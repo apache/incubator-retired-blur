@@ -3,6 +3,7 @@ package com.nearinfinity.blur.search;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -26,7 +27,7 @@ public class SuperParser extends QueryParser {
 	
 	public static void main(String[] args) throws ParseException {
 		SuperParser parser = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT));
-		Query query = parser.parse("address.street:sulgrave +(person.firstname:aaron person.lastname:mccurry +(person.gender:(unknown male)))");
+		Query query = parser.parse("address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query);
 	}
 
@@ -54,19 +55,35 @@ public class SuperParser extends QueryParser {
 
 	@Override
 	protected Query newMatchAllDocsQuery() {
-		throw new RuntimeException("not supported yet");
+		return addField(super.newMatchAllDocsQuery(),UUID.randomUUID().toString());
 	}
 
 	@Override
 	protected MultiPhraseQuery newMultiPhraseQuery() {
-		throw new RuntimeException("not supported yet");
+		return new MultiPhraseQuery() {
+			private static final long serialVersionUID = 2743009696906520410L;
+			@Override
+			public void add(Term[] terms, int position) {
+				super.add(terms, position);
+				for (Term term : terms) {
+					addField(this, term.field());
+				}
+			}
+		};
 	}
 
 	@Override
 	protected PhraseQuery newPhraseQuery() {
-		throw new RuntimeException("not supported yet");
+		return new PhraseQuery() {
+			private static final long serialVersionUID = 1927750709523859808L;
+			@Override
+			public void add(Term term, int position) {
+				super.add(term, position);
+				addField(this, term.field());
+			}
+		};
 	}
-
+	
 	@Override
 	protected Query newPrefixQuery(Term prefix) {
 		return addField(super.newPrefixQuery(prefix),prefix.field());
@@ -153,7 +170,8 @@ public class SuperParser extends QueryParser {
 			}
 			return null;
 		} else {
-			return getGroupName(fieldNames.get(query));
+			String fieldName = fieldNames.get(query);
+			return getGroupName(fieldName);
 		}
 	}
 

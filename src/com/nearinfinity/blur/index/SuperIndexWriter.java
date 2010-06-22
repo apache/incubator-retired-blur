@@ -52,18 +52,6 @@ public class SuperIndexWriter extends IndexWriter {
 	}
 	
 	public SuperIndexWriter addSuperDocument(SuperDocument document, Analyzer analyzer) throws CorruptIndexException, IOException {
-//		RAMDirectory directory = new RAMDirectory();
-//		IndexWriter indexWriter = new IndexWriter(directory,new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
-//		boolean prime = false;
-//		for (Document doc : document.getAllDocumentsForIndexing()) {
-//			if (!prime) {
-//				doc.add(PRIME_DOC_FIELD);
-//				prime = true;
-//			}
-//			indexWriter.addDocument(doc, analyzer);
-//		}
-//		indexWriter.close();
-//		addIndexes(IndexReader.open(directory));
 		boolean prime = false;
 		for (Document doc : document.getAllDocumentsForIndexing()) {
 			if (!prime) {

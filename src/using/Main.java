@@ -13,7 +13,7 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.SuperDocument;
+import com.nearinfinity.blur.index.SuperDocument;
 import com.nearinfinity.blur.index.SuperIndexWriter;
 import com.nearinfinity.blur.search.SuperQuery;
 import com.nearinfinity.blur.search.SuperSearcher;
@@ -21,10 +21,8 @@ import com.nearinfinity.blur.search.SuperSearcher;
 public class Main {
 
 	public static void main(String[] args) throws CorruptIndexException, LockObtainFailedException, IOException {
-		SuperDocument document = new SuperDocument().
-			addFieldStoreAnalyzedNoNorms("id", "1234").
-			addFieldStoreAnalyzedNoNorms("test", "test", "t", 1).
-			addFieldStoreAnalyzedNoNorms("test", "test", "t", 0);
+		SuperDocument document = new SuperDocument("1234");
+		document.addFieldAnalyzedNoNorms("test", "test", "cf1", "5678");
 		
 		Directory directory = new RAMDirectory();
 		

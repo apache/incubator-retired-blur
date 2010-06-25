@@ -8,7 +8,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.store.Directory;
 
-import com.nearinfinity.blur.SuperDocument;
+import com.nearinfinity.blur.index.SuperDocument;
 import com.nearinfinity.blur.index.SuperIndexReader;
 
 public class SuperSearcher extends IndexSearcher {

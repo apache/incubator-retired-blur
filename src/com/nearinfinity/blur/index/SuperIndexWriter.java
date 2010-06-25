@@ -16,7 +16,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 
-import com.nearinfinity.blur.SuperDocument;
 
 public class SuperIndexWriter extends IndexWriter {
 	

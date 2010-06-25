@@ -17,7 +17,6 @@ import org.apache.lucene.index.TermVectorMapper;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.OpenBitSet;
 
-import com.nearinfinity.blur.SuperDocument;
 
 public class SuperIndexReader extends IndexReader {
 	
@@ -56,18 +55,6 @@ public class SuperIndexReader extends IndexReader {
 		return -1;
 	}
 	
-	public SuperDocument superDocument(int n, FieldSelector fieldSelector) throws CorruptIndexException, IOException {
-		return null;
-	}
-	
-	public Map<String,Collection<String>> getSuperFieldName(FieldOption fldOption) {
-		return null;
-	}
-	
-	public SuperDocument superDocument(int n) throws CorruptIndexException, IOException {
-		return superDocument(n, null);
-	}
-
 	@Override
 	public int docFreq(Term t) throws IOException {
 		return indexReader.docFreq(t);

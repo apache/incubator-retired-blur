@@ -11,18 +11,18 @@ public class MassTest {
 		String hostname = "localhost/";
 		List<String> hosts = new ArrayList<String>();
 		List<BlurServer> servers = new ArrayList<BlurServer>();
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 30; i++) {
 			servers.add(startServer(port+i));
 			hosts.add(hostname + (port+i));
 		}
 		
 		new MasterController(3000, hosts).start();
 		
-		Thread.sleep(10000);
-		
-		System.out.println("Stoping server...");
-		
-		servers.get(0).stop();
+//		Thread.sleep(10000);
+//		
+//		System.out.println("Stoping server...");
+//		
+//		servers.get(0).stop();
 
 	}
 

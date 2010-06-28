@@ -45,6 +45,7 @@ public class MasterController extends BlurServer {
 					return thread;
 				}
 			});
+			this.joiner = joiner;
 			this.clientStrs = clientStrs;
 			for (String client : clientStrs) {
 				clientCache.put(client, getClients(4,client));

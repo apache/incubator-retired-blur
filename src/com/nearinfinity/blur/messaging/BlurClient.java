@@ -64,7 +64,7 @@ public class BlurClient {
 			totalTime += (e-s);
 			total++;
 			count++;
-			Thread.sleep(10);
+			Thread.sleep(1);
 		}
 	}
 

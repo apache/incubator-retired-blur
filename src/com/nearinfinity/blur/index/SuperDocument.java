@@ -111,41 +111,41 @@ public class SuperDocument {
 		return doc;
 	}
 
-	public SuperDocument addField(String name, String value, Store store, Index index, String columnFamily, String superKey) {
+	public SuperDocument addField(String columnFamily, String superKey, String name, String value, Store store, Index index) {
 		getDocument(columnFamily, superKey, true).add(new Field(name,value,store,index));
 		return this;
 	}
 
-	public SuperDocument addFieldStoreAnalyzedNoNorms(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.YES, Index.ANALYZED_NO_NORMS, columnFamily, superKey);
+	public SuperDocument addFieldStoreAnalyzedNoNorms(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.YES, Index.ANALYZED_NO_NORMS);
 	}
 	
-	public SuperDocument addFieldAnalyzedNoNorms(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.NO, Index.ANALYZED_NO_NORMS, columnFamily, superKey);
+	public SuperDocument addFieldAnalyzedNoNorms(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.NO, Index.ANALYZED_NO_NORMS);
 	}
 	
-	public SuperDocument addFieldStoreAnalyzed(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.YES, Index.ANALYZED, columnFamily, superKey);
+	public SuperDocument addFieldStoreAnalyzed(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.YES, Index.ANALYZED);
 	}
 	
-	public SuperDocument addFieldAnalyzed(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.NO, Index.ANALYZED, columnFamily, superKey);
+	public SuperDocument addFieldAnalyzed(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.NO, Index.ANALYZED);
 	}
 	
-	public SuperDocument addFieldStoreNotAnalyzedNoNorms(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.YES, Index.NOT_ANALYZED_NO_NORMS, columnFamily, superKey);
+	public SuperDocument addFieldStoreNotAnalyzedNoNorms(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.YES, Index.NOT_ANALYZED_NO_NORMS);
 	}
 	
-	public SuperDocument addFieldNotAnalyzedNoNorms(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.NO, Index.NOT_ANALYZED_NO_NORMS, columnFamily, superKey);
+	public SuperDocument addFieldNotAnalyzedNoNorms(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.NO, Index.NOT_ANALYZED_NO_NORMS);
 	}
 	
-	public SuperDocument addFieldNotStoreAnalyzed(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.YES, Index.NOT_ANALYZED, columnFamily, superKey);
+	public SuperDocument addFieldNotStoreAnalyzed(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.YES, Index.NOT_ANALYZED);
 	}
 	
-	public SuperDocument addFieldNotAnalyzed(String name, String value, String columnFamily, String superKey) {
-		return addField(name, value, Store.NO, Index.NOT_ANALYZED, columnFamily, superKey);
+	public SuperDocument addFieldNotAnalyzed(String columnFamily, String superKey, String name, String value) {
+		return addField(columnFamily, superKey, name, value, Store.NO, Index.NOT_ANALYZED);
 	}
 
 	public void setDocuments(String columnFamily, Map<String, Document> docs) {

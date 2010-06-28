@@ -15,6 +15,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
+import org.apache.lucene.store.RAMDirectory;
 
 
 public class SuperIndexWriter extends IndexWriter {
@@ -50,14 +51,32 @@ public class SuperIndexWriter extends IndexWriter {
 		return -1;
 	}
 	
+	private boolean specialIndexing = false;
+	
 	public SuperIndexWriter addSuperDocument(SuperDocument document, Analyzer analyzer) throws CorruptIndexException, IOException {
-		boolean prime = false;
-		for (Document doc : document.getAllDocumentsForIndexing()) {
-			if (!prime) {
-				doc.add(PRIME_DOC_FIELD);
-				prime = true;
+		if (specialIndexing) {
+			Directory directory = new RAMDirectory();
+			IndexWriter indexWriter = new IndexWriter(directory, analyzer, MaxFieldLength.UNLIMITED);
+			boolean prime = false;
+			for (Document doc : document.getAllDocumentsForIndexing()) {
+				if (!prime) {
+					doc.add(PRIME_DOC_FIELD);
+					prime = true;
+				}
+				indexWriter.addDocument(doc, analyzer);
 			}
-			super.addDocument(doc, analyzer);
+			indexWriter.optimize();
+			indexWriter.close();
+			addIndexesNoOptimize(new Directory[]{directory});
+		} else {
+			boolean prime = false;
+			for (Document doc : document.getAllDocumentsForIndexing()) {
+				if (!prime) {
+					doc.add(PRIME_DOC_FIELD);
+					prime = true;
+				}
+				super.addDocument(doc, analyzer);
+			}
 		}
 		return this;
 	}

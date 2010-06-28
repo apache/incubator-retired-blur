@@ -16,6 +16,6 @@ public interface BlurQuery {
 	long searchFast(String query, String filter);
 	long searchFast(String query, String filter, long minimum);
 	
-	List<BlurHit> searchFast(String query, String filter, int starting, int fetch);
+	List<BlurHit> searchFast(String query, String filter, long starting, int fetch);
 
 }

@@ -109,7 +109,7 @@ public class BlurQueryEngine implements BlurQuery {
 	}
 
 	@Override
-	public List<BlurHit> searchFast(String query, String filter, int starting, int fetch) {
+	public List<BlurHit> searchFast(String query, String filter, long starting, int fetch) {
 		return null;
 	}
 	

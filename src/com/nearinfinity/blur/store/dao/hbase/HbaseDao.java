@@ -25,7 +25,7 @@ public class HbaseDao implements DirectoryDao {
 	private HTable hTable;
 	private byte[] columnFamily;
 	private byte[] dirName;
-	private boolean useCache = false;
+	private boolean useCache = false;//not safe
 	private int maxCacheSize = 16;
 
 	public HbaseDao(String tableName, String columnFamily, String dirName) throws IOException {

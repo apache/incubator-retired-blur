@@ -21,7 +21,6 @@ public class IndexExperiment {
 	public static void main(String[] args) throws Exception {
 		Directory directory = genIndex();
 		Directory directory2 = genIndex();
-		
 		IndexReader indexReader = IndexReader.open(directory);
 		System.out.println(indexReader.numDocs());
 		

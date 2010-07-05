@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.store.dao.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;

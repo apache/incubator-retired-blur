@@ -19,8 +19,8 @@ import org.apache.lucene.document.Document;
 import com.nearinfinity.blur.BlurHit;
 import com.nearinfinity.blur.BlurQuery;
 import com.nearinfinity.blur.index.SuperDocument;
-import com.nearinfinity.blur.store.Bytes;
-import com.nearinfinity.blur.store.ClientPool;
+import com.nearinfinity.blur.store.dao.cassandra.ClientPool;
+import com.nearinfinity.blur.store.dao.utils.Bytes;
 
 public class BlurQueryEngine implements BlurQuery {
 	

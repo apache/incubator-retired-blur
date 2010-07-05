@@ -2,27 +2,27 @@ package com.nearinfinity.blur.store;
 
 import java.util.Random;
 
-import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
+import com.nearinfinity.blur.store.dao.hbase.HbaseDao;
+
 public class SearchTest {
 	
 	private static Random random = new Random();
 
 	public static void main(String[] args) throws Exception {
-		
-		CassandraDirectory directory = new CassandraDirectory("Keyspace1", "Standard1", "testing",
-				ConsistencyLevel.ONE, 10, "localhost", 9160);
+		BlurDirectory directory = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
+//		BlurDirectory directory = new BlurDirectory(new CassandraDao("Keyspace1", "Standard1", "testing", ConsistencyLevel.ONE, 10, "localhost", 9160));
 //		FSDirectory directory = FSDirectory.open(new File("./index"));
 		
 		IndexReader reader = IndexReader.open(directory);
 		int size = reader.numDocs();
 		long total = 0;
-		int runs = 1000;
+		int runs = 1000000;
 		for (int i = 0; i < runs; i++) {
 			if (!reader.isCurrent()) {
 				System.out.println("reopening");
@@ -41,7 +41,7 @@ public class SearchTest {
 					topdocs.totalHits + "] hits in [" + (e-s) +
 							"] ms in [" + size +
 							"] docs");
-			Thread.sleep(100);
+//			Thread.sleep(100);
 		}
 		System.out.println("Total [" + total + "] avg [" + (total / (double)runs) + "]");
 

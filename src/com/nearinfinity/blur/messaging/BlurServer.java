@@ -84,9 +84,11 @@ public class BlurServer {
 					}
 					socket.close();
 				} catch (Exception e) {
-					System.out.println("error........................");
 					if (!socket.isClosed()) {
-						LOG.error("unknown error",e);
+						try {
+							socket.close();
+						} catch (IOException ex) {
+						}
 					}
 				}
 			}

@@ -1,5 +1,6 @@
 package com.nearinfinity.blur.store;
 
+import java.io.File;
 import java.util.Random;
 import java.util.UUID;
 
@@ -11,23 +12,39 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.store.dao.hbase.HbaseDao;
+import com.nearinfinity.blur.store.policy.ZookeeperIndexDeletionPolicy;
 
 public class CreateIndexTest {
 
 	private static Random random = new Random();
 
 	public static void main(String[] args) throws Exception {
+		ZooKeeper zk = new ZooKeeper("localhost", 3000, new Watcher() {
+			@Override
+			public void process(WatchedEvent event) {
+				
+			}
+		});
 //		BlurDirectory directory = new BlurDirectory(new CassandraDao("Keyspace1", "Standard1", "testing", ConsistencyLevel.ONE, 10, "localhost", 9160));
 //		FSDirectory directory = FSDirectory.open(new File("./index"));
-		BlurDirectory directory = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
+		
+		String indexRefPath = "/blur/refs/testing";
+//		BlurDirectory dir = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
+		FSDirectory dir = FSDirectory.open(new File("./index"));
+		ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(zk, dir, indexRefPath);
+		
+//		BlurDirectory directory = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
 		Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-		final IndexWriter indexWriter = new IndexWriter(directory, analyzer, MaxFieldLength.UNLIMITED);
-		indexWriter.setUseCompoundFile(false);
+		final IndexWriter indexWriter = new IndexWriter(directory, analyzer, new ZookeeperIndexDeletionPolicy(zk, indexRefPath), MaxFieldLength.UNLIMITED);
+//		indexWriter.setUseCompoundFile(false);
 		long os = System.currentTimeMillis();
-		for (int y= 0; y < 1000; y++) {
+		for (int y= 0; y < 10; y++) {
 			long is = System.currentTimeMillis();
 			int count = 0;
 			int max = 1000;
@@ -45,8 +62,9 @@ public class CreateIndexTest {
 				}
 				count++;
 			}
-			System.out.println("indexing time [" + (System.currentTimeMillis() - is) + "]");
+			System.out.println("Commiting indexing time [" + (System.currentTimeMillis() - is) + "]");
 			indexWriter.commit();
+			System.out.println("Commit complete");
 		}
 		indexWriter.optimize();
 		System.out.println("optimize time [" + (System.currentTimeMillis() - os) + "]");

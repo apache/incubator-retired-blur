@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.CorruptIndexException;
@@ -15,40 +17,63 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.index.TermVectorMapper;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.OpenBitSet;
+
+import com.nearinfinity.blur.utils.BlurBitSet;
+import com.nearinfinity.blur.utils.BlurBitSetCache;
 
 
 public class SuperIndexReader extends IndexReader {
 	
+	private final static Log LOG = LogFactory.getLog(SuperIndexReader.class);
 	private static final Term PRIME_DOC_TERM = new Term(SuperDocument.PRIME_DOC,SuperDocument.PRIME_DOC_VALUE);
 	private IndexReader indexReader;
-	private OpenBitSet[] primeDocBitSets;
-
-	public SuperIndexReader(IndexReader indexReader) throws IOException {
-		this.indexReader = indexReader;
-		IndexReader[] sequentialSubReaders = indexReader.getSequentialSubReaders();
-		primeDocBitSets = new OpenBitSet[sequentialSubReaders.length];
-		for (int i = 0; i < sequentialSubReaders.length; i++) {
-			primeDocBitSets[i] = new OpenBitSet(sequentialSubReaders[i].maxDoc());
-		}
-		populatePrimeDocBitSets(primeDocBitSets,sequentialSubReaders);
+	private Thread warmUpThread;
+	
+	public SuperIndexReader(IndexReader reader) throws IOException {
+		this.indexReader = reader;
+		init();
 	}
 	
+	private void init() {
+		warmUpThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					IndexReader[] subReaders = indexReader.getSequentialSubReaders();
+					for (IndexReader reader : subReaders) {
+						if (!BlurBitSetCache.isPrimeDocPopulated(reader)) {
+							BlurBitSet bitSet = new BlurBitSet(reader.maxDoc());
+							populatePrimeDocBitSet(bitSet, reader);
+							BlurBitSetCache.setPrimeDoc(reader,bitSet);
+						}
+					}
+				} catch (Exception e) {
+					LOG.error("unknown error",e);
+					throw new RuntimeException(e);
+				}
+			}
+
+			private void populatePrimeDocBitSet(BlurBitSet primeDocBS, IndexReader reader) throws IOException {
+				TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
+				while (termDocs.next()) {
+					primeDocBS.set(termDocs.doc());
+				}
+			}
+		});
+		warmUpThread.setName("SuperIndexReader-Warm-Up[" + indexReader.toString() + "]");
+		warmUpThread.setDaemon(true);
+		warmUpThread.start();
+	}
+
 	public SuperIndexReader(Directory directory) throws CorruptIndexException, IOException {
 		this(IndexReader.open(directory));
 	}
+	
+	
 
-	private static void populatePrimeDocBitSets(OpenBitSet[] primeDocBS, IndexReader[] readers) throws IOException {
-		for (int i = 0; i < readers.length; i++) {
-			populatePrimeDocBitSet(primeDocBS[i],readers[i]);
-		}
-	}
-
-	private static void populatePrimeDocBitSet(OpenBitSet primeDocBS, IndexReader reader) throws IOException {
-		TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
-		while (termDocs.next()) {
-			primeDocBS.set(termDocs.doc());
-		}
+	@Override
+	public IndexReader[] getSequentialSubReaders() {
+		return indexReader.getSequentialSubReaders();
 	}
 
 	public int numSuperDocs() {
@@ -169,6 +194,10 @@ public class SuperIndexReader extends IndexReader {
 	protected void finalize() throws Throwable {
 		super.finalize();
 		indexReader.close();
+	}
+
+	public void waitForWarmUp() throws InterruptedException {
+		warmUpThread.join();
 	}
 	
 }

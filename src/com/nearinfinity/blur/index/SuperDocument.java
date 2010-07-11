@@ -21,6 +21,7 @@ public class SuperDocument {
 	public static final String PRIME_DOC_VALUE = "true";
 	public static final String ID = "_id_";
 	private static final String SUPER_KEY = "_superkey_";
+	private static final String SEP = ".";
 	
 	private Map<String,Map<String,Document>> documents = new HashMap<String, Map<String,Document>>();
 	
@@ -112,8 +113,12 @@ public class SuperDocument {
 	}
 
 	public SuperDocument addField(String columnFamily, String superKey, String name, String value, Store store, Index index) {
-		getDocument(columnFamily, superKey, true).add(new Field(name,value,store,index));
+		getDocument(columnFamily, superKey, true).add(new Field(getFieldName(columnFamily,name),value,store,index));
 		return this;
+	}
+
+	private String getFieldName(String columnFamily, String name) {
+		return columnFamily + SEP + name;
 	}
 
 	public SuperDocument addFieldStoreAnalyzedNoNorms(String columnFamily, String superKey, String name, String value) {

@@ -12,6 +12,9 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
+import com.nearinfinity.blur.utils.BlurBitSet;
+import com.nearinfinity.blur.utils.BlurBitSetCache;
+
 public class SuperQuery extends Query {
 
 	private static final long serialVersionUID = -5901574044714034398L;
@@ -28,7 +31,7 @@ public class SuperQuery extends Query {
 	}
 
 	public Object clone() {
-		return new SuperQuery((Query) query.clone());
+		return new SuperQuery((Query) query.clone(),rewritten);
 	}
 
 	public Query combine(Query[] queries) {
@@ -115,7 +118,7 @@ public class SuperQuery extends Query {
 		@Override
 		public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
 			Scorer scorer = weight.scorer(reader, scoreDocsInOrder, topScorer);
-			return new SuperScorer(scorer);
+			return new SuperScorer(scorer,BlurBitSetCache.getPrimeDoc(reader));
 		}
 
 		@Override
@@ -127,31 +130,97 @@ public class SuperQuery extends Query {
 	public class SuperScorer extends Scorer {
 
 		private Scorer scorer;
+		private float superDocScore = 1;
+		private BlurBitSet bitSet;
+		private int nextPrimeDoc;
+		private int primeDoc;
 
-		protected SuperScorer(Scorer scorer) {
+		protected SuperScorer(Scorer scorer, BlurBitSet bitSet) {
 			super(scorer.getSimilarity());
 			this.scorer = scorer;
+			this.bitSet = bitSet;
 		}
 
 		@Override
 		public float score() throws IOException {
-			return scorer.score();
+			return superDocScore;
+		}
+		
+		@Override
+		public int docID() {
+			return primeDoc;
 		}
 
 		@Override
 		public int advance(int target) throws IOException {
-			return scorer.advance(target);
-		}
-
-		@Override
-		public int docID() {
-			return scorer.docID();
+			int doc = scorer.docID();
+			if (isScorerExhausted(doc)) {
+				if (!isScorerExhausted(nextPrimeDoc)) {
+					primeDoc = nextPrimeDoc;
+					nextPrimeDoc = NO_MORE_DOCS;
+					return primeDoc;
+				}
+				return primeDoc = doc;
+			}
+			if (target > doc || doc == -1) {
+				doc = scorer.advance(target);
+			}
+			if (isScorerExhausted(doc)) {
+				return primeDoc;
+			}
+			return gatherAllHitsSuperDoc(doc);
 		}
 
 		@Override
 		public int nextDoc() throws IOException {
-			return scorer.nextDoc();
+			int doc = scorer.docID();
+			if (isScorerExhausted(doc)) {
+				if (!isScorerExhausted(nextPrimeDoc)) {
+					primeDoc = nextPrimeDoc;
+					nextPrimeDoc = NO_MORE_DOCS;
+					return primeDoc;
+				}
+				return primeDoc = doc;
+			}
+			if (doc == -1) {
+				doc = scorer.nextDoc();
+			}
+			if (isScorerExhausted(doc)) {
+				return primeDoc;
+			}
+			return gatherAllHitsSuperDoc(doc);
+		}
+
+		private int gatherAllHitsSuperDoc(int doc) throws IOException {
+			reset();
+			primeDoc = getPrimeDoc(doc);
+			nextPrimeDoc = getNextPrimeDoc(doc);
+			superDocScore += scorer.score();
+			while ((doc = scorer.nextDoc()) < nextPrimeDoc) {
+				superDocScore += scorer.score();
+			}
+			return primeDoc;
 		}
 		
+		private void reset() {
+			superDocScore = 0;
+		}
+
+		private int getNextPrimeDoc(int doc) {
+			int nextSetBit = bitSet.nextSetBit(doc+1);
+			return nextSetBit == -1 ? NO_MORE_DOCS : nextSetBit;
+		}
+
+		private int getPrimeDoc(int doc) {
+			int prevSetBit = bitSet.prevSetBit(doc);
+			if (prevSetBit < 0) {
+				throw new RuntimeException("Possible Currupt Index");
+			}
+			return prevSetBit;
+		}
+
+		private boolean isScorerExhausted(int doc) {
+			return doc == NO_MORE_DOCS ? true : false;
+		}
 	}
 }

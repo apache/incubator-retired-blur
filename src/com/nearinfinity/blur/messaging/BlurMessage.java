@@ -1,11 +1,8 @@
 package com.nearinfinity.blur.messaging;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.nio.ByteBuffer;
 
 public class BlurMessage {
 	

@@ -6,6 +6,18 @@ public class BlurBitSet extends OpenBitSet {
 
 	private static final long serialVersionUID = 8837907556056943537L;
 	
+	public BlurBitSet() {
+		super();
+	}
+
+	public BlurBitSet(long numBits) {
+		super(numBits);
+	}
+
+	public BlurBitSet(long[] bits, int numWords) {
+		super(bits, numWords);
+	}
+
 	public int prevSetBit(int index) {
 		return (int) prevSetBit((long)index);
 	}

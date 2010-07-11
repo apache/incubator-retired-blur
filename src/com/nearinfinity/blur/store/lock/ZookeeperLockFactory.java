@@ -12,6 +12,8 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 
+import com.nearinfinity.blur.utils.ZkUtils;
+
 public class ZookeeperLockFactory extends LockFactory implements Watcher {
 	
 	public static void main(String[] args) throws IOException, KeeperException, InterruptedException {
@@ -24,7 +26,7 @@ public class ZookeeperLockFactory extends LockFactory implements Watcher {
 		
 		String lockDir = "/blur/lucene/locks";
 		
-		mkNodes(lockDir,zk);
+		ZkUtils.mkNodes(lockDir,zk);
 		
 		ZookeeperLock lock1 = new ZookeeperLock(zk, lockDir, "write.lock");
 		ZookeeperLock lock2 = new ZookeeperLock(zk, lockDir, "write.lock");
@@ -47,30 +49,15 @@ public class ZookeeperLockFactory extends LockFactory implements Watcher {
 	private static final String BLUR_LUCENE_LOCKS = "/blur/lucene/locks";
 	private ZooKeeper zk;
 	private String lockDir = BLUR_LUCENE_LOCKS;
+	
+	public ZookeeperLockFactory(ZooKeeper zk) throws Exception {
+		this.zk = zk;
+		ZkUtils.mkNodes(lockDir,zk);
+	}
 
 	public ZookeeperLockFactory(String hostname, int port) throws Exception {
 		zk = new ZooKeeper("localhost", 3000, this);
-		mkNodes(lockDir,zk);
-	}
-
-	public static void mkNodes(String path, ZooKeeper zk) throws KeeperException, InterruptedException {
-		String[] split = path.split("/");
-		for (int i = 0; i < split.length; i++) {
-			StringBuilder builder = new StringBuilder();
-			for (int j = 0; j <= i; j++) {
-				if (!split[j].isEmpty()) {
-					builder.append('/');
-					builder.append(split[j]);
-				}
-			}
-			String pathToCheck = builder.toString();
-			if (pathToCheck.isEmpty()) {
-				continue;
-			}
-			if (zk.exists(pathToCheck, false) == null) {
-				zk.create(pathToCheck, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-			}
-		}
+		ZkUtils.mkNodes(lockDir,zk);
 	}
 
 	@Override
@@ -89,6 +76,7 @@ public class ZookeeperLockFactory extends LockFactory implements Watcher {
 	
 	public static class ZookeeperLock extends Lock {
 		
+		private static final String LOCK = "/lock-";
 		private ZooKeeper zk;
 		private String lockPath;
 		private String createdLockPath;
@@ -120,7 +108,7 @@ public class ZookeeperLockFactory extends LockFactory implements Watcher {
 		@Override
 		public boolean obtain() throws IOException {
 			try {
-				createdLockPath = zk.create(lockPath + "/lock-", null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+				createdLockPath = zk.create(lockPath + LOCK, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 				List<String> children = zk.getChildren(lockPath, false);
 				if (children.size() == 1) {
 					return true;
@@ -152,8 +140,7 @@ public class ZookeeperLockFactory extends LockFactory implements Watcher {
 	}
 
 	@Override
-	public void process(WatchedEvent arg0) {
-		// TODO Auto-generated method stub
+	public void process(WatchedEvent event) {
 		
 	}
 

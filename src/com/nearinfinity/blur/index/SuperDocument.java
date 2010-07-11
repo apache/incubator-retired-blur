@@ -20,16 +20,10 @@ public class SuperDocument {
 	public static final String PRIME_DOC = "_prime_";
 	public static final String PRIME_DOC_VALUE = "true";
 	public static final String ID = "_id_";
-	private static final String SUPER_KEY = "_superkey_";
-	private static final String SEP = ".";
+	public static final String SUPER_KEY = "_superkey_";
+	public static final String SEP = ".";
 	
 	private Map<String,Map<String,Document>> documents = new HashMap<String, Map<String,Document>>();
-	
-//	public class SuperSubDocument {
-//		String name;
-//		Document document;
-//	}
-	
 	private String id;
 	
 	public SuperDocument(String id) {

@@ -7,7 +7,6 @@ public class ObjectSize {
 	private static Instrumentation instrumentation;
 	
 	public static void premain(String agentArgs, Instrumentation inst) {
-		new Throwable().printStackTrace();
 		instrumentation = inst;
 	}
 	

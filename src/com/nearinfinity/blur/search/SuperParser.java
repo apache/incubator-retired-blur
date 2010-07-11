@@ -19,10 +19,11 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.index.SuperDocument;
+
 public class SuperParser extends QueryParser {
 	
 	public static final String SUPER = "SUPER";
-	private static final String SEP = ".";
 	private Map<Query,String> fieldNames = new HashMap<Query, String>();
 	
 	public static void main(String[] args) throws ParseException {
@@ -155,7 +156,7 @@ public class SuperParser extends QueryParser {
 		if (fieldName == null) {
 			return null;
 		}
-		int index = fieldName.indexOf(SEP);
+		int index = fieldName.indexOf(SuperDocument.SEP);
 		if (index < 0) {
 			return null;
 		}

@@ -8,7 +8,7 @@ import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.lucene.index.IndexReader;
 
 @SuppressWarnings("unchecked")
-public class BlurBitSetCache {
+public class PrimeDocCache {
 	
 	public static final BlurBitSet EMPTY_BIT_SET = new BlurBitSet();
 	private static Map<IndexReader,BlurBitSet> primeDocs = Collections.synchronizedMap(new ReferenceMap(AbstractReferenceMap.WEAK, AbstractReferenceMap.HARD));

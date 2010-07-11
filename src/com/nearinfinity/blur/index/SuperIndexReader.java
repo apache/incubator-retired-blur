@@ -19,7 +19,7 @@ import org.apache.lucene.index.TermVectorMapper;
 import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.blur.utils.BlurBitSet;
-import com.nearinfinity.blur.utils.BlurBitSetCache;
+import com.nearinfinity.blur.utils.PrimeDocCache;
 
 
 public class SuperIndexReader extends IndexReader {
@@ -41,10 +41,10 @@ public class SuperIndexReader extends IndexReader {
 				try {
 					IndexReader[] subReaders = indexReader.getSequentialSubReaders();
 					for (IndexReader reader : subReaders) {
-						if (!BlurBitSetCache.isPrimeDocPopulated(reader)) {
+						if (!PrimeDocCache.isPrimeDocPopulated(reader)) {
 							BlurBitSet bitSet = new BlurBitSet(reader.maxDoc());
 							populatePrimeDocBitSet(bitSet, reader);
-							BlurBitSetCache.setPrimeDoc(reader,bitSet);
+							PrimeDocCache.setPrimeDoc(reader,bitSet);
 						}
 					}
 				} catch (Exception e) {

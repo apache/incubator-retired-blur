@@ -13,7 +13,7 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
 import com.nearinfinity.blur.utils.BlurBitSet;
-import com.nearinfinity.blur.utils.BlurBitSetCache;
+import com.nearinfinity.blur.utils.PrimeDocCache;
 
 public class SuperQuery extends Query {
 
@@ -118,7 +118,7 @@ public class SuperQuery extends Query {
 		@Override
 		public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
 			Scorer scorer = weight.scorer(reader, scoreDocsInOrder, topScorer);
-			return new SuperScorer(scorer,BlurBitSetCache.getPrimeDoc(reader));
+			return new SuperScorer(scorer,PrimeDocCache.getPrimeDoc(reader));
 		}
 
 		@Override

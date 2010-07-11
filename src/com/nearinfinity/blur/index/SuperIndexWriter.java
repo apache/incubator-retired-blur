@@ -75,7 +75,6 @@ public class SuperIndexWriter extends IndexWriter {
 					doc.add(PRIME_DOC_FIELD);
 					prime = true;
 				}
-//				System.out.println("doc=" + doc);
 				super.addDocument(doc, analyzer);
 			}
 		}

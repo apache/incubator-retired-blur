@@ -38,6 +38,9 @@ public class SuperQueryTest extends TestCase {
 		IndexSearcher searcher = new IndexSearcher(reader);
 		TopDocs topDocs = searcher.search(booleanQuery, 10);
 		assertEquals(2, topDocs.totalHits);
+		assertEquals("1",searcher.doc(topDocs.scoreDocs[0].doc).get(SuperDocument.ID));
+		assertEquals("3",searcher.doc(topDocs.scoreDocs[1].doc).get(SuperDocument.ID));
+		
 	}
 
 	private Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {

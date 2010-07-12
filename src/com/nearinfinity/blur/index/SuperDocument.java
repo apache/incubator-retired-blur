@@ -154,5 +154,10 @@ public class SuperDocument {
 	public boolean isEmpty() {
 		return documents.isEmpty();
 	}
+
+	@Override
+	public String toString() {
+		return "id:" + id + "," + documents;
+	}
 	
 }

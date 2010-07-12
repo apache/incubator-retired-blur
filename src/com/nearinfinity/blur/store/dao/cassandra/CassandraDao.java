@@ -157,8 +157,12 @@ public class CassandraDao implements DirectoryDao {
 
 	@Override
 	public void flush(String name) throws IOException {
-		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void removeBlock(String name, long blockId) {
+		throw new RuntimeException("not implemented");
 	}
 	
 }

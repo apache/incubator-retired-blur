@@ -1,6 +1,5 @@
 package com.nearinfinity.blur.store;
 
-import java.io.File;
 import java.util.Random;
 import java.util.UUID;
 
@@ -12,12 +11,12 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.store.dao.hbase.HbaseDao;
 import com.nearinfinity.blur.store.policy.ZookeeperIndexDeletionPolicy;
 
 public class IndexWriterProcess {
@@ -33,7 +32,8 @@ public class IndexWriterProcess {
 		});
 		
 		final String indexRefPath = "/blur/refs/testing";
-		FSDirectory dir = FSDirectory.open(new File("./index"));
+//		FSDirectory dir = FSDirectory.open(new File("./index"));
+		BlurDirectory dir = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
 		final ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(zk, dir, indexRefPath);
 		final Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
 		IndexWriter indexWriter = new IndexWriter(directory, analyzer, new ZookeeperIndexDeletionPolicy(zk, indexRefPath), MaxFieldLength.UNLIMITED);

@@ -74,4 +74,6 @@ public interface DirectoryDao {
 	 */
 	void flush(String name) throws IOException;
 
+	void removeBlock(String name, long blockId);
+
 }

@@ -45,7 +45,12 @@ public class BlurDirectory extends Directory {
 
 	@Override
 	public void deleteFile(String name) throws IOException {
+		long length = dao.getFileLength(name);
 		dao.setFileLength(name, -1);
+		long maxBlockId = getBlock(length - 1);
+		for (long l = 0; l <= maxBlockId; l++) {
+			dao.removeBlock(name,l);
+		}
 	}
 
 	@Override

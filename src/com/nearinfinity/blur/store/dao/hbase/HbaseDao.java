@@ -11,6 +11,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
@@ -111,6 +112,12 @@ public class HbaseDao implements DirectoryDao {
 			put(new Put(getRowId(Bytes.toBytes(name),blockId)).add(columnFamily, Bytes.toBytes(blockId), block));
 		}
 	}
+	
+	@Override
+	public void removeBlock(String name, long blockId) {
+		delete(new Delete(getRowId(Bytes.toBytes(name),blockId)));
+	}
+
 
 	@Override
 	public void setFileLength(String name, long length) throws IOException {
@@ -143,6 +150,16 @@ public class HbaseDao implements DirectoryDao {
 		try {
 			synchronized (hTable) {
 				hTable.put(put);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void delete(Delete delete) {
+		try {
+			synchronized (hTable) {
+				hTable.delete(delete);
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);

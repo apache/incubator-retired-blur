@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -30,18 +31,24 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 
 	@Override
 	public void onCommit(List<? extends IndexCommit> commits) throws IOException {
-		List<String> filesCurrentlyBeingReferenced = getListOfReferencedFiles();
+		List<String> filesCurrentlyBeingReferenced = getListOfReferencedFiles(zk,indexRefPath);
 		int size = commits.size();
-		OUTER: for (int i = 0; i < size - 1; i++) {
+		Collection<String> previouslyReferencedFiles = new TreeSet<String>();
+		OUTER: for (int i = size - 2; i >= 0; i--) {
 			IndexCommit indexCommit = commits.get(i);
-			Collection<String> fileNames = indexCommit.getFileNames();
+			LOG.info("Processing index commit generation [" + indexCommit.getGeneration() + "]");
+			Collection<String> fileNames = new TreeSet<String>(indexCommit.getFileNames());
+			//remove all filenames that were references in newer index commits,
+			//this way older index commits can be released without the fear of 
+			//broken references.
+			fileNames.removeAll(previouslyReferencedFiles);
 			for (String fileName : fileNames) {
 				if (filesCurrentlyBeingReferenced.contains(fileName)) {
-//					LOG.info("Indexcommit [" + indexCommit + "] cannot be reclaimed because file [" + fileName + "] is still being referenced in a live index reader.");
+					previouslyReferencedFiles.addAll(fileNames);
 					continue OUTER;
 				}
 			}
-			System.out.println("deleting files [" + fileNames + "]");
+			LOG.info("Index Commit [" + indexCommit.getGeneration() + "] no longer needed, releasing {" + fileNames + "}");
 			indexCommit.delete();
 		}
 	}
@@ -51,10 +58,11 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 		onCommit(commits);
 	}
 
-	private List<String> getListOfReferencedFiles() {
+	public static List<String> getListOfReferencedFiles(ZooKeeper zk, String indexRefPath) {
 		try {
 			List<String> files = new ArrayList<String>();
 			List<String> children = zk.getChildren(indexRefPath, false);
+//			System.out.println(children);
 			for (String child : children) {
 				String name = getName(child);
 				if (!files.contains(name)) {
@@ -69,14 +77,16 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 		}
 	}
 	
-	private String getName(String name) {
+	private static String getName(String name) {
 		int index = name.lastIndexOf('.');
 		return name.substring(0,index);
 	}
 
 	public static String createRef(ZooKeeper zk, String indexRefPath, String name) {
 		try {
-			return zk.create(indexRefPath + "/" + name + ".", null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+			String path = zk.create(indexRefPath + "/" + name + ".", null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+			LOG.debug("Created reference path [" + path + "]");
+			return path;
 		} catch (KeeperException e) {
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
@@ -86,6 +96,7 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 
 	public static void removeRef(ZooKeeper zk, String refPath) {
 		try {
+			LOG.debug("Removing reference path [" + refPath + "]");
 			zk.delete(refPath, 0);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);

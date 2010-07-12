@@ -140,7 +140,7 @@ public class ZookeeperWrapperDirectory extends Directory {
 
 			@Override
 			public Object clone() {
-				return wrapRef(name,(IndexInput) indexInput.clone());
+				return indexInput.clone();
 			}
 		};
 	}

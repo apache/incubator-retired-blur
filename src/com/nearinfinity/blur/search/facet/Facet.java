@@ -22,12 +22,12 @@ public class Facet extends Collector {
 	private Map<IndexReader, CompressedBitSet[]> facets;
 	private boolean empty = false;
 
-	public Facet(FacetManager manager, final String... names) {
+	public Facet(Map<IndexReader, CompressedBitSet[]> facets, final String... names) {
 		this.names = names;
 		this.counts = new int[names.length];
 		this.lastDocSeenFromIterator = new int[names.length];
 		this.length = names.length;
-		this.facets = manager.getFacets(names);
+		this.facets = facets;
 		if (facets.isEmpty()) {
 			empty = true;
 		}

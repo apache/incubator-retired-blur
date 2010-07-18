@@ -38,7 +38,7 @@ public class UsingFacets {
 		facetManager.updateAllFacets();
 		
 		IndexSearcher searcher = new IndexSearcher(reader);
-		Facet facet = new Facet(facetManager, new String[]{"t1","t2"});
+		Facet facet = facetManager.create("t1","t2");
 		searcher.search(new TermQuery(new Term("name","value")), facet);
 		System.out.println(facet.getCounts());
 		

@@ -28,6 +28,15 @@ public abstract class CompressedBitSet extends DocIdSet implements Serializable 
 
 	public abstract CompressedBitSet toBytes(byte[] bytes) throws IOException;
 	
+	/**
+	 * The openbitset to compress, the threshold is the fraction of compression savings needed to use the compressed version.
+	 * e.g.  If the original memory size for the openbitset was 128 bytes and the threshold is set to 0.5 then the compressed version
+	 * has to be 64 bytes or less.  If the compressed version is not used, the original is wrapped in a no compression wrapper
+	 * and returned.
+	 * @param bitSet
+	 * @param threshold
+	 * @return
+	 */
 	public static CompressedBitSet create(OpenBitSet bitSet, double threshold) {
 		CompressedBitSetInt compressedBitSetInt = new CompressedBitSetInt(bitSet);
 		double memorySize = compressedBitSetInt.getMemorySize();

@@ -1,10 +1,8 @@
 package com.nearinfinity.blur.search.cache.acl;
 
-import org.apache.lucene.search.Filter;
-
 import com.nearinfinity.blur.search.cache.AbstractCachedQueryManager;
 
-public class AclManager extends AbstractCachedQueryManager<Filter> {
+public class AclManager extends AbstractCachedQueryManager<Acl> {
 
 	private static final String ACL = "Acl-";
 
@@ -13,8 +11,8 @@ public class AclManager extends AbstractCachedQueryManager<Filter> {
 	}
 
 	@Override
-	public Filter create(String... names) {
-		return null;
+	public Acl create(String... names) {
+		return new Acl(getCompressedBitSetsByName(names),names);
 	}
 
 }

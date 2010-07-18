@@ -20,7 +20,6 @@ public class Facet extends Collector {
 	private int[] lastDocSeenFromIterator;
 	private int length;
 	private Map<IndexReader, CompressedBitSet[]> facets;
-	private boolean empty = false;
 
 	public Facet(Map<IndexReader, CompressedBitSet[]> facets, final String... names) {
 		this.names = names;
@@ -28,9 +27,6 @@ public class Facet extends Collector {
 		this.lastDocSeenFromIterator = new int[names.length];
 		this.length = names.length;
 		this.facets = facets;
-		if (facets.isEmpty()) {
-			empty = true;
-		}
 	}
 	
 	public Map<String,Integer> getCounts() {
@@ -58,13 +54,14 @@ public class Facet extends Collector {
 	
 	@Override
 	public void setNextReader(IndexReader reader, int docBase) throws IOException {
-		if (!empty) {
-			docIdSetIterators = getIterators(facets.get(reader));
-		} else {
+		CompressedBitSet[] compressedBitSets = facets.get(reader);
+		if (compressedBitSets == null) {
 			docIdSetIterators = new DocIdSetIterator[length];
 			for (int i = 0; i < docIdSetIterators.length; i++) {
 				docIdSetIterators[i] = FacetManager.EMPTY.iterator();
 			}
+		} else {
+			docIdSetIterators = getIterators(compressedBitSets);
 		}
 		//reset the last doc seen
 		Arrays.fill(lastDocSeenFromIterator, -1);

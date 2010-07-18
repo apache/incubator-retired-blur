@@ -3,6 +3,7 @@ package com.nearinfinity.blur.search.cache;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeSet;
@@ -142,5 +143,23 @@ public abstract class AbstractCachedQueryManager<T> {
 
 	public void updateAllFacets() throws IOException {
 		updateFacets(new HashSet<String>(cachedQueries.keySet()));
+	}
+	
+	protected Map<IndexReader, CompressedBitSet[]> getCompressedBitSetsByName(String[] names) {
+		Map<IndexReader, CompressedBitSet[]> result = new HashMap<IndexReader, CompressedBitSet[]>();
+		for (IndexReader indexReader : cachedBitSets.keySet()) {
+			CompressedBitSet[] bitSets = new CompressedBitSet[names.length];
+			Map<String, CompressedBitSet> map = cachedBitSets.get(indexReader);
+			for (int i = 0; i < names.length; i++) {
+				CompressedBitSet compressedBitSet = map.get(names[i]);
+				if (compressedBitSet == null) {
+					bitSets[i] = EMPTY;
+				} else {
+					bitSets[i] = compressedBitSet;
+				}
+			}
+			result.put(indexReader, bitSets);
+		}
+		return result;
 	}
 }

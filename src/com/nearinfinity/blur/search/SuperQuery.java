@@ -3,6 +3,8 @@ package com.nearinfinity.blur.search;
 import java.io.IOException;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
@@ -39,7 +41,7 @@ public class SuperQuery extends Query {
 	}
 
 	public Weight createWeight(Searcher searcher) throws IOException {
-		return new SuperWeight(query.createWeight(searcher));
+		return new SuperWeight(query.createWeight(searcher),query.toString(),this);
 	}
 
 	public boolean equals(Object obj) {
@@ -82,17 +84,21 @@ public class SuperQuery extends Query {
 	}
 
 	public Weight weight(Searcher searcher) throws IOException {
-		return query.weight(searcher);
+		return createWeight(searcher);
 	}
 
-	public class SuperWeight extends Weight {
+	public static class SuperWeight extends Weight {
 		
 		private static final long serialVersionUID = -4832849792097064960L;
 		
 		private Weight weight;
+		private String originalQueryStr;
+		private Query query;
 
-		public SuperWeight(Weight weight) {
+		public SuperWeight(Weight weight, String originalQueryStr, Query query) {
 			this.weight = weight;
+			this.originalQueryStr = originalQueryStr;
+			this.query = query;
 		}
 
 		@Override
@@ -102,7 +108,7 @@ public class SuperQuery extends Query {
 
 		@Override
 		public Query getQuery() {
-			return SuperQuery.this;
+			return query;
 		}
 
 		@Override
@@ -118,7 +124,7 @@ public class SuperQuery extends Query {
 		@Override
 		public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
 			Scorer scorer = weight.scorer(reader, scoreDocsInOrder, topScorer);
-			return new SuperScorer(scorer,PrimeDocCache.getPrimeDoc(reader));
+			return new SuperScorer(scorer,PrimeDocCache.getPrimeDoc(reader),originalQueryStr);
 		}
 
 		@Override
@@ -127,18 +133,22 @@ public class SuperQuery extends Query {
 		}
 	}
 	
-	public class SuperScorer extends Scorer {
-
+	@SuppressWarnings("unused")
+	public static class SuperScorer extends Scorer {
+		
+		private static final Log LOG = LogFactory.getLog(SuperScorer.class);
 		private Scorer scorer;
 		private float superDocScore = 1;
 		private BlurBitSet bitSet;
 		private int nextPrimeDoc;
 		private int primeDoc;
+		private String originalQueryStr;
 
-		protected SuperScorer(Scorer scorer, BlurBitSet bitSet) {
+		protected SuperScorer(Scorer scorer, BlurBitSet bitSet, String originalQueryStr) {
 			super(scorer.getSimilarity());
 			this.scorer = scorer;
 			this.bitSet = bitSet;
+			this.originalQueryStr = originalQueryStr;
 		}
 
 		@Override
@@ -212,11 +222,18 @@ public class SuperQuery extends Query {
 		}
 
 		private int getPrimeDoc(int doc) {
-			int prevSetBit = bitSet.prevSetBit(doc);
-			if (prevSetBit < 0) {
-				throw new RuntimeException("Possible Currupt Index");
+			while (!bitSet.get(doc)) {
+				doc--;
+				if (doc <= 0) {
+					return 0;
+				}
 			}
-			return prevSetBit;
+			return doc;
+//			int prevSetBit = bitSet.prevSetBit(doc);
+//			if (prevSetBit < 0) {
+//				throw new RuntimeException("Possible Corrupt Index");
+//			}
+//			return prevSetBit;
 		}
 
 		private boolean isScorerExhausted(int doc) {

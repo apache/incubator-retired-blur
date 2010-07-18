@@ -28,34 +28,48 @@ import com.nearinfinity.blur.index.SuperIndexWriter;
 public class RandomSuperQueryTest extends TestCase {
 	
 	private static final int MOD_COLS_USED_FOR_SKIPPING = 3;
-	private static final int MAX_NUM_OF_DOCS = 100;
+	private static final int MAX_NUM_OF_DOCS = 10000;
 	private static final int MIN_NUM_COL_FAM = 3;
-	private static final int MAX_NUM_COL_FAM = 10;
-	private static final int MAX_NUM_DOCS_PER_COL_FAM = 10;
-	private static final int MAX_NUM_COLS = 10;
-	private static final int MIN_NUM_COLS = 1;
+	private static final int MAX_NUM_COL_FAM = 20;
+	private static final int MAX_NUM_DOCS_PER_COL_FAM = 25;
+	private static final int MAX_NUM_COLS = 21;
+	private static final int MIN_NUM_COLS = 3;
 	private static final int MAX_NUM_OF_WORDS = 25000;
 	private static final int MOD_USED_FOR_SAMPLING = 7;
 	
 	private Random seedGen = new Random();
 	
+	public void testSlowRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
+		for (int i = 0; i < 3; i++) {
+			System.out.print("Starting pass [" + i + "]... ");
+			System.out.flush();
+			testRandomSuperQuery();
+		}
+	}
+	
 	public void testRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
-//		long seed = seedGen.nextLong();
-		long seed = -8230906496977599182L;
-
+		long seed = seedGen.nextLong();
+//		long seed = 660158310006278052L;
+		
 		Random random = new Random(seed);
 		Collection<String> sampler = new HashSet<String>();
+		System.out.print("Creating index... ");
+		System.out.flush();
 		Directory directory = createIndex(random, sampler);
 		IndexReader reader = IndexReader.open(directory);
 		SuperIndexReader indexReader = new SuperIndexReader(reader);
 		indexReader.waitForWarmUp();
+		System.out.print("Running searches [" + sampler.size() + "]... ");
+		System.out.flush();
 		SuperSearcher searcher = new SuperSearcher(indexReader);
-		for (String s : sampler) {
-			System.out.println(s);
-			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT)).parse(s);
+		long s = System.currentTimeMillis();
+		for (String str : sampler) {
+			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT)).parse(str);
 			TopDocs topDocs = searcher.search(query, 10);
 			assertTrue("seed [" + seed + "] {" + query + "} {" + s + "}",topDocs.totalHits > 0);
 		}
+		long e = System.currentTimeMillis();
+		System.out.println("Finished in [" + (e-s) + "] ms");
 	}
 
 	private Directory createIndex(Random random, Collection<String> sampler) throws CorruptIndexException, LockObtainFailedException, IOException {

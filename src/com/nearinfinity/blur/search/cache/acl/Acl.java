@@ -6,7 +6,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.DocIdSet;
 import org.apache.lucene.search.Filter;
 
-public class AclFilter extends Filter {
+public class Acl extends Filter {
 
 	private static final long serialVersionUID = -7842735006616114158L;
 

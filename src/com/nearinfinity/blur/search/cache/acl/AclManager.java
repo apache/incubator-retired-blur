@@ -4,11 +4,11 @@ import org.apache.lucene.search.Filter;
 
 import com.nearinfinity.blur.search.cache.AbstractCachedQueryManager;
 
-public class AclFilterManager extends AbstractCachedQueryManager<Filter> {
+public class AclManager extends AbstractCachedQueryManager<Filter> {
 
 	private static final String ACL = "Acl-";
 
-	public AclFilterManager(String name, boolean auto) {
+	public AclManager(String name, boolean auto) {
 		super(ACL + name, auto);
 	}
 

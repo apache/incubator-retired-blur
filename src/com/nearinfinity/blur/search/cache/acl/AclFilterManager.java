@@ -2,7 +2,7 @@ package com.nearinfinity.blur.search.cache.acl;
 
 import org.apache.lucene.search.Filter;
 
-import com.nearinfinity.blur.search.AbstractCachedQueryManager;
+import com.nearinfinity.blur.search.cache.AbstractCachedQueryManager;
 
 public class AclFilterManager extends AbstractCachedQueryManager<Filter> {
 

@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.utils;
+package com.nearinfinity.blur.utils.bitset;
 
 import org.apache.lucene.util.OpenBitSet;
 

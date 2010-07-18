@@ -18,8 +18,8 @@ import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.index.TermVectorMapper;
 import org.apache.lucene.store.Directory;
 
-import com.nearinfinity.blur.utils.BlurBitSet;
 import com.nearinfinity.blur.utils.PrimeDocCache;
+import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 
 public class SuperIndexReader extends IndexReader {

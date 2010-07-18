@@ -7,6 +7,8 @@ import org.apache.commons.collections.map.AbstractReferenceMap;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.lucene.index.IndexReader;
 
+import com.nearinfinity.blur.utils.bitset.BlurBitSet;
+
 @SuppressWarnings("unchecked")
 public class PrimeDocCache {
 	

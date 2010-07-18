@@ -1,4 +1,4 @@
-package com.nearinfinity.lucene.util;
+package com.nearinfinity.blur.utils.bitset;
 
 import java.io.IOException;
 

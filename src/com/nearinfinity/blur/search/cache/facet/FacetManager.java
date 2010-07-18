@@ -6,7 +6,7 @@ import java.util.Map;
 import org.apache.lucene.index.IndexReader;
 
 import com.nearinfinity.blur.search.cache.AbstractCachedQueryManager;
-import com.nearinfinity.lucene.util.CompressedBitSet;
+import com.nearinfinity.blur.utils.bitset.CompressedBitSet;
 
 public class FacetManager extends AbstractCachedQueryManager<Facet> {
 	

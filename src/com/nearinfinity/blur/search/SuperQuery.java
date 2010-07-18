@@ -14,8 +14,8 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
-import com.nearinfinity.blur.utils.BlurBitSet;
 import com.nearinfinity.blur.utils.PrimeDocCache;
+import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class SuperQuery extends Query {
 

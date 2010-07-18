@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import com.nearinfinity.blur.utils.bitset.BlurBitSet;
+
 import junit.framework.TestCase;
 
 public class BlurBitSetTest extends TestCase {

@@ -18,8 +18,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.OpenBitSet;
 
-import com.nearinfinity.lucene.util.CompressedBitSet;
-import com.nearinfinity.lucene.util.CompressedBitSetNoCompression;
+import com.nearinfinity.blur.utils.bitset.CompressedBitSet;
+import com.nearinfinity.blur.utils.bitset.CompressedBitSetNoCompression;
 
 public abstract class AbstractCachedQueryManager<T> {
 	

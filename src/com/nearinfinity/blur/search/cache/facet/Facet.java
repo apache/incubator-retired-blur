@@ -10,7 +10,7 @@ import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
 
-import com.nearinfinity.lucene.util.CompressedBitSet;
+import com.nearinfinity.blur.utils.bitset.CompressedBitSet;
 
 public class Facet extends Collector {
 	

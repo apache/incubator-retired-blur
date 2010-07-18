@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.search.facet;
+package com.nearinfinity.blur.search.cache.facet;
 
 import java.io.IOException;
 import java.util.Arrays;

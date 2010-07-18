@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.search.filter;
+package com.nearinfinity.blur.search.cache.acl;
 
 import java.io.IOException;
 

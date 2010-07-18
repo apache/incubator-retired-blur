@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.utils.bitset;
+package com.nearinfinity.blur.utils.bitset.compression;
 
 import java.io.IOException;
 import java.io.Serializable;

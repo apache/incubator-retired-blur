@@ -1,32 +1,58 @@
-package com.nearinfinity.blur.utils.bitset;
+package com.nearinfinity.blur.utils.bitset.compression;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Iterator;
 
 import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.util.BitUtil;
 import org.apache.lucene.util.OpenBitSet;
 
-public class CompressedBitSetLong extends CompressedBitSet {
+public class CompressedBitSetInt extends CompressedBitSet {
 
-	private static final long serialVersionUID = -6860633393213822190L;
-	private static final long ALL_ZEROS = 0; // 0x0000000000000000l
-	private static final long ALL_ONES = -1; // 0xFFFFFFFFFFFFFFFFl
-	private static final long SET_MSB = Long.MIN_VALUE; // 0x8000000000000000l
-	private static final long NOT_SET_MSB = 0x7FFFFFFFFFFFFFFFl;
-	private long[] words;
+	private static final long serialVersionUID = 3034498789134318888L;
+	private static final int WORD_SHIFT = 5;
+	private static final int WORD_LENGTH_BYTES = 4;
+	private static final int WORD_LENGTH_BITS = 32;
+	
+	private static final int ALL_ZEROS = 0; // 0x00000000l
+	private static final int ALL_ONES = -1; // 0xFFFFFFFFl
+	private static final int SET_MSB = Integer.MIN_VALUE; // 0x80000000l
+	private static final int NOT_SET_MSB = 0x7FFFFFFF;
+	private int[] words;
 	private OpenBitSet compressedBits = new OpenBitSet();
+	private long originalSize = 0;
 
-	public CompressedBitSetLong(OpenBitSet bitSet) {
+	public CompressedBitSetInt(OpenBitSet bitSet) {
 		compress(bitSet);
 	}
 
+	public CompressedBitSetInt(Iterator<Integer> bitsToSet) {
+		compress(createBitSet(bitsToSet));
+	}
+
+	private OpenBitSet createBitSet(Iterator<Integer> bitsToSet) {
+		OpenBitSet bitSet = new OpenBitSet();
+		while (bitsToSet.hasNext()) {
+			bitSet.set(bitsToSet.next());
+		}
+		return bitSet;
+	}
+
 	public long getMemorySize() {
-		return (words.length + compressedBits.getBits().length) * 8;
+		return (words.length + compressedBits.getBits().length) * WORD_LENGTH_BYTES;
+	}
+	
+	public long getOriginalMemorySize() {
+		return originalSize;
 	}
 
 	public boolean get(int index) {
-		int neededLogicalCursorPosition = index >> 6;
-		long logicalCursor = 0;
+		int neededLogicalCursorPosition = index >> WORD_SHIFT;
+		int logicalCursor = 0;
 		for (int i = 0; i < words.length; i++) {
 			if (logicalCursor > neededLogicalCursorPosition) {
 				return isMsbSet(words[i - 1]);
@@ -51,7 +77,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 		return compressedBits.fastGet(wordIndex);
 	}
 
-	private boolean isMsbSet(long word) {
+	private boolean isMsbSet(int word) {
 		if ((word & SET_MSB) != 0) {
 			return true;
 		}
@@ -59,12 +85,13 @@ public class CompressedBitSetLong extends CompressedBitSet {
 	}
 
 	private void compress(OpenBitSet bitSet) {
-		long[] bits = bitSet.getBits();
+		originalSize = bitSet.getBits().length * 8;
+		int[] bits = convert(bitSet.getBits());
 		checkNumberOfFilledWords(bits);
-		long[] compBits = new long[bits.length];
+		int[] compBits = new int[bits.length * 2];
 		int indexOfCompression = 0;
 		for (int i = 0; i < bits.length; i++) {
-			long l = bits[i];
+			int l = bits[i];
 			if (l == ALL_ZEROS) {
 				// compress zeros
 				compBits[indexOfCompression] = compBits[indexOfCompression] + 1;
@@ -95,11 +122,21 @@ public class CompressedBitSetLong extends CompressedBitSet {
 				compBits[indexOfCompression++] = l;
 			}
 		}
-		words = new long[indexOfCompression];
+		words = new int[indexOfCompression];
 		System.arraycopy(compBits, 0, words, 0, indexOfCompression);
 	}
 
-	private void checkNumberOfFilledWords(long[] bits) {
+	private int[] convert(long[] bits) {
+		int[] d = new int[bits.length * 2];
+		int intCount = 0;
+		for (int i = 0; i < bits.length; i++) {
+			d[intCount++] = (int) (bits[i] & 0xFFFFFFFF);
+			d[intCount++] = (int) ((bits[i] >>> 32) & 0xFFFFFFFF);
+		}
+		return d;
+	}
+
+	private void checkNumberOfFilledWords(int[] bits) {
 		int filledCount = 0;
 		int emptyCount = 0;
 		for (int i = 0; i < bits.length; i++) {
@@ -122,7 +159,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 			private int doc = -1;
 			private int length = words.length;
 			private int bit = 0;
-			private int[] reportBits = new int[64];
+			private int[] reportBits = new int[WORD_LENGTH_BITS];
 			private int reportBitLength = 0;
 			private int blockReportLength = 0;
 			private int wordCounter = 0;
@@ -135,10 +172,10 @@ public class CompressedBitSetLong extends CompressedBitSet {
 					
 					if (finishReportingLastBlocks() != -1) return doc;
 					
-					long word = words[wordCounter];
+					int word = words[wordCounter];
 					
 					if (compressedBits.get(wordCounter)) {
-						long bitCount = (word & NOT_SET_MSB) << 6;
+						int bitCount = (word & NOT_SET_MSB) << WORD_SHIFT;
 						if ((word & SET_MSB) == 0) {//false block
 							bit += bitCount;
 						} else {//true block
@@ -151,11 +188,11 @@ public class CompressedBitSetLong extends CompressedBitSet {
 							bit += ntz;
 							reportBits[reportBitLength++] = bit;
 							bit++;
-							if (ntz == 63) break INNER;
+							if (ntz == WORD_LENGTH_BITS - 1) break INNER;
 							word = word >>> (ntz + 1);
 						}
 						//moves bit to beginning of next word
-						bit = ((bit - 1 >> 6l) + 1) << 6l;
+						bit = ((bit - 1 >> WORD_SHIFT) + 1) << WORD_SHIFT;
 					}
 				}
 				
@@ -188,9 +225,68 @@ public class CompressedBitSetLong extends CompressedBitSet {
 
 			@Override
 			public int advance(int target) throws IOException {
-				int d;
-				while ((d = nextDoc()) < target) {}
-				return d;
+				for (; wordCounter < length; wordCounter++) {
+					
+					if (finishReportingLastBlocks(target) != -1) return doc;
+
+					int word = words[wordCounter];
+					
+					if (compressedBits.get(wordCounter)) {
+						int bitCount = (word & NOT_SET_MSB) << WORD_SHIFT;
+						if ((word & SET_MSB) == 0) {//false block
+							bit += bitCount;
+						} else {//true block
+							blockReportLength = (int) bitCount;
+						}
+					} else {
+						if (bit + WORD_LENGTH_BITS >= target) {
+							INNER:
+							while (word != 0) {
+								int ntz = BitUtil.ntz(word);
+								bit += ntz;
+								reportBits[reportBitLength++] = bit;
+								bit++;
+								if (ntz == WORD_LENGTH_BITS - 1) break INNER;
+								word = word >>> (ntz + 1);
+							}
+							//moves bit to beginning of next word
+							bit = ((bit - 1 >> WORD_SHIFT) + 1) << WORD_SHIFT;
+						} else {
+							bit += WORD_LENGTH_BITS;
+						}
+					}
+				}
+				
+				if (finishReportingLastBlocks(target) != -1) return doc;
+				
+				return noMoreDocs();
+			}
+
+			private int finishReportingLastBlocks(int target) {
+				while (reportCounter < reportBitLength) {
+					int ndoc = reportBits[reportCounter++];
+					if (ndoc >= target) {
+						return doc = ndoc;
+					}
+				}
+				reportCounter = 0;
+				reportBitLength = 0;
+				
+				if (blockReportLength + bit < target) {
+					bit += blockReportLength;
+				} else {
+					while (blockCounter < blockReportLength) {
+						doc = bit;
+						bit++;
+						blockCounter++;
+						if (doc >= target) {
+							return doc;
+						}
+					}
+				}
+				blockCounter = 0;
+				blockReportLength = 0;
+				return -1;
 			}
 
 			private int noMoreDocs() {
@@ -203,7 +299,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 	public void debug(DocIdSetIterator iterator) throws IOException {
 		int length = words.length;
 		int bit = 0;
-		int[] reportBits = new int[64];
+		int[] reportBits = new int[WORD_LENGTH_BITS];
 		int reportBitLength = 0;
 		int blockReportLength = 0;
 		
@@ -224,7 +320,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 			}
 			blockReportLength = 0;
 			if (compressedBits.fastGet(i)) {
-				long bitCount = (words[i] & NOT_SET_MSB) << 6;
+				int bitCount = (words[i] & NOT_SET_MSB) << WORD_SHIFT;
 				if ((words[i] & SET_MSB) == 0) {
 					//false block
 					bit += bitCount;
@@ -233,7 +329,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 					blockReportLength = (int) bitCount;
 				}
 			} else {
-				long word = words[i];
+				int word = words[i];
 				reportBitLength = 0;
 				INNER:
 				while (word != 0) {
@@ -241,12 +337,12 @@ public class CompressedBitSetLong extends CompressedBitSet {
 					bit += ntz;
 					reportBits[reportBitLength++] = bit;
 					bit++;
-					if (ntz == 63) {
+					if (ntz == WORD_LENGTH_BITS - 1) {
 						break INNER;
 					}
 					word = word >>> (ntz + 1);
 				}
-				bit = ((bit - 1 >> 6l) + 1) << 6l;
+				bit = ((bit - 1 >> WORD_SHIFT) + 1) << WORD_SHIFT;
 			}
 		}
 	}
@@ -254,7 +350,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 	public void debug() {
 		int length = words.length;
 		int bit = 0;
-		int[] reportBits = new int[64];
+		int[] reportBits = new int[WORD_LENGTH_BITS];
 		int reportBitLength = 0;
 		int blockReportLength = 0;
 		
@@ -269,7 +365,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 			}
 			blockReportLength = 0;
 			if (compressedBits.fastGet(i)) {
-				long bitCount = (words[i] & NOT_SET_MSB) << 6;
+				int bitCount = (words[i] & NOT_SET_MSB) << WORD_SHIFT;
 				if ((words[i] & SET_MSB) == 0) {
 					//false block
 					bit += bitCount;
@@ -278,7 +374,7 @@ public class CompressedBitSetLong extends CompressedBitSet {
 					blockReportLength = (int) bitCount;
 				}
 			} else {
-				long word = words[i];
+				int word = words[i];
 				reportBitLength = 0;
 				while (word != 0) {
 					int ntz = BitUtil.ntz(word);
@@ -287,9 +383,16 @@ public class CompressedBitSetLong extends CompressedBitSet {
 					bit++;
 					word = word >>> (ntz + 1);
 				}
-				bit = ((bit - 1 >> 6l) + 1) << 6l;
+				bit = ((bit - 1 >> WORD_SHIFT) + 1) << WORD_SHIFT;
 			}
 		}
+	}
+	
+	public static void main(String[] args) throws IOException {
+		OpenBitSet bitSet = new OpenBitSet();
+		bitSet.set(1);
+		bitSet.set(1000);
+		System.out.println(new CompressedBitSetInt(bitSet).iterator().advance(80));
 	}
 
 	@Override
@@ -308,18 +411,23 @@ public class CompressedBitSetLong extends CompressedBitSet {
 	}
 
 	@Override
-	public byte[] toBytes() {
-		throw new RuntimeException();
+	public byte[] toBytes() throws IOException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ObjectOutputStream outputStream = new ObjectOutputStream(baos);
+		outputStream.writeObject(this);
+		outputStream.close();
+		return baos.toByteArray();
 	}
 
 	@Override
-	public CompressedBitSet toBytes(byte[] bytes) {
-		throw new RuntimeException();
-	}
-
-	@Override
-	public long getOriginalMemorySize() {
-		// TODO Auto-generated method stub
-		return 0;
+	public CompressedBitSet toBytes(byte[] bytes) throws IOException {
+		ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(bytes));
+		try {
+			return (CompressedBitSet) inputStream.readObject();
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		} finally {
+			inputStream.close();
+		}
 	}
 }

@@ -23,13 +23,21 @@ import com.nearinfinity.blur.index.SuperDocument;
 
 public class SuperParser extends QueryParser {
 	
-	public static final String SUPER = "SUPER";
+	private static final String F = "f";
+	private static final String _0 = "0";
+	private static final String FALSE = "false";
+	private static final String DISABLED = "disabled";
+	private static final String OFF = "off";
+	public static final String SUPER = "super";
 	private Map<Query,String> fieldNames = new HashMap<Query, String>();
+	private boolean superSearch = true;
 	
 	public static void main(String[] args) throws ParseException {
 		SuperParser parser = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT));
 		Query query = parser.parse("address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query);
+		Query query2 = parser.parse("disabled address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
+		System.out.println(query2);
 	}
 
 	protected SuperParser(CharStream stream) {
@@ -97,7 +105,25 @@ public class SuperParser extends QueryParser {
 
 	@Override
 	protected Query newTermQuery(Term term) {
+		if (isSuperSearchOffFlag(term)) {
+			superSearch = false;
+		}
 		return addField(super.newTermQuery(term),term.field());
+	}
+
+	private boolean isSuperSearchOffFlag(Term term) {
+		if (term.field().toLowerCase().equals(SUPER) && isNegative(term.text())) {
+			return true;
+		}
+		return false;
+	}
+
+	private boolean isNegative(String str) {
+		str = str.toLowerCase();
+		if (str.equals(OFF) || str.equals(DISABLED) || str.equals(FALSE) || str.equals(_0) || str.equals(F)) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -106,7 +132,7 @@ public class SuperParser extends QueryParser {
 	}
 
 	private Query reprocess(Query query) {
-		if (query == null) {
+		if (query == null || !superSearch) {
 			return query;
 		}
 		if (query instanceof BooleanQuery) {

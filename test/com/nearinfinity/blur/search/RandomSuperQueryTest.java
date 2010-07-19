@@ -37,7 +37,7 @@ public class RandomSuperQueryTest extends TestCase {
 	private static final int MAX_NUM_OF_WORDS = 25000;
 	private static final int MOD_USED_FOR_SAMPLING = 7;
 	
-	private Random seedGen = new Random();
+	private Random seedGen = new Random(1);
 	
 	public void testSlowRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
 		for (int i = 0; i < 3; i++) {

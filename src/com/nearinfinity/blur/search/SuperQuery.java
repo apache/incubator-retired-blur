@@ -229,11 +229,6 @@ public class SuperQuery extends Query {
 				}
 			}
 			return doc;
-//			int prevSetBit = bitSet.prevSetBit(doc);
-//			if (prevSetBit < 0) {
-//				throw new RuntimeException("Possible Corrupt Index");
-//			}
-//			return prevSetBit;
 		}
 
 		private boolean isScorerExhausted(int doc) {

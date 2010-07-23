@@ -13,6 +13,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import com.nearinfinity.blur.search.SearchMessageHandler;
+
 public class BlurServer {
 	
 	private static Log LOG = LogFactory.getLog(BlurServer.class);
@@ -25,12 +27,7 @@ public class BlurServer {
 	private volatile boolean shutdown = false;
 
 	public static void main(String[] args) throws Exception {
-		new BlurServer(Integer.parseInt(args[0]), new MessageHandler() {
-			@Override
-			public byte[] handleMessage(byte[] message) {
-				return message;
-			}
-		}).start();
+		new BlurServer(Integer.parseInt(args[0]), new SearchMessageHandler(args)).start();
 	}
 	
 	public BlurServer(final int port, MessageHandler handler) {

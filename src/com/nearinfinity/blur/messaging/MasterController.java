@@ -97,20 +97,7 @@ public class MasterController extends BlurServer {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		new MasterController(3000,Arrays.asList(
-				"localhost/3001",
-				"localhost/3002",
-				"localhost/3003",
-				"localhost/3004",
-				"localhost/3005",
-				"localhost/3006",
-				"localhost/3007",
-				"localhost/3008"
-				)).start();
-	}
-
-	public MasterController(int port, Collection<String> clients) throws Exception {
-		super(port, new MCMessageHandler(port,clients,new MessageJoiner() {
+		MessageJoiner joiner = new MessageJoiner() {
 			@Override
 			public byte[] join(Collection<byte[]> responses) {
 				try {
@@ -126,7 +113,21 @@ public class MasterController extends BlurServer {
 					throw new RuntimeException(e);
 				}
 			}
-		}));
+		};
+		new MasterController(3000,Arrays.asList(
+				"localhost/3001",
+				"localhost/3002",
+				"localhost/3003",
+				"localhost/3004",
+				"localhost/3005",
+				"localhost/3006",
+				"localhost/3007",
+				"localhost/3008"
+				),joiner).start();
+	}
+
+	public MasterController(int port, Collection<String> clients, MessageJoiner joiner) throws Exception {
+		super(port, new MCMessageHandler(port,clients,joiner));
 	}
 
 }

@@ -1,9 +1,7 @@
 package com.nearinfinity.blur;
 
 public interface BlurHit {
-	
-	float getScore();
+	double getScore();
 	String getId();
 	String getReason();
-
 }

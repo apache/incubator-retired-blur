@@ -1,7 +1,12 @@
 package com.nearinfinity.blur.messaging;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import com.nearinfinity.blur.messaging.MasterController.MessageJoiner;
+import com.nearinfinity.blur.search.SearchMessageHandler;
 
 public class MassTest {
 
@@ -16,7 +21,18 @@ public class MassTest {
 			hosts.add(hostname + (port+i));
 		}
 		
-		new MasterController(3000, hosts).start();
+		MessageJoiner joiner = new MessageJoiner() {
+			@Override
+			public byte[] join(Collection<byte[]> responses) {
+				long total = 0;
+				for (byte[] response : responses) {
+					total += ByteBuffer.wrap(response).getLong();
+				}
+				return ByteBuffer.allocate(8).putLong(total).array();
+			}
+		};
+		
+		new MasterController(3000, hosts, joiner).start();
 		
 //		Thread.sleep(10000);
 //		
@@ -27,14 +43,9 @@ public class MassTest {
 	}
 
 	private static BlurServer startServer(int port) throws Exception {
-		BlurServer server = new BlurServer(port, new MessageHandler() {
-			@Override
-			public byte[] handleMessage(byte[] message) {
-				return message;
-			}
-		});
-		server.start();
-		return server;
+		BlurServer blurServer = new BlurServer(port, new SearchMessageHandler(new String[]{}));
+		blurServer.start();
+		return blurServer;
 	}
 	
 

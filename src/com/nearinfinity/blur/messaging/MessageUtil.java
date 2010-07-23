@@ -3,16 +3,11 @@ package com.nearinfinity.blur.messaging;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 
-import com.nearinfinity.blur.SearchFastResult;
 import com.nearinfinity.blur.SearchResult;
 
 public class MessageUtil {
 
 	private static final String UTF_8 = "UTF-8";
-
-	public static SearchFastResult getSearchFastResult(byte[] searchFast) {
-		return null;
-	}
 
 	public static SearchResult getSearchResult(byte[] search) {
 		SearchResult result = new SearchResult();

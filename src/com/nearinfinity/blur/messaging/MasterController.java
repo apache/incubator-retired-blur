@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class MasterController extends BlurServer {
+public class MasterController extends BlurRpcServer {
 	
 	public static interface MessageJoiner {
 		byte[] join(Collection<byte[]> responses);
@@ -30,7 +30,7 @@ public class MasterController extends BlurServer {
 	
 	public static class MCMessageHandler implements MessageHandler {
 		
-		private Map<String, BlockingQueue<BlurClient>> clientCache = new ConcurrentHashMap<String, BlockingQueue<BlurClient>>();
+		private Map<String, BlockingQueue<BlurRpcClient>> clientCache = new ConcurrentHashMap<String, BlockingQueue<BlurRpcClient>>();
 		private ExecutorService service;
 		private Collection<String> clientStrs;
 		private MessageJoiner joiner;
@@ -52,10 +52,10 @@ public class MasterController extends BlurServer {
 			}
 		}
 
-		private BlockingQueue<BlurClient> getClients(int size, String client) throws InterruptedException, IOException {
-			ArrayBlockingQueue<BlurClient> queue = new ArrayBlockingQueue<BlurClient>(size);
+		private BlockingQueue<BlurRpcClient> getClients(int size, String client) throws InterruptedException, IOException {
+			ArrayBlockingQueue<BlurRpcClient> queue = new ArrayBlockingQueue<BlurRpcClient>(size);
 			for (int i = 0; i < size; i++) {
-				queue.put(new BlurClient(client));
+				queue.put(new BlurRpcClient(client));
 			}
 			return queue;
 		}
@@ -84,8 +84,8 @@ public class MasterController extends BlurServer {
 			return service.submit(new Callable<byte[]>() {
 				@Override
 				public byte[] call() throws Exception {
-					BlockingQueue<BlurClient> blockingQueue = clientCache.get(clientStr);
-					BlurClient client = blockingQueue.take();
+					BlockingQueue<BlurRpcClient> blockingQueue = clientCache.get(clientStr);
+					BlurRpcClient client = blockingQueue.take();
 					try {
 						return client.send(message);
 					}  finally {

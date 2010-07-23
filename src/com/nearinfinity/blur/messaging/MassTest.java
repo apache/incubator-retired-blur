@@ -15,7 +15,7 @@ public class MassTest {
 		int port = 3001;
 		String hostname = "localhost/";
 		List<String> hosts = new ArrayList<String>();
-		List<BlurServer> servers = new ArrayList<BlurServer>();
+		List<BlurRpcServer> servers = new ArrayList<BlurRpcServer>();
 		for (int i = 0; i < 30; i++) {
 			servers.add(startServer(port+i));
 			hosts.add(hostname + (port+i));
@@ -42,8 +42,8 @@ public class MassTest {
 
 	}
 
-	private static BlurServer startServer(int port) throws Exception {
-		BlurServer blurServer = new BlurServer(port, new SearchMessageHandler(new String[]{}));
+	private static BlurRpcServer startServer(int port) throws Exception {
+		BlurRpcServer blurServer = new BlurRpcServer(port, new SearchMessageHandler(new String[]{}));
 		blurServer.start();
 		return blurServer;
 	}

@@ -15,9 +15,9 @@ import org.apache.commons.logging.LogFactory;
 
 import com.nearinfinity.blur.search.SearchMessageHandler;
 
-public class BlurServer {
+public class BlurRpcServer {
 	
-	private static Log LOG = LogFactory.getLog(BlurServer.class);
+	private static Log LOG = LogFactory.getLog(BlurRpcServer.class);
 	
 	private int port;
 	private Thread listenerThread;
@@ -27,10 +27,10 @@ public class BlurServer {
 	private volatile boolean shutdown = false;
 
 	public static void main(String[] args) throws Exception {
-		new BlurServer(Integer.parseInt(args[0]), new SearchMessageHandler(args)).start();
+		new BlurRpcServer(Integer.parseInt(args[0]), new SearchMessageHandler(args)).start();
 	}
 	
-	public BlurServer(final int port, MessageHandler handler) {
+	public BlurRpcServer(final int port, MessageHandler handler) {
 		this.port = port;
 		this.handler = handler;
 		this.executor = Executors.newCachedThreadPool(new ThreadFactory() {

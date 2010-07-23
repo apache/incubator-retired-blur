@@ -3,18 +3,17 @@ package com.nearinfinity.blur.engine;
 import java.io.IOException;
 
 import com.nearinfinity.blur.BlurSearch;
-import com.nearinfinity.blur.SearchFastResult;
 import com.nearinfinity.blur.SearchResult;
-import com.nearinfinity.blur.messaging.BlurClient;
+import com.nearinfinity.blur.messaging.BlurRpcClient;
 import com.nearinfinity.blur.messaging.MessageUtil;
 
-public class BlurQueryEngine implements BlurSearch {
+public class BlurClient implements BlurSearch {
 	
-	private BlurClient client;
+	private BlurRpcClient client;
 	
 	public static void main(String[] args) throws IOException {
-		BlurClient blurClient = new BlurClient("localhost",3000);
-		BlurQueryEngine blurQueryEngine = new BlurQueryEngine(blurClient);
+		BlurRpcClient blurClient = new BlurRpcClient("localhost",3000);
+		BlurClient blurQueryEngine = new BlurClient(blurClient);
 		while (true) {
 			long s = System.currentTimeMillis();
 			SearchResult searchResult = blurQueryEngine.search("test:test", "", 0, 10);
@@ -23,20 +22,20 @@ public class BlurQueryEngine implements BlurSearch {
 		}
 	}
 
-	public BlurQueryEngine(BlurClient client) {
+	public BlurClient(BlurRpcClient client) {
 		this.client = client;
 	}
 
 	@Override
-	public SearchFastResult searchFast(String query, String filter) {
+	public SearchResult searchFast(String query, String filter) {
 		return searchFast(query, filter, Long.MAX_VALUE);
 	}
 
 	@Override
-	public SearchFastResult searchFast(String query, String filter, long minimum) {
+	public SearchResult searchFast(String query, String filter, long minimum) {
 		try {
 			byte[] searchFast = client.send(MessageUtil.getSearchFastMessage(query,filter,minimum));
-			return MessageUtil.getSearchFastResult(searchFast);
+			return MessageUtil.getSearchResult(searchFast);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

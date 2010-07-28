@@ -1,12 +1,15 @@
 package using;
 
-import java.nio.ByteBuffer;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.nearinfinity.blur.BlurHit;
+import com.nearinfinity.blur.SearchResult;
 import com.nearinfinity.blur.messaging.BlurRpcServer;
 import com.nearinfinity.blur.messaging.MasterController;
+import com.nearinfinity.blur.messaging.MessageUtil;
 import com.nearinfinity.blur.messaging.MasterController.MessageJoiner;
 import com.nearinfinity.blur.search.SearchMessageHandler;
 
@@ -26,11 +29,25 @@ public class MassTest {
 		MessageJoiner joiner = new MessageJoiner() {
 			@Override
 			public byte[] join(Collection<byte[]> responses) {
-				long total = 0;
+				long totalHits = 0;
+				List<BlurHit> blurHits = new ArrayList<BlurHit>();
+				List<byte[]> shardNames = new ArrayList<byte[]>();
 				for (byte[] response : responses) {
-					total += ByteBuffer.wrap(response).getLong();
+					SearchResult searchResult;
+					try {
+						searchResult = MessageUtil.getSearchResult(response);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+					totalHits += searchResult.count;
+					blurHits.addAll(searchResult.hits);
+					shardNames.addAll(searchResult.respondingShards);
 				}
-				return ByteBuffer.allocate(8).putLong(total).array();
+				try {
+					return MessageUtil.createSearchResults(totalHits, blurHits, shardNames);
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		};
 		

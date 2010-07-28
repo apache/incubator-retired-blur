@@ -1,7 +1,9 @@
 package com.nearinfinity.blur.engine;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.nearinfinity.blur.BlurHit;
 import com.nearinfinity.blur.BlurSearch;
 import com.nearinfinity.blur.SearchResult;
 import com.nearinfinity.blur.messaging.BlurRpcClient;
@@ -19,6 +21,10 @@ public class BlurClient implements BlurSearch {
 			SearchResult searchResult = blurQueryEngine.search("test:test", "", 0, 10);
 			long e = System.currentTimeMillis();
 			System.out.println(searchResult.count + " in " + (e-s) + " ms");
+			List<BlurHit> hits = searchResult.hits;
+			for (BlurHit hit : hits) {
+				System.out.println("Hit [" + hit.getId() + "] [" + hit.getScore() + "]");
+			}
 		}
 	}
 

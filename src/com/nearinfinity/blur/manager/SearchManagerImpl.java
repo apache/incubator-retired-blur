@@ -1,14 +1,15 @@
 package com.nearinfinity.blur.manager;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
+
+import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 
 public class SearchManagerImpl implements SearchManager {
 
@@ -37,9 +38,9 @@ public class SearchManagerImpl implements SearchManager {
 		};
 	}
 	
-	private void updateSearchers(Map<String, IndexReader> newIndexReaders) {
-		Map<String,Searcher> newSearchers = new HashMap<String, Searcher>();
-		for (Entry<String, IndexReader> entry : newIndexReaders.entrySet()) {
+	private void updateSearchers(Map<String, SuperIndexReader> newIndexReaders) {
+		Map<String,Searcher> newSearchers = new TreeMap<String, Searcher>();
+		for (Entry<String, SuperIndexReader> entry : newIndexReaders.entrySet()) {
 			newSearchers.put(entry.getKey(), new IndexSearcher(entry.getValue()));
 		}
 		searchers = newSearchers;

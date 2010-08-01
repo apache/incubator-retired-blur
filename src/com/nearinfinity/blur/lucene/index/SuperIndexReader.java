@@ -194,13 +194,18 @@ public class SuperIndexReader extends IndexReader {
 		indexReader.close();
 	}
 
-	public void waitForWarmUp() throws InterruptedException {
+	public SuperIndexReader waitForWarmUp() throws InterruptedException {
 		warmUpThread.join();
+		return this;
 	}
 
 	@Override
 	public boolean isCurrent() throws CorruptIndexException, IOException {
 		return indexReader.isCurrent();
+	}
+
+	public SuperIndexReader reopenSuper() throws CorruptIndexException, IOException {
+		return new SuperIndexReader(reopen());
 	}
 	
 }

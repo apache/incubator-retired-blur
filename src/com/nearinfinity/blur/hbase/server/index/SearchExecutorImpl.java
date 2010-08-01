@@ -15,7 +15,7 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.hbase.BlurHits;
 import com.nearinfinity.blur.hbase.BlurHits.BlurHit;
-import com.nearinfinity.blur.search.SuperParser;
+import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;

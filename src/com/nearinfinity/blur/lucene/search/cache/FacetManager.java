@@ -1,6 +1,5 @@
-package com.nearinfinity.blur.search.cache.facet;
+package com.nearinfinity.blur.lucene.search.cache;
 
-import com.nearinfinity.blur.search.cache.AbstractCachedQueryManager;
 
 public class FacetManager extends AbstractCachedQueryManager<Facet> {
 	

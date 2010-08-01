@@ -1,6 +1,5 @@
-package com.nearinfinity.blur.search.cache.acl;
+package com.nearinfinity.blur.lucene.search.cache;
 
-import com.nearinfinity.blur.search.cache.AbstractCachedQueryManager;
 
 public class AclManager extends AbstractCachedQueryManager<Acl> {
 

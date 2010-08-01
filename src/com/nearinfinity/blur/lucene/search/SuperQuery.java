@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.search;
+package com.nearinfinity.blur.lucene.search;
 
 import java.io.IOException;
 import java.util.Set;

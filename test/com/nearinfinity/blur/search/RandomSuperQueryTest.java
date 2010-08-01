@@ -25,6 +25,7 @@ import org.apache.lucene.util.Version;
 import com.nearinfinity.blur.index.SuperDocument;
 import com.nearinfinity.blur.index.SuperIndexReader;
 import com.nearinfinity.blur.index.SuperIndexWriter;
+import com.nearinfinity.blur.lucene.search.SuperParser;
 
 public class RandomSuperQueryTest extends TestCase {
 	

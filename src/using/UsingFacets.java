@@ -20,8 +20,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.search.cache.facet.Facet;
-import com.nearinfinity.blur.search.cache.facet.FacetManager;
+import com.nearinfinity.blur.lucene.search.cache.Facet;
+import com.nearinfinity.blur.lucene.search.cache.FacetManager;
 
 public class UsingFacets {
 

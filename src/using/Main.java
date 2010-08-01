@@ -16,7 +16,7 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.index.SuperDocument;
 import com.nearinfinity.blur.index.SuperIndexWriter;
-import com.nearinfinity.blur.search.SuperQuery;
+import com.nearinfinity.blur.lucene.search.SuperQuery;
 
 public class Main {
 

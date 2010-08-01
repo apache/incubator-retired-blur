@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.search;
+package com.nearinfinity.blur.lucene.search;
 
 import java.util.HashMap;
 import java.util.List;

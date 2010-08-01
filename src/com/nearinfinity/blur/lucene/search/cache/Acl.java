@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.search.cache.acl;
+package com.nearinfinity.blur.lucene.search.cache;
 
 import java.io.IOException;
 import java.util.Map;

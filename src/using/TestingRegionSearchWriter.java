@@ -33,7 +33,7 @@ public class TestingRegionSearchWriter {
 				
 			}
 		});
-		ZookeeperWrapperDirectory dir = new ZookeeperWrapperDirectory(zk, FSDirectory.open(new File("/Users/amccurry/testIndex")),"/blur/Users/amccurry/testIndex");
+		ZookeeperWrapperDirectory dir = new ZookeeperWrapperDirectory(FSDirectory.open(new File("/Users/amccurry/testIndex")),"/blur/Users/amccurry/testIndex");
 		IndexDeletionPolicy indexDeletionPolicy = new ZookeeperIndexDeletionPolicy(zk, "/blur/indexRefs/Users/amccurry/testIndex");
 		SuperIndexWriter writer = new SuperIndexWriter(dir, new StandardAnalyzer(Version.LUCENE_CURRENT), indexDeletionPolicy, MaxFieldLength.UNLIMITED);
 		for (int j = 0; j < 1000; j++) {

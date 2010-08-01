@@ -23,7 +23,6 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 public class SearchExecutorImpl implements SearchExecutor {
 
 	private static final String UNKNOWN = "unknown";
-//	private static final Log LOG = LogFactory.getLog(SearchExecutorImpl.class);
 
 	private SearchManager searchManager;
 	
@@ -99,5 +98,10 @@ public class SearchExecutorImpl implements SearchExecutor {
 			blurHits.add(new BlurHit(doc.score, Integer.toString(doc.doc), UNKNOWN));
 		}
 		return blurHits;
+	}
+
+	@Override
+	public void update() {
+		//do nothing
 	}
 }

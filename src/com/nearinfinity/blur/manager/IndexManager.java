@@ -5,7 +5,7 @@ import java.util.Map;
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 
 
-public interface IndexManager {
+public interface IndexManager extends UpdatableManager {
 	
 	Map<String,SuperIndexReader> getCurrentIndexReaders();
 

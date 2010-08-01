@@ -1,62 +1,45 @@
 package com.nearinfinity.blur.hbase;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.ipc.HBaseRPCProtocolVersion;
 import org.apache.hadoop.hbase.regionserver.HRegionServer;
-import org.apache.hadoop.hbase.zookeeper.HQuorumPeer;
-import org.apache.hadoop.util.StringUtils;
-import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;
 import com.nearinfinity.blur.manager.SearchManagerImpl;
+import com.nearinfinity.blur.manager.UpdatableManager;
+import com.nearinfinity.blur.manager.dao.DirectoryManagerDao;
 
 public class BlurRegionServer extends HRegionServer implements BlurRegionInterface {
-
-	private static final String ZOOKEEPER_SESSION_TIMEOUT = "zookeeper.session.timeout";
-	private static final String SERVER = "server.";
-	private static final String CLIENT_PORT = "clientPort";
-	private static final Log LOG = LogFactory.getLog(BlurRegionServer.class);
 	
+	private static final long TEN_SECONDS = 10000;
+
 	static {
 		BlurRPC.initialize();
 	}
 	
-	private String quorumServers;
-	private ZooKeeper zk;
 	private DirectoryManagerImpl directoryManager;
 	private IndexManagerImpl indexManager;
 	private SearchManagerImpl searchManager;
 	private SearchExecutorImpl searchExecutor;
 	private ExecutorService executor = Executors.newCachedThreadPool();
+	private Timer timer;
 
 	public BlurRegionServer(HBaseConfiguration conf) throws IOException {
 		super(conf);
-		Properties properties = HQuorumPeer.makeZKProps(conf);
-		setQuorumServers(properties);
-		if (quorumServers == null) {
-			throw new IOException("Could not read quorum servers from " + ZOOKEEPER_CONFIG_NAME);
-		}
-		int sessionTimeout = conf.getInt(ZOOKEEPER_SESSION_TIMEOUT, 60 * 1000);
-		this.zk = new ZooKeeper(quorumServers, sessionTimeout, this);
-		
-		this.directoryManager = new DirectoryManagerImpl(zk);
+		DirectoryManagerDao dao = null;
+		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);
 		this.searchExecutor = new SearchExecutorImpl(searchManager);
+		updateTask(directoryManager,indexManager,searchManager,searchExecutor);
 	}
 
 	@Override
@@ -77,49 +60,17 @@ public class BlurRegionServer extends HRegionServer implements BlurRegionInterfa
 		return super.getProtocolVersion(protocol, clientVersion);
 	}
 	
-	private void setQuorumServers(Properties properties) {
-		String clientPort = null;
-		List<String> servers = new ArrayList<String>();
-		boolean anyValid = false;
-		for (Entry<Object, Object> property : properties.entrySet()) {
-			String key = property.getKey().toString().trim();
-			String value = property.getValue().toString().trim();
-			if (key.equals(CLIENT_PORT)) {
-				clientPort = value;
-			} else if (key.startsWith(SERVER)) {
-				String host = value.substring(0, value.indexOf(':'));
-				servers.add(host);
-				try {
-					InetAddress.getByName(host);
-					anyValid = true;
-				} catch (UnknownHostException e) {
-					LOG.warn(StringUtils.stringifyException(e));
+	private void updateTask(final UpdatableManager... managers) {
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				for (UpdatableManager manager : managers) {
+					manager.update();
 				}
 			}
-		}
-		if (!anyValid) {
-			LOG.error("no valid quorum servers found in " + ZOOKEEPER_CONFIG_NAME);
-			return;
-		}
-		if (clientPort == null) {
-			LOG.error("no clientPort found in " + ZOOKEEPER_CONFIG_NAME);
-			return;
-		}
-		if (servers.isEmpty()) {
-			LOG.fatal("No server.X lines found in conf/zoo.cfg. HBase must have a "
-					+ "ZooKeeper cluster configured for its operation.");
-			return;
-		}
-		StringBuilder hostPortBuilder = new StringBuilder();
-		for (int i = 0; i < servers.size(); ++i) {
-			String host = servers.get(i);
-			if (i > 0) {
-				hostPortBuilder.append(',');
-			}
-			hostPortBuilder.append(host);
-			hostPortBuilder.append(':');
-			hostPortBuilder.append(clientPort);
-		}
-		quorumServers = hostPortBuilder.toString();
+		};
+		this.timer = new Timer("Update-Manager-Timer", true);
+		this.timer.schedule(task, TEN_SECONDS, TEN_SECONDS);
 	}
+
 }

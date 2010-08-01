@@ -12,12 +12,11 @@ import org.apache.lucene.store.NoLockFactory;
 
 import com.nearinfinity.blur.lucene.store.dao.DirectoryDao;
 
-public class BlurDirectory extends Directory {
+public class BlurBaseDirectory extends Directory {
 
-	public static final long BLOCK_SHIFT = 14; //2^19 = 524,288 bits which is 65,536 bytes per block
+	public static final long BLOCK_SHIFT = 14; //2^14 = 16,384 bytes per block
 	public static final long BLOCK_MOD = 0x3FFF;
 	public static final int BLOCK_SIZE = 1 << BLOCK_SHIFT;
-	
 	
 	public static long getBlock(long pos) {
 		return pos >>> BLOCK_SHIFT;
@@ -33,7 +32,7 @@ public class BlurDirectory extends Directory {
 
 	private DirectoryDao dao;
 	
-	public BlurDirectory(DirectoryDao dao) {
+	public BlurBaseDirectory(DirectoryDao dao) {
 		this.dao = dao;
 		setLockFactory(new NoLockFactory());
 	}

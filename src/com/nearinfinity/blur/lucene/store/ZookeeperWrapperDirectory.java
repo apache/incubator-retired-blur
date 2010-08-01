@@ -12,17 +12,26 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.lucene.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
 import com.nearinfinity.blur.utils.ZkUtils;
+import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public class ZookeeperWrapperDirectory extends Directory {
 	
-	private Directory directory;
 	private ZooKeeper zk;
+	private Directory directory;
 	private String indexRefPath;
 	
-	public ZookeeperWrapperDirectory(ZooKeeper zk, Directory directory, String indexRefPath) throws IOException {
+//	public ZookeeperWrapperDirectory(ZooKeeper zk, Directory directory, String indexRefPath) throws IOException {
+//		this.directory = directory;
+//		this.indexRefPath = indexRefPath;
+//		this.zk = zk;
+//		ZkUtils.mkNodes(indexRefPath, zk);
+//		this.setLockFactory(new ZookeeperLockFactory(zk));
+//	}
+	
+	public ZookeeperWrapperDirectory(Directory directory, String indexRefPath) throws IOException {
+		this.zk = ZooKeeperFactory.getZooKeeper();
 		this.directory = directory;
 		this.indexRefPath = indexRefPath;
-		this.zk = zk;
 		ZkUtils.mkNodes(indexRefPath, zk);
 		this.setLockFactory(new ZookeeperLockFactory(zk));
 	}

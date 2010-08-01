@@ -2,8 +2,6 @@ package com.nearinfinity.blur.manager;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
@@ -17,15 +15,16 @@ import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 public class IndexManagerImpl implements IndexManager {
 
 	private static final Log LOG = LogFactoryImpl.getLog(IndexManagerImpl.class);
-	private static final long WAIT_BETWEEN_PASSES = 10000;
 	private DirectoryManager directoryManager;
-	private Map<String, SuperIndexReader> readers = new TreeMap<String, SuperIndexReader>();
-	private Timer timer;
+	private volatile Map<String, SuperIndexReader> readers = new TreeMap<String, SuperIndexReader>();
 
 	public IndexManagerImpl(DirectoryManager directoryManager) {
 		this.directoryManager = directoryManager;
-		this.timer = new Timer("IndexReader-Refresher",true);
-		this.timer.scheduleAtFixedRate(getTask(), WAIT_BETWEEN_PASSES, WAIT_BETWEEN_PASSES);
+	}
+	
+	@Override
+	public void update() {
+		updateIndexers(directoryManager.getCurrentDirectories());
 	}
 
 	@Override
@@ -33,15 +32,6 @@ public class IndexManagerImpl implements IndexManager {
 		return readers;
 	}
 	
-	private TimerTask getTask() {
-		return new TimerTask() {
-			@Override
-			public void run() {
-				updateIndexers(directoryManager.getCurrentDirectories());
-			}
-		};
-	}
-
 	protected void updateIndexers(Map<String, Directory> directories) {
 		Map<String,SuperIndexReader> newReaders = new TreeMap<String, SuperIndexReader>();
 		for (Entry<String, Directory> entry : directories.entrySet()) {

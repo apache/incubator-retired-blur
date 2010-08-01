@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.apache.lucene.search.Searcher;
 
-public interface SearchManager {
+public interface SearchManager extends UpdatableManager {
 
 	Map<String,Searcher> getSearcher();
 

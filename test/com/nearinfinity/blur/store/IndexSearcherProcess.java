@@ -11,7 +11,7 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.lucene.store.BlurDirectory;
+import com.nearinfinity.blur.lucene.store.BlurBaseDirectory;
 import com.nearinfinity.blur.lucene.store.ZookeeperWrapperDirectory;
 import com.nearinfinity.blur.lucene.store.dao.hbase.HbaseDao;
 import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
@@ -28,8 +28,8 @@ public class IndexSearcherProcess {
 		
 		final String indexRefPath = "/blur/refs/testing";
 //		FSDirectory dir = FSDirectory.open(new File("./index"));
-		BlurDirectory dir = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
-		final ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(zk, dir, indexRefPath);
+		BlurBaseDirectory dir = new BlurBaseDirectory(new HbaseDao("t1", "f1", "testing"));
+		final ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(dir, indexRefPath);
 		
 		while (!IndexReader.indexExists(directory)) {
 			Thread.sleep(100);

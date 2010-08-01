@@ -29,7 +29,7 @@ public class SearchTest {
 		String indexRefPath = "/blur/refs/testing";
 //		BlurDirectory dir = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
 		FSDirectory dir = FSDirectory.open(new File("./index"));
-		ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(zk, dir, indexRefPath);
+		ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(dir, indexRefPath);
 //		BlurDirectory directory = new BlurDirectory(new HbaseDao("t1", "f1", "testing"));
 //		BlurDirectory directory = new BlurDirectory(new CassandraDao("Keyspace1", "Standard1", "testing", ConsistencyLevel.ONE, 10, "localhost", 9160));
 //		FSDirectory directory = FSDirectory.open(new File("./index"));

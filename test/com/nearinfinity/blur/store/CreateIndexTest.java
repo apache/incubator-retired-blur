@@ -41,7 +41,7 @@ public class CreateIndexTest {
 		
 		final String indexRefPath = "/blur/refs/testing";
 		FSDirectory dir = FSDirectory.open(new File("./index"));
-		final ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(zk, dir, indexRefPath);
+		final ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(dir, indexRefPath);
 		final Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
 		new Thread(new Runnable() {
 			@Override

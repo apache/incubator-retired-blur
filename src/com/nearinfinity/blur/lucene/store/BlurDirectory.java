@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.lucene.store;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,7 +10,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 
-import com.nearinfinity.blur.store.dao.DirectoryDao;
+import com.nearinfinity.blur.lucene.store.dao.DirectoryDao;
 
 public class BlurDirectory extends Directory {
 

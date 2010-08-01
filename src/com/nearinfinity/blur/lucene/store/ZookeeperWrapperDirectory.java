@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.lucene.store;
 
 import java.io.IOException;
 
@@ -9,8 +9,8 @@ import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
-import com.nearinfinity.blur.store.policy.ZookeeperIndexDeletionPolicy;
+import com.nearinfinity.blur.lucene.store.lock.ZookeeperLockFactory;
+import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
 import com.nearinfinity.blur.utils.ZkUtils;
 
 public class ZookeeperWrapperDirectory extends Directory {

@@ -6,7 +6,8 @@ import org.apache.cassandra.thrift.ConsistencyLevel;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-import com.nearinfinity.blur.store.dao.cassandra.CassandraDao;
+import com.nearinfinity.blur.lucene.store.BlurDirectory;
+import com.nearinfinity.blur.lucene.store.dao.cassandra.CassandraDao;
 
 public class CopyToLocal {
 	

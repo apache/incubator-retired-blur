@@ -2,7 +2,8 @@ package com.nearinfinity.blur.store;
 
 import org.apache.cassandra.thrift.ConsistencyLevel;
 
-import com.nearinfinity.blur.store.dao.cassandra.CassandraDao;
+import com.nearinfinity.blur.lucene.store.BlurDirectory;
+import com.nearinfinity.blur.lucene.store.dao.cassandra.CassandraDao;
 
 public class List {
 	

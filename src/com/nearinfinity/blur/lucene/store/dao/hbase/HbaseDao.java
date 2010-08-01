@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.dao.hbase;
+package com.nearinfinity.blur.lucene.store.dao.hbase;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,7 +18,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import com.nearinfinity.blur.store.dao.DirectoryDao;
+import com.nearinfinity.blur.lucene.store.dao.DirectoryDao;
 
 public class HbaseDao implements DirectoryDao {
 	

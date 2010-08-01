@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.dao.cassandra;
+package com.nearinfinity.blur.lucene.store.dao.cassandra;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,8 +14,8 @@ import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.Cassandra.Client;
 
-import com.nearinfinity.blur.store.dao.DirectoryDao;
-import com.nearinfinity.blur.store.dao.utils.Bytes;
+import com.nearinfinity.blur.lucene.store.dao.DirectoryDao;
+import com.nearinfinity.blur.lucene.store.dao.utils.Bytes;
 
 public class CassandraDao implements DirectoryDao {
 	

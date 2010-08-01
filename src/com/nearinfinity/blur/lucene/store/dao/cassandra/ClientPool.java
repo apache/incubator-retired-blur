@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.dao.cassandra;
+package com.nearinfinity.blur.lucene.store.dao.cassandra;
 
 import java.util.Collection;
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.lock;
+package com.nearinfinity.blur.lucene.store.lock;
 
 import java.io.IOException;
 import java.util.List;

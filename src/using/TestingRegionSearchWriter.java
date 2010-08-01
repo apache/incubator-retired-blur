@@ -14,8 +14,8 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.index.SuperDocument;
 import com.nearinfinity.blur.index.SuperIndexWriter;
-import com.nearinfinity.blur.store.ZookeeperWrapperDirectory;
-import com.nearinfinity.blur.store.policy.ZookeeperIndexDeletionPolicy;
+import com.nearinfinity.blur.lucene.store.ZookeeperWrapperDirectory;
+import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
 
 public class TestingRegionSearchWriter {
 

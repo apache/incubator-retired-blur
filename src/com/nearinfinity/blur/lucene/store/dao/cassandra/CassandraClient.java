@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.dao.cassandra;
+package com.nearinfinity.blur.lucene.store.dao.cassandra;
 
 import org.apache.cassandra.thrift.InvalidRequestException;
 import org.apache.cassandra.thrift.TimedOutException;

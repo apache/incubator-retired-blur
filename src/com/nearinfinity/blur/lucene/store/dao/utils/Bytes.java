@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.dao.utils;
+package com.nearinfinity.blur.lucene.store.dao.utils;
 
 
 public class Bytes extends org.apache.hadoop.hbase.util.Bytes {

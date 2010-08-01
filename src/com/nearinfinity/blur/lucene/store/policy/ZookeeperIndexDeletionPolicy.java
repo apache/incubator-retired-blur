@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.policy;
+package com.nearinfinity.blur.lucene.store.policy;
 
 import java.io.IOException;
 import java.util.ArrayList;

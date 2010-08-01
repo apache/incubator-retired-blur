@@ -13,6 +13,8 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.lucene.store.ZookeeperWrapperDirectory;
+
 public class SearchTest {
 	
 	private static Random random = new Random();

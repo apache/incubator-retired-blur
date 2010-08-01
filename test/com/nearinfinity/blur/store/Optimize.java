@@ -6,7 +6,8 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.store.dao.hbase.HbaseDao;
+import com.nearinfinity.blur.lucene.store.BlurDirectory;
+import com.nearinfinity.blur.lucene.store.dao.hbase.HbaseDao;
 
 public class Optimize {
 

@@ -1,8 +1,7 @@
-package com.nearinfinity.blur.hbase.ipc;
+package com.nearinfinity.blur.hbase;
 
 import org.apache.hadoop.hbase.ipc.HRegionInterface;
 
-import com.nearinfinity.blur.hbase.BlurHits;
 
 public interface SearchRegionInterface extends HRegionInterface {
 

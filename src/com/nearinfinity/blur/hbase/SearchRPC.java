@@ -7,7 +7,6 @@ import org.apache.hadoop.hbase.io.HbaseObjectWritable;
 import org.apache.hadoop.hbase.ipc.HBaseRPC;
 import org.apache.hadoop.io.Writable;
 
-import com.nearinfinity.blur.hbase.ipc.SearchRegionInterface;
 
 /**
  * Simple class for registering the search RPC codes.

@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.hbase.client;
+package com.nearinfinity.blur.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,9 +14,6 @@ import org.apache.hadoop.hbase.HRegionInfo;
 import org.apache.hadoop.hbase.HServerAddress;
 import org.apache.hadoop.hbase.client.HTable;
 
-import com.nearinfinity.blur.hbase.BlurHits;
-import com.nearinfinity.blur.hbase.SearchRPC;
-import com.nearinfinity.blur.hbase.ipc.SearchRegionInterface;
 import com.nearinfinity.blur.utils.IterableConverter;
 import com.nearinfinity.blur.utils.IterableConverter.Converter;
 

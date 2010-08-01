@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.hbase.server;
+package com.nearinfinity.blur.hbase;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -17,9 +17,6 @@ import org.apache.hadoop.hbase.zookeeper.HQuorumPeer;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.hbase.BlurHits;
-import com.nearinfinity.blur.hbase.SearchRPC;
-import com.nearinfinity.blur.hbase.ipc.SearchRegionInterface;
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;

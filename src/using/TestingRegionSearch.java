@@ -1,6 +1,6 @@
 package using;
 
-import com.nearinfinity.blur.hbase.client.SearchTable;
+import com.nearinfinity.blur.hbase.SearchTable;
 
 public class TestingRegionSearch {
 

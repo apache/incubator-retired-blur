@@ -96,6 +96,7 @@ public class BlurHits implements Writable {
 	}
 
 	public synchronized void merge(BlurHits blurHits) {
+		totalHits += blurHits.totalHits;
 		hits.addAll(blurHits.hits);
 	}
 

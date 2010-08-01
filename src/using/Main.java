@@ -6,6 +6,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
@@ -16,7 +17,6 @@ import org.apache.lucene.util.Version;
 import com.nearinfinity.blur.index.SuperDocument;
 import com.nearinfinity.blur.index.SuperIndexWriter;
 import com.nearinfinity.blur.search.SuperQuery;
-import com.nearinfinity.blur.search.SuperSearcher;
 
 public class Main {
 
@@ -36,10 +36,10 @@ public class Main {
 		System.out.println("took " + (e-s));
 		indexWriter.close();
 		
-		SuperSearcher searcher = new SuperSearcher(directory);
+		IndexSearcher searcher = new IndexSearcher(directory);
 		TopDocs topDocs = searcher.search(new SuperQuery(new TermQuery(new Term("test1","test1"))), 10);
 		System.out.println(topDocs.totalHits);
-		System.out.println(searcher.superDoc(topDocs.scoreDocs[0].doc));
+		System.out.println(searcher.doc(topDocs.scoreDocs[0].doc));
 	}
 
 }

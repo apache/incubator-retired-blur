@@ -68,8 +68,6 @@ public class SuperIndexReader extends IndexReader {
 	public SuperIndexReader(Directory directory) throws CorruptIndexException, IOException {
 		this(IndexReader.open(directory));
 	}
-	
-	
 
 	@Override
 	public IndexReader[] getSequentialSubReaders() {
@@ -198,6 +196,11 @@ public class SuperIndexReader extends IndexReader {
 
 	public void waitForWarmUp() throws InterruptedException {
 		warmUpThread.join();
+	}
+
+	@Override
+	public boolean isCurrent() throws CorruptIndexException, IOException {
+		return indexReader.isCurrent();
 	}
 	
 }

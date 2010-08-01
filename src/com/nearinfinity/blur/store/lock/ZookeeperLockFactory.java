@@ -50,12 +50,12 @@ public class ZookeeperLockFactory extends LockFactory implements Watcher {
 	private ZooKeeper zk;
 	private String lockDir = BLUR_LUCENE_LOCKS;
 	
-	public ZookeeperLockFactory(ZooKeeper zk) throws Exception {
+	public ZookeeperLockFactory(ZooKeeper zk) throws IOException {
 		this.zk = zk;
 		ZkUtils.mkNodes(lockDir,zk);
 	}
 
-	public ZookeeperLockFactory(String hostname, int port) throws Exception {
+	public ZookeeperLockFactory(String hostname, int port) throws IOException {
 		zk = new ZooKeeper("localhost", 3000, this);
 		ZkUtils.mkNodes(lockDir,zk);
 	}

@@ -14,6 +14,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
@@ -61,7 +62,7 @@ public class RandomSuperQueryTest extends TestCase {
 		indexReader.waitForWarmUp();
 		System.out.print("Running searches [" + sampler.size() + "]... ");
 		System.out.flush();
-		SuperSearcher searcher = new SuperSearcher(indexReader);
+		IndexSearcher searcher = new IndexSearcher(indexReader);
 		long s = System.currentTimeMillis();
 		for (String str : sampler) {
 			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT)).parse(str);

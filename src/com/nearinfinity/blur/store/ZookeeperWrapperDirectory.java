@@ -19,7 +19,7 @@ public class ZookeeperWrapperDirectory extends Directory {
 	private ZooKeeper zk;
 	private String indexRefPath;
 	
-	public ZookeeperWrapperDirectory(ZooKeeper zk, Directory directory, String indexRefPath) throws Exception {
+	public ZookeeperWrapperDirectory(ZooKeeper zk, Directory directory, String indexRefPath) throws IOException {
 		this.directory = directory;
 		this.indexRefPath = indexRefPath;
 		this.zk = zk;

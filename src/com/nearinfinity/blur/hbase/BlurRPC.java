@@ -12,7 +12,7 @@ import org.apache.hadoop.io.Writable;
  * Simple class for registering the search RPC codes.
  * 
  */
-public final class SearchRPC {
+public final class BlurRPC {
 
 	private static final byte RPC_CODE = 90;
 
@@ -22,7 +22,7 @@ public final class SearchRPC {
 		if (initialized) {
 			return;
 		}
-		HBaseRPC.addToMap(SearchRegionInterface.class, RPC_CODE);
+		HBaseRPC.addToMap(BlurRegionInterface.class, RPC_CODE);
 		addWritableType(BlurHits.class);
 		initialized = true;
 	}
@@ -46,7 +46,7 @@ public final class SearchRPC {
 		
 	}
 
-	private SearchRPC() {
+	private BlurRPC() {
 		// Static helper class;
 	}
 

@@ -17,10 +17,10 @@ import org.apache.hadoop.hbase.client.HTable;
 import com.nearinfinity.blur.utils.IterableConverter;
 import com.nearinfinity.blur.utils.IterableConverter.Converter;
 
-public class SearchTable extends HTable {
+public class BlurTable extends HTable {
 	
 	static interface ParallelCall<T> {
-		T call(SearchRegionInterface searchRegionInterface) throws Exception;
+		T call(BlurRegionInterface searchRegionInterface) throws Exception;
 	}
 	
 	static interface ParallelResult<T> {
@@ -34,22 +34,22 @@ public class SearchTable extends HTable {
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	
 	static {
-		SearchRPC.initialize();
+		BlurRPC.initialize();
 	}
 	
-	public SearchTable(byte[] tableName) throws IOException {
+	public BlurTable(byte[] tableName) throws IOException {
 		super(tableName);
 	}
 
-	public SearchTable(HBaseConfiguration conf, byte[] tableName) throws IOException {
+	public BlurTable(HBaseConfiguration conf, byte[] tableName) throws IOException {
 		super(conf, tableName);
 	}
 
-	public SearchTable(HBaseConfiguration conf, String tableName) throws IOException {
+	public BlurTable(HBaseConfiguration conf, String tableName) throws IOException {
 		super(conf, tableName);
 	}
 
-	public SearchTable(String tableName) throws IOException {
+	public BlurTable(String tableName) throws IOException {
 		super(tableName);
 	}
 	
@@ -60,7 +60,7 @@ public class SearchTable extends HTable {
 	public long searchFast(final String query, final String filter, final long minimum) throws Exception {
 		return execute(new ParallelCall<Long>() {
 			@Override
-			public Long call(SearchRegionInterface searchRegionInterface) throws Exception {
+			public Long call(BlurRegionInterface searchRegionInterface) throws Exception {
 				return searchRegionInterface.searchFast(query, filter, minimum);
 			}
 		}).merge(new Join<Long>(){
@@ -81,7 +81,7 @@ public class SearchTable extends HTable {
 	public BlurHits search(final String query, final String filter, final long start, final int fetchCount) throws Exception {
 		return execute(new ParallelCall<BlurHits>() {
 			@Override
-			public BlurHits call(SearchRegionInterface searchRegionInterface) throws Exception {
+			public BlurHits call(BlurRegionInterface searchRegionInterface) throws Exception {
 				return searchRegionInterface.search(query, filter, start, fetchCount);
 			}
 		}).merge(new Join<BlurHits>(){
@@ -105,7 +105,7 @@ public class SearchTable extends HTable {
 			@Override
 			public T merge(Join<T> join) throws Exception {
 				List<Future<T>> futures = new ArrayList<Future<T>>();
-				for (final SearchRegionInterface regionInterface : getAllSearchRegions(getRegionsInfo())) {
+				for (final BlurRegionInterface regionInterface : getAllSearchRegions(getRegionsInfo())) {
 					futures.add(executor.submit(new Callable<T>() {
 						@Override
 						public T call() throws Exception {
@@ -118,11 +118,11 @@ public class SearchTable extends HTable {
 		};
 	}
 
-	private Iterable<SearchRegionInterface> getAllSearchRegions(Map<HRegionInfo, HServerAddress> regionsInfo) {
-		return new IterableConverter<HServerAddress,SearchRegionInterface>(regionsInfo.values(), new Converter<HServerAddress,SearchRegionInterface>() {
+	private Iterable<BlurRegionInterface> getAllSearchRegions(Map<HRegionInfo, HServerAddress> regionsInfo) {
+		return new IterableConverter<HServerAddress,BlurRegionInterface>(regionsInfo.values(), new Converter<HServerAddress,BlurRegionInterface>() {
 			@Override
-			public SearchRegionInterface convert(HServerAddress address) throws Exception {
-				return (SearchRegionInterface) getConnection().getHRegionConnection(address);
+			public BlurRegionInterface convert(HServerAddress address) throws Exception {
+				return (BlurRegionInterface) getConnection().getHRegionConnection(address);
 			}
 		});
 	}

@@ -22,15 +22,15 @@ import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;
 import com.nearinfinity.blur.manager.SearchManagerImpl;
 
-public class SearchRegionServer extends HRegionServer implements SearchRegionInterface {
+public class BlurRegionServer extends HRegionServer implements BlurRegionInterface {
 
 	private static final String ZOOKEEPER_SESSION_TIMEOUT = "zookeeper.session.timeout";
 	private static final String SERVER = "server.";
 	private static final String CLIENT_PORT = "clientPort";
-	private static final Log LOG = LogFactory.getLog(SearchRegionServer.class);
+	private static final Log LOG = LogFactory.getLog(BlurRegionServer.class);
 	
 	static {
-		SearchRPC.initialize();
+		BlurRPC.initialize();
 	}
 	
 	private String quorumServers;
@@ -40,7 +40,7 @@ public class SearchRegionServer extends HRegionServer implements SearchRegionInt
 	private SearchManagerImpl searchManager;
 	private SearchExecutorImpl searchExecutor;
 
-	public SearchRegionServer(HBaseConfiguration conf) throws IOException {
+	public BlurRegionServer(HBaseConfiguration conf) throws IOException {
 		super(conf);
 		Properties properties = HQuorumPeer.makeZKProps(conf);
 		setQuorumServers(properties);
@@ -68,7 +68,7 @@ public class SearchRegionServer extends HRegionServer implements SearchRegionInt
 	
 	@Override
 	public long getProtocolVersion(final String protocol, final long clientVersion) throws IOException {
-		if (protocol.equals(SearchRegionInterface.class.getName())) {
+		if (protocol.equals(BlurRegionInterface.class.getName())) {
 			return HBaseRPCProtocolVersion.versionID;
 		}
 		return super.getProtocolVersion(protocol, clientVersion);

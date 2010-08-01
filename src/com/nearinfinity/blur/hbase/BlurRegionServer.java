@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +41,7 @@ public class BlurRegionServer extends HRegionServer implements BlurRegionInterfa
 	private IndexManagerImpl indexManager;
 	private SearchManagerImpl searchManager;
 	private SearchExecutorImpl searchExecutor;
+	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	public BlurRegionServer(HBaseConfiguration conf) throws IOException {
 		super(conf);
@@ -58,12 +61,12 @@ public class BlurRegionServer extends HRegionServer implements BlurRegionInterfa
 
 	@Override
 	public BlurHits search(String query, String filter, long start, int fetchCount) {
-		return searchExecutor.search(query, filter, start, fetchCount);
+		return searchExecutor.search(executor, query, filter, start, fetchCount);
 	}
 
 	@Override
 	public long searchFast(String query, String filter, long minimum) {
-		return searchExecutor.searchFast(query, filter, minimum);
+		return searchExecutor.searchFast(executor, query, filter, minimum);
 	}
 	
 	@Override

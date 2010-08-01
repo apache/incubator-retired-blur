@@ -1,11 +1,13 @@
 package com.nearinfinity.blur.manager;
 
+import java.util.concurrent.ExecutorService;
+
 import com.nearinfinity.blur.hbase.BlurHits;
 
 public interface SearchExecutor {
 
-	BlurHits search(String query, String filter, long start, int fetchCount);
+	BlurHits search(ExecutorService executor, String query, String filter, long start, int fetchCount);
 
-	long searchFast(String query, String filter, long minimum);
+	long searchFast(ExecutorService executor, String query, String filter, long minimum);
 
 }

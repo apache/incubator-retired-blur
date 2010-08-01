@@ -26,13 +26,12 @@ public class SearchExecutorImpl implements SearchExecutor {
 //	private static final Log LOG = LogFactory.getLog(SearchExecutorImpl.class);
 
 	private SearchManager searchManager;
-	private ExecutorService executor;
 	
 	public SearchExecutorImpl(SearchManager searchManager) {
 		this.searchManager = searchManager;
 	}
 
-	public BlurHits search(String query, String filter, long start, int fetchCount) {
+	public BlurHits search(ExecutorService executor, String query, String filter, long start, int fetchCount) {
 		try {
 			final Query q = parse(query);
 			return ForkJoin.execute(executor, searchManager.getSearcher().entrySet(), new ParallelCall<Entry<String, Searcher>,BlurHits>() {
@@ -62,7 +61,7 @@ public class SearchExecutorImpl implements SearchExecutor {
 		}
 	}
 
-	public long searchFast(String query, String filter, long minimum) {
+	public long searchFast(ExecutorService executor, String query, String filter, long minimum) {
 		try {
 			final Query q = parse(query);
 			return ForkJoin.execute(executor, searchManager.getSearcher().entrySet(), new ParallelCall<Entry<String, Searcher>,Long>() {

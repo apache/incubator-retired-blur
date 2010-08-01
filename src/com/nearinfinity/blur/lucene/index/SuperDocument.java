@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.index;
+package com.nearinfinity.blur.lucene.index;
 
 import java.util.ArrayList;
 import java.util.Collection;

@@ -12,8 +12,8 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.index.SuperDocument;
-import com.nearinfinity.blur.index.SuperIndexWriter;
+import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.index.SuperIndexWriter;
 import com.nearinfinity.blur.lucene.store.ZookeeperWrapperDirectory;
 import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
 

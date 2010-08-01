@@ -19,7 +19,7 @@ import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.index.SuperDocument;
+import com.nearinfinity.blur.lucene.index.SuperDocument;
 
 public class SuperParser extends QueryParser {
 	

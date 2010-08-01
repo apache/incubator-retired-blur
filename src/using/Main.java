@@ -14,8 +14,8 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.index.SuperDocument;
-import com.nearinfinity.blur.index.SuperIndexWriter;
+import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.index.SuperIndexWriter;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 
 public class Main {

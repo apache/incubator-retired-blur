@@ -20,10 +20,10 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.hbase.BlurHits;
 import com.nearinfinity.blur.hbase.SearchRPC;
 import com.nearinfinity.blur.hbase.ipc.SearchRegionInterface;
-import com.nearinfinity.blur.hbase.server.index.DirectoryManagerImpl;
-import com.nearinfinity.blur.hbase.server.index.IndexManagerImpl;
-import com.nearinfinity.blur.hbase.server.index.SearchExecutorImpl;
-import com.nearinfinity.blur.hbase.server.index.SearchManagerImpl;
+import com.nearinfinity.blur.manager.DirectoryManagerImpl;
+import com.nearinfinity.blur.manager.IndexManagerImpl;
+import com.nearinfinity.blur.manager.SearchExecutorImpl;
+import com.nearinfinity.blur.manager.SearchManagerImpl;
 
 public class SearchRegionServer extends HRegionServer implements SearchRegionInterface {
 

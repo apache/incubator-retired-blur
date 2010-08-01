@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.index;
+package com.nearinfinity.blur.lucene.index;
 
 import java.io.IOException;
 import java.util.Collection;

@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.hbase.server.index;
+package com.nearinfinity.blur.manager;
 
 import java.util.HashMap;
 import java.util.Map;

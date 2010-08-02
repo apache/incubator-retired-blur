@@ -41,6 +41,7 @@ public class IndexManagerImpl implements IndexManager {
 				LOG.error("Error open new index for reading using shard [" + entry.getKey() + "]",e);
 			}
 		}
+		System.out.println("new Indexes [" + readers + "]");
 		readers = newReaders;
 	}
 

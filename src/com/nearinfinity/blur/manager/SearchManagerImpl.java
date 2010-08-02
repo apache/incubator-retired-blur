@@ -33,6 +33,7 @@ public class SearchManagerImpl implements SearchManager {
 		for (Entry<String, SuperIndexReader> entry : newIndexReaders.entrySet()) {
 			newSearchers.put(entry.getKey(), new IndexSearcher(entry.getValue()));
 		}
+		System.out.println("new Searchers [" + searchers + "]");
 		searchers = newSearchers;
 	}
 }

@@ -36,6 +36,7 @@ public class DirectoryManagerImpl implements DirectoryManager {
 		TreeMap<String, Directory> newDirectories = new TreeMap<String, Directory>();
 		Set<String> shardsToServe = getShardNamesToServe();
 		for (String shardToServe : shardsToServe) {
+			System.out.println("Getting shard [" + shardToServe + "]");
 			Directory directory = directories.get(shardToServe);
 			if (directory == null) {
 				try {
@@ -46,6 +47,7 @@ public class DirectoryManagerImpl implements DirectoryManager {
 			}
 			newDirectories.put(shardToServe, directory);
 		}
+		System.out.println("New dirs [" + newDirectories + "]");
 		directories = newDirectories;
 	}
 

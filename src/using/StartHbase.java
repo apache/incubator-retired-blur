@@ -9,9 +9,7 @@ public class StartHbase {
 		System.setProperty("hbase.home.dir", "/Users/amccurry/Downloads/hbase-0.20.5/bin/..");
 		System.setProperty("hbase.id.str", "amccurry");
 		System.setProperty("hbase.root.logger", "INFO,DRFA");
-		System.setProperty("java.library.path",
-				"/Users/amccurry/Downloads/hbase-0.20.5/bin/../lib/native/Mac_OS_X-x86_64-64");
-
+		System.setProperty("java.library.path", "/Users/amccurry/Downloads/hbase-0.20.5/bin/../lib/native/Mac_OS_X-x86_64-64");
 		HMaster.main(new String[] { "start" });
 	}
 }

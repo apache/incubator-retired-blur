@@ -1,8 +1,13 @@
 package com.nearinfinity.blur.hbase;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,10 +36,25 @@ public class BlurRegionServer extends HRegionServer implements BlurRegionInterfa
 	private SearchExecutorImpl searchExecutor;
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	private Timer timer;
-
+	
 	public BlurRegionServer(HBaseConfiguration conf) throws IOException {
 		super(conf);
-		DirectoryManagerDao dao = null;
+		DirectoryManagerDao dao = new DirectoryManagerDao() {
+			
+			@Override
+			public URI getURIForShardId(String shardId) {
+				try {
+					return new URI("file:///Users/amccurry/testIndex");
+				} catch (URISyntaxException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			
+			@Override
+			public Set<String> getShardNamesToServe() {
+				return new TreeSet<String>(Arrays.asList("test"));
+			}
+		};
 		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);
@@ -64,6 +84,11 @@ public class BlurRegionServer extends HRegionServer implements BlurRegionInterfa
 		TimerTask task = new TimerTask() {
 			@Override
 			public void run() {
+				System.out.println("Running update....");
+				if (isStopRequested()) {
+					System.out.println("Shutdown....");
+					executor.shutdown();
+				}
 				for (UpdatableManager manager : managers) {
 					manager.update();
 				}

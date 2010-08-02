@@ -15,7 +15,7 @@ import com.nearinfinity.blur.manager.dao.DirectoryManagerDao;
 
 public class DirectoryManagerImpl implements DirectoryManager {
 	private static final Log LOG = LogFactory.getLog(DirectoryManagerImpl.class);
-	private volatile Map<String, Directory> directories = new TreeMap<String, Directory>();
+	private volatile Map<String,Map<String, Directory>> directories = new TreeMap<String, Map<String, Directory>>();
 	private DirectoryManagerDao dao;
 
 	public DirectoryManagerImpl(DirectoryManagerDao dao) {
@@ -23,7 +23,7 @@ public class DirectoryManagerImpl implements DirectoryManager {
 	}
 
 	@Override
-	public Map<String, Directory> getCurrentDirectories() {
+	public Map<String,Map<String, Directory>> getCurrentDirectories() {
 		return directories;
 	}
 
@@ -33,31 +33,42 @@ public class DirectoryManagerImpl implements DirectoryManager {
 	}
 
 	private void updateDirectories() {
-		TreeMap<String, Directory> newDirectories = new TreeMap<String, Directory>();
-		Set<String> shardsToServe = getShardNamesToServe();
-		for (String shardToServe : shardsToServe) {
-			System.out.println("Getting shard [" + shardToServe + "]");
-			Directory directory = directories.get(shardToServe);
-			if (directory == null) {
-				try {
-					directory = openDirectory(shardToServe);
-				} catch (IOException e) {
-					LOG.error("Error opening directory", e);
+		Map<String,Map<String, Directory>> newDirectories = new TreeMap<String, Map<String, Directory>>();
+		Map<String, Set<String>> shardNamesToServe = getShardIdsToServe();
+		for (String table : shardNamesToServe.keySet()) {
+			Map<String, Directory> newDirs = new TreeMap<String, Directory>();
+			for (String shardId : shardNamesToServe.get(table)) {
+				Directory directory = getCurrentDirectory(table,shardId);
+				if (directory == null) {
+					try {
+						directory = openDirectory(table, shardId);
+					} catch (IOException e) {
+						LOG.error("Error opening directory", e);
+					}
 				}
+				newDirs.put(shardId, directory);
 			}
-			newDirectories.put(shardToServe, directory);
+			newDirectories.put(table, newDirs);
 		}
-		System.out.println("New dirs [" + newDirectories + "]");
+		LOG.info("New Directories [" + newDirectories + "]");
 		directories = newDirectories;
 	}
 
-	private Directory openDirectory(String shardToServe) throws IOException {
-		URI uri = dao.getURIForShardId(shardToServe);
+	private Directory getCurrentDirectory(String table, String shardId) {
+		Map<String, Directory> map = directories.get(table);
+		if (map != null) {
+			return map.get(shardId);
+		}
+		return null;
+	}
+
+	private Directory openDirectory(String table, String shardId) throws IOException {
+		URI uri = dao.getURIForShardId(table, shardId);
 		return URIDirectory.openDirectory(uri);
 	}
 
-	private Set<String> getShardNamesToServe() {
-		return dao.getShardNamesToServe();
+	private Map<String,Set<String>> getShardIdsToServe() {
+		return dao.getShardIdsToServe();
 	}
 
 }

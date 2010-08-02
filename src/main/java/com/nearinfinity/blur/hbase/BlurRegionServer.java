@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,17 +44,19 @@ public class BlurRegionServer extends HRegionServer implements BlurRegionInterfa
 		DirectoryManagerDao dao = new DirectoryManagerDao() {
 			
 			@Override
-			public URI getURIForShardId(String shardId) {
+			public Map<String, Set<String>> getShardIdsToServe() {
+				Map<String, Set<String>> shardIds = new TreeMap<String, Set<String>>();
+				shardIds.put("test", new TreeSet<String>(Arrays.asList("test")));
+				return shardIds;
+			}
+
+			@Override
+			public URI getURIForShardId(String table, String shardId) {
 				try {
 					return new URI("file:///Users/amccurry/testIndex");
 				} catch (URISyntaxException e) {
 					throw new RuntimeException(e);
 				}
-			}
-			
-			@Override
-			public Set<String> getShardNamesToServe() {
-				return new TreeSet<String>(Arrays.asList("test"));
 			}
 		};
 		this.directoryManager = new DirectoryManagerImpl(dao);
@@ -64,12 +68,12 @@ public class BlurRegionServer extends HRegionServer implements BlurRegionInterfa
 
 	@Override
 	public BlurHits search(String query, String filter, long start, int fetchCount) {
-		return searchExecutor.search(executor, query, filter, start, fetchCount);
+		return searchExecutor.search(executor, null, query, filter, start, fetchCount);
 	}
 
 	@Override
 	public long searchFast(String query, String filter, long minimum) {
-		return searchExecutor.searchFast(executor, query, filter, minimum);
+		return searchExecutor.searchFast(executor, null, query, filter, minimum);
 	}
 	
 	@Override

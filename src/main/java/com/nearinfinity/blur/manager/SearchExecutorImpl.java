@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.manager;
 
 import java.util.List;
+import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -29,11 +30,16 @@ public class SearchExecutorImpl implements SearchExecutor {
 	public SearchExecutorImpl(SearchManager searchManager) {
 		this.searchManager = searchManager;
 	}
+	
+	@Override
+	public Set<String> getTables() {
+		return searchManager.getTables();
+	}
 
-	public BlurHits search(ExecutorService executor, String query, String filter, long start, int fetchCount) {
+	public BlurHits search(ExecutorService executor, String table, String query, String filter, long start, int fetchCount) {
 		try {
 			final Query q = parse(query);
-			return ForkJoin.execute(executor, searchManager.getSearcher().entrySet(), new ParallelCall<Entry<String, Searcher>,BlurHits>() {
+			return ForkJoin.execute(executor, searchManager.getSearchers(table).entrySet(), new ParallelCall<Entry<String, Searcher>,BlurHits>() {
 				@Override
 				public BlurHits call(Entry<String, Searcher> input) throws Exception {
 					Searcher searcher = input.getValue();
@@ -60,10 +66,10 @@ public class SearchExecutorImpl implements SearchExecutor {
 		}
 	}
 
-	public long searchFast(ExecutorService executor, String query, String filter, long minimum) {
+	public long searchFast(ExecutorService executor, String table, String query, String filter, long minimum) {
 		try {
 			final Query q = parse(query);
-			return ForkJoin.execute(executor, searchManager.getSearcher().entrySet(), new ParallelCall<Entry<String, Searcher>,Long>() {
+			return ForkJoin.execute(executor, searchManager.getSearchers(table).entrySet(), new ParallelCall<Entry<String, Searcher>,Long>() {
 				@Override
 				public Long call(Entry<String, Searcher> input) throws Exception {
 					Searcher searcher = input.getValue();
@@ -104,4 +110,6 @@ public class SearchExecutorImpl implements SearchExecutor {
 	public void update() {
 		//do nothing
 	}
+
+
 }

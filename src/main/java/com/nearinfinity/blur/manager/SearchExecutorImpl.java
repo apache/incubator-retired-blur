@@ -1,5 +1,6 @@
 package com.nearinfinity.blur.manager;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -7,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -16,6 +18,7 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.hbase.BlurHits;
 import com.nearinfinity.blur.hbase.BlurHits.BlurHit;
+import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
@@ -45,7 +48,7 @@ public class SearchExecutorImpl implements SearchExecutor {
 					Searcher searcher = input.getValue();
 					TopDocs topDocs;
 					topDocs = searcher.search((Query) q.clone(), 10);
-					return convert(topDocs);
+					return convert(topDocs, searcher);
 				}
 			}).merge(new Merger<BlurHits>() {
 				@Override
@@ -96,12 +99,14 @@ public class SearchExecutorImpl implements SearchExecutor {
 		return new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT)).parse(query);
 	}
 	
-	private BlurHits convert(TopDocs topDocs) {
+	private BlurHits convert(TopDocs topDocs, Searcher searcher) throws IOException {
 		BlurHits blurHits = new BlurHits();
 		blurHits.setTotalHits(topDocs.totalHits);
 		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		for (ScoreDoc doc : scoreDocs) {
-			blurHits.add(new BlurHit(doc.score, Integer.toString(doc.doc), UNKNOWN));
+		for (ScoreDoc scoreDoc : scoreDocs) {
+			Document doc = searcher.doc(scoreDoc.doc);
+			String id = doc.get(SuperDocument.ID);
+			blurHits.add(new BlurHit(scoreDoc.score, id, UNKNOWN));
 		}
 		return blurHits;
 	}

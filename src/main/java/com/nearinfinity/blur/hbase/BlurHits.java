@@ -3,6 +3,7 @@ package com.nearinfinity.blur.hbase;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -53,6 +54,10 @@ public class BlurHits implements Writable {
 		@Override
 		public String toString() {
 			return score + "," + id + "," + reason;
+		}
+
+		public void toJson(PrintWriter printWriter) {
+			printWriter.println("{\"score\":" + score + ",\"id\":\"" + id +	"\",\"reason\":\"" + reason + "\"}");
 		}
 	}
 	
@@ -107,5 +112,18 @@ public class BlurHits implements Writable {
 	@Override
 	public String toString() {
 		return "totalHits:" + totalHits + "," + hits.toString();
+	}
+
+	public void toJson(PrintWriter printWriter) {
+		printWriter.println("{\"totalHits\":" + totalHits + ",\"hits\":[");
+		boolean flag = true;
+		for (BlurHit hit : hits) {
+			if (!flag) {
+				printWriter.println(',');
+			}
+			hit.toJson(printWriter);
+			flag = false;
+		}
+		printWriter.println("]}");
 	}
 }

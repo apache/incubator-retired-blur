@@ -16,10 +16,10 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.hbase.BlurHits;
-import com.nearinfinity.blur.hbase.BlurHits.BlurHit;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.SuperParser;
+import com.nearinfinity.blur.server.BlurHits;
+import com.nearinfinity.blur.server.BlurHits.BlurHit;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;

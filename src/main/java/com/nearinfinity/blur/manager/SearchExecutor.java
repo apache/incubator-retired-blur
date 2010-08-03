@@ -3,7 +3,7 @@ package com.nearinfinity.blur.manager;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import com.nearinfinity.blur.hbase.BlurHits;
+import com.nearinfinity.blur.server.BlurHits;
 
 public interface SearchExecutor extends UpdatableManager {
 	

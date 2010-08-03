@@ -21,11 +21,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
-import com.nearinfinity.blur.hbase.BlurHits;
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;
@@ -35,6 +35,8 @@ import com.nearinfinity.blur.manager.dao.DirectoryManagerDao;
 
 public class BlurRegion extends AbstractHandler implements HttpConstants {
 	
+	private static final String QUERY_IS_BLANK = "query is blank";
+
 	public enum REQUEST_TYPE {
 		STATUS,
 		SEARCH,
@@ -57,6 +59,7 @@ public class BlurRegion extends AbstractHandler implements HttpConstants {
 	private Timer timer;
 
 	private ExecutorService executor = Executors.newCachedThreadPool();
+	private ObjectMapper mapper = new ObjectMapper();
 
 	public BlurRegion() {
 		init();
@@ -106,6 +109,7 @@ public class BlurRegion extends AbstractHandler implements HttpConstants {
 	}
 
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		response.setContentType(MIME_TYPE);
 		REQUEST_TYPE type = getRequestType(target);
 		System.out.println("type " + target + " " + type);
 		try {
@@ -124,7 +128,6 @@ public class BlurRegion extends AbstractHandler implements HttpConstants {
 				return;
 			}
 		} catch (Exception e) {
-			response.setContentType(MIME_TYPE);
 			response.setStatus(SC_INTERNAL_SERVER_ERROR);
 			PrintWriter printWriter = response.getWriter();
 			printWriter.println("{\"error\":\""+e.getLocalizedMessage()+"\"}");
@@ -135,58 +138,40 @@ public class BlurRegion extends AbstractHandler implements HttpConstants {
 	}
 
 	private void sendNotFoundError(String target, HttpServletResponse response) throws IOException {
-		response.setContentType(MIME_TYPE);
 		response.setStatus(SC_NOT_FOUND);
-		PrintWriter printWriter = response.getWriter();
-		printWriter.println("{\"error\":\"Page not found\", \"page\":\"" + target + "\"}");
-		printWriter.flush();
+		mapper.writeValue(response.getWriter(), new Error().setError("page not found").setPage(target));
 	}
 
 	private void handleFastSearch(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String table = getTable(target);
-		long searchFast = -1;
 		String query = getQuery(request);
 		String filter = getFilter(request);
 		long minimum = getMinimum(request);
+
 		if (query != null) {
-			searchFast = searchExecutor.searchFast(executor, table, query, filter, minimum);
+			HitCount totalHits = new HitCount().setTotalHits(searchExecutor.searchFast(executor, table, query, filter, minimum));
+			response.setStatus(SC_OK);
+			mapper.writeValue(response.getWriter(), totalHits);
 		} else {
-			response.setContentType(MIME_TYPE);
 			response.setStatus(SC_INTERNAL_SERVER_ERROR);
-			PrintWriter printWriter = response.getWriter();
-			printWriter.println("{\"error\":\"query is blank\"}");
-			printWriter.flush();
+			mapper.writeValue(response.getWriter(), new Error().setError(QUERY_IS_BLANK));
 		}
-		response.setContentType(MIME_TYPE);
-		response.setStatus(SC_OK);
-		PrintWriter printWriter = response.getWriter();
-		printWriter.println("{\"totalhits\":"+searchFast+"}");
-		printWriter.flush();
 	}
-
-
-
 	private void handleSearch(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String table = getTable(target);
-		BlurHits blurHits = null;
 		String query = getQuery(request);
 		String filter = getFilter(request);
 		long start = getStart(request);
 		int fetch = getFetch(request);
+		
 		if (query != null) {
-			blurHits = searchExecutor.search(executor, table, query, filter, start, fetch);
+			BlurHits blurHits = searchExecutor.search(executor, table, query, filter, start, fetch);
+			response.setStatus(SC_OK);
+			mapper.writeValue(response.getWriter(), blurHits);
 		} else {
-			response.setContentType(MIME_TYPE);
 			response.setStatus(SC_INTERNAL_SERVER_ERROR);
-			PrintWriter printWriter = response.getWriter();
-			printWriter.println("{\"error\":\"query is blank\"}");
-			printWriter.flush();
+			mapper.writeValue(response.getWriter(), new Error().setError(QUERY_IS_BLANK));
 		}
-		response.setContentType(MIME_TYPE);
-		response.setStatus(SC_OK);
-		PrintWriter printWriter = response.getWriter();
-		blurHits.toJson(printWriter);
-		printWriter.flush();
 	}
 
 	private long getStart(HttpServletRequest request) {
@@ -206,7 +191,6 @@ public class BlurRegion extends AbstractHandler implements HttpConstants {
 	}
 
 	private void handleStatus(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		response.setContentType(MIME_TYPE);
 		response.setStatus(SC_OK);
 		PrintWriter printWriter = response.getWriter();
 		Set<String> tables = searchExecutor.getTables();

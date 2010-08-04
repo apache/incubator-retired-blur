@@ -10,8 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
-import com.nearinfinity.blur.lucene.store.dao.hbase.HbaseDao;
-
 public class URIDirectory {
 	
 	public static interface OpenDirectory {
@@ -23,17 +21,17 @@ public class URIDirectory {
 	
 	static {
 		openDirs = new ConcurrentHashMap<String, OpenDirectory>();
-		register("hbase", new OpenDirectory() {
-			@Override
-			public Directory open(URI uri) throws IOException {
-				String path = uri.getPath();
-				String[] split = path.split("/");
-				String tableName = split[1];
-				String columnFamily = split[2];
-				String dirName = split[2];
-				return new BlurBaseDirectory(new HbaseDao(tableName, columnFamily, dirName));
-			}
-		});
+//		register("hbase", new OpenDirectory() {
+//			@Override
+//			public Directory open(URI uri) throws IOException {
+//				String path = uri.getPath();
+//				String[] split = path.split("/");
+//				String tableName = split[1];
+//				String columnFamily = split[2];
+//				String dirName = split[2];
+//				return new BlurBaseDirectory(new HbaseDao(tableName, columnFamily, dirName));
+//			}
+//		});
 		register("file", new OpenDirectory() {
 			@Override
 			public Directory open(URI uri) throws IOException {

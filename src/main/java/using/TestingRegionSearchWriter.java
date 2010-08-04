@@ -16,11 +16,13 @@ import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
 import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public class TestingRegionSearchWriter {
+	
+	private String[] columnFamilies = new String[]{"person","email","telephones"};
 
 	public static void main(String[] args) throws Exception {
+//		String baseDir = "/Users/amccurr"
 		URI uri = new URI("zk://localhost/blur/test/testIndex?file:///Users/amccurry/testIndex");
 		Directory dir = URIDirectory.openDirectory(uri);
-		System.out.println(dir);
 		IndexDeletionPolicy indexDeletionPolicy = new ZookeeperIndexDeletionPolicy(ZooKeeperFactory.getZooKeeper(), uri);
 		SuperIndexWriter writer = new SuperIndexWriter(dir, new StandardAnalyzer(Version.LUCENE_CURRENT), indexDeletionPolicy, MaxFieldLength.UNLIMITED);
 		for (int j = 0; j < 1000; j++) {
@@ -31,7 +33,6 @@ public class TestingRegionSearchWriter {
 			writer.commit();
 		}
 		writer.close();
-
 	}
 
 	private static SuperDocument genDoc() {

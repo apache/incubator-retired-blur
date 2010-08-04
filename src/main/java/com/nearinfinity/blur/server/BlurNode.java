@@ -1,19 +1,14 @@
 	package com.nearinfinity.blur.server;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
 
+import com.nearinfinity.blur.BlurConfiguration;
+import com.nearinfinity.blur.BlurConstants;
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;
@@ -21,7 +16,8 @@ import com.nearinfinity.blur.manager.SearchManagerImpl;
 import com.nearinfinity.blur.manager.UpdatableManager;
 import com.nearinfinity.blur.manager.dao.DirectoryManagerDao;
 
-public class BlurNode extends BlurServer implements HttpConstants {
+public class BlurNode extends BlurServer implements HttpConstants,BlurConstants {
+	
 	
 	private static final Log LOG = LogFactory.getLog(BlurNode.class);
 	private static final long TEN_SECONDS = 10000;
@@ -29,28 +25,14 @@ public class BlurNode extends BlurServer implements HttpConstants {
 	private IndexManagerImpl indexManager;
 	private SearchManagerImpl searchManager;
 	private Timer timer;
+	private BlurConfiguration configuration = new BlurConfiguration();
 	
 	public BlurNode() {
 		init();
 	}
 	
 	private void init() {
-		DirectoryManagerDao dao = new DirectoryManagerDao() {
-			@Override
-			public Map<String, Set<String>> getShardIdsToServe() {
-				Map<String, Set<String>> shardIds = new TreeMap<String, Set<String>>();
-				shardIds.put("test", new TreeSet<String>(Arrays.asList("test")));
-				return shardIds;
-			}
-			@Override
-			public URI getURIForShardId(String table, String shardId) {
-				try {
-					return new URI("zk://localhost/blur/test/testIndex?file:///Users/amccurry/testIndex");
-				} catch (URISyntaxException e) {
-					throw new RuntimeException(e);
-				}
-			}
-		};
+		DirectoryManagerDao dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_DAO, DirectoryManagerDao.class);
 		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);

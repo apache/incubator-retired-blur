@@ -11,8 +11,9 @@ import org.apache.zookeeper.ZooKeeper;
 public class ZooKeeperFactory {
 	private static final Log LOG = LogFactory.getLog(ZooKeeperFactory.class);
 	private static ZooKeeper zk;
-	private static String connectString;
-	private static int sessionTimeout;
+	//@todo
+	private static String connectString = "localhost";
+	private static int sessionTimeout = 3000;
 
 	public static synchronized ZooKeeper getZooKeeper() throws IOException {
 		if (zk == null) {

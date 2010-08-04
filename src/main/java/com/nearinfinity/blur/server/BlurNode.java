@@ -45,7 +45,7 @@ public class BlurNode extends BlurServer implements HttpConstants {
 			@Override
 			public URI getURIForShardId(String table, String shardId) {
 				try {
-					return new URI("file:///Users/amccurry/testIndex");
+					return new URI("zk://localhost/blur/test/testIndex?file:///Users/amccurry/testIndex");
 				} catch (URISyntaxException e) {
 					throw new RuntimeException(e);
 				}
@@ -78,7 +78,8 @@ public class BlurNode extends BlurServer implements HttpConstants {
 	}
 	
 	public static void main(String[] args) throws Exception {
-		Server server = new Server(8080);
+		int port = Integer.parseInt(args[0]);
+		Server server = new Server(port);
 		server.setHandler(new BlurNode());
 		server.start();
 		server.join();

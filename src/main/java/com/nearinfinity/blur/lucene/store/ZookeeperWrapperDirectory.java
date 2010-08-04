@@ -105,7 +105,7 @@ public class ZookeeperWrapperDirectory extends Directory {
 	}
 
 	public String toString() {
-		return directory.toString();
+		return "zk:{\"ref\":\"" + indexRefPath + "\",\"dir\":"+directory.toString()+"}";
 	}
 
 	public void touchFile(String name) throws IOException {

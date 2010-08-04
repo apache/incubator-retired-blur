@@ -7,6 +7,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.queryParser.ParseException;
@@ -26,6 +28,7 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class SearchExecutorImpl implements SearchExecutor {
 
+	private static final Log LOG = LogFactory.getLog(SearchExecutorImpl.class);
 	private static final String UNKNOWN = "unknown";
 
 	private SearchManager searchManager;
@@ -65,6 +68,7 @@ public class SearchExecutorImpl implements SearchExecutor {
 				}
 			});
 		} catch (Exception e) {
+			LOG.error("Unknown error",e);
 			throw new RuntimeException(e);
 		}
 	}

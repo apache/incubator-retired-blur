@@ -10,8 +10,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
@@ -19,7 +17,7 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import com.nearinfinity.blur.manager.SearchExecutor;
 
 public class BlurServer extends AbstractHandler implements HttpConstants {
-	private static final Log LOG = LogFactory.getLog(BlurServer.class);
+//	private static final Log LOG = LogFactory.getLog(BlurServer.class);
 	private static final String QUERY_IS_BLANK = "query is blank";
 
 	public enum REQUEST_TYPE {

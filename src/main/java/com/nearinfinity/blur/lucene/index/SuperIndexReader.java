@@ -205,7 +205,7 @@ public class SuperIndexReader extends IndexReader {
 	}
 
 	public SuperIndexReader reopenSuper() throws CorruptIndexException, IOException {
-		return new SuperIndexReader(reopen());
+		return new SuperIndexReader(indexReader.reopen());
 	}
 	
 }

@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.lucene.store.policy;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -27,6 +28,10 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 		this.zk = zk;
 		this.indexRefPath = indexRefPath;
 		ZkUtils.mkNodes(indexRefPath, zk);
+	}
+
+	public ZookeeperIndexDeletionPolicy(ZooKeeper zooKeeper, URI uri) throws Exception {
+		this(zooKeeper,uri.getPath());
 	}
 
 	@Override

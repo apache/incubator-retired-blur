@@ -9,6 +9,7 @@ import java.util.concurrent.Future;
 
 import org.eclipse.jetty.server.Server;
 
+import com.nearinfinity.blur.BlurClient;
 import com.nearinfinity.blur.manager.SearchExecutor;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;

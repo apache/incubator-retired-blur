@@ -1,4 +1,4 @@
-package com.nearinfinity.blur;
+package com.nearinfinity.blur.utils;
 
 import java.io.InputStream;
 import java.util.HashMap;

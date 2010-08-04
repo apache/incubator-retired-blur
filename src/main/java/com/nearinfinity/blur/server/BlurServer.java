@@ -15,9 +15,11 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import com.nearinfinity.blur.manager.SearchExecutor;
+import com.nearinfinity.blur.utils.HttpConstants;
 
 public class BlurServer extends AbstractHandler implements HttpConstants {
-//	private static final Log LOG = LogFactory.getLog(BlurServer.class);
+
+	//	private static final Log LOG = LogFactory.getLog(BlurServer.class);
 	private static final String QUERY_IS_BLANK = "query is blank";
 
 	public enum REQUEST_TYPE {
@@ -30,6 +32,7 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 	private static final String FAST = "fast";
 	private static final String QUERY = "q";
 	private static final String FILTER = "f";
+	private static final String MINIMUM = "m";
 	private static final String MIME_TYPE = "text/html;charset=utf-8";
 	
 	private static final int FETCH_DEFAULT = 10;
@@ -164,7 +167,7 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 	}
 
 	private long getMinimum(HttpServletRequest request) {
-		String minStr = request.getParameter("min");
+		String minStr = request.getParameter(MINIMUM);
 		if (minStr == null) {
 			return Long.MAX_VALUE;
 		}

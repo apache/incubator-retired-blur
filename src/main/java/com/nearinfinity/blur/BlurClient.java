@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.server;
+package com.nearinfinity.blur;
 
 import java.io.IOException;
 import java.net.URI;
@@ -19,42 +19,16 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
-public class BlurClient {
+import com.nearinfinity.blur.data.DataStorageDao;
+import com.nearinfinity.blur.server.BlurHits;
+import com.nearinfinity.blur.server.HitCount;
+import com.nearinfinity.blur.utils.BlurConfiguration;
+import com.nearinfinity.blur.utils.BlurConstants;
 
-	private static final BlurHits EMTPY_HITS = new BlurHits();;
-
-	private HttpClient httpclient;
-	private String scheme = "http";
-	private String host;
-	private int port;
-	private ObjectMapper mapper = new ObjectMapper();
-	
-	public BlurClient(String connectionStrings) {
-		setupConnections(connectionStrings);
-		createHttpClient();
-	}
-
-	private void setupConnections(String connectionStrings) {
-		//@todo
-		String[] hosts = connectionStrings.split(",");
-		for (String str : hosts) {
-			String[] parts = str.split(":");
-			host = parts[0];
-			port = Integer.parseInt(parts[1]);
-		}
-	}
-
-	private void createHttpClient() {
-		HttpParams params = new BasicHttpParams();
-	    HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
-	    HttpProtocolParams.setContentCharset(params, "UTF-8");
-	    SchemeRegistry registry = new SchemeRegistry();
-	    registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
-	    ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, registry);
-		httpclient = new DefaultHttpClient(manager, params);		
-	}
+public class BlurClient implements BlurConstants {
 
 	public static void main(String[] args) throws IOException {
 		BlurClient blurClient = new BlurClient(args[0]);
@@ -80,6 +54,50 @@ public class BlurClient {
 		}
 		
 	}
+	
+	private static final BlurHits EMTPY_HITS = new BlurHits();
+
+	private BlurConfiguration configuration = new BlurConfiguration();
+	private HttpClient httpclient;
+	private String scheme = "http";
+	private String host;
+	private int port;
+	private ObjectMapper mapper = new ObjectMapper();
+	private DataStorageDao storageDao;
+	
+	public BlurClient(String connectionStrings) {
+		setupConnections(connectionStrings);
+		createHttpClient();
+		storageDao = configuration.getNewInstance(BLUR_DATA_STORAGE_DAO, DataStorageDao.class);
+	}
+
+	private void setupConnections(String connectionStrings) {
+		//@todo
+		String[] hosts = connectionStrings.split(",");
+		for (String str : hosts) {
+			String[] parts = str.split(":");
+			host = parts[0];
+			port = Integer.parseInt(parts[1]);
+		}
+	}
+
+	private void createHttpClient() {
+		HttpParams params = new BasicHttpParams();
+	    HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+	    HttpProtocolParams.setContentCharset(params, "UTF-8");
+	    SchemeRegistry registry = new SchemeRegistry();
+	    registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+	    ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, registry);
+		httpclient = new DefaultHttpClient(manager, params);		
+	}
+	
+	public void save(String id, JsonNode jsonNode) {
+		storageDao.save(id, jsonNode);
+	}
+	
+	public JsonNode fetch(String id) {
+		return storageDao.fetch(id);
+	}
 
 	public BlurHits search(String table, String query, String filter, long start, int fetchCount) throws IOException {
 		URI uri;
@@ -90,15 +108,10 @@ public class BlurClient {
 		}
 		HttpGet get = new HttpGet(uri);
 		try {
-//			long s = System.currentTimeMillis();
 			HttpResponse response = httpclient.execute(get,new BasicHttpContext());
 			HttpEntity entity = response.getEntity();
 			if (entity != null) {
-				try {
-					return mapper.readValue(entity.getContent(), BlurHits.class);
-				} finally {
-//					System.out.println((System.currentTimeMillis() - s));
-				}
+				return mapper.readValue(entity.getContent(), BlurHits.class);
 			}
 		} catch (Exception e) {
 			get.abort();
@@ -106,16 +119,45 @@ public class BlurClient {
 		return EMTPY_HITS;
 	}
 
+	public long searchFast(String table, String query, String filter, long minimum) {
+		URI uri;
+		try {
+			uri = URIUtils.createURI(scheme, host, port, getPath(table,true), getQuery(query, filter, minimum), null);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+		HttpGet get = new HttpGet(uri);
+		try {
+			HttpResponse response = httpclient.execute(get,new BasicHttpContext());
+			HttpEntity entity = response.getEntity();
+			if (entity != null) {
+				HitCount hitCount = mapper.readValue(entity.getContent(), HitCount.class);
+				return hitCount.getTotalHits();
+			}
+		} catch (Exception e) {
+			get.abort();
+		}
+		return -1;
+	}
+
+	private String getPath(String table, boolean fast) {
+		if (fast) {
+			return "/" + table + "/fast";
+		} else {
+			return "/" + table;
+		}
+	}
+
+	private String getQuery(String query, String filter, long minimum) {
+		return "q=" + query + "&f=" + filter + "&m=" + minimum;
+	}
+
 	private String getQuery(String query, String filter, long start, int fetchCount) {
 		return "q=" + query + "&f=" + filter + "&s=" + start + "&c=" + fetchCount;
 	}
 
 	private String getPath(String table) {
-		return "/" + table;
-	}
-
-	public long searchFast(String table, String query, String filter, long minimum) {
-		return 0;
+		return getPath(table,false);
 	}
 
 }

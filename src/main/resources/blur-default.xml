@@ -5,4 +5,9 @@
 		<name>blur.directory.manager.dao</name>
 		<value>using.LocalDirectoryManagerDao</value>
 	</property>
+	
+	<property>
+		<name>blur.data.storage.dao</name>
+		<value>com.nearinfinity.blur.data.DoNothingDataStorageDao</value>
+	</property>
 </configuration>

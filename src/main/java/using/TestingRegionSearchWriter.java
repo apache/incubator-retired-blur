@@ -17,7 +17,7 @@ import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public class TestingRegionSearchWriter {
 	
-	private String[] columnFamilies = new String[]{"person","email","telephones"};
+//	private String[] columnFamilies = new String[]{"person","email","telephones"};
 
 	public static void main(String[] args) throws Exception {
 //		String baseDir = "/Users/amccurr"

@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.lucene.store.dao;
+package com.nearinfinity.blur.lucene.store;
 
 import java.io.IOException;
 import java.util.List;

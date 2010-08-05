@@ -10,7 +10,6 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 
-import com.nearinfinity.blur.lucene.store.dao.DirectoryStore;
 
 public class BlurBaseDirectory extends Directory {
 

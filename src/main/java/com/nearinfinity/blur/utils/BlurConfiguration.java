@@ -3,6 +3,7 @@ package com.nearinfinity.blur.utils;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -15,11 +16,15 @@ import org.w3c.dom.NodeList;
 
 public class BlurConfiguration implements BlurConstants {
 	private static final Log LOG = LogFactory.getLog(BlurConfiguration.class);
-	
 	private static final String PROPERTY = "property";
 	private static final String BLUR_DEFAULT_XML = "/blur-default.xml";
 	private static final String VALUE = "value";
 	private static final String NAME = "name";
+	private static final String NODE_UUID = UUID.randomUUID().toString();
+
+	public String getNodeUuid() {
+		return NODE_UUID;
+	}
 
 	static {
 		InputStream inputStream = BlurConfiguration.class.getResourceAsStream(BLUR_DEFAULT_XML);

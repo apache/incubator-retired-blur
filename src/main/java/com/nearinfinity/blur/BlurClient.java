@@ -68,7 +68,7 @@ public class BlurClient implements BlurConstants {
 	public BlurClient(String connectionStrings) {
 		setupConnections(connectionStrings);
 		createHttpClient();
-		storageDao = configuration.getNewInstance(BLUR_DATA_STORAGE_DAO, DataStorageDao.class);
+		storageDao = configuration.getNewInstance(BLUR_DATA_STORAGE_STORE_CLASS, DataStorageDao.class);
 	}
 
 	private void setupConnections(String connectionStrings) {

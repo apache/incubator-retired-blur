@@ -11,7 +11,7 @@ import org.apache.zookeeper.ZooKeeper;
 public class ZooKeeperFactory {
 	private static final Log LOG = LogFactory.getLog(ZooKeeperFactory.class);
 	private static ZooKeeper zk;
-	//@todo
+	//@todo get form blur config
 	private static String connectString = "localhost";
 	private static int sessionTimeout = 3000;
 

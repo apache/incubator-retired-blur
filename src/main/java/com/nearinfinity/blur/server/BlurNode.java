@@ -33,7 +33,7 @@ public class BlurNode extends BlurServer implements HttpConstants,BlurConstants 
 	}
 	
 	private void init() {
-		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_DAO, DirectoryManagerStore.class);
+		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_STORE_CLASS, DirectoryManagerStore.class);
 		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);

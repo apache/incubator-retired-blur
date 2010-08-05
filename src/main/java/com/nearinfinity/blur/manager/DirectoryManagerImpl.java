@@ -11,9 +11,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.blur.lucene.store.URIDirectory;
+import com.nearinfinity.blur.utils.BlurConfiguration;
+import com.nearinfinity.blur.utils.BlurConstants;
 
-public class DirectoryManagerImpl implements DirectoryManager {
+public class DirectoryManagerImpl implements DirectoryManager, BlurConstants {
+	
+	private static final int DEFAULT_NUMBER_OF_SHARDS_TO_SERVE_PER_PASS = 1;
 	private static final Log LOG = LogFactory.getLog(DirectoryManagerImpl.class);
+	private BlurConfiguration configuration = new BlurConfiguration();
 	private volatile Map<String,Map<String, Directory>> directories = new TreeMap<String, Map<String, Directory>>();
 	private DirectoryManagerStore dao;
 
@@ -62,12 +67,12 @@ public class DirectoryManagerImpl implements DirectoryManager {
 	}
 
 	private Directory openDirectory(String table, String shardId) throws IOException {
-		URI uri = dao.getURIForShardId(table, shardId);
+		URI uri = dao.getDirectoryURIToServe(table, shardId);
 		return URIDirectory.openDirectory(uri);
 	}
 
 	private Map<String,Set<String>> getShardIdsToServe() {
-		return dao.getShardIdsToServe();
+		return dao.getShardIdsToServe(configuration.getNodeUuid(),configuration.getInt(BLUR_SHARDS_TOSERVE_PER_PASS, DEFAULT_NUMBER_OF_SHARDS_TO_SERVE_PER_PASS));
 	}
 
 }

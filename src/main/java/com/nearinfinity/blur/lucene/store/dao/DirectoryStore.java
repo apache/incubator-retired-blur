@@ -3,7 +3,7 @@ package com.nearinfinity.blur.lucene.store.dao;
 import java.io.IOException;
 import java.util.List;
 
-public interface DirectoryDao {
+public interface DirectoryStore {
 	
 	/**
 	 * Saves the block of file data to a persistent store.

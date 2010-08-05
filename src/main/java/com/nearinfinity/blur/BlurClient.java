@@ -55,8 +55,6 @@ public class BlurClient implements BlurConstants {
 		
 	}
 	
-	private static final BlurHits EMTPY_HITS = new BlurHits();
-
 	private BlurConfiguration configuration = new BlurConfiguration();
 	private HttpClient httpclient;
 	private String scheme = "http";

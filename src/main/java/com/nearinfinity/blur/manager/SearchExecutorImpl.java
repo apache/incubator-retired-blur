@@ -2,6 +2,7 @@ package com.nearinfinity.blur.manager;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
@@ -22,11 +23,12 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.server.BlurHits;
 import com.nearinfinity.blur.server.BlurHits.BlurHit;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class SearchExecutorImpl implements SearchExecutor {
+public class SearchExecutorImpl implements SearchExecutor,BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(SearchExecutorImpl.class);
 	private static final String UNKNOWN = "unknown";
@@ -45,7 +47,11 @@ public class SearchExecutorImpl implements SearchExecutor {
 	public BlurHits search(ExecutorService executor, String table, String query, String filter, long start, int fetchCount) {
 		try {
 			final Query q = parse(query);
-			return ForkJoin.execute(executor, searchManager.getSearchers(table).entrySet(), new ParallelCall<Entry<String, Searcher>,BlurHits>() {
+			Map<String, Searcher> searchers = searchManager.getSearchers(table);
+			if (searchers == null || searchers.isEmpty()) {
+				return EMTPY_HITS;
+			}
+			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>,BlurHits>() {
 				@Override
 				public BlurHits call(Entry<String, Searcher> input) throws Exception {
 					Searcher searcher = input.getValue();
@@ -76,7 +82,11 @@ public class SearchExecutorImpl implements SearchExecutor {
 	public long searchFast(ExecutorService executor, String table, String query, String filter, long minimum) {
 		try {
 			final Query q = parse(query);
-			return ForkJoin.execute(executor, searchManager.getSearchers(table).entrySet(), new ParallelCall<Entry<String, Searcher>,Long>() {
+			Map<String, Searcher> searchers = searchManager.getSearchers(table);
+			if (searchers == null || searchers.isEmpty()) {
+				return 0;
+			}
+			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>,Long>() {
 				@Override
 				public Long call(Entry<String, Searcher> input) throws Exception {
 					Searcher searcher = input.getValue();

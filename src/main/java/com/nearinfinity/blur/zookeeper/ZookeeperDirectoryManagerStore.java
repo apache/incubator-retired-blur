@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -19,12 +17,13 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
 
+import com.nearinfinity.blur.manager.AbstractDirectoryManagerStore;
 import com.nearinfinity.blur.manager.DirectoryManagerStore;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ZkUtils;
 
-public class ZookeeperDirectoryManagerStore implements DirectoryManagerStore, BlurConstants {
+public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStore implements DirectoryManagerStore, BlurConstants {
 	
 	private static final Log LOG = LogFactory.getLog(ZookeeperDirectoryManagerStore.class);
 	private static final ArrayList<ACL> ACL = Ids.OPEN_ACL_UNSAFE;
@@ -35,7 +34,7 @@ public class ZookeeperDirectoryManagerStore implements DirectoryManagerStore, Bl
 	private String uuid = configuration.getNodeUuid();
 	private ZooKeeper zk;
 	private final String blurZookeeperPath = configuration.get(BLUR_ZOOKEEPER_PATH);
-	private Map<String, Set<String>> currentlyServing = new HashMap<String, Set<String>>();
+	
 	
 	public ZookeeperDirectoryManagerStore() {
 		try {
@@ -45,32 +44,6 @@ public class ZookeeperDirectoryManagerStore implements DirectoryManagerStore, Bl
 			throw new RuntimeException(e);
 		}
 	}
-
-	@Override
-	public Map<String, Set<String>> getShardIdsToServe(String nodeId, int maxToServePerCall) {
-		int count = 0;
-		Set<String> tables = getTables();
-		for (String table : tables) {
-			Set<String> shards = currentlyServing.get(table);
-			if (shards == null) {
-				shards = new TreeSet<String>();
-				currentlyServing.put(table, shards);
-			}
-			Set<String> shardIds = getShardIds(table);
-			for (String shardId : shardIds) {
-				if (!isThisNodeServing(table,shardId)) {
-					if (obtainLock(table,shardId)) {
-						shards.add(shardId);
-						count++;
-						if (count >= maxToServePerCall) {
-							return currentlyServing;
-						}
-					}
-				}
-			}
-		}
-		return currentlyServing;
-	}
 	
 	@Override
 	public boolean obtainLock(String table, String shardId) {
@@ -78,8 +51,10 @@ public class ZookeeperDirectoryManagerStore implements DirectoryManagerStore, Bl
 			ZkUtils.mkNodes(getPath(blurZookeeperPath,TABLE_LOCKS,table), zk);
 			String path = getShardIdLockPath(table, shardId);
 			try {
-				zk.create(path, toBytes(uuid), ACL, CreateMode.EPHEMERAL);
-				return true;
+				if (zk.exists(path, false) == null) {
+					zk.create(path, toBytes(uuid), ACL, CreateMode.EPHEMERAL);
+					return true;
+				}
 			} catch (Exception e) {
 				LOG.info("Cannot obtain lock for table [" + table + "] with shard [" + shardId + "]");
 			}
@@ -100,15 +75,6 @@ public class ZookeeperDirectoryManagerStore implements DirectoryManagerStore, Bl
 
 	private String getShardIdLockPath(String table, String shardId) {
 		return getPath(blurZookeeperPath,TABLE_LOCKS,table,shardId);
-	}
-
-	@Override
-	public boolean isThisNodeServing(String table, String shardId) {
-		Set<String> shards = currentlyServing.get(table);
-		if (shards == null) {
-			return false;
-		}
-		return shards.contains(shardId);
 	}
 
 	@Override
@@ -236,10 +202,5 @@ public class ZookeeperDirectoryManagerStore implements DirectoryManagerStore, Bl
 		}
 		return builder.toString();
 	}
-
-
-
-
-
 
 }

@@ -11,14 +11,14 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.blur.lucene.store.URIDirectory;
-import com.nearinfinity.blur.manager.dao.DirectoryManagerDao;
+import com.nearinfinity.blur.manager.dao.DirectoryManagerStore;
 
 public class DirectoryManagerImpl implements DirectoryManager {
 	private static final Log LOG = LogFactory.getLog(DirectoryManagerImpl.class);
 	private volatile Map<String,Map<String, Directory>> directories = new TreeMap<String, Map<String, Directory>>();
-	private DirectoryManagerDao dao;
+	private DirectoryManagerStore dao;
 
-	public DirectoryManagerImpl(DirectoryManagerDao dao) {
+	public DirectoryManagerImpl(DirectoryManagerStore dao) {
 		this.dao = dao;
 	}
 

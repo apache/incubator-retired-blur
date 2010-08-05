@@ -8,9 +8,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import com.nearinfinity.blur.manager.dao.DirectoryManagerDao;
+import com.nearinfinity.blur.manager.dao.DirectoryManagerStore;
 
-public class LocalDirectoryManagerDao implements DirectoryManagerDao {
+public class LocalDirectoryManagerStore implements DirectoryManagerStore {
 
 	@Override
 	public Map<String, Set<String>> getShardIdsToServe() {

@@ -12,7 +12,7 @@ import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;
 import com.nearinfinity.blur.manager.SearchManagerImpl;
 import com.nearinfinity.blur.manager.UpdatableManager;
-import com.nearinfinity.blur.manager.dao.DirectoryManagerDao;
+import com.nearinfinity.blur.manager.dao.DirectoryManagerStore;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.HttpConstants;
@@ -33,7 +33,7 @@ public class BlurNode extends BlurServer implements HttpConstants,BlurConstants 
 	}
 	
 	private void init() {
-		DirectoryManagerDao dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_DAO, DirectoryManagerDao.class);
+		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_DAO, DirectoryManagerStore.class);
 		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);

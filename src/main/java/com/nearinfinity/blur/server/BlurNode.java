@@ -8,11 +8,11 @@ import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.server.Server;
 
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
+import com.nearinfinity.blur.manager.DirectoryManagerStore;
 import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;
 import com.nearinfinity.blur.manager.SearchManagerImpl;
 import com.nearinfinity.blur.manager.UpdatableManager;
-import com.nearinfinity.blur.manager.dao.DirectoryManagerStore;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.HttpConstants;

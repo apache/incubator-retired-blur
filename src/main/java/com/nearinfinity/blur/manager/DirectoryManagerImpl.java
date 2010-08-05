@@ -11,7 +11,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.blur.lucene.store.URIDirectory;
-import com.nearinfinity.blur.manager.dao.DirectoryManagerStore;
 
 public class DirectoryManagerImpl implements DirectoryManager {
 	private static final Log LOG = LogFactory.getLog(DirectoryManagerImpl.class);

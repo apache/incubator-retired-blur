@@ -4,7 +4,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 
-import com.nearinfinity.blur.manager.dao.DirectoryManagerStore;
+import com.nearinfinity.blur.manager.DirectoryManagerStore;
 
 public class ZookeeperDirectoryManagerStore implements DirectoryManagerStore {
 

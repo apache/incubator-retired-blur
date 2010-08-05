@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.manager.dao;
+package com.nearinfinity.blur.manager;
 
 import java.net.URI;
 import java.util.Map;

@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import com.nearinfinity.blur.manager.dao.DirectoryManagerStore;
+import com.nearinfinity.blur.manager.DirectoryManagerStore;
 
 public class LocalDirectoryManagerStore implements DirectoryManagerStore {
 

@@ -1,7 +1,8 @@
 package com.nearinfinity.blur.server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,15 +11,18 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jackson.JsonGenerationException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import com.nearinfinity.blur.manager.SearchExecutor;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.HttpConstants;
 
-public class BlurServer extends AbstractHandler implements HttpConstants {
-
+public class BlurServer extends AbstractHandler implements HttpConstants,BlurConstants {
+	
 	//	private static final Log LOG = LogFactory.getLog(BlurServer.class);
 	private static final String QUERY_IS_BLANK = "query is blank";
 
@@ -29,12 +33,7 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 		UNKNOWN
 	}
 	
-	private static final String FAST = "fast";
-	private static final String QUERY = "q";
-	private static final String FILTER = "f";
-	private static final String MINIMUM = "m";
 	private static final String MIME_TYPE = "text/html;charset=utf-8";
-	
 	private static final int FETCH_DEFAULT = 10;
 
 	protected SearchExecutor searchExecutor;
@@ -57,22 +56,35 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 				handleFastSearch(target,baseRequest,request,response);
 				return;
 			default:
-				sendNotFoundError(target,response);
+				handleOther(target,baseRequest,request,response);
 				return;
 			}
 		} catch (Exception e) {
-			response.setStatus(SC_INTERNAL_SERVER_ERROR);
-			PrintWriter printWriter = response.getWriter();
-			printWriter.println("{\"error\":\""+e.getLocalizedMessage()+"\"}");
-			printWriter.flush();
+			send(SC_INTERNAL_SERVER_ERROR,response,new Error().setError(e.getLocalizedMessage()));
 		} finally {
 			baseRequest.setHandled(true);
 		}
 	}
 
+	protected void handleOther(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
+		sendNotFoundError(target,response);
+	}
+
+	protected void send(int status, HttpServletResponse response, Object o) {
+		response.setStatus(SC_INTERNAL_SERVER_ERROR);
+		try {
+			mapper.writeValue(response.getWriter(), o);
+		} catch (JsonGenerationException e) {
+			throw new RuntimeException(e);
+		} catch (JsonMappingException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private void sendNotFoundError(String target, HttpServletResponse response) throws IOException {
-		response.setStatus(SC_NOT_FOUND);
-		mapper.writeValue(response.getWriter(), new Error().setError("page not found").setPage(target));
+		send(SC_NOT_FOUND,response,new Error().setError("page not found").setPage(target));
 	}
 
 	private void handleFastSearch(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -83,13 +95,12 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 
 		if (query != null) {
 			HitCount totalHits = new HitCount().setTotalHits(searchExecutor.searchFast(executor, table, query, filter, minimum));
-			response.setStatus(SC_OK);
-			mapper.writeValue(response.getWriter(), totalHits);
+			send(SC_OK, response, totalHits);
 		} else {
-			response.setStatus(SC_INTERNAL_SERVER_ERROR);
-			mapper.writeValue(response.getWriter(), new Error().setError(QUERY_IS_BLANK));
+			send(SC_INTERNAL_SERVER_ERROR, response, new Error().setError(QUERY_IS_BLANK));
 		}
 	}
+	
 	private void handleSearch(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String table = getTable(target);
 		String query = getQuery(request);
@@ -99,16 +110,14 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 		
 		if (query != null) {
 			BlurHits blurHits = searchExecutor.search(executor, table, query, filter, start, fetch);
-			response.setStatus(SC_OK);
-			mapper.writeValue(response.getWriter(), blurHits);
+			send(SC_OK, response, blurHits);
 		} else {
-			response.setStatus(SC_INTERNAL_SERVER_ERROR);
-			mapper.writeValue(response.getWriter(), new Error().setError(QUERY_IS_BLANK));
+			send(SC_INTERNAL_SERVER_ERROR, response, new Error().setError(QUERY_IS_BLANK));
 		}
 	}
 
 	private long getStart(HttpServletRequest request) {
-		String startStr = request.getParameter("s");
+		String startStr = request.getParameter(SEARCH_START);
 		if (startStr != null) {
 			return Long.parseLong(startStr);
 		}
@@ -116,7 +125,7 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 	}
 
 	private int getFetch(HttpServletRequest request) {
-		String fetchStr = request.getParameter("c");
+		String fetchStr = request.getParameter(SEARCH_FETCH_COUNT);
 		if (fetchStr != null) {
 			return Integer.parseInt(fetchStr);
 		}
@@ -124,22 +133,9 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 	}
 
 	private void handleStatus(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		response.setStatus(SC_OK);
-		PrintWriter printWriter = response.getWriter();
-		Set<String> tables = searchExecutor.getTables();
-		boolean flag = true;
-		printWriter.println("{\"tables\":[");
-		for (String table : tables) {
-			if (!flag) {
-				printWriter.print(',');
-			}
-			printWriter.print('"');
-			printWriter.println(table);
-			printWriter.print('"');
-			flag = false;
-		}
-		printWriter.println("]}");
-		printWriter.flush();
+		Map<String,Set<String>> map = new HashMap<String, Set<String>>();
+		map.put("tables", searchExecutor.getTables());
+		send(SC_OK, response, map);
 	}
 	
 	private String getTable(String target) {
@@ -159,7 +155,7 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 		} else if (split.length == 2) {
 			return REQUEST_TYPE.SEARCH;
 		} else if (split.length == 3) {
-			if (FAST.equals(split[2])) {
+			if (SEARCH_FAST.equals(split[2])) {
 				return REQUEST_TYPE.FAST_SEARCH;
 			}
 		}
@@ -167,7 +163,7 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 	}
 
 	private long getMinimum(HttpServletRequest request) {
-		String minStr = request.getParameter(MINIMUM);
+		String minStr = request.getParameter(SEARCH_MINIMUM);
 		if (minStr == null) {
 			return Long.MAX_VALUE;
 		}
@@ -175,11 +171,11 @@ public class BlurServer extends AbstractHandler implements HttpConstants {
 	}
 
 	private String getFilter(HttpServletRequest request) {
-		return request.getParameter(FILTER);
+		return request.getParameter(SEARCH_FILTER);
 	}
 
 	private String getQuery(HttpServletRequest request) {
-		return request.getParameter(QUERY);
+		return request.getParameter(SEARCH_QUERY);
 	}
 
 }

@@ -4,7 +4,7 @@
 
 	<property>
 		<name>blur.data.storage.store.class</name>
-		<value>com.nearinfinity.blur.data.DoNothingDataStorageDao</value>
+		<value>com.nearinfinity.blur.data.EchoDataStorage</value>
 	</property>
 	
 	<property>

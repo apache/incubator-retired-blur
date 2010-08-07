@@ -19,13 +19,10 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
-import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.nearinfinity.blur.data.DataStorageDao;
 import com.nearinfinity.blur.server.BlurHits;
 import com.nearinfinity.blur.server.HitCount;
-import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurClient implements BlurConstants {
@@ -55,18 +52,15 @@ public class BlurClient implements BlurConstants {
 		
 	}
 	
-	private BlurConfiguration configuration = new BlurConfiguration();
 	private HttpClient httpclient;
 	private String scheme = "http";
 	private String host;
 	private int port;
 	private ObjectMapper mapper = new ObjectMapper();
-	private DataStorageDao storageDao;
 	
 	public BlurClient(String connectionStrings) {
 		setupConnections(connectionStrings);
 		createHttpClient();
-		storageDao = configuration.getNewInstance(BLUR_DATA_STORAGE_STORE_CLASS, DataStorageDao.class);
 	}
 
 	private void setupConnections(String connectionStrings) {
@@ -87,14 +81,6 @@ public class BlurClient implements BlurConstants {
 	    registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
 	    ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, registry);
 		httpclient = new DefaultHttpClient(manager, params);		
-	}
-	
-	public void save(String id, JsonNode jsonNode) {
-		storageDao.save(id, jsonNode);
-	}
-	
-	public JsonNode fetch(String id) {
-		return storageDao.fetch(id);
 	}
 
 	public BlurHits search(String table, String query, String filter, long start, int fetchCount) throws IOException {

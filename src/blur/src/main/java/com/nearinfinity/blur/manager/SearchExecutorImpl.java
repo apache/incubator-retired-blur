@@ -44,7 +44,7 @@ public class SearchExecutorImpl implements SearchExecutor,BlurConstants {
 		return searchManager.getTables();
 	}
 
-	public BlurHits search(ExecutorService executor, String table, String query, String filter, long start, int fetchCount) {
+	public BlurHits search(ExecutorService executor, String table, String query, String filter, long start, final int fetchCount) {
 		try {
 			final Query q = parse(query);
 			Map<String, Searcher> searchers = searchManager.getSearchers(table);
@@ -54,10 +54,11 @@ public class SearchExecutorImpl implements SearchExecutor,BlurConstants {
 			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>,BlurHits>() {
 				@Override
 				public BlurHits call(Entry<String, Searcher> input) throws Exception {
+					String shardId = input.getKey();
 					Searcher searcher = input.getValue();
 					TopDocs topDocs;
-					topDocs = searcher.search((Query) q.clone(), 10);
-					return convert(topDocs, searcher);
+					topDocs = searcher.search((Query) q.clone(), fetchCount);
+					return convert(topDocs, searcher, shardId);
 				}
 			}).merge(new Merger<BlurHits>() {
 				@Override
@@ -70,6 +71,7 @@ public class SearchExecutorImpl implements SearchExecutor,BlurConstants {
 							blurHits.merge(future.get());
 						}
 					}
+					blurHits.reduceHitsTo(fetchCount);
 					return blurHits;
 				}
 			});
@@ -113,8 +115,9 @@ public class SearchExecutorImpl implements SearchExecutor,BlurConstants {
 		return new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT)).parse(query);
 	}
 	
-	private BlurHits convert(TopDocs topDocs, Searcher searcher) throws IOException {
+	private BlurHits convert(TopDocs topDocs, Searcher searcher, String shardId) throws IOException {
 		BlurHits blurHits = new BlurHits();
+		blurHits.setHits(shardId, topDocs.totalHits);
 		blurHits.setTotalHits(topDocs.totalHits);
 		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
 		for (ScoreDoc scoreDoc : scoreDocs) {

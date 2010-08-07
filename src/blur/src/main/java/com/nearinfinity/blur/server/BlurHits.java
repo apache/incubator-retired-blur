@@ -1,6 +1,8 @@
 package com.nearinfinity.blur.server;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class BlurHits {
@@ -37,7 +39,20 @@ public class BlurHits {
 	
 	private long totalHits = 0;
 	private Set<BlurHit> hits = new TreeSet<BlurHit>();
+	private Map<String,Integer> hitsPerShard = new TreeMap<String, Integer>();
 	
+	public void setHits(String shardId, int hitCount) {
+		hitsPerShard.put(shardId, hitCount);
+	}
+	
+	public Map<String, Integer> getHitsPerShard() {
+		return hitsPerShard;
+	}
+
+	public void setHitsPerShard(Map<String, Integer> hitsPerShard) {
+		this.hitsPerShard = hitsPerShard;
+	}
+
 	public long getTotalHits() {
 		return totalHits;
 	}
@@ -56,6 +71,7 @@ public class BlurHits {
 
 	public synchronized void merge(BlurHits blurHits) {
 		totalHits += blurHits.totalHits;
+		hitsPerShard.putAll(blurHits.hitsPerShard);
 		hits.addAll(blurHits.hits);
 	}
 
@@ -66,6 +82,21 @@ public class BlurHits {
 	@Override
 	public String toString() {
 		return "totalHits:" + totalHits + "," + hits.toString();
+	}
+
+	public void reduceHitsTo(int fetchCount) {
+		hits = reduce(hits, fetchCount);
+	}
+	
+	private Set<BlurHit> reduce(Set<BlurHit> hits, int fetchCount) {
+		Set<BlurHit> topHits = new TreeSet<BlurHit>();
+		for (BlurHit blurHit : hits) {
+			topHits.add(blurHit);
+			if (topHits.size() >= fetchCount) {
+				return topHits;
+			}
+		}
+		return topHits;
 	}
 
 }

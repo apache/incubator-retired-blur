@@ -76,6 +76,7 @@ public class BlurMaster extends BlurServer implements SearchExecutor {
 							blurHits.merge(future.get());
 						}
 					}
+					blurHits.reduceHitsTo(fetchCount);
 					return blurHits;
 				}
 			});

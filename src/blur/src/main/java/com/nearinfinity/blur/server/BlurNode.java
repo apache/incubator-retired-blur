@@ -9,7 +9,7 @@ import org.eclipse.jetty.server.Server;
 
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.DirectoryManagerStore;
-import com.nearinfinity.blur.manager.IndexManagerImpl;
+import com.nearinfinity.blur.manager.IndexReaderManagerImpl;
 import com.nearinfinity.blur.manager.SearchExecutorImpl;
 import com.nearinfinity.blur.manager.SearchManagerImpl;
 import com.nearinfinity.blur.manager.UpdatableManager;
@@ -23,7 +23,7 @@ public class BlurNode extends BlurServer implements HttpConstants,BlurConstants 
 	private static final Log LOG = LogFactory.getLog(BlurNode.class);
 	private static final long TEN_SECONDS = 10000;
 	private DirectoryManagerImpl directoryManager;
-	private IndexManagerImpl indexManager;
+	private IndexReaderManagerImpl indexManager;
 	private SearchManagerImpl searchManager;
 	private Timer timer;
 	private BlurConfiguration configuration = new BlurConfiguration();
@@ -35,7 +35,7 @@ public class BlurNode extends BlurServer implements HttpConstants,BlurConstants 
 	private void init() {
 		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_STORE_CLASS, DirectoryManagerStore.class);
 		this.directoryManager = new DirectoryManagerImpl(dao);
-		this.indexManager = new IndexManagerImpl(directoryManager);
+		this.indexManager = new IndexReaderManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);
 		this.searchExecutor = new SearchExecutorImpl(searchManager);
 		update(directoryManager, indexManager, searchManager, searchExecutor);

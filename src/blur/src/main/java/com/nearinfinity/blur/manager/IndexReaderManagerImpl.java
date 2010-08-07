@@ -11,13 +11,13 @@ import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 
-public class IndexManagerImpl implements IndexManager {
+public class IndexReaderManagerImpl implements IndexReaderManager {
 
-	private static final Log LOG = LogFactory.getLog(IndexManagerImpl.class);
+	private static final Log LOG = LogFactory.getLog(IndexReaderManagerImpl.class);
 	private DirectoryManager directoryManager;
 	private volatile Map<String,Map<String, SuperIndexReader>> readers = new TreeMap<String, Map<String,SuperIndexReader>>();
 
-	public IndexManagerImpl(DirectoryManager directoryManager) {
+	public IndexReaderManagerImpl(DirectoryManager directoryManager) {
 		this.directoryManager = directoryManager;
 	}
 	

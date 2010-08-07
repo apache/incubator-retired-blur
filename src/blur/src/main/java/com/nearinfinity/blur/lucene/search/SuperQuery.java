@@ -1,67 +1,39 @@
 package com.nearinfinity.blur.lucene.search;
 
 import java.io.IOException;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
-import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
-public class SuperQuery extends Query {
+public class SuperQuery extends AbstractWrapperQuery {
 
 	private static final long serialVersionUID = -5901574044714034398L;
 	private Query query;
 	private boolean rewritten;
 	
 	public SuperQuery(Query query) {
-		this(query,false);
+		super(query,false);
 	}
 	
 	public SuperQuery(Query query, boolean rewritten) {
-		this.query = query;
-		this.rewritten = rewritten;
+		super(query,rewritten);
 	}
 
 	public Object clone() {
 		return new SuperQuery((Query) query.clone(),rewritten);
 	}
 
-	public Query combine(Query[] queries) {
-		return query.combine(queries);
-	}
-
 	public Weight createWeight(Searcher searcher) throws IOException {
 		return new SuperWeight(query.createWeight(searcher),query.toString(),this);
-	}
-
-	public boolean equals(Object obj) {
-		return query.equals(obj);
-	}
-
-	public void extractTerms(Set<Term> terms) {
-		query.extractTerms(terms);
-	}
-
-	public float getBoost() {
-		return query.getBoost();
-	}
-
-	public Similarity getSimilarity(Searcher searcher) {
-		return query.getSimilarity(searcher);
-	}
-
-	public int hashCode() {
-		return query.hashCode();
 	}
 
 	public Query rewrite(IndexReader reader) throws IOException {
@@ -71,20 +43,12 @@ public class SuperQuery extends Query {
 		return new SuperQuery(query.rewrite(reader),true);
 	}
 
-	public void setBoost(float b) {
-		query.setBoost(b);
-	}
-
 	public String toString() {
 		return "super:{" + query.toString() + "}";
 	}
 
 	public String toString(String field) {
 		return "super:{" + query.toString(field) + "}";
-	}
-
-	public Weight weight(Searcher searcher) throws IOException {
-		return createWeight(searcher);
 	}
 
 	public static class SuperWeight extends Weight {

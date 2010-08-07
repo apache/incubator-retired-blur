@@ -16,10 +16,10 @@ import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 public class SearchManagerImpl implements SearchManager {
 
 	private static final Log LOG = LogFactory.getLog(SearchManagerImpl.class);
-	private IndexManager indexManager;
+	private IndexReaderManager indexManager;
 	private volatile Map<String,Map<String,Searcher>> searchers = new TreeMap<String, Map<String,Searcher>>();
 
-	public SearchManagerImpl(IndexManager indexManager) {
+	public SearchManagerImpl(IndexReaderManager indexManager) {
 		this.indexManager = indexManager;
 	}
 	

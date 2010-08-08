@@ -19,7 +19,6 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import com.nearinfinity.blur.lucene.store.DirectoryStore;
-import com.nearinfinity.blur.lucene.store.dao.DirectoryDao;
 
 public class HbaseDao implements DirectoryStore {
 	

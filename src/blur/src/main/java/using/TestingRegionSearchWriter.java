@@ -13,7 +13,6 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.index.SuperIndexWriter;
 import com.nearinfinity.blur.lucene.store.URIDirectory;
 import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
-import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public class TestingRegionSearchWriter {
 	
@@ -23,7 +22,7 @@ public class TestingRegionSearchWriter {
 //		String baseDir = "/Users/amccurr"
 		URI uri = new URI("zk://localhost/blur/test/testIndex?file:///Users/amccurry/testIndex");
 		Directory dir = URIDirectory.openDirectory(uri);
-		IndexDeletionPolicy indexDeletionPolicy = new ZookeeperIndexDeletionPolicy(ZooKeeperFactory.getZooKeeper(), uri);
+		IndexDeletionPolicy indexDeletionPolicy = new ZookeeperIndexDeletionPolicy(uri);
 		SuperIndexWriter writer = new SuperIndexWriter(dir, new StandardAnalyzer(Version.LUCENE_CURRENT), indexDeletionPolicy, MaxFieldLength.UNLIMITED);
 		for (int j = 0; j < 1000; j++) {
 			for (int i = 0; i < 1000; i++) {

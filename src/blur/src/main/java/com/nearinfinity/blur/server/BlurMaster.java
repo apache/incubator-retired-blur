@@ -119,7 +119,7 @@ public class BlurMaster extends BlurServer implements SearchExecutor {
 		if (split.length > 3) {
 			if (DATA.equals(split[2])) {
 				DataResponse simpleResponse = new DataResponse();
-				dataStorage.fetch(split[3], simpleResponse);
+				dataStorage.fetch(split[1], split[3], simpleResponse);
 				response.setContentType(simpleResponse.getMimeType());
 				IOUtils.copy(simpleResponse.getInputStream(), response.getOutputStream());
 				return;

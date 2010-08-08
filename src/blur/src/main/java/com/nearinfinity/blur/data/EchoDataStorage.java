@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,8 +30,8 @@ public class EchoDataStorage implements DataStorage {
 	private ObjectMapper mapper = new ObjectMapper();
 	
 	@Override
-	public void fetch(String id, DataResponse response) {
-		LOG.info("Fetching [" + id + "]");
+	public void fetch(String table, String id, DataResponse response) {
+		LOG.info("Fetching [" + table +	"] [" + id + "]");
 		EchoId echoId = new EchoId();
 		echoId.setId(id);
 		response.setMimeType("text/html");
@@ -48,9 +49,13 @@ public class EchoDataStorage implements DataStorage {
 	}
 	
 	@Override
-	public void save(String id, String mimeType, InputStream inputStream) {
+	public void save(String table, String id, String mimeType, InputStream inputStream) {
 		
 	}
 
+	@Override
+	public Iterable<String> getIdsToBeIndexed(String table, String shardId) {
+		return new HashSet<String>();
+	}
 
 }

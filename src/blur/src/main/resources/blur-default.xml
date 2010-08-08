@@ -22,4 +22,9 @@
 		<value>1</value>
 	</property>
 	
+	<property>
+		<name>blur.lucene.similarity.class</name>
+		<value>com.nearinfinity.blur.lucene.search.FairSimilarity</value>
+	</property>
+	
 </configuration>

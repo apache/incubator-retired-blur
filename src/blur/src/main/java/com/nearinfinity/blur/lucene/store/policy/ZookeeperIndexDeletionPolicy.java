@@ -17,6 +17,7 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.utils.ZkUtils;
+import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 
@@ -24,14 +25,14 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 	private String indexRefPath;
 	private ZooKeeper zk;
 
-	public ZookeeperIndexDeletionPolicy(ZooKeeper zk, String indexRefPath) throws Exception {
-		this.zk = zk;
+	public ZookeeperIndexDeletionPolicy(String indexRefPath) throws Exception {
+		this.zk = ZooKeeperFactory.getZooKeeper();
 		this.indexRefPath = indexRefPath;
 		ZkUtils.mkNodes(indexRefPath, zk);
 	}
 
-	public ZookeeperIndexDeletionPolicy(ZooKeeper zooKeeper, URI uri) throws Exception {
-		this(zooKeeper,uri.getPath());
+	public ZookeeperIndexDeletionPolicy(URI uri) throws Exception {
+		this(uri.getPath());
 	}
 
 	@Override

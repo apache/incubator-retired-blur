@@ -48,7 +48,7 @@ public class CreateIndexTest {
 			public void run() {
 				try {
 					while (true) {
-						IndexWriter indexWriter = new IndexWriter(directory, analyzer, new ZookeeperIndexDeletionPolicy(zk, indexRefPath), MaxFieldLength.UNLIMITED);
+						IndexWriter indexWriter = new IndexWriter(directory, analyzer, new ZookeeperIndexDeletionPolicy(indexRefPath), MaxFieldLength.UNLIMITED);
 						indexWriter.setUseCompoundFile(false);
 						for (int i = 0; i < 1000; i++) {
 							indexWriter.addDocument(genDoc());

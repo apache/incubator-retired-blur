@@ -10,17 +10,23 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
+import com.nearinfinity.blur.utils.BlurConfiguration;
+import com.nearinfinity.blur.utils.BlurConstants;
 
-public class SearchManagerImpl implements SearchManager {
+public class SearchManagerImpl implements SearchManager, BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(SearchManagerImpl.class);
 	private IndexReaderManager indexManager;
 	private volatile Map<String,Map<String,Searcher>> searchers = new TreeMap<String, Map<String,Searcher>>();
+	private Similarity similarity;
+	private BlurConfiguration configuration = new BlurConfiguration();
 
 	public SearchManagerImpl(IndexReaderManager indexManager) {
 		this.indexManager = indexManager;
+		this.similarity = configuration.getNewInstance(BLUR_LUCENE_SIMILARITY_CLASS, Similarity.class);
 	}
 	
 	@Override
@@ -44,7 +50,9 @@ public class SearchManagerImpl implements SearchManager {
 			Map<String, SuperIndexReader> readers = newIndexReaders.get(table);
 			Map<String, Searcher> newSearcherMap = new TreeMap<String, Searcher>();
 			for (Entry<String, SuperIndexReader> entry : readers.entrySet()) {
-				newSearcherMap.put(entry.getKey(), new IndexSearcher(entry.getValue()));
+				IndexSearcher searcher = new IndexSearcher(entry.getValue());
+				searcher.setSimilarity(similarity);
+				newSearcherMap.put(entry.getKey(), searcher);
 			}
 			newSearchers.put(table, newSearcherMap);
 		}

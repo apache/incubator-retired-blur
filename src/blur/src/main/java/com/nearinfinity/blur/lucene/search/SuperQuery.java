@@ -17,8 +17,6 @@ import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 public class SuperQuery extends AbstractWrapperQuery {
 
 	private static final long serialVersionUID = -5901574044714034398L;
-	private Query query;
-	private boolean rewritten;
 	
 	public SuperQuery(Query query) {
 		super(query,false);

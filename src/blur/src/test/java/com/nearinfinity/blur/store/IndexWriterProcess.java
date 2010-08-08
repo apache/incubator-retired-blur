@@ -14,9 +14,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.lucene.store.ZookeeperWrapperDirectory;
 import com.nearinfinity.blur.lucene.store.policy.ZookeeperIndexDeletionPolicy;
@@ -26,18 +23,11 @@ public class IndexWriterProcess {
 	private static Random random = new Random();
 
 	public static void main(String[] args) throws Exception {
-		final ZooKeeper zk = new ZooKeeper("localhost", 3000, new Watcher() {
-			@Override
-			public void process(WatchedEvent event) {
-				
-			}
-		});
-		
 		final String indexRefPath = "/blur/refs/testing";
 		FSDirectory dir = FSDirectory.open(new File("./index"));
 		final ZookeeperWrapperDirectory directory = new ZookeeperWrapperDirectory(dir, indexRefPath);
 		final Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
-		IndexWriter indexWriter = new IndexWriter(directory, analyzer, new ZookeeperIndexDeletionPolicy(zk, indexRefPath), MaxFieldLength.UNLIMITED);
+		IndexWriter indexWriter = new IndexWriter(directory, analyzer, new ZookeeperIndexDeletionPolicy(indexRefPath), MaxFieldLength.UNLIMITED);
 		indexWriter.setUseCompoundFile(false);
 		while (true) {
 			for (int i = 0; i < 10000; i++) {

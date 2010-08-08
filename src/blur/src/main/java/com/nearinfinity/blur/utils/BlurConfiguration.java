@@ -114,4 +114,12 @@ public class BlurConfiguration implements BlurConstants {
 			throw new RuntimeException(e);
 		}
 	}
+
+	public long getLong(String name, long defaultValue) {
+		String value = properties.get(name);
+		if (value == null) {
+			return defaultValue;
+		}
+		return Long.parseLong(value);
+	}
 }

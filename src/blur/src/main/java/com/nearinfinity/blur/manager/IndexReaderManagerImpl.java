@@ -23,7 +23,7 @@ public class IndexReaderManagerImpl implements IndexReaderManager {
 	
 	@Override
 	public void update() {
-		updateIndexers(directoryManager.getCurrentDirectories());
+		updateIndexReaders(directoryManager.getCurrentDirectories());
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class IndexReaderManagerImpl implements IndexReaderManager {
 		return readers;
 	}
 	
-	protected void updateIndexers(Map<String,Map<String, Directory>> directories) {
+	protected void updateIndexReaders(Map<String,Map<String, Directory>> directories) {
 		Map<String,Map<String, SuperIndexReader>> newTableReaders = new TreeMap<String, Map<String,SuperIndexReader>>();
 		for (String table : directories.keySet()) {
 			Map<String, Directory> newDirectories = directories.get(table);

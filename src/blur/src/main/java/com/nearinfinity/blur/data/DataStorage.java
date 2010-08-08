@@ -27,8 +27,10 @@ public interface DataStorage {
 		}
 	}
 	
-	void save(String id, String mimeType, InputStream inputStream);
+	void save(String table, String id, String mimeType, InputStream inputStream);
 
-	void fetch(String id, DataResponse response);
+	void fetch(String table, String id, DataResponse response);
+	
+	Iterable<String> getIdsToBeIndexed(String table, String shardId);
 
 }

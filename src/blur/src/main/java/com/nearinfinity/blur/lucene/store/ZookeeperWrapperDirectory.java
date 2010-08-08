@@ -28,6 +28,10 @@ public class ZookeeperWrapperDirectory extends Directory {
 		this.setLockFactory(new ZookeeperLockFactory(zk));
 	}
 
+	public String getIndexRefPath() {
+		return indexRefPath;
+	}
+
 	public void clearLock(String name) throws IOException {
 		directory.clearLock(name);
 	}

@@ -13,12 +13,10 @@ import org.apache.cassandra.thrift.NotFoundException;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.Cassandra.Client;
-import org.apache.hadoop.hbase.HConstants;
-import org.apache.hadoop.hbase.util.Bytes;
 
-import com.nearinfinity.blur.lucene.store.dao.DirectoryDao;
+import com.nearinfinity.blur.lucene.store.DirectoryStore;
 
-public class CassandraDao implements DirectoryDao {
+public class CassandraDao implements DirectoryStore {
 	
 	private static final String SEP = "/";
 	private ClientPool pool;
@@ -138,7 +136,7 @@ public class CassandraDao implements DirectoryDao {
 		Client client = pool.getClient();
 		try {
 			SlicePredicate slicePredicate = new SlicePredicate();
-			SliceRange sliceRange = new SliceRange(HConstants.EMPTY_BYTE_ARRAY, HConstants.EMPTY_BYTE_ARRAY, false, Integer.MAX_VALUE);
+			SliceRange sliceRange = new SliceRange(Bytes.EMPTY_BYTE_ARRAY, Bytes.EMPTY_BYTE_ARRAY, false, Integer.MAX_VALUE);
 			slicePredicate.setSlice_range(sliceRange);
 			ColumnParent columnParent = new ColumnParent(columnFamily);
 			List<ColumnOrSuperColumn> list = client.get_slice(keySpace, getDirectoryId(), columnParent, slicePredicate, consistencyLevel);

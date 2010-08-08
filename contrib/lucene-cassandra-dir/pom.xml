@@ -15,6 +15,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.nearinfinity.blur</groupId>
+			<artifactId>blur-core</artifactId>
+			<version>0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
 			<version>3.0.0-nic</version>

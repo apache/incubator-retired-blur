@@ -15,6 +15,7 @@ import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.Cassandra.Client;
 
 import com.nearinfinity.blur.lucene.store.DirectoryStore;
+import com.nearinfinity.blur.lucene.store.dao.cassandra.utils.Bytes;
 
 public class CassandraDao implements DirectoryStore {
 	

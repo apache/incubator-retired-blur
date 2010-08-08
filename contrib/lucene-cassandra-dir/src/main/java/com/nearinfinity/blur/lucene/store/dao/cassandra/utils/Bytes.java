@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.lucene.store.dao.cassandra;
+package com.nearinfinity.blur.lucene.store.dao.cassandra.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;

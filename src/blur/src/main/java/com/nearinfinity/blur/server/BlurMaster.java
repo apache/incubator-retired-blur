@@ -39,7 +39,7 @@ public class BlurMaster extends BlurServer implements SearchExecutor,BlurConstan
 
 	private static final String DATA = "data";
 	private BlurConfiguration configuration = new BlurConfiguration();
-	private List<BlurClient> clients = new ArrayList<BlurClient>();
+	private List<BlurMasterClient> clients = new ArrayList<BlurMasterClient>();
 	private DataStorage dataStorage;
 	private ZooKeeper zk = ZooKeeperFactory.getZooKeeper();
 	
@@ -63,7 +63,7 @@ public class BlurMaster extends BlurServer implements SearchExecutor,BlurConstan
 
 	private synchronized void createBlurClients() {
 		try {
-			List<BlurClient> newClients = new ArrayList<BlurClient>();
+			List<BlurMasterClient> newClients = new ArrayList<BlurMasterClient>();
 			List<String> children = zk.getChildren(blurNodePath, this);
 			for (String child : children) {
 				String path = blurNodePath + "/" + child;
@@ -71,7 +71,7 @@ public class BlurMaster extends BlurServer implements SearchExecutor,BlurConstan
 				if (stat != null) {
 					byte[] bs = zk.getData(path, false, stat);
 					if (isNode(bs)) {
-						newClients.add(new BlurClient(child));
+						newClients.add(new BlurMasterClient(child));
 					}
 				}
 			}
@@ -99,9 +99,9 @@ public class BlurMaster extends BlurServer implements SearchExecutor,BlurConstan
 	@Override
 	public BlurHits search(ExecutorService executor, final String table, final String query, final String acl, final long start, final int fetchCount) {
 		try {
-			return ForkJoin.execute(executor, clients, new ParallelCall<BlurClient,BlurHits>() {
+			return ForkJoin.execute(executor, clients, new ParallelCall<BlurMasterClient,BlurHits>() {
 				@Override
-				public BlurHits call(BlurClient client) throws Exception {
+				public BlurHits call(BlurMasterClient client) throws Exception {
 					return client.search(table, query, acl, start, fetchCount);
 				}
 			}).merge(new Merger<BlurHits>() {
@@ -127,9 +127,9 @@ public class BlurMaster extends BlurServer implements SearchExecutor,BlurConstan
 	@Override
 	public long searchFast(ExecutorService executor, final String table, final String query, final String acl, final long minimum) {
 		try {
-			return ForkJoin.execute(executor, clients, new ParallelCall<BlurClient,Long>() {
+			return ForkJoin.execute(executor, clients, new ParallelCall<BlurMasterClient,Long>() {
 				@Override
-				public Long call(BlurClient client) throws Exception {
+				public Long call(BlurMasterClient client) throws Exception {
 					return client.searchFast(table, query, acl, minimum);
 				}
 			}).merge(new Merger<Long>() {

@@ -23,40 +23,15 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class BlurClient implements BlurConstants {
+public class BlurMasterClient implements BlurConstants {
 
-	public static void main(String[] args) throws IOException {
-		BlurClient blurClient = new BlurClient(args[0]);
-		System.out.println(blurClient.search("test", "test.test:value", "", 0, 10));
-		BlurHits blurHits = null;
-		long totalHits = 0;
-		long totalTime = 0;
-		int count = 0;
-		int max = 25;
-		while (true) {
-			if (count >= max) {
-				System.out.println("hits: " + totalHits + " at " + totalTime / 25.0);
-				count = 0;
-				totalHits = 0;
-				totalTime = 0;
-			}
-			long s = System.currentTimeMillis();
-			blurHits = blurClient.search("test", "test.test:value", "", 0, 10);
-			long e = System.currentTimeMillis();
-			totalHits += blurHits.getTotalHits();
-			totalTime += (e-s);
-			count++;
-		}
-		
-	}
-	
 	private HttpClient httpclient;
 	private String scheme = "http";
 	private String host;
 	private int port;
 	private ObjectMapper mapper = new ObjectMapper();
 	
-	public BlurClient(String connectionStrings) {
+	public BlurMasterClient(String connectionStrings) {
 		setupConnections(connectionStrings);
 		createHttpClient();
 	}

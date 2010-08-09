@@ -20,7 +20,6 @@ import org.apache.zookeeper.data.Stat;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 
-import com.nearinfinity.blur.BlurClient;
 import com.nearinfinity.blur.data.DataStorage;
 import com.nearinfinity.blur.data.DataStorage.DataResponse;
 import com.nearinfinity.blur.manager.SearchExecutor;

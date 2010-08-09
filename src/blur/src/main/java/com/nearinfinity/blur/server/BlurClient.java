@@ -1,4 +1,4 @@
-package com.nearinfinity.blur;
+package com.nearinfinity.blur.server;
 
 import java.io.IOException;
 import java.net.URI;
@@ -21,8 +21,6 @@ import org.apache.http.params.HttpProtocolParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.nearinfinity.blur.server.BlurHits;
-import com.nearinfinity.blur.server.HitCount;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurClient implements BlurConstants {

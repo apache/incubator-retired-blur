@@ -1,6 +1,8 @@
 package com.nearinfinity.blur.server;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -11,6 +13,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooDefs.Ids;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -18,13 +24,22 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 
 import com.nearinfinity.blur.manager.SearchExecutor;
+import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.HttpConstants;
+import com.nearinfinity.blur.utils.ZkUtils;
+import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
-public class BlurServer extends AbstractHandler implements HttpConstants,BlurConstants {
+public abstract class BlurServer extends AbstractHandler implements HttpConstants,BlurConstants {
 	
+	private static final String NODES = "nodes";
 	//	private static final Log LOG = LogFactory.getLog(BlurServer.class);
 	private static final String QUERY_IS_BLANK = "query is blank";
+	
+	public enum NODE_TYPE {
+		MASTER,
+		NODE
+	}
 
 	public enum REQUEST_TYPE {
 		STATUS,
@@ -40,6 +55,17 @@ public class BlurServer extends AbstractHandler implements HttpConstants,BlurCon
 
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	private ObjectMapper mapper = new ObjectMapper();
+	private ZooKeeper zk;
+	protected String blurNodePath;
+	private BlurConfiguration configuration = new BlurConfiguration();
+	protected int port;
+	
+	public BlurServer() throws IOException {
+		zk = ZooKeeperFactory.getZooKeeper();
+		blurNodePath = configuration.get(BLUR_ZOOKEEPER_PATH) + "/" + NODES;
+	}
+	
+	public abstract void startServer() throws Exception;
 
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
 		response.setContentType(MIME_TYPE);
@@ -90,11 +116,11 @@ public class BlurServer extends AbstractHandler implements HttpConstants,BlurCon
 	private void handleFastSearch(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String table = getTable(target);
 		String query = getQuery(request);
-		String filter = getFilter(request);
+		String acl = getAcl(request);
 		long minimum = getMinimum(request);
 
 		if (query != null) {
-			HitCount totalHits = new HitCount().setTotalHits(searchExecutor.searchFast(executor, table, query, filter, minimum));
+			HitCount totalHits = new HitCount().setTotalHits(searchExecutor.searchFast(executor, table, query, acl, minimum));
 			send(SC_OK, response, totalHits);
 		} else {
 			send(SC_INTERNAL_SERVER_ERROR, response, new Error().setError(QUERY_IS_BLANK));
@@ -104,12 +130,12 @@ public class BlurServer extends AbstractHandler implements HttpConstants,BlurCon
 	private void handleSearch(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		String table = getTable(target);
 		String query = getQuery(request);
-		String filter = getFilter(request);
+		String acl = getAcl(request);
 		long start = getStart(request);
 		int fetch = getFetch(request);
 		
 		if (query != null) {
-			BlurHits blurHits = searchExecutor.search(executor, table, query, filter, start, fetch);
+			BlurHits blurHits = searchExecutor.search(executor, table, query, acl, start, fetch);
 			send(SC_OK, response, blurHits);
 		} else {
 			send(SC_INTERNAL_SERVER_ERROR, response, new Error().setError(QUERY_IS_BLANK));
@@ -170,12 +196,33 @@ public class BlurServer extends AbstractHandler implements HttpConstants,BlurCon
 		return Long.parseLong(minStr);
 	}
 
-	private String getFilter(HttpServletRequest request) {
-		return request.getParameter(SEARCH_FILTER);
+	private String getAcl(HttpServletRequest request) {
+		return request.getParameter(SEARCH_ACL);
 	}
 
 	private String getQuery(HttpServletRequest request) {
 		return request.getParameter(SEARCH_QUERY);
 	}
+	
+	protected void registerNode() {
+		try {
+			ZkUtils.mkNodes(blurNodePath, zk);
+			InetAddress address = getMyAddress();
+			String hostName = address.getHostAddress();
+			NODE_TYPE type = getType();
+			zk.create(blurNodePath + "/" + hostName + ":" + port, type.name().getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private InetAddress getMyAddress() throws UnknownHostException {
+		return InetAddress.getLocalHost();
+	}
 
+	protected abstract NODE_TYPE getType();
 }

@@ -44,7 +44,7 @@ public class SuperQueryTest extends TestCase {
 		
 	}
 
-	private Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
+	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
 		Directory directory = new RAMDirectory();
 		SuperIndexWriter writer = new SuperIndexWriter(directory, new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
 		writer.addSuperDocument(create("1","person.name:aaron","address.street:sulgrave"));
@@ -54,7 +54,7 @@ public class SuperQueryTest extends TestCase {
 		return directory;
 	}
 
-	private SuperDocument create(String id, String... parts) {
+	public static SuperDocument create(String id, String... parts) {
 		SuperDocument document = new SuperDocument(id);
 		for (String part : parts) {
 			String[] split = part.split(":");

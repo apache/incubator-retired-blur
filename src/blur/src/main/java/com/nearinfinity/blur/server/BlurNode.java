@@ -1,5 +1,6 @@
 	package com.nearinfinity.blur.server;
 
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,8 +19,7 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.HttpConstants;
 
 public class BlurNode extends BlurServer implements HttpConstants,BlurConstants {
-	
-	
+
 	private static final Log LOG = LogFactory.getLog(BlurNode.class);
 	private static final long TEN_SECONDS = 10000;
 	private DirectoryManagerImpl directoryManager;
@@ -28,11 +28,17 @@ public class BlurNode extends BlurServer implements HttpConstants,BlurConstants 
 	private Timer timer;
 	private BlurConfiguration configuration = new BlurConfiguration();
 	
-	public BlurNode() {
-		init();
+	public BlurNode() throws IOException {
+		super();
+		this.port = configuration.getInt(BLUR_NODE_PORT, 40010);
 	}
 	
-	private void init() {
+	public BlurNode(int port) throws IOException {
+		super();
+		this.port = port;
+	}
+
+	public void startServer() throws Exception {
 		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_STORE_CLASS, DirectoryManagerStore.class);
 		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexReaderManagerImpl(directoryManager);
@@ -40,8 +46,13 @@ public class BlurNode extends BlurServer implements HttpConstants,BlurConstants 
 		this.searchExecutor = new SearchExecutorImpl(searchManager);
 		update(directoryManager, indexManager, searchManager, searchExecutor);
 		runUpdateTask(directoryManager, indexManager, searchManager, searchExecutor);
+		Server server = new Server(port);
+		server.setHandler(this);
+		server.start();
+		registerNode();
+		server.join();
 	}
-	
+
 	private void runUpdateTask(final UpdatableManager... managers) {
 		TimerTask task = new TimerTask() {
 			@Override
@@ -61,10 +72,12 @@ public class BlurNode extends BlurServer implements HttpConstants,BlurConstants 
 	}
 	
 	public static void main(String[] args) throws Exception {
-		int port = Integer.parseInt(args[0]);
-		Server server = new Server(port);
-		server.setHandler(new BlurNode());
-		server.start();
-		server.join();
+		BlurNode blurNode = new BlurNode();
+		blurNode.startServer();
+	}
+
+	@Override
+	protected NODE_TYPE getType() {
+		return NODE_TYPE.NODE;
 	}
 }

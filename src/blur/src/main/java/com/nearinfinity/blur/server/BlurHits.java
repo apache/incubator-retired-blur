@@ -84,8 +84,9 @@ public class BlurHits {
 		return "totalHits:" + totalHits + "," + hits.toString();
 	}
 
-	public void reduceHitsTo(int fetchCount) {
+	public BlurHits reduceHitsTo(int fetchCount) {
 		hits = reduce(hits, fetchCount);
+		return this;
 	}
 	
 	private Set<BlurHit> reduce(Set<BlurHit> hits, int fetchCount) {

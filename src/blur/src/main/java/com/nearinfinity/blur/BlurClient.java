@@ -83,10 +83,10 @@ public class BlurClient implements BlurConstants {
 		httpclient = new DefaultHttpClient(manager, params);		
 	}
 
-	public BlurHits search(String table, String query, String filter, long start, int fetchCount) throws IOException {
+	public BlurHits search(String table, String query, String acl, long start, int fetchCount) throws IOException {
 		URI uri;
 		try {
-			uri = URIUtils.createURI(scheme, host, port, getPath(table), getQuery(query, filter, start, fetchCount), null);
+			uri = URIUtils.createURI(scheme, host, port, getPath(table), getQuery(query, acl, start, fetchCount), null);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
@@ -103,10 +103,10 @@ public class BlurClient implements BlurConstants {
 		return EMTPY_HITS;
 	}
 
-	public long searchFast(String table, String query, String filter, long minimum) {
+	public long searchFast(String table, String query, String acl, long minimum) {
 		URI uri;
 		try {
-			uri = URIUtils.createURI(scheme, host, port, getPath(table,true), getQuery(query, filter, minimum), null);
+			uri = URIUtils.createURI(scheme, host, port, getPath(table,true), getQuery(query, acl, minimum), null);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
@@ -132,12 +132,12 @@ public class BlurClient implements BlurConstants {
 		}
 	}
 
-	private String getQuery(String query, String filter, long minimum) {
-		return "q=" + query + "&f=" + filter + "&m=" + minimum;
+	private String getQuery(String query, String acl, long minimum) {
+		return "q=" + query + "&a=" + acl + "&m=" + minimum;
 	}
 
-	private String getQuery(String query, String filter, long start, int fetchCount) {
-		return "q=" + query + "&f=" + filter + "&s=" + start + "&c=" + fetchCount;
+	private String getQuery(String query, String acl, long start, int fetchCount) {
+		return "q=" + query + "&a" + acl + "&s=" + start + "&c=" + fetchCount;
 	}
 
 	private String getPath(String table) {

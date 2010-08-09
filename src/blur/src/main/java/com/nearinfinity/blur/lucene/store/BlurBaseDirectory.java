@@ -29,60 +29,60 @@ public class BlurBaseDirectory extends Directory {
 		return (block << BLOCK_SHIFT) + positionInBlock;
 	}
 
-	private DirectoryStore dao;
+	private DirectoryStore store;
 	
-	public BlurBaseDirectory(DirectoryStore dao) {
-		this.dao = dao;
+	public BlurBaseDirectory(DirectoryStore store) {
+		this.store = store;
 		setLockFactory(new NoLockFactory());
 	}
 	
 	@Override
 	public void close() throws IOException {
-		dao.close();
+		store.close();
 	}
 
 	@Override
 	public void deleteFile(String name) throws IOException {
-		long length = dao.getFileLength(name);
-		dao.setFileLength(name, -1);
+		long length = store.getFileLength(name);
+		store.setFileLength(name, -1);
 		long maxBlockId = getBlock(length - 1);
 		for (long l = 0; l <= maxBlockId; l++) {
-			dao.removeBlock(name,l);
+			store.removeBlock(name,l);
 		}
 	}
 
 	@Override
 	public boolean fileExists(String name) throws IOException {
-		return dao.fileExists(name);
+		return store.fileExists(name);
 	}
 
 	@Override
 	public long fileLength(String name) throws IOException {
-		if (!dao.fileExists(name)) {
+		if (!store.fileExists(name)) {
 			throw new FileNotFoundException(name);
 		}
-		return dao.getFileLength(name);
+		return store.getFileLength(name);
 	}
 
 	@Override
 	public long fileModified(String name) throws IOException {
-		return dao.getFileModified(name);
+		return store.getFileModified(name);
 	}
 
 	@Override
 	public String[] listAll() throws IOException {
-		return dao.getAllFileNames().toArray(new String[]{});
+		return store.getAllFileNames().toArray(new String[]{});
 	}
 
 	@Override
 	public void touchFile(String name) throws IOException {
-		long fileLength = dao.getFileLength(name);
-		dao.setFileLength(name, fileLength < 0 ? 0 : fileLength);
+		long fileLength = store.getFileLength(name);
+		store.setFileLength(name, fileLength < 0 ? 0 : fileLength);
 	}
 
 	@Override
 	public IndexOutput createOutput(final String name) throws IOException {
-		dao.setFileLength(name, 0);
+		store.setFileLength(name, 0);
 		return new BufferedIndexOutput() {
 			
 			private long position;
@@ -98,13 +98,13 @@ public class BlurBaseDirectory extends Directory {
 				while (len > 0) {
 					long blockId = getBlock(position);
 					int innerPosition = (int) getPosition(position);
-					byte[] block = dao.fetchBlock(name,blockId);
+					byte[] block = store.fetchBlock(name,blockId);
 					if (block == null) {
 						block = new byte[BLOCK_SIZE];
 					}
 					int length = Math.min(len, block.length - innerPosition);
 					System.arraycopy(b, offset, block, innerPosition, length);
-					dao.saveBlock(name,blockId,block);
+					store.saveBlock(name,blockId,block);
 					position += length;
 					len -= length;
 					offset += length;
@@ -117,7 +117,7 @@ public class BlurBaseDirectory extends Directory {
 			@Override
 			public void close() throws IOException {
 				super.close();
-				dao.flush(name);
+				store.flush(name);
 			}
 
 			@Override
@@ -130,7 +130,7 @@ public class BlurBaseDirectory extends Directory {
 			public void setLength(final long length) throws IOException {
 				super.setLength(length);
 				fileLength = length;
-				dao.setFileLength(name,length);
+				store.setFileLength(name,length);
 			}
 		};
 	}
@@ -163,7 +163,7 @@ public class BlurBaseDirectory extends Directory {
 				while (len > 0) {
 					long blockId = getBlock(position);
 					int innerPosition = (int) getPosition(position);
-					byte[] block = dao.fetchBlock(name, blockId);
+					byte[] block = store.fetchBlock(name, blockId);
 					int length = Math.min(len,block.length-innerPosition);
 					System.arraycopy(block, innerPosition, b, off, length);
 					position += length;

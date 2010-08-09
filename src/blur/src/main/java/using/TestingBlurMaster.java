@@ -10,29 +10,33 @@ public class TestingBlurMaster {
 			@Override
 			public void run() {
 				try {
-					BlurMaster.main(new String[]{"8080"});
+					new BlurMaster(8080).startServer();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
 		}).start();
 		
+		Thread.sleep(10000);
+		
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					BlurNode.main(new String[]{"8081"});
+					new BlurNode(8081).startServer();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
 			}
 		}).start();
 		
+		Thread.sleep(10000);
+		
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					BlurNode.main(new String[]{"8082"});
+					new BlurNode(8082).startServer();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}

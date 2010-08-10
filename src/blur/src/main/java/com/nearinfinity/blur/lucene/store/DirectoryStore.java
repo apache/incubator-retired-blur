@@ -74,6 +74,8 @@ public interface DirectoryStore {
 	 */
 	void flush(String name) throws IOException;
 
-	void removeBlock(String name, long blockId);
+	void removeBlock(String name, long blockId) throws IOException;
+	
+	void removeFileMetaData(String name) throws IOException;
 
 }

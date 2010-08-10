@@ -44,10 +44,12 @@ public class BlurBaseDirectory extends Directory {
 	@Override
 	public void deleteFile(String name) throws IOException {
 		long length = store.getFileLength(name);
-		store.setFileLength(name, -1);
-		long maxBlockId = getBlock(length - 1);
-		for (long l = 0; l <= maxBlockId; l++) {
-			store.removeBlock(name,l);
+		store.removeFileMetaData(name);
+		if (length > 0) {
+			long maxBlockId = getBlock(length - 1);
+			for (long l = 0; l <= maxBlockId; l++) {
+				store.removeBlock(name,l);
+			}
 		}
 	}
 

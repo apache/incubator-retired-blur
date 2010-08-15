@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.lucene.store.Directory;
 import org.slf4j.Logger;
@@ -33,7 +34,21 @@ public class DirectoryManagerImpl implements DirectoryManager, BlurConstants {
 
 	@Override
 	public void update() {
-		updateDirectories();
+		while (true) {
+			Map<String,Set<String>> prevCurrentState = getCurrentState();
+			updateDirectories();
+			if (prevCurrentState.equals(getCurrentState())) {
+				return;
+			}
+		}
+	}
+
+	private Map<String, Set<String>> getCurrentState() {
+		Map<String, Set<String>> result = new TreeMap<String, Set<String>>();
+		for (String table : directories.keySet()) {
+			result.put(table, new TreeSet<String>(directories.get(table).keySet()));
+		}
+		return result;
 	}
 
 	private void updateDirectories() {

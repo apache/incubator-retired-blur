@@ -30,11 +30,10 @@ public class AddTableThroughClient {
 //		desc.shardDirectoryLocations.put("shard4", "file:///Users/amccurry/testIndex");
 //		client.create("test", desc);
 		
-//		client.enable("test");
-		
+		client.enable("test");
 		
 		//need to make sure readers are closed....
-		client.disable("test");
+//		client.disable("test");
 	}
 
 }

@@ -1,6 +1,8 @@
 package com.nearinfinity.blur.manager;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
@@ -14,6 +16,7 @@ import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 public class IndexReaderManagerImpl implements IndexReaderManager {
 
 	private final static Logger LOG = LoggerFactory.getLogger(IndexReaderManagerImpl.class);
+	protected static final long WAIT_TIME_BEFORE_FORCING_CLOSED = 60000;
 	private DirectoryManager directoryManager;
 	private volatile Map<String,Map<String, SuperIndexReader>> readers = new TreeMap<String, Map<String,SuperIndexReader>>();
 
@@ -47,7 +50,11 @@ public class IndexReaderManagerImpl implements IndexReaderManager {
 			newTableReaders.put(table, newReaders);
 		}
 		LOG.info("New Indexreaders {}",newTableReaders);
+		Map<String,Map<String, SuperIndexReader>> oldTableReaders = readers;
 		readers = newTableReaders;
+		//close old readers here?
+		Collection<SuperIndexReader> readersThatNeedToBeClosed = getReadersThatNeedToBeClosed(oldTableReaders);
+		futureClose(readersThatNeedToBeClosed);
 	}
 
 	private SuperIndexReader openReader(String table, String shardId, Directory dir) throws IOException, InterruptedException {
@@ -68,5 +75,49 @@ public class IndexReaderManagerImpl implements IndexReaderManager {
 		return null;
 	}
 
+	private void futureClose(final Collection<SuperIndexReader> readersThatNeedToBeClosed) {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(WAIT_TIME_BEFORE_FORCING_CLOSED);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+				for (SuperIndexReader reader : readersThatNeedToBeClosed) {
+					try {
+						LOG.info("Closing reader {}",reader);
+						reader.close();
+					} catch (IOException e) {
+						LOG.error("Unknown error",e);
+					}
+				}
+			}
+		});
+		thread.setDaemon(true);
+		thread.setName("Closing-Old-Readers-" + System.currentTimeMillis());
+		thread.start();
+	}
+
+	private Collection<SuperIndexReader> getReadersThatNeedToBeClosed(Map<String, Map<String, SuperIndexReader>> oldTableReaders) {
+		Collection<SuperIndexReader> result = new HashSet<SuperIndexReader>();
+		for (String table : oldTableReaders.keySet()) {
+			if (readers.containsKey(table)) {
+				Map<String, SuperIndexReader> onlineReaders = readers.get(table);
+				Map<String, SuperIndexReader> oldReaders = oldTableReaders.get(table);
+				for (String shardId : oldReaders.keySet()) {
+					if (!onlineReaders.containsKey(shardId)) {
+						result.add(oldReaders.get(shardId));
+					}
+				}
+			} else {
+				//the whole table is gone
+				Map<String, SuperIndexReader> map = oldTableReaders.get(table);
+				result.addAll(map.values());
+			}
+		}
+		LOG.info("Old readers that need to be closed {}",result);
+		return result;
+	}
 
 }

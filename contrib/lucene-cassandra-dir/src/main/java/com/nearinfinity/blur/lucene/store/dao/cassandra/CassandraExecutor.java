@@ -25,11 +25,6 @@ import org.apache.thrift.transport.TTransportException;
 
 public class CassandraExecutor {
 	
-	public static void main(String... args) {
-		setup(9160,2,"192.168.1.202");
-		System.out.println(hostNames);
-	}
-	
 	public static interface Command<T> {
 		T execute(Client client) throws Exception;
 	}

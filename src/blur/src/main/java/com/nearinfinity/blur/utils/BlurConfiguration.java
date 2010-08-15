@@ -122,4 +122,8 @@ public class BlurConfiguration implements BlurConstants {
 		}
 		return Long.parseLong(value);
 	}
+
+	public void setInt(String name, int value) {
+		properties.put(name, Integer.toString(value));
+	}
 }

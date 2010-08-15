@@ -1,9 +1,7 @@
 package com.nearinfinity.blur.utils;
 
-import com.nearinfinity.blur.server.BlurHits;
 
 public interface BlurConstants {
-	public static final BlurHits EMTPY_HITS = new BlurHits();
 	public static final String BLUR_MASTER_PORT = "blur.master.port";
 	public static final String BLUR_NODE_PORT = "blur.node.port";
 	public static final String BLUR_DATA_STORAGE_STORE_CLASS = "blur.data.storage.store.class";

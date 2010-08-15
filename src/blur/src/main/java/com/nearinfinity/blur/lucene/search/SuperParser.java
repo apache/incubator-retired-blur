@@ -14,36 +14,21 @@ import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.queryParser.QueryParserTokenManager;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
-import com.nearinfinity.blur.lucene.search.cache.Acl;
 
 public class SuperParser extends QueryParser {
 	
-	private static final String ON = "on";
-	private static final String ENABLED = "enabled";
-	private static final String TRUE = "true";
-	private static final String _1 = "1";
-	private static final String T = "t";
-	private static final String FACETS = "facets";
-	private static final String F = "f";
-	private static final String _0 = "0";
-	private static final String FALSE = "false";
-	private static final String DISABLED = "disabled";
-	private static final String OFF = "off";
 	public static final String SUPER = "super";
 	private Map<Query,String> fieldNames = new HashMap<Query, String>();
 	private boolean superSearch = true;
-	private boolean facetedSearch = false;
-	private Acl acl;
 	
 	public static void main(String[] args) throws ParseException {
-		SuperParser parser = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT));
+		SuperParser parser = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true);
 		Query query = parser.parse("address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query);
 		Query query2 = parser.parse("disabled address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
@@ -58,15 +43,11 @@ public class SuperParser extends QueryParser {
 		super(tm);
 	}
 
-	public SuperParser(Version matchVersion, Analyzer a) {
+	public SuperParser(Version matchVersion, Analyzer a, boolean superSearch) {
 		super(matchVersion, SUPER, a);
+		this.superSearch = superSearch;
 	}
 	
-	public SuperParser(Version matchVersion, Analyzer a, Acl acl) {
-		super(matchVersion, SUPER, a);
-		this.acl = acl;
-	}
-
 	@Override
 	public Query parse(String query) throws ParseException {
 		return reprocess(super.parse(query));
@@ -120,43 +101,7 @@ public class SuperParser extends QueryParser {
 
 	@Override
 	protected Query newTermQuery(Term term) {
-		if (isSuperSearchOffFlag(term)) {
-			superSearch = false;
-		}
-		if (isFacetSearch(term)) {
-			facetedSearch = true;
-		}
 		return addField(super.newTermQuery(term),term.field());
-	}
-
-	private boolean isFacetSearch(Term term) {
-		if (term.field().toLowerCase().equals(FACETS) && isPositive(term.text())) {
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isPositive(String str) {
-		str = str.toLowerCase();
-		if (str.equals(ON) || str.equals(ENABLED) || str.equals(TRUE) || str.equals(_1) || str.equals(T)) {
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isSuperSearchOffFlag(Term term) {
-		if (term.field().toLowerCase().equals(SUPER) && isNegative(term.text())) {
-			return true;
-		}
-		return false;
-	}
-
-	private boolean isNegative(String str) {
-		str = str.toLowerCase();
-		if (str.equals(OFF) || str.equals(DISABLED) || str.equals(FALSE) || str.equals(_0) || str.equals(F)) {
-			return true;
-		}
-		return false;
 	}
 
 	@Override
@@ -166,7 +111,7 @@ public class SuperParser extends QueryParser {
 
 	private Query reprocess(Query query) {
 		if (query == null || !isSuperSearch()) {
-			return wrapAcl(query);
+			return query;
 		}
 		if (query instanceof BooleanQuery) {
 			BooleanQuery booleanQuery = (BooleanQuery) query;
@@ -180,15 +125,8 @@ public class SuperParser extends QueryParser {
 				return booleanQuery;
 			}
 		} else {
-			return new SuperQuery(wrapAcl(query));
+			return new SuperQuery(query);
 		}
-	}
-
-	private Query wrapAcl(Query query) {
-		if (acl == null) {
-			return query;
-		}
-		return new FilteredQuery(query,acl);
 	}
 
 	private boolean isSameGroupName(BooleanQuery booleanQuery) {
@@ -246,16 +184,8 @@ public class SuperParser extends QueryParser {
 		fieldNames.put(q, field);
 		return q;
 	}
-	
-	
-	public boolean isSuperSearch() {
-		if (facetedSearch) {
-			superSearch = true;
-		}
-		return superSearch;
-	}
 
-	public boolean isFacetedSearch() {
-		return facetedSearch;
+	public boolean isSuperSearch() {
+		return superSearch;
 	}
 }

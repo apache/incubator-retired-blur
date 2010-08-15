@@ -7,8 +7,6 @@
 	<version>0.1-SNAPSHOT</version>
 	<name>Blur Core</name>
 
-
-
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -51,24 +49,6 @@
 			<groupId>commons-logging</groupId>
 			<artifactId>commons-logging</artifactId>
 			<version>1.1.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.eclipse.jetty</groupId>
-			<artifactId>jetty-server</artifactId>
-			<version>7.0.1.v20091125</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.5.5</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.0.1</version>
 		</dependency>
 	</dependencies>
 	<build>

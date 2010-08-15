@@ -66,7 +66,7 @@ public class RandomSuperQueryTest extends TestCase {
 		IndexSearcher searcher = new IndexSearcher(indexReader);
 		long s = System.currentTimeMillis();
 		for (String str : sampler) {
-			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT)).parse(str);
+			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true).parse(str);
 			TopDocs topDocs = searcher.search(query, 10);
 			assertTrue("seed [" + seed + "] {" + query + "} {" + s + "}",topDocs.totalHits > 0);
 		}

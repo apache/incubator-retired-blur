@@ -1,0 +1,173 @@
+package com.nearinfinity.blur.thrift;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.TreeMap;
+import java.util.Map.Entry;
+import java.util.concurrent.Future;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.Version;
+import org.apache.thrift.TException;
+
+import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.search.SuperParser;
+import com.nearinfinity.blur.manager.DirectoryManagerImpl;
+import com.nearinfinity.blur.manager.DirectoryManagerStore;
+import com.nearinfinity.blur.manager.IndexReaderManagerImpl;
+import com.nearinfinity.blur.manager.SearchManagerImpl;
+import com.nearinfinity.blur.manager.UpdatableManager;
+import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.utils.ForkJoin;
+import com.nearinfinity.blur.utils.ForkJoin.Merger;
+import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
+
+public class BlurShardServer extends BlurAdminServer implements BlurConstants {
+
+	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
+	private static final long TEN_SECONDS = 10000;
+	private DirectoryManagerImpl directoryManager;
+	private IndexReaderManagerImpl indexManager;
+	private SearchManagerImpl searchManager;
+	private Timer timer;
+	private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+	
+	public BlurShardServer() throws IOException {
+		super();
+		startServer();
+	}
+	
+	private void startServer() throws IOException {
+		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_STORE_CLASS, DirectoryManagerStore.class);
+		this.directoryManager = new DirectoryManagerImpl(dao);
+		this.indexManager = new IndexReaderManagerImpl(directoryManager);
+		this.searchManager = new SearchManagerImpl(indexManager);
+		update(directoryManager, indexManager, searchManager);
+		runUpdateTask(directoryManager, indexManager, searchManager);
+	}
+
+	@Override
+	public long countSearch(String table, String query, boolean superQueryOn, final long minimum) throws BlurException, TException {
+		Map<String, Searcher> searchers = searchManager.getSearchers(table);
+		try {
+			final Query q = parse(query,superQueryOn);
+			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>, Long>() {
+				@Override
+				public Long call(Entry<String, Searcher> entry) throws Exception {
+					Searcher searcher = entry.getValue();
+					TopDocs topDocs = searcher.search((Query) q.clone(), 1);
+					return (long) topDocs.totalHits;
+				}
+			}).merge(new Merger<Long>() {
+				@Override
+				public Long merge(List<Future<Long>> futures) throws Exception {
+					long total = 0;
+					for (Future<Long> future : futures) {
+						total += future.get();
+						if (total >= minimum) {
+							return total;
+						}
+					}
+					return total;
+				}
+			});
+		} catch (Exception e) {
+			LOG.error("Unknown error",e);
+			throw new RuntimeException(e);
+		}
+	}
+
+	@Override
+	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, final long start, final int fetch) throws BlurException, TException {
+		Map<String, Searcher> searchers = searchManager.getSearchers(table);
+		try {
+			final Query q = parse(query,superQueryOn);
+			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>, Hits>() {
+				@Override
+				public Hits call(Entry<String, Searcher> entry) throws Exception {
+					String shardId = entry.getKey();
+					Searcher searcher = entry.getValue();
+					TopDocs topDocs = searcher.search((Query) q.clone(), (int) (start + fetch));
+					return new Hits(topDocs.totalHits, getShardInfo(shardId,topDocs), getHitList(searcher,(int) start,fetch,topDocs));
+				}
+			}).merge(new Merger<Hits>() {
+				@Override
+				public Hits merge(List<Future<Hits>> futures) throws Exception {
+					return null;
+				}
+			});
+		} catch (Exception e) {
+			LOG.error("Unknown error",e);
+			throw new RuntimeException(e);
+		}
+	}
+	
+	protected Map<String, Long> getShardInfo(String shardId, TopDocs topDocs) {
+		Map<String, Long> shardInfo = new TreeMap<String, Long>();
+		shardInfo.put(shardId, (long)topDocs.totalHits);
+		return shardInfo;
+	}
+
+	protected List<Hit> getHitList(Searcher searcher, int start, int fetch, TopDocs topDocs) throws CorruptIndexException, IOException {
+		List<Hit> hitList = new ArrayList<Hit>();
+		int collectTotal = start + fetch;
+		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		for (int i = start; i < topDocs.scoreDocs.length && i < collectTotal; i++) {
+			ScoreDoc scoreDoc = scoreDocs[i];
+			String id = fetchId(searcher, scoreDoc.doc);
+			hitList.add(new Hit(id, scoreDoc.score, null));
+		}
+		return hitList;
+	}
+
+	private String fetchId(Searcher searcher, int docId) throws CorruptIndexException, IOException {
+		Document doc = searcher.doc(docId);
+		return doc.get(SuperDocument.ID);
+	}
+
+	private Query parse(String query, boolean superQueryOn) throws ParseException {
+		return new SuperParser(Version.LUCENE_CURRENT, analyzer, superQueryOn).parse(query);
+	}
+	
+	@Override
+	protected NODE_TYPE getType() {
+		return NODE_TYPE.NODE;
+	}
+	
+	private void runUpdateTask(final UpdatableManager... managers) {
+		TimerTask task = new TimerTask() {
+			@Override
+			public void run() {
+				update(managers);
+			}
+		};
+		this.timer = new Timer("Update-Manager-Timer", true);
+		this.timer.schedule(task, TEN_SECONDS, TEN_SECONDS);
+	}
+	
+	private void update(UpdatableManager... managers) {
+		LOG.info("Running Update");
+		for (UpdatableManager manager : managers) {
+			manager.update();
+		}
+	}
+
+}

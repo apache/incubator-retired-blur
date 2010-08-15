@@ -8,7 +8,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.Map.Entry;
-import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +36,6 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
-import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
@@ -65,61 +63,29 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public long countSearch(String table, String query, boolean superQueryOn, final long minimum) throws BlurException, TException {
-		Map<String, Searcher> searchers = searchManager.getSearchers(table);
-		try {
-			final Query q = parse(query,superQueryOn);
-			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>, Long>() {
-				@Override
-				public Long call(Entry<String, Searcher> entry) throws Exception {
-					Searcher searcher = entry.getValue();
-					TopDocs topDocs = searcher.search((Query) q.clone(), 1);
-					return (long) topDocs.totalHits;
-				}
-			}).merge(new Merger<Long>() {
-				@Override
-				public Long merge(List<Future<Long>> futures) throws Exception {
-					long total = 0;
-					for (Future<Long> future : futures) {
-						total += future.get();
-						if (total >= minimum) {
-							return total;
-						}
-					}
-					return total;
-				}
-			});
-		} catch (Exception e) {
-			LOG.error("Unknown error",e);
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, final long start, final int fetch) throws BlurException, TException {
+	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, 
+			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
 		Map<String, Searcher> searchers = searchManager.getSearchers(table);
 		try {
 			final Query q = parse(query,superQueryOn);
 			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>, Hits>() {
 				@Override
 				public Hits call(Entry<String, Searcher> entry) throws Exception {
-					String shardId = entry.getKey();
-					Searcher searcher = entry.getValue();
-					TopDocs topDocs = searcher.search((Query) q.clone(), (int) (start + fetch));
-					return new Hits(topDocs.totalHits, getShardInfo(shardId,topDocs), getHitList(searcher,(int) start,fetch,topDocs));
+					return performSearch((Query) q.clone(), entry.getKey(), entry.getValue(), (int) start, fetch);
 				}
-			}).merge(new Merger<Hits>() {
-				@Override
-				public Hits merge(List<Future<Hits>> futures) throws Exception {
-					return null;
-				}
-			});
+			}).merge(new HitsMerger());
 		} catch (Exception e) {
 			LOG.error("Unknown error",e);
 			throw new RuntimeException(e);
 		}
 	}
 	
+	protected Hits performSearch(Query query, String shardId,Searcher searcher, int start, int fetch) throws IOException {
+		int count = (int) (start + fetch);
+		TopDocs topDocs = searcher.search(query, count == 0 ? 1 : count);
+		return new Hits(topDocs.totalHits, getShardInfo(shardId,topDocs), fetch == 0 ? null : getHitList(searcher,(int) start,fetch,topDocs));
+	}
+
 	protected Map<String, Long> getShardInfo(String shardId, TopDocs topDocs) {
 		Map<String, Long> shardInfo = new TreeMap<String, Long>();
 		shardInfo.put(shardId, (long)topDocs.totalHits);

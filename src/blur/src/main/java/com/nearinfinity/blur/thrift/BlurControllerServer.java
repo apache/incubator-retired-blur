@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.concurrent.Future;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -24,7 +23,6 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ZkUtils;
-import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class BlurControllerServer extends BlurAdminServer implements Watcher {
@@ -40,54 +38,16 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher {
 	}
 
 	@Override
-	public long countSearch(final String table, final String query, final boolean superQueryOn, final long minimum) throws BlurException, TException {
-		try {
-			return ForkJoin.execute(executor, clients.values(), new ParallelCall<Blur.Client,Long>() {
-				@Override
-				public Long call(Blur.Client client) throws Exception {
-					return client.countSearch(table, query, superQueryOn, minimum);
-				}
-			}).merge(new Merger<Long>() {
-				@Override
-				public Long merge(List<Future<Long>> futures) throws Exception {
-					long total = 0;
-					for (Future<Long> future : futures) {
-						total += future.get();
-						if (total >= minimum) {
-							return total;
-						}
-					}
-					return total;
-				}
-			});
-		} catch (Exception e) {
-			LOG.error("Unknown error",e);
-			throw new RuntimeException(e);
-		}
-	}
-
-	@Override
-	public Hits search(final String table, final String query, final boolean superQueryOn, final ScoreType type, final long start, final int fetch) throws BlurException, TException {
+	public Hits search(final String table, final String query, final boolean superQueryOn, final ScoreType type, final String filter, 
+			final long start, final int fetch, final long minimumNumberOfHits, final long maxQueryTime) throws BlurException, TException {
 		try {
 			return ForkJoin.execute(executor, clients.values(), new ParallelCall<Blur.Client,Hits>() {
 				@Override
 				public Hits call(Blur.Client client) throws Exception {
-					return client.search(table, query, superQueryOn, type, start, fetch);
+					return client.search(table, query, superQueryOn, type, filter, start, 
+							fetch, minimumNumberOfHits, maxQueryTime);
 				}
-			}).merge(new Merger<Hits>() {
-				@Override
-				public Hits merge(List<Future<Hits>> futures) throws Exception {
-					Hits hits = null;
-					for (Future<Hits> future : futures) {
-						if (hits == null) {
-							hits = future.get();
-						} else {
-							hits = mergeHits(hits,future.get());
-						}
-					}
-					return hits;
-				}
-			});
+			}).merge(new HitsMerger());
 		} catch (Exception e) {
 			LOG.error("Unknown error",e);
 			throw new RuntimeException(e);
@@ -102,10 +62,6 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher {
 	@Override
 	protected NODE_TYPE getType() {
 		return NODE_TYPE.CONTROLLER;
-	}
-	
-	private Hits mergeHits(Hits existing, Hits newHits) {
-		return null;		
 	}
 	
 	private synchronized void createBlurClients() {

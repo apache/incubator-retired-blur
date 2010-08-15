@@ -3,9 +3,12 @@ package com.nearinfinity.blur.thrift;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.apache.thrift.TException;
 import org.apache.zookeeper.CreateMode;
@@ -14,16 +17,65 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ZkUtils;
+import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
 	private static final String NODES = "nodes";
+	
+	public static class HitsMerger implements Merger<Hits> {
+		@Override
+		public Hits merge(List<Future<Hits>> futures) throws Exception {
+			Hits hits = null;
+			for (Future<Hits> future : futures) {
+				if (hits == null) {
+					hits = future.get();
+				} else {
+					hits = mergeHits(hits,future.get());
+				}
+			}
+			sortHits(hits.hits);
+			return hits;
+		}
+		
+		private void sortHits(List<Hit> hits) {
+			if (hits == null) {
+				return;
+			}
+			Collections.sort(hits, new Comparator<Hit>() {
+				@Override
+				public int compare(Hit o1, Hit o2) {
+					if (o1.score == o2.score) {
+						return o1.id.compareTo(o2.id);
+					}
+					return Double.compare(o1.score, o2.score);
+				}
+			});
+		}
+
+		protected Hits mergeHits(Hits existing, Hits newHits) {
+			existing.totalHits += newHits.totalHits;
+			if (existing.shardInfo == null) {
+				existing.shardInfo = newHits.shardInfo;
+			} else {
+				existing.shardInfo.putAll(newHits.shardInfo);
+			}
+			if (existing.hits == null) {
+				existing.hits = newHits.hits;
+			} else {
+				existing.hits.addAll(newHits.hits);
+			}
+			return existing;		
+		}
+	}
 	
 	public enum NODE_TYPE {
 		CONTROLLER,

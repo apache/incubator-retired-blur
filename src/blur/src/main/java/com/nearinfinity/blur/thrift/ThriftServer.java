@@ -2,14 +2,14 @@ package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -17,7 +17,7 @@ import com.nearinfinity.blur.utils.BlurConfiguration;
 
 public class ThriftServer {
 	
-	private static final Log LOG = LogFactory.getLog(ThriftServer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ThriftServer.class);
 	
 	private Iface iface;
 	private int port;

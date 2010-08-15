@@ -2,14 +2,14 @@ package com.nearinfinity.blur.lucene.search;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Weight;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
@@ -98,7 +98,7 @@ public class SuperQuery extends AbstractWrapperQuery {
 	@SuppressWarnings("unused")
 	public static class SuperScorer extends Scorer {
 		
-		private static final Log LOG = LogFactory.getLog(SuperScorer.class);
+		private final static Logger LOG = LoggerFactory.getLogger(SuperScorer.class);
 		private Scorer scorer;
 		private float superDocScore = 1;
 		private BlurBitSet bitSet;

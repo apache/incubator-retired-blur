@@ -2,15 +2,15 @@ package com.nearinfinity.blur.utils;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZkUtils {
 	
-	private static final Log LOG = LogFactory.getLog(ZkUtils.class);
+	private static final Logger LOG = LoggerFactory.getLogger(ZkUtils.class);
 
 	public static void mkNodes(String path, ZooKeeper zk) throws IOException {
 		String[] split = path.split("/");
@@ -31,7 +31,7 @@ public class ZkUtils {
 					zk.create(pathToCheck, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 				}
 			} catch (Exception e) {
-				LOG.error(e);
+				LOG.error("error",e);
 			}
 		}
 	}

@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Directory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.lucene.store.URIDirectory;
 import com.nearinfinity.blur.utils.BlurConfiguration;
@@ -17,7 +17,7 @@ import com.nearinfinity.blur.utils.BlurConstants;
 public class DirectoryManagerImpl implements DirectoryManager, BlurConstants {
 	
 	private static final int DEFAULT_NUMBER_OF_SHARDS_TO_SERVE_PER_PASS = 1;
-	private static final Log LOG = LogFactory.getLog(DirectoryManagerImpl.class);
+	private final static Logger LOG = LoggerFactory.getLogger(DirectoryManagerImpl.class);
 	private BlurConfiguration configuration = new BlurConfiguration();
 	private volatile Map<String,Map<String, Directory>> directories = new TreeMap<String, Map<String, Directory>>();
 	private DirectoryManagerStore dao;
@@ -54,7 +54,7 @@ public class DirectoryManagerImpl implements DirectoryManager, BlurConstants {
 			}
 			newDirectories.put(table, newDirs);
 		}
-		LOG.info("New Directories [" + newDirectories + "]");
+		LOG.info("New Directories {}",newDirectories);
 		directories = newDirectories;
 	}
 

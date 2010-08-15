@@ -8,14 +8,14 @@ import java.util.UUID;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class BlurConfiguration implements BlurConstants {
-	private static final Log LOG = LogFactory.getLog(BlurConfiguration.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BlurConfiguration.class);
 	private static final String PROPERTY = "property";
 	private static final String BLUR_DEFAULT_XML = "/blur-default.xml";
 	private static final String VALUE = "value";
@@ -34,7 +34,7 @@ public class BlurConfiguration implements BlurConstants {
 		properties = new HashMap<String, String>();
 		populate(inputStream);
 	}
-	
+
 	private static Map<String, String> properties;
 
 	public String get(String name) {
@@ -56,8 +56,7 @@ public class BlurConfiguration implements BlurConstants {
 		}
 		return Integer.parseInt(value);
 	}
-	
-	
+
 	private static void populate(InputStream inputStream) {
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -75,7 +74,7 @@ public class BlurConfiguration implements BlurConstants {
 			Node node = nodeList.item(i);
 			populate(node);
 		}
-		
+
 	}
 
 	private static void populate(Node node) {
@@ -103,7 +102,8 @@ public class BlurConfiguration implements BlurConstants {
 	@SuppressWarnings("unchecked")
 	public <T> T getNewInstance(String name, Class<? extends T> clazz) {
 		String className = get(name);
-		LOG.info("Using property [" + name + "] trying to create class [" + className + "] for class type of [" + clazz + "]");
+		LOG.info("Using property {} trying to create class {} for class type of {}",
+				new Object[]{name,className,clazz.toString()});
 		try {
 			return (T) Class.forName(className).newInstance();
 		} catch (InstantiationException e) {

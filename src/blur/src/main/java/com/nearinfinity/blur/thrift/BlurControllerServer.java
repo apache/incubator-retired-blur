@@ -5,8 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -15,6 +13,8 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -27,7 +27,7 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class BlurControllerServer extends BlurAdminServer implements Watcher {
 	
-	private static Log LOG = LogFactory.getLog(BlurControllerServer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BlurControllerServer.class);
 	private Map<String,Blur.Client> clients = new TreeMap<String,Blur.Client>();
 	private int nodePort;
 

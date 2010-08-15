@@ -9,8 +9,6 @@ import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -22,6 +20,8 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Version;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.SuperParser;
@@ -40,7 +40,7 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
-	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
+	private static final Logger LOG = LoggerFactory.getLogger(BlurShardServer.class);
 	private static final long TEN_SECONDS = 10000;
 	private DirectoryManagerImpl directoryManager;
 	private IndexReaderManagerImpl indexManager;

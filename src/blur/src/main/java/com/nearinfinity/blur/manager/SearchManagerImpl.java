@@ -6,11 +6,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.utils.BlurConfiguration;
@@ -18,7 +18,7 @@ import com.nearinfinity.blur.utils.BlurConstants;
 
 public class SearchManagerImpl implements SearchManager, BlurConstants {
 
-	private static final Log LOG = LogFactory.getLog(SearchManagerImpl.class);
+	private final static Logger LOG = LoggerFactory.getLogger(SearchManagerImpl.class);
 	private IndexReaderManager indexManager;
 	private volatile Map<String,Map<String,Searcher>> searchers = new TreeMap<String, Map<String,Searcher>>();
 	private Similarity similarity;
@@ -56,7 +56,7 @@ public class SearchManagerImpl implements SearchManager, BlurConstants {
 			}
 			newSearchers.put(table, newSearcherMap);
 		}
-		LOG.info("New Searchers [" + newSearchers + "]");
+		LOG.info("New Searchers {}",newSearchers);
 		searchers = newSearchers;
 	}
 

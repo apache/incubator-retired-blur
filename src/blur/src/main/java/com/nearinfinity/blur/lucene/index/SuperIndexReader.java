@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.CorruptIndexException;
@@ -17,6 +15,8 @@ import org.apache.lucene.index.TermFreqVector;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.index.TermVectorMapper;
 import org.apache.lucene.store.Directory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
@@ -24,7 +24,8 @@ import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class SuperIndexReader extends IndexReader {
 	
-	private final static Log LOG = LogFactory.getLog(SuperIndexReader.class);
+	private final static Logger LOG = LoggerFactory.getLogger(SuperIndexReader.class);
+	
 	private static final Term PRIME_DOC_TERM = new Term(SuperDocument.PRIME_DOC,SuperDocument.PRIME_DOC_VALUE);
 	private IndexReader indexReader;
 	private Thread warmUpThread;

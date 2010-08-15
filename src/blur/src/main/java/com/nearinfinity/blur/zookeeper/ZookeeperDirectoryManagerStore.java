@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.manager.AbstractDirectoryManagerStore;
 import com.nearinfinity.blur.manager.DirectoryManagerStore;
@@ -25,7 +25,7 @@ import com.nearinfinity.blur.utils.ZkUtils;
 
 public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStore implements DirectoryManagerStore, BlurConstants {
 	
-	private static final Log LOG = LogFactory.getLog(ZookeeperDirectoryManagerStore.class);
+	private final static Logger LOG = LoggerFactory.getLogger(ZookeeperDirectoryManagerStore.class);
 	private static final ArrayList<ACL> ACL = Ids.OPEN_ACL_UNSAFE;
 	private static final String TABLE_LOCKS = "tableLocks";
 	private static final String TABLES = "tables";
@@ -56,7 +56,7 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 					return true;
 				}
 			} catch (Exception e) {
-				LOG.info("Cannot obtain lock for table [" + table + "] with shard [" + shardId + "]");
+				LOG.info("Cannot obtain lock for table {} with shard {}",table,shardId);
 			}
 			return false;
 		} catch (Exception e) {

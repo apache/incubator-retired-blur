@@ -10,14 +10,14 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.util.OpenBitSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.utils.bitset.compression.CompressedBitSet;
 import com.nearinfinity.blur.utils.bitset.compression.CompressedBitSetNoCompression;
@@ -27,7 +27,7 @@ public abstract class AbstractCachedQueryManager<T> {
 	public static final CompressedBitSet EMPTY = new CompressedBitSetNoCompression(new OpenBitSet());
 	
 	private static final int _10000 = 10000;
-	private final static Log LOG = LogFactory.getLog(AbstractCachedQueryManager.class);
+	private final static Logger LOG = LoggerFactory.getLogger(AbstractCachedQueryManager.class);
 	private static final String CACHED_QUERY_MANAGER = "CachedQueryManager-";
 	
 	private Thread cachedQueryManagerThread;

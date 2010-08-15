@@ -5,15 +5,15 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Directory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 
 public class IndexReaderManagerImpl implements IndexReaderManager {
 
-	private static final Log LOG = LogFactory.getLog(IndexReaderManagerImpl.class);
+	private final static Logger LOG = LoggerFactory.getLogger(IndexReaderManagerImpl.class);
 	private DirectoryManager directoryManager;
 	private volatile Map<String,Map<String, SuperIndexReader>> readers = new TreeMap<String, Map<String,SuperIndexReader>>();
 
@@ -40,12 +40,13 @@ public class IndexReaderManagerImpl implements IndexReaderManager {
 				try {
 					newReaders.put(entry.getKey(), openReader(table, entry.getKey(), entry.getValue()));
 				} catch (Exception e) {
-					LOG.error("Error open new index for reading using shard [" + entry.getKey() + "]",e);
+					LOG.error("Error open new index for reading using shard {}",entry.getKey());
+					LOG.error("Unknown", e);
 				}
 			}
 			newTableReaders.put(table, newReaders);
 		}
-		LOG.info("New Indexreaders [" + newTableReaders + "]");
+		LOG.info("New Indexreaders {}",newTableReaders);
 		readers = newTableReaders;
 	}
 

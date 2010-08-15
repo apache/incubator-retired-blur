@@ -7,21 +7,21 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.utils.ZkUtils;
 import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 
-	private static final Log LOG = LogFactory.getLog(ZookeeperIndexDeletionPolicy.class);
+	private final static Logger LOG = LoggerFactory.getLogger(ZookeeperIndexDeletionPolicy.class);
 	private String indexRefPath;
 	private ZooKeeper zk;
 
@@ -42,7 +42,7 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 		Collection<String> previouslyReferencedFiles = new TreeSet<String>();
 		OUTER: for (int i = size - 2; i >= 0; i--) {
 			IndexCommit indexCommit = commits.get(i);
-			LOG.info("Processing index commit generation [" + indexCommit.getGeneration() + "]");
+			LOG.info("Processing index commit generation {}", indexCommit.getGeneration());
 			Collection<String> fileNames = new TreeSet<String>(indexCommit.getFileNames());
 			//remove all filenames that were references in newer index commits,
 			//this way older index commits can be released without the fear of 
@@ -54,7 +54,7 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 					continue OUTER;
 				}
 			}
-			LOG.info("Index Commit [" + indexCommit.getGeneration() + "] no longer needed, releasing {" + fileNames + "}");
+			LOG.info("Index Commit {} no longer needed, releasing {}",indexCommit.getGeneration(),fileNames);
 			indexCommit.delete();
 		}
 	}
@@ -68,7 +68,6 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 		try {
 			List<String> files = new ArrayList<String>();
 			List<String> children = zk.getChildren(indexRefPath, false);
-//			System.out.println(children);
 			for (String child : children) {
 				String name = getName(child);
 				if (!files.contains(name)) {
@@ -91,7 +90,7 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 	public static String createRef(ZooKeeper zk, String indexRefPath, String name) {
 		try {
 			String path = zk.create(indexRefPath + "/" + name + ".", null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-			LOG.debug("Created reference path [" + path + "]");
+			LOG.debug("Created reference path {}",path);
 			return path;
 		} catch (KeeperException e) {
 			throw new RuntimeException(e);
@@ -102,7 +101,7 @@ public class ZookeeperIndexDeletionPolicy implements IndexDeletionPolicy {
 
 	public static void removeRef(ZooKeeper zk, String refPath) {
 		try {
-			LOG.debug("Removing reference path [" + refPath + "]");
+			LOG.debug("Removing reference path {}",refPath);
 			zk.delete(refPath, 0);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);

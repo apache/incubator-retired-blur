@@ -50,7 +50,7 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher {
 			}).merge(new HitsMerger());
 		} catch (Exception e) {
 			LOG.error("Unknown error",e);
-			throw new RuntimeException(e);
+			throw new BlurException(e.getMessage());
 		}
 	}
 
@@ -94,6 +94,7 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher {
 		try {
 			tr.open();
 		} catch (TTransportException e) {
+			LOG.error("Error opening client to host {}",hostname);
 			return null;
 		}
 		return client;

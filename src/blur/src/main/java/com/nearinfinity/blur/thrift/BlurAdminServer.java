@@ -97,7 +97,13 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	public BlurAdminServer() throws IOException {
 		zk = ZooKeeperFactory.getZooKeeper();
 		blurNodePath = configuration.get(BLUR_ZOOKEEPER_PATH) + "/" + NODES;
-		registerNode();
+		try {
+			registerNode();
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -153,21 +159,13 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
 	protected abstract NODE_TYPE getType();
 	
-	protected void registerNode() {
-		try {
-			InetAddress address = getMyAddress();
-			String hostName = address.getHostAddress();
-			NODE_TYPE type = getType();
-			ZkUtils.mkNodes(blurNodePath, zk);
-			ZkUtils.mkNodes(blurNodePath + "/" + type.name(), zk);
-			zk.create(blurNodePath + "/" + type.name() + "/" + hostName, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (KeeperException e) {
-			throw new RuntimeException(e);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
+	protected void registerNode() throws KeeperException, InterruptedException, IOException {
+		InetAddress address = getMyAddress();
+		String hostName = address.getHostAddress();
+		NODE_TYPE type = getType();
+		ZkUtils.mkNodes(blurNodePath, zk);
+		ZkUtils.mkNodes(blurNodePath + "/" + type.name(), zk);
+		zk.create(blurNodePath + "/" + type.name() + "/" + hostName, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 	}
 	
 	private InetAddress getMyAddress() throws UnknownHostException {

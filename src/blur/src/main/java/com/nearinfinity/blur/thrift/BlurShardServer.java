@@ -8,9 +8,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.queryParser.ParseException;
@@ -23,6 +23,7 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
@@ -34,6 +35,7 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
@@ -41,12 +43,12 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
 	private static final Logger LOG = LoggerFactory.getLogger(BlurShardServer.class);
-	private static final long TEN_SECONDS = 10000;
+	private static final long TIME_BETWEEN_UPDATES = 10000;
 	private DirectoryManagerImpl directoryManager;
 	private IndexReaderManagerImpl indexManager;
 	private SearchManagerImpl searchManager;
 	private Timer timer;
-	private Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+	private Map<String,Analyzer> analyzerCache = new ConcurrentHashMap<String, Analyzer>();
 	
 	public BlurShardServer() throws IOException {
 		super();
@@ -67,7 +69,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
 		Map<String, Searcher> searchers = searchManager.getSearchers(table);
 		try {
-			final Query q = parse(query,superQueryOn);
+			final Query q = parse(query,superQueryOn,getAnalyzer(table));
 			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>, Hits>() {
 				@Override
 				public Hits call(Entry<String, Searcher> entry) throws Exception {
@@ -76,10 +78,30 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			}).merge(new HitsMerger());
 		} catch (Exception e) {
 			LOG.error("Unknown error",e);
-			throw new RuntimeException(e);
+			throw new BlurException(e.getMessage());
 		}
 	}
 	
+	private Analyzer getAnalyzer(String table) throws BlurException, TException {
+		Analyzer analyzer = analyzerCache.get(table);
+		if (analyzer != null) {
+			return analyzer;
+		}
+		TableDescriptor descriptor = describe(table);
+		if (descriptor == null) {
+			throw new BlurException("Descriptor for table [" + table +
+					"] cannot be null");
+		}
+		try {
+			BlurAnalyzer blurAnalyzer = BlurAnalyzer.create(descriptor.analyzerDef);
+			analyzerCache.put(table, blurAnalyzer);
+			return blurAnalyzer;
+		} catch (Exception e) {
+			LOG.error("unknown error", e);
+			throw new BlurException(e.getMessage());
+		}
+	}
+
 	protected Hits performSearch(Query query, String shardId,Searcher searcher, int start, int fetch) throws IOException {
 		int count = (int) (start + fetch);
 		TopDocs topDocs = searcher.search(query, count == 0 ? 1 : count);
@@ -109,7 +131,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 		return doc.get(SuperDocument.ID);
 	}
 
-	private Query parse(String query, boolean superQueryOn) throws ParseException {
+	private Query parse(String query, boolean superQueryOn, Analyzer analyzer) throws ParseException {
 		return new SuperParser(Version.LUCENE_CURRENT, analyzer, superQueryOn).parse(query);
 	}
 	
@@ -126,7 +148,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			}
 		};
 		this.timer = new Timer("Update-Manager-Timer", true);
-		this.timer.schedule(task, TEN_SECONDS, TEN_SECONDS);
+		this.timer.schedule(task, TIME_BETWEEN_UPDATES, TIME_BETWEEN_UPDATES);
 	}
 	
 	private void update(UpdatableManager... managers) {
@@ -135,5 +157,4 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			manager.update();
 		}
 	}
-
 }

@@ -16,9 +16,21 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-core</artifactId>
 			<version>3.0.0-nic</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.incubator</groupId>
+			<artifactId>thrift</artifactId>
+			<version>0.3.0</version>
 		</dependency>
 
 		<dependency>
@@ -50,6 +62,13 @@
 			<artifactId>commons-logging</artifactId>
 			<version>1.1.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+			<version>1.5.5</version>
+		</dependency>
+
 	</dependencies>
 	<build>
 		<plugins>

@@ -26,19 +26,22 @@ import org.apache.thrift.protocol.*;
 public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._Fields>, java.io.Serializable, Cloneable {
   private static final TStruct STRUCT_DESC = new TStruct("TableDescriptor");
 
-  private static final TField ANALYZER_DEF_FIELD_DESC = new TField("analyzerDef", TType.STRING, (short)1);
-  private static final TField PARTITIONER_CLASS_FIELD_DESC = new TField("partitionerClass", TType.STRING, (short)2);
-  private static final TField SHARD_DIRECTORY_LOCATIONS_FIELD_DESC = new TField("shardDirectoryLocations", TType.MAP, (short)3);
+  private static final TField IS_ENABLED_FIELD_DESC = new TField("isEnabled", TType.BOOL, (short)1);
+  private static final TField ANALYZER_DEF_FIELD_DESC = new TField("analyzerDef", TType.STRING, (short)2);
+  private static final TField PARTITIONER_CLASS_FIELD_DESC = new TField("partitionerClass", TType.STRING, (short)3);
+  private static final TField SHARD_DIRECTORY_LOCATIONS_FIELD_DESC = new TField("shardDirectoryLocations", TType.MAP, (short)4);
 
+  public boolean isEnabled;
   public String analyzerDef;
   public String partitionerClass;
   public Map<String,String> shardDirectoryLocations;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    ANALYZER_DEF((short)1, "analyzerDef"),
-    PARTITIONER_CLASS((short)2, "partitionerClass"),
-    SHARD_DIRECTORY_LOCATIONS((short)3, "shardDirectoryLocations");
+    IS_ENABLED((short)1, "isEnabled"),
+    ANALYZER_DEF((short)2, "analyzerDef"),
+    PARTITIONER_CLASS((short)3, "partitionerClass"),
+    SHARD_DIRECTORY_LOCATIONS((short)4, "shardDirectoryLocations");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -53,11 +56,13 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // ANALYZER_DEF
+        case 1: // IS_ENABLED
+          return IS_ENABLED;
+        case 2: // ANALYZER_DEF
           return ANALYZER_DEF;
-        case 2: // PARTITIONER_CLASS
+        case 3: // PARTITIONER_CLASS
           return PARTITIONER_CLASS;
-        case 3: // SHARD_DIRECTORY_LOCATIONS
+        case 4: // SHARD_DIRECTORY_LOCATIONS
           return SHARD_DIRECTORY_LOCATIONS;
         default:
           return null;
@@ -99,10 +104,14 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   }
 
   // isset id assignments
+  private static final int __ISENABLED_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.IS_ENABLED, new FieldMetaData("isEnabled", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.ANALYZER_DEF, new FieldMetaData("analyzerDef", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.PARTITIONER_CLASS, new FieldMetaData("partitionerClass", TFieldRequirementType.DEFAULT, 
@@ -119,11 +128,14 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   }
 
   public TableDescriptor(
+    boolean isEnabled,
     String analyzerDef,
     String partitionerClass,
     Map<String,String> shardDirectoryLocations)
   {
     this();
+    this.isEnabled = isEnabled;
+    setIsEnabledIsSet(true);
     this.analyzerDef = analyzerDef;
     this.partitionerClass = partitionerClass;
     this.shardDirectoryLocations = shardDirectoryLocations;
@@ -133,6 +145,9 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
    * Performs a deep copy on <i>other</i>.
    */
   public TableDescriptor(TableDescriptor other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
+    this.isEnabled = other.isEnabled;
     if (other.isSetAnalyzerDef()) {
       this.analyzerDef = other.analyzerDef;
     }
@@ -163,6 +178,29 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   @Deprecated
   public TableDescriptor clone() {
     return new TableDescriptor(this);
+  }
+
+  public boolean isIsEnabled() {
+    return this.isEnabled;
+  }
+
+  public TableDescriptor setIsEnabled(boolean isEnabled) {
+    this.isEnabled = isEnabled;
+    setIsEnabledIsSet(true);
+    return this;
+  }
+
+  public void unsetIsEnabled() {
+    __isset_bit_vector.clear(__ISENABLED_ISSET_ID);
+  }
+
+  /** Returns true if field isEnabled is set (has been asigned a value) and false otherwise */
+  public boolean isSetIsEnabled() {
+    return __isset_bit_vector.get(__ISENABLED_ISSET_ID);
+  }
+
+  public void setIsEnabledIsSet(boolean value) {
+    __isset_bit_vector.set(__ISENABLED_ISSET_ID, value);
   }
 
   public String getAnalyzerDef() {
@@ -250,6 +288,14 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case IS_ENABLED:
+      if (value == null) {
+        unsetIsEnabled();
+      } else {
+        setIsEnabled((Boolean)value);
+      }
+      break;
+
     case ANALYZER_DEF:
       if (value == null) {
         unsetAnalyzerDef();
@@ -283,6 +329,9 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case IS_ENABLED:
+      return new Boolean(isIsEnabled());
+
     case ANALYZER_DEF:
       return getAnalyzerDef();
 
@@ -303,6 +352,8 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     switch (field) {
+    case IS_ENABLED:
+      return isSetIsEnabled();
     case ANALYZER_DEF:
       return isSetAnalyzerDef();
     case PARTITIONER_CLASS:
@@ -329,6 +380,15 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   public boolean equals(TableDescriptor that) {
     if (that == null)
       return false;
+
+    boolean this_present_isEnabled = true;
+    boolean that_present_isEnabled = true;
+    if (this_present_isEnabled || that_present_isEnabled) {
+      if (!(this_present_isEnabled && that_present_isEnabled))
+        return false;
+      if (this.isEnabled != that.isEnabled)
+        return false;
+    }
 
     boolean this_present_analyzerDef = true && this.isSetAnalyzerDef();
     boolean that_present_analyzerDef = true && that.isSetAnalyzerDef();
@@ -373,6 +433,15 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     int lastComparison = 0;
     TableDescriptor typedOther = (TableDescriptor)other;
 
+    lastComparison = Boolean.valueOf(isSetIsEnabled()).compareTo(typedOther.isSetIsEnabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsEnabled()) {      lastComparison = TBaseHelper.compareTo(this.isEnabled, typedOther.isEnabled);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetAnalyzerDef()).compareTo(typedOther.isSetAnalyzerDef());
     if (lastComparison != 0) {
       return lastComparison;
@@ -413,21 +482,29 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
         break;
       }
       switch (field.id) {
-        case 1: // ANALYZER_DEF
+        case 1: // IS_ENABLED
+          if (field.type == TType.BOOL) {
+            this.isEnabled = iprot.readBool();
+            setIsEnabledIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 2: // ANALYZER_DEF
           if (field.type == TType.STRING) {
             this.analyzerDef = iprot.readString();
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // PARTITIONER_CLASS
+        case 3: // PARTITIONER_CLASS
           if (field.type == TType.STRING) {
             this.partitionerClass = iprot.readString();
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // SHARD_DIRECTORY_LOCATIONS
+        case 4: // SHARD_DIRECTORY_LOCATIONS
           if (field.type == TType.MAP) {
             {
               TMap _map9 = iprot.readMapBegin();
@@ -461,6 +538,9 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
+    oprot.writeFieldBegin(IS_ENABLED_FIELD_DESC);
+    oprot.writeBool(this.isEnabled);
+    oprot.writeFieldEnd();
     if (this.analyzerDef != null) {
       oprot.writeFieldBegin(ANALYZER_DEF_FIELD_DESC);
       oprot.writeString(this.analyzerDef);
@@ -493,6 +573,10 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     StringBuilder sb = new StringBuilder("TableDescriptor(");
     boolean first = true;
 
+    sb.append("isEnabled:");
+    sb.append(this.isEnabled);
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("analyzerDef:");
     if (this.analyzerDef == null) {
       sb.append("null");

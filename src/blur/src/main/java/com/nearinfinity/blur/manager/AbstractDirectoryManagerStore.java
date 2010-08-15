@@ -17,21 +17,29 @@ public abstract class AbstractDirectoryManagerStore implements DirectoryManagerS
 			return new HashMap<String, Set<String>>();
 		}
 		for (String table : tables) {
-			Set<String> shards = currentlyServing.get(table);
-			if (shards == null) {
-				shards = new TreeSet<String>();
-				currentlyServing.put(table, shards);
+			Set<String> currentlyServingShards = currentlyServing.get(table);
+			if (currentlyServingShards == null) {
+				currentlyServingShards = new TreeSet<String>();
+				currentlyServing.put(table, currentlyServingShards);
 			}
 			Set<String> shardIds = getShardIds(table);
 			for (String shardId : shardIds) {
 				if (!isThisNodeServing(table,shardId)) {
 					if (obtainLock(table,shardId)) {
-						shards.add(shardId);
+						currentlyServingShards.add(shardId);
 						count++;
 						if (count >= maxToServePerCall) {
 							return currentlyServing;
 						}
 					}
+				}
+			}
+			
+			//if table is disabled, shutdown the shard
+			for (String shardId : new TreeSet<String>(currentlyServingShards)) {
+				if (!shardIds.contains(shardId)) {
+					releaseLock(table,shardId);
+					currentlyServingShards.remove(shardId);
 				}
 			}
 		}

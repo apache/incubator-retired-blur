@@ -27,8 +27,6 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 	
 	private final static Logger LOG = LoggerFactory.getLogger(ZookeeperDirectoryManagerStore.class);
 	private static final ArrayList<ACL> ACL = Ids.OPEN_ACL_UNSAFE;
-	private static final String TABLE_LOCKS = "tableLocks";
-	private static final String TABLES = "tables";
 	private static final String UTF_8 = "UTF-8";
 	private BlurConfiguration configuration = new BlurConfiguration();
 	private String uuid = configuration.getNodeUuid();
@@ -39,7 +37,7 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 	public ZookeeperDirectoryManagerStore() {
 		try {
 			zk = ZooKeeperFactory.getZooKeeper();
-			ZkUtils.mkNodes(getPath(blurZookeeperPath,TABLE_LOCKS), zk);
+			ZkUtils.mkNodes(ZkUtils.getPath(blurZookeeperPath,BLUR_TABLE_LOCKS_NODE), zk);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -48,7 +46,7 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 	@Override
 	public boolean obtainLock(String table, String shardId) {
 		try {
-			ZkUtils.mkNodes(getPath(blurZookeeperPath,TABLE_LOCKS,table), zk);
+			ZkUtils.mkNodes(ZkUtils.getPath(blurZookeeperPath,BLUR_TABLE_LOCKS_NODE,table), zk);
 			String path = getShardIdLockPath(table, shardId);
 			try {
 				if (zk.exists(path, false) == null) {
@@ -64,6 +62,23 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 		}
 	}
 
+	@Override
+	public void releaseLock(String table, String shardId) {
+		String path = getShardIdLockPath(table, shardId);
+		try {
+			Stat stat = zk.exists(path, false);
+			if (stat == null) {
+				//lock already removed
+				return;
+			}
+			zk.delete(path, stat.getVersion());
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		
+	}
 	
 	private byte[] toBytes(String str) {
 		try {
@@ -74,7 +89,7 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 	}
 
 	private String getShardIdLockPath(String table, String shardId) {
-		return getPath(blurZookeeperPath,TABLE_LOCKS,table,shardId);
+		return ZkUtils.getPath(blurZookeeperPath,BLUR_TABLE_LOCKS_NODE,table,shardId);
 	}
 
 	@Override
@@ -129,7 +144,7 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 	@Override
 	public Set<String> getTables() {
 		try {
-			String path = getPath(blurZookeeperPath,TABLES);
+			String path = ZkUtils.getPath(blurZookeeperPath,BLUR_TABLES_NODE);
 			Stat stat = zk.exists(path, false);
 			if (stat == null) {
 				return null;
@@ -184,23 +199,10 @@ public class ZookeeperDirectoryManagerStore extends AbstractDirectoryManagerStor
 	}
 	
 	private String getTablePath(String table) {
-		return getPath(blurZookeeperPath,TABLES,table);
+		return ZkUtils.getPath(blurZookeeperPath,BLUR_TABLES_NODE,table);
 	}
 
 	private String getShardIdPath(String table, String shardId) {
-		return getPath(blurZookeeperPath,TABLES,table,shardId);
+		return ZkUtils.getPath(blurZookeeperPath,BLUR_TABLES_NODE,table,shardId);
 	}
-
-	private static String getPath(String... parts) {
-		if (parts == null || parts.length == 0) {
-			return null;
-		}
-		StringBuilder builder = new StringBuilder(parts[0]);
-		for (int i = 1; i < parts.length; i++) {
-			builder.append('/');
-			builder.append(parts[i]);
-		}
-		return builder.toString();
-	}
-
 }

@@ -70,4 +70,10 @@ public class LocalDirectoryManagerStore implements DirectoryManagerStore {
 		return false;
 	}
 
+	@Override
+	public void releaseLock(String table, String shardId) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

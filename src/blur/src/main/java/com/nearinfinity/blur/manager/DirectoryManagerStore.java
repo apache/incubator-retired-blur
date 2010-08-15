@@ -18,5 +18,6 @@ public interface DirectoryManagerStore {
 	void removeTable(String table);
 	boolean isThisNodeServing(String table, String shardId);
 	boolean obtainLock(String table, String shardId);
+	void releaseLock(String table, String shardId);
 
 }

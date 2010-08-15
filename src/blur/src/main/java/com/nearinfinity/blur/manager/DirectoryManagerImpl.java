@@ -72,7 +72,9 @@ public class DirectoryManagerImpl implements DirectoryManager, BlurConstants {
 	}
 
 	private Map<String,Set<String>> getShardIdsToServe() {
-		return dao.getShardIdsToServe(configuration.getNodeUuid(),configuration.getInt(BLUR_SHARDS_TOSERVE_PER_PASS, DEFAULT_NUMBER_OF_SHARDS_TO_SERVE_PER_PASS));
+		return dao.getShardIdsToServe(configuration.getNodeUuid(),
+				configuration.getInt(BLUR_SHARDS_TOSERVE_PER_PASS,
+						DEFAULT_NUMBER_OF_SHARDS_TO_SERVE_PER_PASS));
 	}
 
 }

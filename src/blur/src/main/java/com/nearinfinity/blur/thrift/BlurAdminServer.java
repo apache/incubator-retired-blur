@@ -58,6 +58,9 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 					hits = mergeHits(hits,future.get());
 				}
 			}
+			if (hits == null) {
+				return null;
+			}
 			sortHits(hits.hits);
 			return hits;
 		}

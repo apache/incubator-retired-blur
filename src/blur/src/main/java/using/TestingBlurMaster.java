@@ -10,12 +10,12 @@ public class TestingBlurMaster {
 
 	public static void main(String[] args) throws Exception {
 		BlurConfiguration configuration = new BlurConfiguration();
-		configuration.setInt("blur.shard.server.port",8081);
+		configuration.setInt("blur.shard.server.port",40020);
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					new ThriftServer(8080, new BlurControllerServer()).start();
+					new ThriftServer(40010, new BlurControllerServer()).start();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
@@ -26,7 +26,7 @@ public class TestingBlurMaster {
 			@Override
 			public void run() {
 				try {
-					new ThriftServer(8081, new BlurShardServer()).start();
+					new ThriftServer(40020, new BlurShardServer()).start();
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}

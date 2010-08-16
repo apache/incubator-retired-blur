@@ -99,7 +99,14 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 		if (o == null) {
 			throw new NullPointerException();
 		}
-		return getAnalyzerByClassName(o.toString());
+		String cn;
+		if (o instanceof JsonNode) {
+			JsonNode jsonNode = (JsonNode) o;
+			cn = jsonNode.getTextValue();
+		} else {
+			cn = o.toString();
+		}
+		return getAnalyzerByClassName(cn);
 	}
 
 	private static Analyzer getAnalyzerByClassName(String className) throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {

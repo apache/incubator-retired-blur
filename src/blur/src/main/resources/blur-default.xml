@@ -3,13 +3,13 @@
 <configuration>
 
 	<property>
-		<name>blur.master.port</name>
-		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>
+		<name>blur.server.controller.port</name>
+		<value>40010</value>
 	</property>
 
 	<property>
-		<name>blur.node.port</name>
-		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>
+		<name>blur.server.shard.port</name>
+		<value>40020</value>
 	</property>
 
 	<property>

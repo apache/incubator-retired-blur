@@ -16,7 +16,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Client;
 public class RunClient {
 	
 	public static void main(String... args) throws BlurException, TException {
-		TTransport tr = new TSocket("localhost", 8081);
+		TTransport tr = new TSocket("localhost", 40010);
 		TProtocol proto = new TBinaryProtocol(tr);
 		Client client = new Client(proto);
 		tr.open();

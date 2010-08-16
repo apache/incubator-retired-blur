@@ -336,7 +336,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
 	private void checkIfTableExists(TableDescriptor descriptor, String table) throws BlurException {
 		if (descriptor == null) {
-			throw new BlurException("table " + table + " does not exist");
+			throw new BlurException("Table " + table + " does not exist");
 		}		
 	}
 }

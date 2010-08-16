@@ -14,9 +14,10 @@ import org.slf4j.LoggerFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
+import com.nearinfinity.blur.utils.BlurConstants;
 
-public class ThriftServer {
-	
+public class ThriftServer implements BlurConstants {
+
 	private static final Logger LOG = LoggerFactory.getLogger(ThriftServer.class);
 	
 	private Iface iface;
@@ -35,12 +36,12 @@ public class ThriftServer {
 			System.err.println("Server type unknown [shard,controller]");
 			System.exit(1);
 		}
-		if (args[0] == "shard") {
+		if (args[0].equals(SHARD)) {
 			iface = new BlurShardServer();
-			port = configuration.getInt("blur.server.shard.port",-1);
-		} else if (args[0] == "controller") {
+			port = configuration.getInt(BLUR_SERVER_SHARD_PORT,-1);
+		} else if (args[0].equals(CONTROLLER)) {
 			iface = new BlurControllerServer();
-			port = configuration.getInt("blur.server.controller.port",-1);
+			port = configuration.getInt(BLUR_SERVER_CONTROLLER_PORT,-1);
 		} else {
 			System.err.println("Server type unknown [shard,controller]");
 			System.exit(1);
@@ -55,7 +56,7 @@ public class ThriftServer {
 			Blur.Processor processor = new Blur.Processor(iface);
 			Factory protFactory = new TBinaryProtocol.Factory(true, true);
 			TServer server = new TThreadPoolServer(processor, serverTransport, protFactory);
-			LOG.info("Starting server on port [" + port + "]");
+			LOG.info("Starting server on port {}",port);
 			server.serve();
 		} catch (TTransportException e) {
 			LOG.error("Unknown error",e);

@@ -26,19 +26,22 @@ import org.apache.thrift.protocol.*;
 public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._Fields>, java.io.Serializable, Cloneable {
   private static final TStruct STRUCT_DESC = new TStruct("TableDescriptor");
 
-  private static final TField ANALYZER_DEF_FIELD_DESC = new TField("analyzerDef", TType.STRING, (short)1);
-  private static final TField PARTITIONER_CLASS_FIELD_DESC = new TField("partitionerClass", TType.STRING, (short)2);
-  private static final TField SHARD_DIRECTORY_LOCATION_FIELD_DESC = new TField("shardDirectoryLocation", TType.MAP, (short)3);
+  private static final TField IS_ENABLED_FIELD_DESC = new TField("isEnabled", TType.BOOL, (short)1);
+  private static final TField ANALYZER_DEF_FIELD_DESC = new TField("analyzerDef", TType.STRING, (short)2);
+  private static final TField PARTITIONER_CLASS_FIELD_DESC = new TField("partitionerClass", TType.STRING, (short)3);
+  private static final TField SHARD_DIRECTORY_LOCATIONS_FIELD_DESC = new TField("shardDirectoryLocations", TType.MAP, (short)4);
 
+  public boolean isEnabled;
   public String analyzerDef;
   public String partitionerClass;
-  public Map<String,String> shardDirectoryLocation;
+  public Map<String,String> shardDirectoryLocations;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    ANALYZER_DEF((short)1, "analyzerDef"),
-    PARTITIONER_CLASS((short)2, "partitionerClass"),
-    SHARD_DIRECTORY_LOCATION((short)3, "shardDirectoryLocation");
+    IS_ENABLED((short)1, "isEnabled"),
+    ANALYZER_DEF((short)2, "analyzerDef"),
+    PARTITIONER_CLASS((short)3, "partitionerClass"),
+    SHARD_DIRECTORY_LOCATIONS((short)4, "shardDirectoryLocations");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -53,12 +56,14 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // ANALYZER_DEF
+        case 1: // IS_ENABLED
+          return IS_ENABLED;
+        case 2: // ANALYZER_DEF
           return ANALYZER_DEF;
-        case 2: // PARTITIONER_CLASS
+        case 3: // PARTITIONER_CLASS
           return PARTITIONER_CLASS;
-        case 3: // SHARD_DIRECTORY_LOCATION
-          return SHARD_DIRECTORY_LOCATION;
+        case 4: // SHARD_DIRECTORY_LOCATIONS
+          return SHARD_DIRECTORY_LOCATIONS;
         default:
           return null;
       }
@@ -99,15 +104,19 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   }
 
   // isset id assignments
+  private static final int __ISENABLED_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.IS_ENABLED, new FieldMetaData("isEnabled", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.ANALYZER_DEF, new FieldMetaData("analyzerDef", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.PARTITIONER_CLASS, new FieldMetaData("partitionerClass", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.SHARD_DIRECTORY_LOCATION, new FieldMetaData("shardDirectoryLocation", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.SHARD_DIRECTORY_LOCATIONS, new FieldMetaData("shardDirectoryLocations", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new FieldValueMetaData(TType.STRING))));
@@ -119,40 +128,46 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   }
 
   public TableDescriptor(
+    boolean isEnabled,
     String analyzerDef,
     String partitionerClass,
-    Map<String,String> shardDirectoryLocation)
+    Map<String,String> shardDirectoryLocations)
   {
     this();
+    this.isEnabled = isEnabled;
+    setIsEnabledIsSet(true);
     this.analyzerDef = analyzerDef;
     this.partitionerClass = partitionerClass;
-    this.shardDirectoryLocation = shardDirectoryLocation;
+    this.shardDirectoryLocations = shardDirectoryLocations;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public TableDescriptor(TableDescriptor other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
+    this.isEnabled = other.isEnabled;
     if (other.isSetAnalyzerDef()) {
       this.analyzerDef = other.analyzerDef;
     }
     if (other.isSetPartitionerClass()) {
       this.partitionerClass = other.partitionerClass;
     }
-    if (other.isSetShardDirectoryLocation()) {
-      Map<String,String> __this__shardDirectoryLocation = new HashMap<String,String>();
-      for (Map.Entry<String, String> other_element : other.shardDirectoryLocation.entrySet()) {
+    if (other.isSetShardDirectoryLocations()) {
+      Map<String,String> __this__shardDirectoryLocations = new HashMap<String,String>();
+      for (Map.Entry<String, String> other_element : other.shardDirectoryLocations.entrySet()) {
 
         String other_element_key = other_element.getKey();
         String other_element_value = other_element.getValue();
 
-        String __this__shardDirectoryLocation_copy_key = other_element_key;
+        String __this__shardDirectoryLocations_copy_key = other_element_key;
 
-        String __this__shardDirectoryLocation_copy_value = other_element_value;
+        String __this__shardDirectoryLocations_copy_value = other_element_value;
 
-        __this__shardDirectoryLocation.put(__this__shardDirectoryLocation_copy_key, __this__shardDirectoryLocation_copy_value);
+        __this__shardDirectoryLocations.put(__this__shardDirectoryLocations_copy_key, __this__shardDirectoryLocations_copy_value);
       }
-      this.shardDirectoryLocation = __this__shardDirectoryLocation;
+      this.shardDirectoryLocations = __this__shardDirectoryLocations;
     }
   }
 
@@ -163,6 +178,29 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   @Deprecated
   public TableDescriptor clone() {
     return new TableDescriptor(this);
+  }
+
+  public boolean isIsEnabled() {
+    return this.isEnabled;
+  }
+
+  public TableDescriptor setIsEnabled(boolean isEnabled) {
+    this.isEnabled = isEnabled;
+    setIsEnabledIsSet(true);
+    return this;
+  }
+
+  public void unsetIsEnabled() {
+    __isset_bit_vector.clear(__ISENABLED_ISSET_ID);
+  }
+
+  /** Returns true if field isEnabled is set (has been asigned a value) and false otherwise */
+  public boolean isSetIsEnabled() {
+    return __isset_bit_vector.get(__ISENABLED_ISSET_ID);
+  }
+
+  public void setIsEnabledIsSet(boolean value) {
+    __isset_bit_vector.set(__ISENABLED_ISSET_ID, value);
   }
 
   public String getAnalyzerDef() {
@@ -213,43 +251,51 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     }
   }
 
-  public int getShardDirectoryLocationSize() {
-    return (this.shardDirectoryLocation == null) ? 0 : this.shardDirectoryLocation.size();
+  public int getShardDirectoryLocationsSize() {
+    return (this.shardDirectoryLocations == null) ? 0 : this.shardDirectoryLocations.size();
   }
 
-  public void putToShardDirectoryLocation(String key, String val) {
-    if (this.shardDirectoryLocation == null) {
-      this.shardDirectoryLocation = new HashMap<String,String>();
+  public void putToShardDirectoryLocations(String key, String val) {
+    if (this.shardDirectoryLocations == null) {
+      this.shardDirectoryLocations = new HashMap<String,String>();
     }
-    this.shardDirectoryLocation.put(key, val);
+    this.shardDirectoryLocations.put(key, val);
   }
 
-  public Map<String,String> getShardDirectoryLocation() {
-    return this.shardDirectoryLocation;
+  public Map<String,String> getShardDirectoryLocations() {
+    return this.shardDirectoryLocations;
   }
 
-  public TableDescriptor setShardDirectoryLocation(Map<String,String> shardDirectoryLocation) {
-    this.shardDirectoryLocation = shardDirectoryLocation;
+  public TableDescriptor setShardDirectoryLocations(Map<String,String> shardDirectoryLocations) {
+    this.shardDirectoryLocations = shardDirectoryLocations;
     return this;
   }
 
-  public void unsetShardDirectoryLocation() {
-    this.shardDirectoryLocation = null;
+  public void unsetShardDirectoryLocations() {
+    this.shardDirectoryLocations = null;
   }
 
-  /** Returns true if field shardDirectoryLocation is set (has been asigned a value) and false otherwise */
-  public boolean isSetShardDirectoryLocation() {
-    return this.shardDirectoryLocation != null;
+  /** Returns true if field shardDirectoryLocations is set (has been asigned a value) and false otherwise */
+  public boolean isSetShardDirectoryLocations() {
+    return this.shardDirectoryLocations != null;
   }
 
-  public void setShardDirectoryLocationIsSet(boolean value) {
+  public void setShardDirectoryLocationsIsSet(boolean value) {
     if (!value) {
-      this.shardDirectoryLocation = null;
+      this.shardDirectoryLocations = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case IS_ENABLED:
+      if (value == null) {
+        unsetIsEnabled();
+      } else {
+        setIsEnabled((Boolean)value);
+      }
+      break;
+
     case ANALYZER_DEF:
       if (value == null) {
         unsetAnalyzerDef();
@@ -266,11 +312,11 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       }
       break;
 
-    case SHARD_DIRECTORY_LOCATION:
+    case SHARD_DIRECTORY_LOCATIONS:
       if (value == null) {
-        unsetShardDirectoryLocation();
+        unsetShardDirectoryLocations();
       } else {
-        setShardDirectoryLocation((Map<String,String>)value);
+        setShardDirectoryLocations((Map<String,String>)value);
       }
       break;
 
@@ -283,14 +329,17 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case IS_ENABLED:
+      return new Boolean(isIsEnabled());
+
     case ANALYZER_DEF:
       return getAnalyzerDef();
 
     case PARTITIONER_CLASS:
       return getPartitionerClass();
 
-    case SHARD_DIRECTORY_LOCATION:
-      return getShardDirectoryLocation();
+    case SHARD_DIRECTORY_LOCATIONS:
+      return getShardDirectoryLocations();
 
     }
     throw new IllegalStateException();
@@ -303,12 +352,14 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     switch (field) {
+    case IS_ENABLED:
+      return isSetIsEnabled();
     case ANALYZER_DEF:
       return isSetAnalyzerDef();
     case PARTITIONER_CLASS:
       return isSetPartitionerClass();
-    case SHARD_DIRECTORY_LOCATION:
-      return isSetShardDirectoryLocation();
+    case SHARD_DIRECTORY_LOCATIONS:
+      return isSetShardDirectoryLocations();
     }
     throw new IllegalStateException();
   }
@@ -330,6 +381,15 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     if (that == null)
       return false;
 
+    boolean this_present_isEnabled = true;
+    boolean that_present_isEnabled = true;
+    if (this_present_isEnabled || that_present_isEnabled) {
+      if (!(this_present_isEnabled && that_present_isEnabled))
+        return false;
+      if (this.isEnabled != that.isEnabled)
+        return false;
+    }
+
     boolean this_present_analyzerDef = true && this.isSetAnalyzerDef();
     boolean that_present_analyzerDef = true && that.isSetAnalyzerDef();
     if (this_present_analyzerDef || that_present_analyzerDef) {
@@ -348,12 +408,12 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
         return false;
     }
 
-    boolean this_present_shardDirectoryLocation = true && this.isSetShardDirectoryLocation();
-    boolean that_present_shardDirectoryLocation = true && that.isSetShardDirectoryLocation();
-    if (this_present_shardDirectoryLocation || that_present_shardDirectoryLocation) {
-      if (!(this_present_shardDirectoryLocation && that_present_shardDirectoryLocation))
+    boolean this_present_shardDirectoryLocations = true && this.isSetShardDirectoryLocations();
+    boolean that_present_shardDirectoryLocations = true && that.isSetShardDirectoryLocations();
+    if (this_present_shardDirectoryLocations || that_present_shardDirectoryLocations) {
+      if (!(this_present_shardDirectoryLocations && that_present_shardDirectoryLocations))
         return false;
-      if (!this.shardDirectoryLocation.equals(that.shardDirectoryLocation))
+      if (!this.shardDirectoryLocations.equals(that.shardDirectoryLocations))
         return false;
     }
 
@@ -373,6 +433,15 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     int lastComparison = 0;
     TableDescriptor typedOther = (TableDescriptor)other;
 
+    lastComparison = Boolean.valueOf(isSetIsEnabled()).compareTo(typedOther.isSetIsEnabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetIsEnabled()) {      lastComparison = TBaseHelper.compareTo(this.isEnabled, typedOther.isEnabled);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetAnalyzerDef()).compareTo(typedOther.isSetAnalyzerDef());
     if (lastComparison != 0) {
       return lastComparison;
@@ -391,11 +460,11 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetShardDirectoryLocation()).compareTo(typedOther.isSetShardDirectoryLocation());
+    lastComparison = Boolean.valueOf(isSetShardDirectoryLocations()).compareTo(typedOther.isSetShardDirectoryLocations());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetShardDirectoryLocation()) {      lastComparison = TBaseHelper.compareTo(this.shardDirectoryLocation, typedOther.shardDirectoryLocation);
+    if (isSetShardDirectoryLocations()) {      lastComparison = TBaseHelper.compareTo(this.shardDirectoryLocations, typedOther.shardDirectoryLocations);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -413,32 +482,40 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
         break;
       }
       switch (field.id) {
-        case 1: // ANALYZER_DEF
+        case 1: // IS_ENABLED
+          if (field.type == TType.BOOL) {
+            this.isEnabled = iprot.readBool();
+            setIsEnabledIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 2: // ANALYZER_DEF
           if (field.type == TType.STRING) {
             this.analyzerDef = iprot.readString();
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // PARTITIONER_CLASS
+        case 3: // PARTITIONER_CLASS
           if (field.type == TType.STRING) {
             this.partitionerClass = iprot.readString();
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // SHARD_DIRECTORY_LOCATION
+        case 4: // SHARD_DIRECTORY_LOCATIONS
           if (field.type == TType.MAP) {
             {
               TMap _map9 = iprot.readMapBegin();
-              this.shardDirectoryLocation = new HashMap<String,String>(2*_map9.size);
+              this.shardDirectoryLocations = new HashMap<String,String>(2*_map9.size);
               for (int _i10 = 0; _i10 < _map9.size; ++_i10)
               {
                 String _key11;
                 String _val12;
                 _key11 = iprot.readString();
                 _val12 = iprot.readString();
-                this.shardDirectoryLocation.put(_key11, _val12);
+                this.shardDirectoryLocations.put(_key11, _val12);
               }
               iprot.readMapEnd();
             }
@@ -461,6 +538,9 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
+    oprot.writeFieldBegin(IS_ENABLED_FIELD_DESC);
+    oprot.writeBool(this.isEnabled);
+    oprot.writeFieldEnd();
     if (this.analyzerDef != null) {
       oprot.writeFieldBegin(ANALYZER_DEF_FIELD_DESC);
       oprot.writeString(this.analyzerDef);
@@ -471,11 +551,11 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       oprot.writeString(this.partitionerClass);
       oprot.writeFieldEnd();
     }
-    if (this.shardDirectoryLocation != null) {
-      oprot.writeFieldBegin(SHARD_DIRECTORY_LOCATION_FIELD_DESC);
+    if (this.shardDirectoryLocations != null) {
+      oprot.writeFieldBegin(SHARD_DIRECTORY_LOCATIONS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.shardDirectoryLocation.size()));
-        for (Map.Entry<String, String> _iter13 : this.shardDirectoryLocation.entrySet())
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.shardDirectoryLocations.size()));
+        for (Map.Entry<String, String> _iter13 : this.shardDirectoryLocations.entrySet())
         {
           oprot.writeString(_iter13.getKey());
           oprot.writeString(_iter13.getValue());
@@ -493,6 +573,10 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     StringBuilder sb = new StringBuilder("TableDescriptor(");
     boolean first = true;
 
+    sb.append("isEnabled:");
+    sb.append(this.isEnabled);
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("analyzerDef:");
     if (this.analyzerDef == null) {
       sb.append("null");
@@ -509,11 +593,11 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("shardDirectoryLocation:");
-    if (this.shardDirectoryLocation == null) {
+    sb.append("shardDirectoryLocations:");
+    if (this.shardDirectoryLocations == null) {
       sb.append("null");
     } else {
-      sb.append(this.shardDirectoryLocation);
+      sb.append(this.shardDirectoryLocations);
     }
     first = false;
     sb.append(")");

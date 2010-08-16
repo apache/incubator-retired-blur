@@ -3,10 +3,20 @@
 <configuration>
 
 	<property>
-		<name>blur.data.storage.store.class</name>
-		<value>com.nearinfinity.blur.data.EchoDataStorage</value>
+		<name>blur.master.port</name>
+		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>
 	</property>
-	
+
+	<property>
+		<name>blur.node.port</name>
+		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>
+	</property>
+
+	<property>
+		<name>blur.directory.manager.store.class</name>
+		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>
+	</property>
+
 	<property>
 		<name>blur.directory.manager.store.class</name>
 		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>

@@ -21,11 +21,12 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ZkUtils;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class BlurControllerServer extends BlurAdminServer implements Watcher {
+public class BlurControllerServer extends BlurAdminServer implements Watcher,BlurConstants {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(BlurControllerServer.class);
 	private Map<String,Blur.Client> clients = new TreeMap<String,Blur.Client>();
@@ -33,7 +34,7 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher {
 
 	public BlurControllerServer() throws IOException {
 		super();
-		nodePort = configuration.getInt("blur.shard.server.port", -1);
+		nodePort = configuration.getInt(BLUR_SERVER_SHARD_PORT, -1);
 		createBlurClients();
 	}
 

@@ -29,6 +29,8 @@ public class Blur {
 
     public List<String> tableList() throws BlurException, TException;
 
+    public TableDescriptor describe(String table) throws BlurException, TException;
+
     public void enable(String table) throws BlurException, TException;
 
     public void disable(String table) throws BlurException, TException;
@@ -37,11 +39,7 @@ public class Blur {
 
     public void drop(String table) throws BlurException, TException;
 
-    public TableDescriptor describe(String table) throws BlurException, TException;
-
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, long start, int fetch) throws BlurException, TException;
-
-    public long countSearch(String table, String query, boolean superQueryOn, long minimum) throws BlurException, TException;
+    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException;
 
     public List<String> getDynamicTerms(String table) throws BlurException, TException;
 
@@ -126,6 +124,45 @@ public class Blur {
         throw result.ex;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "tableList failed: unknown result");
+    }
+
+    public TableDescriptor describe(String table) throws BlurException, TException
+    {
+      send_describe(table);
+      return recv_describe();
+    }
+
+    public void send_describe(String table) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("describe", TMessageType.CALL, ++seqid_));
+      describe_args args = new describe_args();
+      args.setTable(table);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public TableDescriptor recv_describe() throws BlurException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "describe failed: out of sequence response");
+      }
+      describe_result result = new describe_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "describe failed: unknown result");
     }
 
     public void enable(String table) throws BlurException, TException
@@ -273,52 +310,13 @@ public class Blur {
       return;
     }
 
-    public TableDescriptor describe(String table) throws BlurException, TException
+    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException
     {
-      send_describe(table);
-      return recv_describe();
-    }
-
-    public void send_describe(String table) throws TException
-    {
-      oprot_.writeMessageBegin(new TMessage("describe", TMessageType.CALL, ++seqid_));
-      describe_args args = new describe_args();
-      args.setTable(table);
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
-    }
-
-    public TableDescriptor recv_describe() throws BlurException, TException
-    {
-      TMessage msg = iprot_.readMessageBegin();
-      if (msg.type == TMessageType.EXCEPTION) {
-        TApplicationException x = TApplicationException.read(iprot_);
-        iprot_.readMessageEnd();
-        throw x;
-      }
-      if (msg.seqid != seqid_) {
-        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "describe failed: out of sequence response");
-      }
-      describe_result result = new describe_result();
-      result.read(iprot_);
-      iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
-      if (result.ex != null) {
-        throw result.ex;
-      }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "describe failed: unknown result");
-    }
-
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, long start, int fetch) throws BlurException, TException
-    {
-      send_search(table, query, superQueryOn, type, start, fetch);
+      send_search(table, query, superQueryOn, type, filter, start, fetch, minimumNumberOfHits, maxQueryTime);
       return recv_search();
     }
 
-    public void send_search(String table, String query, boolean superQueryOn, ScoreType type, long start, int fetch) throws TException
+    public void send_search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("search", TMessageType.CALL, ++seqid_));
       search_args args = new search_args();
@@ -326,8 +324,11 @@ public class Blur {
       args.setQuery(query);
       args.setSuperQueryOn(superQueryOn);
       args.setType(type);
+      args.setFilter(filter);
       args.setStart(start);
       args.setFetch(fetch);
+      args.setMinimumNumberOfHits(minimumNumberOfHits);
+      args.setMaxQueryTime(maxQueryTime);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -354,48 +355,6 @@ public class Blur {
         throw result.ex;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
-    }
-
-    public long countSearch(String table, String query, boolean superQueryOn, long minimum) throws BlurException, TException
-    {
-      send_countSearch(table, query, superQueryOn, minimum);
-      return recv_countSearch();
-    }
-
-    public void send_countSearch(String table, String query, boolean superQueryOn, long minimum) throws TException
-    {
-      oprot_.writeMessageBegin(new TMessage("countSearch", TMessageType.CALL, ++seqid_));
-      countSearch_args args = new countSearch_args();
-      args.setTable(table);
-      args.setQuery(query);
-      args.setSuperQueryOn(superQueryOn);
-      args.setMinimum(minimum);
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
-    }
-
-    public long recv_countSearch() throws BlurException, TException
-    {
-      TMessage msg = iprot_.readMessageBegin();
-      if (msg.type == TMessageType.EXCEPTION) {
-        TApplicationException x = TApplicationException.read(iprot_);
-        iprot_.readMessageEnd();
-        throw x;
-      }
-      if (msg.seqid != seqid_) {
-        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "countSearch failed: out of sequence response");
-      }
-      countSearch_result result = new countSearch_result();
-      result.read(iprot_);
-      iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
-      }
-      if (result.ex != null) {
-        throw result.ex;
-      }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "countSearch failed: unknown result");
     }
 
     public List<String> getDynamicTerms(String table) throws BlurException, TException
@@ -560,13 +519,12 @@ public class Blur {
     {
       iface_ = iface;
       processMap_.put("tableList", new tableList());
+      processMap_.put("describe", new describe());
       processMap_.put("enable", new enable());
       processMap_.put("disable", new disable());
       processMap_.put("create", new create());
       processMap_.put("drop", new drop());
-      processMap_.put("describe", new describe());
       processMap_.put("search", new search());
-      processMap_.put("countSearch", new countSearch());
       processMap_.put("getDynamicTerms", new getDynamicTerms());
       processMap_.put("getDynamicTermQuery", new getDynamicTermQuery());
       processMap_.put("createDynamicTermQuery", new createDynamicTermQuery());
@@ -629,6 +587,44 @@ public class Blur {
           return;
         }
         oprot.writeMessageBegin(new TMessage("tableList", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class describe implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        describe_args args = new describe_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("describe", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        describe_result result = new describe_result();
+        try {
+          result.success = iface_.describe(args.table);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing describe", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing describe");
+          oprot.writeMessageBegin(new TMessage("describe", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("describe", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -788,44 +784,6 @@ public class Blur {
 
     }
 
-    private class describe implements ProcessFunction {
-      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-      {
-        describe_args args = new describe_args();
-        try {
-          args.read(iprot);
-        } catch (TProtocolException e) {
-          iprot.readMessageEnd();
-          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new TMessage("describe", TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        describe_result result = new describe_result();
-        try {
-          result.success = iface_.describe(args.table);
-        } catch (BlurException ex) {
-          result.ex = ex;
-        } catch (Throwable th) {
-          LOGGER.error("Internal error processing describe", th);
-          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing describe");
-          oprot.writeMessageBegin(new TMessage("describe", TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        oprot.writeMessageBegin(new TMessage("describe", TMessageType.REPLY, seqid));
-        result.write(oprot);
-        oprot.writeMessageEnd();
-        oprot.getTransport().flush();
-      }
-
-    }
-
     private class search implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
@@ -844,7 +802,7 @@ public class Blur {
         iprot.readMessageEnd();
         search_result result = new search_result();
         try {
-          result.success = iface_.search(args.table, args.query, args.superQueryOn, args.type, args.start, args.fetch);
+          result.success = iface_.search(args.table, args.query, args.superQueryOn, args.type, args.filter, args.start, args.fetch, args.minimumNumberOfHits, args.maxQueryTime);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -857,45 +815,6 @@ public class Blur {
           return;
         }
         oprot.writeMessageBegin(new TMessage("search", TMessageType.REPLY, seqid));
-        result.write(oprot);
-        oprot.writeMessageEnd();
-        oprot.getTransport().flush();
-      }
-
-    }
-
-    private class countSearch implements ProcessFunction {
-      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-      {
-        countSearch_args args = new countSearch_args();
-        try {
-          args.read(iprot);
-        } catch (TProtocolException e) {
-          iprot.readMessageEnd();
-          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new TMessage("countSearch", TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        countSearch_result result = new countSearch_result();
-        try {
-          result.success = iface_.countSearch(args.table, args.query, args.superQueryOn, args.minimum);
-          result.setSuccessIsSet(true);
-        } catch (BlurException ex) {
-          result.ex = ex;
-        } catch (Throwable th) {
-          LOGGER.error("Internal error processing countSearch", th);
-          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing countSearch");
-          oprot.writeMessageBegin(new TMessage("countSearch", TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        oprot.writeMessageBegin(new TMessage("countSearch", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -1628,6 +1547,661 @@ public class Blur {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("tableList_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class describe_args implements TBase<describe_args, describe_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("describe_args");
+
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+
+    public String table;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TABLE((short)1, "table");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(describe_args.class, metaDataMap);
+    }
+
+    public describe_args() {
+    }
+
+    public describe_args(
+      String table)
+    {
+      this();
+      this.table = table;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public describe_args(describe_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+    }
+
+    public describe_args deepCopy() {
+      return new describe_args(this);
+    }
+
+    @Deprecated
+    public describe_args clone() {
+      return new describe_args(this);
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public describe_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof describe_args)
+        return this.equals((describe_args)that);
+      return false;
+    }
+
+    public boolean equals(describe_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(describe_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      describe_args typedOther = (describe_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("describe_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class describe_result implements TBase<describe_result, describe_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("describe_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+
+    public TableDescriptor success;
+    public BlurException ex;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, TableDescriptor.class)));
+      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(describe_result.class, metaDataMap);
+    }
+
+    public describe_result() {
+    }
+
+    public describe_result(
+      TableDescriptor success,
+      BlurException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public describe_result(describe_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new TableDescriptor(other.success);
+      }
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public describe_result deepCopy() {
+      return new describe_result(this);
+    }
+
+    @Deprecated
+    public describe_result clone() {
+      return new describe_result(this);
+    }
+
+    public TableDescriptor getSuccess() {
+      return this.success;
+    }
+
+    public describe_result setSuccess(TableDescriptor success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public describe_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((TableDescriptor)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof describe_result)
+        return this.equals((describe_result)that);
+      return false;
+    }
+
+    public boolean equals(describe_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(describe_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      describe_result typedOther = (describe_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRUCT) {
+              this.success = new TableDescriptor();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // EX
+            if (field.type == TType.STRUCT) {
+              this.ex = new BlurException();
+              this.ex.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("describe_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -4015,661 +4589,6 @@ public class Blur {
 
   }
 
-  public static class describe_args implements TBase<describe_args, describe_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("describe_args");
-
-    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-
-    public String table;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements TFieldIdEnum {
-      TABLE((short)1, "table");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(describe_args.class, metaDataMap);
-    }
-
-    public describe_args() {
-    }
-
-    public describe_args(
-      String table)
-    {
-      this();
-      this.table = table;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public describe_args(describe_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
-    }
-
-    public describe_args deepCopy() {
-      return new describe_args(this);
-    }
-
-    @Deprecated
-    public describe_args clone() {
-      return new describe_args(this);
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public describe_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been asigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
-      }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case TABLE:
-        return getTable();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      switch (field) {
-      case TABLE:
-        return isSetTable();
-      }
-      throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof describe_args)
-        return this.equals((describe_args)that);
-      return false;
-    }
-
-    public boolean equals(describe_args that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(describe_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      describe_args typedOther = (describe_args)other;
-
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public void read(TProtocol iprot) throws TException {
-      TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 1: // TABLE
-            if (field.type == TType.STRING) {
-              this.table = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(TProtocol oprot) throws TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("describe_args(");
-      boolean first = true;
-
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws TException {
-      // check for required fields
-    }
-
-  }
-
-  public static class describe_result implements TBase<describe_result, describe_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("describe_result");
-
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
-
-    public TableDescriptor success;
-    public BlurException ex;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // EX
-            return EX;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new StructMetaData(TType.STRUCT, TableDescriptor.class)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRUCT)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(describe_result.class, metaDataMap);
-    }
-
-    public describe_result() {
-    }
-
-    public describe_result(
-      TableDescriptor success,
-      BlurException ex)
-    {
-      this();
-      this.success = success;
-      this.ex = ex;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public describe_result(describe_result other) {
-      if (other.isSetSuccess()) {
-        this.success = new TableDescriptor(other.success);
-      }
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
-      }
-    }
-
-    public describe_result deepCopy() {
-      return new describe_result(this);
-    }
-
-    @Deprecated
-    public describe_result clone() {
-      return new describe_result(this);
-    }
-
-    public TableDescriptor getSuccess() {
-      return this.success;
-    }
-
-    public describe_result setSuccess(TableDescriptor success) {
-      this.success = success;
-      return this;
-    }
-
-    public void unsetSuccess() {
-      this.success = null;
-    }
-
-    /** Returns true if field success is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return this.success != null;
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
-    }
-
-    public BlurException getEx() {
-      return this.ex;
-    }
-
-    public describe_result setEx(BlurException ex) {
-      this.ex = ex;
-      return this;
-    }
-
-    public void unsetEx() {
-      this.ex = null;
-    }
-
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
-    }
-
-    public void setExIsSet(boolean value) {
-      if (!value) {
-        this.ex = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((TableDescriptor)value);
-        }
-        break;
-
-      case EX:
-        if (value == null) {
-          unsetEx();
-        } else {
-          setEx((BlurException)value);
-        }
-        break;
-
-      }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return getSuccess();
-
-      case EX:
-        return getEx();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case EX:
-        return isSetEx();
-      }
-      throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof describe_result)
-        return this.equals((describe_result)that);
-      return false;
-    }
-
-    public boolean equals(describe_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (!this.success.equals(that.success))
-          return false;
-      }
-
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
-          return false;
-        if (!this.ex.equals(that.ex))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(describe_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      describe_result typedOther = (describe_result)other;
-
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public void read(TProtocol iprot) throws TException {
-      TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == TType.STRUCT) {
-              this.success = new TableDescriptor();
-              this.success.read(iprot);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 1: // EX
-            if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(TProtocol oprot) throws TException {
-      oprot.writeStructBegin(STRUCT_DESC);
-
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        this.success.write(oprot);
-        oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("describe_result(");
-      boolean first = true;
-
-      sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.success);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.ex);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws TException {
-      // check for required fields
-    }
-
-  }
-
   public static class search_args implements TBase<search_args, search_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("search_args");
 
@@ -4677,8 +4596,11 @@ public class Blur {
     private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRING, (short)2);
     private static final TField SUPER_QUERY_ON_FIELD_DESC = new TField("superQueryOn", TType.BOOL, (short)3);
     private static final TField TYPE_FIELD_DESC = new TField("type", TType.I32, (short)4);
-    private static final TField START_FIELD_DESC = new TField("start", TType.I64, (short)5);
-    private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)6);
+    private static final TField FILTER_FIELD_DESC = new TField("filter", TType.STRING, (short)5);
+    private static final TField START_FIELD_DESC = new TField("start", TType.I64, (short)6);
+    private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)7);
+    private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)8);
+    private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)9);
 
     public String table;
     public String query;
@@ -4688,8 +4610,11 @@ public class Blur {
      * @see ScoreType
      */
     public ScoreType type;
+    public String filter;
     public long start;
     public int fetch;
+    public long minimumNumberOfHits;
+    public long maxQueryTime;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
@@ -4701,8 +4626,11 @@ public class Blur {
        * @see ScoreType
        */
       TYPE((short)4, "type"),
-      START((short)5, "start"),
-      FETCH((short)6, "fetch");
+      FILTER((short)5, "filter"),
+      START((short)6, "start"),
+      FETCH((short)7, "fetch"),
+      MINIMUM_NUMBER_OF_HITS((short)8, "minimumNumberOfHits"),
+      MAX_QUERY_TIME((short)9, "maxQueryTime");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4725,10 +4653,16 @@ public class Blur {
             return SUPER_QUERY_ON;
           case 4: // TYPE
             return TYPE;
-          case 5: // START
+          case 5: // FILTER
+            return FILTER;
+          case 6: // START
             return START;
-          case 6: // FETCH
+          case 7: // FETCH
             return FETCH;
+          case 8: // MINIMUM_NUMBER_OF_HITS
+            return MINIMUM_NUMBER_OF_HITS;
+          case 9: // MAX_QUERY_TIME
+            return MAX_QUERY_TIME;
           default:
             return null;
         }
@@ -4772,7 +4706,9 @@ public class Blur {
     private static final int __SUPERQUERYON_ISSET_ID = 0;
     private static final int __START_ISSET_ID = 1;
     private static final int __FETCH_ISSET_ID = 2;
-    private BitSet __isset_bit_vector = new BitSet(3);
+    private static final int __MINIMUMNUMBEROFHITS_ISSET_ID = 3;
+    private static final int __MAXQUERYTIME_ISSET_ID = 4;
+    private BitSet __isset_bit_vector = new BitSet(5);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
@@ -4785,10 +4721,16 @@ public class Blur {
           new FieldValueMetaData(TType.BOOL)));
       tmpMap.put(_Fields.TYPE, new FieldMetaData("type", TFieldRequirementType.DEFAULT, 
           new EnumMetaData(TType.ENUM, ScoreType.class)));
+      tmpMap.put(_Fields.FILTER, new FieldMetaData("filter", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.START, new FieldMetaData("start", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.I64)));
       tmpMap.put(_Fields.FETCH, new FieldMetaData("fetch", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.I32)));
+      tmpMap.put(_Fields.MINIMUM_NUMBER_OF_HITS, new FieldMetaData("minimumNumberOfHits", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I64)));
+      tmpMap.put(_Fields.MAX_QUERY_TIME, new FieldMetaData("maxQueryTime", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(search_args.class, metaDataMap);
     }
@@ -4801,8 +4743,11 @@ public class Blur {
       String query,
       boolean superQueryOn,
       ScoreType type,
+      String filter,
       long start,
-      int fetch)
+      int fetch,
+      long minimumNumberOfHits,
+      long maxQueryTime)
     {
       this();
       this.table = table;
@@ -4810,10 +4755,15 @@ public class Blur {
       this.superQueryOn = superQueryOn;
       setSuperQueryOnIsSet(true);
       this.type = type;
+      this.filter = filter;
       this.start = start;
       setStartIsSet(true);
       this.fetch = fetch;
       setFetchIsSet(true);
+      this.minimumNumberOfHits = minimumNumberOfHits;
+      setMinimumNumberOfHitsIsSet(true);
+      this.maxQueryTime = maxQueryTime;
+      setMaxQueryTimeIsSet(true);
     }
 
     /**
@@ -4832,8 +4782,13 @@ public class Blur {
       if (other.isSetType()) {
         this.type = other.type;
       }
+      if (other.isSetFilter()) {
+        this.filter = other.filter;
+      }
       this.start = other.start;
       this.fetch = other.fetch;
+      this.minimumNumberOfHits = other.minimumNumberOfHits;
+      this.maxQueryTime = other.maxQueryTime;
     }
 
     public search_args deepCopy() {
@@ -4948,6 +4903,30 @@ public class Blur {
       }
     }
 
+    public String getFilter() {
+      return this.filter;
+    }
+
+    public search_args setFilter(String filter) {
+      this.filter = filter;
+      return this;
+    }
+
+    public void unsetFilter() {
+      this.filter = null;
+    }
+
+    /** Returns true if field filter is set (has been asigned a value) and false otherwise */
+    public boolean isSetFilter() {
+      return this.filter != null;
+    }
+
+    public void setFilterIsSet(boolean value) {
+      if (!value) {
+        this.filter = null;
+      }
+    }
+
     public long getStart() {
       return this.start;
     }
@@ -4994,6 +4973,52 @@ public class Blur {
       __isset_bit_vector.set(__FETCH_ISSET_ID, value);
     }
 
+    public long getMinimumNumberOfHits() {
+      return this.minimumNumberOfHits;
+    }
+
+    public search_args setMinimumNumberOfHits(long minimumNumberOfHits) {
+      this.minimumNumberOfHits = minimumNumberOfHits;
+      setMinimumNumberOfHitsIsSet(true);
+      return this;
+    }
+
+    public void unsetMinimumNumberOfHits() {
+      __isset_bit_vector.clear(__MINIMUMNUMBEROFHITS_ISSET_ID);
+    }
+
+    /** Returns true if field minimumNumberOfHits is set (has been asigned a value) and false otherwise */
+    public boolean isSetMinimumNumberOfHits() {
+      return __isset_bit_vector.get(__MINIMUMNUMBEROFHITS_ISSET_ID);
+    }
+
+    public void setMinimumNumberOfHitsIsSet(boolean value) {
+      __isset_bit_vector.set(__MINIMUMNUMBEROFHITS_ISSET_ID, value);
+    }
+
+    public long getMaxQueryTime() {
+      return this.maxQueryTime;
+    }
+
+    public search_args setMaxQueryTime(long maxQueryTime) {
+      this.maxQueryTime = maxQueryTime;
+      setMaxQueryTimeIsSet(true);
+      return this;
+    }
+
+    public void unsetMaxQueryTime() {
+      __isset_bit_vector.clear(__MAXQUERYTIME_ISSET_ID);
+    }
+
+    /** Returns true if field maxQueryTime is set (has been asigned a value) and false otherwise */
+    public boolean isSetMaxQueryTime() {
+      return __isset_bit_vector.get(__MAXQUERYTIME_ISSET_ID);
+    }
+
+    public void setMaxQueryTimeIsSet(boolean value) {
+      __isset_bit_vector.set(__MAXQUERYTIME_ISSET_ID, value);
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case TABLE:
@@ -5028,6 +5053,14 @@ public class Blur {
         }
         break;
 
+      case FILTER:
+        if (value == null) {
+          unsetFilter();
+        } else {
+          setFilter((String)value);
+        }
+        break;
+
       case START:
         if (value == null) {
           unsetStart();
@@ -5041,6 +5074,22 @@ public class Blur {
           unsetFetch();
         } else {
           setFetch((Integer)value);
+        }
+        break;
+
+      case MINIMUM_NUMBER_OF_HITS:
+        if (value == null) {
+          unsetMinimumNumberOfHits();
+        } else {
+          setMinimumNumberOfHits((Long)value);
+        }
+        break;
+
+      case MAX_QUERY_TIME:
+        if (value == null) {
+          unsetMaxQueryTime();
+        } else {
+          setMaxQueryTime((Long)value);
         }
         break;
 
@@ -5065,11 +5114,20 @@ public class Blur {
       case TYPE:
         return getType();
 
+      case FILTER:
+        return getFilter();
+
       case START:
         return new Long(getStart());
 
       case FETCH:
         return new Integer(getFetch());
+
+      case MINIMUM_NUMBER_OF_HITS:
+        return new Long(getMinimumNumberOfHits());
+
+      case MAX_QUERY_TIME:
+        return new Long(getMaxQueryTime());
 
       }
       throw new IllegalStateException();
@@ -5090,10 +5148,16 @@ public class Blur {
         return isSetSuperQueryOn();
       case TYPE:
         return isSetType();
+      case FILTER:
+        return isSetFilter();
       case START:
         return isSetStart();
       case FETCH:
         return isSetFetch();
+      case MINIMUM_NUMBER_OF_HITS:
+        return isSetMinimumNumberOfHits();
+      case MAX_QUERY_TIME:
+        return isSetMaxQueryTime();
       }
       throw new IllegalStateException();
     }
@@ -5151,6 +5215,15 @@ public class Blur {
           return false;
       }
 
+      boolean this_present_filter = true && this.isSetFilter();
+      boolean that_present_filter = true && that.isSetFilter();
+      if (this_present_filter || that_present_filter) {
+        if (!(this_present_filter && that_present_filter))
+          return false;
+        if (!this.filter.equals(that.filter))
+          return false;
+      }
+
       boolean this_present_start = true;
       boolean that_present_start = true;
       if (this_present_start || that_present_start) {
@@ -5166,6 +5239,24 @@ public class Blur {
         if (!(this_present_fetch && that_present_fetch))
           return false;
         if (this.fetch != that.fetch)
+          return false;
+      }
+
+      boolean this_present_minimumNumberOfHits = true;
+      boolean that_present_minimumNumberOfHits = true;
+      if (this_present_minimumNumberOfHits || that_present_minimumNumberOfHits) {
+        if (!(this_present_minimumNumberOfHits && that_present_minimumNumberOfHits))
+          return false;
+        if (this.minimumNumberOfHits != that.minimumNumberOfHits)
+          return false;
+      }
+
+      boolean this_present_maxQueryTime = true;
+      boolean that_present_maxQueryTime = true;
+      if (this_present_maxQueryTime || that_present_maxQueryTime) {
+        if (!(this_present_maxQueryTime && that_present_maxQueryTime))
+          return false;
+        if (this.maxQueryTime != that.maxQueryTime)
           return false;
       }
 
@@ -5221,6 +5312,15 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetFilter()).compareTo(typedOther.isSetFilter());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetFilter()) {        lastComparison = TBaseHelper.compareTo(this.filter, typedOther.filter);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetStart()).compareTo(typedOther.isSetStart());
       if (lastComparison != 0) {
         return lastComparison;
@@ -5235,6 +5335,24 @@ public class Blur {
         return lastComparison;
       }
       if (isSetFetch()) {        lastComparison = TBaseHelper.compareTo(this.fetch, typedOther.fetch);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMinimumNumberOfHits()).compareTo(typedOther.isSetMinimumNumberOfHits());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMinimumNumberOfHits()) {        lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMaxQueryTime()).compareTo(typedOther.isSetMaxQueryTime());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMaxQueryTime()) {        lastComparison = TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5281,7 +5399,14 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 5: // START
+          case 5: // FILTER
+            if (field.type == TType.STRING) {
+              this.filter = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 6: // START
             if (field.type == TType.I64) {
               this.start = iprot.readI64();
               setStartIsSet(true);
@@ -5289,10 +5414,26 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 6: // FETCH
+          case 7: // FETCH
             if (field.type == TType.I32) {
               this.fetch = iprot.readI32();
               setFetchIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 8: // MINIMUM_NUMBER_OF_HITS
+            if (field.type == TType.I64) {
+              this.minimumNumberOfHits = iprot.readI64();
+              setMinimumNumberOfHitsIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 9: // MAX_QUERY_TIME
+            if (field.type == TType.I64) {
+              this.maxQueryTime = iprot.readI64();
+              setMaxQueryTimeIsSet(true);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -5330,11 +5471,22 @@ public class Blur {
         oprot.writeI32(this.type.getValue());
         oprot.writeFieldEnd();
       }
+      if (this.filter != null) {
+        oprot.writeFieldBegin(FILTER_FIELD_DESC);
+        oprot.writeString(this.filter);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldBegin(START_FIELD_DESC);
       oprot.writeI64(this.start);
       oprot.writeFieldEnd();
       oprot.writeFieldBegin(FETCH_FIELD_DESC);
       oprot.writeI32(this.fetch);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(MINIMUM_NUMBER_OF_HITS_FIELD_DESC);
+      oprot.writeI64(this.minimumNumberOfHits);
+      oprot.writeFieldEnd();
+      oprot.writeFieldBegin(MAX_QUERY_TIME_FIELD_DESC);
+      oprot.writeI64(this.maxQueryTime);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -5373,12 +5525,28 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
+      sb.append("filter:");
+      if (this.filter == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.filter);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("start:");
       sb.append(this.start);
       first = false;
       if (!first) sb.append(", ");
       sb.append("fetch:");
       sb.append(this.fetch);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("minimumNumberOfHits:");
+      sb.append(this.minimumNumberOfHits);
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("maxQueryTime:");
+      sb.append(this.maxQueryTime);
       first = false;
       sb.append(")");
       return sb.toString();
@@ -5742,911 +5910,6 @@ public class Blur {
       } else {
         sb.append(this.success);
       }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.ex);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws TException {
-      // check for required fields
-    }
-
-  }
-
-  public static class countSearch_args implements TBase<countSearch_args, countSearch_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("countSearch_args");
-
-    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-    private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRING, (short)2);
-    private static final TField SUPER_QUERY_ON_FIELD_DESC = new TField("superQueryOn", TType.BOOL, (short)3);
-    private static final TField MINIMUM_FIELD_DESC = new TField("minimum", TType.I64, (short)4);
-
-    public String table;
-    public String query;
-    public boolean superQueryOn;
-    public long minimum;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements TFieldIdEnum {
-      TABLE((short)1, "table"),
-      QUERY((short)2, "query"),
-      SUPER_QUERY_ON((short)3, "superQueryOn"),
-      MINIMUM((short)4, "minimum");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // QUERY
-            return QUERY;
-          case 3: // SUPER_QUERY_ON
-            return SUPER_QUERY_ON;
-          case 4: // MINIMUM
-            return MINIMUM;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-    private static final int __SUPERQUERYON_ISSET_ID = 0;
-    private static final int __MINIMUM_ISSET_ID = 1;
-    private BitSet __isset_bit_vector = new BitSet(2);
-
-    public static final Map<_Fields, FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.SUPER_QUERY_ON, new FieldMetaData("superQueryOn", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-      tmpMap.put(_Fields.MINIMUM, new FieldMetaData("minimum", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(countSearch_args.class, metaDataMap);
-    }
-
-    public countSearch_args() {
-    }
-
-    public countSearch_args(
-      String table,
-      String query,
-      boolean superQueryOn,
-      long minimum)
-    {
-      this();
-      this.table = table;
-      this.query = query;
-      this.superQueryOn = superQueryOn;
-      setSuperQueryOnIsSet(true);
-      this.minimum = minimum;
-      setMinimumIsSet(true);
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public countSearch_args(countSearch_args other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
-      if (other.isSetQuery()) {
-        this.query = other.query;
-      }
-      this.superQueryOn = other.superQueryOn;
-      this.minimum = other.minimum;
-    }
-
-    public countSearch_args deepCopy() {
-      return new countSearch_args(this);
-    }
-
-    @Deprecated
-    public countSearch_args clone() {
-      return new countSearch_args(this);
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public countSearch_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been asigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
-    }
-
-    public String getQuery() {
-      return this.query;
-    }
-
-    public countSearch_args setQuery(String query) {
-      this.query = query;
-      return this;
-    }
-
-    public void unsetQuery() {
-      this.query = null;
-    }
-
-    /** Returns true if field query is set (has been asigned a value) and false otherwise */
-    public boolean isSetQuery() {
-      return this.query != null;
-    }
-
-    public void setQueryIsSet(boolean value) {
-      if (!value) {
-        this.query = null;
-      }
-    }
-
-    public boolean isSuperQueryOn() {
-      return this.superQueryOn;
-    }
-
-    public countSearch_args setSuperQueryOn(boolean superQueryOn) {
-      this.superQueryOn = superQueryOn;
-      setSuperQueryOnIsSet(true);
-      return this;
-    }
-
-    public void unsetSuperQueryOn() {
-      __isset_bit_vector.clear(__SUPERQUERYON_ISSET_ID);
-    }
-
-    /** Returns true if field superQueryOn is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuperQueryOn() {
-      return __isset_bit_vector.get(__SUPERQUERYON_ISSET_ID);
-    }
-
-    public void setSuperQueryOnIsSet(boolean value) {
-      __isset_bit_vector.set(__SUPERQUERYON_ISSET_ID, value);
-    }
-
-    public long getMinimum() {
-      return this.minimum;
-    }
-
-    public countSearch_args setMinimum(long minimum) {
-      this.minimum = minimum;
-      setMinimumIsSet(true);
-      return this;
-    }
-
-    public void unsetMinimum() {
-      __isset_bit_vector.clear(__MINIMUM_ISSET_ID);
-    }
-
-    /** Returns true if field minimum is set (has been asigned a value) and false otherwise */
-    public boolean isSetMinimum() {
-      return __isset_bit_vector.get(__MINIMUM_ISSET_ID);
-    }
-
-    public void setMinimumIsSet(boolean value) {
-      __isset_bit_vector.set(__MINIMUM_ISSET_ID, value);
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
-      case QUERY:
-        if (value == null) {
-          unsetQuery();
-        } else {
-          setQuery((String)value);
-        }
-        break;
-
-      case SUPER_QUERY_ON:
-        if (value == null) {
-          unsetSuperQueryOn();
-        } else {
-          setSuperQueryOn((Boolean)value);
-        }
-        break;
-
-      case MINIMUM:
-        if (value == null) {
-          unsetMinimum();
-        } else {
-          setMinimum((Long)value);
-        }
-        break;
-
-      }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case TABLE:
-        return getTable();
-
-      case QUERY:
-        return getQuery();
-
-      case SUPER_QUERY_ON:
-        return new Boolean(isSuperQueryOn());
-
-      case MINIMUM:
-        return new Long(getMinimum());
-
-      }
-      throw new IllegalStateException();
-    }
-
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      switch (field) {
-      case TABLE:
-        return isSetTable();
-      case QUERY:
-        return isSetQuery();
-      case SUPER_QUERY_ON:
-        return isSetSuperQueryOn();
-      case MINIMUM:
-        return isSetMinimum();
-      }
-      throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof countSearch_args)
-        return this.equals((countSearch_args)that);
-      return false;
-    }
-
-    public boolean equals(countSearch_args that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
-
-      boolean this_present_query = true && this.isSetQuery();
-      boolean that_present_query = true && that.isSetQuery();
-      if (this_present_query || that_present_query) {
-        if (!(this_present_query && that_present_query))
-          return false;
-        if (!this.query.equals(that.query))
-          return false;
-      }
-
-      boolean this_present_superQueryOn = true;
-      boolean that_present_superQueryOn = true;
-      if (this_present_superQueryOn || that_present_superQueryOn) {
-        if (!(this_present_superQueryOn && that_present_superQueryOn))
-          return false;
-        if (this.superQueryOn != that.superQueryOn)
-          return false;
-      }
-
-      boolean this_present_minimum = true;
-      boolean that_present_minimum = true;
-      if (this_present_minimum || that_present_minimum) {
-        if (!(this_present_minimum && that_present_minimum))
-          return false;
-        if (this.minimum != that.minimum)
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(countSearch_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      countSearch_args typedOther = (countSearch_args)other;
-
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetQuery()) {        lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetSuperQueryOn()).compareTo(typedOther.isSetSuperQueryOn());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuperQueryOn()) {        lastComparison = TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetMinimum()).compareTo(typedOther.isSetMinimum());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetMinimum()) {        lastComparison = TBaseHelper.compareTo(this.minimum, typedOther.minimum);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public void read(TProtocol iprot) throws TException {
-      TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 1: // TABLE
-            if (field.type == TType.STRING) {
-              this.table = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 2: // QUERY
-            if (field.type == TType.STRING) {
-              this.query = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 3: // SUPER_QUERY_ON
-            if (field.type == TType.BOOL) {
-              this.superQueryOn = iprot.readBool();
-              setSuperQueryOnIsSet(true);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 4: // MINIMUM
-            if (field.type == TType.I64) {
-              this.minimum = iprot.readI64();
-              setMinimumIsSet(true);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(TProtocol oprot) throws TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
-        oprot.writeFieldEnd();
-      }
-      if (this.query != null) {
-        oprot.writeFieldBegin(QUERY_FIELD_DESC);
-        oprot.writeString(this.query);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldBegin(SUPER_QUERY_ON_FIELD_DESC);
-      oprot.writeBool(this.superQueryOn);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(MINIMUM_FIELD_DESC);
-      oprot.writeI64(this.minimum);
-      oprot.writeFieldEnd();
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("countSearch_args(");
-      boolean first = true;
-
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("query:");
-      if (this.query == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.query);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("superQueryOn:");
-      sb.append(this.superQueryOn);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("minimum:");
-      sb.append(this.minimum);
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws TException {
-      // check for required fields
-    }
-
-  }
-
-  public static class countSearch_result implements TBase<countSearch_result, countSearch_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("countSearch_result");
-
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.I64, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
-
-    public long success;
-    public BlurException ex;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // EX
-            return EX;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
-
-    public static final Map<_Fields, FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRUCT)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(countSearch_result.class, metaDataMap);
-    }
-
-    public countSearch_result() {
-    }
-
-    public countSearch_result(
-      long success,
-      BlurException ex)
-    {
-      this();
-      this.success = success;
-      setSuccessIsSet(true);
-      this.ex = ex;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public countSearch_result(countSearch_result other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.success = other.success;
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
-      }
-    }
-
-    public countSearch_result deepCopy() {
-      return new countSearch_result(this);
-    }
-
-    @Deprecated
-    public countSearch_result clone() {
-      return new countSearch_result(this);
-    }
-
-    public long getSuccess() {
-      return this.success;
-    }
-
-    public countSearch_result setSuccess(long success) {
-      this.success = success;
-      setSuccessIsSet(true);
-      return this;
-    }
-
-    public void unsetSuccess() {
-      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
-    }
-
-    /** Returns true if field success is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
-    }
-
-    public BlurException getEx() {
-      return this.ex;
-    }
-
-    public countSearch_result setEx(BlurException ex) {
-      this.ex = ex;
-      return this;
-    }
-
-    public void unsetEx() {
-      this.ex = null;
-    }
-
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
-    }
-
-    public void setExIsSet(boolean value) {
-      if (!value) {
-        this.ex = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((Long)value);
-        }
-        break;
-
-      case EX:
-        if (value == null) {
-          unsetEx();
-        } else {
-          setEx((BlurException)value);
-        }
-        break;
-
-      }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return new Long(getSuccess());
-
-      case EX:
-        return getEx();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case EX:
-        return isSetEx();
-      }
-      throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof countSearch_result)
-        return this.equals((countSearch_result)that);
-      return false;
-    }
-
-    public boolean equals(countSearch_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_success = true;
-      boolean that_present_success = true;
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (this.success != that.success)
-          return false;
-      }
-
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
-          return false;
-        if (!this.ex.equals(that.ex))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(countSearch_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      countSearch_result typedOther = (countSearch_result)other;
-
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public void read(TProtocol iprot) throws TException {
-      TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == TType.I64) {
-              this.success = iprot.readI64();
-              setSuccessIsSet(true);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 1: // EX
-            if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(TProtocol oprot) throws TException {
-      oprot.writeStructBegin(STRUCT_DESC);
-
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI64(this.success);
-        oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("countSearch_result(");
-      boolean first = true;
-
-      sb.append("success:");
-      sb.append(this.success);
       first = false;
       if (!first) sb.append(", ");
       sb.append("ex:");

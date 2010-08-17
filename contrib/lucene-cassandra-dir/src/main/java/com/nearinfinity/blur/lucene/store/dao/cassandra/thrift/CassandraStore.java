@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.lucene.store.dao.cassandra;
+package com.nearinfinity.blur.lucene.store.dao.cassandra.thrift;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,7 +14,7 @@ import org.apache.cassandra.thrift.SliceRange;
 import org.apache.cassandra.thrift.Cassandra.Client;
 
 import com.nearinfinity.blur.lucene.store.DirectoryStore;
-import com.nearinfinity.blur.lucene.store.dao.cassandra.CassandraExecutor.Command;
+import com.nearinfinity.blur.lucene.store.dao.cassandra.thrift.CassandraExecutor.Command;
 import com.nearinfinity.blur.lucene.store.dao.cassandra.utils.Bytes;
 
 public class CassandraStore implements DirectoryStore {

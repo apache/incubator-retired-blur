@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.lucene.store.dao.cassandra;
+package com.nearinfinity.blur.lucene.store.dao.cassandra.thrift;
 
 import java.io.IOException;
 import java.util.ArrayList;

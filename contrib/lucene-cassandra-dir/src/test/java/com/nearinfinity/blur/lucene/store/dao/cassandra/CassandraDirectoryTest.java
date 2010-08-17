@@ -17,6 +17,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.store.BlurBaseDirectory;
+import com.nearinfinity.blur.lucene.store.dao.cassandra.thrift.CassandraStore;
 
 public class CassandraDirectoryTest extends TestCase {
 	

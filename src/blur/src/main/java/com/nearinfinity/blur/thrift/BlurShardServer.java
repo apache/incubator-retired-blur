@@ -14,6 +14,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Searcher;
@@ -25,9 +26,11 @@ import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.search.FilterParser;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.DirectoryManagerStore;
+import com.nearinfinity.blur.manager.FilterManager;
 import com.nearinfinity.blur.manager.IndexReaderManagerImpl;
 import com.nearinfinity.blur.manager.SearchManagerImpl;
 import com.nearinfinity.blur.manager.UpdatableManager;
@@ -49,6 +52,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private SearchManagerImpl searchManager;
 	private Timer timer;
 	private Map<String,Analyzer> analyzerCache = new ConcurrentHashMap<String, Analyzer>();
+	private FilterManager filterManager;
 	
 	public BlurShardServer() throws IOException {
 		super();
@@ -60,6 +64,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexReaderManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);
+		this.filterManager = configuration.getNewInstance(BLUR_FILTER_MANAGER_CLASS, FilterManager.class);
 		update(directoryManager, indexManager, searchManager);
 		runUpdateTask(directoryManager, indexManager, searchManager);
 	}
@@ -69,11 +74,12 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
 		Map<String, Searcher> searchers = searchManager.getSearchers(table);
 		try {
-			final Query q = parse(query,superQueryOn,getAnalyzer(table));
+			Filter queryFilter = parse(table,filter);
+			final Query userQuery = parse(query,superQueryOn,getAnalyzer(table),queryFilter);
 			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>, Hits>() {
 				@Override
 				public Hits call(Entry<String, Searcher> entry) throws Exception {
-					return performSearch((Query) q.clone(), entry.getKey(), entry.getValue(), (int) start, fetch);
+					return performSearch((Query) userQuery.clone(), entry.getKey(), entry.getValue(), (int) start, fetch);
 				}
 			}).merge(new HitsMerger());
 		} catch (Exception e) {
@@ -81,7 +87,16 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			throw new BlurException(e.getMessage());
 		}
 	}
-	
+
+	private Filter parse(String table, String filter) throws ParseException {
+		Map<String,Filter> filters = getFilters(table);
+		return new FilterParser(table, filters).parseFilter(filter);
+	}
+
+	private Map<String, Filter> getFilters(String table) {
+		return filterManager.getFilters(table);
+	}
+
 	private Analyzer getAnalyzer(String table) throws BlurException, TException {
 		Analyzer analyzer = analyzerCache.get(table);
 		if (analyzer != null) {
@@ -131,8 +146,8 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 		return doc.get(SuperDocument.ID);
 	}
 
-	private Query parse(String query, boolean superQueryOn, Analyzer analyzer) throws ParseException {
-		return new SuperParser(Version.LUCENE_CURRENT, analyzer, superQueryOn).parse(query);
+	private Query parse(String query, boolean superQueryOn, Analyzer analyzer, Filter queryFilter) throws ParseException {
+		return new SuperParser(Version.LUCENE_CURRENT, analyzer, superQueryOn, queryFilter).parse(query);
 	}
 	
 	@Override

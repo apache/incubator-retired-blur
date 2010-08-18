@@ -10,6 +10,7 @@ public interface BlurConstants {
 	public static final String BLUR_TABLES_NODE = "tables";
 	public static final String BLUR_SERVER_CONTROLLER_PORT = "blur.server.controller.port";
 	public static final String BLUR_SERVER_SHARD_PORT = "blur.server.shard.port";
+	public static final String BLUR_FILTER_MANAGER_CLASS = "blur.filter.manager.class";
 	public static final String CONTROLLER = "controller";
 	public static final String SHARD = "shard";
 }

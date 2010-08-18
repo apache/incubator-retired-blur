@@ -2,3 +2,4 @@
 /blur/tables/<table name>/<shard id perm node with dir uri as data>
 /blur/nodes/<NODE type>/<hostname ep node with null data
 /blur/ref/<table name>/<shard id>/<files that are being referenced by a reader>
+/blur/dynamicTerms/<table name>/<dynamic term name data contains the query plus if it's a superQuery or not>

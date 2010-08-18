@@ -19,12 +19,12 @@ import com.nearinfinity.blur.utils.BlurConstants;
 public class SearchManagerImpl implements SearchManager, BlurConstants {
 
 	private final static Logger LOG = LoggerFactory.getLogger(SearchManagerImpl.class);
-	private IndexReaderManager indexManager;
+	private IndexManager indexManager;
 	private volatile Map<String,Map<String,Searcher>> searchers = new TreeMap<String, Map<String,Searcher>>();
 	private Similarity similarity;
 	private BlurConfiguration configuration = new BlurConfiguration();
 
-	public SearchManagerImpl(IndexReaderManager indexManager) {
+	public SearchManagerImpl(IndexManager indexManager) {
 		this.indexManager = indexManager;
 		this.similarity = configuration.getNewInstance(BLUR_LUCENE_SIMILARITY_CLASS, Similarity.class);
 	}

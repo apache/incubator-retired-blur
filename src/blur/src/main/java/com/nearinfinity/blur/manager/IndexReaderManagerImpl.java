@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 
-public class IndexReaderManagerImpl implements IndexReaderManager {
+public class IndexReaderManagerImpl implements IndexManager {
 
 	private final static Logger LOG = LoggerFactory.getLogger(IndexReaderManagerImpl.class);
 	protected static final long WAIT_TIME_BEFORE_FORCING_CLOSED = 60000;

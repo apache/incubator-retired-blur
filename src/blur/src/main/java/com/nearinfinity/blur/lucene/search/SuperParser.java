@@ -8,12 +8,12 @@ import java.util.UUID;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryParser.CharStream;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
-import org.apache.lucene.queryParser.QueryParserTokenManager;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
@@ -26,26 +26,20 @@ public class SuperParser extends QueryParser {
 	public static final String SUPER = "super";
 	private Map<Query,String> fieldNames = new HashMap<Query, String>();
 	private boolean superSearch = true;
+	private Filter queryFilter;
 	
 	public static void main(String[] args) throws ParseException {
-		SuperParser parser = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true);
+		SuperParser parser = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true,null);
 		Query query = parser.parse("address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query);
 		Query query2 = parser.parse("disabled address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query2);
 	}
 
-	protected SuperParser(CharStream stream) {
-		super(stream);
-	}
-
-	public SuperParser(QueryParserTokenManager tm) {
-		super(tm);
-	}
-
-	public SuperParser(Version matchVersion, Analyzer a, boolean superSearch) {
+	public SuperParser(Version matchVersion, Analyzer a, boolean superSearch, Filter queryFilter) {
 		super(matchVersion, SUPER, a);
 		this.superSearch = superSearch;
+		this.queryFilter = queryFilter;
 	}
 	
 	@Override
@@ -111,7 +105,7 @@ public class SuperParser extends QueryParser {
 
 	private Query reprocess(Query query) {
 		if (query == null || !isSuperSearch()) {
-			return query;
+			return wrapFilter(query);
 		}
 		if (query instanceof BooleanQuery) {
 			BooleanQuery booleanQuery = (BooleanQuery) query;
@@ -125,8 +119,12 @@ public class SuperParser extends QueryParser {
 				return booleanQuery;
 			}
 		} else {
-			return new SuperQuery(query);
+			return new SuperQuery(wrapFilter(query));
 		}
+	}
+
+	private Query wrapFilter(Query query) {
+		return new FilteredQuery(query,queryFilter);
 	}
 
 	private boolean isSameGroupName(BooleanQuery booleanQuery) {

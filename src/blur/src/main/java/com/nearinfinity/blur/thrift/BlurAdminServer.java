@@ -9,6 +9,7 @@ import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,6 +44,7 @@ import com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore;
 
 public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
+	private static final String DYNAMIC_TERMS = "dynamicTerms";
 	private static final Logger LOG = LoggerFactory.getLogger(BlurAdminServer.class);
 	private static final String NODES = "nodes";
 	private static final String BLUR_REFS = "refs";
@@ -194,26 +196,118 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			throw new BlurException(e.getMessage());
 		}
 	}
-	
+
 	@Override
 	public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn)
-			throws BlurException, TException {
-
+		throws BlurException, TException {
+		try {
+			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
+			Stat stat = zk.exists(path, false);
+			if (stat != null) {
+				throw new BlurException("Dynamic term [" + term +
+						"] already exists for table [" + table +
+						"]");
+			}
+			byte[] bs = query.getBytes();
+			byte b = 0;
+			if (superQueryOn) {
+				b = 1;
+			}
+			ByteBuffer buffer = ByteBuffer.allocate(bs.length + 1);
+			zk.create(path, buffer.put(b).put(bs).array(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void deleteDynamicTermQuery(String table, String term) throws BlurException, TException {
-
+		try {
+			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
+			Stat stat = zk.exists(path, false);
+			if (stat == null) {
+				throw new BlurException("Dynamic term [" + term +
+						"] does not exist for table [" + table +
+						"]");
+			}
+			zk.delete(path, stat.getVersion());
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public String getDynamicTermQuery(String table, String term) throws BlurException, TException {
-		return null;
+		try {
+			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
+			Stat stat = zk.exists(path, false);
+			if (stat == null) {
+				throw new BlurException("Dynamic term [" + term +
+						"] does not exist for table [" + table +
+						"]");
+			}
+			ByteBuffer buffer = ByteBuffer.wrap(zk.getData(path, false, stat));
+			return new String(buffer.array(),1,buffer.remaining());
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	@Override
+	public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, TException {
+		try {
+			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
+			Stat stat = zk.exists(path, false);
+			if (stat == null) {
+				throw new BlurException("Dynamic term [" + term +
+						"] does not exist for table [" + table +
+						"]");
+			}
+			ByteBuffer buffer = ByteBuffer.wrap(zk.getData(path, false, stat));
+			byte b = buffer.get();
+			if (b == 0) {
+				return false;
+			} else {
+				return true;
+			}
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public List<String> getDynamicTerms(String table) throws BlurException, TException {
-		return null;
+		try {
+			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table);
+			return zk.getChildren(path, false);
+		} catch (KeeperException e) {
+			throw new RuntimeException(e);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -300,15 +394,25 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	private byte[] writeTableDescriptor(TableDescriptor descriptor) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ObjectOutputStream outputStream = new ObjectOutputStream(baos);
-		outputStream.writeObject(descriptor);
+		String analyzerDef = descriptor.getAnalyzerDef();
+		String partitionerClass = descriptor.getPartitionerClass();
+		Map<String, String> shardDirectoryLocations = descriptor.getShardDirectoryLocations();
+		outputStream.writeObject(analyzerDef);
+		outputStream.writeObject(partitionerClass);
+		outputStream.writeObject(shardDirectoryLocations);
 		outputStream.close();
 		return baos.toByteArray();
 	}
 	
+	@SuppressWarnings("unchecked")
 	private TableDescriptor readTableDescriptor(byte[] data) throws IOException, ClassNotFoundException {
 		ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(data));
 		try {
-			return (TableDescriptor) inputStream.readObject();
+			TableDescriptor descriptor = new TableDescriptor();
+			descriptor.analyzerDef = (String) inputStream.readObject();
+			descriptor.partitionerClass = (String) inputStream.readObject();
+			descriptor.shardDirectoryLocations = (Map<String, String>) inputStream.readObject();
+			return descriptor;
 		} finally {
 			inputStream.close();
 		}

@@ -13,7 +13,8 @@ import org.apache.thrift.TEnum;
 public enum ScoreType implements TEnum {
   SUPER(0),
   AGGREGATE(1),
-  BEST_SCORE(2);
+  BEST(2),
+  CONSTANT(3);
 
   private final int value;
 
@@ -39,7 +40,9 @@ public enum ScoreType implements TEnum {
       case 1:
         return AGGREGATE;
       case 2:
-        return BEST_SCORE;
+        return BEST;
+      case 3:
+        return CONSTANT;
       default:
         return null;
     }

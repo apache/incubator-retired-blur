@@ -1,7 +1,5 @@
 package com.nearinfinity.blur.lucene.search;
 
-import java.util.Map;
-
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
@@ -16,19 +14,20 @@ import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nearinfinity.blur.manager.FilterManager;
 import com.nearinfinity.blur.thrift.BlurShardServer;
 
 public class FilterParser extends QueryParser {
 	
 	private static final Logger LOG = LoggerFactory.getLogger(BlurShardServer.class);
 	private static final String FILTERED_QUERY = "FILTERED_QUERY";
-	private Map<String,Filter> filters;
 	private String table;
+	private FilterManager filterManager;
 
-	public FilterParser(String table, Map<String,Filter> filters) {
+	public FilterParser(String table, FilterManager filterManager) {
 		super(Version.LUCENE_CURRENT, FILTERED_QUERY, new WhitespaceAnalyzer());
 		this.table = table;
-		this.filters = filters;
+		this.filterManager = filterManager;
 	}
 
 	public Filter parseFilter(String filter) throws ParseException {
@@ -38,7 +37,7 @@ public class FilterParser extends QueryParser {
 	@Override
 	protected Query newTermQuery(Term term) {
 		if (FILTERED_QUERY.equals(term.field())) {
-			Filter filter = filters.get(term);
+			Filter filter = filterManager.getFilter(table, term.text());
 			if (filter == null) {
 				LOG.debug("Dynamic term [" + term +
 						"] not found for table [" + table +

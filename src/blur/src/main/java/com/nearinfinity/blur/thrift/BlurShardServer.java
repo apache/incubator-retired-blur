@@ -15,9 +15,11 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Version;
 import org.apache.thrift.TException;
@@ -26,13 +28,14 @@ import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.FilterParser;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.DirectoryManagerStore;
 import com.nearinfinity.blur.manager.FilterManager;
+import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManagerImpl;
-import com.nearinfinity.blur.manager.SearchManagerImpl;
 import com.nearinfinity.blur.manager.UpdatableManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
@@ -48,11 +51,11 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private static final Logger LOG = LoggerFactory.getLogger(BlurShardServer.class);
 	private static final long TIME_BETWEEN_UPDATES = 10000;
 	private DirectoryManagerImpl directoryManager;
-	private IndexManagerImpl indexManager;
-	private SearchManagerImpl searchManager;
+	private IndexManager indexManager;
 	private Timer timer;
 	private Map<String,Analyzer> analyzerCache = new ConcurrentHashMap<String, Analyzer>();
 	private FilterManager filterManager;
+	private Similarity similarity;
 	
 	public BlurShardServer() throws IOException {
 		super();
@@ -63,22 +66,22 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_STORE_CLASS, DirectoryManagerStore.class);
 		this.directoryManager = new DirectoryManagerImpl(dao);
 		this.indexManager = new IndexManagerImpl(directoryManager);
-		this.searchManager = new SearchManagerImpl(indexManager);
 		this.filterManager = configuration.getNewInstance(BLUR_FILTER_MANAGER_CLASS, FilterManager.class);
-		update(directoryManager, indexManager, searchManager);
-		runUpdateTask(directoryManager, indexManager, searchManager);
+		this.similarity = configuration.getNewInstance(BLUR_LUCENE_SIMILARITY_CLASS, Similarity.class);
+		update(directoryManager, indexManager);
+		runUpdateTask(directoryManager, indexManager);
 	}
 
 	@Override
 	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, 
 			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
-		Map<String, Searcher> searchers = searchManager.getSearchers(table);
+		Map<String, SuperIndexReader> indexReaders = indexManager.getIndexReaders(table);
 		try {
 			Filter queryFilter = parse(table,filter);
 			final Query userQuery = parse(query,superQueryOn,getAnalyzer(table),queryFilter);
-			return ForkJoin.execute(executor, searchers.entrySet(), new ParallelCall<Entry<String, Searcher>, Hits>() {
+			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, SuperIndexReader>, Hits>() {
 				@Override
-				public Hits call(Entry<String, Searcher> entry) throws Exception {
+				public Hits call(Entry<String, SuperIndexReader> entry) throws Exception {
 					return performSearch((Query) userQuery.clone(), entry.getKey(), entry.getValue(), (int) start, fetch);
 				}
 			}).merge(new HitsMerger());
@@ -89,12 +92,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	private Filter parse(String table, String filter) throws ParseException {
-		Map<String,Filter> filters = getFilters(table);
-		return new FilterParser(table, filters).parseFilter(filter);
-	}
-
-	private Map<String, Filter> getFilters(String table) {
-		return filterManager.getFilters(table);
+		return new FilterParser(table, filterManager).parseFilter(filter);
 	}
 
 	private Analyzer getAnalyzer(String table) throws BlurException, TException {
@@ -117,7 +115,9 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 		}
 	}
 
-	protected Hits performSearch(Query query, String shardId,Searcher searcher, int start, int fetch) throws IOException {
+	protected Hits performSearch(Query query, String shardId, SuperIndexReader reader, int start, int fetch) throws IOException {
+		IndexSearcher searcher = new IndexSearcher(reader);
+		searcher.setSimilarity(similarity);
 		int count = (int) (start + fetch);
 		TopDocs topDocs = searcher.search(query, count == 0 ? 1 : count);
 		return new Hits(topDocs.totalHits, getShardInfo(shardId,topDocs), fetch == 0 ? null : getHitList(searcher,(int) start,fetch,topDocs));

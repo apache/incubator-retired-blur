@@ -2,6 +2,7 @@ package com.nearinfinity.blur.manager;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.TreeMap;
@@ -19,9 +20,15 @@ public class IndexManagerImpl implements IndexManager {
 	protected static final long WAIT_TIME_BEFORE_FORCING_CLOSED = 60000;
 	private DirectoryManager directoryManager;
 	private volatile Map<String,Map<String, SuperIndexReader>> readers = new TreeMap<String, Map<String,SuperIndexReader>>();
+	private volatile Map<SuperIndexReader,Directory> dirs = new HashMap<SuperIndexReader, Directory>();
 
 	public IndexManagerImpl(DirectoryManager directoryManager) {
 		this.directoryManager = directoryManager;
+	}
+
+	@Override
+	public Directory getDirectory(SuperIndexReader indexReader) {
+		return dirs.get(indexReader);
 	}
 	
 	@Override
@@ -29,19 +36,18 @@ public class IndexManagerImpl implements IndexManager {
 		updateIndexReaders(directoryManager.getCurrentDirectories());
 	}
 
-	@Override
-	public Map<String,Map<String, SuperIndexReader>> getCurrentIndexReaders() {
-		return readers;
-	}
-	
 	protected void updateIndexReaders(Map<String,Map<String, Directory>> directories) {
 		Map<String,Map<String, SuperIndexReader>> newTableReaders = new TreeMap<String, Map<String,SuperIndexReader>>();
+		Map<SuperIndexReader, Directory> newDirs = new HashMap<SuperIndexReader, Directory>();
 		for (String table : directories.keySet()) {
 			Map<String, Directory> newDirectories = directories.get(table);
 			Map<String,SuperIndexReader> newReaders = new TreeMap<String, SuperIndexReader>();
 			for (Entry<String, Directory> entry : newDirectories.entrySet()) {
 				try {
-					newReaders.put(entry.getKey(), openReader(table, entry.getKey(), entry.getValue()));
+					Directory directory = entry.getValue();
+					SuperIndexReader reader = openReader(table, entry.getKey(), directory);
+					newDirs.put(reader, directory);
+					newReaders.put(entry.getKey(), reader);
 				} catch (Exception e) {
 					LOG.error("Error open new index for reading using shard {}",entry.getKey());
 					LOG.error("Unknown", e);
@@ -52,6 +58,8 @@ public class IndexManagerImpl implements IndexManager {
 		LOG.info("New Indexreaders {}",newTableReaders);
 		Map<String,Map<String, SuperIndexReader>> oldTableReaders = readers;
 		readers = newTableReaders;
+		
+		dirs = newDirs;
 		//close old readers here?
 		Collection<SuperIndexReader> readersThatNeedToBeClosed = getReadersThatNeedToBeClosed(oldTableReaders);
 		futureClose(readersThatNeedToBeClosed);
@@ -120,4 +128,8 @@ public class IndexManagerImpl implements IndexManager {
 		return result;
 	}
 
+	@Override
+	public Map<String, SuperIndexReader> getIndexReaders(String table) {
+		return readers.get(table);
+	}
 }

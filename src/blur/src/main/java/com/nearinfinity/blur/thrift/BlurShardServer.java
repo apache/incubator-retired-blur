@@ -31,7 +31,7 @@ import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.DirectoryManagerImpl;
 import com.nearinfinity.blur.manager.DirectoryManagerStore;
 import com.nearinfinity.blur.manager.FilterManager;
-import com.nearinfinity.blur.manager.IndexReaderManagerImpl;
+import com.nearinfinity.blur.manager.IndexManagerImpl;
 import com.nearinfinity.blur.manager.SearchManagerImpl;
 import com.nearinfinity.blur.manager.UpdatableManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -48,7 +48,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private static final Logger LOG = LoggerFactory.getLogger(BlurShardServer.class);
 	private static final long TIME_BETWEEN_UPDATES = 10000;
 	private DirectoryManagerImpl directoryManager;
-	private IndexReaderManagerImpl indexManager;
+	private IndexManagerImpl indexManager;
 	private SearchManagerImpl searchManager;
 	private Timer timer;
 	private Map<String,Analyzer> analyzerCache = new ConcurrentHashMap<String, Analyzer>();
@@ -62,7 +62,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private void startServer() throws IOException {
 		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_STORE_CLASS, DirectoryManagerStore.class);
 		this.directoryManager = new DirectoryManagerImpl(dao);
-		this.indexManager = new IndexReaderManagerImpl(directoryManager);
+		this.indexManager = new IndexManagerImpl(directoryManager);
 		this.searchManager = new SearchManagerImpl(indexManager);
 		this.filterManager = configuration.getNewInstance(BLUR_FILTER_MANAGER_CLASS, FilterManager.class);
 		update(directoryManager, indexManager, searchManager);

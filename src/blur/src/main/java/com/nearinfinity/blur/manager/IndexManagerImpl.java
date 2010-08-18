@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 
-public class IndexReaderManagerImpl implements IndexManager {
+public class IndexManagerImpl implements IndexManager {
 
-	private final static Logger LOG = LoggerFactory.getLogger(IndexReaderManagerImpl.class);
+	private final static Logger LOG = LoggerFactory.getLogger(IndexManagerImpl.class);
 	protected static final long WAIT_TIME_BEFORE_FORCING_CLOSED = 60000;
 	private DirectoryManager directoryManager;
 	private volatile Map<String,Map<String, SuperIndexReader>> readers = new TreeMap<String, Map<String,SuperIndexReader>>();
 
-	public IndexReaderManagerImpl(DirectoryManager directoryManager) {
+	public IndexManagerImpl(DirectoryManager directoryManager) {
 		this.directoryManager = directoryManager;
 	}
 	

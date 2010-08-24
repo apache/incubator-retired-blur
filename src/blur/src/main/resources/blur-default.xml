@@ -18,8 +18,8 @@
 	</property>
 
 	<property>
-		<name>blur.directory.manager.store.class</name>
-		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>
+		<name>blur.filter.manager.class</name>
+		<value>com.nearinfinity.blur.manager.FilterManagerImpl</value>
 	</property>
 	
 	<property>

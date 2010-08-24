@@ -103,7 +103,7 @@ public class SuperQuery extends AbstractWrapperQuery {
 		private float superDocScore = 1;
 		private BlurBitSet bitSet;
 		private int nextPrimeDoc;
-		private int primeDoc;
+		private int primeDoc = -1;
 		private String originalQueryStr;
 
 		protected SuperScorer(Scorer scorer, BlurBitSet bitSet, String originalQueryStr) {
@@ -127,18 +127,13 @@ public class SuperQuery extends AbstractWrapperQuery {
 		public int advance(int target) throws IOException {
 			int doc = scorer.docID();
 			if (isScorerExhausted(doc)) {
-				if (!isScorerExhausted(nextPrimeDoc)) {
-					primeDoc = nextPrimeDoc;
-					nextPrimeDoc = NO_MORE_DOCS;
-					return primeDoc;
-				}
 				return primeDoc = doc;
 			}
 			if (target > doc || doc == -1) {
 				doc = scorer.advance(target);
 			}
 			if (isScorerExhausted(doc)) {
-				return primeDoc;
+				return primeDoc == -1 ? primeDoc = doc : primeDoc;
 			}
 			return gatherAllHitsSuperDoc(doc);
 		}
@@ -147,18 +142,13 @@ public class SuperQuery extends AbstractWrapperQuery {
 		public int nextDoc() throws IOException {
 			int doc = scorer.docID();
 			if (isScorerExhausted(doc)) {
-				if (!isScorerExhausted(nextPrimeDoc)) {
-					primeDoc = nextPrimeDoc;
-					nextPrimeDoc = NO_MORE_DOCS;
-					return primeDoc;
-				}
 				return primeDoc = doc;
 			}
 			if (doc == -1) {
 				doc = scorer.nextDoc();
 			}
 			if (isScorerExhausted(doc)) {
-				return primeDoc;
+				return primeDoc == -1 ? primeDoc = doc : primeDoc;
 			}
 			return gatherAllHitsSuperDoc(doc);
 		}

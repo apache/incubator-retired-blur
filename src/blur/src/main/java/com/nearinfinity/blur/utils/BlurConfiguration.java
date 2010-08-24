@@ -103,7 +103,7 @@ public class BlurConfiguration implements BlurConstants {
 	public <T> T getNewInstance(String name, Class<? extends T> clazz) {
 		String className = get(name);
 		LOG.info("Using property {} trying to create class {} for class type of {}",
-				new Object[]{name,className,clazz.toString()});
+				name,className,clazz.toString());
 		try {
 			return (T) Class.forName(className).newInstance();
 		} catch (InstantiationException e) {

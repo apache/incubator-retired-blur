@@ -97,12 +97,21 @@ public class SuperDocument {
 				docs.add(addMetaData(id,entry.getKey(),entry.getValue()));
 			}
 		}
+		addExtra(docs);
 		return docs;
 	}
 
+	private void addExtra(List<Document> docs) {
+		if (docs == null || docs.isEmpty()) {
+			return;
+		}
+		Document document = docs.get(0);
+		document.add(new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.NOT_ANALYZED_NO_NORMS));
+	}
+
 	private static Document addMetaData(String id, String superKey, Document doc) {
-		doc.add(new Field(ID,id,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
-		doc.add(new Field(SUPER_KEY,superKey,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+		doc.add(new Field(ID,id,Store.YES,Index.NO));
+		doc.add(new Field(SUPER_KEY,superKey,Store.YES,Index.NO));
 		return doc;
 	}
 

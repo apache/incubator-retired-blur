@@ -75,9 +75,9 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 				@Override
 				public int compare(Hit o1, Hit o2) {
 					if (o1.score == o2.score) {
-						return o1.id.compareTo(o2.id);
+						return o2.id.compareTo(o1.id);
 					}
-					return Double.compare(o1.score, o2.score);
+					return Double.compare(o2.score, o1.score);
 				}
 			});
 		}

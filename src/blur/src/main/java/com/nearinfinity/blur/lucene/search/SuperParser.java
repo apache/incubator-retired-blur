@@ -14,6 +14,7 @@ import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.PhraseQuery;
 import org.apache.lucene.search.Query;
@@ -38,6 +39,7 @@ public class SuperParser extends QueryParser {
 
 	public SuperParser(Version matchVersion, Analyzer a, boolean superSearch, Filter queryFilter) {
 		super(matchVersion, SUPER, a);
+		this.setAllowLeadingWildcard(true);
 		this.superSearch = superSearch;
 		this.queryFilter = queryFilter;
 	}
@@ -100,6 +102,9 @@ public class SuperParser extends QueryParser {
 
 	@Override
 	protected Query newWildcardQuery(Term t) {
+		if (SUPER.equals(t.field()) && "*".equals(t.text())) {
+			return new MatchAllDocsQuery();
+		}
 		return addField(super.newWildcardQuery(t),t.field());
 	}
 

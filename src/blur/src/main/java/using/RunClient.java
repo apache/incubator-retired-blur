@@ -25,10 +25,11 @@ public class RunClient {
 		System.out.println(tableList);
 		long hitsTotal = 0;
 		long totalTime = 0;
-		long passes = 10;
+		long passes = 1;
 		for (int i = 0; i < passes; i++) {
 			long s = System.currentTimeMillis();
-			Hits hits = client.search("test", "test.test:value2", true, ScoreType.SUPER, null, 0, 0, Long.MAX_VALUE, Long.MAX_VALUE);
+			Hits hits = client.search("test", "person.name:aaron", true, ScoreType.SUPER, null, 0, 10, Long.MAX_VALUE, Long.MAX_VALUE);
+//			Hits hits = client.search("test", "test.test:value2", true, ScoreType.SUPER, null, 0, 0, Long.MAX_VALUE, Long.MAX_VALUE);
 			hitsTotal += hits.totalHits;
 			long e = System.currentTimeMillis();
 			totalTime += (e-s);

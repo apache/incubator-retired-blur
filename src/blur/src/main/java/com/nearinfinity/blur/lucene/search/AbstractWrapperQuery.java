@@ -62,7 +62,7 @@ public abstract class AbstractWrapperQuery extends Query {
 
 	public abstract String toString(String field);
 
-	public Weight weight(Searcher searcher) throws IOException {
-		return createWeight(searcher);
-	}
+//	public Weight weight(Searcher searcher) throws IOException {
+//		return createWeight(searcher);
+//	}
 }

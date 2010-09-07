@@ -16,7 +16,7 @@ import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.mele.Mele;
 
-public class IndexManagerImpl implements IndexManager {
+public class IndexManagerImpl {
 
 //	private static final Log LOG = LogFactory.getLog(IndexManagerImpl.class);
 	private Mele mele;
@@ -52,7 +52,6 @@ public class IndexManagerImpl implements IndexManager {
 		//@todo once all are brought online, look for shards that are not online yet...
 	}
 
-	@Override
 	public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
 		Map<String, IndexWriter> map = indexWriters.get(table);
 		Map<String, IndexReader> reader = new HashMap<String, IndexReader>();

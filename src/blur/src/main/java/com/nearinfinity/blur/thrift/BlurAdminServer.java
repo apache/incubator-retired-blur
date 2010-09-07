@@ -6,16 +6,12 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -40,7 +36,7 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ZkUtils;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
-import com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore;
+import com.nearinfinity.mele.Mele;
 
 public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
@@ -115,7 +111,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	protected String blurNodePath;
 	protected BlurConfiguration configuration = new BlurConfiguration();
 	protected String blurPath;
-	protected ZookeeperDirectoryManagerStore zookeeperDirectoryManagerStore = new ZookeeperDirectoryManagerStore();
+	protected Mele mele;
 	
 	public BlurAdminServer() throws IOException {
 		zk = ZooKeeperFactory.getZooKeeper();
@@ -128,6 +124,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+		mele = Mele.getMele();
 	}
 
 	@Override
@@ -163,7 +160,6 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		} catch (Exception e) {
 			throw new BlurException(e.getMessage());
 		}
-		removeAllTableShards(table);
 	}
 
 	@Override
@@ -192,7 +188,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		}
 		try {
 			createAllTableShards(table,descriptor);
-		} catch (URISyntaxException e) {
+		} catch (IOException e) {
 			throw new BlurException(e.getMessage());
 		}
 	}
@@ -396,10 +392,10 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		ObjectOutputStream outputStream = new ObjectOutputStream(baos);
 		String analyzerDef = descriptor.getAnalyzerDef();
 		String partitionerClass = descriptor.getPartitionerClass();
-		Map<String, String> shardDirectoryLocations = descriptor.getShardDirectoryLocations();
+		List<String> shardNames = descriptor.getShardNames();
 		outputStream.writeObject(analyzerDef);
 		outputStream.writeObject(partitionerClass);
-		outputStream.writeObject(shardDirectoryLocations);
+		outputStream.writeObject(shardNames);
 		outputStream.close();
 		return baos.toByteArray();
 	}
@@ -411,34 +407,25 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			TableDescriptor descriptor = new TableDescriptor();
 			descriptor.analyzerDef = (String) inputStream.readObject();
 			descriptor.partitionerClass = (String) inputStream.readObject();
-			descriptor.shardDirectoryLocations = (Map<String, String>) inputStream.readObject();
+			descriptor.shardNames = (List<String>) inputStream.readObject();
 			return descriptor;
 		} finally {
 			inputStream.close();
 		}
 	}
 	
-	private void createAllTableShards(String table, TableDescriptor descriptor) throws URISyntaxException {
-		Map<String, String> directoryLocations = descriptor.shardDirectoryLocations;
-		for (String shardId : directoryLocations.keySet()) {
-			URI dirUri = new URI(wrapWithZookeeperUri(table,shardId,directoryLocations.get(shardId)));
-			zookeeperDirectoryManagerStore.addDirectoryURIToServe(table, shardId, dirUri);
+	private void createAllTableShards(String table, TableDescriptor descriptor) throws IOException {
+//		???? mele here
+		mele.createDirectoryCluster(table);
+		List<String> shardNames = descriptor.shardNames;
+		for (String shard : shardNames) {
+			mele.createDirectory(table, shard);
 		}
 	}
 
-	private String wrapWithZookeeperUri(String table, String shardId, String baseUri) {
-		return "zk://" + blurPath +
-				"/" + BLUR_REFS +
-				"/" + table + 
-				"/" + shardId + 
-				"?" + baseUri;
-	}
-
-	private void removeAllTableShards(String table) {
-		Set<String> shardIds = zookeeperDirectoryManagerStore.getShardIds(table);
-		for (String shardId : shardIds) {
-			zookeeperDirectoryManagerStore.removeDirectoryURIToServe(table, shardId);
-		}
+	private void removeAllTableShards(String table) throws IOException {
+//		????  mele here
+		mele.removeDirectoryCluster(table);
 	}
 	
 	private void checkIfTableExists(TableDescriptor descriptor, String table) throws BlurException {

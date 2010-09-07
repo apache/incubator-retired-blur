@@ -14,8 +14,11 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
@@ -52,6 +55,8 @@ public class RandomSuperQueryTest extends TestCase {
 	public void testRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
 		long seed = seedGen.nextLong();
 //		long seed = 660158310006278052L;
+
+		Filter filter = new QueryWrapperFilter(new MatchAllDocsQuery());
 		
 		Random random = new Random(seed);
 		Collection<String> sampler = new HashSet<String>();
@@ -66,7 +71,7 @@ public class RandomSuperQueryTest extends TestCase {
 		IndexSearcher searcher = new IndexSearcher(indexReader);
 		long s = System.currentTimeMillis();
 		for (String str : sampler) {
-			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true, null).parse(str);
+			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true, filter).parse(str);
 			TopDocs topDocs = searcher.search(query, 10);
 			assertTrue("seed [" + seed + "] {" + query + "} {" + s + "}",topDocs.totalHits > 0);
 		}

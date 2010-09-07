@@ -3,18 +3,15 @@ package com.nearinfinity.blur.manager;
 import java.io.IOException;
 
 import org.apache.lucene.search.Filter;
-import org.apache.zookeeper.ZooKeeper;
-
-import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 
 public class FilterManagerImpl implements FilterManager {
 	
-	private ZooKeeper zk;
-	private IndexManager indexManager;
+//	private ZooKeeper zk;
+//	private IndexManager indexManager;
 
 	public FilterManagerImpl(IndexManager indexManager) throws IOException {
-		zk = ZooKeeperFactory.getZooKeeper();
-		this.indexManager = indexManager;
+//		zk = ZooKeeperFactory.getZooKeeper();
+//		this.indexManager = indexManager;
 	}
 
 	@Override

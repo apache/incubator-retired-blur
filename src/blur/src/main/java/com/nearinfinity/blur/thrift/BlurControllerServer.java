@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
@@ -13,12 +15,11 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.Mutation;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -26,9 +27,9 @@ import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ZkUtils;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class BlurControllerServer extends BlurAdminServer implements Watcher,BlurConstants {
+public class BlurControllerServer extends BlurAdminServer implements Watcher, BlurConstants {
 	
-	private static final Logger LOG = LoggerFactory.getLogger(BlurControllerServer.class);
+	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 	private Map<String,Blur.Client> clients = new TreeMap<String,Blur.Client>();
 	private int nodePort;
 
@@ -95,9 +96,14 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher,Blu
 		try {
 			tr.open();
 		} catch (TTransportException e) {
-			LOG.error("Error opening client to host {}",hostname);
+			LOG.error("Error opening client to host " + hostname);
 			return null;
 		}
 		return client;
+	}
+
+	@Override
+	public void update(String table, Mutation mutation) throws BlurException, TException {
+		
 	}
 }

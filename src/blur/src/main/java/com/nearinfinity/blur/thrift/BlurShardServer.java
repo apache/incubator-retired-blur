@@ -4,15 +4,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.IndexSearcher;
@@ -23,23 +24,18 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.util.Version;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
-import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.FilterParser;
 import com.nearinfinity.blur.lucene.search.SuperParser;
-import com.nearinfinity.blur.manager.DirectoryManagerImpl;
-import com.nearinfinity.blur.manager.DirectoryManagerStore;
 import com.nearinfinity.blur.manager.FilterManager;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManagerImpl;
-import com.nearinfinity.blur.manager.UpdatableManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.Mutation;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -48,11 +44,8 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
-	private static final Logger LOG = LoggerFactory.getLogger(BlurShardServer.class);
-	private static final long TIME_BETWEEN_UPDATES = 10000;
-	private DirectoryManagerImpl directoryManager;
+	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
-	private Timer timer;
 	private Map<String,Analyzer> analyzerCache = new ConcurrentHashMap<String, Analyzer>();
 	private FilterManager filterManager;
 	private Similarity similarity;
@@ -63,25 +56,27 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 	
 	private void startServer() throws IOException {
-		DirectoryManagerStore dao = configuration.getNewInstance(BLUR_DIRECTORY_MANAGER_STORE_CLASS, DirectoryManagerStore.class);
-		this.directoryManager = new DirectoryManagerImpl(dao);
-		this.indexManager = new IndexManagerImpl(directoryManager);
+		this.indexManager = new IndexManagerImpl();
 		this.filterManager = configuration.getNewInstance(BLUR_FILTER_MANAGER_CLASS, FilterManager.class);
 		this.similarity = configuration.getNewInstance(BLUR_LUCENE_SIMILARITY_CLASS, Similarity.class);
-		update(directoryManager, indexManager);
-		runUpdateTask(directoryManager, indexManager);
 	}
 
 	@Override
 	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, 
 			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
-		Map<String, SuperIndexReader> indexReaders = indexManager.getIndexReaders(table);
+		Map<String, IndexReader> indexReaders;
+		try {
+			indexReaders = indexManager.getIndexReaders(table);
+		} catch (IOException e) {
+			LOG.error("Unknown error",e);
+			throw new BlurException(e.getMessage());
+		}
 		try {
 			Filter queryFilter = parse(table,filter);
 			final Query userQuery = parse(query,superQueryOn,getAnalyzer(table),queryFilter);
-			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, SuperIndexReader>, Hits>() {
+			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, Hits>() {
 				@Override
-				public Hits call(Entry<String, SuperIndexReader> entry) throws Exception {
+				public Hits call(Entry<String, IndexReader> entry) throws Exception {
 					return performSearch((Query) userQuery.clone(), entry.getKey(), entry.getValue(), (int) start, fetch);
 				}
 			}).merge(new HitsMerger());
@@ -115,7 +110,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 		}
 	}
 
-	protected Hits performSearch(Query query, String shardId, SuperIndexReader reader, int start, int fetch) throws IOException {
+	protected Hits performSearch(Query query, String shardId, IndexReader reader, int start, int fetch) throws IOException {
 		IndexSearcher searcher = new IndexSearcher(reader);
 		searcher.setSimilarity(similarity);
 		int count = (int) (start + fetch);
@@ -154,22 +149,9 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	protected NODE_TYPE getType() {
 		return NODE_TYPE.NODE;
 	}
-	
-	private void runUpdateTask(final UpdatableManager... managers) {
-		TimerTask task = new TimerTask() {
-			@Override
-			public void run() {
-				update(managers);
-			}
-		};
-		this.timer = new Timer("Update-Manager-Timer", true);
-		this.timer.schedule(task, TIME_BETWEEN_UPDATES, TIME_BETWEEN_UPDATES);
-	}
-	
-	private void update(UpdatableManager... managers) {
-		LOG.info("Running Update");
-		for (UpdatableManager manager : managers) {
-			manager.update();
-		}
+
+	@Override
+	public void update(String table, Mutation mutation) throws BlurException, TException {
+		
 	}
 }

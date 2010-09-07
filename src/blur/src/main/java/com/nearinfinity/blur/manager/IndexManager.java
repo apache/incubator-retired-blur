@@ -1,15 +1,13 @@
 package com.nearinfinity.blur.manager;
 
+import java.io.IOException;
 import java.util.Map;
 
-import org.apache.lucene.store.Directory;
-
-import com.nearinfinity.blur.lucene.index.SuperIndexReader;
+import org.apache.lucene.index.IndexReader;
 
 
-public interface IndexManager extends UpdatableManager {
+public interface IndexManager {
 	
-	Directory getDirectory(SuperIndexReader indexReader);
-	Map<String, SuperIndexReader> getIndexReaders(String table);
+	Map<String, IndexReader> getIndexReaders(String table) throws IOException;
 
 }

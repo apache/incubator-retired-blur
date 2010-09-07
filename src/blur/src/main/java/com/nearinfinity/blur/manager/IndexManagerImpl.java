@@ -1,135 +1,64 @@
 package com.nearinfinity.blur.manager;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.index.IndexDeletionPolicy;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.nearinfinity.blur.lucene.index.SuperIndexReader;
+import com.nearinfinity.mele.Mele;
 
 public class IndexManagerImpl implements IndexManager {
 
-	private final static Logger LOG = LoggerFactory.getLogger(IndexManagerImpl.class);
-	protected static final long WAIT_TIME_BEFORE_FORCING_CLOSED = 60000;
-	private DirectoryManager directoryManager;
-	private volatile Map<String,Map<String, SuperIndexReader>> readers = new TreeMap<String, Map<String,SuperIndexReader>>();
-	private volatile Map<SuperIndexReader,Directory> dirs = new HashMap<SuperIndexReader, Directory>();
+//	private static final Log LOG = LogFactory.getLog(IndexManagerImpl.class);
+	private Mele mele;
+	private Map<String,Map<String,IndexWriter>> indexWriters = new ConcurrentHashMap<String, Map<String,IndexWriter>>();
+	private Map<String,Analyzer> analyzers = new ConcurrentHashMap<String, Analyzer>();
 
-	public IndexManagerImpl(DirectoryManager directoryManager) {
-		this.directoryManager = directoryManager;
+	public IndexManagerImpl() throws IOException {
+		setupMele();
 	}
 
-	@Override
-	public Directory getDirectory(SuperIndexReader indexReader) {
-		return dirs.get(indexReader);
-	}
-	
-	@Override
-	public void update() {
-		updateIndexReaders(directoryManager.getCurrentDirectories());
-	}
-
-	protected void updateIndexReaders(Map<String,Map<String, Directory>> directories) {
-		Map<String,Map<String, SuperIndexReader>> newTableReaders = new TreeMap<String, Map<String,SuperIndexReader>>();
-		Map<SuperIndexReader, Directory> newDirs = new HashMap<SuperIndexReader, Directory>();
-		for (String table : directories.keySet()) {
-			Map<String, Directory> newDirectories = directories.get(table);
-			Map<String,SuperIndexReader> newReaders = new TreeMap<String, SuperIndexReader>();
-			for (Entry<String, Directory> entry : newDirectories.entrySet()) {
-				try {
-					Directory directory = entry.getValue();
-					SuperIndexReader reader = openReader(table, entry.getKey(), directory);
-					newDirs.put(reader, directory);
-					newReaders.put(entry.getKey(), reader);
-				} catch (Exception e) {
-					LOG.error("Error open new index for reading using shard {}",entry.getKey());
-					LOG.error("Unknown", e);
-				}
+	private void setupMele() throws IOException {
+		mele = Mele.getMele();
+		List<String> listClusters = mele.listClusters();
+		for (String cluster : listClusters) {
+			Map<String, IndexWriter> map = indexWriters.get(cluster);
+			if (map == null) {
+				map = new ConcurrentHashMap<String, IndexWriter>();
+				indexWriters.put(cluster, map);
 			}
-			newTableReaders.put(table, newReaders);
+			List<String> localDirectories = mele.listLocalDirectories(cluster);
+			for (String local : localDirectories) {
+				//@todo get zk lock here....???  maybe if the index writer cannot get a lock that is good enough???
+				// also maybe send this into a loop so that if a node goes down it will picks the pieces...
+				// need to think about what happens when a node comes back online.
+				Directory directory = mele.open(cluster, local);
+				IndexDeletionPolicy deletionPolicy = mele.getIndexDeletionPolicy(cluster, local);
+				Analyzer analyzer = analyzers.get(cluster);
+				IndexWriter indexWriter = new IndexWriter(directory, analyzer, deletionPolicy, MaxFieldLength.UNLIMITED);
+				map.put(local, indexWriter);
+			}
 		}
-		LOG.info("New Indexreaders {}",newTableReaders);
-		Map<String,Map<String, SuperIndexReader>> oldTableReaders = readers;
-		readers = newTableReaders;
 		
-		dirs = newDirs;
-		//close old readers here?
-		Collection<SuperIndexReader> readersThatNeedToBeClosed = getReadersThatNeedToBeClosed(oldTableReaders);
-		futureClose(readersThatNeedToBeClosed);
+		//@todo once all are brought online, look for shards that are not online yet...
 	}
 
-	private SuperIndexReader openReader(String table, String shardId, Directory dir) throws IOException, InterruptedException {
-		SuperIndexReader reader = getReader(table,shardId);
-		if (reader == null) {
-			return new SuperIndexReader(dir).waitForWarmUp();
-		} else if (!reader.isCurrent()) {
-			return reader.reopenSuper().waitForWarmUp();
+	@Override
+	public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
+		Map<String, IndexWriter> map = indexWriters.get(table);
+		Map<String, IndexReader> reader = new HashMap<String, IndexReader>();
+		for (Entry<String, IndexWriter> writer : map.entrySet()) {
+			reader.put(writer.getKey(), writer.getValue().getReader());
 		}
 		return reader;
-	}
-
-	private SuperIndexReader getReader(String table, String shardId) {
-		Map<String, SuperIndexReader> tableMap = readers.get(table);
-		if (tableMap != null) {
-			return tableMap.get(shardId);
-		}
-		return null;
-	}
-
-	private void futureClose(final Collection<SuperIndexReader> readersThatNeedToBeClosed) {
-		Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					Thread.sleep(WAIT_TIME_BEFORE_FORCING_CLOSED);
-				} catch (InterruptedException e) {
-					throw new RuntimeException(e);
-				}
-				for (SuperIndexReader reader : readersThatNeedToBeClosed) {
-					try {
-						LOG.info("Closing reader {}",reader);
-						reader.close();
-					} catch (IOException e) {
-						LOG.error("Unknown error",e);
-					}
-				}
-			}
-		});
-		thread.setDaemon(true);
-		thread.setName("Closing-Old-Readers-" + System.currentTimeMillis());
-		thread.start();
-	}
-
-	private Collection<SuperIndexReader> getReadersThatNeedToBeClosed(Map<String, Map<String, SuperIndexReader>> oldTableReaders) {
-		Collection<SuperIndexReader> result = new HashSet<SuperIndexReader>();
-		for (String table : oldTableReaders.keySet()) {
-			if (readers.containsKey(table)) {
-				Map<String, SuperIndexReader> onlineReaders = readers.get(table);
-				Map<String, SuperIndexReader> oldReaders = oldTableReaders.get(table);
-				for (String shardId : oldReaders.keySet()) {
-					if (!onlineReaders.containsKey(shardId)) {
-						result.add(oldReaders.get(shardId));
-					}
-				}
-			} else {
-				//the whole table is gone
-				Map<String, SuperIndexReader> map = oldTableReaders.get(table);
-				result.addAll(map.values());
-			}
-		}
-		LOG.info("Old readers that need to be closed {}",result);
-		return result;
-	}
-
-	@Override
-	public Map<String, SuperIndexReader> getIndexReaders(String table) {
-		return readers.get(table);
 	}
 }

@@ -86,6 +86,9 @@ public class SuperQuery extends AbstractWrapperQuery {
 		@Override
 		public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
 			Scorer scorer = weight.scorer(reader, scoreDocsInOrder, topScorer);
+			if (scorer == null) {
+				return null;
+			}
 			return new SuperScorer(scorer,PrimeDocCache.getPrimeDoc(reader),originalQueryStr);
 		}
 

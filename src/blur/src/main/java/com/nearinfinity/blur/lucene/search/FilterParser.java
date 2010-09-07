@@ -14,7 +14,7 @@ import org.apache.lucene.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nearinfinity.blur.manager.FilterManagerImpl;
+import com.nearinfinity.blur.manager.FilterManager;
 import com.nearinfinity.blur.thrift.BlurShardServer;
 
 public class FilterParser extends QueryParser {
@@ -22,9 +22,9 @@ public class FilterParser extends QueryParser {
 	private static final Logger LOG = LoggerFactory.getLogger(BlurShardServer.class);
 	private static final String FILTERED_QUERY = "FILTERED_QUERY";
 	private String table;
-	private FilterManagerImpl filterManager;
+	private FilterManager filterManager;
 
-	public FilterParser(String table, FilterManagerImpl filterManager) {
+	public FilterParser(String table, FilterManager filterManager) {
 		super(Version.LUCENE_CURRENT, FILTERED_QUERY, new WhitespaceAnalyzer());
 		this.table = table;
 		this.filterManager = filterManager;

@@ -16,7 +16,6 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.FilterManager;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -30,8 +29,8 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.FilterParser;
 import com.nearinfinity.blur.lucene.search.SuperParser;
-import com.nearinfinity.blur.manager.FilterManagerImpl;
-import com.nearinfinity.blur.manager.IndexManagerImpl;
+import com.nearinfinity.blur.manager.FilterManager;
+import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -45,9 +44,9 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
-	private IndexManagerImpl indexManager;
+	private IndexManager indexManager;
 	private Map<String,Analyzer> analyzerCache = new ConcurrentHashMap<String, Analyzer>();
-	private FilterManagerImpl filterManager;
+	private FilterManager filterManager;
 	private Similarity similarity;
 	
 	public BlurShardServer() throws IOException {
@@ -56,7 +55,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 	
 	private void startServer() throws IOException {
-		this.indexManager = new IndexManagerImpl();
+		this.indexManager = new IndexManager();
 //		this.filterManager = configuration.getNewInstance(BLUR_FILTER_MANAGER_CLASS, FilterManager.class);
 		this.similarity = configuration.getNewInstance(BLUR_LUCENE_SIMILARITY_CLASS, Similarity.class);
 	}

@@ -4,12 +4,12 @@ import java.io.IOException;
 
 import org.apache.lucene.search.Filter;
 
-public class FilterManagerImpl {
+public class FilterManager {
 	
 //	private ZooKeeper zk;
 //	private IndexManager indexManager;
 
-	public FilterManagerImpl(IndexManagerImpl indexManager) throws IOException {
+	public FilterManager(IndexManager indexManager) throws IOException {
 //		zk = ZooKeeperFactory.getZooKeeper();
 //		this.indexManager = indexManager;
 	}

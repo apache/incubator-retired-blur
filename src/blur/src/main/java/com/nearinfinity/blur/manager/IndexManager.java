@@ -16,14 +16,14 @@ import org.apache.lucene.store.Directory;
 
 import com.nearinfinity.mele.Mele;
 
-public class IndexManagerImpl {
+public class IndexManager {
 
 //	private static final Log LOG = LogFactory.getLog(IndexManagerImpl.class);
 	private Mele mele;
 	private Map<String,Map<String,IndexWriter>> indexWriters = new ConcurrentHashMap<String, Map<String,IndexWriter>>();
 	private Map<String,Analyzer> analyzers = new ConcurrentHashMap<String, Analyzer>();
 
-	public IndexManagerImpl() throws IOException {
+	public IndexManager() throws IOException {
 		setupMele();
 	}
 

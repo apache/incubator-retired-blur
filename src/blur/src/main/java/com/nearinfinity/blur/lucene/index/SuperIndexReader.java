@@ -208,5 +208,10 @@ public class SuperIndexReader extends IndexReader {
 	public SuperIndexReader reopenSuper() throws CorruptIndexException, IOException {
 		return new SuperIndexReader(indexReader.reopen());
 	}
+
+	@Override
+	public long getUniqueTermCount() throws IOException {
+		return indexReader.getUniqueTermCount();
+	}
 	
 }

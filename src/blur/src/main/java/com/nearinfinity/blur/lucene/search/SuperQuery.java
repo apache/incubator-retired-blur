@@ -129,6 +129,7 @@ public class SuperQuery extends AbstractWrapperQuery {
 		@Override
 		public int advance(int target) throws IOException {
 			int doc = scorer.docID();
+			int odoc = doc;
 			if (isScorerExhausted(doc)) {
 				return primeDoc = doc;
 			}
@@ -138,12 +139,15 @@ public class SuperQuery extends AbstractWrapperQuery {
 			if (isScorerExhausted(doc)) {
 				return primeDoc == -1 ? primeDoc = doc : primeDoc;
 			}
-			return gatherAllHitsSuperDoc(doc);
+			int gatherAllHitsSuperDoc = gatherAllHitsSuperDoc(doc);
+//			System.out.println("adv [" + target + "] [" + originalQueryStr + "] > " + odoc + " = " + gatherAllHitsSuperDoc);
+			return gatherAllHitsSuperDoc;
 		}
 
 		@Override
 		public int nextDoc() throws IOException {
 			int doc = scorer.docID();
+			int odoc = doc;
 			if (isScorerExhausted(doc)) {
 				return primeDoc = doc;
 			}
@@ -153,7 +157,9 @@ public class SuperQuery extends AbstractWrapperQuery {
 			if (isScorerExhausted(doc)) {
 				return primeDoc == -1 ? primeDoc = doc : primeDoc;
 			}
-			return gatherAllHitsSuperDoc(doc);
+			int gatherAllHitsSuperDoc = gatherAllHitsSuperDoc(doc);
+//			System.out.println("nextDoc [" + originalQueryStr + "] > " + odoc + " = " + gatherAllHitsSuperDoc);
+			return gatherAllHitsSuperDoc;
 		}
 
 		private int gatherAllHitsSuperDoc(int doc) throws IOException {

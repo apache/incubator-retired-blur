@@ -111,8 +111,12 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 
 	private static Analyzer getAnalyzerByClassName(String className) throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		Class<?> clazz = Class.forName(className);
-		Constructor<?> constructor = clazz.getConstructor(new Class[]{Version.class});
-		return (Analyzer) constructor.newInstance(Version.LUCENE_CURRENT);
+		try {
+			return (Analyzer) clazz.newInstance();
+		} catch (Exception e) {
+			Constructor<?> constructor = clazz.getConstructor(new Class[]{Version.class});
+			return (Analyzer) constructor.newInstance(Version.LUCENE_CURRENT);
+		}
 	}
 
 }

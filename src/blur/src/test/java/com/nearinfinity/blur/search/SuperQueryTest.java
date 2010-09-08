@@ -10,6 +10,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
@@ -36,6 +37,9 @@ public class SuperQueryTest extends TestCase {
 		
 		Directory directory = createIndex();
 		SuperIndexReader reader = new SuperIndexReader(IndexReader.open(directory));
+		printAll(new Term("person.name","aaron"),reader);
+		printAll(new Term("address.street","sulgrave"),reader);
+		printAll(new Term(SuperDocument.PRIME_DOC,SuperDocument.PRIME_DOC_VALUE),reader);
 		reader.waitForWarmUp();
 		IndexSearcher searcher = new IndexSearcher(reader);
 		TopDocs topDocs = searcher.search(booleanQuery, 10);
@@ -43,6 +47,13 @@ public class SuperQueryTest extends TestCase {
 		assertEquals("1",searcher.doc(topDocs.scoreDocs[0].doc).get(SuperDocument.ID));
 		assertEquals("3",searcher.doc(topDocs.scoreDocs[1].doc).get(SuperDocument.ID));
 		
+	}
+
+	private void printAll(Term term, SuperIndexReader reader) throws IOException {
+		TermDocs termDocs = reader.termDocs(term);
+		while (termDocs.next()) {
+			System.out.println(term + "=>" + termDocs.doc());
+		}
 	}
 
 	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
@@ -63,7 +74,7 @@ public class SuperQueryTest extends TestCase {
 			String[] split2 = split[0].split("\\.");
 			String superName = split2[0];
 			String fieldName = split2[1];
-			document.addFieldNotAnalyzedNoNorms(superName, UUID.randomUUID().toString(), fieldName, value);
+			document.addFieldAnalyzedNoNorms(superName, UUID.randomUUID().toString(), fieldName, value);
 		}
 		return document;
 	}

@@ -56,7 +56,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	
 	private void startServer() throws IOException {
 		this.indexManager = new IndexManager();
-//		this.filterManager = configuration.getNewInstance(BLUR_FILTER_MANAGER_CLASS, FilterManager.class);
 		this.similarity = configuration.getNewInstance(BLUR_LUCENE_SIMILARITY_CLASS, Similarity.class);
 	}
 
@@ -151,6 +150,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
 	@Override
 	public void update(String table, Mutation mutation) throws BlurException, TException {
-		
+		indexManager.update(table, mutation);
 	}
 }

@@ -8,6 +8,7 @@ import junit.framework.TestCase;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
@@ -23,8 +24,8 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
-import com.nearinfinity.blur.lucene.index.SuperIndexWriter;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
+import com.nearinfinity.blur.manager.IndexManager;
 
 public class SuperQueryTest extends TestCase {
 	
@@ -46,10 +47,10 @@ public class SuperQueryTest extends TestCase {
 
 	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
 		Directory directory = new RAMDirectory();
-		SuperIndexWriter writer = new SuperIndexWriter(directory, new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
-		writer.addSuperDocument(create("1","person.name:aaron","address.street:sulgrave"));
-		writer.addSuperDocument(create("2","person.name:hannah","address.street:sulgrave"));
-		writer.addSuperDocument(create("3","person.name:aaron","address.street:sulgrave court"));
+		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
+		IndexManager.update(writer, create("1","person.name:aaron","address.street:sulgrave"));
+		IndexManager.update(writer, create("2","person.name:hannah","address.street:sulgrave"));
+		IndexManager.update(writer, create("3","person.name:aaron","address.street:sulgrave court"));
 		writer.close();
 		return directory;
 	}

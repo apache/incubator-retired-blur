@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
@@ -27,8 +28,8 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
-import com.nearinfinity.blur.lucene.index.SuperIndexWriter;
 import com.nearinfinity.blur.lucene.search.SuperParser;
+import com.nearinfinity.blur.manager.IndexManager;
 
 public class RandomSuperQueryTest extends TestCase {
 	
@@ -87,10 +88,10 @@ public class RandomSuperQueryTest extends TestCase {
 			columns.put(columnFamilies[i], genWords(random,MIN_NUM_COLS,MAX_NUM_COLS,"col"));
 		}
 		
-		SuperIndexWriter writer = new SuperIndexWriter(directory, new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
+		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
 		int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
 		for (int i = 0; i < numberOfDocs; i++) {
-			writer.addSuperDocument(generatSuperDoc(random, columns, sampler));
+			IndexManager.update(writer, generatSuperDoc(random, columns, sampler));
 		}
 		writer.close();
 		return directory;

@@ -26,6 +26,10 @@ public class SuperDocument {
 	private Map<String,Map<String,Document>> documents = new HashMap<String, Map<String,Document>>();
 	private String id;
 	
+	public String getId() {
+		return id;
+	}
+
 	public SuperDocument(String id) {
 		this.id = id;
 	}

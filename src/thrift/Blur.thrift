@@ -16,13 +16,29 @@ struct TableDescriptor {
   1:bool isEnabled,
   2:string analyzerDef,
   3:string partitionerClass,
-  4:map<string,string> shardDirectoryLocations
+  4:list<string> shardNames
+}
+
+struct Document {
+  1:string id,
+  2:map<string,string> values
+}
+
+struct DocumentFamily {
+  1:string name,
+  2:list<Document> documents
+}
+
+struct Mutation {
+  1:string id,
+  2:list<DocumentFamily> documentFamilies
 }
 
 enum ScoreType {
   SUPER,
   AGGREGATE,
-  BEST_SCORE
+  BEST,
+  CONSTANT
 }
 
 exception BlurException {
@@ -39,11 +55,14 @@ void disable(1:string table) throws (1:BlurException ex)
 void create(1:string table, 2:TableDescriptor desc) throws (1:BlurException ex)
 void drop(1:string table) throws (1:BlurException ex)
 
+void update(1:string table, 2:Mutation mutation) throws (1:BlurException ex)
+
 Hits search(1:string table, 2:string query, 3:bool superQueryOn, 4:ScoreType type, 5:string filter, 6:i64 start, 7:i32 fetch, 8:i64 minimumNumberOfHits, 9:i64 maxQueryTime)
    throws (1:BlurException ex)
 
 list<string> getDynamicTerms(1:string table) throws (1:BlurException ex)
 string getDynamicTermQuery(1:string table, 2:string term) throws (1:BlurException ex)
+bool isDynamicTermQuerySuperQuery(1:string table, 2:string term) throws (1:BlurException ex)
 void createDynamicTermQuery(1:string table, 2:string term, 3:string query, 4:bool superQueryOn) throws (1:BlurException ex)
 void deleteDynamicTermQuery(1:string table, 2:string term) throws (1:BlurException ex)
 

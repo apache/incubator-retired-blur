@@ -140,7 +140,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	private Query parse(String query, boolean superQueryOn, Analyzer analyzer, Filter queryFilter) throws ParseException {
-		return new SuperParser(Version.LUCENE_CURRENT, analyzer, superQueryOn, queryFilter).parse(query);
+		return new SuperParser(Version.LUCENE_30, analyzer, superQueryOn, queryFilter).parse(query);
 	}
 	
 	@Override

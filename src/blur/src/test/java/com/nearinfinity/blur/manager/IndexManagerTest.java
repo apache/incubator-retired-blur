@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import junit.framework.TestCase;
@@ -56,8 +57,9 @@ public class IndexManagerTest extends TestCase {
 		sc.columns.put("name", col);
 		scf.superColumns = new HashMap<String, SuperColumn>();
 		scf.superColumns.put("1", sc);
+		row.superColumnFamilies = new TreeMap<String, SuperColumnFamily>();
 		row.superColumnFamilies.put("person", scf);
-		indexManager.replace("test",row);
+		indexManager.replaceRow("test",row);
 		
 		Map<String, IndexReader> indexReaders = indexManager.getIndexReaders("test");
 		int total = 0;

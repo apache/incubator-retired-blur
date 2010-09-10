@@ -109,8 +109,6 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
   }
 
   public Row() {
-    this.superColumnFamilies = new HashMap<String,SuperColumnFamily>();
-
   }
 
   public Row(

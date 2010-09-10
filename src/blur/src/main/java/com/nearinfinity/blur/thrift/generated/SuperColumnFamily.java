@@ -109,8 +109,6 @@ public class SuperColumnFamily implements TBase<SuperColumnFamily, SuperColumnFa
   }
 
   public SuperColumnFamily() {
-    this.superColumns = new HashMap<String,SuperColumn>();
-
   }
 
   public SuperColumnFamily(

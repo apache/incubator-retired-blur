@@ -160,22 +160,22 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 	
 	@Override
-	public long appendRow(String table, Row row) throws BlurException, TException {
+	public boolean appendRow(String table, Row row) throws BlurException, TException {
 		return indexManager.appendRow(table,row);
 	}
 
 	@Override
-	public long removeRow(String table, String id) throws BlurException, TException {
+	public boolean removeRow(String table, String id) throws BlurException, TException {
 		return indexManager.removeRow(table,id);
 	}
 
 	@Override
-	public long removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException {
+	public boolean removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException {
 		return indexManager.removeSuperColumn(table,id,superColumnId);
 	}
 
 	@Override
-	public long replaceRow(String table, Row row) throws BlurException, TException {
+	public boolean replaceRow(String table, Row row) throws BlurException, TException {
 		return indexManager.replaceRow(table,row);
 	}
 

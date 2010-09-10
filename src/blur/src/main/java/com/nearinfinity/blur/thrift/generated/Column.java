@@ -108,8 +108,6 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
   }
 
   public Column() {
-    this.values = new ArrayList<String>();
-
   }
 
   public Column(

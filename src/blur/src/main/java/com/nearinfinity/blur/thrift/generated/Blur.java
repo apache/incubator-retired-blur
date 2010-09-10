@@ -39,13 +39,13 @@ public class Blur {
 
     public void drop(String table) throws BlurException, TException;
 
-    public long removeRow(String table, String id) throws BlurException, TException;
+    public boolean removeRow(String table, String id) throws BlurException, TException;
 
-    public long removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException;
+    public boolean removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException;
 
-    public long replaceRow(String table, Row row) throws BlurException, TException;
+    public boolean replaceRow(String table, Row row) throws BlurException, TException;
 
-    public long appendRow(String table, Row row) throws BlurException, TException;
+    public boolean appendRow(String table, Row row) throws BlurException, TException;
 
     public Row fetchRow(String table, String id) throws BlurException, TException;
 
@@ -324,7 +324,7 @@ public class Blur {
       return;
     }
 
-    public long removeRow(String table, String id) throws BlurException, TException
+    public boolean removeRow(String table, String id) throws BlurException, TException
     {
       send_removeRow(table, id);
       return recv_removeRow();
@@ -341,7 +341,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public long recv_removeRow() throws BlurException, TException
+    public boolean recv_removeRow() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -364,7 +364,7 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "removeRow failed: unknown result");
     }
 
-    public long removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException
+    public boolean removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException
     {
       send_removeSuperColumn(table, id, superColumnId);
       return recv_removeSuperColumn();
@@ -382,7 +382,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public long recv_removeSuperColumn() throws BlurException, TException
+    public boolean recv_removeSuperColumn() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -405,7 +405,7 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "removeSuperColumn failed: unknown result");
     }
 
-    public long replaceRow(String table, Row row) throws BlurException, TException
+    public boolean replaceRow(String table, Row row) throws BlurException, TException
     {
       send_replaceRow(table, row);
       return recv_replaceRow();
@@ -422,7 +422,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public long recv_replaceRow() throws BlurException, TException
+    public boolean recv_replaceRow() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -445,7 +445,7 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "replaceRow failed: unknown result");
     }
 
-    public long appendRow(String table, Row row) throws BlurException, TException
+    public boolean appendRow(String table, Row row) throws BlurException, TException
     {
       send_appendRow(table, row);
       return recv_appendRow();
@@ -462,7 +462,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public long recv_appendRow() throws BlurException, TException
+    public boolean recv_appendRow() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -5538,10 +5538,10 @@ public class Blur {
   public static class removeRow_result implements TBase<removeRow_result, removeRow_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("removeRow_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.I64, (short)0);
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public long success;
+    public boolean success;
     public BlurException ex;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -5613,7 +5613,7 @@ public class Blur {
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
+          new FieldValueMetaData(TType.BOOL)));
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -5624,7 +5624,7 @@ public class Blur {
     }
 
     public removeRow_result(
-      long success,
+      boolean success,
       BlurException ex)
     {
       this();
@@ -5654,11 +5654,11 @@ public class Blur {
       return new removeRow_result(this);
     }
 
-    public long getSuccess() {
+    public boolean isSuccess() {
       return this.success;
     }
 
-    public removeRow_result setSuccess(long success) {
+    public removeRow_result setSuccess(boolean success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
@@ -5707,7 +5707,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Long)value);
+          setSuccess((Boolean)value);
         }
         break;
 
@@ -5729,7 +5729,7 @@ public class Blur {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return new Long(getSuccess());
+        return new Boolean(isSuccess());
 
       case EX:
         return getEx();
@@ -5836,8 +5836,8 @@ public class Blur {
         }
         switch (field.id) {
           case 0: // SUCCESS
-            if (field.type == TType.I64) {
-              this.success = iprot.readI64();
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
               setSuccessIsSet(true);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
@@ -5867,7 +5867,7 @@ public class Blur {
 
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI64(this.success);
+        oprot.writeBool(this.success);
         oprot.writeFieldEnd();
       } else if (this.isSetEx()) {
         oprot.writeFieldBegin(EX_FIELD_DESC);
@@ -6365,10 +6365,10 @@ public class Blur {
   public static class removeSuperColumn_result implements TBase<removeSuperColumn_result, removeSuperColumn_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("removeSuperColumn_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.I64, (short)0);
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public long success;
+    public boolean success;
     public BlurException ex;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -6440,7 +6440,7 @@ public class Blur {
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
+          new FieldValueMetaData(TType.BOOL)));
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -6451,7 +6451,7 @@ public class Blur {
     }
 
     public removeSuperColumn_result(
-      long success,
+      boolean success,
       BlurException ex)
     {
       this();
@@ -6481,11 +6481,11 @@ public class Blur {
       return new removeSuperColumn_result(this);
     }
 
-    public long getSuccess() {
+    public boolean isSuccess() {
       return this.success;
     }
 
-    public removeSuperColumn_result setSuccess(long success) {
+    public removeSuperColumn_result setSuccess(boolean success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
@@ -6534,7 +6534,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Long)value);
+          setSuccess((Boolean)value);
         }
         break;
 
@@ -6556,7 +6556,7 @@ public class Blur {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return new Long(getSuccess());
+        return new Boolean(isSuccess());
 
       case EX:
         return getEx();
@@ -6663,8 +6663,8 @@ public class Blur {
         }
         switch (field.id) {
           case 0: // SUCCESS
-            if (field.type == TType.I64) {
-              this.success = iprot.readI64();
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
               setSuccessIsSet(true);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
@@ -6694,7 +6694,7 @@ public class Blur {
 
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI64(this.success);
+        oprot.writeBool(this.success);
         oprot.writeFieldEnd();
       } else if (this.isSetEx()) {
         oprot.writeFieldBegin(EX_FIELD_DESC);
@@ -7106,10 +7106,10 @@ public class Blur {
   public static class replaceRow_result implements TBase<replaceRow_result, replaceRow_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("replaceRow_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.I64, (short)0);
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public long success;
+    public boolean success;
     public BlurException ex;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -7181,7 +7181,7 @@ public class Blur {
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
+          new FieldValueMetaData(TType.BOOL)));
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -7192,7 +7192,7 @@ public class Blur {
     }
 
     public replaceRow_result(
-      long success,
+      boolean success,
       BlurException ex)
     {
       this();
@@ -7222,11 +7222,11 @@ public class Blur {
       return new replaceRow_result(this);
     }
 
-    public long getSuccess() {
+    public boolean isSuccess() {
       return this.success;
     }
 
-    public replaceRow_result setSuccess(long success) {
+    public replaceRow_result setSuccess(boolean success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
@@ -7275,7 +7275,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Long)value);
+          setSuccess((Boolean)value);
         }
         break;
 
@@ -7297,7 +7297,7 @@ public class Blur {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return new Long(getSuccess());
+        return new Boolean(isSuccess());
 
       case EX:
         return getEx();
@@ -7404,8 +7404,8 @@ public class Blur {
         }
         switch (field.id) {
           case 0: // SUCCESS
-            if (field.type == TType.I64) {
-              this.success = iprot.readI64();
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
               setSuccessIsSet(true);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
@@ -7435,7 +7435,7 @@ public class Blur {
 
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI64(this.success);
+        oprot.writeBool(this.success);
         oprot.writeFieldEnd();
       } else if (this.isSetEx()) {
         oprot.writeFieldBegin(EX_FIELD_DESC);
@@ -7847,10 +7847,10 @@ public class Blur {
   public static class appendRow_result implements TBase<appendRow_result, appendRow_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("appendRow_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.I64, (short)0);
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public long success;
+    public boolean success;
     public BlurException ex;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -7922,7 +7922,7 @@ public class Blur {
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
+          new FieldValueMetaData(TType.BOOL)));
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -7933,7 +7933,7 @@ public class Blur {
     }
 
     public appendRow_result(
-      long success,
+      boolean success,
       BlurException ex)
     {
       this();
@@ -7963,11 +7963,11 @@ public class Blur {
       return new appendRow_result(this);
     }
 
-    public long getSuccess() {
+    public boolean isSuccess() {
       return this.success;
     }
 
-    public appendRow_result setSuccess(long success) {
+    public appendRow_result setSuccess(boolean success) {
       this.success = success;
       setSuccessIsSet(true);
       return this;
@@ -8016,7 +8016,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Long)value);
+          setSuccess((Boolean)value);
         }
         break;
 
@@ -8038,7 +8038,7 @@ public class Blur {
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
-        return new Long(getSuccess());
+        return new Boolean(isSuccess());
 
       case EX:
         return getEx();
@@ -8145,8 +8145,8 @@ public class Blur {
         }
         switch (field.id) {
           case 0: // SUCCESS
-            if (field.type == TType.I64) {
-              this.success = iprot.readI64();
+            if (field.type == TType.BOOL) {
+              this.success = iprot.readBool();
               setSuccessIsSet(true);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
@@ -8176,7 +8176,7 @@ public class Blur {
 
       if (this.isSetSuccess()) {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeI64(this.success);
+        oprot.writeBool(this.success);
         oprot.writeFieldEnd();
       } else if (this.isSetEx()) {
         oprot.writeFieldBegin(EX_FIELD_DESC);

@@ -109,8 +109,6 @@ public class SuperColumn implements TBase<SuperColumn, SuperColumn._Fields>, jav
   }
 
   public SuperColumn() {
-    this.columns = new HashMap<String,Column>();
-
   }
 
   public SuperColumn(

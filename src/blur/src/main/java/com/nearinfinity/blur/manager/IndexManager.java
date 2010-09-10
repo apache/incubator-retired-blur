@@ -61,17 +61,7 @@ public class IndexManager {
 		}
 		return reader;
 	}
-	
-	public void replace(String table, Row row) throws BlurException {
-		IndexWriter indexWriter = getIndexWriter(table,row.id);
-		try {
-			replace(indexWriter,row);
-		} catch (IOException e) {
-			LOG.error("Unknown error",e);
-			throw new BlurException("Unknown error [" + e.getMessage() + "]");
-		}
-	}
-	
+
 	public static void replace(IndexWriter indexWriter, Row row) throws IOException {
 		replace(indexWriter,createSuperDocument(row));
 	}
@@ -99,20 +89,30 @@ public class IndexManager {
 		}
 	}
 
-	public long appendRow(String table, Row row) {
-		return 0;
+	public boolean appendRow(String table, Row row) {
+		return false;
 	}
 
-	public long replaceRow(String table, Row row) {
-		return 0;
+	public boolean replaceRow(String table, Row row) throws BlurException {
+		IndexWriter indexWriter = getIndexWriter(table, row.id);
+		if (indexWriter != null) {
+			try {
+				replace(indexWriter,row);
+			} catch (IOException e) {
+				LOG.error("Unknown error",e);
+				throw new BlurException("Unknown error [" + e.getMessage() + "]");
+			}
+			return true;
+		}
+		return false;
 	}
 
-	public long removeSuperColumn(String table, String id, String superColumnId) {
-		return 0;
+	public boolean removeSuperColumn(String table, String id, String superColumnId) {
+		return false;
 	}
 
-	public long removeRow(String table, String id) {
-		return 0;
+	public boolean removeRow(String table, String id) {
+		return false;
 	}
 
 	public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) {
@@ -144,6 +144,7 @@ public class IndexManager {
 		String superColumnId = document.getField(SuperDocument.SUPER_KEY).stringValue();
 		SuperColumn superColumn = new SuperColumn();
 		superColumn.id = superColumnId;
+		superColumn.columns = new TreeMap<String, Column>();
 		String superColumnFamily = null;
 		for (Fieldable fieldable : document.getFields()) {
 			String name = fieldable.name();
@@ -262,8 +263,7 @@ public class IndexManager {
 		if (indexWriter == null) {
 			LOG.error("Shard [" + shard + "] from table [" + table
 					+ "] not online in this server.");
-			throw new BlurException("Shard [" + shard + "] from table ["
-					+ table + "] not online in this server.");
+			return null;
 		}
 		return indexWriter;
 	}
@@ -314,26 +314,17 @@ public class IndexManager {
 		}
 	}
 	
-	private IndexReader getIndexReader(String table, String id) throws BlurException, IOException {
-		Partitioner partitioner = partitioners.get(table);
-		if (id == null) {
-			throw new BlurException("null mutation id");
-		}
-		String shard = partitioner.getShard(id);
-		Map<String, IndexWriter> tableWriters = indexWriters.get(table);
-		if (tableWriters == null) {
-			LOG.error("Table [" + table + "] not online in this server.");
-			throw new BlurException("Table [" + table
-					+ "] not online in this server.");
-		}
-		IndexWriter indexWriter = tableWriters.get(shard);
+	private IndexReader getIndexReader(String table, String id) throws BlurException {
+		IndexWriter indexWriter = getIndexWriter(table, id);
 		if (indexWriter == null) {
-			LOG.error("Shard [" + shard + "] from table [" + table
-					+ "] not online in this server.");
-			throw new BlurException("Shard [" + shard + "] from table ["
-					+ table + "] not online in this server.");
+			return null;
 		}
-		return indexWriter.getReader();
+		try {
+			return indexWriter.getReader();
+		} catch (IOException e) {
+			LOG.error("Error trying to open reader on writer.",e);
+			throw new BlurException("Error trying to open reader on writer.");
+		}
 	}
 	
 }

@@ -104,7 +104,7 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher, Bl
 	}
 
 	@Override
-	public long appendRow(String table, Row row) throws BlurException,
+	public boolean appendRow(String table, Row row) throws BlurException,
 			TException {
 		throw new RuntimeException();
 	}
@@ -123,19 +123,19 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher, Bl
 	}
 
 	@Override
-	public long removeRow(String table, String id) throws BlurException,
+	public boolean removeRow(String table, String id) throws BlurException,
 			TException {
 		throw new RuntimeException();
 	}
 
 	@Override
-	public long removeSuperColumn(String table, String id, String superColumnId)
+	public boolean removeSuperColumn(String table, String id, String superColumnId)
 			throws BlurException, TException {
 		throw new RuntimeException();
 	}
 
 	@Override
-	public long replaceRow(String table, Row row) throws BlurException,
+	public boolean replaceRow(String table, Row row) throws BlurException,
 			TException {
 		throw new RuntimeException();
 	}

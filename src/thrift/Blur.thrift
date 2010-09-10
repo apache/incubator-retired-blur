@@ -19,19 +19,24 @@ struct TableDescriptor {
   4:list<string> shardNames
 }
 
-struct Document {
-  1:string id,
-  2:map<string,string> values
-}
-
-struct DocumentFamily {
+struct Column {
   1:string name,
-  2:list<Document> documents
+  2:list<string> values
 }
 
-struct Mutation {
+struct SuperColumn {
   1:string id,
-  2:list<DocumentFamily> documentFamilies
+  2:map<string,Column> columns
+}
+
+struct SuperColumnFamily {
+  1:string name,
+  2:map<string,SuperColumn> superColumns
+}
+
+struct Row {
+  1:string id,
+  2:map<string,SuperColumnFamily> superColumnFamilies
 }
 
 enum ScoreType {
@@ -55,7 +60,13 @@ void disable(1:string table) throws (1:BlurException ex)
 void create(1:string table, 2:TableDescriptor desc) throws (1:BlurException ex)
 void drop(1:string table) throws (1:BlurException ex)
 
-void update(1:string table, 2:Mutation mutation) throws (1:BlurException ex)
+i64 removeRow(1:string table, 2:string id) throws (1:BlurException ex)
+i64 removeSuperColumn(1:string table, 2:string id, 3:string superColumnId) throws (1:BlurException ex)
+i64 replaceRow(1:string table, 2:Row row) throws (1:BlurException ex)
+i64 appendRow(1:string table, 2:Row row) throws (1:BlurException ex)
+
+Row fetchRow(1:string table, 2:string id) throws (1:BlurException ex)
+SuperColumn fetchSuperColumn(1:string table, 2:string id, 3:string superColumnFamilyName, 4:string superColumnId) throws (1:BlurException ex)
 
 Hits search(1:string table, 2:string query, 3:bool superQueryOn, 4:ScoreType type, 5:string filter, 6:i64 start, 7:i32 fetch, 8:i64 minimumNumberOfHits, 9:i64 maxQueryTime)
    throws (1:BlurException ex)

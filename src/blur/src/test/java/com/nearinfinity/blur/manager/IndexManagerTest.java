@@ -43,15 +43,6 @@ public class IndexManagerTest extends TestCase {
 
 	public void testIndexManager() throws IOException, BlurException {
 		IndexManager indexManager = new IndexManager();
-//		Mutation mutation = new Mutation();
-//		mutation.id = "1";
-//		DocumentFamily elem = new DocumentFamily();
-//		elem.setName("person");
-//		Document doc = new Document();
-//		doc.id = "1";
-//		doc.putToValues("name", "aaron");
-//		elem.addToDocuments(doc);
-//		mutation.addToDocumentFamilies(elem);
 		Row row = new Row();
 		row.id="1";
 		SuperColumnFamily scf = new SuperColumnFamily();
@@ -74,6 +65,10 @@ public class IndexManagerTest extends TestCase {
 			total += entry.getValue().numDocs();
 		}
 		assertTrue(total > 0);
+		
+		Row r = indexManager.fetchRow("test", "1");
+		System.out.println(r);
+		System.out.println(row);
 	}
 
 

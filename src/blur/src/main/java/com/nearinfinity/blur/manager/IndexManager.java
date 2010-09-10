@@ -1,9 +1,11 @@
 package com.nearinfinity.blur.manager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,16 +14,19 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.manager.util.TermDocIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -114,8 +119,76 @@ public class IndexManager {
 		return null;
 	}
 
-	public Row fetchRow(String table, String id) {
-		return null;
+	public Row fetchRow(String table, String id) throws BlurException {
+		try {
+			IndexReader reader = getIndexReader(table,id);
+			Iterable<Document> docs = getDocs(reader,id);
+			Row row = new Row();
+			row.id = id;
+			boolean empty = true;
+			for (Document document : docs) {
+				empty = false;
+				addDocumentToRow(row,document);
+			}
+			if (empty) {
+				return null;
+			}
+			return row;
+		} catch (IOException e) {
+			LOG.error("Unknown io error",e);
+			throw new BlurException(e.getMessage());
+		}
+	}
+
+	private void addDocumentToRow(Row row, Document document) {
+		String superColumnId = document.getField(SuperDocument.SUPER_KEY).stringValue();
+		SuperColumn superColumn = new SuperColumn();
+		superColumn.id = superColumnId;
+		String superColumnFamily = null;
+		for (Fieldable fieldable : document.getFields()) {
+			String name = fieldable.name();
+			int index = name.indexOf(SuperDocument.SEP);
+			if (index < 0) {
+				continue;
+			}
+			if (superColumnFamily == null) {
+				superColumnFamily = name.substring(0,index);	
+			}
+			String columnName = name.substring(index + 1);
+			String value = fieldable.stringValue();
+			addValue(superColumn,columnName,value);
+		}
+		addToRow(row,superColumnFamily,superColumn);
+	}
+
+	private void addValue(SuperColumn superColumn, String columnName, String value) {
+		Column column = superColumn.columns.get(columnName);
+		if (column == null) {
+			column = new Column();
+			column.name = columnName;
+			column.values = new ArrayList<String>();
+			superColumn.columns.put(column.name, column);
+		}
+		column.values.add(value);
+	}
+
+	private void addToRow(Row row, String superColumnFamilyName, SuperColumn superColumn) {
+		if (row.superColumnFamilies == null) {
+			row.superColumnFamilies = new TreeMap<String, SuperColumnFamily>();
+		}
+		SuperColumnFamily superColumnFamily = row.superColumnFamilies.get(superColumnFamilyName);
+		if (superColumnFamily == null) {
+			superColumnFamily = new SuperColumnFamily();
+			superColumnFamily.name = superColumnFamilyName;
+			superColumnFamily.superColumns = new TreeMap<String, SuperColumn>();
+			row.superColumnFamilies.put(superColumnFamily.name, superColumnFamily);
+		}
+		superColumnFamily.superColumns.put(superColumn.id, superColumn);
+	}
+
+	private Iterable<Document> getDocs(final IndexReader reader, String id) throws IOException {
+		TermDocs termDocs = reader.termDocs(new Term(SuperDocument.ID,id));
+		return new TermDocIterable(termDocs,reader);
 	}
 
 	private void setupMele() throws IOException {
@@ -194,7 +267,6 @@ public class IndexManager {
 		}
 		return indexWriter;
 	}
-	
 
 	private static boolean replaceInternal(IndexWriter indexWriter, SuperDocument document) throws IOException {
 		long oldRamSize = indexWriter.ramSizeInBytes();
@@ -213,21 +285,55 @@ public class IndexManager {
 	public static SuperDocument createSuperDocument(Row row) {
 		SuperDocument document = new SuperDocument(row.id);
 		for (Entry<String, SuperColumnFamily> superColumnFamilyEntry : row.superColumnFamilies.entrySet()) {
-			String superColumnFamilyName = superColumnFamilyEntry.getKey();
-			SuperColumnFamily superColumnFamily = superColumnFamilyEntry.getValue();
-			for (Entry<String, SuperColumn> superColumnEntry : superColumnFamily.superColumns.entrySet()) {
-				String superColumnId = superColumnEntry.getKey();
-				SuperColumn superColumn = superColumnEntry.getValue();
-				for (Entry<String, Column> columnEntry : superColumn.columns.entrySet()) {
-					String columnName = columnEntry.getKey();
-					Column column = columnEntry.getValue();
-					for (String value : column.values) {
-						document.addFieldStoreAnalyzedNoNorms(superColumnFamilyName, superColumnId, columnName, value);
-					}
-				}
-			}
+			addSuperColumnFamily(superColumnFamilyEntry,document);
 		}
 		return document;
+	}
+
+	private static void addSuperColumnFamily(Entry<String, SuperColumnFamily> superColumnFamilyEntry, SuperDocument document) {
+		String superColumnFamilyName = superColumnFamilyEntry.getKey();
+		SuperColumnFamily superColumnFamily = superColumnFamilyEntry.getValue();
+		for (Entry<String, SuperColumn> superColumnEntry : superColumnFamily.superColumns.entrySet()) {
+			add(superColumnFamilyName, superColumnEntry, document);
+		}
+	}
+
+	private static void add(String superColumnFamilyName, Entry<String, SuperColumn> superColumnEntry, SuperDocument document) {
+		String superColumnId = superColumnEntry.getKey();
+		SuperColumn superColumn = superColumnEntry.getValue();
+		for (Entry<String, Column> columnEntry : superColumn.columns.entrySet()) {
+			add(superColumnFamilyName, superColumnId, columnEntry,document);
+		}		
+	}
+
+	private static void add(String superColumnFamilyName, String superColumnId, Entry<String, Column> columnEntry, SuperDocument document) {
+		String columnName = columnEntry.getKey();
+		Column column = columnEntry.getValue();
+		for (String value : column.values) {
+			document.addFieldStoreAnalyzedNoNorms(superColumnFamilyName, superColumnId, columnName, value);
+		}
+	}
+	
+	private IndexReader getIndexReader(String table, String id) throws BlurException, IOException {
+		Partitioner partitioner = partitioners.get(table);
+		if (id == null) {
+			throw new BlurException("null mutation id");
+		}
+		String shard = partitioner.getShard(id);
+		Map<String, IndexWriter> tableWriters = indexWriters.get(table);
+		if (tableWriters == null) {
+			LOG.error("Table [" + table + "] not online in this server.");
+			throw new BlurException("Table [" + table
+					+ "] not online in this server.");
+		}
+		IndexWriter indexWriter = tableWriters.get(shard);
+		if (indexWriter == null) {
+			LOG.error("Shard [" + shard + "] from table [" + table
+					+ "] not online in this server.");
+			throw new BlurException("Shard [" + shard + "] from table ["
+					+ table + "] not online in this server.");
+		}
+		return indexWriter.getReader();
 	}
 	
 }

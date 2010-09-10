@@ -67,8 +67,7 @@ public class IndexManagerTest extends TestCase {
 		assertTrue(total > 0);
 		
 		Row r = indexManager.fetchRow("test", "1");
-		System.out.println(r);
-		System.out.println(row);
+		assertEquals(row,r);
 	}
 
 

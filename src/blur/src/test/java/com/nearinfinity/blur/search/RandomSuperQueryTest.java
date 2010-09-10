@@ -34,19 +34,19 @@ import com.nearinfinity.blur.manager.IndexManager;
 public class RandomSuperQueryTest extends TestCase {
 	
 	private static final int MOD_COLS_USED_FOR_SKIPPING = 3;
-	private static final int MAX_NUM_OF_DOCS = 10000;
-	private static final int MIN_NUM_COL_FAM = 3;
-	private static final int MAX_NUM_COL_FAM = 20;
-	private static final int MAX_NUM_DOCS_PER_COL_FAM = 25;
-	private static final int MAX_NUM_COLS = 21;
-	private static final int MIN_NUM_COLS = 3;
+	private static final int MAX_NUM_OF_DOCS = 10000;//10000
+	private static final int MIN_NUM_COL_FAM = 1;//3
+	private static final int MAX_NUM_COL_FAM = 2;//20
+	private static final int MAX_NUM_DOCS_PER_COL_FAM = 2;//25
+	private static final int MAX_NUM_COLS = 3;//21
+	private static final int MIN_NUM_COLS = 1;//3
 	private static final int MAX_NUM_OF_WORDS = 25000;
-	private static final int MOD_USED_FOR_SAMPLING = 7;
+	private static final int MOD_USED_FOR_SAMPLING = 1;//
 	
 	private Random seedGen = new Random(1);
 	
 	public void testSlowRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 10; i++) {
 			System.out.print("Starting pass [" + i + "]... ");
 			System.out.flush();
 			testRandomSuperQuery();
@@ -55,7 +55,6 @@ public class RandomSuperQueryTest extends TestCase {
 	
 	public void testRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
 		long seed = seedGen.nextLong();
-//		long seed = 660158310006278052L;
 
 		Filter filter = new QueryWrapperFilter(new MatchAllDocsQuery());
 		
@@ -69,10 +68,11 @@ public class RandomSuperQueryTest extends TestCase {
 		indexReader.waitForWarmUp();
 		System.out.print("Running searches [" + sampler.size() + "]... ");
 		System.out.flush();
+		assertTrue(!sampler.isEmpty());
 		IndexSearcher searcher = new IndexSearcher(indexReader);
 		long s = System.currentTimeMillis();
 		for (String str : sampler) {
-			Query query = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true, filter).parse(str);
+			Query query = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30),true, filter).parse(str);
 			TopDocs topDocs = searcher.search(query, 10);
 			assertTrue("seed [" + seed + "] {" + query + "} {" + s + "}",topDocs.totalHits > 0);
 		}
@@ -88,7 +88,7 @@ public class RandomSuperQueryTest extends TestCase {
 			columns.put(columnFamilies[i], genWords(random,MIN_NUM_COLS,MAX_NUM_COLS,"col"));
 		}
 		
-		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
+		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
 		int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
 		for (int i = 0; i < numberOfDocs; i++) {
 			IndexManager.update(writer, generatSuperDoc(random, columns, sampler));

@@ -43,7 +43,6 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	private static final String DYNAMIC_TERMS = "dynamicTerms";
 	private static final Logger LOG = LoggerFactory.getLogger(BlurAdminServer.class);
 	private static final String NODES = "nodes";
-	private static final String BLUR_REFS = "refs";
 	
 	public static class HitsMerger implements Merger<Hits> {
 		@Override
@@ -190,6 +189,18 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			createAllTableShards(table,descriptor);
 		} catch (IOException e) {
 			throw new BlurException(e.getMessage());
+		}
+	}
+	
+	public boolean isTableEnabled(String table) {
+		try {
+			TableDescriptor describe = describe(table);
+			if (describe == null) {
+				return false;
+			}
+			return describe.isEnabled;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 	}
 

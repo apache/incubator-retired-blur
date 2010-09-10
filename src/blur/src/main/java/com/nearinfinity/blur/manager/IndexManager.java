@@ -37,12 +37,27 @@ import com.nearinfinity.mele.Mele;
 public class IndexManager {
 
 	private static final Log LOG = LogFactory.getLog(IndexManager.class);
+	private static final long POLL_TIME = 5000;
+	private static final TableManager ALWAYS_ON = new TableManager() {
+		@Override
+		public boolean isTableEnabled(String table) {
+			return true;
+		}
+	};
+	
 	private Mele mele;
 	private Map<String, Map<String, IndexWriter>> indexWriters = new ConcurrentHashMap<String, Map<String, IndexWriter>>();
 	private Map<String, Analyzer> analyzers = new ConcurrentHashMap<String, Analyzer>();
 	private Map<String, Partitioner> partitioners = new ConcurrentHashMap<String, Partitioner>();
-
-	public IndexManager() throws IOException {
+	private TableManager manager;
+	private Thread daemon;
+	
+	public interface TableManager {
+		boolean isTableEnabled(String table);
+	}
+	
+	public IndexManager(TableManager manager) throws IOException {
+		this.manager = manager;
 		setupMele();
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
@@ -50,6 +65,10 @@ public class IndexManager {
 				close();
 			}
 		}));
+	}
+
+	public IndexManager() throws IOException {
+		this(ALWAYS_ON);
 	}
 
 	public Map<String, IndexReader> getIndexReaders(String table)
@@ -140,6 +159,14 @@ public class IndexManager {
 		}
 	}
 
+	public static SuperDocument createSuperDocument(Row row) {
+		SuperDocument document = new SuperDocument(row.id);
+		for (Entry<String, SuperColumnFamily> superColumnFamilyEntry : row.superColumnFamilies.entrySet()) {
+			addSuperColumnFamily(superColumnFamilyEntry,document);
+		}
+		return document;
+	}
+
 	private void addDocumentToRow(Row row, Document document) {
 		String superColumnId = document.getField(SuperDocument.SUPER_KEY).stringValue();
 		SuperColumn superColumn = new SuperColumn();
@@ -196,6 +223,10 @@ public class IndexManager {
 		mele = Mele.getMele();
 		List<String> listClusters = mele.listClusters();
 		for (String cluster : listClusters) {
+			if (!manager.isTableEnabled(cluster)) {
+				ensureClosed(cluster);
+				continue;
+			}
 			setupPartitioner(cluster);
 			Map<String, IndexWriter> map = indexWriters.get(cluster);
 			if (map == null) {
@@ -208,14 +239,66 @@ public class IndexManager {
 
 		// @todo once all are brought online, look for shards that are not
 		// online yet...
-		for (String cluster : listClusters) {
-			Map<String, IndexWriter> map = indexWriters.get(cluster);
-			if (map == null) {
-				map = new ConcurrentHashMap<String, IndexWriter>();
-				indexWriters.put(cluster, map);
+		serverUnservedShards();
+		daemon = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(POLL_TIME);
+				} catch (InterruptedException e) {
+					return;
+				}
+				while (true) {
+					serverUnservedShards();
+					try {
+						Thread.sleep(POLL_TIME);
+					} catch (InterruptedException e) {
+						return;
+					}
+				}
 			}
-			List<String> listDirectories = mele.listDirectories(cluster);
-			openForWriting(cluster, listDirectories, map);
+		});
+		daemon.setDaemon(true);
+		daemon.setName("IndexManager-Index-Daemon");
+		daemon.start();
+	}
+	
+	private void serverUnservedShards() {
+		try {
+			for (String cluster : mele.listClusters()) {
+				if (!manager.isTableEnabled(cluster)) {
+					ensureClosed(cluster);
+					continue;
+				}
+				Map<String, IndexWriter> map = indexWriters.get(cluster);
+				if (map == null) {
+					map = new ConcurrentHashMap<String, IndexWriter>();
+					indexWriters.put(cluster, map);
+				}
+				List<String> listDirectories = mele.listDirectories(cluster);
+				openForWriting(cluster, listDirectories, map);
+			}
+		} catch (Exception e) {
+			LOG.error("Unknown error",e);
+		}
+	}
+
+	private void ensureClosed(String table) {
+		Map<String, IndexWriter> writers = indexWriters.get(table);
+		ensureClosed(writers);
+	}
+
+	private void ensureClosed(Map<String, IndexWriter> writers) {
+		for (IndexWriter writer : writers.values()) {
+			ensureClosed(writer);
+		}
+	}
+
+	private void ensureClosed(IndexWriter writer) {
+		try {
+			writer.close();
+		} catch (IOException e) {
+			LOG.error("Uknown lucene error",e);
 		}
 	}
 
@@ -280,14 +363,6 @@ public class IndexManager {
 			indexWriter.addDocument(doc);
 		}
 		return true;
-	}
-
-	public static SuperDocument createSuperDocument(Row row) {
-		SuperDocument document = new SuperDocument(row.id);
-		for (Entry<String, SuperColumnFamily> superColumnFamilyEntry : row.superColumnFamilies.entrySet()) {
-			addSuperColumnFamily(superColumnFamilyEntry,document);
-		}
-		return document;
 	}
 
 	private static void addSuperColumnFamily(Entry<String, SuperColumnFamily> superColumnFamilyEntry, SuperDocument document) {

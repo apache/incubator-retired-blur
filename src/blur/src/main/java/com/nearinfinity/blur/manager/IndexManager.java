@@ -12,7 +12,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -24,8 +23,10 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.DocumentFamily;
-import com.nearinfinity.blur.thrift.generated.Mutation;
+import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.SuperColumn;
+import com.nearinfinity.blur.thrift.generated.SuperColumnFamily;
 import com.nearinfinity.mele.Mele;
 
 public class IndexManager {
@@ -44,6 +45,77 @@ public class IndexManager {
 				close();
 			}
 		}));
+	}
+
+	public Map<String, IndexReader> getIndexReaders(String table)
+			throws IOException {
+		Map<String, IndexWriter> map = indexWriters.get(table);
+		Map<String, IndexReader> reader = new HashMap<String, IndexReader>();
+		for (Entry<String, IndexWriter> writer : map.entrySet()) {
+			reader.put(writer.getKey(), writer.getValue().getReader());
+		}
+		return reader;
+	}
+	
+	public void replace(String table, Row row) throws BlurException {
+		IndexWriter indexWriter = getIndexWriter(table,row.id);
+		try {
+			replace(indexWriter,row);
+		} catch (IOException e) {
+			LOG.error("Unknown error",e);
+			throw new BlurException("Unknown error [" + e.getMessage() + "]");
+		}
+	}
+	
+	public static void replace(IndexWriter indexWriter, Row row) throws IOException {
+		replace(indexWriter,createSuperDocument(row));
+	}
+	
+	public static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
+		indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
+		if (!replaceInternal(indexWriter,document)) {
+			indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
+			if (!replaceInternal(indexWriter,document)) {
+				throw new IOException("SuperDocument too large, try increasing ram buffer size.");
+			}
+		}
+	}
+
+	public void close() {
+		for (Entry<String, Map<String, IndexWriter>> writers : indexWriters.entrySet()) {
+			for (Entry<String, IndexWriter> writer : writers.getValue().entrySet()) {
+				try {
+					writer.getValue().close();
+				} catch (IOException e) {
+					LOG.error("Erroring trying to close [" + writers.getKey()
+							+ "] [" + writer.getKey() + "]", e);
+				}
+			}
+		}
+	}
+
+	public long appendRow(String table, Row row) {
+		return 0;
+	}
+
+	public long replaceRow(String table, Row row) {
+		return 0;
+	}
+
+	public long removeSuperColumn(String table, String id, String superColumnId) {
+		return 0;
+	}
+
+	public long removeRow(String table, String id) {
+		return 0;
+	}
+
+	public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) {
+		return null;
+	}
+
+	public Row fetchRow(String table, String id) {
+		return null;
 	}
 
 	private void setupMele() throws IOException {
@@ -74,12 +146,10 @@ public class IndexManager {
 	}
 
 	private void setupPartitioner(String cluster) throws IOException {
-		partitioners.put(cluster,
-				new Partitioner(mele.listDirectories(cluster)));
+		partitioners.put(cluster, new Partitioner(mele.listDirectories(cluster)));
 	}
 
-	private void openForWriting(String cluster, List<String> dirs,
-			Map<String, IndexWriter> writersMap) throws IOException {
+	private void openForWriting(String cluster, List<String> dirs, Map<String, IndexWriter> writersMap) throws IOException {
 		for (String local : dirs) {
 			// @todo get zk lock here....??? maybe if the index writer cannot
 			// get a lock that is good enough???
@@ -90,7 +160,7 @@ public class IndexManager {
 			IndexDeletionPolicy deletionPolicy = mele.getIndexDeletionPolicy(cluster, local);
 			Analyzer analyzer = analyzers.get(cluster);
 			if (analyzer == null) {
-				analyzer = new StandardAnalyzer(Version.LUCENE_CURRENT);
+				analyzer = new StandardAnalyzer(Version.LUCENE_30);
 			}
 			try {
 				if (!IndexWriter.isLocked(directory)) {
@@ -102,20 +172,9 @@ public class IndexManager {
 			}
 		}
 	}
-
-	public Map<String, IndexReader> getIndexReaders(String table)
-			throws IOException {
-		Map<String, IndexWriter> map = indexWriters.get(table);
-		Map<String, IndexReader> reader = new HashMap<String, IndexReader>();
-		for (Entry<String, IndexWriter> writer : map.entrySet()) {
-			reader.put(writer.getKey(), writer.getValue().getReader());
-		}
-		return reader;
-	}
-
-	public void update(String table, Mutation mutation) throws BlurException {
+	
+	private IndexWriter getIndexWriter(String table, String id) throws BlurException {
 		Partitioner partitioner = partitioners.get(table);
-		String id = mutation.getId();
 		if (id == null) {
 			throw new BlurException("null mutation id");
 		}
@@ -133,32 +192,13 @@ public class IndexManager {
 			throw new BlurException("Shard [" + shard + "] from table ["
 					+ table + "] not online in this server.");
 		}
-		try {
-			update(indexWriter,mutation);
-		} catch (IOException e) {
-			LOG.error("Unknown error",e);
-			throw new BlurException("Unknown error [" + e.getMessage() + "]");
-		}
-	}
-
-	private void update(IndexWriter indexWriter, Mutation mutation) throws CorruptIndexException, IOException {
-		SuperDocument superDocument = getSuperDocument(mutation);
-		update(indexWriter,superDocument);
+		return indexWriter;
 	}
 	
-	public static void update(IndexWriter indexWriter, SuperDocument superDocument) throws IOException {
-		indexWriter.deleteDocuments(new Term(SuperDocument.ID, superDocument.getId()));
-		if (!updateInternal(indexWriter,superDocument)) {
-			indexWriter.deleteDocuments(new Term(SuperDocument.ID, superDocument.getId()));
-			if (!updateInternal(indexWriter,superDocument)) {
-				throw new IOException("SuperDocument too large, try increasing ram buffer size.");
-			}
-		}
-	}
 
-	private static boolean updateInternal(IndexWriter indexWriter, SuperDocument superDocument) throws IOException {
+	private static boolean replaceInternal(IndexWriter indexWriter, SuperDocument document) throws IOException {
 		long oldRamSize = indexWriter.ramSizeInBytes();
-		for (Document doc : superDocument.getAllDocumentsForIndexing()) {
+		for (Document doc : document.getAllDocumentsForIndexing()) {
 			long newRamSize = indexWriter.ramSizeInBytes();
 			if (newRamSize < oldRamSize) {
 				LOG.info("Flush occur during writing of super document, start over.");
@@ -170,30 +210,24 @@ public class IndexManager {
 		return true;
 	}
 
-	private SuperDocument getSuperDocument(Mutation mutation) {
-		SuperDocument document = new SuperDocument(mutation.getId());
-		for (DocumentFamily documentFamily : mutation.documentFamilies) {
-			for (com.nearinfinity.blur.thrift.generated.Document doc : documentFamily.documents) {
-				String name = documentFamily.getName();
-				String id = doc.getId();
-				for (Entry<String,String> kv : doc.values.entrySet()) {
-					document.addFieldStoreAnalyzedNoNorms(name, id, kv.getKey(), kv.getValue());
+	public static SuperDocument createSuperDocument(Row row) {
+		SuperDocument document = new SuperDocument(row.id);
+		for (Entry<String, SuperColumnFamily> superColumnFamilyEntry : row.superColumnFamilies.entrySet()) {
+			String superColumnFamilyName = superColumnFamilyEntry.getKey();
+			SuperColumnFamily superColumnFamily = superColumnFamilyEntry.getValue();
+			for (Entry<String, SuperColumn> superColumnEntry : superColumnFamily.superColumns.entrySet()) {
+				String superColumnId = superColumnEntry.getKey();
+				SuperColumn superColumn = superColumnEntry.getValue();
+				for (Entry<String, Column> columnEntry : superColumn.columns.entrySet()) {
+					String columnName = columnEntry.getKey();
+					Column column = columnEntry.getValue();
+					for (String value : column.values) {
+						document.addFieldStoreAnalyzedNoNorms(superColumnFamilyName, superColumnId, columnName, value);
+					}
 				}
 			}
 		}
 		return document;
 	}
-
-	public void close() {
-		for (Entry<String, Map<String, IndexWriter>> writers : indexWriters.entrySet()) {
-			for (Entry<String, IndexWriter> writer : writers.getValue().entrySet()) {
-				try {
-					writer.getValue().close();
-				} catch (IOException e) {
-					LOG.error("Erroring trying to close [" + writers.getKey()
-							+ "] [" + writer.getKey() + "]", e);
-				}
-			}
-		}
-	}
+	
 }

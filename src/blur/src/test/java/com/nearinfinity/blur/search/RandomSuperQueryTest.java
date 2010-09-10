@@ -91,7 +91,7 @@ public class RandomSuperQueryTest extends TestCase {
 		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
 		int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
 		for (int i = 0; i < numberOfDocs; i++) {
-			IndexManager.update(writer, generatSuperDoc(random, columns, sampler));
+			IndexManager.replace(writer, generatSuperDoc(random, columns, sampler));
 		}
 		writer.close();
 		return directory;

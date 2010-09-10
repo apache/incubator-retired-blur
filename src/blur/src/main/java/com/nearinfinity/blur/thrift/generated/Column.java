@@ -23,19 +23,19 @@ import org.apache.thrift.*;
 import org.apache.thrift.meta_data.*;
 import org.apache.thrift.protocol.*;
 
-public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("DocumentFamily");
+public class Column implements TBase<Column, Column._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Column");
 
   private static final TField NAME_FIELD_DESC = new TField("name", TType.STRING, (short)1);
-  private static final TField DOCUMENTS_FIELD_DESC = new TField("documents", TType.LIST, (short)2);
+  private static final TField VALUES_FIELD_DESC = new TField("values", TType.LIST, (short)2);
 
   public String name;
-  public List<Document> documents;
+  public List<String> values;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     NAME((short)1, "name"),
-    DOCUMENTS((short)2, "documents");
+    VALUES((short)2, "values");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -52,8 +52,8 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
       switch(fieldId) {
         case 1: // NAME
           return NAME;
-        case 2: // DOCUMENTS
-          return DOCUMENTS;
+        case 2: // VALUES
+          return VALUES;
         default:
           return null;
       }
@@ -100,55 +100,57 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.DOCUMENTS, new FieldMetaData("documents", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.VALUES, new FieldMetaData("values", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, Document.class))));
+            new FieldValueMetaData(TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(DocumentFamily.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(Column.class, metaDataMap);
   }
 
-  public DocumentFamily() {
+  public Column() {
+    this.values = new ArrayList<String>();
+
   }
 
-  public DocumentFamily(
+  public Column(
     String name,
-    List<Document> documents)
+    List<String> values)
   {
     this();
     this.name = name;
-    this.documents = documents;
+    this.values = values;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public DocumentFamily(DocumentFamily other) {
+  public Column(Column other) {
     if (other.isSetName()) {
       this.name = other.name;
     }
-    if (other.isSetDocuments()) {
-      List<Document> __this__documents = new ArrayList<Document>();
-      for (Document other_element : other.documents) {
-        __this__documents.add(new Document(other_element));
+    if (other.isSetValues()) {
+      List<String> __this__values = new ArrayList<String>();
+      for (String other_element : other.values) {
+        __this__values.add(other_element);
       }
-      this.documents = __this__documents;
+      this.values = __this__values;
     }
   }
 
-  public DocumentFamily deepCopy() {
-    return new DocumentFamily(this);
+  public Column deepCopy() {
+    return new Column(this);
   }
 
   @Deprecated
-  public DocumentFamily clone() {
-    return new DocumentFamily(this);
+  public Column clone() {
+    return new Column(this);
   }
 
   public String getName() {
     return this.name;
   }
 
-  public DocumentFamily setName(String name) {
+  public Column setName(String name) {
     this.name = name;
     return this;
   }
@@ -168,42 +170,42 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
     }
   }
 
-  public int getDocumentsSize() {
-    return (this.documents == null) ? 0 : this.documents.size();
+  public int getValuesSize() {
+    return (this.values == null) ? 0 : this.values.size();
   }
 
-  public java.util.Iterator<Document> getDocumentsIterator() {
-    return (this.documents == null) ? null : this.documents.iterator();
+  public java.util.Iterator<String> getValuesIterator() {
+    return (this.values == null) ? null : this.values.iterator();
   }
 
-  public void addToDocuments(Document elem) {
-    if (this.documents == null) {
-      this.documents = new ArrayList<Document>();
+  public void addToValues(String elem) {
+    if (this.values == null) {
+      this.values = new ArrayList<String>();
     }
-    this.documents.add(elem);
+    this.values.add(elem);
   }
 
-  public List<Document> getDocuments() {
-    return this.documents;
+  public List<String> getValues() {
+    return this.values;
   }
 
-  public DocumentFamily setDocuments(List<Document> documents) {
-    this.documents = documents;
+  public Column setValues(List<String> values) {
+    this.values = values;
     return this;
   }
 
-  public void unsetDocuments() {
-    this.documents = null;
+  public void unsetValues() {
+    this.values = null;
   }
 
-  /** Returns true if field documents is set (has been asigned a value) and false otherwise */
-  public boolean isSetDocuments() {
-    return this.documents != null;
+  /** Returns true if field values is set (has been asigned a value) and false otherwise */
+  public boolean isSetValues() {
+    return this.values != null;
   }
 
-  public void setDocumentsIsSet(boolean value) {
+  public void setValuesIsSet(boolean value) {
     if (!value) {
-      this.documents = null;
+      this.values = null;
     }
   }
 
@@ -217,11 +219,11 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
       }
       break;
 
-    case DOCUMENTS:
+    case VALUES:
       if (value == null) {
-        unsetDocuments();
+        unsetValues();
       } else {
-        setDocuments((List<Document>)value);
+        setValues((List<String>)value);
       }
       break;
 
@@ -237,8 +239,8 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
     case NAME:
       return getName();
 
-    case DOCUMENTS:
-      return getDocuments();
+    case VALUES:
+      return getValues();
 
     }
     throw new IllegalStateException();
@@ -253,8 +255,8 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
     switch (field) {
     case NAME:
       return isSetName();
-    case DOCUMENTS:
-      return isSetDocuments();
+    case VALUES:
+      return isSetValues();
     }
     throw new IllegalStateException();
   }
@@ -267,12 +269,12 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof DocumentFamily)
-      return this.equals((DocumentFamily)that);
+    if (that instanceof Column)
+      return this.equals((Column)that);
     return false;
   }
 
-  public boolean equals(DocumentFamily that) {
+  public boolean equals(Column that) {
     if (that == null)
       return false;
 
@@ -285,12 +287,12 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
         return false;
     }
 
-    boolean this_present_documents = true && this.isSetDocuments();
-    boolean that_present_documents = true && that.isSetDocuments();
-    if (this_present_documents || that_present_documents) {
-      if (!(this_present_documents && that_present_documents))
+    boolean this_present_values = true && this.isSetValues();
+    boolean that_present_values = true && that.isSetValues();
+    if (this_present_values || that_present_values) {
+      if (!(this_present_values && that_present_values))
         return false;
-      if (!this.documents.equals(that.documents))
+      if (!this.values.equals(that.values))
         return false;
     }
 
@@ -302,13 +304,13 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
     return 0;
   }
 
-  public int compareTo(DocumentFamily other) {
+  public int compareTo(Column other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    DocumentFamily typedOther = (DocumentFamily)other;
+    Column typedOther = (Column)other;
 
     lastComparison = Boolean.valueOf(isSetName()).compareTo(typedOther.isSetName());
     if (lastComparison != 0) {
@@ -319,11 +321,11 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetDocuments()).compareTo(typedOther.isSetDocuments());
+    lastComparison = Boolean.valueOf(isSetValues()).compareTo(typedOther.isSetValues());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetDocuments()) {      lastComparison = TBaseHelper.compareTo(this.documents, typedOther.documents);
+    if (isSetValues()) {      lastComparison = TBaseHelper.compareTo(this.values, typedOther.values);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -348,17 +350,16 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // DOCUMENTS
+        case 2: // VALUES
           if (field.type == TType.LIST) {
             {
-              TList _list18 = iprot.readListBegin();
-              this.documents = new ArrayList<Document>(_list18.size);
-              for (int _i19 = 0; _i19 < _list18.size; ++_i19)
+              TList _list13 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list13.size);
+              for (int _i14 = 0; _i14 < _list13.size; ++_i14)
               {
-                Document _elem20;
-                _elem20 = new Document();
-                _elem20.read(iprot);
-                this.documents.add(_elem20);
+                String _elem15;
+                _elem15 = iprot.readString();
+                this.values.add(_elem15);
               }
               iprot.readListEnd();
             }
@@ -386,13 +387,13 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
       oprot.writeString(this.name);
       oprot.writeFieldEnd();
     }
-    if (this.documents != null) {
-      oprot.writeFieldBegin(DOCUMENTS_FIELD_DESC);
+    if (this.values != null) {
+      oprot.writeFieldBegin(VALUES_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.documents.size()));
-        for (Document _iter21 : this.documents)
+        oprot.writeListBegin(new TList(TType.STRING, this.values.size()));
+        for (String _iter16 : this.values)
         {
-          _iter21.write(oprot);
+          oprot.writeString(_iter16);
         }
         oprot.writeListEnd();
       }
@@ -404,7 +405,7 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("DocumentFamily(");
+    StringBuilder sb = new StringBuilder("Column(");
     boolean first = true;
 
     sb.append("name:");
@@ -415,11 +416,11 @@ public class DocumentFamily implements TBase<DocumentFamily, DocumentFamily._Fie
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("documents:");
-    if (this.documents == null) {
+    sb.append("values:");
+    if (this.values == null) {
       sb.append("null");
     } else {
-      sb.append(this.documents);
+      sb.append(this.values);
     }
     first = false;
     sb.append(")");

@@ -23,19 +23,19 @@ import org.apache.thrift.*;
 import org.apache.thrift.meta_data.*;
 import org.apache.thrift.protocol.*;
 
-public class Document implements TBase<Document, Document._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Document");
+public class SuperColumn implements TBase<SuperColumn, SuperColumn._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("SuperColumn");
 
   private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)1);
-  private static final TField VALUES_FIELD_DESC = new TField("values", TType.MAP, (short)2);
+  private static final TField COLUMNS_FIELD_DESC = new TField("columns", TType.MAP, (short)2);
 
   public String id;
-  public Map<String,String> values;
+  public Map<String,Column> columns;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     ID((short)1, "id"),
-    VALUES((short)2, "values");
+    COLUMNS((short)2, "columns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -52,8 +52,8 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // VALUES
-          return VALUES;
+        case 2: // COLUMNS
+          return COLUMNS;
         default:
           return null;
       }
@@ -100,64 +100,66 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.VALUES, new FieldMetaData("values", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.COLUMNS, new FieldMetaData("columns", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
-            new FieldValueMetaData(TType.STRING))));
+            new StructMetaData(TType.STRUCT, Column.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Document.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(SuperColumn.class, metaDataMap);
   }
 
-  public Document() {
+  public SuperColumn() {
+    this.columns = new HashMap<String,Column>();
+
   }
 
-  public Document(
+  public SuperColumn(
     String id,
-    Map<String,String> values)
+    Map<String,Column> columns)
   {
     this();
     this.id = id;
-    this.values = values;
+    this.columns = columns;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Document(Document other) {
+  public SuperColumn(SuperColumn other) {
     if (other.isSetId()) {
       this.id = other.id;
     }
-    if (other.isSetValues()) {
-      Map<String,String> __this__values = new HashMap<String,String>();
-      for (Map.Entry<String, String> other_element : other.values.entrySet()) {
+    if (other.isSetColumns()) {
+      Map<String,Column> __this__columns = new HashMap<String,Column>();
+      for (Map.Entry<String, Column> other_element : other.columns.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        String other_element_value = other_element.getValue();
+        Column other_element_value = other_element.getValue();
 
-        String __this__values_copy_key = other_element_key;
+        String __this__columns_copy_key = other_element_key;
 
-        String __this__values_copy_value = other_element_value;
+        Column __this__columns_copy_value = new Column(other_element_value);
 
-        __this__values.put(__this__values_copy_key, __this__values_copy_value);
+        __this__columns.put(__this__columns_copy_key, __this__columns_copy_value);
       }
-      this.values = __this__values;
+      this.columns = __this__columns;
     }
   }
 
-  public Document deepCopy() {
-    return new Document(this);
+  public SuperColumn deepCopy() {
+    return new SuperColumn(this);
   }
 
   @Deprecated
-  public Document clone() {
-    return new Document(this);
+  public SuperColumn clone() {
+    return new SuperColumn(this);
   }
 
   public String getId() {
     return this.id;
   }
 
-  public Document setId(String id) {
+  public SuperColumn setId(String id) {
     this.id = id;
     return this;
   }
@@ -177,38 +179,38 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
     }
   }
 
-  public int getValuesSize() {
-    return (this.values == null) ? 0 : this.values.size();
+  public int getColumnsSize() {
+    return (this.columns == null) ? 0 : this.columns.size();
   }
 
-  public void putToValues(String key, String val) {
-    if (this.values == null) {
-      this.values = new HashMap<String,String>();
+  public void putToColumns(String key, Column val) {
+    if (this.columns == null) {
+      this.columns = new HashMap<String,Column>();
     }
-    this.values.put(key, val);
+    this.columns.put(key, val);
   }
 
-  public Map<String,String> getValues() {
-    return this.values;
+  public Map<String,Column> getColumns() {
+    return this.columns;
   }
 
-  public Document setValues(Map<String,String> values) {
-    this.values = values;
+  public SuperColumn setColumns(Map<String,Column> columns) {
+    this.columns = columns;
     return this;
   }
 
-  public void unsetValues() {
-    this.values = null;
+  public void unsetColumns() {
+    this.columns = null;
   }
 
-  /** Returns true if field values is set (has been asigned a value) and false otherwise */
-  public boolean isSetValues() {
-    return this.values != null;
+  /** Returns true if field columns is set (has been asigned a value) and false otherwise */
+  public boolean isSetColumns() {
+    return this.columns != null;
   }
 
-  public void setValuesIsSet(boolean value) {
+  public void setColumnsIsSet(boolean value) {
     if (!value) {
-      this.values = null;
+      this.columns = null;
     }
   }
 
@@ -222,11 +224,11 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
       }
       break;
 
-    case VALUES:
+    case COLUMNS:
       if (value == null) {
-        unsetValues();
+        unsetColumns();
       } else {
-        setValues((Map<String,String>)value);
+        setColumns((Map<String,Column>)value);
       }
       break;
 
@@ -242,8 +244,8 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
     case ID:
       return getId();
 
-    case VALUES:
-      return getValues();
+    case COLUMNS:
+      return getColumns();
 
     }
     throw new IllegalStateException();
@@ -258,8 +260,8 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
     switch (field) {
     case ID:
       return isSetId();
-    case VALUES:
-      return isSetValues();
+    case COLUMNS:
+      return isSetColumns();
     }
     throw new IllegalStateException();
   }
@@ -272,12 +274,12 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof Document)
-      return this.equals((Document)that);
+    if (that instanceof SuperColumn)
+      return this.equals((SuperColumn)that);
     return false;
   }
 
-  public boolean equals(Document that) {
+  public boolean equals(SuperColumn that) {
     if (that == null)
       return false;
 
@@ -290,12 +292,12 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
         return false;
     }
 
-    boolean this_present_values = true && this.isSetValues();
-    boolean that_present_values = true && that.isSetValues();
-    if (this_present_values || that_present_values) {
-      if (!(this_present_values && that_present_values))
+    boolean this_present_columns = true && this.isSetColumns();
+    boolean that_present_columns = true && that.isSetColumns();
+    if (this_present_columns || that_present_columns) {
+      if (!(this_present_columns && that_present_columns))
         return false;
-      if (!this.values.equals(that.values))
+      if (!this.columns.equals(that.columns))
         return false;
     }
 
@@ -307,13 +309,13 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
     return 0;
   }
 
-  public int compareTo(Document other) {
+  public int compareTo(SuperColumn other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    Document typedOther = (Document)other;
+    SuperColumn typedOther = (SuperColumn)other;
 
     lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
     if (lastComparison != 0) {
@@ -324,11 +326,11 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetValues()).compareTo(typedOther.isSetValues());
+    lastComparison = Boolean.valueOf(isSetColumns()).compareTo(typedOther.isSetColumns());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetValues()) {      lastComparison = TBaseHelper.compareTo(this.values, typedOther.values);
+    if (isSetColumns()) {      lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -353,18 +355,19 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // VALUES
+        case 2: // COLUMNS
           if (field.type == TType.MAP) {
             {
-              TMap _map13 = iprot.readMapBegin();
-              this.values = new HashMap<String,String>(2*_map13.size);
-              for (int _i14 = 0; _i14 < _map13.size; ++_i14)
+              TMap _map17 = iprot.readMapBegin();
+              this.columns = new HashMap<String,Column>(2*_map17.size);
+              for (int _i18 = 0; _i18 < _map17.size; ++_i18)
               {
-                String _key15;
-                String _val16;
-                _key15 = iprot.readString();
-                _val16 = iprot.readString();
-                this.values.put(_key15, _val16);
+                String _key19;
+                Column _val20;
+                _key19 = iprot.readString();
+                _val20 = new Column();
+                _val20.read(iprot);
+                this.columns.put(_key19, _val20);
               }
               iprot.readMapEnd();
             }
@@ -392,14 +395,14 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
       oprot.writeString(this.id);
       oprot.writeFieldEnd();
     }
-    if (this.values != null) {
-      oprot.writeFieldBegin(VALUES_FIELD_DESC);
+    if (this.columns != null) {
+      oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.values.size()));
-        for (Map.Entry<String, String> _iter17 : this.values.entrySet())
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRUCT, this.columns.size()));
+        for (Map.Entry<String, Column> _iter21 : this.columns.entrySet())
         {
-          oprot.writeString(_iter17.getKey());
-          oprot.writeString(_iter17.getValue());
+          oprot.writeString(_iter21.getKey());
+          _iter21.getValue().write(oprot);
         }
         oprot.writeMapEnd();
       }
@@ -411,7 +414,7 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Document(");
+    StringBuilder sb = new StringBuilder("SuperColumn(");
     boolean first = true;
 
     sb.append("id:");
@@ -422,11 +425,11 @@ public class Document implements TBase<Document, Document._Fields>, java.io.Seri
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("values:");
-    if (this.values == null) {
+    sb.append("columns:");
+    if (this.columns == null) {
       sb.append("null");
     } else {
-      sb.append(this.values);
+      sb.append(this.columns);
     }
     first = false;
     sb.append(")");

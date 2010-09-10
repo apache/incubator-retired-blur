@@ -23,19 +23,19 @@ import org.apache.thrift.*;
 import org.apache.thrift.meta_data.*;
 import org.apache.thrift.protocol.*;
 
-public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Mutation");
+public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("Row");
 
   private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)1);
-  private static final TField DOCUMENT_FAMILIES_FIELD_DESC = new TField("documentFamilies", TType.LIST, (short)2);
+  private static final TField SUPER_COLUMN_FAMILIES_FIELD_DESC = new TField("superColumnFamilies", TType.MAP, (short)2);
 
   public String id;
-  public List<DocumentFamily> documentFamilies;
+  public Map<String,SuperColumnFamily> superColumnFamilies;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     ID((short)1, "id"),
-    DOCUMENT_FAMILIES((short)2, "documentFamilies");
+    SUPER_COLUMN_FAMILIES((short)2, "superColumnFamilies");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -52,8 +52,8 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // DOCUMENT_FAMILIES
-          return DOCUMENT_FAMILIES;
+        case 2: // SUPER_COLUMN_FAMILIES
+          return SUPER_COLUMN_FAMILIES;
         default:
           return null;
       }
@@ -100,55 +100,66 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.DOCUMENT_FAMILIES, new FieldMetaData("documentFamilies", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, DocumentFamily.class))));
+    tmpMap.put(_Fields.SUPER_COLUMN_FAMILIES, new FieldMetaData("superColumnFamilies", TFieldRequirementType.DEFAULT, 
+        new MapMetaData(TType.MAP, 
+            new FieldValueMetaData(TType.STRING), 
+            new StructMetaData(TType.STRUCT, SuperColumnFamily.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Mutation.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
 
-  public Mutation() {
+  public Row() {
+    this.superColumnFamilies = new HashMap<String,SuperColumnFamily>();
+
   }
 
-  public Mutation(
+  public Row(
     String id,
-    List<DocumentFamily> documentFamilies)
+    Map<String,SuperColumnFamily> superColumnFamilies)
   {
     this();
     this.id = id;
-    this.documentFamilies = documentFamilies;
+    this.superColumnFamilies = superColumnFamilies;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Mutation(Mutation other) {
+  public Row(Row other) {
     if (other.isSetId()) {
       this.id = other.id;
     }
-    if (other.isSetDocumentFamilies()) {
-      List<DocumentFamily> __this__documentFamilies = new ArrayList<DocumentFamily>();
-      for (DocumentFamily other_element : other.documentFamilies) {
-        __this__documentFamilies.add(new DocumentFamily(other_element));
+    if (other.isSetSuperColumnFamilies()) {
+      Map<String,SuperColumnFamily> __this__superColumnFamilies = new HashMap<String,SuperColumnFamily>();
+      for (Map.Entry<String, SuperColumnFamily> other_element : other.superColumnFamilies.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        SuperColumnFamily other_element_value = other_element.getValue();
+
+        String __this__superColumnFamilies_copy_key = other_element_key;
+
+        SuperColumnFamily __this__superColumnFamilies_copy_value = new SuperColumnFamily(other_element_value);
+
+        __this__superColumnFamilies.put(__this__superColumnFamilies_copy_key, __this__superColumnFamilies_copy_value);
       }
-      this.documentFamilies = __this__documentFamilies;
+      this.superColumnFamilies = __this__superColumnFamilies;
     }
   }
 
-  public Mutation deepCopy() {
-    return new Mutation(this);
+  public Row deepCopy() {
+    return new Row(this);
   }
 
   @Deprecated
-  public Mutation clone() {
-    return new Mutation(this);
+  public Row clone() {
+    return new Row(this);
   }
 
   public String getId() {
     return this.id;
   }
 
-  public Mutation setId(String id) {
+  public Row setId(String id) {
     this.id = id;
     return this;
   }
@@ -168,42 +179,38 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     }
   }
 
-  public int getDocumentFamiliesSize() {
-    return (this.documentFamilies == null) ? 0 : this.documentFamilies.size();
+  public int getSuperColumnFamiliesSize() {
+    return (this.superColumnFamilies == null) ? 0 : this.superColumnFamilies.size();
   }
 
-  public java.util.Iterator<DocumentFamily> getDocumentFamiliesIterator() {
-    return (this.documentFamilies == null) ? null : this.documentFamilies.iterator();
-  }
-
-  public void addToDocumentFamilies(DocumentFamily elem) {
-    if (this.documentFamilies == null) {
-      this.documentFamilies = new ArrayList<DocumentFamily>();
+  public void putToSuperColumnFamilies(String key, SuperColumnFamily val) {
+    if (this.superColumnFamilies == null) {
+      this.superColumnFamilies = new HashMap<String,SuperColumnFamily>();
     }
-    this.documentFamilies.add(elem);
+    this.superColumnFamilies.put(key, val);
   }
 
-  public List<DocumentFamily> getDocumentFamilies() {
-    return this.documentFamilies;
+  public Map<String,SuperColumnFamily> getSuperColumnFamilies() {
+    return this.superColumnFamilies;
   }
 
-  public Mutation setDocumentFamilies(List<DocumentFamily> documentFamilies) {
-    this.documentFamilies = documentFamilies;
+  public Row setSuperColumnFamilies(Map<String,SuperColumnFamily> superColumnFamilies) {
+    this.superColumnFamilies = superColumnFamilies;
     return this;
   }
 
-  public void unsetDocumentFamilies() {
-    this.documentFamilies = null;
+  public void unsetSuperColumnFamilies() {
+    this.superColumnFamilies = null;
   }
 
-  /** Returns true if field documentFamilies is set (has been asigned a value) and false otherwise */
-  public boolean isSetDocumentFamilies() {
-    return this.documentFamilies != null;
+  /** Returns true if field superColumnFamilies is set (has been asigned a value) and false otherwise */
+  public boolean isSetSuperColumnFamilies() {
+    return this.superColumnFamilies != null;
   }
 
-  public void setDocumentFamiliesIsSet(boolean value) {
+  public void setSuperColumnFamiliesIsSet(boolean value) {
     if (!value) {
-      this.documentFamilies = null;
+      this.superColumnFamilies = null;
     }
   }
 
@@ -217,11 +224,11 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
       }
       break;
 
-    case DOCUMENT_FAMILIES:
+    case SUPER_COLUMN_FAMILIES:
       if (value == null) {
-        unsetDocumentFamilies();
+        unsetSuperColumnFamilies();
       } else {
-        setDocumentFamilies((List<DocumentFamily>)value);
+        setSuperColumnFamilies((Map<String,SuperColumnFamily>)value);
       }
       break;
 
@@ -237,8 +244,8 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     case ID:
       return getId();
 
-    case DOCUMENT_FAMILIES:
-      return getDocumentFamilies();
+    case SUPER_COLUMN_FAMILIES:
+      return getSuperColumnFamilies();
 
     }
     throw new IllegalStateException();
@@ -253,8 +260,8 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     switch (field) {
     case ID:
       return isSetId();
-    case DOCUMENT_FAMILIES:
-      return isSetDocumentFamilies();
+    case SUPER_COLUMN_FAMILIES:
+      return isSetSuperColumnFamilies();
     }
     throw new IllegalStateException();
   }
@@ -267,12 +274,12 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof Mutation)
-      return this.equals((Mutation)that);
+    if (that instanceof Row)
+      return this.equals((Row)that);
     return false;
   }
 
-  public boolean equals(Mutation that) {
+  public boolean equals(Row that) {
     if (that == null)
       return false;
 
@@ -285,12 +292,12 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
         return false;
     }
 
-    boolean this_present_documentFamilies = true && this.isSetDocumentFamilies();
-    boolean that_present_documentFamilies = true && that.isSetDocumentFamilies();
-    if (this_present_documentFamilies || that_present_documentFamilies) {
-      if (!(this_present_documentFamilies && that_present_documentFamilies))
+    boolean this_present_superColumnFamilies = true && this.isSetSuperColumnFamilies();
+    boolean that_present_superColumnFamilies = true && that.isSetSuperColumnFamilies();
+    if (this_present_superColumnFamilies || that_present_superColumnFamilies) {
+      if (!(this_present_superColumnFamilies && that_present_superColumnFamilies))
         return false;
-      if (!this.documentFamilies.equals(that.documentFamilies))
+      if (!this.superColumnFamilies.equals(that.superColumnFamilies))
         return false;
     }
 
@@ -302,13 +309,13 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     return 0;
   }
 
-  public int compareTo(Mutation other) {
+  public int compareTo(Row other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    Mutation typedOther = (Mutation)other;
+    Row typedOther = (Row)other;
 
     lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
     if (lastComparison != 0) {
@@ -319,11 +326,11 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetDocumentFamilies()).compareTo(typedOther.isSetDocumentFamilies());
+    lastComparison = Boolean.valueOf(isSetSuperColumnFamilies()).compareTo(typedOther.isSetSuperColumnFamilies());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetDocumentFamilies()) {      lastComparison = TBaseHelper.compareTo(this.documentFamilies, typedOther.documentFamilies);
+    if (isSetSuperColumnFamilies()) {      lastComparison = TBaseHelper.compareTo(this.superColumnFamilies, typedOther.superColumnFamilies);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -348,19 +355,21 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // DOCUMENT_FAMILIES
-          if (field.type == TType.LIST) {
+        case 2: // SUPER_COLUMN_FAMILIES
+          if (field.type == TType.MAP) {
             {
-              TList _list22 = iprot.readListBegin();
-              this.documentFamilies = new ArrayList<DocumentFamily>(_list22.size);
-              for (int _i23 = 0; _i23 < _list22.size; ++_i23)
+              TMap _map27 = iprot.readMapBegin();
+              this.superColumnFamilies = new HashMap<String,SuperColumnFamily>(2*_map27.size);
+              for (int _i28 = 0; _i28 < _map27.size; ++_i28)
               {
-                DocumentFamily _elem24;
-                _elem24 = new DocumentFamily();
-                _elem24.read(iprot);
-                this.documentFamilies.add(_elem24);
+                String _key29;
+                SuperColumnFamily _val30;
+                _key29 = iprot.readString();
+                _val30 = new SuperColumnFamily();
+                _val30.read(iprot);
+                this.superColumnFamilies.put(_key29, _val30);
               }
-              iprot.readListEnd();
+              iprot.readMapEnd();
             }
           } else { 
             TProtocolUtil.skip(iprot, field.type);
@@ -386,15 +395,16 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
       oprot.writeString(this.id);
       oprot.writeFieldEnd();
     }
-    if (this.documentFamilies != null) {
-      oprot.writeFieldBegin(DOCUMENT_FAMILIES_FIELD_DESC);
+    if (this.superColumnFamilies != null) {
+      oprot.writeFieldBegin(SUPER_COLUMN_FAMILIES_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.documentFamilies.size()));
-        for (DocumentFamily _iter25 : this.documentFamilies)
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRUCT, this.superColumnFamilies.size()));
+        for (Map.Entry<String, SuperColumnFamily> _iter31 : this.superColumnFamilies.entrySet())
         {
-          _iter25.write(oprot);
+          oprot.writeString(_iter31.getKey());
+          _iter31.getValue().write(oprot);
         }
-        oprot.writeListEnd();
+        oprot.writeMapEnd();
       }
       oprot.writeFieldEnd();
     }
@@ -404,7 +414,7 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Mutation(");
+    StringBuilder sb = new StringBuilder("Row(");
     boolean first = true;
 
     sb.append("id:");
@@ -415,11 +425,11 @@ public class Mutation implements TBase<Mutation, Mutation._Fields>, java.io.Seri
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("documentFamilies:");
-    if (this.documentFamilies == null) {
+    sb.append("superColumnFamilies:");
+    if (this.superColumnFamilies == null) {
       sb.append("null");
     } else {
-      sb.append(this.documentFamilies);
+      sb.append(this.superColumnFamilies);
     }
     first = false;
     sb.append(")");

@@ -114,8 +114,12 @@ public class SuperDocument {
 	}
 
 	private static Document addMetaData(String id, String superKey, Document doc) {
-		doc.add(new Field(ID,id,Store.YES,Index.NO));
-		doc.add(new Field(SUPER_KEY,superKey,Store.YES,Index.NO));
+		if (doc.getField(ID) == null) {
+			doc.add(new Field(ID,id,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+		}
+		if (doc.getField(SUPER_KEY) == null) {
+			doc.add(new Field(SUPER_KEY,superKey,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+		}
 		return doc;
 	}
 

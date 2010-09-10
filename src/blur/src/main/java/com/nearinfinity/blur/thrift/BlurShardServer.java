@@ -34,8 +34,9 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
-import com.nearinfinity.blur.thrift.generated.Mutation;
+import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -149,7 +150,34 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public void update(String table, Mutation mutation) throws BlurException, TException {
-		indexManager.update(table, mutation);
+	public Row fetchRow(String table, String id) throws BlurException, TException {
+		return indexManager.fetchRow(table,id);
 	}
+
+	@Override
+	public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) throws BlurException, TException {
+		return indexManager.fetchSuperColumn(table,id,superColumnFamilyName,superColumnId);
+	}
+	
+	@Override
+	public long appendRow(String table, Row row) throws BlurException, TException {
+		return indexManager.appendRow(table,row);
+	}
+
+	@Override
+	public long removeRow(String table, String id) throws BlurException, TException {
+		return indexManager.removeRow(table,id);
+	}
+
+	@Override
+	public long removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException {
+		return indexManager.removeSuperColumn(table,id,superColumnId);
+	}
+
+	@Override
+	public long replaceRow(String table, Row row) throws BlurException, TException {
+		return indexManager.replaceRow(table,row);
+	}
+
+
 }

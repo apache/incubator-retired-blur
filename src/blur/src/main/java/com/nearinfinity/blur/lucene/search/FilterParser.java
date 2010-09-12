@@ -25,7 +25,7 @@ public class FilterParser extends QueryParser {
 	private FilterManager filterManager;
 
 	public FilterParser(String table, FilterManager filterManager) {
-		super(Version.LUCENE_CURRENT, FILTERED_QUERY, new WhitespaceAnalyzer());
+		super(Version.LUCENE_30, FILTERED_QUERY, new WhitespaceAnalyzer());
 		this.table = table;
 		this.filterManager = filterManager;
 	}

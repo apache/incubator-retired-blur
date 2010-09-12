@@ -12,8 +12,8 @@ public class LocalHdfsMeleConfiguration extends MeleConfiguration {
 	
 	public LocalHdfsMeleConfiguration() throws IOException {
 		this.setUsingHdfs(true);
-		this.setBaseHdfsPath("./tmp/mele-hdfs");
-		this.setLocalReplicationPathList(Arrays.asList("./tmp/mele1","./tmp/mele2","./tmp/mele3"));
+		this.setBaseHdfsPath("target/test-tmp/mele-hdfs");
+		this.setLocalReplicationPathList(Arrays.asList("target/test-tmp/mele1","target/test-tmp/mele2","target/test-tmp/mele3"));
 		FileSystem fs = FileSystem.get(new Configuration());
 		this.setHdfsFileSystem(fs);
 	}

@@ -26,7 +26,7 @@ public class IndexManagerTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		rm(new File("./tmp"));
+		rm(new File("target/test-tmp"));
 		mele = Mele.getMele(new LocalHdfsMeleConfiguration());
 		mele.createDirectoryCluster("test");
 		mele.createDirectory("test", "s1");

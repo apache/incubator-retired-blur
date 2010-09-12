@@ -58,7 +58,7 @@ public class SuperQueryTest extends TestCase {
 
 	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
 		Directory directory = new RAMDirectory();
-		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_CURRENT), MaxFieldLength.UNLIMITED);
+		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
 		IndexManager.replace(writer, create("1","person.name:aaron","address.street:sulgrave"));
 		IndexManager.replace(writer, create("2","person.name:hannah","address.street:sulgrave"));
 		IndexManager.replace(writer, create("3","person.name:aaron","address.street:sulgrave court"));

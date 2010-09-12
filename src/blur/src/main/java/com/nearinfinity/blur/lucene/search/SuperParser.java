@@ -30,7 +30,7 @@ public class SuperParser extends QueryParser {
 	private Filter queryFilter;
 	
 	public static void main(String[] args) throws ParseException {
-		SuperParser parser = new SuperParser(Version.LUCENE_CURRENT, new StandardAnalyzer(Version.LUCENE_CURRENT),true,null);
+		SuperParser parser = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30),true,null);
 		Query query = parser.parse("address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query);
 		Query query2 = parser.parse("disabled address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");

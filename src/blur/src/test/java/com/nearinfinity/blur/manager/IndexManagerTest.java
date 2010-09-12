@@ -14,6 +14,7 @@ import org.apache.lucene.index.IndexReader;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.blur.thrift.generated.SuperColumnFamily;
@@ -42,7 +43,7 @@ public class IndexManagerTest extends TestCase {
 		file.delete();
 	}
 
-	public void testIndexManager() throws IOException, BlurException {
+	public void testIndexManager() throws IOException, BlurException, MissingShardException {
 		IndexManager indexManager = new IndexManager();
 		Row row = new Row();
 		row.id="1";

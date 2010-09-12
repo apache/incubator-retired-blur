@@ -8,6 +8,7 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManager.TableManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SuperColumn;
@@ -63,7 +64,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public Row fetchRow(String table, String id) throws BlurException, TException {
+	public Row fetchRow(String table, String id) throws BlurException, TException, MissingShardException {
 		return indexManager.fetchRow(table,id);
 	}
 
@@ -73,22 +74,22 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 	
 	@Override
-	public boolean appendRow(String table, Row row) throws BlurException, TException {
-		return indexManager.appendRow(table,row);
+	public void appendRow(String table, Row row) throws BlurException, TException {
+		indexManager.appendRow(table,row);
 	}
 
 	@Override
-	public boolean removeRow(String table, String id) throws BlurException, TException {
-		return indexManager.removeRow(table,id);
+	public void removeRow(String table, String id) throws BlurException, TException {
+		indexManager.removeRow(table,id);
 	}
 
 	@Override
-	public boolean removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException {
-		return indexManager.removeSuperColumn(table,id,superColumnId);
+	public void removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException {
+		indexManager.removeSuperColumn(table,id,superColumnId);
 	}
 
 	@Override
-	public boolean replaceRow(String table, Row row) throws BlurException, TException {
-		return indexManager.replaceRow(table,row);
+	public void replaceRow(String table, Row row) throws BlurException, TException, MissingShardException {
+		indexManager.replaceRow(table,row);
 	}
 }

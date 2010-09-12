@@ -40,12 +40,14 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.lucene.search.FilterParser;
 import com.nearinfinity.blur.lucene.search.SuperParser;
+import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
 import com.nearinfinity.blur.manager.util.TermDocIterable;
 import com.nearinfinity.blur.thrift.BlurAdminServer.HitsMerger;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SuperColumn;
@@ -78,7 +80,9 @@ public class IndexManager {
 	private Similarity similarity = new FairSimilarity();
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	private TableManager manager;
-	private Thread daemon;
+	private Thread daemonUnservedShards;
+	private BlurWriteAheadLog wal = BlurWriteAheadLog.NO_LOG;
+	private Thread daemonCommitDaemon;
 	
 	public interface TableManager {
 		boolean isTableEnabled(String table);
@@ -88,14 +92,9 @@ public class IndexManager {
 	public IndexManager(TableManager manager) throws IOException, BlurException {
 		this.manager = manager;
 		setupIndexManager();
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			@Override
-			public void run() {
-				close();
-			}
-		}));
+		Runtime.getRuntime().addShutdownHook(new ShutdownThread(this));
 	}
-
+	
 	public IndexManager() throws IOException, BlurException {
 		this(ALWAYS_ON);
 	}
@@ -114,12 +113,14 @@ public class IndexManager {
 		replace(indexWriter,createSuperDocument(row));
 	}
 	
-	public synchronized static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
-		indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
-		if (!replaceInternal(indexWriter,document)) {
+	public static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
+		synchronized (indexWriter) {
 			indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
 			if (!replaceInternal(indexWriter,document)) {
-				throw new IOException("SuperDocument too large, try increasing ram buffer size.");
+				indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
+				if (!replaceInternal(indexWriter,document)) {
+					throw new IOException("SuperDocument too large, try increasing ram buffer size.");
+				}
 			}
 		}
 	}
@@ -137,39 +138,69 @@ public class IndexManager {
 		}
 	}
 
-	public boolean appendRow(String table, Row row) {
-		return false;
-	}
-
-	public boolean replaceRow(String table, Row row) throws BlurException {
-		IndexWriter indexWriter = getIndexWriter(table, row.id);
-		if (indexWriter != null) {
-			try {
-				replace(indexWriter,row);
-			} catch (IOException e) {
-				LOG.error("Unknown error",e);
-				throw new BlurException("Unknown error [" + e.getMessage() + "]");
-			}
-			return true;
+	public void appendRow(String table, Row row) throws BlurException {
+		try {
+			wal.appendRow(table,row);
+		} catch (IOException e) {
+			LOG.error("Error writing to WAL",e);
+			throw new BlurException("Error writing to WAL");
 		}
-		return false;
+		
+		//@todo finish
+		
 	}
 
-	public boolean removeSuperColumn(String table, String id, String superColumnId) {
-		return false;
+	public void replaceRow(String table, Row row) throws BlurException, MissingShardException {
+		try {
+			wal.replaceRow(table,row);
+		} catch (IOException e) {
+			LOG.error("Error writing to WAL",e);
+			throw new BlurException("Error writing to WAL");
+		}
+		
+		IndexWriter indexWriter = getIndexWriter(table, row.id);
+		checkIfShardIsNull(indexWriter);
+		try {
+			replace(indexWriter,row);
+		} catch (IOException e) {
+			LOG.error("Unknown error",e);
+			throw new BlurException("Unknown error [" + e.getMessage() + "]");
+		}
 	}
 
-	public boolean removeRow(String table, String id) {
-		return false;
+	public void removeSuperColumn(String table, String id, String superColumnId) throws BlurException {
+		try {
+			wal.removeSuperColumn(table,id,superColumnId);
+		} catch (IOException e) {
+			LOG.error("Error writing to WAL",e);
+			throw new BlurException("Error writing to WAL");
+		}
+		
+		//@todo finish
+		
+	}
+
+	public void removeRow(String table, String id) throws BlurException {
+		try {
+			wal.removeRow(table,id);
+		} catch (IOException e) {
+			LOG.error("Error writing to WAL",e);
+			throw new BlurException("Error writing to WAL");
+		}
+		
+		//@todo finish
 	}
 
 	public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) {
+		
+		//@todo finish
 		return null;
 	}
 
-	public Row fetchRow(String table, String id) throws BlurException {
+	public Row fetchRow(String table, String id) throws BlurException, MissingShardException {
 		try {
 			IndexReader reader = getIndexReader(table,id);
+			checkIfShardIsNull(reader);
 			Iterable<Document> docs = getDocs(reader,id);
 			Row row = new Row();
 			row.id = id;
@@ -348,29 +379,57 @@ public class IndexManager {
 		// @todo once all are brought online, look for shards that are not
 		// online yet...
 		serverUnservedShards();
-		daemon = new Thread(new Runnable() {
+		startDaemonUnservedShards();
+		startDaemonWriterCommit();
+	}
+	
+	private void startDaemonWriterCommit() {
+		daemonCommitDaemon = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					Thread.sleep(POLL_TIME);
-				} catch (InterruptedException e) {
-					return;
-				}
+				sleep(POLL_TIME);
 				while (true) {
-					serverUnservedShards();
-					try {
-						Thread.sleep(POLL_TIME);
-					} catch (InterruptedException e) {
-						return;
-					}
+					commitIndexWriters();
+					sleep(POLL_TIME);
 				}
 			}
 		});
-		daemon.setDaemon(true);
-		daemon.setName("IndexManager-Index-Daemon");
-		daemon.start();
+		daemonCommitDaemon.setDaemon(true);
+		daemonCommitDaemon.setName("IndexManager-Commit-Daemon");
+		daemonCommitDaemon.start();
 	}
 	
+	private void commitIndexWriters() {
+		for (Entry<String, Map<String, IndexWriter>> tableEntry : indexWriters.entrySet()) {
+			String table = tableEntry.getKey();
+			for (Entry<String, IndexWriter> shardEntry : tableEntry.getValue().entrySet()) {
+				String shard = shardEntry.getKey();
+				IndexWriter indexWriter = shardEntry.getValue();
+				try {
+					wal.commit(table,shard,indexWriter);
+				} catch (IOException e) {
+					LOG.error("Unknown error while commiting data to [" + table + "] [" + shard + "]",e);
+				}
+			}
+		}
+	}
+
+	private void startDaemonUnservedShards() {
+		daemonUnservedShards = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				sleep(POLL_TIME);
+				while (true) {
+					serverUnservedShards();
+					sleep(POLL_TIME);
+				}
+			}
+		});
+		daemonUnservedShards.setDaemon(true);
+		daemonUnservedShards.setName("IndexManager-Unserved-Shard-Daemon");
+		daemonUnservedShards.start();
+	}
+
 	private void serverUnservedShards() {
 		try {
 			for (String cluster : mele.listClusters()) {
@@ -410,28 +469,29 @@ public class IndexManager {
 		}
 	}
 
-	private void setupPartitioner(String cluster) throws IOException {
-		partitioners.put(cluster, new Partitioner(mele.listDirectories(cluster)));
+	private void setupPartitioner(String table) throws IOException {
+		partitioners.put(table, new Partitioner(mele.listDirectories(table)));
 	}
 
-	private void openForWriting(String cluster, List<String> dirs, Map<String, IndexWriter> writersMap) throws IOException, BlurException {
-		for (String local : dirs) {
+	private void openForWriting(String table, List<String> dirs, Map<String, IndexWriter> writersMap) throws IOException, BlurException {
+		for (String shard : dirs) {
 			// @todo get zk lock here....??? maybe if the index writer cannot
 			// get a lock that is good enough???
 			// also maybe send this into a loop so that if a node goes down it
 			// will picks the pieces...
 			// need to think about what happens when a node comes back online.
-			Directory directory = mele.open(cluster, local);
-			IndexDeletionPolicy deletionPolicy = mele.getIndexDeletionPolicy(cluster, local);
-			Analyzer analyzer = getAnalyzer(cluster);
+			Directory directory = mele.open(table, shard);
+			IndexDeletionPolicy deletionPolicy = mele.getIndexDeletionPolicy(table, shard);
+			Analyzer analyzer = getAnalyzer(table);
 			try {
 				if (!IndexWriter.isLocked(directory)) {
 					IndexWriter indexWriter = new IndexWriter(directory, analyzer, deletionPolicy, MaxFieldLength.UNLIMITED);
 					indexWriter.setSimilarity(similarity);
-					writersMap.put(local, indexWriter);
+					wal.replay(table, shard, partitioners.get(table), indexWriter);
+					writersMap.put(shard, indexWriter);
 				}
 			} catch (LockObtainFailedException e) {
-				LOG.info("Cluster [" + cluster + "] shard [" + local + "] is locked by another shard.");
+				LOG.info("Table [" + table + "] shard [" + shard + "] is locked by another shard.");
 			}
 		}
 	}
@@ -508,4 +568,28 @@ public class IndexManager {
 		}
 	}
 
+	public static class ShutdownThread extends Thread {
+		private IndexManager indexManager;
+		public ShutdownThread(IndexManager indexManager) {
+			this.indexManager = indexManager;
+		}
+		@Override
+		public void run() {
+			indexManager.close();
+		}
+	}
+	
+	public static void sleep(long pauseTime) {
+		try {
+			Thread.sleep(pauseTime);
+		} catch (InterruptedException e) {
+			return;
+		}
+	}
+	
+	private void checkIfShardIsNull(Object shard) throws MissingShardException {
+		if (shard == null) {
+			throw new MissingShardException();
+		}
+	}
 }

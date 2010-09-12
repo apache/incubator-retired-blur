@@ -35,8 +35,7 @@ public abstract class BlurWriteAheadLog {
 		}
 		
 		@Override
-		public void removeSuperColumn(String table, String id, String superColumnId)
-				throws IOException {
+		public void removeSuperColumn(String table, String id, String superColumnId) throws IOException {
 			
 		}
 		
@@ -46,8 +45,7 @@ public abstract class BlurWriteAheadLog {
 		}
 		
 		@Override
-		public void commit(String table, String shard, IndexWriter indexWriter)
-				throws IOException {
+		public void commit(String table, String shard, IndexWriter indexWriter) throws IOException {
 			indexWriter.commit();
 		}
 		

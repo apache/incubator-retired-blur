@@ -25,6 +25,7 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -38,7 +39,6 @@ import org.apache.lucene.util.Version;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
-import com.nearinfinity.blur.lucene.search.FilterParser;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
 import com.nearinfinity.blur.manager.util.TermDocIterable;
@@ -76,7 +76,6 @@ public class IndexManager {
 	private Map<String, Map<String, IndexWriter>> indexWriters = new ConcurrentHashMap<String, Map<String, IndexWriter>>();
 	private Map<String, Analyzer> analyzers = new ConcurrentHashMap<String, Analyzer>();
 	private Map<String, Partitioner> partitioners = new ConcurrentHashMap<String, Partitioner>();
-	private FilterManager filterManager;
 	private Similarity similarity = new FairSimilarity();
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	private TableManager manager;
@@ -220,7 +219,7 @@ public class IndexManager {
 	}
 	
 	public Hits search(String table, String query, boolean superQueryOn,
-			ScoreType type, String filter, final long start, final int fetch,
+			ScoreType type, String postSuperFilter, String preSuperFilter, final long start, final int fetch,
 			long minimumNumberOfHits, long maxQueryTime) throws BlurException {
 		Map<String, IndexReader> indexReaders;
 		try {
@@ -230,8 +229,9 @@ public class IndexManager {
 			throw new BlurException(e.getMessage());
 		}
 		try {
-			Filter queryFilter = parse(table,filter);
-			final Query userQuery = parse(query,superQueryOn,getAnalyzer(table),queryFilter);
+			Filter preFilter = parseFilter(table,preSuperFilter);
+			Filter postFilter = parseFilter(table,postSuperFilter);
+			final Query userQuery = parseQuery(query,superQueryOn,getAnalyzer(table),postFilter,preFilter);
 			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, Hits>() {
 				@Override
 				public Hits call(Entry<String, IndexReader> entry) throws Exception {
@@ -244,8 +244,11 @@ public class IndexManager {
 		}
 	}
 
-	private Filter parse(String table, String filter) throws ParseException {
-		return new FilterParser(table, filterManager).parseFilter(filter);
+	private Filter parseFilter(String table, String filter) {
+		if (filter == null) {
+			return null;
+		}
+		return null;
 	}
 
 	private Analyzer getAnalyzer(String table) throws BlurException {
@@ -263,8 +266,12 @@ public class IndexManager {
 		}
 	}
 
-	private Query parse(String query, boolean superQueryOn, Analyzer analyzer, Filter queryFilter) throws ParseException {
-		return new SuperParser(Version.LUCENE_30, analyzer, superQueryOn, queryFilter).parse(query);
+	private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter) throws ParseException {
+		Query result = new SuperParser(Version.LUCENE_30, analyzer, superQueryOn, preFilter).parse(query);
+		if (postFilter == null) {
+			return result;	
+		}
+		return new FilteredQuery(result, postFilter);
 	}
 	
 	private Hits performSearch(Query query, String shardId, IndexReader reader, int start, int fetch) throws IOException {

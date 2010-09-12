@@ -51,7 +51,7 @@ public class Blur {
 
     public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) throws BlurException, MissingShardException, TException;
 
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException;
+    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException;
 
     public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException;
 
@@ -573,13 +573,13 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchSuperColumn failed: unknown result");
     }
 
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException
+    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException
     {
-      send_search(table, query, superQueryOn, type, filter, start, fetch, minimumNumberOfHits, maxQueryTime);
+      send_search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, start, fetch, minimumNumberOfHits, maxQueryTime);
       return recv_search();
     }
 
-    public void send_search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws TException
+    public void send_search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("search", TMessageType.CALL, ++seqid_));
       search_args args = new search_args();
@@ -587,7 +587,8 @@ public class Blur {
       args.setQuery(query);
       args.setSuperQueryOn(superQueryOn);
       args.setType(type);
-      args.setFilter(filter);
+      args.setPostSuperFilter(postSuperFilter);
+      args.setPreSuperFilter(preSuperFilter);
       args.setStart(start);
       args.setFetch(fetch);
       args.setMinimumNumberOfHits(minimumNumberOfHits);
@@ -1370,7 +1371,7 @@ public class Blur {
         iprot.readMessageEnd();
         search_result result = new search_result();
         try {
-          result.success = iface_.search(args.table, args.query, args.superQueryOn, args.type, args.filter, args.start, args.fetch, args.minimumNumberOfHits, args.maxQueryTime);
+          result.success = iface_.search(args.table, args.query, args.superQueryOn, args.type, args.postSuperFilter, args.preSuperFilter, args.start, args.fetch, args.minimumNumberOfHits, args.maxQueryTime);
         } catch (BlurException be) {
           result.be = be;
         } catch (MissingShardException mse) {
@@ -10104,11 +10105,12 @@ public class Blur {
     private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRING, (short)2);
     private static final TField SUPER_QUERY_ON_FIELD_DESC = new TField("superQueryOn", TType.BOOL, (short)3);
     private static final TField TYPE_FIELD_DESC = new TField("type", TType.I32, (short)4);
-    private static final TField FILTER_FIELD_DESC = new TField("filter", TType.STRING, (short)5);
-    private static final TField START_FIELD_DESC = new TField("start", TType.I64, (short)6);
-    private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)7);
-    private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)8);
-    private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)9);
+    private static final TField POST_SUPER_FILTER_FIELD_DESC = new TField("postSuperFilter", TType.STRING, (short)5);
+    private static final TField PRE_SUPER_FILTER_FIELD_DESC = new TField("preSuperFilter", TType.STRING, (short)6);
+    private static final TField START_FIELD_DESC = new TField("start", TType.I64, (short)7);
+    private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)8);
+    private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)9);
+    private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)10);
 
     public String table;
     public String query;
@@ -10118,7 +10120,8 @@ public class Blur {
      * @see ScoreType
      */
     public ScoreType type;
-    public String filter;
+    public String postSuperFilter;
+    public String preSuperFilter;
     public long start;
     public int fetch;
     public long minimumNumberOfHits;
@@ -10134,11 +10137,12 @@ public class Blur {
        * @see ScoreType
        */
       TYPE((short)4, "type"),
-      FILTER((short)5, "filter"),
-      START((short)6, "start"),
-      FETCH((short)7, "fetch"),
-      MINIMUM_NUMBER_OF_HITS((short)8, "minimumNumberOfHits"),
-      MAX_QUERY_TIME((short)9, "maxQueryTime");
+      POST_SUPER_FILTER((short)5, "postSuperFilter"),
+      PRE_SUPER_FILTER((short)6, "preSuperFilter"),
+      START((short)7, "start"),
+      FETCH((short)8, "fetch"),
+      MINIMUM_NUMBER_OF_HITS((short)9, "minimumNumberOfHits"),
+      MAX_QUERY_TIME((short)10, "maxQueryTime");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10161,15 +10165,17 @@ public class Blur {
             return SUPER_QUERY_ON;
           case 4: // TYPE
             return TYPE;
-          case 5: // FILTER
-            return FILTER;
-          case 6: // START
+          case 5: // POST_SUPER_FILTER
+            return POST_SUPER_FILTER;
+          case 6: // PRE_SUPER_FILTER
+            return PRE_SUPER_FILTER;
+          case 7: // START
             return START;
-          case 7: // FETCH
+          case 8: // FETCH
             return FETCH;
-          case 8: // MINIMUM_NUMBER_OF_HITS
+          case 9: // MINIMUM_NUMBER_OF_HITS
             return MINIMUM_NUMBER_OF_HITS;
-          case 9: // MAX_QUERY_TIME
+          case 10: // MAX_QUERY_TIME
             return MAX_QUERY_TIME;
           default:
             return null;
@@ -10229,7 +10235,9 @@ public class Blur {
           new FieldValueMetaData(TType.BOOL)));
       tmpMap.put(_Fields.TYPE, new FieldMetaData("type", TFieldRequirementType.DEFAULT, 
           new EnumMetaData(TType.ENUM, ScoreType.class)));
-      tmpMap.put(_Fields.FILTER, new FieldMetaData("filter", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.POST_SUPER_FILTER, new FieldMetaData("postSuperFilter", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.PRE_SUPER_FILTER, new FieldMetaData("preSuperFilter", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.START, new FieldMetaData("start", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.I64)));
@@ -10251,7 +10259,8 @@ public class Blur {
       String query,
       boolean superQueryOn,
       ScoreType type,
-      String filter,
+      String postSuperFilter,
+      String preSuperFilter,
       long start,
       int fetch,
       long minimumNumberOfHits,
@@ -10263,7 +10272,8 @@ public class Blur {
       this.superQueryOn = superQueryOn;
       setSuperQueryOnIsSet(true);
       this.type = type;
-      this.filter = filter;
+      this.postSuperFilter = postSuperFilter;
+      this.preSuperFilter = preSuperFilter;
       this.start = start;
       setStartIsSet(true);
       this.fetch = fetch;
@@ -10290,8 +10300,11 @@ public class Blur {
       if (other.isSetType()) {
         this.type = other.type;
       }
-      if (other.isSetFilter()) {
-        this.filter = other.filter;
+      if (other.isSetPostSuperFilter()) {
+        this.postSuperFilter = other.postSuperFilter;
+      }
+      if (other.isSetPreSuperFilter()) {
+        this.preSuperFilter = other.preSuperFilter;
       }
       this.start = other.start;
       this.fetch = other.fetch;
@@ -10411,27 +10424,51 @@ public class Blur {
       }
     }
 
-    public String getFilter() {
-      return this.filter;
+    public String getPostSuperFilter() {
+      return this.postSuperFilter;
     }
 
-    public search_args setFilter(String filter) {
-      this.filter = filter;
+    public search_args setPostSuperFilter(String postSuperFilter) {
+      this.postSuperFilter = postSuperFilter;
       return this;
     }
 
-    public void unsetFilter() {
-      this.filter = null;
+    public void unsetPostSuperFilter() {
+      this.postSuperFilter = null;
     }
 
-    /** Returns true if field filter is set (has been asigned a value) and false otherwise */
-    public boolean isSetFilter() {
-      return this.filter != null;
+    /** Returns true if field postSuperFilter is set (has been asigned a value) and false otherwise */
+    public boolean isSetPostSuperFilter() {
+      return this.postSuperFilter != null;
     }
 
-    public void setFilterIsSet(boolean value) {
+    public void setPostSuperFilterIsSet(boolean value) {
       if (!value) {
-        this.filter = null;
+        this.postSuperFilter = null;
+      }
+    }
+
+    public String getPreSuperFilter() {
+      return this.preSuperFilter;
+    }
+
+    public search_args setPreSuperFilter(String preSuperFilter) {
+      this.preSuperFilter = preSuperFilter;
+      return this;
+    }
+
+    public void unsetPreSuperFilter() {
+      this.preSuperFilter = null;
+    }
+
+    /** Returns true if field preSuperFilter is set (has been asigned a value) and false otherwise */
+    public boolean isSetPreSuperFilter() {
+      return this.preSuperFilter != null;
+    }
+
+    public void setPreSuperFilterIsSet(boolean value) {
+      if (!value) {
+        this.preSuperFilter = null;
       }
     }
 
@@ -10561,11 +10598,19 @@ public class Blur {
         }
         break;
 
-      case FILTER:
+      case POST_SUPER_FILTER:
         if (value == null) {
-          unsetFilter();
+          unsetPostSuperFilter();
         } else {
-          setFilter((String)value);
+          setPostSuperFilter((String)value);
+        }
+        break;
+
+      case PRE_SUPER_FILTER:
+        if (value == null) {
+          unsetPreSuperFilter();
+        } else {
+          setPreSuperFilter((String)value);
         }
         break;
 
@@ -10622,8 +10667,11 @@ public class Blur {
       case TYPE:
         return getType();
 
-      case FILTER:
-        return getFilter();
+      case POST_SUPER_FILTER:
+        return getPostSuperFilter();
+
+      case PRE_SUPER_FILTER:
+        return getPreSuperFilter();
 
       case START:
         return new Long(getStart());
@@ -10656,8 +10704,10 @@ public class Blur {
         return isSetSuperQueryOn();
       case TYPE:
         return isSetType();
-      case FILTER:
-        return isSetFilter();
+      case POST_SUPER_FILTER:
+        return isSetPostSuperFilter();
+      case PRE_SUPER_FILTER:
+        return isSetPreSuperFilter();
       case START:
         return isSetStart();
       case FETCH:
@@ -10723,12 +10773,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_filter = true && this.isSetFilter();
-      boolean that_present_filter = true && that.isSetFilter();
-      if (this_present_filter || that_present_filter) {
-        if (!(this_present_filter && that_present_filter))
+      boolean this_present_postSuperFilter = true && this.isSetPostSuperFilter();
+      boolean that_present_postSuperFilter = true && that.isSetPostSuperFilter();
+      if (this_present_postSuperFilter || that_present_postSuperFilter) {
+        if (!(this_present_postSuperFilter && that_present_postSuperFilter))
           return false;
-        if (!this.filter.equals(that.filter))
+        if (!this.postSuperFilter.equals(that.postSuperFilter))
+          return false;
+      }
+
+      boolean this_present_preSuperFilter = true && this.isSetPreSuperFilter();
+      boolean that_present_preSuperFilter = true && that.isSetPreSuperFilter();
+      if (this_present_preSuperFilter || that_present_preSuperFilter) {
+        if (!(this_present_preSuperFilter && that_present_preSuperFilter))
+          return false;
+        if (!this.preSuperFilter.equals(that.preSuperFilter))
           return false;
       }
 
@@ -10820,11 +10879,20 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetFilter()).compareTo(typedOther.isSetFilter());
+      lastComparison = Boolean.valueOf(isSetPostSuperFilter()).compareTo(typedOther.isSetPostSuperFilter());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetFilter()) {        lastComparison = TBaseHelper.compareTo(this.filter, typedOther.filter);
+      if (isSetPostSuperFilter()) {        lastComparison = TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetPreSuperFilter()).compareTo(typedOther.isSetPreSuperFilter());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetPreSuperFilter()) {        lastComparison = TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -10907,14 +10975,21 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 5: // FILTER
+          case 5: // POST_SUPER_FILTER
             if (field.type == TType.STRING) {
-              this.filter = iprot.readString();
+              this.postSuperFilter = iprot.readString();
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 6: // START
+          case 6: // PRE_SUPER_FILTER
+            if (field.type == TType.STRING) {
+              this.preSuperFilter = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 7: // START
             if (field.type == TType.I64) {
               this.start = iprot.readI64();
               setStartIsSet(true);
@@ -10922,7 +10997,7 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 7: // FETCH
+          case 8: // FETCH
             if (field.type == TType.I32) {
               this.fetch = iprot.readI32();
               setFetchIsSet(true);
@@ -10930,7 +11005,7 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 8: // MINIMUM_NUMBER_OF_HITS
+          case 9: // MINIMUM_NUMBER_OF_HITS
             if (field.type == TType.I64) {
               this.minimumNumberOfHits = iprot.readI64();
               setMinimumNumberOfHitsIsSet(true);
@@ -10938,7 +11013,7 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 9: // MAX_QUERY_TIME
+          case 10: // MAX_QUERY_TIME
             if (field.type == TType.I64) {
               this.maxQueryTime = iprot.readI64();
               setMaxQueryTimeIsSet(true);
@@ -10979,9 +11054,14 @@ public class Blur {
         oprot.writeI32(this.type.getValue());
         oprot.writeFieldEnd();
       }
-      if (this.filter != null) {
-        oprot.writeFieldBegin(FILTER_FIELD_DESC);
-        oprot.writeString(this.filter);
+      if (this.postSuperFilter != null) {
+        oprot.writeFieldBegin(POST_SUPER_FILTER_FIELD_DESC);
+        oprot.writeString(this.postSuperFilter);
+        oprot.writeFieldEnd();
+      }
+      if (this.preSuperFilter != null) {
+        oprot.writeFieldBegin(PRE_SUPER_FILTER_FIELD_DESC);
+        oprot.writeString(this.preSuperFilter);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldBegin(START_FIELD_DESC);
@@ -11033,11 +11113,19 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("filter:");
-      if (this.filter == null) {
+      sb.append("postSuperFilter:");
+      if (this.postSuperFilter == null) {
         sb.append("null");
       } else {
-        sb.append(this.filter);
+        sb.append(this.postSuperFilter);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("preSuperFilter:");
+      if (this.preSuperFilter == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.preSuperFilter);
       }
       first = false;
       if (!first) sb.append(", ");

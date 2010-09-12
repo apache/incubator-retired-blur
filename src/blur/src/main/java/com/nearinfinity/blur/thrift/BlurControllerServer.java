@@ -41,13 +41,13 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher, Bl
 	}
 
 	@Override
-	public Hits search(final String table, final String query, final boolean superQueryOn, final ScoreType type, final String filter, 
+	public Hits search(final String table, final String query, final boolean superQueryOn, final ScoreType type, final String postSuperFilter, final String preSuperFilter, 
 			final long start, final int fetch, final long minimumNumberOfHits, final long maxQueryTime) throws BlurException, TException {
 		try {
 			return ForkJoin.execute(executor, clients.values(), new ParallelCall<Blur.Client,Hits>() {
 				@Override
 				public Hits call(Blur.Client client) throws Exception {
-					return client.search(table, query, superQueryOn, type, filter, start, 
+					return client.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, start, 
 							fetch, minimumNumberOfHits, maxQueryTime);
 				}
 			}).merge(new HitsMerger());

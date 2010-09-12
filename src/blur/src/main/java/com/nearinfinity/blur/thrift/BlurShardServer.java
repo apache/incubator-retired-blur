@@ -53,9 +53,9 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, 
+	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, 
 			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
-		return indexManager.search(table, query, superQueryOn, type, filter, start, fetch, minimumNumberOfHits, maxQueryTime);
+		return indexManager.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, start, fetch, minimumNumberOfHits, maxQueryTime);
 	}
 	
 	@Override

@@ -129,6 +129,9 @@ public class SuperParser extends QueryParser {
 	}
 
 	private Query wrapFilter(Query query) {
+		if (queryFilter == null) {
+			return query;
+		}
 		return new FilteredQuery(query,queryFilter);
 	}
 

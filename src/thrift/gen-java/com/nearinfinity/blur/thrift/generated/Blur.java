@@ -39,29 +39,29 @@ public class Blur {
 
     public void drop(String table) throws BlurException, TException;
 
-    public boolean removeRow(String table, String id) throws BlurException, TException;
+    public void removeRow(String table, String id) throws BlurException, MissingShardException, TException;
 
-    public boolean removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException;
+    public void removeSuperColumn(String table, String id, String superColumnId) throws BlurException, MissingShardException, TException;
 
-    public boolean replaceRow(String table, Row row) throws BlurException, TException;
+    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException;
 
-    public boolean appendRow(String table, Row row) throws BlurException, TException;
+    public void appendRow(String table, Row row) throws BlurException, MissingShardException, TException;
 
-    public Row fetchRow(String table, String id) throws BlurException, TException;
+    public Row fetchRow(String table, String id) throws BlurException, MissingShardException, TException;
 
-    public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) throws BlurException, TException;
+    public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) throws BlurException, MissingShardException, TException;
 
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException;
+    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException;
 
-    public List<String> getDynamicTerms(String table) throws BlurException, TException;
+    public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException;
 
-    public String getDynamicTermQuery(String table, String term) throws BlurException, TException;
+    public String getDynamicTermQuery(String table, String term) throws BlurException, MissingShardException, TException;
 
-    public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, TException;
+    public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, MissingShardException, TException;
 
-    public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn) throws BlurException, TException;
+    public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn) throws BlurException, MissingShardException, TException;
 
-    public void deleteDynamicTermQuery(String table, String term) throws BlurException, TException;
+    public void deleteDynamicTermQuery(String table, String term) throws BlurException, MissingShardException, TException;
 
   }
 
@@ -324,10 +324,10 @@ public class Blur {
       return;
     }
 
-    public boolean removeRow(String table, String id) throws BlurException, TException
+    public void removeRow(String table, String id) throws BlurException, MissingShardException, TException
     {
       send_removeRow(table, id);
-      return recv_removeRow();
+      recv_removeRow();
     }
 
     public void send_removeRow(String table, String id) throws TException
@@ -341,7 +341,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public boolean recv_removeRow() throws BlurException, TException
+    public void recv_removeRow() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -355,19 +355,19 @@ public class Blur {
       removeRow_result result = new removeRow_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
+      if (result.be != null) {
+        throw result.be;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.mse != null) {
+        throw result.mse;
       }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "removeRow failed: unknown result");
+      return;
     }
 
-    public boolean removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException
+    public void removeSuperColumn(String table, String id, String superColumnId) throws BlurException, MissingShardException, TException
     {
       send_removeSuperColumn(table, id, superColumnId);
-      return recv_removeSuperColumn();
+      recv_removeSuperColumn();
     }
 
     public void send_removeSuperColumn(String table, String id, String superColumnId) throws TException
@@ -382,7 +382,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public boolean recv_removeSuperColumn() throws BlurException, TException
+    public void recv_removeSuperColumn() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -396,19 +396,19 @@ public class Blur {
       removeSuperColumn_result result = new removeSuperColumn_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
+      if (result.be != null) {
+        throw result.be;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.mse != null) {
+        throw result.mse;
       }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "removeSuperColumn failed: unknown result");
+      return;
     }
 
-    public boolean replaceRow(String table, Row row) throws BlurException, TException
+    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException
     {
       send_replaceRow(table, row);
-      return recv_replaceRow();
+      recv_replaceRow();
     }
 
     public void send_replaceRow(String table, Row row) throws TException
@@ -422,7 +422,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public boolean recv_replaceRow() throws BlurException, TException
+    public void recv_replaceRow() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -436,19 +436,19 @@ public class Blur {
       replaceRow_result result = new replaceRow_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
+      if (result.be != null) {
+        throw result.be;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.mse != null) {
+        throw result.mse;
       }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "replaceRow failed: unknown result");
+      return;
     }
 
-    public boolean appendRow(String table, Row row) throws BlurException, TException
+    public void appendRow(String table, Row row) throws BlurException, MissingShardException, TException
     {
       send_appendRow(table, row);
-      return recv_appendRow();
+      recv_appendRow();
     }
 
     public void send_appendRow(String table, Row row) throws TException
@@ -462,7 +462,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public boolean recv_appendRow() throws BlurException, TException
+    public void recv_appendRow() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -476,16 +476,16 @@ public class Blur {
       appendRow_result result = new appendRow_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
+      if (result.be != null) {
+        throw result.be;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.mse != null) {
+        throw result.mse;
       }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "appendRow failed: unknown result");
+      return;
     }
 
-    public Row fetchRow(String table, String id) throws BlurException, TException
+    public Row fetchRow(String table, String id) throws BlurException, MissingShardException, TException
     {
       send_fetchRow(table, id);
       return recv_fetchRow();
@@ -502,7 +502,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public Row recv_fetchRow() throws BlurException, TException
+    public Row recv_fetchRow() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -519,13 +519,16 @@ public class Blur {
       if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
     }
 
-    public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) throws BlurException, TException
+    public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) throws BlurException, MissingShardException, TException
     {
       send_fetchSuperColumn(table, id, superColumnFamilyName, superColumnId);
       return recv_fetchSuperColumn();
@@ -544,7 +547,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public SuperColumn recv_fetchSuperColumn() throws BlurException, TException
+    public SuperColumn recv_fetchSuperColumn() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -561,13 +564,16 @@ public class Blur {
       if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchSuperColumn failed: unknown result");
     }
 
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException
+    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String filter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException
     {
       send_search(table, query, superQueryOn, type, filter, start, fetch, minimumNumberOfHits, maxQueryTime);
       return recv_search();
@@ -591,7 +597,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public Hits recv_search() throws BlurException, TException
+    public Hits recv_search() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -608,13 +614,16 @@ public class Blur {
       if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
     }
 
-    public List<String> getDynamicTerms(String table) throws BlurException, TException
+    public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException
     {
       send_getDynamicTerms(table);
       return recv_getDynamicTerms();
@@ -630,7 +639,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public List<String> recv_getDynamicTerms() throws BlurException, TException
+    public List<String> recv_getDynamicTerms() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -647,13 +656,16 @@ public class Blur {
       if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "getDynamicTerms failed: unknown result");
     }
 
-    public String getDynamicTermQuery(String table, String term) throws BlurException, TException
+    public String getDynamicTermQuery(String table, String term) throws BlurException, MissingShardException, TException
     {
       send_getDynamicTermQuery(table, term);
       return recv_getDynamicTermQuery();
@@ -670,7 +682,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public String recv_getDynamicTermQuery() throws BlurException, TException
+    public String recv_getDynamicTermQuery() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -687,13 +699,16 @@ public class Blur {
       if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "getDynamicTermQuery failed: unknown result");
     }
 
-    public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, TException
+    public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, MissingShardException, TException
     {
       send_isDynamicTermQuerySuperQuery(table, term);
       return recv_isDynamicTermQuerySuperQuery();
@@ -710,7 +725,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public boolean recv_isDynamicTermQuerySuperQuery() throws BlurException, TException
+    public boolean recv_isDynamicTermQuerySuperQuery() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -727,13 +742,16 @@ public class Blur {
       if (result.isSetSuccess()) {
         return result.success;
       }
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "isDynamicTermQuerySuperQuery failed: unknown result");
     }
 
-    public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn) throws BlurException, TException
+    public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn) throws BlurException, MissingShardException, TException
     {
       send_createDynamicTermQuery(table, term, query, superQueryOn);
       recv_createDynamicTermQuery();
@@ -752,7 +770,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public void recv_createDynamicTermQuery() throws BlurException, TException
+    public void recv_createDynamicTermQuery() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -766,13 +784,16 @@ public class Blur {
       createDynamicTermQuery_result result = new createDynamicTermQuery_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       return;
     }
 
-    public void deleteDynamicTermQuery(String table, String term) throws BlurException, TException
+    public void deleteDynamicTermQuery(String table, String term) throws BlurException, MissingShardException, TException
     {
       send_deleteDynamicTermQuery(table, term);
       recv_deleteDynamicTermQuery();
@@ -789,7 +810,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public void recv_deleteDynamicTermQuery() throws BlurException, TException
+    public void recv_deleteDynamicTermQuery() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -803,8 +824,11 @@ public class Blur {
       deleteDynamicTermQuery_result result = new deleteDynamicTermQuery_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
-      if (result.ex != null) {
-        throw result.ex;
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
       }
       return;
     }
@@ -1106,10 +1130,11 @@ public class Blur {
         iprot.readMessageEnd();
         removeRow_result result = new removeRow_result();
         try {
-          result.success = iface_.removeRow(args.table, args.id);
-          result.setSuccessIsSet(true);
-        } catch (BlurException ex) {
-          result.ex = ex;
+          iface_.removeRow(args.table, args.id);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing removeRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing removeRow");
@@ -1145,10 +1170,11 @@ public class Blur {
         iprot.readMessageEnd();
         removeSuperColumn_result result = new removeSuperColumn_result();
         try {
-          result.success = iface_.removeSuperColumn(args.table, args.id, args.superColumnId);
-          result.setSuccessIsSet(true);
-        } catch (BlurException ex) {
-          result.ex = ex;
+          iface_.removeSuperColumn(args.table, args.id, args.superColumnId);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing removeSuperColumn", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing removeSuperColumn");
@@ -1184,10 +1210,11 @@ public class Blur {
         iprot.readMessageEnd();
         replaceRow_result result = new replaceRow_result();
         try {
-          result.success = iface_.replaceRow(args.table, args.row);
-          result.setSuccessIsSet(true);
-        } catch (BlurException ex) {
-          result.ex = ex;
+          iface_.replaceRow(args.table, args.row);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing replaceRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing replaceRow");
@@ -1223,10 +1250,11 @@ public class Blur {
         iprot.readMessageEnd();
         appendRow_result result = new appendRow_result();
         try {
-          result.success = iface_.appendRow(args.table, args.row);
-          result.setSuccessIsSet(true);
-        } catch (BlurException ex) {
-          result.ex = ex;
+          iface_.appendRow(args.table, args.row);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing appendRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing appendRow");
@@ -1263,8 +1291,10 @@ public class Blur {
         fetchRow_result result = new fetchRow_result();
         try {
           result.success = iface_.fetchRow(args.table, args.id);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing fetchRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchRow");
@@ -1301,8 +1331,10 @@ public class Blur {
         fetchSuperColumn_result result = new fetchSuperColumn_result();
         try {
           result.success = iface_.fetchSuperColumn(args.table, args.id, args.superColumnFamilyName, args.superColumnId);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing fetchSuperColumn", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchSuperColumn");
@@ -1339,8 +1371,10 @@ public class Blur {
         search_result result = new search_result();
         try {
           result.success = iface_.search(args.table, args.query, args.superQueryOn, args.type, args.filter, args.start, args.fetch, args.minimumNumberOfHits, args.maxQueryTime);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing search", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing search");
@@ -1377,8 +1411,10 @@ public class Blur {
         getDynamicTerms_result result = new getDynamicTerms_result();
         try {
           result.success = iface_.getDynamicTerms(args.table);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing getDynamicTerms", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing getDynamicTerms");
@@ -1415,8 +1451,10 @@ public class Blur {
         getDynamicTermQuery_result result = new getDynamicTermQuery_result();
         try {
           result.success = iface_.getDynamicTermQuery(args.table, args.term);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing getDynamicTermQuery", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing getDynamicTermQuery");
@@ -1454,8 +1492,10 @@ public class Blur {
         try {
           result.success = iface_.isDynamicTermQuerySuperQuery(args.table, args.term);
           result.setSuccessIsSet(true);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing isDynamicTermQuerySuperQuery", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing isDynamicTermQuerySuperQuery");
@@ -1492,8 +1532,10 @@ public class Blur {
         createDynamicTermQuery_result result = new createDynamicTermQuery_result();
         try {
           iface_.createDynamicTermQuery(args.table, args.term, args.query, args.superQueryOn);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing createDynamicTermQuery", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing createDynamicTermQuery");
@@ -1530,8 +1572,10 @@ public class Blur {
         deleteDynamicTermQuery_result result = new deleteDynamicTermQuery_result();
         try {
           iface_.deleteDynamicTermQuery(args.table, args.term);
-        } catch (BlurException ex) {
-          result.ex = ex;
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing deleteDynamicTermQuery", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing deleteDynamicTermQuery");
@@ -5538,16 +5582,16 @@ public class Blur {
   public static class removeRow_result implements TBase<removeRow_result, removeRow_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("removeRow_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
-    public boolean success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5562,10 +5606,10 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -5606,15 +5650,13 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(removeRow_result.class, metaDataMap);
@@ -5624,24 +5666,23 @@ public class Blur {
     }
 
     public removeRow_result(
-      boolean success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
-      this.success = success;
-      setSuccessIsSet(true);
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public removeRow_result(removeRow_result other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.success = other.success;
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -5654,68 +5695,69 @@ public class Blur {
       return new removeRow_result(this);
     }
 
-    public boolean isSuccess() {
-      return this.success;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public removeRow_result setSuccess(boolean success) {
-      this.success = success;
-      setSuccessIsSet(true);
+    public removeRow_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetSuccess() {
-      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field success is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setSuccessIsSet(boolean value) {
-      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
-    }
-
-    public BlurException getEx() {
-      return this.ex;
-    }
-
-    public removeRow_result setEx(BlurException ex) {
-      this.ex = ex;
-      return this;
-    }
-
-    public void unsetEx() {
-      this.ex = null;
-    }
-
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
-    }
-
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public removeRow_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
+      case BE:
         if (value == null) {
-          unsetSuccess();
+          unsetBe();
         } else {
-          setSuccess((Boolean)value);
+          setBe((BlurException)value);
         }
         break;
 
-      case EX:
+      case MSE:
         if (value == null) {
-          unsetEx();
+          unsetMse();
         } else {
-          setEx((BlurException)value);
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -5728,11 +5770,11 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return new Boolean(isSuccess());
+      case BE:
+        return getBe();
 
-      case EX:
-        return getEx();
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -5745,10 +5787,10 @@ public class Blur {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -5770,21 +5812,21 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_success = true;
-      boolean that_present_success = true;
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (this.success != that.success)
+        if (!this.be.equals(that.be))
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -5804,20 +5846,20 @@ public class Blur {
       int lastComparison = 0;
       removeRow_result typedOther = (removeRow_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5835,18 +5877,18 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == TType.BOOL) {
-              this.success = iprot.readBool();
-              setSuccessIsSet(true);
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 2: // MSE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -5865,13 +5907,13 @@ public class Blur {
     public void write(TProtocol oprot) throws TException {
       oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeBool(this.success);
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -5883,15 +5925,19 @@ public class Blur {
       StringBuilder sb = new StringBuilder("removeRow_result(");
       boolean first = true;
 
-      sb.append("success:");
-      sb.append(this.success);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -6365,16 +6411,16 @@ public class Blur {
   public static class removeSuperColumn_result implements TBase<removeSuperColumn_result, removeSuperColumn_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("removeSuperColumn_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
-    public boolean success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -6389,10 +6435,10 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -6433,15 +6479,13 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(removeSuperColumn_result.class, metaDataMap);
@@ -6451,24 +6495,23 @@ public class Blur {
     }
 
     public removeSuperColumn_result(
-      boolean success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
-      this.success = success;
-      setSuccessIsSet(true);
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public removeSuperColumn_result(removeSuperColumn_result other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.success = other.success;
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -6481,68 +6524,69 @@ public class Blur {
       return new removeSuperColumn_result(this);
     }
 
-    public boolean isSuccess() {
-      return this.success;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public removeSuperColumn_result setSuccess(boolean success) {
-      this.success = success;
-      setSuccessIsSet(true);
+    public removeSuperColumn_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetSuccess() {
-      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field success is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setSuccessIsSet(boolean value) {
-      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
-    }
-
-    public BlurException getEx() {
-      return this.ex;
-    }
-
-    public removeSuperColumn_result setEx(BlurException ex) {
-      this.ex = ex;
-      return this;
-    }
-
-    public void unsetEx() {
-      this.ex = null;
-    }
-
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
-    }
-
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public removeSuperColumn_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
+      case BE:
         if (value == null) {
-          unsetSuccess();
+          unsetBe();
         } else {
-          setSuccess((Boolean)value);
+          setBe((BlurException)value);
         }
         break;
 
-      case EX:
+      case MSE:
         if (value == null) {
-          unsetEx();
+          unsetMse();
         } else {
-          setEx((BlurException)value);
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -6555,11 +6599,11 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return new Boolean(isSuccess());
+      case BE:
+        return getBe();
 
-      case EX:
-        return getEx();
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -6572,10 +6616,10 @@ public class Blur {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -6597,21 +6641,21 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_success = true;
-      boolean that_present_success = true;
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (this.success != that.success)
+        if (!this.be.equals(that.be))
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -6631,20 +6675,20 @@ public class Blur {
       int lastComparison = 0;
       removeSuperColumn_result typedOther = (removeSuperColumn_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -6662,18 +6706,18 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == TType.BOOL) {
-              this.success = iprot.readBool();
-              setSuccessIsSet(true);
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 2: // MSE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -6692,13 +6736,13 @@ public class Blur {
     public void write(TProtocol oprot) throws TException {
       oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeBool(this.success);
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -6710,15 +6754,19 @@ public class Blur {
       StringBuilder sb = new StringBuilder("removeSuperColumn_result(");
       boolean first = true;
 
-      sb.append("success:");
-      sb.append(this.success);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -7106,16 +7154,16 @@ public class Blur {
   public static class replaceRow_result implements TBase<replaceRow_result, replaceRow_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("replaceRow_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
-    public boolean success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7130,10 +7178,10 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -7174,15 +7222,13 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(replaceRow_result.class, metaDataMap);
@@ -7192,24 +7238,23 @@ public class Blur {
     }
 
     public replaceRow_result(
-      boolean success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
-      this.success = success;
-      setSuccessIsSet(true);
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public replaceRow_result(replaceRow_result other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.success = other.success;
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -7222,68 +7267,69 @@ public class Blur {
       return new replaceRow_result(this);
     }
 
-    public boolean isSuccess() {
-      return this.success;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public replaceRow_result setSuccess(boolean success) {
-      this.success = success;
-      setSuccessIsSet(true);
+    public replaceRow_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetSuccess() {
-      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field success is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setSuccessIsSet(boolean value) {
-      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
-    }
-
-    public BlurException getEx() {
-      return this.ex;
-    }
-
-    public replaceRow_result setEx(BlurException ex) {
-      this.ex = ex;
-      return this;
-    }
-
-    public void unsetEx() {
-      this.ex = null;
-    }
-
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
-    }
-
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public replaceRow_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
+      case BE:
         if (value == null) {
-          unsetSuccess();
+          unsetBe();
         } else {
-          setSuccess((Boolean)value);
+          setBe((BlurException)value);
         }
         break;
 
-      case EX:
+      case MSE:
         if (value == null) {
-          unsetEx();
+          unsetMse();
         } else {
-          setEx((BlurException)value);
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -7296,11 +7342,11 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return new Boolean(isSuccess());
+      case BE:
+        return getBe();
 
-      case EX:
-        return getEx();
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -7313,10 +7359,10 @@ public class Blur {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -7338,21 +7384,21 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_success = true;
-      boolean that_present_success = true;
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (this.success != that.success)
+        if (!this.be.equals(that.be))
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -7372,20 +7418,20 @@ public class Blur {
       int lastComparison = 0;
       replaceRow_result typedOther = (replaceRow_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -7403,18 +7449,18 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == TType.BOOL) {
-              this.success = iprot.readBool();
-              setSuccessIsSet(true);
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 2: // MSE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -7433,13 +7479,13 @@ public class Blur {
     public void write(TProtocol oprot) throws TException {
       oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeBool(this.success);
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -7451,15 +7497,19 @@ public class Blur {
       StringBuilder sb = new StringBuilder("replaceRow_result(");
       boolean first = true;
 
-      sb.append("success:");
-      sb.append(this.success);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -7847,16 +7897,16 @@ public class Blur {
   public static class appendRow_result implements TBase<appendRow_result, appendRow_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("appendRow_result");
 
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
-    public boolean success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7871,10 +7921,10 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -7915,15 +7965,13 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __SUCCESS_ISSET_ID = 0;
-    private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(appendRow_result.class, metaDataMap);
@@ -7933,24 +7981,23 @@ public class Blur {
     }
 
     public appendRow_result(
-      boolean success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
-      this.success = success;
-      setSuccessIsSet(true);
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public appendRow_result(appendRow_result other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
-      this.success = other.success;
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -7963,68 +8010,69 @@ public class Blur {
       return new appendRow_result(this);
     }
 
-    public boolean isSuccess() {
-      return this.success;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public appendRow_result setSuccess(boolean success) {
-      this.success = success;
-      setSuccessIsSet(true);
+    public appendRow_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetSuccess() {
-      __isset_bit_vector.clear(__SUCCESS_ISSET_ID);
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field success is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return __isset_bit_vector.get(__SUCCESS_ISSET_ID);
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setSuccessIsSet(boolean value) {
-      __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
-    }
-
-    public BlurException getEx() {
-      return this.ex;
-    }
-
-    public appendRow_result setEx(BlurException ex) {
-      this.ex = ex;
-      return this;
-    }
-
-    public void unsetEx() {
-      this.ex = null;
-    }
-
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
-    }
-
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public appendRow_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case SUCCESS:
+      case BE:
         if (value == null) {
-          unsetSuccess();
+          unsetBe();
         } else {
-          setSuccess((Boolean)value);
+          setBe((BlurException)value);
         }
         break;
 
-      case EX:
+      case MSE:
         if (value == null) {
-          unsetEx();
+          unsetMse();
         } else {
-          setEx((BlurException)value);
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -8037,11 +8085,11 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return new Boolean(isSuccess());
+      case BE:
+        return getBe();
 
-      case EX:
-        return getEx();
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -8054,10 +8102,10 @@ public class Blur {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -8079,21 +8127,21 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_success = true;
-      boolean that_present_success = true;
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (this.success != that.success)
+        if (!this.be.equals(that.be))
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -8113,20 +8161,20 @@ public class Blur {
       int lastComparison = 0;
       appendRow_result typedOther = (appendRow_result)other;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8144,18 +8192,18 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == TType.BOOL) {
-              this.success = iprot.readBool();
-              setSuccessIsSet(true);
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 2: // MSE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -8174,13 +8222,13 @@ public class Blur {
     public void write(TProtocol oprot) throws TException {
       oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeBool(this.success);
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -8192,15 +8240,19 @@ public class Blur {
       StringBuilder sb = new StringBuilder("appendRow_result(");
       boolean first = true;
 
-      sb.append("success:");
-      sb.append(this.success);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -8588,15 +8640,18 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("fetchRow_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
     public Row success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8613,8 +8668,10 @@ public class Blur {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -8661,7 +8718,9 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new StructMetaData(TType.STRUCT, Row.class)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(fetchRow_result.class, metaDataMap);
@@ -8672,11 +8731,13 @@ public class Blur {
 
     public fetchRow_result(
       Row success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
       this.success = success;
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
@@ -8686,8 +8747,11 @@ public class Blur {
       if (other.isSetSuccess()) {
         this.success = new Row(other.success);
       }
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -8724,27 +8788,51 @@ public class Blur {
       }
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public fetchRow_result setEx(BlurException ex) {
-      this.ex = ex;
+    public fetchRow_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public fetchRow_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
@@ -8758,11 +8846,19 @@ public class Blur {
         }
         break;
 
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -8778,8 +8874,11 @@ public class Blur {
       case SUCCESS:
         return getSuccess();
 
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -8794,8 +8893,10 @@ public class Blur {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -8826,12 +8927,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -8860,11 +8970,20 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8890,10 +9009,18 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -8916,9 +9043,13 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         this.success.write(oprot);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -8938,11 +9069,19 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -9504,15 +9643,18 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("fetchSuperColumn_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
     public SuperColumn success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -9529,8 +9671,10 @@ public class Blur {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -9577,7 +9721,9 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new StructMetaData(TType.STRUCT, SuperColumn.class)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(fetchSuperColumn_result.class, metaDataMap);
@@ -9588,11 +9734,13 @@ public class Blur {
 
     public fetchSuperColumn_result(
       SuperColumn success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
       this.success = success;
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
@@ -9602,8 +9750,11 @@ public class Blur {
       if (other.isSetSuccess()) {
         this.success = new SuperColumn(other.success);
       }
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -9640,27 +9791,51 @@ public class Blur {
       }
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public fetchSuperColumn_result setEx(BlurException ex) {
-      this.ex = ex;
+    public fetchSuperColumn_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public fetchSuperColumn_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
@@ -9674,11 +9849,19 @@ public class Blur {
         }
         break;
 
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -9694,8 +9877,11 @@ public class Blur {
       case SUCCESS:
         return getSuccess();
 
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -9710,8 +9896,10 @@ public class Blur {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -9742,12 +9930,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -9776,11 +9973,20 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9806,10 +10012,18 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -9832,9 +10046,13 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         this.success.write(oprot);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -9854,11 +10072,19 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -10844,15 +11070,18 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("search_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
     public Hits success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10869,8 +11098,10 @@ public class Blur {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -10917,7 +11148,9 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new StructMetaData(TType.STRUCT, Hits.class)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(search_result.class, metaDataMap);
@@ -10928,11 +11161,13 @@ public class Blur {
 
     public search_result(
       Hits success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
       this.success = success;
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
@@ -10942,8 +11177,11 @@ public class Blur {
       if (other.isSetSuccess()) {
         this.success = new Hits(other.success);
       }
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -10980,27 +11218,51 @@ public class Blur {
       }
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public search_result setEx(BlurException ex) {
-      this.ex = ex;
+    public search_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public search_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
@@ -11014,11 +11276,19 @@ public class Blur {
         }
         break;
 
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -11034,8 +11304,11 @@ public class Blur {
       case SUCCESS:
         return getSuccess();
 
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -11050,8 +11323,10 @@ public class Blur {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -11082,12 +11357,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -11116,11 +11400,20 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -11146,10 +11439,18 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -11172,9 +11473,13 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         this.success.write(oprot);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -11194,11 +11499,19 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -11499,15 +11812,18 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("getDynamicTerms_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
     public List<String> success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -11524,8 +11840,10 @@ public class Blur {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -11573,7 +11891,9 @@ public class Blur {
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new ListMetaData(TType.LIST, 
               new FieldValueMetaData(TType.STRING))));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(getDynamicTerms_result.class, metaDataMap);
@@ -11584,11 +11904,13 @@ public class Blur {
 
     public getDynamicTerms_result(
       List<String> success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
       this.success = success;
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
@@ -11602,8 +11924,11 @@ public class Blur {
         }
         this.success = __this__success;
       }
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -11655,27 +11980,51 @@ public class Blur {
       }
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public getDynamicTerms_result setEx(BlurException ex) {
-      this.ex = ex;
+    public getDynamicTerms_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public getDynamicTerms_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
@@ -11689,11 +12038,19 @@ public class Blur {
         }
         break;
 
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -11709,8 +12066,11 @@ public class Blur {
       case SUCCESS:
         return getSuccess();
 
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -11725,8 +12085,10 @@ public class Blur {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -11757,12 +12119,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -11791,11 +12162,20 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -11830,10 +12210,18 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -11863,9 +12251,13 @@ public class Blur {
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -11885,11 +12277,19 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -12277,15 +12677,18 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("getDynamicTermQuery_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
     public String success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -12302,8 +12705,10 @@ public class Blur {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -12350,7 +12755,9 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(getDynamicTermQuery_result.class, metaDataMap);
@@ -12361,11 +12768,13 @@ public class Blur {
 
     public getDynamicTermQuery_result(
       String success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
       this.success = success;
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
@@ -12375,8 +12784,11 @@ public class Blur {
       if (other.isSetSuccess()) {
         this.success = other.success;
       }
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -12413,27 +12825,51 @@ public class Blur {
       }
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public getDynamicTermQuery_result setEx(BlurException ex) {
-      this.ex = ex;
+    public getDynamicTermQuery_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public getDynamicTermQuery_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
@@ -12447,11 +12883,19 @@ public class Blur {
         }
         break;
 
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -12467,8 +12911,11 @@ public class Blur {
       case SUCCESS:
         return getSuccess();
 
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -12483,8 +12930,10 @@ public class Blur {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -12515,12 +12964,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -12549,11 +13007,20 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -12578,10 +13045,18 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -12604,9 +13079,13 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         oprot.writeString(this.success);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -12626,11 +13105,19 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -13018,15 +13505,18 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("isDynamicTermQuerySuperQuery_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.BOOL, (short)0);
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
     public boolean success;
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -13043,8 +13533,10 @@ public class Blur {
         switch(fieldId) {
           case 0: // SUCCESS
             return SUCCESS;
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -13093,7 +13585,9 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.BOOL)));
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(isDynamicTermQuerySuperQuery_result.class, metaDataMap);
@@ -13104,12 +13598,14 @@ public class Blur {
 
     public isDynamicTermQuerySuperQuery_result(
       boolean success,
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
       this.success = success;
       setSuccessIsSet(true);
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
@@ -13119,8 +13615,11 @@ public class Blur {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       this.success = other.success;
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -13156,27 +13655,51 @@ public class Blur {
       __isset_bit_vector.set(__SUCCESS_ISSET_ID, value);
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public isDynamicTermQuerySuperQuery_result setEx(BlurException ex) {
-      this.ex = ex;
+    public isDynamicTermQuerySuperQuery_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public isDynamicTermQuerySuperQuery_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
@@ -13190,11 +13713,19 @@ public class Blur {
         }
         break;
 
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -13210,8 +13741,11 @@ public class Blur {
       case SUCCESS:
         return new Boolean(isSuccess());
 
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -13226,8 +13760,10 @@ public class Blur {
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -13258,12 +13794,21 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -13292,11 +13837,20 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -13322,10 +13876,18 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -13348,9 +13910,13 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         oprot.writeBool(this.success);
         oprot.writeFieldEnd();
-      } else if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      } else if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -13366,11 +13932,19 @@ public class Blur {
       sb.append(this.success);
       first = false;
       if (!first) sb.append(", ");
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -13928,13 +14502,16 @@ public class Blur {
   public static class createDynamicTermQuery_result implements TBase<createDynamicTermQuery_result, createDynamicTermQuery_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("createDynamicTermQuery_result");
 
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -13949,8 +14526,10 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -13995,7 +14574,9 @@ public class Blur {
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(createDynamicTermQuery_result.class, metaDataMap);
@@ -14005,18 +14586,23 @@ public class Blur {
     }
 
     public createDynamicTermQuery_result(
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public createDynamicTermQuery_result(createDynamicTermQuery_result other) {
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -14029,37 +14615,69 @@ public class Blur {
       return new createDynamicTermQuery_result(this);
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public createDynamicTermQuery_result setEx(BlurException ex) {
-      this.ex = ex;
+    public createDynamicTermQuery_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public createDynamicTermQuery_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -14072,8 +14690,11 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -14086,8 +14707,10 @@ public class Blur {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -14109,12 +14732,21 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -14134,11 +14766,20 @@ public class Blur {
       int lastComparison = 0;
       createDynamicTermQuery_result typedOther = (createDynamicTermQuery_result)other;
 
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -14156,10 +14797,18 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -14178,9 +14827,13 @@ public class Blur {
     public void write(TProtocol oprot) throws TException {
       oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -14192,11 +14845,19 @@ public class Blur {
       StringBuilder sb = new StringBuilder("createDynamicTermQuery_result(");
       boolean first = true;
 
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");
@@ -14583,13 +15244,16 @@ public class Blur {
   public static class deleteDynamicTermQuery_result implements TBase<deleteDynamicTermQuery_result, deleteDynamicTermQuery_result._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("deleteDynamicTermQuery_result");
 
-    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
-    public BlurException ex;
+    public BlurException be;
+    public MissingShardException mse;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      EX((short)1, "ex");
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -14604,8 +15268,10 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // EX
-            return EX;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
           default:
             return null;
         }
@@ -14650,7 +15316,9 @@ public class Blur {
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(deleteDynamicTermQuery_result.class, metaDataMap);
@@ -14660,18 +15328,23 @@ public class Blur {
     }
 
     public deleteDynamicTermQuery_result(
-      BlurException ex)
+      BlurException be,
+      MissingShardException mse)
     {
       this();
-      this.ex = ex;
+      this.be = be;
+      this.mse = mse;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public deleteDynamicTermQuery_result(deleteDynamicTermQuery_result other) {
-      if (other.isSetEx()) {
-        this.ex = new BlurException(other.ex);
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
       }
     }
 
@@ -14684,37 +15357,69 @@ public class Blur {
       return new deleteDynamicTermQuery_result(this);
     }
 
-    public BlurException getEx() {
-      return this.ex;
+    public BlurException getBe() {
+      return this.be;
     }
 
-    public deleteDynamicTermQuery_result setEx(BlurException ex) {
-      this.ex = ex;
+    public deleteDynamicTermQuery_result setBe(BlurException be) {
+      this.be = be;
       return this;
     }
 
-    public void unsetEx() {
-      this.ex = null;
+    public void unsetBe() {
+      this.be = null;
     }
 
-    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
-    public boolean isSetEx() {
-      return this.ex != null;
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
     }
 
-    public void setExIsSet(boolean value) {
+    public void setBeIsSet(boolean value) {
       if (!value) {
-        this.ex = null;
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public deleteDynamicTermQuery_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case EX:
+      case BE:
         if (value == null) {
-          unsetEx();
+          unsetBe();
         } else {
-          setEx((BlurException)value);
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
         }
         break;
 
@@ -14727,8 +15432,11 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case EX:
-        return getEx();
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
 
       }
       throw new IllegalStateException();
@@ -14741,8 +15449,10 @@ public class Blur {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
-      case EX:
-        return isSetEx();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
       }
       throw new IllegalStateException();
     }
@@ -14764,12 +15474,21 @@ public class Blur {
       if (that == null)
         return false;
 
-      boolean this_present_ex = true && this.isSetEx();
-      boolean that_present_ex = true && that.isSetEx();
-      if (this_present_ex || that_present_ex) {
-        if (!(this_present_ex && that_present_ex))
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
           return false;
-        if (!this.ex.equals(that.ex))
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
           return false;
       }
 
@@ -14789,11 +15508,20 @@ public class Blur {
       int lastComparison = 0;
       deleteDynamicTermQuery_result typedOther = (deleteDynamicTermQuery_result)other;
 
-      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -14811,10 +15539,18 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // EX
+          case 1: // BE
             if (field.type == TType.STRUCT) {
-              this.ex = new BlurException();
-              this.ex.read(iprot);
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -14833,9 +15569,13 @@ public class Blur {
     public void write(TProtocol oprot) throws TException {
       oprot.writeStructBegin(STRUCT_DESC);
 
-      if (this.isSetEx()) {
-        oprot.writeFieldBegin(EX_FIELD_DESC);
-        this.ex.write(oprot);
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -14847,11 +15587,19 @@ public class Blur {
       StringBuilder sb = new StringBuilder("deleteDynamicTermQuery_result(");
       boolean first = true;
 
-      sb.append("ex:");
-      if (this.ex == null) {
+      sb.append("be:");
+      if (this.be == null) {
         sb.append("null");
       } else {
-        sb.append(this.ex);
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
       }
       first = false;
       sb.append(")");

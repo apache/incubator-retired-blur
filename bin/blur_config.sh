@@ -1,4 +1,5 @@
 #!/bin/sh
+
 export BLUR_LOG=$BLUR_HOME/logs
 export BLUR_LIB=$BLUR_HOME/libs
 export BLUR_PID_DIR=/tmp/blur

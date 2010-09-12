@@ -72,7 +72,7 @@ void appendRow(1:string table, 2:Row row) throws (1:BlurException be, 2: Missing
 Row fetchRow(1:string table, 2:string id) throws (1:BlurException be, 2: MissingShardException mse)
 SuperColumn fetchSuperColumn(1:string table, 2:string id, 3:string superColumnFamilyName, 4:string superColumnId) throws (1:BlurException be, 2: MissingShardException mse)
 
-Hits search(1:string table, 2:string query, 3:bool superQueryOn, 4:ScoreType type, 5:string filter, 6:i64 start, 7:i32 fetch, 8:i64 minimumNumberOfHits, 9:i64 maxQueryTime)
+Hits search(1:string table, 2:string query, 3:bool superQueryOn, 4:ScoreType type, 5:string postSuperFilter, 6:string preSuperFilter, 7:i64 start, 8:i32 fetch, 9:i64 minimumNumberOfHits, 10:i64 maxQueryTime)
    throws (1:BlurException be, 2: MissingShardException mse)
 
 list<string> getDynamicTerms(1:string table) throws (1:BlurException be, 2: MissingShardException mse)

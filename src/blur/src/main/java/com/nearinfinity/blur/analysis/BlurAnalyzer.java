@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.util.Version;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -39,6 +40,9 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 	}
 
 	public static BlurAnalyzer create(String s) throws Exception {
+		if (s == null || s.trim().isEmpty()) {
+			return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode jsonNode = mapper.readTree(s);
 		return create(jsonNode);
@@ -115,7 +119,7 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 			return (Analyzer) clazz.newInstance();
 		} catch (Exception e) {
 			Constructor<?> constructor = clazz.getConstructor(new Class[]{Version.class});
-			return (Analyzer) constructor.newInstance(Version.LUCENE_CURRENT);
+			return (Analyzer) constructor.newInstance(Version.LUCENE_30);
 		}
 	}
 

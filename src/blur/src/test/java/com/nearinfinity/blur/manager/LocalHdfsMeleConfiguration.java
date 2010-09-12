@@ -6,7 +6,7 @@ import java.util.Arrays;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 
-import com.nearinfinity.mele.store.MeleConfiguration;
+import com.nearinfinity.mele.MeleConfiguration;
 
 public class LocalHdfsMeleConfiguration extends MeleConfiguration {
 	

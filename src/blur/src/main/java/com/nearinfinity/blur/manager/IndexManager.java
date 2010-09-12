@@ -8,30 +8,50 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Searcher;
+import org.apache.lucene.search.Similarity;
+import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.search.FairSimilarity;
+import com.nearinfinity.blur.lucene.search.FilterParser;
+import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.util.TermDocIterable;
+import com.nearinfinity.blur.thrift.BlurAdminServer.HitsMerger;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.blur.thrift.generated.SuperColumnFamily;
+import com.nearinfinity.blur.utils.ForkJoin;
+import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 import com.nearinfinity.mele.Mele;
 
 public class IndexManager {
@@ -43,22 +63,31 @@ public class IndexManager {
 		public boolean isTableEnabled(String table) {
 			return true;
 		}
+
+		@Override
+		public String getAnalyzerDefinitions(String table) {
+			return "";
+		}
 	};
 	
 	private Mele mele;
 	private Map<String, Map<String, IndexWriter>> indexWriters = new ConcurrentHashMap<String, Map<String, IndexWriter>>();
 	private Map<String, Analyzer> analyzers = new ConcurrentHashMap<String, Analyzer>();
 	private Map<String, Partitioner> partitioners = new ConcurrentHashMap<String, Partitioner>();
+	private FilterManager filterManager;
+	private Similarity similarity = new FairSimilarity();
+	private ExecutorService executor = Executors.newCachedThreadPool();
 	private TableManager manager;
 	private Thread daemon;
 	
 	public interface TableManager {
 		boolean isTableEnabled(String table);
+		String getAnalyzerDefinitions(String table);
 	}
 	
-	public IndexManager(TableManager manager) throws IOException {
+	public IndexManager(TableManager manager) throws IOException, BlurException {
 		this.manager = manager;
-		setupMele();
+		setupIndexManager();
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -67,7 +96,7 @@ public class IndexManager {
 		}));
 	}
 
-	public IndexManager() throws IOException {
+	public IndexManager() throws IOException, BlurException {
 		this(ALWAYS_ON);
 	}
 
@@ -85,7 +114,7 @@ public class IndexManager {
 		replace(indexWriter,createSuperDocument(row));
 	}
 	
-	public static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
+	public synchronized static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
 		indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
 		if (!replaceInternal(indexWriter,document)) {
 			indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
@@ -158,6 +187,85 @@ public class IndexManager {
 			throw new BlurException(e.getMessage());
 		}
 	}
+	
+	public Hits search(String table, String query, boolean superQueryOn,
+			ScoreType type, String filter, final long start, final int fetch,
+			long minimumNumberOfHits, long maxQueryTime) throws BlurException {
+		Map<String, IndexReader> indexReaders;
+		try {
+			indexReaders = getIndexReaders(table);
+		} catch (IOException e) {
+			LOG.error("Unknown error",e);
+			throw new BlurException(e.getMessage());
+		}
+		try {
+			Filter queryFilter = parse(table,filter);
+			final Query userQuery = parse(query,superQueryOn,getAnalyzer(table),queryFilter);
+			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, Hits>() {
+				@Override
+				public Hits call(Entry<String, IndexReader> entry) throws Exception {
+					return performSearch((Query) userQuery.clone(), entry.getKey(), entry.getValue(), (int) start, fetch);
+				}
+			}).merge(new HitsMerger());
+		} catch (Exception e) {
+			LOG.error("Unknown error",e);
+			throw new BlurException(e.getMessage());
+		}
+	}
+
+	private Filter parse(String table, String filter) throws ParseException {
+		return new FilterParser(table, filterManager).parseFilter(filter);
+	}
+
+	private Analyzer getAnalyzer(String table) throws BlurException {
+		Analyzer analyzer = analyzers.get(table);
+		if (analyzer != null) {
+			return analyzer;
+		}
+		try {
+			BlurAnalyzer blurAnalyzer = BlurAnalyzer.create(manager.getAnalyzerDefinitions(table));
+			analyzers.put(table, blurAnalyzer);
+			return blurAnalyzer;
+		} catch (Exception e) {
+			LOG.error("unknown error", e);
+			throw new BlurException(e.getMessage());
+		}
+	}
+
+	private Query parse(String query, boolean superQueryOn, Analyzer analyzer, Filter queryFilter) throws ParseException {
+		return new SuperParser(Version.LUCENE_30, analyzer, superQueryOn, queryFilter).parse(query);
+	}
+	
+	private Hits performSearch(Query query, String shardId, IndexReader reader, int start, int fetch) throws IOException {
+		IndexSearcher searcher = new IndexSearcher(reader);
+		searcher.setSimilarity(similarity);
+		int count = (int) (start + fetch);
+		TopDocs topDocs = searcher.search(query, count == 0 ? 1 : count);
+		return new Hits(topDocs.totalHits, getShardInfo(shardId,topDocs), fetch == 0 ? null : getHitList(searcher,(int) start,fetch,topDocs));
+	}
+
+	private Map<String, Long> getShardInfo(String shardId, TopDocs topDocs) {
+		Map<String, Long> shardInfo = new TreeMap<String, Long>();
+		shardInfo.put(shardId, (long)topDocs.totalHits);
+		return shardInfo;
+	}
+
+	private List<Hit> getHitList(Searcher searcher, int start, int fetch, TopDocs topDocs) throws CorruptIndexException, IOException {
+		List<Hit> hitList = new ArrayList<Hit>();
+		int collectTotal = start + fetch;
+		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
+		for (int i = start; i < topDocs.scoreDocs.length && i < collectTotal; i++) {
+			ScoreDoc scoreDoc = scoreDocs[i];
+			String id = fetchId(searcher, scoreDoc.doc);
+			hitList.add(new Hit(id, scoreDoc.score, null));
+		}
+		return hitList;
+	}
+	
+	private String fetchId(Searcher searcher, int docId) throws CorruptIndexException, IOException {
+		Document doc = searcher.doc(docId);
+		return doc.get(SuperDocument.ID);
+	}
 
 	public static SuperDocument createSuperDocument(Row row) {
 		SuperDocument document = new SuperDocument(row.id);
@@ -219,7 +327,7 @@ public class IndexManager {
 		return new TermDocIterable(termDocs,reader);
 	}
 
-	private void setupMele() throws IOException {
+	private void setupIndexManager() throws IOException, BlurException {
 		mele = Mele.getMele();
 		List<String> listClusters = mele.listClusters();
 		for (String cluster : listClusters) {
@@ -306,7 +414,7 @@ public class IndexManager {
 		partitioners.put(cluster, new Partitioner(mele.listDirectories(cluster)));
 	}
 
-	private void openForWriting(String cluster, List<String> dirs, Map<String, IndexWriter> writersMap) throws IOException {
+	private void openForWriting(String cluster, List<String> dirs, Map<String, IndexWriter> writersMap) throws IOException, BlurException {
 		for (String local : dirs) {
 			// @todo get zk lock here....??? maybe if the index writer cannot
 			// get a lock that is good enough???
@@ -315,13 +423,11 @@ public class IndexManager {
 			// need to think about what happens when a node comes back online.
 			Directory directory = mele.open(cluster, local);
 			IndexDeletionPolicy deletionPolicy = mele.getIndexDeletionPolicy(cluster, local);
-			Analyzer analyzer = analyzers.get(cluster);
-			if (analyzer == null) {
-				analyzer = new StandardAnalyzer(Version.LUCENE_30);
-			}
+			Analyzer analyzer = getAnalyzer(cluster);
 			try {
 				if (!IndexWriter.isLocked(directory)) {
 					IndexWriter indexWriter = new IndexWriter(directory, analyzer, deletionPolicy, MaxFieldLength.UNLIMITED);
+					indexWriter.setSimilarity(similarity);
 					writersMap.put(local, indexWriter);
 				}
 			} catch (LockObtainFailedException e) {
@@ -401,5 +507,5 @@ public class IndexManager {
 			throw new BlurException("Error trying to open reader on writer.");
 		}
 	}
-	
+
 }

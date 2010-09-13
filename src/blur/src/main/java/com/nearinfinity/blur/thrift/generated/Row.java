@@ -27,15 +27,15 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
   private static final TStruct STRUCT_DESC = new TStruct("Row");
 
   private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)1);
-  private static final TField SUPER_COLUMN_FAMILIES_FIELD_DESC = new TField("superColumnFamilies", TType.MAP, (short)2);
+  private static final TField SUPER_COLUMNS_FIELD_DESC = new TField("superColumns", TType.SET, (short)2);
 
   public String id;
-  public Map<String,SuperColumnFamily> superColumnFamilies;
+  public Set<SuperColumn> superColumns;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     ID((short)1, "id"),
-    SUPER_COLUMN_FAMILIES((short)2, "superColumnFamilies");
+    SUPER_COLUMNS((short)2, "superColumns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -52,8 +52,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // SUPER_COLUMN_FAMILIES
-          return SUPER_COLUMN_FAMILIES;
+        case 2: // SUPER_COLUMNS
+          return SUPER_COLUMNS;
         default:
           return null;
       }
@@ -100,10 +100,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.SUPER_COLUMN_FAMILIES, new FieldMetaData("superColumnFamilies", TFieldRequirementType.DEFAULT, 
-        new MapMetaData(TType.MAP, 
-            new FieldValueMetaData(TType.STRING), 
-            new StructMetaData(TType.STRUCT, SuperColumnFamily.class))));
+    tmpMap.put(_Fields.SUPER_COLUMNS, new FieldMetaData("superColumns", TFieldRequirementType.DEFAULT, 
+        new SetMetaData(TType.SET, 
+            new StructMetaData(TType.STRUCT, SuperColumn.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
@@ -113,11 +112,11 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
 
   public Row(
     String id,
-    Map<String,SuperColumnFamily> superColumnFamilies)
+    Set<SuperColumn> superColumns)
   {
     this();
     this.id = id;
-    this.superColumnFamilies = superColumnFamilies;
+    this.superColumns = superColumns;
   }
 
   /**
@@ -127,20 +126,12 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     if (other.isSetId()) {
       this.id = other.id;
     }
-    if (other.isSetSuperColumnFamilies()) {
-      Map<String,SuperColumnFamily> __this__superColumnFamilies = new HashMap<String,SuperColumnFamily>();
-      for (Map.Entry<String, SuperColumnFamily> other_element : other.superColumnFamilies.entrySet()) {
-
-        String other_element_key = other_element.getKey();
-        SuperColumnFamily other_element_value = other_element.getValue();
-
-        String __this__superColumnFamilies_copy_key = other_element_key;
-
-        SuperColumnFamily __this__superColumnFamilies_copy_value = new SuperColumnFamily(other_element_value);
-
-        __this__superColumnFamilies.put(__this__superColumnFamilies_copy_key, __this__superColumnFamilies_copy_value);
+    if (other.isSetSuperColumns()) {
+      Set<SuperColumn> __this__superColumns = new HashSet<SuperColumn>();
+      for (SuperColumn other_element : other.superColumns) {
+        __this__superColumns.add(new SuperColumn(other_element));
       }
-      this.superColumnFamilies = __this__superColumnFamilies;
+      this.superColumns = __this__superColumns;
     }
   }
 
@@ -177,38 +168,42 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     }
   }
 
-  public int getSuperColumnFamiliesSize() {
-    return (this.superColumnFamilies == null) ? 0 : this.superColumnFamilies.size();
+  public int getSuperColumnsSize() {
+    return (this.superColumns == null) ? 0 : this.superColumns.size();
   }
 
-  public void putToSuperColumnFamilies(String key, SuperColumnFamily val) {
-    if (this.superColumnFamilies == null) {
-      this.superColumnFamilies = new HashMap<String,SuperColumnFamily>();
+  public java.util.Iterator<SuperColumn> getSuperColumnsIterator() {
+    return (this.superColumns == null) ? null : this.superColumns.iterator();
+  }
+
+  public void addToSuperColumns(SuperColumn elem) {
+    if (this.superColumns == null) {
+      this.superColumns = new HashSet<SuperColumn>();
     }
-    this.superColumnFamilies.put(key, val);
+    this.superColumns.add(elem);
   }
 
-  public Map<String,SuperColumnFamily> getSuperColumnFamilies() {
-    return this.superColumnFamilies;
+  public Set<SuperColumn> getSuperColumns() {
+    return this.superColumns;
   }
 
-  public Row setSuperColumnFamilies(Map<String,SuperColumnFamily> superColumnFamilies) {
-    this.superColumnFamilies = superColumnFamilies;
+  public Row setSuperColumns(Set<SuperColumn> superColumns) {
+    this.superColumns = superColumns;
     return this;
   }
 
-  public void unsetSuperColumnFamilies() {
-    this.superColumnFamilies = null;
+  public void unsetSuperColumns() {
+    this.superColumns = null;
   }
 
-  /** Returns true if field superColumnFamilies is set (has been asigned a value) and false otherwise */
-  public boolean isSetSuperColumnFamilies() {
-    return this.superColumnFamilies != null;
+  /** Returns true if field superColumns is set (has been asigned a value) and false otherwise */
+  public boolean isSetSuperColumns() {
+    return this.superColumns != null;
   }
 
-  public void setSuperColumnFamiliesIsSet(boolean value) {
+  public void setSuperColumnsIsSet(boolean value) {
     if (!value) {
-      this.superColumnFamilies = null;
+      this.superColumns = null;
     }
   }
 
@@ -222,11 +217,11 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       }
       break;
 
-    case SUPER_COLUMN_FAMILIES:
+    case SUPER_COLUMNS:
       if (value == null) {
-        unsetSuperColumnFamilies();
+        unsetSuperColumns();
       } else {
-        setSuperColumnFamilies((Map<String,SuperColumnFamily>)value);
+        setSuperColumns((Set<SuperColumn>)value);
       }
       break;
 
@@ -242,8 +237,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     case ID:
       return getId();
 
-    case SUPER_COLUMN_FAMILIES:
-      return getSuperColumnFamilies();
+    case SUPER_COLUMNS:
+      return getSuperColumns();
 
     }
     throw new IllegalStateException();
@@ -258,8 +253,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     switch (field) {
     case ID:
       return isSetId();
-    case SUPER_COLUMN_FAMILIES:
-      return isSetSuperColumnFamilies();
+    case SUPER_COLUMNS:
+      return isSetSuperColumns();
     }
     throw new IllegalStateException();
   }
@@ -290,12 +285,12 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
         return false;
     }
 
-    boolean this_present_superColumnFamilies = true && this.isSetSuperColumnFamilies();
-    boolean that_present_superColumnFamilies = true && that.isSetSuperColumnFamilies();
-    if (this_present_superColumnFamilies || that_present_superColumnFamilies) {
-      if (!(this_present_superColumnFamilies && that_present_superColumnFamilies))
+    boolean this_present_superColumns = true && this.isSetSuperColumns();
+    boolean that_present_superColumns = true && that.isSetSuperColumns();
+    if (this_present_superColumns || that_present_superColumns) {
+      if (!(this_present_superColumns && that_present_superColumns))
         return false;
-      if (!this.superColumnFamilies.equals(that.superColumnFamilies))
+      if (!this.superColumns.equals(that.superColumns))
         return false;
     }
 
@@ -324,11 +319,11 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetSuperColumnFamilies()).compareTo(typedOther.isSetSuperColumnFamilies());
+    lastComparison = Boolean.valueOf(isSetSuperColumns()).compareTo(typedOther.isSetSuperColumns());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSuperColumnFamilies()) {      lastComparison = TBaseHelper.compareTo(this.superColumnFamilies, typedOther.superColumnFamilies);
+    if (isSetSuperColumns()) {      lastComparison = TBaseHelper.compareTo(this.superColumns, typedOther.superColumns);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -353,21 +348,19 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // SUPER_COLUMN_FAMILIES
-          if (field.type == TType.MAP) {
+        case 2: // SUPER_COLUMNS
+          if (field.type == TType.SET) {
             {
-              TMap _map27 = iprot.readMapBegin();
-              this.superColumnFamilies = new HashMap<String,SuperColumnFamily>(2*_map27.size);
-              for (int _i28 = 0; _i28 < _map27.size; ++_i28)
+              TSet _set21 = iprot.readSetBegin();
+              this.superColumns = new HashSet<SuperColumn>(2*_set21.size);
+              for (int _i22 = 0; _i22 < _set21.size; ++_i22)
               {
-                String _key29;
-                SuperColumnFamily _val30;
-                _key29 = iprot.readString();
-                _val30 = new SuperColumnFamily();
-                _val30.read(iprot);
-                this.superColumnFamilies.put(_key29, _val30);
+                SuperColumn _elem23;
+                _elem23 = new SuperColumn();
+                _elem23.read(iprot);
+                this.superColumns.add(_elem23);
               }
-              iprot.readMapEnd();
+              iprot.readSetEnd();
             }
           } else { 
             TProtocolUtil.skip(iprot, field.type);
@@ -393,16 +386,15 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       oprot.writeString(this.id);
       oprot.writeFieldEnd();
     }
-    if (this.superColumnFamilies != null) {
-      oprot.writeFieldBegin(SUPER_COLUMN_FAMILIES_FIELD_DESC);
+    if (this.superColumns != null) {
+      oprot.writeFieldBegin(SUPER_COLUMNS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRUCT, this.superColumnFamilies.size()));
-        for (Map.Entry<String, SuperColumnFamily> _iter31 : this.superColumnFamilies.entrySet())
+        oprot.writeSetBegin(new TSet(TType.STRUCT, this.superColumns.size()));
+        for (SuperColumn _iter24 : this.superColumns)
         {
-          oprot.writeString(_iter31.getKey());
-          _iter31.getValue().write(oprot);
+          _iter24.write(oprot);
         }
-        oprot.writeMapEnd();
+        oprot.writeSetEnd();
       }
       oprot.writeFieldEnd();
     }
@@ -423,11 +415,11 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("superColumnFamilies:");
-    if (this.superColumnFamilies == null) {
+    sb.append("superColumns:");
+    if (this.superColumns == null) {
       sb.append("null");
     } else {
-      sb.append(this.superColumnFamilies);
+      sb.append(this.superColumns);
     }
     first = false;
     sb.append(")");

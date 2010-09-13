@@ -2,10 +2,7 @@ package com.nearinfinity.blur.manager;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import junit.framework.TestCase;
@@ -17,7 +14,6 @@ import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SuperColumn;
-import com.nearinfinity.blur.thrift.generated.SuperColumnFamily;
 import com.nearinfinity.mele.Mele;
 
 public class IndexManagerTest extends TestCase {
@@ -34,7 +30,7 @@ public class IndexManagerTest extends TestCase {
 		mele.createDirectory("test", "s3");
 	}
 
-	private void rm(File file) {
+	public static void rm(File file) {
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
 				rm(f);
@@ -47,19 +43,15 @@ public class IndexManagerTest extends TestCase {
 		IndexManager indexManager = new IndexManager();
 		Row row = new Row();
 		row.id="1";
-		SuperColumnFamily scf = new SuperColumnFamily();
-		scf.name = "person";
 		SuperColumn sc = new SuperColumn();
+		sc.family = "person";
 		sc.id = "1";
 		Column col = new Column();
 		col.name = "name";
-		col.values = Arrays.asList("aaron");
-		sc.columns = new HashMap<String, Column>();
-		sc.columns.put("name", col);
-		scf.superColumns = new HashMap<String, SuperColumn>();
-		scf.superColumns.put("1", sc);
-		row.superColumnFamilies = new TreeMap<String, SuperColumnFamily>();
-		row.superColumnFamilies.put("person", scf);
+		col.addToValues("aaron");
+		sc.addToColumns(col);
+		row.addToSuperColumns(sc);
+		
 		indexManager.replaceRow("test",row);
 		
 		Map<String, IndexReader> indexReaders = indexManager.getIndexReaders("test");
@@ -71,6 +63,8 @@ public class IndexManagerTest extends TestCase {
 		
 		Row r = indexManager.fetchRow("test", "1");
 		assertEquals(row,r);
+		
+		indexManager.close();
 	}
 
 

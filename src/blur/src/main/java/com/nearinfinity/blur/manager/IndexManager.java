@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.manager;
 
+import static com.nearinfinity.blur.manager.RowSuperDocumentUtil.createSuperDocument;
+import static com.nearinfinity.blur.manager.RowSuperDocumentUtil.getRow;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +18,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
@@ -44,14 +46,12 @@ import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
 import com.nearinfinity.blur.manager.util.TermDocIterable;
 import com.nearinfinity.blur.thrift.BlurAdminServer.HitsMerger;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SuperColumn;
-import com.nearinfinity.blur.thrift.generated.SuperColumnFamily;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 import com.nearinfinity.mele.Mele;
@@ -200,18 +200,7 @@ public class IndexManager {
 		try {
 			IndexReader reader = getIndexReader(table,id);
 			checkIfShardIsNull(reader);
-			Iterable<Document> docs = getDocs(reader,id);
-			Row row = new Row();
-			row.id = id;
-			boolean empty = true;
-			for (Document document : docs) {
-				empty = false;
-				addDocumentToRow(row,document);
-			}
-			if (empty) {
-				return null;
-			}
-			return row;
+			return getRow(id,  getDocs(reader,id));
 		} catch (IOException e) {
 			LOG.error("Unknown io error",e);
 			throw new BlurException(e.getMessage());
@@ -303,61 +292,6 @@ public class IndexManager {
 	private String fetchId(Searcher searcher, int docId) throws CorruptIndexException, IOException {
 		Document doc = searcher.doc(docId);
 		return doc.get(SuperDocument.ID);
-	}
-
-	public static SuperDocument createSuperDocument(Row row) {
-		SuperDocument document = new SuperDocument(row.id);
-		for (Entry<String, SuperColumnFamily> superColumnFamilyEntry : row.superColumnFamilies.entrySet()) {
-			addSuperColumnFamily(superColumnFamilyEntry,document);
-		}
-		return document;
-	}
-
-	private void addDocumentToRow(Row row, Document document) {
-		String superColumnId = document.getField(SuperDocument.SUPER_KEY).stringValue();
-		SuperColumn superColumn = new SuperColumn();
-		superColumn.id = superColumnId;
-		superColumn.columns = new TreeMap<String, Column>();
-		String superColumnFamily = null;
-		for (Fieldable fieldable : document.getFields()) {
-			String name = fieldable.name();
-			int index = name.indexOf(SuperDocument.SEP);
-			if (index < 0) {
-				continue;
-			}
-			if (superColumnFamily == null) {
-				superColumnFamily = name.substring(0,index);	
-			}
-			String columnName = name.substring(index + 1);
-			String value = fieldable.stringValue();
-			addValue(superColumn,columnName,value);
-		}
-		addToRow(row,superColumnFamily,superColumn);
-	}
-
-	private void addValue(SuperColumn superColumn, String columnName, String value) {
-		Column column = superColumn.columns.get(columnName);
-		if (column == null) {
-			column = new Column();
-			column.name = columnName;
-			column.values = new ArrayList<String>();
-			superColumn.columns.put(column.name, column);
-		}
-		column.values.add(value);
-	}
-
-	private void addToRow(Row row, String superColumnFamilyName, SuperColumn superColumn) {
-		if (row.superColumnFamilies == null) {
-			row.superColumnFamilies = new TreeMap<String, SuperColumnFamily>();
-		}
-		SuperColumnFamily superColumnFamily = row.superColumnFamilies.get(superColumnFamilyName);
-		if (superColumnFamily == null) {
-			superColumnFamily = new SuperColumnFamily();
-			superColumnFamily.name = superColumnFamilyName;
-			superColumnFamily.superColumns = new TreeMap<String, SuperColumn>();
-			row.superColumnFamilies.put(superColumnFamily.name, superColumnFamily);
-		}
-		superColumnFamily.superColumns.put(superColumn.id, superColumn);
 	}
 
 	private Iterable<Document> getDocs(final IndexReader reader, String id) throws IOException {
@@ -538,30 +472,6 @@ public class IndexManager {
 		return true;
 	}
 
-	private static void addSuperColumnFamily(Entry<String, SuperColumnFamily> superColumnFamilyEntry, SuperDocument document) {
-		String superColumnFamilyName = superColumnFamilyEntry.getKey();
-		SuperColumnFamily superColumnFamily = superColumnFamilyEntry.getValue();
-		for (Entry<String, SuperColumn> superColumnEntry : superColumnFamily.superColumns.entrySet()) {
-			add(superColumnFamilyName, superColumnEntry, document);
-		}
-	}
-
-	private static void add(String superColumnFamilyName, Entry<String, SuperColumn> superColumnEntry, SuperDocument document) {
-		String superColumnId = superColumnEntry.getKey();
-		SuperColumn superColumn = superColumnEntry.getValue();
-		for (Entry<String, Column> columnEntry : superColumn.columns.entrySet()) {
-			add(superColumnFamilyName, superColumnId, columnEntry,document);
-		}		
-	}
-
-	private static void add(String superColumnFamilyName, String superColumnId, Entry<String, Column> columnEntry, SuperDocument document) {
-		String columnName = columnEntry.getKey();
-		Column column = columnEntry.getValue();
-		for (String value : column.values) {
-			document.addFieldStoreAnalyzedNoNorms(superColumnFamilyName, superColumnId, columnName, value);
-		}
-	}
-	
 	private IndexReader getIndexReader(String table, String id) throws BlurException {
 		IndexWriter indexWriter = getIndexWriter(table, id);
 		if (indexWriter == null) {

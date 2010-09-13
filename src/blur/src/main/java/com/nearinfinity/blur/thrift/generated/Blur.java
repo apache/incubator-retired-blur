@@ -2108,13 +2108,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list32 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list32.size);
-                for (int _i33 = 0; _i33 < _list32.size; ++_i33)
+                TList _list25 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list25.size);
+                for (int _i26 = 0; _i26 < _list25.size; ++_i26)
                 {
-                  String _elem34;
-                  _elem34 = iprot.readString();
-                  this.success.add(_elem34);
+                  String _elem27;
+                  _elem27 = iprot.readString();
+                  this.success.add(_elem27);
                 }
                 iprot.readListEnd();
               }
@@ -2148,9 +2148,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter35 : this.success)
+          for (String _iter28 : this.success)
           {
-            oprot.writeString(_iter35);
+            oprot.writeString(_iter28);
           }
           oprot.writeListEnd();
         }
@@ -12284,13 +12284,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list36 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list36.size);
-                for (int _i37 = 0; _i37 < _list36.size; ++_i37)
+                TList _list29 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list29.size);
+                for (int _i30 = 0; _i30 < _list29.size; ++_i30)
                 {
-                  String _elem38;
-                  _elem38 = iprot.readString();
-                  this.success.add(_elem38);
+                  String _elem31;
+                  _elem31 = iprot.readString();
+                  this.success.add(_elem31);
                 }
                 iprot.readListEnd();
               }
@@ -12332,9 +12332,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter39 : this.success)
+          for (String _iter32 : this.success)
           {
-            oprot.writeString(_iter39);
+            oprot.writeString(_iter32);
           }
           oprot.writeListEnd();
         }

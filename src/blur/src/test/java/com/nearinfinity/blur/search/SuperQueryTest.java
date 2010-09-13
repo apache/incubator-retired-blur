@@ -1,9 +1,9 @@
 package com.nearinfinity.blur.search;
 
+import static junit.framework.Assert.assertEquals;
+
 import java.io.IOException;
 import java.util.UUID;
-
-import junit.framework.TestCase;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -22,14 +22,16 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.manager.IndexManager;
 
-public class SuperQueryTest extends TestCase {
+public class SuperQueryTest {
 	
+    @Test
 	public void testSimpleSuperQuery() throws CorruptIndexException, IOException, InterruptedException {
 		BooleanQuery booleanQuery = new BooleanQuery();
 		booleanQuery.add(wrapSuper(new TermQuery(new Term("person.name","aaron"))), Occur.MUST);

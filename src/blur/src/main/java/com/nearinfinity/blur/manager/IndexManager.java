@@ -30,6 +30,7 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
@@ -40,6 +41,7 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
@@ -58,7 +60,8 @@ import com.nearinfinity.mele.Mele;
 
 public class IndexManager {
 
-	private static final Log LOG = LogFactory.getLog(IndexManager.class);
+	private static final Version LUCENE_VERSION = Version.LUCENE_30;
+    private static final Log LOG = LogFactory.getLog(IndexManager.class);
 	private static final long POLL_TIME = 5000;
 	private static final TableManager ALWAYS_ON = new TableManager() {
 		@Override
@@ -103,7 +106,8 @@ public class IndexManager {
 		Map<String, IndexWriter> map = indexWriters.get(table);
 		Map<String, IndexReader> reader = new HashMap<String, IndexReader>();
 		for (Entry<String, IndexWriter> writer : map.entrySet()) {
-			reader.put(writer.getKey(), writer.getValue().getReader());
+			reader.put(writer.getKey(), 
+			        SuperIndexReader.warmUpPrimeDocBitSets(writer.getValue().getReader()));
 		}
 		return reader;
 	}
@@ -218,8 +222,8 @@ public class IndexManager {
 			throw new BlurException(e.getMessage());
 		}
 		try {
-			Filter preFilter = parseFilter(table,preSuperFilter);
-			Filter postFilter = parseFilter(table,postSuperFilter);
+			Filter preFilter = parseFilter(table,preSuperFilter,false);
+			Filter postFilter = parseFilter(table,postSuperFilter,true);
 			final Query userQuery = parseQuery(query,superQueryOn,getAnalyzer(table),postFilter,preFilter);
 			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, Hits>() {
 				@Override
@@ -233,11 +237,11 @@ public class IndexManager {
 		}
 	}
 
-	private Filter parseFilter(String table, String filter) {
+	private Filter parseFilter(String table, String filter, boolean superQueryOn) throws ParseException, BlurException {
 		if (filter == null) {
 			return null;
 		}
-		return null;
+		return new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, getAnalyzer(table),superQueryOn,null).parse(filter));
 	}
 
 	private Analyzer getAnalyzer(String table) throws BlurException {
@@ -256,7 +260,7 @@ public class IndexManager {
 	}
 
 	private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter) throws ParseException {
-		Query result = new SuperParser(Version.LUCENE_30, analyzer, superQueryOn, preFilter).parse(query);
+		Query result = new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, preFilter).parse(query);
 		if (postFilter == null) {
 			return result;	
 		}

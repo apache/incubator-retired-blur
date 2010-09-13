@@ -39,34 +39,42 @@ public class SuperIndexReader extends IndexReader {
 		warmUpThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				try {
-					IndexReader[] subReaders = indexReader.getSequentialSubReaders();
-					for (IndexReader reader : subReaders) {
-						if (!PrimeDocCache.isPrimeDocPopulated(reader)) {
-							BlurBitSet bitSet = new BlurBitSet(reader.maxDoc());
-							populatePrimeDocBitSet(bitSet, reader);
-							PrimeDocCache.setPrimeDoc(reader,bitSet);
-						}
-					}
-				} catch (Exception e) {
-					LOG.error("unknown error",e);
-					throw new RuntimeException(e);
-				}
+			    warmUpPrimeDocBitSets(indexReader);
+				
 			}
 
-			private void populatePrimeDocBitSet(BlurBitSet primeDocBS, IndexReader reader) throws IOException {
-				TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
-				while (termDocs.next()) {
-					primeDocBS.set(termDocs.doc());
-				}
-			}
+			
 		});
 		warmUpThread.setName("SuperIndexReader-Warm-Up[" + indexReader.toString() + "]");
 		warmUpThread.setDaemon(true);
 		warmUpThread.start();
 	}
 
-	public SuperIndexReader(Directory directory) throws CorruptIndexException, IOException {
+	public static IndexReader warmUpPrimeDocBitSets(IndexReader indexReader) {
+	    try {
+            IndexReader[] subReaders = indexReader.getSequentialSubReaders();
+            for (IndexReader reader : subReaders) {
+                if (!PrimeDocCache.isPrimeDocPopulated(reader)) {
+                    BlurBitSet bitSet = new BlurBitSet(reader.maxDoc());
+                    populatePrimeDocBitSet(bitSet, reader);
+                    PrimeDocCache.setPrimeDoc(reader,bitSet);
+                }
+            }
+            return indexReader;
+        } catch (Exception e) {
+            LOG.error("Unknown error during creation of prime doc bitsets.",e);
+            throw new RuntimeException(e);
+        }
+    }
+	
+	private static void populatePrimeDocBitSet(BlurBitSet primeDocBS, IndexReader reader) throws IOException {
+        TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
+        while (termDocs.next()) {
+            primeDocBS.set(termDocs.doc());
+        }
+    }
+
+    public SuperIndexReader(Directory directory) throws CorruptIndexException, IOException {
 		this(IndexReader.open(directory));
 	}
 

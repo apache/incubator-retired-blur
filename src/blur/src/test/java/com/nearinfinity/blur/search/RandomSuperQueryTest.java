@@ -1,13 +1,13 @@
 package com.nearinfinity.blur.search;
 
+import static junit.framework.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
-
-import junit.framework.TestCase;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -25,13 +25,14 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
+import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.IndexManager;
 
-public class RandomSuperQueryTest extends TestCase {
+public class RandomSuperQueryTest {
 	
 	private static final int MOD_COLS_USED_FOR_SKIPPING = 3;
 	private static final int MAX_NUM_OF_DOCS = 10000;//10000
@@ -45,6 +46,7 @@ public class RandomSuperQueryTest extends TestCase {
 	
 	private Random seedGen = new Random(1);
 	
+	@Test
 	public void testSlowRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
 		for (int i = 0; i < 10; i++) {
 			System.out.print("Starting pass [" + i + "]... ");
@@ -53,6 +55,7 @@ public class RandomSuperQueryTest extends TestCase {
 		}
 	}
 	
+	@Test
 	public void testRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
 		long seed = seedGen.nextLong();
 

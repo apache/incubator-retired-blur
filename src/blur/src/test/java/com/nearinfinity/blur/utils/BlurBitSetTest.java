@@ -1,15 +1,18 @@
 package com.nearinfinity.blur.utils;
 
+import static junit.framework.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.junit.Test;
+
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
-import junit.framework.TestCase;
+public class BlurBitSetTest {
 
-public class BlurBitSetTest extends TestCase {
-
+    @Test
 	public void testRandomBlurBitSet() {
 		BlurBitSet blurBitSet = new BlurBitSet();
 		populate(blurBitSet,1000000,10000);
@@ -28,6 +31,7 @@ public class BlurBitSetTest extends TestCase {
 		}
 	}
 	
+    @Test
 	public void testPerformance() {
 		BlurBitSet blurBitSet = new BlurBitSet();
 		populate(blurBitSet,1000000,10000);

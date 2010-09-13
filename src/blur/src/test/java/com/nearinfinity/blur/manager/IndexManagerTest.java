@@ -1,13 +1,16 @@
 package com.nearinfinity.blur.manager;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import junit.framework.TestCase;
-
 import org.apache.lucene.index.IndexReader;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
@@ -16,12 +19,12 @@ import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.mele.Mele;
 
-public class IndexManagerTest extends TestCase {
+public class IndexManagerTest {
 	
 	private Mele mele;
 
-	@Override
-	protected void setUp() throws Exception {
+	@Before
+    public void setUp() throws Exception {
 		rm(new File("target/test-tmp"));
 		mele = Mele.getMele(new LocalHdfsMeleConfiguration());
 		mele.createDirectoryCluster("test");
@@ -39,6 +42,7 @@ public class IndexManagerTest extends TestCase {
 		file.delete();
 	}
 
+	@Test
 	public void testIndexManager() throws IOException, BlurException, MissingShardException {
 		IndexManager indexManager = new IndexManager();
 		Row row = new Row();

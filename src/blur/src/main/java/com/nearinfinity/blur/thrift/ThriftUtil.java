@@ -14,7 +14,7 @@ public class ThriftUtil {
     public static Row newRow(String id, ColumnFamily... columnFamilies) {
         Row row = new Row().setId(id);
         for (ColumnFamily columnFamily : columnFamilies) {
-            row.addToSuperColumns(columnFamily);
+            row.addToColumnFamilies(columnFamily);
         }
         return row;
     }

@@ -56,12 +56,12 @@ public class RowSuperDocumentUtil {
 		Set<Column> columnSet = new TreeSet<Column>(BlurConstants.COLUMN_COMPARATOR);
 		columnSet.addAll(columns.values());
         columnFamily.putToColumns(superColumnId, columnSet);
-        row.addToSuperColumns(columnFamily);
+        row.addToColumnFamilies(columnFamily);
 	}
 	
 	public static SuperDocument createSuperDocument(Row row) {
 		SuperDocument document = new SuperDocument(row.id);
-		for (ColumnFamily columnFamily : row.superColumns) {
+		for (ColumnFamily columnFamily : row.columnFamilies) {
 			for (String id : columnFamily.columns.keySet()) {
 			    Set<Column> columns = columnFamily.columns.get(id);
 			    for (Column column : columns) {

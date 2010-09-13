@@ -30,7 +30,7 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
   private static final TField SUPER_COLUMNS_FIELD_DESC = new TField("superColumns", TType.SET, (short)2);
 
   public String id;
-  public Set<SuperColumn> superColumns;
+  public Set<ColumnFamily> superColumns;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -102,7 +102,7 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.SUPER_COLUMNS, new FieldMetaData("superColumns", TFieldRequirementType.DEFAULT, 
         new SetMetaData(TType.SET, 
-            new StructMetaData(TType.STRUCT, SuperColumn.class))));
+            new StructMetaData(TType.STRUCT, ColumnFamily.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
@@ -112,7 +112,7 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
 
   public Row(
     String id,
-    Set<SuperColumn> superColumns)
+    Set<ColumnFamily> superColumns)
   {
     this();
     this.id = id;
@@ -127,9 +127,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       this.id = other.id;
     }
     if (other.isSetSuperColumns()) {
-      Set<SuperColumn> __this__superColumns = new HashSet<SuperColumn>();
-      for (SuperColumn other_element : other.superColumns) {
-        __this__superColumns.add(new SuperColumn(other_element));
+      Set<ColumnFamily> __this__superColumns = new HashSet<ColumnFamily>();
+      for (ColumnFamily other_element : other.superColumns) {
+        __this__superColumns.add(new ColumnFamily(other_element));
       }
       this.superColumns = __this__superColumns;
     }
@@ -172,22 +172,22 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     return (this.superColumns == null) ? 0 : this.superColumns.size();
   }
 
-  public java.util.Iterator<SuperColumn> getSuperColumnsIterator() {
+  public java.util.Iterator<ColumnFamily> getSuperColumnsIterator() {
     return (this.superColumns == null) ? null : this.superColumns.iterator();
   }
 
-  public void addToSuperColumns(SuperColumn elem) {
+  public void addToSuperColumns(ColumnFamily elem) {
     if (this.superColumns == null) {
-      this.superColumns = new HashSet<SuperColumn>();
+      this.superColumns = new HashSet<ColumnFamily>();
     }
     this.superColumns.add(elem);
   }
 
-  public Set<SuperColumn> getSuperColumns() {
+  public Set<ColumnFamily> getSuperColumns() {
     return this.superColumns;
   }
 
-  public Row setSuperColumns(Set<SuperColumn> superColumns) {
+  public Row setSuperColumns(Set<ColumnFamily> superColumns) {
     this.superColumns = superColumns;
     return this;
   }
@@ -221,7 +221,7 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       if (value == null) {
         unsetSuperColumns();
       } else {
-        setSuperColumns((Set<SuperColumn>)value);
+        setSuperColumns((Set<ColumnFamily>)value);
       }
       break;
 
@@ -351,14 +351,14 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
         case 2: // SUPER_COLUMNS
           if (field.type == TType.SET) {
             {
-              TSet _set21 = iprot.readSetBegin();
-              this.superColumns = new HashSet<SuperColumn>(2*_set21.size);
-              for (int _i22 = 0; _i22 < _set21.size; ++_i22)
+              TSet _set26 = iprot.readSetBegin();
+              this.superColumns = new HashSet<ColumnFamily>(2*_set26.size);
+              for (int _i27 = 0; _i27 < _set26.size; ++_i27)
               {
-                SuperColumn _elem23;
-                _elem23 = new SuperColumn();
-                _elem23.read(iprot);
-                this.superColumns.add(_elem23);
+                ColumnFamily _elem28;
+                _elem28 = new ColumnFamily();
+                _elem28.read(iprot);
+                this.superColumns.add(_elem28);
               }
               iprot.readSetEnd();
             }
@@ -390,9 +390,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       oprot.writeFieldBegin(SUPER_COLUMNS_FIELD_DESC);
       {
         oprot.writeSetBegin(new TSet(TType.STRUCT, this.superColumns.size()));
-        for (SuperColumn _iter24 : this.superColumns)
+        for (ColumnFamily _iter29 : this.superColumns)
         {
-          _iter24.write(oprot);
+          _iter29.write(oprot);
         }
         oprot.writeSetEnd();
       }

@@ -3,7 +3,7 @@ package com.nearinfinity.blur.utils;
 import java.util.Comparator;
 
 import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.SuperColumn;
+import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 
 
 public interface BlurConstants {
@@ -18,6 +18,6 @@ public interface BlurConstants {
 	public static final String BLUR_FILTER_MANAGER_CLASS = "blur.filter.manager.class";
 	public static final String CONTROLLER = "controller";
 	public static final String SHARD = "shard";
-	public static final Comparator<? super SuperColumn> SUPER_COLUMN_COMPARATOR = new SuperColumnComparator();
+	public static final Comparator<? super ColumnFamily> COLUMN_FAMILY_COMPARATOR = new ColumnFamilyComparator();
 	public static final Comparator<? super Column> COLUMN_COMPARATOR = new ColumnComparator();
 }

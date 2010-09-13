@@ -11,7 +11,6 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 
@@ -69,11 +68,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) throws BlurException, TException {
-		return indexManager.fetchSuperColumn(table,id,superColumnFamilyName,superColumnId);
-	}
-	
-	@Override
 	public void appendRow(String table, Row row) throws BlurException, TException {
 		indexManager.appendRow(table,row);
 	}
@@ -81,11 +75,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	@Override
 	public void removeRow(String table, String id) throws BlurException, TException {
 		indexManager.removeRow(table,id);
-	}
-
-	@Override
-	public void removeSuperColumn(String table, String id, String superColumnId) throws BlurException, TException {
-		indexManager.removeSuperColumn(table,id,superColumnId);
 	}
 
 	@Override

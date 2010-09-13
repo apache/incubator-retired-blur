@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.manager;
 
+import static com.nearinfinity.blur.thrift.ThriftUtil.newColumn;
+import static com.nearinfinity.blur.thrift.ThriftUtil.newColumnFamily;
+import static com.nearinfinity.blur.thrift.ThriftUtil.newRow;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
@@ -13,10 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.mele.Mele;
 
 public class IndexManagerTest {
@@ -45,17 +46,7 @@ public class IndexManagerTest {
 	@Test
 	public void testIndexManager() throws IOException, BlurException, MissingShardException {
 		IndexManager indexManager = new IndexManager();
-		Row row = new Row();
-		row.id="1";
-		SuperColumn sc = new SuperColumn();
-		sc.family = "person";
-		sc.id = "1";
-		Column col = new Column();
-		col.name = "name";
-		col.addToValues("aaron");
-		sc.addToColumns(col);
-		row.addToSuperColumns(sc);
-		
+		Row row = newRow("1", newColumnFamily("person", "1", newColumn("name", "aaron")));
 		indexManager.replaceRow("test",row);
 		
 		Map<String, IndexReader> indexReaders = indexManager.getIndexReaders("test");

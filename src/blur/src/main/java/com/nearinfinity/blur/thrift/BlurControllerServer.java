@@ -21,7 +21,6 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -116,21 +115,8 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher, Bl
 	}
 
 	@Override
-	public SuperColumn fetchSuperColumn(String table, String id,
-			String superColumnFamilyName, String superColumnId)
-			throws BlurException, TException {
-		throw new RuntimeException();
-	}
-
-	@Override
 	public void removeRow(String table, String id) throws BlurException,
 			TException {
-		throw new RuntimeException();
-	}
-
-	@Override
-	public void removeSuperColumn(String table, String id, String superColumnId)
-			throws BlurException, TException {
 		throw new RuntimeException();
 	}
 

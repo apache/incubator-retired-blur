@@ -53,7 +53,6 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.thrift.generated.SuperColumn;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 import com.nearinfinity.mele.Mele;
@@ -171,18 +170,6 @@ public class IndexManager {
 		}
 	}
 
-	public void removeSuperColumn(String table, String id, String superColumnId) throws BlurException {
-		try {
-			wal.removeSuperColumn(table,id,superColumnId);
-		} catch (IOException e) {
-			LOG.error("Error writing to WAL",e);
-			throw new BlurException("Error writing to WAL");
-		}
-		
-		//@todo finish
-		
-	}
-
 	public void removeRow(String table, String id) throws BlurException {
 		try {
 			wal.removeRow(table,id);
@@ -192,12 +179,6 @@ public class IndexManager {
 		}
 		
 		//@todo finish
-	}
-
-	public SuperColumn fetchSuperColumn(String table, String id, String superColumnFamilyName, String superColumnId) {
-		
-		//@todo finish
-		return null;
 	}
 
 	public Row fetchRow(String table, String id) throws BlurException, MissingShardException {

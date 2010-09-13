@@ -24,8 +24,8 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
-import com.nearinfinity.blur.utils.ZkUtils;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
+import com.nearinfinity.mele.store.util.ZkUtils;
 
 public class BlurControllerServer extends BlurAdminServer implements Watcher, BlurConstants {
 	
@@ -70,7 +70,7 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher, Bl
 		try {
 			Map<String,Blur.Client> newClients = new TreeMap<String,Blur.Client>();
 			String path = blurNodePath + "/" + NODE_TYPE.NODE.name();
-			ZkUtils.mkNodes(path, zk);
+			ZkUtils.mkNodesStr(zk, path);
 			List<String> children = zk.getChildren(path, this);
 			for (String hostname : children) {
 				Client client = clients.get(hostname);

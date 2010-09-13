@@ -33,10 +33,10 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
-import com.nearinfinity.blur.utils.ZkUtils;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
-import com.nearinfinity.blur.zookeeper.ZooKeeperFactory;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.store.util.ZkUtils;
+import com.nearinfinity.mele.store.zookeeper.ZooKeeperFactory;
 
 public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
@@ -208,7 +208,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn)
 		throws BlurException, TException {
 		try {
-			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table));
 			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
 			Stat stat = zk.exists(path, false);
 			if (stat != null) {
@@ -227,15 +227,13 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
 	public void deleteDynamicTermQuery(String table, String term) throws BlurException, TException {
 		try {
-			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table));
 			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
 			Stat stat = zk.exists(path, false);
 			if (stat == null) {
@@ -248,15 +246,13 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
 	public String getDynamicTermQuery(String table, String term) throws BlurException, TException {
 		try {
-			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table));
 			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
 			Stat stat = zk.exists(path, false);
 			if (stat == null) {
@@ -270,15 +266,13 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 	
 	@Override
 	public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, TException {
 		try {
-			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table));
 			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table,term);
 			Stat stat = zk.exists(path, false);
 			if (stat == null) {
@@ -297,22 +291,18 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
 		}
 	}
 
 	@Override
 	public List<String> getDynamicTerms(String table) throws BlurException, TException {
 		try {
-			ZkUtils.mkNodes(ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table), zk);
+			ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table));
 			String path = ZkUtils.getPath(blurPath,DYNAMIC_TERMS,table);
 			return zk.getChildren(path, false);
 		} catch (KeeperException e) {
 			throw new RuntimeException(e);
 		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -339,8 +329,8 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		InetAddress address = getMyAddress();
 		String hostName = address.getHostAddress();
 		NODE_TYPE type = getType();
-		ZkUtils.mkNodes(blurNodePath, zk);
-		ZkUtils.mkNodes(blurNodePath + "/" + type.name(), zk);
+		ZkUtils.mkNodesStr(zk, blurNodePath);
+		ZkUtils.mkNodesStr(zk, blurNodePath + "/" + type.name());
 		while (true) {
 			int retry = 10;
 			try {
@@ -365,7 +355,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	}
 	
 	private TableDescriptor get(String table) throws KeeperException, InterruptedException, IOException, ClassNotFoundException {
-		ZkUtils.mkNodes(ZkUtils.getPath(blurPath,BLUR_TABLES_NODE), zk);
+		ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,BLUR_TABLES_NODE));
 		String path = ZkUtils.getPath(blurPath,BLUR_TABLES_NODE,table);
 		Stat stat = zk.exists(path, false);
 		if (stat == null) {
@@ -377,7 +367,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	}
 
 	private void save(String table, TableDescriptor descriptor) throws KeeperException, InterruptedException, IOException {
-		ZkUtils.mkNodes(ZkUtils.getPath(blurPath,BLUR_TABLES_NODE), zk);
+		ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,BLUR_TABLES_NODE));
 		String path = ZkUtils.getPath(blurPath,BLUR_TABLES_NODE,table);
 		Stat stat = zk.exists(path, false);
 		if (stat == null) {
@@ -388,7 +378,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	}
 	
 	private void remove(String table) throws InterruptedException, KeeperException, IOException {
-		ZkUtils.mkNodes(ZkUtils.getPath(blurPath,BLUR_TABLES_NODE), zk);
+		ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath,BLUR_TABLES_NODE));
 		String path = ZkUtils.getPath(blurPath,BLUR_TABLES_NODE,table);
 		Stat stat = zk.exists(path, false);
 		if (stat == null) {

@@ -23,8 +23,8 @@ import com.nearinfinity.mele.Mele;
 
 public class ComplexIndexManagerTest {
 
-	private static final String SHARD_NAME = "shard";
-	private static final String TABLE_NAME = "complex-test";
+    public static final String SHARD_NAME = "shard";
+    public static final String TABLE_NAME = "complex-test";
 	private static Mele mele;
 	private static IndexManager indexManager;
     private static ArrayList<Row> rows;

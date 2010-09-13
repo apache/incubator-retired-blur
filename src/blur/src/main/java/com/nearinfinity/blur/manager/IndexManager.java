@@ -382,6 +382,9 @@ public class IndexManager {
 	}
 
 	private void ensureClosed(Map<String, IndexWriter> writers) {
+	    if (writers == null) {
+	        return;
+	    }
 		for (IndexWriter writer : writers.values()) {
 			ensureClosed(writer);
 		}

@@ -26,6 +26,7 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -123,7 +124,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
-		mele = Mele.getMele();
+		mele = MeleFactory.getInstance();
 	}
 
 	@Override

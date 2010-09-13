@@ -45,6 +45,7 @@ import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
+import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.manager.util.TermDocIterable;
 import com.nearinfinity.blur.thrift.BlurAdminServer.HitsMerger;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -285,7 +286,7 @@ public class IndexManager {
 	}
 
 	private void setupIndexManager() throws IOException, BlurException {
-		mele = Mele.getMele();
+	    mele = MeleFactory.getInstance();
 		List<String> listClusters = mele.listClusters();
 		for (String cluster : listClusters) {
 			if (!manager.isTableEnabled(cluster)) {

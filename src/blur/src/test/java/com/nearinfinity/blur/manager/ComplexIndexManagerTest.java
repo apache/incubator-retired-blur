@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -32,7 +33,8 @@ public class ComplexIndexManagerTest {
     @BeforeClass
     public static void setUpOnce() throws Exception {
 	    rm(new File("target/test-tmp"));
-    	mele = Mele.getMele(new LocalHdfsMeleConfiguration());
+	    MeleFactory.setup(new LocalHdfsMeleConfiguration());
+    	mele = MeleFactory.getInstance();
     	mele.createDirectoryCluster(TABLE_NAME);
     	mele.createDirectory(TABLE_NAME, SHARD_NAME);
     	indexManager = new IndexManager();

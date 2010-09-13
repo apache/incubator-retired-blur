@@ -395,6 +395,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		String analyzerDef = descriptor.getAnalyzerDef();
 		String partitionerClass = descriptor.getPartitionerClass();
 		List<String> shardNames = descriptor.getShardNames();
+		outputStream.writeBoolean(descriptor.isEnabled);
 		outputStream.writeObject(analyzerDef);
 		outputStream.writeObject(partitionerClass);
 		outputStream.writeObject(shardNames);
@@ -407,6 +408,7 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(data));
 		try {
 			TableDescriptor descriptor = new TableDescriptor();
+			descriptor.isEnabled = inputStream.readBoolean();
 			descriptor.analyzerDef = (String) inputStream.readObject();
 			descriptor.partitionerClass = (String) inputStream.readObject();
 			descriptor.shardNames = (List<String>) inputStream.readObject();

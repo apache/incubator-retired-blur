@@ -2,6 +2,8 @@ package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexManager;
@@ -16,7 +18,7 @@ import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
-//	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
+	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
 	
 	public BlurShardServer() throws IOException, BlurException {
@@ -27,12 +29,15 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			public boolean isTableEnabled(String table) {
 				try {
 					TableDescriptor describe = describe(table);
+					System.out.println("isTableEnabled " + table + " = " + describe);
 					if (describe == null) {
 						return false;
 					}
 					return describe.isEnabled;
 				} catch (Exception e) {
-					throw new RuntimeException();
+				    LOG.error("Uknown error while trying to check if table [" + table +
+				    		"] is enabled.",e);
+					throw new RuntimeException(e);
 				}
 			}
 			

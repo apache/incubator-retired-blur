@@ -28,14 +28,17 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
 
   private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)1);
   private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.SET, (short)2);
+  private static final TField WAL_DISABLED_FIELD_DESC = new TField("walDisabled", TType.BOOL, (short)3);
 
   public String id;
   public Set<ColumnFamily> columnFamilies;
+  public boolean walDisabled;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     ID((short)1, "id"),
-    COLUMN_FAMILIES((short)2, "columnFamilies");
+    COLUMN_FAMILIES((short)2, "columnFamilies"),
+    WAL_DISABLED((short)3, "walDisabled");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -54,6 +57,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
           return ID;
         case 2: // COLUMN_FAMILIES
           return COLUMN_FAMILIES;
+        case 3: // WAL_DISABLED
+          return WAL_DISABLED;
         default:
           return null;
       }
@@ -94,6 +99,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
   }
 
   // isset id assignments
+  private static final int __WALDISABLED_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -103,6 +110,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     tmpMap.put(_Fields.COLUMN_FAMILIES, new FieldMetaData("columnFamilies", TFieldRequirementType.DEFAULT, 
         new SetMetaData(TType.SET, 
             new StructMetaData(TType.STRUCT, ColumnFamily.class))));
+    tmpMap.put(_Fields.WAL_DISABLED, new FieldMetaData("walDisabled", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
@@ -112,17 +121,22 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
 
   public Row(
     String id,
-    Set<ColumnFamily> columnFamilies)
+    Set<ColumnFamily> columnFamilies,
+    boolean walDisabled)
   {
     this();
     this.id = id;
     this.columnFamilies = columnFamilies;
+    this.walDisabled = walDisabled;
+    setWalDisabledIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public Row(Row other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetId()) {
       this.id = other.id;
     }
@@ -133,6 +147,7 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       }
       this.columnFamilies = __this__columnFamilies;
     }
+    this.walDisabled = other.walDisabled;
   }
 
   public Row deepCopy() {
@@ -207,6 +222,29 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     }
   }
 
+  public boolean isWalDisabled() {
+    return this.walDisabled;
+  }
+
+  public Row setWalDisabled(boolean walDisabled) {
+    this.walDisabled = walDisabled;
+    setWalDisabledIsSet(true);
+    return this;
+  }
+
+  public void unsetWalDisabled() {
+    __isset_bit_vector.clear(__WALDISABLED_ISSET_ID);
+  }
+
+  /** Returns true if field walDisabled is set (has been asigned a value) and false otherwise */
+  public boolean isSetWalDisabled() {
+    return __isset_bit_vector.get(__WALDISABLED_ISSET_ID);
+  }
+
+  public void setWalDisabledIsSet(boolean value) {
+    __isset_bit_vector.set(__WALDISABLED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -225,6 +263,14 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       }
       break;
 
+    case WAL_DISABLED:
+      if (value == null) {
+        unsetWalDisabled();
+      } else {
+        setWalDisabled((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -239,6 +285,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
 
     case COLUMN_FAMILIES:
       return getColumnFamilies();
+
+    case WAL_DISABLED:
+      return new Boolean(isWalDisabled());
 
     }
     throw new IllegalStateException();
@@ -255,6 +304,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       return isSetId();
     case COLUMN_FAMILIES:
       return isSetColumnFamilies();
+    case WAL_DISABLED:
+      return isSetWalDisabled();
     }
     throw new IllegalStateException();
   }
@@ -294,6 +345,15 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
         return false;
     }
 
+    boolean this_present_walDisabled = true;
+    boolean that_present_walDisabled = true;
+    if (this_present_walDisabled || that_present_walDisabled) {
+      if (!(this_present_walDisabled && that_present_walDisabled))
+        return false;
+      if (this.walDisabled != that.walDisabled)
+        return false;
+    }
+
     return true;
   }
 
@@ -324,6 +384,15 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       return lastComparison;
     }
     if (isSetColumnFamilies()) {      lastComparison = TBaseHelper.compareTo(this.columnFamilies, typedOther.columnFamilies);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetWalDisabled()).compareTo(typedOther.isSetWalDisabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWalDisabled()) {      lastComparison = TBaseHelper.compareTo(this.walDisabled, typedOther.walDisabled);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -366,6 +435,14 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 3: // WAL_DISABLED
+          if (field.type == TType.BOOL) {
+            this.walDisabled = iprot.readBool();
+            setWalDisabledIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -398,6 +475,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       }
       oprot.writeFieldEnd();
     }
+    oprot.writeFieldBegin(WAL_DISABLED_FIELD_DESC);
+    oprot.writeBool(this.walDisabled);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -421,6 +501,10 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     } else {
       sb.append(this.columnFamilies);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("walDisabled:");
+    sb.append(this.walDisabled);
     first = false;
     sb.append(")");
     return sb.toString();

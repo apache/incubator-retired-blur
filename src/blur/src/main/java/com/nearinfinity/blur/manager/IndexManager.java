@@ -142,24 +142,28 @@ public class IndexManager {
 	}
 
 	public void appendRow(String table, Row row) throws BlurException {
-		try {
-			wal.appendRow(table,row);
-		} catch (IOException e) {
-			LOG.error("Error writing to WAL",e);
-			throw new BlurException("Error writing to WAL");
-		}
+	    if (!row.walDisabled) {
+    		try {
+    			wal.appendRow(table,row);
+    		} catch (IOException e) {
+    			LOG.error("Error writing to WAL",e);
+    			throw new BlurException("Error writing to WAL");
+    		}
+	    }
 		
 		//@todo finish
 		
 	}
 
 	public void replaceRow(String table, Row row) throws BlurException, MissingShardException {
-		try {
-			wal.replaceRow(table,row);
-		} catch (IOException e) {
-			LOG.error("Error writing to WAL",e);
-			throw new BlurException("Error writing to WAL");
-		}
+	    if (!row.walDisabled) {
+    		try {
+    			wal.replaceRow(table,row);
+    		} catch (IOException e) {
+    			LOG.error("Error writing to WAL",e);
+    			throw new BlurException("Error writing to WAL");
+    		}
+	    }
 		
 		IndexWriter indexWriter = getIndexWriter(table, row.id);
 		checkIfShardIsNull(indexWriter);

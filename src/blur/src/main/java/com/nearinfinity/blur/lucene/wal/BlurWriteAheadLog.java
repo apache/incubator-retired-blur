@@ -15,8 +15,6 @@ public abstract class BlurWriteAheadLog {
 
 	public abstract void replaceRow(String table, Row row) throws IOException;
 
-	public abstract void removeSuperColumn(String table, String id, String superColumnId) throws IOException;
-
 	public abstract void removeRow(String table, String id) throws IOException;
 
 	public abstract void commit(String table, String shard, IndexWriter indexWriter) throws IOException;
@@ -31,11 +29,6 @@ public abstract class BlurWriteAheadLog {
 		
 		@Override
 		public void replaceRow(String table, Row row) throws IOException {
-			
-		}
-		
-		@Override
-		public void removeSuperColumn(String table, String id, String superColumnId) throws IOException {
 			
 		}
 		

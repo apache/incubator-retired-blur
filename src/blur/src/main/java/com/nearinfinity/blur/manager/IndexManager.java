@@ -1,7 +1,7 @@
 package com.nearinfinity.blur.manager;
 
-import static com.nearinfinity.blur.manager.RowSuperDocumentUtil.createSuperDocument;
-import static com.nearinfinity.blur.manager.RowSuperDocumentUtil.getRow;
+import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.createSuperDocument;
+import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
 import java.io.IOException;
 import java.util.ArrayList;

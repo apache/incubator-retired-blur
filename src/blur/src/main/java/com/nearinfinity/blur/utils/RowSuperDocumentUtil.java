@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.manager;
+package com.nearinfinity.blur.utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,7 +12,6 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.utils.BlurConstants;
 
 public class RowSuperDocumentUtil {
 

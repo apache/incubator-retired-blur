@@ -10,9 +10,9 @@ import com.nearinfinity.mele.MeleConfiguration;
 
 public class LocalHdfsMeleConfiguration extends MeleConfiguration {
 	
-	public LocalHdfsMeleConfiguration() throws IOException {
-		this.setBaseHdfsPath("target/test-tmp/mele-hdfs");
-		this.setLocalReplicationPathList(Arrays.asList("target/test-tmp/mele1","target/test-tmp/mele2","target/test-tmp/mele3"));
+	public LocalHdfsMeleConfiguration(String baseDir) throws IOException {
+		this.setBaseHdfsPath(baseDir + "/mele-hdfs");
+		this.setLocalReplicationPathList(Arrays.asList(baseDir + "/mele1",baseDir + "/mele2",baseDir + "/mele3"));
 		FileSystem fs = FileSystem.get(new Configuration());
 		this.setHdfsFileSystem(fs);
 	}

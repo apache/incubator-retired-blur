@@ -10,13 +10,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.nearinfinity.blur.manager.util.MeleFactory;
+import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
@@ -24,22 +24,32 @@ import com.nearinfinity.mele.Mele;
 
 public class ComplexIndexManagerTest {
 
-    public static final String SHARD_NAME = "shard";
-    public static final String TABLE_NAME = "complex-test";
+    private static final String SHARD_NAME = "shard";
+    private static final String TABLE_NAME = "complex-test";
 	private static Mele mele;
 	private static IndexManager indexManager;
     private static ArrayList<Row> rows;
 
     @BeforeClass
     public static void setUpOnce() throws Exception {
-	    rm(new File("target/test-tmp"));
-	    MeleFactory.setup(new LocalHdfsMeleConfiguration());
-    	mele = MeleFactory.getInstance();
+	    String pathname = "target/test-tmp-complex";
+        rm(new File(pathname));
+	    LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
+        mele = new Mele(configuration);
     	mele.createDirectoryCluster(TABLE_NAME);
     	mele.createDirectory(TABLE_NAME, SHARD_NAME);
-    	indexManager = new IndexManager();
+    	
+    	System.out.println(mele.listDirectories(TABLE_NAME));
+    	System.out.println(mele.listLocalDirectories(TABLE_NAME));
+    	
+    	indexManager = new IndexManager(mele);
     	populate();
 	}
+    
+    @AfterClass
+    public static void oneTimeTearDown() throws InterruptedException {
+        indexManager.close();
+    }
 
 	private static void populate() throws IOException, BlurException, MissingShardException {
 	    rows = new ArrayList<Row>();
@@ -81,36 +91,36 @@ public class ComplexIndexManagerTest {
 	
 	@Test
 	public void testSimpleSearchWithFetch1() throws IOException, BlurException, MissingShardException {
-		Hits hits = indexManager.search(TABLE_NAME, "person.name:aaron", true, ScoreType.SUPER, 
-				null, null, 0, 10, Long.MAX_VALUE, Long.MAX_VALUE);
-		assertEquals(1, hits.totalHits);
-		Hit hit = hits.hits.get(0);
+		HitsIterable hits = indexManager.search(TABLE_NAME, "person.name:aaron", true, ScoreType.SUPER, 
+				null, null, Long.MAX_VALUE, Long.MAX_VALUE);
+		assertEquals(1, hits.getTotalHits());
+		Hit hit = hits.iterator().next();
 		assertEquals("1000", hit.id);
 		assertEquals(rows.get(0), indexManager.fetchRow(TABLE_NAME, hit.id));
 	}
 	
 	@Test
     public void testSimpleSearchWithFetch2() throws IOException, BlurException, MissingShardException {
-	    Hits hitsNoFilter = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
-                null, null, 0, 10, Long.MAX_VALUE, Long.MAX_VALUE);
-        assertEquals(1, hitsNoFilter.totalHits);
-        Hit hitNoFilter = hitsNoFilter.hits.get(0);
+	    HitsIterable hitsNoFilter = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
+                null, null, Long.MAX_VALUE, Long.MAX_VALUE);
+        assertEquals(1, hitsNoFilter.getTotalHits());
+        Hit hitNoFilter = hitsNoFilter.iterator().next();
         assertEquals("2000", hitNoFilter.id);
         assertEquals(rows.get(1), indexManager.fetchRow(TABLE_NAME, hitNoFilter.id));
     }
 	
 	@Test
 	public void testSimpleSearchWithFilterAndFetchWithFalse() throws IOException, BlurException, MissingShardException {
-        Hits hitsAfterFilterFalse = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
-                null, "address.private:false person.private:false", 0, 10, Long.MAX_VALUE, Long.MAX_VALUE);
-        assertEquals(0, hitsAfterFilterFalse.totalHits);
+	    HitsIterable hitsAfterFilterFalse = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
+                null, "address.private:false person.private:false", Long.MAX_VALUE, Long.MAX_VALUE);
+        assertEquals(0, hitsAfterFilterFalse.getTotalHits());
     }
 	
 	@Test
     public void testSimpleSearchWithFilterAndFetchWithTrue() throws IOException, BlurException, MissingShardException {
-        Hits hitsAfterFilterTrue = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
-                null, "address.private:true person.private:true", 0, 10, Long.MAX_VALUE, Long.MAX_VALUE);
-        assertEquals(1, hitsAfterFilterTrue.totalHits);
+	    HitsIterable hitsAfterFilterTrue = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
+                null, "address.private:true person.private:true", Long.MAX_VALUE, Long.MAX_VALUE);
+        assertEquals(1, hitsAfterFilterTrue.getTotalHits());
     }
 	
 }

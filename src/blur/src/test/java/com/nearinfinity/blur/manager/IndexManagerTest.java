@@ -15,7 +15,6 @@ import org.apache.lucene.index.IndexReader;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -27,9 +26,10 @@ public class IndexManagerTest {
 
 	@Before
     public void setUp() throws Exception {
-		rm(new File("target/test-tmp"));
-		MeleFactory.setup(new LocalHdfsMeleConfiguration());
-        mele = MeleFactory.getInstance();
+	    String pathname = "target/test-tmp-index-manager";
+        rm(new File(pathname));
+        LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
+        mele = new Mele(configuration);
 		mele.createDirectoryCluster("test");
 		mele.createDirectory("test", "s1");
 		mele.createDirectory("test", "s2");
@@ -46,8 +46,8 @@ public class IndexManagerTest {
 	}
 
 	@Test
-	public void testIndexManager() throws IOException, BlurException, MissingShardException {
-		IndexManager indexManager = new IndexManager();
+	public void testIndexManager() throws IOException, BlurException, MissingShardException, InterruptedException {
+		IndexManager indexManager = new IndexManager(mele);
 		Row row = newRow("1", newColumnFamily("person", "1", newColumn("name", "aaron")));
 		indexManager.replaceRow("test",row);
 		

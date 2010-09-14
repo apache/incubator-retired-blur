@@ -4,11 +4,9 @@ import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.createSuperDocume
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -18,7 +16,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -31,10 +28,7 @@ import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.util.Version;
@@ -45,12 +39,11 @@ import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
-import com.nearinfinity.blur.manager.util.MeleFactory;
+import com.nearinfinity.blur.manager.hits.HitsIterable;
+import com.nearinfinity.blur.manager.hits.HitsIterableMerger;
+import com.nearinfinity.blur.manager.hits.SearchHitsIterable;
 import com.nearinfinity.blur.manager.util.TermDocIterable;
-import com.nearinfinity.blur.thrift.BlurAdminServer.HitsMerger;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
@@ -91,14 +84,15 @@ public class IndexManager {
 		String getAnalyzerDefinitions(String table);
 	}
 	
-	public IndexManager(TableManager manager) throws IOException, BlurException {
+	public IndexManager(Mele mele, TableManager manager) throws IOException, BlurException {
+	    this.mele = mele;
 		this.manager = manager;
 		setupIndexManager();
 		Runtime.getRuntime().addShutdownHook(new ShutdownThread(this));
 	}
 	
-	public IndexManager() throws IOException, BlurException {
-		this(ALWAYS_ON);
+	public IndexManager(Mele mele) throws IOException, BlurException {
+		this(mele,ALWAYS_ON);
 	}
 
 	public Map<String, IndexReader> getIndexReaders(String table)
@@ -128,7 +122,11 @@ public class IndexManager {
 		}
 	}
 
-	public void close() {
+	public void close() throws InterruptedException {
+	    daemonCommitDaemon.interrupt();
+	    daemonCommitDaemon.join();
+	    daemonUnservedShards.interrupt();
+	    daemonUnservedShards.join();
 		for (Entry<String, Map<String, IndexWriter>> writers : indexWriters.entrySet()) {
 			for (Entry<String, IndexWriter> writer : writers.getValue().entrySet()) {
 				try {
@@ -197,8 +195,8 @@ public class IndexManager {
 		}
 	}
 	
-	public Hits search(String table, String query, boolean superQueryOn,
-			ScoreType type, String postSuperFilter, String preSuperFilter, final long start, final int fetch,
+	public HitsIterable search(String table, String query, final boolean superQueryOn,
+			ScoreType type, String postSuperFilter, String preSuperFilter,
 			long minimumNumberOfHits, long maxQueryTime) throws BlurException {
 		Map<String, IndexReader> indexReaders;
 		try {
@@ -211,12 +209,14 @@ public class IndexManager {
 			Filter preFilter = parseFilter(table,preSuperFilter,false);
 			Filter postFilter = parseFilter(table,postSuperFilter,true);
 			final Query userQuery = parseQuery(query,superQueryOn,getAnalyzer(table),postFilter,preFilter);
-			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, Hits>() {
+			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
 				@Override
-				public Hits call(Entry<String, IndexReader> entry) throws Exception {
-					return performSearch((Query) userQuery.clone(), entry.getKey(), entry.getValue(), (int) start, fetch);
+				public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
+				    IndexSearcher searcher = new IndexSearcher(entry.getValue());
+			        searcher.setSimilarity(similarity);
+				    return new SearchHitsIterable(superQueryOn, (Query) userQuery.clone(), entry.getKey(), searcher);
 				}
-			}).merge(new HitsMerger());
+			}).merge(new HitsIterableMerger(minimumNumberOfHits));
 		} catch (Exception e) {
 			LOG.error("Unknown error",e);
 			throw new BlurException(e.getMessage());
@@ -253,44 +253,12 @@ public class IndexManager {
 		return new FilteredQuery(result, postFilter);
 	}
 	
-	private Hits performSearch(Query query, String shardId, IndexReader reader, int start, int fetch) throws IOException {
-		IndexSearcher searcher = new IndexSearcher(reader);
-		searcher.setSimilarity(similarity);
-		int count = (int) (start + fetch);
-		TopDocs topDocs = searcher.search(query, count == 0 ? 1 : count);
-		return new Hits(topDocs.totalHits, getShardInfo(shardId,topDocs), fetch == 0 ? null : getHitList(searcher,(int) start,fetch,topDocs));
-	}
-
-	private Map<String, Long> getShardInfo(String shardId, TopDocs topDocs) {
-		Map<String, Long> shardInfo = new TreeMap<String, Long>();
-		shardInfo.put(shardId, (long)topDocs.totalHits);
-		return shardInfo;
-	}
-
-	private List<Hit> getHitList(Searcher searcher, int start, int fetch, TopDocs topDocs) throws CorruptIndexException, IOException {
-		List<Hit> hitList = new ArrayList<Hit>();
-		int collectTotal = start + fetch;
-		ScoreDoc[] scoreDocs = topDocs.scoreDocs;
-		for (int i = start; i < topDocs.scoreDocs.length && i < collectTotal; i++) {
-			ScoreDoc scoreDoc = scoreDocs[i];
-			String id = fetchId(searcher, scoreDoc.doc);
-			hitList.add(new Hit(id, scoreDoc.score, null));
-		}
-		return hitList;
-	}
-	
-	private String fetchId(Searcher searcher, int docId) throws CorruptIndexException, IOException {
-		Document doc = searcher.doc(docId);
-		return doc.get(SuperDocument.ID);
-	}
-
 	private Iterable<Document> getDocs(final IndexReader reader, String id) throws IOException {
 		TermDocs termDocs = reader.termDocs(new Term(SuperDocument.ID,id));
 		return new TermDocIterable(termDocs,reader);
 	}
 
 	private void setupIndexManager() throws IOException, BlurException {
-	    mele = MeleFactory.getInstance();
 		List<String> listClusters = mele.listClusters();
 		for (String cluster : listClusters) {
 			if (!manager.isTableEnabled(cluster)) {
@@ -318,10 +286,8 @@ public class IndexManager {
 		daemonCommitDaemon = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				sleep(POLL_TIME);
-				while (true) {
+				while (sleep(POLL_TIME)) {
 					commitIndexWriters();
-					sleep(POLL_TIME);
 				}
 			}
 		});
@@ -349,10 +315,8 @@ public class IndexManager {
 		daemonUnservedShards = new Thread(new Runnable() {
 			@Override
 			public void run() {
-				sleep(POLL_TIME);
-				while (true) {
+				while (sleep(POLL_TIME)) {
 					serverUnservedShards();
-					sleep(POLL_TIME);
 				}
 			}
 		});
@@ -485,15 +449,20 @@ public class IndexManager {
 		}
 		@Override
 		public void run() {
-			indexManager.close();
+			try {
+                indexManager.close();
+            } catch (InterruptedException e) {
+                LOG.error("Error while closing index manager.",e);
+            }
 		}
 	}
 	
-	public static void sleep(long pauseTime) {
+	public static boolean sleep(long pauseTime) {
 		try {
 			Thread.sleep(pauseTime);
+			return true;
 		} catch (InterruptedException e) {
-			return;
+			return false;
 		}
 	}
 	

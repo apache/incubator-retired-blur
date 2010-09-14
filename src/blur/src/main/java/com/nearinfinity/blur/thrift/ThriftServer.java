@@ -11,11 +11,13 @@ import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.mele.MeleConfiguration;
 
 public class ThriftServer implements BlurConstants {
 
@@ -31,6 +33,7 @@ public class ThriftServer implements BlurConstants {
 
 	public static void main(String[] args) throws IOException, BlurException {
 		BlurConfiguration configuration = new BlurConfiguration();
+		MeleFactory.setup(new MeleConfiguration());
 		int port = -1;
 		Iface iface = null;
 		if (args.length < 1) {
@@ -38,7 +41,7 @@ public class ThriftServer implements BlurConstants {
 			System.exit(1);
 		}
 		if (args[0].equals(SHARD)) {
-			iface = new BlurShardServer();
+			iface = new BlurShardServer(MeleFactory.getInstance());
 			port = configuration.getInt(BLUR_SERVER_SHARD_PORT,-1);
 		} else if (args[0].equals(CONTROLLER)) {
 			iface = new BlurControllerServer();

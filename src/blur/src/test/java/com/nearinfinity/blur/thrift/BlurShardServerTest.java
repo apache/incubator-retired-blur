@@ -17,12 +17,11 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.nearinfinity.blur.manager.ComplexIndexManagerTest;
 import com.nearinfinity.blur.manager.LocalHdfsMeleConfiguration;
-import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
@@ -33,22 +32,27 @@ import com.nearinfinity.mele.Mele;
 
 public class BlurShardServerTest {
     
+    private static final String SHARD_NAME = "shard";
+    private static final String TABLE_NAME = "blur-shard-test";
     private static final int PORT = 9123;
     private static TThreadPoolServer server;
     private static Mele mele;
     private static Thread thread;
     private static Client client;
+    private static BlurShardServer blurServer;
 
     @BeforeClass
     public static void setUpOnce() throws Exception {
-        rm(new File("target/test-tmp"));
-        MeleFactory.setup(new LocalHdfsMeleConfiguration());
-        mele = MeleFactory.getInstance();
-        mele.createDirectoryCluster(ComplexIndexManagerTest.TABLE_NAME);
-        mele.createDirectory(ComplexIndexManagerTest.TABLE_NAME, ComplexIndexManagerTest.SHARD_NAME);
+        String pathname = "target/test-tmp-blur-shard";
+        rm(new File(pathname));
+        LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
+        mele = new Mele(configuration);
+        mele.createDirectoryCluster(TABLE_NAME);
+        mele.createDirectory(TABLE_NAME, SHARD_NAME);
         
         TServerSocket serverTransport = new TServerSocket(PORT);
-        Blur.Processor processor = new Blur.Processor(new BlurShardServer());
+        blurServer = new BlurShardServer(mele);
+        Blur.Processor processor = new Blur.Processor(blurServer);
         Factory protFactory = new TBinaryProtocol.Factory(true, true);
         server = new TThreadPoolServer(processor, serverTransport, protFactory);
         thread = new Thread(new Runnable() {
@@ -68,21 +72,27 @@ public class BlurShardServerTest {
         
         
         List<String> tableList = client.tableList();
-        if (tableList.contains(ComplexIndexManagerTest.TABLE_NAME)) {
-            TableDescriptor describe = client.describe(ComplexIndexManagerTest.TABLE_NAME);
+        if (tableList.contains(TABLE_NAME)) {
+            TableDescriptor describe = client.describe(TABLE_NAME);
             if (describe.isEnabled) {
-                client.disable(ComplexIndexManagerTest.TABLE_NAME);
+                client.disable(TABLE_NAME);
             }
-            client.drop(ComplexIndexManagerTest.TABLE_NAME);
+            client.drop(TABLE_NAME);
         }
         
         TableDescriptor desc = new TableDescriptor();
         desc.analyzerDef = "";
         desc.partitionerClass = "com.nearinfinity.blur.manager.Partitioner";
-        desc.addToShardNames(ComplexIndexManagerTest.SHARD_NAME);
+        desc.addToShardNames(SHARD_NAME);
         
-        client.create(ComplexIndexManagerTest.TABLE_NAME, desc);
-        client.enable(ComplexIndexManagerTest.TABLE_NAME);
+        client.create(TABLE_NAME, desc);
+        client.enable(TABLE_NAME);
+        Thread.sleep(2000);//wait for server to come online and serve shards
+    }
+    
+    @AfterClass
+    public static void oneTimeTearDown() throws InterruptedException {
+        blurServer.close();
     }
     
     @Test
@@ -98,8 +108,8 @@ public class BlurShardServerTest {
                         newColumn("street","155 johndoe","155 johndoe Court"),
                         newColumn("city","thecity")));
         
-        client.replaceRow(ComplexIndexManagerTest.TABLE_NAME, row);
-        Row fetchRow = client.fetchRow(ComplexIndexManagerTest.TABLE_NAME, "1000");
+        client.replaceRow(TABLE_NAME, row);
+        Row fetchRow = client.fetchRow(TABLE_NAME, "1000");
         assertEquals(row,fetchRow);
     }
 

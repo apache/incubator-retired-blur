@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class MultipleHitsIterable implements HitsIterable {
+public class HitsIterableMultiple implements HitsIterable {
     
     private long totalHits;
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();

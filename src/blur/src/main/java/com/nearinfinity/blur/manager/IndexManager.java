@@ -40,8 +40,8 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.manager.hits.HitsIterableMerger;
-import com.nearinfinity.blur.manager.hits.SearchHitsIterable;
+import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
+import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
 import com.nearinfinity.blur.manager.util.TermDocIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
@@ -214,9 +214,9 @@ public class IndexManager {
 			public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
 			    IndexSearcher searcher = new IndexSearcher(entry.getValue());
 		        searcher.setSimilarity(similarity);
-			    return new SearchHitsIterable(superQueryOn, (Query) userQuery.clone(), entry.getKey(), searcher);
+			    return new HitsIterableSearcher(superQueryOn, (Query) userQuery.clone(), entry.getKey(), searcher);
 			}
-		}).merge(new HitsIterableMerger(minimumNumberOfHits));
+		}).merge(new MergerHitsIterable(minimumNumberOfHits));
 	}
 
 	private Filter parseFilter(String table, String filter, boolean superQueryOn) throws ParseException, BlurException {

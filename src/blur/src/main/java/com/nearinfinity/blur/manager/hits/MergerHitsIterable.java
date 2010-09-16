@@ -5,17 +5,17 @@ import java.util.concurrent.Future;
 
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
-public class HitsIterableMerger implements Merger<HitsIterable> {
+public class MergerHitsIterable implements Merger<HitsIterable> {
 
     private long minimumNumberOfHits;
 
-    public HitsIterableMerger(long minimumNumberOfHits) {
+    public MergerHitsIterable(long minimumNumberOfHits) {
         this.minimumNumberOfHits = minimumNumberOfHits;
     }
 
     @Override
     public HitsIterable merge(List<Future<HitsIterable>> futures) throws Exception {
-        MultipleHitsIterable iterable = new MultipleHitsIterable();
+        HitsIterableMultiple iterable = new HitsIterableMultiple();
         for (Future<HitsIterable> future : futures) {
             iterable.addHitsIterable(future.get());
             if (iterable.getTotalHits() >= minimumNumberOfHits) {

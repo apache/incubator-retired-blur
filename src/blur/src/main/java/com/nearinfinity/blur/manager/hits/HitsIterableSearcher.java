@@ -18,9 +18,9 @@ import org.apache.lucene.search.TopDocs;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.thrift.generated.Hit;
 
-public class SearchHitsIterable implements HitsIterable {
+public class HitsIterableSearcher implements HitsIterable {
     
-    private static final Log LOG = LogFactory.getLog(SearchHitsIterable.class);
+    private static final Log LOG = LogFactory.getLog(HitsIterableSearcher.class);
     private static final MapFieldSelector SELECTOR = new MapFieldSelector(Arrays.asList(SuperDocument.ID,SuperDocument.SUPER_KEY));
 
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
@@ -34,7 +34,7 @@ public class SearchHitsIterable implements HitsIterable {
     private int batch = 0;
     private boolean superOn;
 
-    public SearchHitsIterable(boolean superOn, Query query, String shard, IndexSearcher searcher) {
+    public HitsIterableSearcher(boolean superOn, Query query, String shard, IndexSearcher searcher) {
         this.superOn = superOn;
         this.query = query;
         this.shard = shard;

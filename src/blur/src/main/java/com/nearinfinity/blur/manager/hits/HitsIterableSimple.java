@@ -9,13 +9,13 @@ import java.util.TreeMap;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class SimpleHitsIterable implements HitsIterable {
+public class HitsIterableSimple implements HitsIterable {
     
     private List<Hit> hits;
     private Map<String, Long> shardInfo;
     private long skipTo;
 
-    public SimpleHitsIterable(String shard, List<Hit> hits) {
+    public HitsIterableSimple(String shard, List<Hit> hits) {
         Collections.sort(hits,BlurConstants.HITS_COMPARATOR);
         this.hits = hits;
         this.shardInfo = new TreeMap<String, Long>();

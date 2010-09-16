@@ -8,7 +8,7 @@ import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
-import com.nearinfinity.blur.manager.hits.HitsIterableMerger;
+import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.thrift.BlurClientManager.Command;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -44,7 +44,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 		                }
 		            });
 				}
-			}).merge(new HitsIterableMerger(minimumNumberOfHits));
+			}).merge(new MergerHitsIterable(minimumNumberOfHits));
 			return convertToHits(hitsIterable, start, fetch, minimumNumberOfHits);
 		} catch (Exception e) {
 			LOG.error("Unknown error during search of [" +

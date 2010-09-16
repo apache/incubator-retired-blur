@@ -42,7 +42,7 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 	
 	public enum NODE_TYPE {
 		CONTROLLER,
-		NODE
+		SHARD
 	}
 
 	protected ExecutorService executor = Executors.newCachedThreadPool();
@@ -67,8 +67,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 		}
 		this.mele = mele;
 	}
-
-	
 	
 	@Override
     public List<String> controllerServerList() throws BlurException, TException {
@@ -284,7 +282,7 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 	
 	@Override
     public void process(WatchedEvent event) {
-	    shardServerHosts = updateNodeLists(NODE_TYPE.NODE);
+	    shardServerHosts = updateNodeLists(NODE_TYPE.SHARD);
 	    controllerServerHosts = updateNodeLists(NODE_TYPE.CONTROLLER);
     }
 

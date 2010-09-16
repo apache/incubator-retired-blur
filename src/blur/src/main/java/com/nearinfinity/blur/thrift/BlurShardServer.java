@@ -81,7 +81,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	
 	@Override
 	protected NODE_TYPE getType() {
-		return NODE_TYPE.NODE;
+		return NODE_TYPE.SHARD;
 	}
 
 	@Override

@@ -115,8 +115,8 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
 	public BlurAdminServer() throws IOException {
 		zk = ZooKeeperFactory.getZooKeeper();
-		blurPath = configuration.get(BLUR_ZOOKEEPER_PATH);
-		blurNodePath = configuration.get(BLUR_ZOOKEEPER_PATH) + "/" + NODES;
+		blurPath = configuration.get(BLUR_ZOOKEEPER_PATH,BLUR_ZOOKEEPER_PATH_DEFAULT);
+		blurNodePath = blurPath + "/" + NODES;
 		try {
 			registerNode();
 		} catch (KeeperException e) {

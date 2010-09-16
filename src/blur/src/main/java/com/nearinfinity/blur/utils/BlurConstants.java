@@ -12,6 +12,7 @@ import com.nearinfinity.blur.thrift.generated.Hit;
 
 public interface BlurConstants {
 	public static final String BLUR_ZOOKEEPER_PATH = "blur.zookeeper.path";
+	public static final String BLUR_ZOOKEEPER_PATH_DEFAULT = "/blur";
 	public static final String BLUR_TABLES_NODE = "tables";
 	public static final String BLUR_SERVER_CONTROLLER_PORT = "blur.server.controller.port";
 	public static final String BLUR_SERVER_SHARD_PORT = "blur.server.shard.port";

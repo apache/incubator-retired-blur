@@ -9,6 +9,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,7 +26,10 @@ import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
+import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
@@ -404,5 +408,33 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
             result.add(host + ":" + port);
         }
         return result;
+    }
+    
+    public static Hits convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfHits) {
+        Hits hits = new Hits();
+        hits.setTotalHits(hitsIterable.getTotalHits());
+        hits.setShardInfo(hitsIterable.getShardInfo());
+        if (minimumNumberOfHits > 0) {
+            hitsIterable.skipTo(start);
+            int count = 0;
+            Iterator<Hit> iterator = hitsIterable.iterator();
+            while (iterator.hasNext() && count < fetch) {
+                hits.addToHits(iterator.next());
+                count++;
+            }
+        }
+        return hits;
+    }
+    
+    public static String getParametersList(Object... params) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < params.length; i+=2) {
+            if (i != 0) {
+                builder.append(',');
+            }
+            builder.append('[').append(params[i]).
+                append(']').append('=').append('[').append(params[i+1]).append(']');
+        }
+        return builder.toString();
     }
 }

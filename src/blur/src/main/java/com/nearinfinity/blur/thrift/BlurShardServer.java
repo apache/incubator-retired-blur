@@ -1,7 +1,6 @@
 package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,7 +10,6 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManager.TableManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -28,7 +26,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	public BlurShardServer(Mele mele) throws IOException, BlurException {
 		super(mele);
 		indexManager = new IndexManager(mele, new TableManager() {
-			
 			@Override
 			public boolean isTableEnabled(String table) {
 				try {
@@ -44,7 +41,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 					throw new RuntimeException(e);
 				}
 			}
-			
+
 			@Override
 			public String getAnalyzerDefinitions(String table) {
 				try {
@@ -63,23 +60,20 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	@Override
 	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, 
 			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
-	    Hits hits = new Hits();
-		HitsIterable hitsIterable = indexManager.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, minimumNumberOfHits, maxQueryTime);
-		hits.setTotalHits(hitsIterable.getTotalHits());
-		hits.setShardInfo(hitsIterable.getShardInfo());
-		if (minimumNumberOfHits > 0) {
-    		hitsIterable.skipTo(start);
-    		int count = 0;
-    		Iterator<Hit> iterator = hitsIterable.iterator();
-    		while (iterator.hasNext() && count < fetch) {
-    		    hits.addToHits(iterator.next());
-    		    count++;
-    		}
-		}
-		return hits;
+        try {
+            HitsIterable hitsIterable = indexManager.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, minimumNumberOfHits, maxQueryTime);
+            return convertToHits(hitsIterable,start,fetch,minimumNumberOfHits);
+        } catch (Exception e) {
+            LOG.error("Unknown error during search of [" +
+                    getParametersList("table",table, "query", query, "superQueryOn", superQueryOn,
+                            "type", type, "postSuperFilter", postSuperFilter, "preSuperFilter", preSuperFilter, 
+                            "start", start, "fetch", fetch, "minimumNumberOfHits", minimumNumberOfHits, 
+                            "maxQueryTime", maxQueryTime) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
 	}
 	
-	@Override
+    @Override
 	protected NODE_TYPE getType() {
 		return NODE_TYPE.SHARD;
 	}

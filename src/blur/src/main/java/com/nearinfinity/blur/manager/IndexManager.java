@@ -198,30 +198,25 @@ public class IndexManager {
 	
 	public HitsIterable search(String table, String query, final boolean superQueryOn,
 			ScoreType type, String postSuperFilter, String preSuperFilter,
-			long minimumNumberOfHits, long maxQueryTime) throws BlurException {
+			long minimumNumberOfHits, long maxQueryTime) throws Exception {
 		Map<String, IndexReader> indexReaders;
 		try {
 			indexReaders = getIndexReaders(table);
 		} catch (IOException e) {
-			LOG.error("Unknown error",e);
+			LOG.error("Unknown error while trying to fetch index readers.",e);
 			throw new BlurException(e.getMessage());
 		}
-		try {
-			Filter preFilter = parseFilter(table,preSuperFilter,false);
-			Filter postFilter = parseFilter(table,postSuperFilter,true);
-			final Query userQuery = parseQuery(query,superQueryOn,getAnalyzer(table),postFilter,preFilter);
-			return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
-				@Override
-				public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
-				    IndexSearcher searcher = new IndexSearcher(entry.getValue());
-			        searcher.setSimilarity(similarity);
-				    return new SearchHitsIterable(superQueryOn, (Query) userQuery.clone(), entry.getKey(), searcher);
-				}
-			}).merge(new HitsIterableMerger(minimumNumberOfHits));
-		} catch (Exception e) {
-			LOG.error("Unknown error",e);
-			throw new BlurException(e.getMessage());
-		}
+		Filter preFilter = parseFilter(table,preSuperFilter,false);
+		Filter postFilter = parseFilter(table,postSuperFilter,true);
+		final Query userQuery = parseQuery(query,superQueryOn,getAnalyzer(table),postFilter,preFilter);
+		return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
+			@Override
+			public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
+			    IndexSearcher searcher = new IndexSearcher(entry.getValue());
+		        searcher.setSimilarity(similarity);
+			    return new SearchHitsIterable(superQueryOn, (Query) userQuery.clone(), entry.getKey(), searcher);
+			}
+		}).merge(new HitsIterableMerger(minimumNumberOfHits));
 	}
 
 	private Filter parseFilter(String table, String filter, boolean superQueryOn) throws ParseException, BlurException {

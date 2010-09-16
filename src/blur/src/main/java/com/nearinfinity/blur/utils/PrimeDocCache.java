@@ -17,7 +17,7 @@ public class PrimeDocCache {
     public static final BlurBitSet EMPTY_BIT_SET = new BlurBitSet();
     private static final Log LOG = LogFactory.getLog(PrimeDocCache.class);
     private static Map<IndexReader, BlurBitSet> primeDocs = Collections.synchronizedMap(new ReferenceMap(
-            AbstractReferenceMap.WEAK, AbstractReferenceMap.HARD));
+            AbstractReferenceMap.SOFT, AbstractReferenceMap.HARD));
 
     public static BlurBitSet getPrimeDoc(IndexReader reader) {
         BlurBitSet blurBitSet = primeDocs.get(reader);

@@ -90,7 +90,7 @@ public class ComplexIndexManagerTest {
 	}
 	
 	@Test
-	public void testSimpleSearchWithFetch1() throws IOException, BlurException, MissingShardException {
+	public void testSimpleSearchWithFetch1() throws Exception {
 		HitsIterable hits = indexManager.search(TABLE_NAME, "person.name:aaron", true, ScoreType.SUPER, 
 				null, null, Long.MAX_VALUE, Long.MAX_VALUE);
 		assertEquals(1, hits.getTotalHits());
@@ -100,7 +100,7 @@ public class ComplexIndexManagerTest {
 	}
 	
 	@Test
-    public void testSimpleSearchWithFetch2() throws IOException, BlurException, MissingShardException {
+    public void testSimpleSearchWithFetch2() throws Exception {
 	    HitsIterable hitsNoFilter = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
                 null, null, Long.MAX_VALUE, Long.MAX_VALUE);
         assertEquals(1, hitsNoFilter.getTotalHits());
@@ -110,14 +110,14 @@ public class ComplexIndexManagerTest {
     }
 	
 	@Test
-	public void testSimpleSearchWithFilterAndFetchWithFalse() throws IOException, BlurException, MissingShardException {
+	public void testSimpleSearchWithFilterAndFetchWithFalse() throws Exception {
 	    HitsIterable hitsAfterFilterFalse = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
                 null, "address.private:false person.private:false", Long.MAX_VALUE, Long.MAX_VALUE);
         assertEquals(0, hitsAfterFilterFalse.getTotalHits());
     }
 	
 	@Test
-    public void testSimpleSearchWithFilterAndFetchWithTrue() throws IOException, BlurException, MissingShardException {
+    public void testSimpleSearchWithFilterAndFetchWithTrue() throws Exception {
 	    HitsIterable hitsAfterFilterTrue = indexManager.search(TABLE_NAME, "person.name:johnathon", true, ScoreType.SUPER, 
                 null, "address.private:true person.private:true", Long.MAX_VALUE, Long.MAX_VALUE);
         assertEquals(1, hitsAfterFilterTrue.getTotalHits());

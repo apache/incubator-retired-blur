@@ -1,40 +1,16 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
-
 	<property>
 		<name>blur.server.controller.port</name>
 		<value>40010</value>
 	</property>
-
 	<property>
 		<name>blur.server.shard.port</name>
 		<value>40020</value>
 	</property>
-
-	<property>
-		<name>blur.directory.manager.store.class</name>
-		<value>com.nearinfinity.blur.zookeeper.ZookeeperDirectoryManagerStore</value>
-	</property>
-
-	<property>
-		<name>blur.filter.manager.class</name>
-		<value>com.nearinfinity.blur.manager.FilterManagerImpl</value>
-	</property>
-	
 	<property>
 		<name>blur.zookeeper.path</name>
 		<value>/blur</value>
 	</property>
-	
-	<property>
-		<name>blur.shards.toserve.per.pass</name>
-		<value>1</value>
-	</property>
-	
-	<property>
-		<name>blur.lucene.similarity.class</name>
-		<value>com.nearinfinity.blur.lucene.search.FairSimilarity</value>
-	</property>
-	
 </configuration>

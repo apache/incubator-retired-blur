@@ -50,10 +50,10 @@ public class ThriftServer implements BlurConstants {
 		}
 		if (args[0].equals(SHARD)) {
 			iface = new BlurShardServer(MeleFactory.getInstance());
-			port = configuration.getInt(BLUR_SERVER_SHARD_PORT,-1);
+			port = configuration.getBlurShardServerPort();
 		} else if (args[0].equals(CONTROLLER)) {
 			iface = new BlurControllerServer();
-			port = configuration.getInt(BLUR_SERVER_CONTROLLER_PORT,-1);
+			port = configuration.getBlurControllerServerPort();
 		} else {
 			System.err.println("Server type unknown [shard,controller]");
 			System.exit(1);

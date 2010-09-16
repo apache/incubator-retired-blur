@@ -101,4 +101,14 @@ public class DoNothingServer implements Iface {
         return Arrays.asList("donothing");
     }
 
+    @Override
+    public List<String> controllerServerList() throws BlurException, TException {
+        return null;
+    }
+
+    @Override
+    public List<String> shardServerList() throws BlurException, TException {
+        return null;
+    }
+
 }

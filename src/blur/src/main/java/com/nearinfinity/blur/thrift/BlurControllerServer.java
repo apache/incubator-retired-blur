@@ -26,6 +26,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
+import com.nearinfinity.mele.Mele;
 import com.nearinfinity.mele.store.util.ZkUtils;
 
 public class BlurControllerServer extends BlurAdminServer implements Watcher, BlurConstants {
@@ -33,8 +34,8 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher, Bl
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 	private List<String> nodeList = new ArrayList<String>();
 
-	public BlurControllerServer() throws IOException {
-		super();
+	public BlurControllerServer(Mele mele) throws IOException {
+		super(mele);
 		createBlurClients();
 	}
 

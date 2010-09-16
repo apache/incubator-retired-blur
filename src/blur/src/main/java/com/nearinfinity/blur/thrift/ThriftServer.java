@@ -10,18 +10,22 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
-import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.mele.Mele;
 import com.nearinfinity.mele.MeleConfiguration;
 
 public class ThriftServer implements BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(ThriftServer.class);
+
+    private static ThriftServer controllerServer;
+
+    private static ThriftServer shardServer;
 	
 	private Iface iface;
 	private int port;
@@ -34,45 +38,48 @@ public class ThriftServer implements BlurConstants {
 
     private TServerSocket serverTransport;
 
+    private Thread listeningThread;
+
 	public ThriftServer(int port, Iface iface) {
 		this.port = port;
 		this.iface = iface;
 	}
 
-	public static void main(String[] args) throws IOException, BlurException {
+	public static void main(String[] args) throws IOException, BlurException, InterruptedException {
 		BlurConfiguration configuration = new BlurConfiguration();
-		MeleFactory.setup(new MeleConfiguration());
-		int port = -1;
-		Iface iface = null;
-		if (args.length < 1) {
-			System.err.println("Server type unknown [shard,controller]");
-			System.exit(1);
-		}
-		if (args[0].equals(SHARD)) {
-			iface = new BlurShardServer(MeleFactory.getInstance());
-			port = configuration.getBlurShardServerPort();
-		} else if (args[0].equals(CONTROLLER)) {
-			iface = new BlurControllerServer();
-			port = configuration.getBlurControllerServerPort();
-		} else {
-			System.err.println("Server type unknown [shard,controller]");
-			System.exit(1);
-		}
-		ThriftServer server = new ThriftServer(port, iface);
-		server.start();
+		Mele mele = new Mele(new MeleConfiguration());
+		controllerServer = new ThriftServer(configuration.getBlurControllerServerPort(), 
+		        new BlurControllerServer(mele)).start();
+		shardServer = new ThriftServer(configuration.getBlurShardServerPort(), 
+		        new BlurShardServer(mele)).start();
+		controllerServer.waitForShutdown();
+		shardServer.waitForShutdown();
 	}
 	
-	public void start() {
-		try {
-			serverTransport = new TServerSocket(port);
-			processor = new Blur.Processor(iface);
-			protFactory = new TBinaryProtocol.Factory(true, true);
-			server = new TThreadPoolServer(processor, serverTransport, protFactory);
-			LOG.info("Starting server on port [" +port + "]");
-			server.serve();
-		} catch (TTransportException e) {
-			LOG.error("Unknown error",e);
-		}
+	public void waitForShutdown() throws InterruptedException {
+        listeningThread.join();
+    }
+
+    public ThriftServer start() {
+	    listeningThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverTransport = new TServerSocket(port);
+                    processor = new Blur.Processor(iface);
+                    protFactory = new TBinaryProtocol.Factory(true, true);
+                    server = new TThreadPoolServer(processor, serverTransport, protFactory);
+                    LOG.info("Starting server on port [" + port + "]");
+                    server.serve();
+                } catch (TTransportException e) {
+                    LOG.error("Unknown error",e);
+                }
+            }
+        });
+	    listeningThread.setDaemon(true);
+	    listeningThread.setName("Thrift Server Listener Thread");
+	    listeningThread.start();
+		return this;
 	}
 	
 	public void stop() {

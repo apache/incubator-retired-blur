@@ -9,111 +9,52 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
-import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.mele.Mele;
 import com.nearinfinity.mele.store.util.ZkUtils;
 import com.nearinfinity.mele.store.zookeeper.ZooKeeperFactory;
 
-public abstract class BlurAdminServer implements Iface,BlurConstants {
+public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 	
+	private static final Log LOG = LogFactory.getLog(BlurAdminServer.class);
 	private static final String DYNAMIC_TERMS = "dynamicTerms";
-	private static final Logger LOG = LoggerFactory.getLogger(BlurAdminServer.class);
 	private static final String NODES = "nodes";
-	
-	public static class HitsMerger implements Merger<Hits> {
-		@Override
-		public Hits merge(List<Future<Hits>> futures) throws Exception {
-			Hits hits = null;
-			for (Future<Hits> future : futures) {
-				if (hits == null) {
-					hits = future.get();
-				} else {
-					hits = mergeHits(hits,future.get());
-				}
-			}
-			if (hits == null) {
-				return null;
-			}
-			sortHits(hits.hits);
-			return hits;
-		}
-		
-		private void sortHits(List<Hit> hits) {
-			if (hits == null) {
-				return;
-			}
-			Collections.sort(hits, new Comparator<Hit>() {
-				@Override
-				public int compare(Hit o1, Hit o2) {
-					if (o1.score == o2.score) {
-						return o2.id.compareTo(o1.id);
-					}
-					return Double.compare(o2.score, o1.score);
-				}
-			});
-		}
-
-		protected Hits mergeHits(Hits existing, Hits newHits) {
-			existing.totalHits += newHits.totalHits;
-			if (existing.shardInfo == null) {
-				existing.shardInfo = newHits.shardInfo;
-			} else {
-				existing.shardInfo.putAll(newHits.shardInfo);
-			}
-			if (existing.hits == null) {
-				existing.hits = newHits.hits;
-			} else {
-				existing.hits.addAll(newHits.hits);
-			}
-			return existing;		
-		}
-	}
 	
 	public enum NODE_TYPE {
 		CONTROLLER,
 		NODE
 	}
 
-	public enum REQUEST_TYPE {
-		STATUS,
-		SEARCH,
-		FAST_SEARCH,
-		UNKNOWN
-	}
-	
 	protected ExecutorService executor = Executors.newCachedThreadPool();
 	protected ZooKeeper zk;
 	protected String blurNodePath;
 	protected BlurConfiguration configuration = new BlurConfiguration();
 	protected String blurPath;
 	protected Mele mele;
+	protected List<String> shardServerHosts = new ArrayList<String>();
+	protected List<String> controllerServerHosts = new ArrayList<String>();
 	
-	public BlurAdminServer() throws IOException {
+	public BlurAdminServer(Mele mele) throws IOException {
 		zk = ZooKeeperFactory.getZooKeeper();
 		blurPath = configuration.get(BLUR_ZOOKEEPER_PATH,BLUR_ZOOKEEPER_PATH_DEFAULT);
 		blurNodePath = blurPath + "/" + NODES;
@@ -124,13 +65,25 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
-		mele = MeleFactory.getInstance();
+		this.mele = mele;
 	}
 
+	
+	
 	@Override
+    public List<String> controllerServerList() throws BlurException, TException {
+        return addPort(controllerServerHosts,configuration.getBlurControllerServerPort());
+    }
+
+    @Override
+    public List<String> shardServerList() throws BlurException, TException {
+        return addPort(shardServerHosts,configuration.getBlurShardServerPort());
+    }
+
+    @Override
 	public void create(String table, TableDescriptor desc) throws BlurException, TException {
 		if (tableList().contains(table)) {
-			throw new BlurException("table " + table + " already exists");
+			throw new BlurException("Table " + table + " already exists.");
 		}
 		desc.isEnabled = false;
 		try {
@@ -140,11 +93,14 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 		}
 	}
 
-
 	@Override
 	public TableDescriptor describe(String table) throws BlurException, TException {
 		try {
-			return get(table);
+			TableDescriptor tableDescriptor = get(table);
+			if (tableDescriptor == null) {
+			    throw new BlurException("Table " + table + " does not exist.");
+			}
+            return tableDescriptor;
 		} catch (Exception e) {
 			throw new BlurException(e.getMessage());
 		}
@@ -153,7 +109,6 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	@Override
 	public void disable(String table) throws BlurException, TException {
 		TableDescriptor descriptor = describe(table);
-		checkIfTableExists(descriptor,table);
 		descriptor.isEnabled = false;
 		try {
 			save(table,descriptor);
@@ -165,9 +120,8 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	@Override
 	public void drop(String table) throws BlurException, TException {
 		TableDescriptor descriptor = describe(table);
-		checkIfTableExists(descriptor,table);
 		if (descriptor.isEnabled) {
-			throw new BlurException("table " + table + " must be disabled before drop");
+			throw new BlurException("Table " + table + " must be disabled before dropping.");
 		}
 		try {
 			remove(table);
@@ -179,7 +133,9 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	@Override
 	public void enable(String table) throws BlurException, TException {
 		TableDescriptor descriptor = describe(table);
-		checkIfTableExists(descriptor,table);
+		if (descriptor.isEnabled) {
+		    return;
+		}
 		descriptor.isEnabled = true;
 		try {
 			save(table,descriptor);
@@ -326,7 +282,13 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	
 	protected abstract NODE_TYPE getType();
 	
-	protected void registerNode() throws KeeperException, InterruptedException, IOException {
+	@Override
+    public void process(WatchedEvent event) {
+	    shardServerHosts = updateNodeLists(NODE_TYPE.NODE);
+	    controllerServerHosts = updateNodeLists(NODE_TYPE.CONTROLLER);
+    }
+
+    protected void registerNode() throws KeeperException, InterruptedException, IOException {
 		InetAddress address = getMyAddress();
 		String hostName = address.getHostAddress();
 		NODE_TYPE type = getType();
@@ -340,7 +302,9 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 			} catch (KeeperException e) {
 				if (e.code().equals(Code.NODEEXISTS)) {
 					if (retry > 0) {
-						LOG.info("Waiting to register node {} as type {}, probably because node was shutdown and restarted...",hostName,type.name());
+						LOG.info("Waiting to register node [" + hostName +
+								"] as type [" + type.name() +
+								"], probably because node was shutdown and restarted...");
 						Thread.sleep(1000);
 						retry--;
 						continue;
@@ -349,6 +313,16 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 				throw e;
 			}
 		}
+	}
+	
+	protected List<String> updateNodeLists(NODE_TYPE type) {
+	     try {
+          String path = blurNodePath + "/" + type.name();
+          ZkUtils.mkNodesStr(zk, path);
+          return new ArrayList<String>(zk.getChildren(path, this));
+      } catch (Exception e) {
+          throw new RuntimeException(e);
+      }
 	}
 	
 	private InetAddress getMyAddress() throws UnknownHostException {
@@ -419,22 +393,18 @@ public abstract class BlurAdminServer implements Iface,BlurConstants {
 	}
 	
 	private void createAllTableShards(String table, TableDescriptor descriptor) throws IOException {
-//		???? mele here
 		mele.createDirectoryCluster(table);
 		List<String> shardNames = descriptor.shardNames;
 		for (String shard : shardNames) {
 			mele.createDirectory(table, shard);
 		}
 	}
-
-	private void removeAllTableShards(String table) throws IOException {
-//		????  mele here
-		mele.removeDirectoryCluster(table);
-	}
 	
-	private void checkIfTableExists(TableDescriptor descriptor, String table) throws BlurException {
-		if (descriptor == null) {
-			throw new BlurException("Table " + table + " does not exist");
-		}		
-	}
+    private static List<String> addPort(List<String> hosts, int port) {
+        List<String> result = new ArrayList<String>();
+        for (String host : hosts) {
+            result.add(host + ":" + port);
+        }
+        return result;
+    }
 }

@@ -26,7 +26,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private IndexManager indexManager;
 	
 	public BlurShardServer(Mele mele) throws IOException, BlurException {
-		super();
+		super(mele);
 		indexManager = new IndexManager(mele, new TableManager() {
 			
 			@Override

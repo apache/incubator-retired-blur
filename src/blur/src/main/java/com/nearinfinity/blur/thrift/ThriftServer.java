@@ -2,29 +2,37 @@ package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
-import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.nearinfinity.blur.manager.util.MeleFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.MeleConfiguration;
 
 public class ThriftServer implements BlurConstants {
 
-	private static final Logger LOG = LoggerFactory.getLogger(ThriftServer.class);
+	private static final Log LOG = LogFactory.getLog(ThriftServer.class);
 	
 	private Iface iface;
 	private int port;
+
+    private TThreadPoolServer server;
+
+    private Factory protFactory;
+
+    private Processor processor;
+
+    private TServerSocket serverTransport;
 
 	public ThriftServer(int port, Iface iface) {
 		this.port = port;
@@ -56,15 +64,20 @@ public class ThriftServer implements BlurConstants {
 	
 	public void start() {
 		try {
-			TServerSocket serverTransport = new TServerSocket(port);
-			Blur.Processor processor = new Blur.Processor(iface);
-			Factory protFactory = new TBinaryProtocol.Factory(true, true);
-			TServer server = new TThreadPoolServer(processor, serverTransport, protFactory);
-			LOG.info("Starting server on port {}",port);
+			serverTransport = new TServerSocket(port);
+			processor = new Blur.Processor(iface);
+			protFactory = new TBinaryProtocol.Factory(true, true);
+			server = new TThreadPoolServer(processor, serverTransport, protFactory);
+			LOG.info("Starting server on port [" +port + "]");
 			server.serve();
 		} catch (TTransportException e) {
 			LOG.error("Unknown error",e);
 		}
+	}
+	
+	public void stop() {
+	    serverTransport.close();
+	    server.stop();
 	}
 
 }

@@ -30,7 +30,7 @@ public class SearchHitsIterable implements HitsIterable {
     private long skipTo;
     private long totalHits;
     private TopDocs topDocs;
-    private int fetchCount = 100;
+    private int fetchCount = 1000;
     private int batch = 0;
     private boolean superOn;
 
@@ -46,6 +46,7 @@ public class SearchHitsIterable implements HitsIterable {
         try {
             topDocs = searcher.search(query, fetchCount * (batch + 1));
             totalHits = topDocs.totalHits;
+            shardInfo.put(shard, totalHits);
             batch++;
         } catch (IOException e) {
             LOG.error("Error during for [" + query +

@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -30,30 +31,30 @@ import com.nearinfinity.mele.store.util.ZkUtils;
 public class BlurControllerServer extends BlurAdminServer implements Watcher, BlurConstants {
 	
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
-	private Map<String,Blur.Client> clients = new TreeMap<String,Blur.Client>();
-	private int nodePort;
+	private List<String> nodeList = new ArrayList<String>();
 
 	public BlurControllerServer() throws IOException {
 		super();
-		nodePort = configuration.getInt(BLUR_SERVER_SHARD_PORT, -1);
 		createBlurClients();
 	}
 
 	@Override
 	public Hits search(final String table, final String query, final boolean superQueryOn, final ScoreType type, final String postSuperFilter, final String preSuperFilter, 
 			final long start, final int fetch, final long minimumNumberOfHits, final long maxQueryTime) throws BlurException, TException {
-		try {
-			return ForkJoin.execute(executor, clients.values(), new ParallelCall<Blur.Client,Hits>() {
-				@Override
-				public Hits call(Blur.Client client) throws Exception {
-					return client.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, start, 
-							fetch, minimumNumberOfHits, maxQueryTime);
-				}
-			}).merge(new HitsMerger());
-		} catch (Exception e) {
-			LOG.error("Unknown error",e);
-			throw new BlurException(e.getMessage());
-		}
+//		try {
+//			return ForkJoin.execute(executor, clients.values(), new ParallelCall<String,Hits>() {
+//				@Override
+//				public Hits call(Blur.Client client) throws Exception {
+//					return client.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, start, 
+//							fetch, minimumNumberOfHits, maxQueryTime);
+//				}
+//			}).merge(new HitsMerger());
+//		} catch (Exception e) {
+//			LOG.error("Unknown error",e);
+//			throw new BlurException(e.getMessage());
+//		}
+	    
+	    return null;
 	}
 
 	@Override
@@ -67,40 +68,40 @@ public class BlurControllerServer extends BlurAdminServer implements Watcher, Bl
 	}
 	
 	private synchronized void createBlurClients() {
-		try {
-			Map<String,Blur.Client> newClients = new TreeMap<String,Blur.Client>();
-			String path = blurNodePath + "/" + NODE_TYPE.NODE.name();
-			ZkUtils.mkNodesStr(zk, path);
-			List<String> children = zk.getChildren(path, this);
-			for (String hostname : children) {
-				Client client = clients.get(hostname);
-				if (client == null) {
-					Client newClient = createClient(hostname);
-					if (newClient == null) {
-						newClients.put(hostname,newClient);
-					}
-				} else {
-					newClients.put(hostname,client);
-				}
-			}
-			clients = newClients;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+//		try {
+//			Map<String,Blur.Client> newClients = new TreeMap<String,Blur.Client>();
+//			String path = blurNodePath + "/" + NODE_TYPE.NODE.name();
+//			ZkUtils.mkNodesStr(zk, path);
+//			List<String> children = zk.getChildren(path, this);
+//			for (String hostname : children) {
+//				Client client = clients.get(hostname);
+//				if (client == null) {
+//					Client newClient = createClient(hostname);
+//					if (newClient == null) {
+//						newClients.put(hostname,newClient);
+//					}
+//				} else {
+//					newClients.put(hostname,client);
+//				}
+//			}
+//			clients = newClients;
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
 	}
 
-	private Client createClient(String hostname) {
-		TTransport tr = new TSocket(hostname, nodePort);
-		TProtocol proto = new TBinaryProtocol(tr);
-		Client client = new Client(proto);
-		try {
-			tr.open();
-		} catch (TTransportException e) {
-			LOG.error("Error opening client to host " + hostname);
-			return null;
-		}
-		return client;
-	}
+//	private Client createClient(String hostname) {
+//		TTransport tr = new TSocket(hostname, nodePort);
+//		TProtocol proto = new TBinaryProtocol(tr);
+//		Client client = new Client(proto);
+//		try {
+//			tr.open();
+//		} catch (TTransportException e) {
+//			LOG.error("Error opening client to host " + hostname);
+//			return null;
+//		}
+//		return client;
+//	}
 
 	@Override
 	public void appendRow(String table, Row row) throws BlurException,

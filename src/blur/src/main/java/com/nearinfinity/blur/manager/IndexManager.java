@@ -71,7 +71,7 @@ public class IndexManager {
 	private Mele mele;
 	private Map<String, Map<String, IndexWriter>> indexWriters = new ConcurrentHashMap<String, Map<String, IndexWriter>>();
 	private Map<String, Analyzer> analyzers = new ConcurrentHashMap<String, Analyzer>();
-	private Map<String, Partitioner> partitioners = new ConcurrentHashMap<String, Partitioner>();
+	private PartitionerManager partitionerManager;
 	private Similarity similarity = new FairSimilarity();
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	private TableManager manager;
@@ -87,6 +87,7 @@ public class IndexManager {
 	public IndexManager(Mele mele, TableManager manager) throws IOException, BlurException {
 	    this.mele = mele;
 		this.manager = manager;
+		this.partitionerManager = new PartitionerManager(mele);
 		setupIndexManager();
 		Runtime.getRuntime().addShutdownHook(new ShutdownThread(this));
 	}
@@ -265,7 +266,6 @@ public class IndexManager {
 				ensureClosed(cluster);
 				continue;
 			}
-			setupPartitioner(cluster);
 			Map<String, IndexWriter> map = indexWriters.get(cluster);
 			if (map == null) {
 				map = new ConcurrentHashMap<String, IndexWriter>();
@@ -367,10 +367,6 @@ public class IndexManager {
 		}
 	}
 
-	private void setupPartitioner(String table) throws IOException {
-		partitioners.put(table, new Partitioner(mele.listDirectories(table)));
-	}
-
 	private void openForWriting(String table, List<String> dirs, Map<String, IndexWriter> writersMap) throws IOException, BlurException {
 		for (String shard : dirs) {
 			// @todo get zk lock here....??? maybe if the index writer cannot
@@ -385,7 +381,7 @@ public class IndexManager {
 				if (!IndexWriter.isLocked(directory)) {
 					IndexWriter indexWriter = new IndexWriter(directory, analyzer, deletionPolicy, MaxFieldLength.UNLIMITED);
 					indexWriter.setSimilarity(similarity);
-					wal.replay(table, shard, partitioners.get(table), indexWriter);
+					wal.replay(table, shard, partitionerManager.getPartitioner(table), indexWriter);
 					writersMap.put(shard, indexWriter);
 				}
 			} catch (LockObtainFailedException e) {
@@ -395,7 +391,7 @@ public class IndexManager {
 	}
 	
 	private IndexWriter getIndexWriter(String table, String id) throws BlurException {
-		Partitioner partitioner = partitioners.get(table);
+		Partitioner partitioner = partitionerManager.getPartitioner(table);
 		if (id == null) {
 			throw new BlurException("null mutation id");
 		}

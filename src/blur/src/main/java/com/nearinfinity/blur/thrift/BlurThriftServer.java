@@ -48,16 +48,20 @@ public class BlurThriftServer implements BlurConstants {
 		BlurConfiguration configuration = new BlurConfiguration();
 		Mele mele = new Mele(configuration);
 		for (String arg : args) {
-		    if (SHARD.equals(arg) && shardServer != null) {
+		    if (SHARD.equals(arg) && shardServer == null) {
 		        shardServer = new BlurThriftServer(configuration.getBlurShardServerPort(), 
 		                new BlurShardServer(mele,configuration)).start(SHARD);
-		        shardServer.waitForShutdown();
-		    } else if (CONTROLLER.equals(arg) && controllerServer != null) {
+		        
+		    } else if (CONTROLLER.equals(arg) && controllerServer == null) {
 		        controllerServer = new BlurThriftServer(configuration.getBlurControllerServerPort(), 
 		                new BlurControllerServer(mele,configuration)).start(CONTROLLER);
-		        controllerServer.waitForShutdown();
+		        
 		    }
 		}
+		if (controllerServer != null)
+		    controllerServer.waitForShutdown();
+		if (shardServer != null)
+		    shardServer.waitForShutdown();
 	}
 	
 	public void waitForShutdown() throws InterruptedException {
@@ -80,7 +84,6 @@ public class BlurThriftServer implements BlurConstants {
                 }
             }
         });
-	    listeningThread.setDaemon(true);
 	    listeningThread.setName("Thrift Server Listener Thread - " + name);
 	    listeningThread.start();
 		return this;

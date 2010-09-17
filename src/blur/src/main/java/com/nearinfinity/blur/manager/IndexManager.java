@@ -375,12 +375,13 @@ public class IndexManager {
 			try {
 				if (!IndexWriter.isLocked(directory)) {
 					IndexWriter indexWriter = new IndexWriter(directory, analyzer, deletionPolicy, MaxFieldLength.UNLIMITED);
+					LOG.info("Opening Table [" + table + "] shard [" + shard + "] for writing.");
 					indexWriter.setSimilarity(similarity);
 					wal.replay(table, shard, partitionerManager.getPartitioner(table), indexWriter);
 					writersMap.put(shard, indexWriter);
 				}
 			} catch (LockObtainFailedException e) {
-				LOG.info("Table [" + table + "] shard [" + shard + "] is locked by another shard.");
+				LOG.debug("Table [" + table + "] shard [" + shard + "] is locked by another shard.");
 			}
 		}
 	}

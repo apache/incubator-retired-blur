@@ -31,7 +31,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 			public boolean isTableEnabled(String table) {
 				try {
 					TableDescriptor describe = describe(table);
-					System.out.println("isTableEnabled " + table + " = " + describe);
 					if (describe == null) {
 						return false;
 					}

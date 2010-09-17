@@ -52,16 +52,17 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 	protected ExecutorService executor = Executors.newCachedThreadPool();
 	protected ZooKeeper zk;
 	protected String blurNodePath;
-	protected BlurConfiguration configuration = new BlurConfiguration();
+	protected BlurConfiguration configuration;
 	protected String blurPath;
 	protected Mele mele;
 	protected List<String> shardServerHosts = new ArrayList<String>();
 	protected List<String> controllerServerHosts = new ArrayList<String>();
 	
-	public BlurAdminServer(Mele mele) throws IOException {
-		zk = ZooKeeperFactory.getZooKeeper();
-		blurPath = configuration.get(BLUR_ZOOKEEPER_PATH,BLUR_ZOOKEEPER_PATH_DEFAULT);
-		blurNodePath = blurPath + "/" + NODES;
+	public BlurAdminServer(Mele mele, BlurConfiguration configuration) throws IOException {
+	    this.configuration = configuration;
+		this.zk = ZooKeeperFactory.getZooKeeper();
+		this.blurPath = configuration.get(BLUR_ZOOKEEPER_PATH,BLUR_ZOOKEEPER_PATH_DEFAULT);
+		this.blurNodePath = blurPath + "/" + NODES;
 		try {
 			registerNode();
 		} catch (KeeperException e) {

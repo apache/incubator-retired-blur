@@ -1,8 +1,8 @@
 package com.nearinfinity.blur.manager;
 
-import static com.nearinfinity.blur.thrift.ThriftUtil.newColumn;
-import static com.nearinfinity.blur.thrift.ThriftUtil.newColumnFamily;
-import static com.nearinfinity.blur.thrift.ThriftUtil.newRow;
+import static com.nearinfinity.blur.utils.ThriftUtil.newColumn;
+import static com.nearinfinity.blur.utils.ThriftUtil.newColumnFamily;
+import static com.nearinfinity.blur.utils.ThriftUtil.newRow;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 

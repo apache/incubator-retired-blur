@@ -1,9 +1,9 @@
 package com.nearinfinity.blur.thrift;
 
 import static com.nearinfinity.blur.manager.IndexManagerTest.rm;
-import static com.nearinfinity.blur.thrift.ThriftUtil.newColumn;
-import static com.nearinfinity.blur.thrift.ThriftUtil.newColumnFamily;
-import static com.nearinfinity.blur.thrift.ThriftUtil.newRow;
+import static com.nearinfinity.blur.utils.ThriftUtil.newColumn;
+import static com.nearinfinity.blur.utils.ThriftUtil.newColumnFamily;
+import static com.nearinfinity.blur.utils.ThriftUtil.newRow;
 import static junit.framework.Assert.assertEquals;
 
 import java.io.File;
@@ -28,6 +28,7 @@ import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.mele.Mele;
 
 public class BlurShardServerTest {
@@ -51,7 +52,7 @@ public class BlurShardServerTest {
         mele.createDirectory(TABLE_NAME, SHARD_NAME);
         
         TServerSocket serverTransport = new TServerSocket(PORT);
-        blurServer = new BlurShardServer(mele);
+        blurServer = new BlurShardServer(mele, new BlurConfiguration());
         Blur.Processor processor = new Blur.Processor(blurServer);
         Factory protFactory = new TBinaryProtocol.Factory(true, true);
         server = new TThreadPoolServer(processor, serverTransport, protFactory);

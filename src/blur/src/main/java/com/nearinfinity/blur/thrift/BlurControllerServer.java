@@ -15,6 +15,7 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
@@ -24,8 +25,8 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 
-	public BlurControllerServer(Mele mele) throws IOException {
-		super(mele);
+	public BlurControllerServer(Mele mele, BlurConfiguration configuration) throws IOException {
+		super(mele,configuration);
 	}
 
 	@Override

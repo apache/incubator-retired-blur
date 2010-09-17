@@ -16,7 +16,7 @@ public class BlurClientManagerTest {
     private static final String CONNECTION_STR = "localhost:" + 7832;
     private static final int PORT = 7832;
     private Thread serverThread;
-    protected ThriftServer thriftServer;
+    protected BlurThriftServer thriftServer;
 
     @Test
     public void testBlurClientManager() throws Exception {
@@ -30,7 +30,7 @@ public class BlurClientManagerTest {
         assertEquals(Arrays.asList("donothing"),list);
         stopDoNothingServer();
         
-        Thread.sleep(1000);
+        Thread.sleep(5000);
         
         try {
             BlurClientManager.execute(CONNECTION_STR, new Command<List<String>>() {
@@ -65,8 +65,8 @@ public class BlurClientManagerTest {
             @Override
             public void run() {
                 try {
-                    thriftServer = new ThriftServer(PORT, new DoNothingServer());
-                    thriftServer.start();
+                    thriftServer = new BlurThriftServer(PORT, new DoNothingServer());
+                    thriftServer.start("NAME");
                 } catch (Exception e) {
                     //do nothing
                 }

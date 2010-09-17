@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.manager.util;
+package com.nearinfinity.blur.utils;
 
 import java.io.IOException;
 import java.util.Iterator;

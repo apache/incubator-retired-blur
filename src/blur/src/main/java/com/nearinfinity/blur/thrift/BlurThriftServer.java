@@ -17,15 +17,14 @@ import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
-import com.nearinfinity.mele.MeleConfiguration;
 
-public class ThriftServer implements BlurConstants {
+public class BlurThriftServer implements BlurConstants {
 
-	private static final Log LOG = LogFactory.getLog(ThriftServer.class);
+	private static final Log LOG = LogFactory.getLog(BlurThriftServer.class);
 
-    private static ThriftServer controllerServer;
+    private static BlurThriftServer controllerServer;
 
-    private static ThriftServer shardServer;
+    private static BlurThriftServer shardServer;
 	
 	private Iface iface;
 	private int port;
@@ -40,27 +39,32 @@ public class ThriftServer implements BlurConstants {
 
     private Thread listeningThread;
 
-	public ThriftServer(int port, Iface iface) {
+	public BlurThriftServer(int port, Iface iface) {
 		this.port = port;
 		this.iface = iface;
 	}
 
 	public static void main(String[] args) throws IOException, BlurException, InterruptedException {
 		BlurConfiguration configuration = new BlurConfiguration();
-		Mele mele = new Mele(new MeleConfiguration());
-		controllerServer = new ThriftServer(configuration.getBlurControllerServerPort(), 
-		        new BlurControllerServer(mele)).start();
-		shardServer = new ThriftServer(configuration.getBlurShardServerPort(), 
-		        new BlurShardServer(mele)).start();
-		controllerServer.waitForShutdown();
-		shardServer.waitForShutdown();
+		Mele mele = new Mele(configuration);
+		for (String arg : args) {
+		    if (SHARD.equals(arg) && shardServer != null) {
+		        shardServer = new BlurThriftServer(configuration.getBlurShardServerPort(), 
+		                new BlurShardServer(mele,configuration)).start(SHARD);
+		        shardServer.waitForShutdown();
+		    } else if (CONTROLLER.equals(arg) && controllerServer != null) {
+		        controllerServer = new BlurThriftServer(configuration.getBlurControllerServerPort(), 
+		                new BlurControllerServer(mele,configuration)).start(CONTROLLER);
+		        controllerServer.waitForShutdown();
+		    }
+		}
 	}
 	
 	public void waitForShutdown() throws InterruptedException {
         listeningThread.join();
     }
 
-    public ThriftServer start() {
+    public BlurThriftServer start(String name) {
 	    listeningThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -77,7 +81,7 @@ public class ThriftServer implements BlurConstants {
             }
         });
 	    listeningThread.setDaemon(true);
-	    listeningThread.setName("Thrift Server Listener Thread");
+	    listeningThread.setName("Thrift Server Listener Thread - " + name);
 	    listeningThread.start();
 		return this;
 	}

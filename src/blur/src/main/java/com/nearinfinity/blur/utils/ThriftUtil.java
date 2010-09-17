@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.thrift;
+package com.nearinfinity.blur.utils;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -7,7 +7,6 @@ import java.util.TreeSet;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.utils.BlurConstants;
 
 public class ThriftUtil {
 

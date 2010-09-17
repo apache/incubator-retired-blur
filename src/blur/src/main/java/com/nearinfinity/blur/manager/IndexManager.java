@@ -42,12 +42,12 @@ import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
-import com.nearinfinity.blur.manager.util.TermDocIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.ForkJoin;
+import com.nearinfinity.blur.utils.TermDocIterable;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 import com.nearinfinity.mele.Mele;
 

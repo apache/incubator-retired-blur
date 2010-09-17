@@ -15,6 +15,7 @@ import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
 
@@ -23,8 +24,8 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
 	
-	public BlurShardServer(Mele mele) throws IOException, BlurException {
-		super(mele);
+	public BlurShardServer(Mele mele, BlurConfiguration configuration) throws IOException, BlurException {
+		super(mele,configuration);
 		indexManager = new IndexManager(mele, new TableManager() {
 			@Override
 			public boolean isTableEnabled(String table) {
@@ -36,9 +37,9 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 					}
 					return describe.isEnabled;
 				} catch (Exception e) {
-				    LOG.error("Uknown error while trying to check if table [" + table +
+				    LOG.error("Unknown error while trying to check if table [" + table +
 				    		"] is enabled.",e);
-					throw new RuntimeException(e);
+					return false;
 				}
 			}
 

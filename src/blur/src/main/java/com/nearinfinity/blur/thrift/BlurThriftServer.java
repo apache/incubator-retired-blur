@@ -17,6 +17,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.store.util.AddressUtil;
 
 public class BlurThriftServer implements BlurConstants {
 
@@ -45,6 +46,7 @@ public class BlurThriftServer implements BlurConstants {
 	}
 
 	public static void main(String[] args) throws IOException, BlurException, InterruptedException {
+	    System.out.println("Using hostname [" + AddressUtil.getMyHostName() + "]");
 		BlurConfiguration configuration = new BlurConfiguration();
 		Mele mele = new Mele(configuration);
 		for (String arg : args) {
@@ -86,6 +88,12 @@ public class BlurThriftServer implements BlurConstants {
         });
 	    listeningThread.setName("Thrift Server Listener Thread - " + name);
 	    listeningThread.start();
+	    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                stop();
+            }
+        }));
 		return this;
 	}
 	

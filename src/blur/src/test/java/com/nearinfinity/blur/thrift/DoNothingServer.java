@@ -2,6 +2,7 @@ package com.nearinfinity.blur.thrift;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 
@@ -108,6 +109,11 @@ public class DoNothingServer implements Iface {
 
     @Override
     public List<String> shardServerList() throws BlurException, TException {
+        return null;
+    }
+
+    @Override
+    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
         return null;
     }
 

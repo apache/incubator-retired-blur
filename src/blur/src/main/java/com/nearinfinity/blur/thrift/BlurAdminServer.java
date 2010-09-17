@@ -5,12 +5,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -35,6 +35,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.store.util.AddressUtil;
 import com.nearinfinity.mele.store.util.ZkUtils;
 import com.nearinfinity.mele.store.zookeeper.ZooKeeperFactory;
 
@@ -96,7 +97,25 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 		}
 	}
 
-	@Override
+    @Override
+    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+        try {
+            TableDescriptor descriptor = describe(table);
+            Map<String,String> result = new TreeMap<String, String>();
+            List<String> shardNames = descriptor.shardNames;
+            for (String shardName : shardNames) {
+                String lockPath = Mele.getLockPath(configuration, table, shardName);
+                byte[] data = zk.getData(lockPath + "/" + "write.lock", false, null);
+                result.put(shardName, new String(data));
+            }
+            return result;
+        } catch (Exception e) {
+            LOG.error("Unkown error while trying to create layout for table [" + table + "]",e);
+            throw new BlurException("Unkown error while trying to create layout for table [" + table + "]");
+        }
+    }
+
+    @Override
 	public TableDescriptor describe(String table) throws BlurException, TException {
 		try {
 			TableDescriptor tableDescriptor = get(table);
@@ -292,8 +311,7 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
     }
 
     protected void registerNode() throws KeeperException, InterruptedException, IOException {
-		InetAddress address = getMyAddress();
-		String hostName = address.getHostAddress();
+		String hostName = AddressUtil.getMyHostName();
 		NODE_TYPE type = getType();
 		ZkUtils.mkNodesStr(zk, blurNodePath);
 		ZkUtils.mkNodesStr(zk, blurNodePath + "/" + type.name());
@@ -326,10 +344,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
       } catch (Exception e) {
           throw new RuntimeException(e);
       }
-	}
-	
-	private InetAddress getMyAddress() throws UnknownHostException {
-		return InetAddress.getLocalHost();
 	}
 	
 	private TableDescriptor get(String table) throws KeeperException, InterruptedException, IOException, ClassNotFoundException {

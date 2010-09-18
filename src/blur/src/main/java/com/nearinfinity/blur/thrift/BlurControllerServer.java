@@ -17,7 +17,7 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -36,8 +36,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public Hits search(final String table, final String query, final boolean superQueryOn, final ScoreType type, final String postSuperFilter, final String preSuperFilter, 
-			final long start, final int fetch, final long minimumNumberOfHits, final long maxQueryTime) throws BlurException, TException {
+	public Hits search(final String table, final SearchQuery searchQuery) throws BlurException, TException {
 		try {
 			HitsIterable hitsIterable = ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,HitsIterable>() {
 				@Override
@@ -45,20 +44,15 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 					return BlurClientManager.execute(hostnamePort, new Command<HitsIterable>() {
 		                @Override
 		                public HitsIterable call(Client client) throws Exception {
-		                    return new HitsIterableBlurClient(client,hostnamePort,table,query,
-		                            superQueryOn,type,postSuperFilter,preSuperFilter,
-		                            minimumNumberOfHits,maxQueryTime);
+		                    return new HitsIterableBlurClient(client,hostnamePort,table,searchQuery);
 		                }
 		            });
 				}
-			}).merge(new MergerHitsIterable(minimumNumberOfHits));
-			return convertToHits(hitsIterable, start, fetch, minimumNumberOfHits);
+			}).merge(new MergerHitsIterable(searchQuery.minimumNumberOfHits));
+			return convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits);
 		} catch (Exception e) {
 			LOG.error("Unknown error during search of [" +
-					getParametersList("table",table, "query", query, "superQueryOn", superQueryOn,
-					        "type", type, "postSuperFilter", postSuperFilter, "preSuperFilter", preSuperFilter, 
-				            "start", start, "fetch", fetch, "minimumNumberOfHits", minimumNumberOfHits, 
-				            "maxQueryTime", maxQueryTime) + "]",e);
+					getParametersList("table",table, "searchquery", searchQuery) + "]",e);
 			throw new BlurException(e.getMessage());
 		}
 	}

@@ -10,7 +10,7 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
@@ -91,13 +91,6 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter,
-            String preSuperFilter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime)
-            throws BlurException, MissingShardException, TException {
-        return null;
-    }
-
-    @Override
     public List<String> tableList() throws BlurException, TException {
         return Arrays.asList("donothing");
     }
@@ -114,6 +107,11 @@ public class DoNothingServer implements Iface {
 
     @Override
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+        return null;
+    }
+
+    @Override
+    public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException {
         return null;
     }
 

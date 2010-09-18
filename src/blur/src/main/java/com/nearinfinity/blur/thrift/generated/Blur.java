@@ -53,7 +53,7 @@ public class Blur {
 
     public Row fetchRow(String table, String id) throws BlurException, MissingShardException, TException;
 
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException;
+    public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException;
 
     public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException;
 
@@ -604,26 +604,18 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
     }
 
-    public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, MissingShardException, TException
+    public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException
     {
-      send_search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, start, fetch, minimumNumberOfHits, maxQueryTime);
+      send_search(table, searchQuery);
       return recv_search();
     }
 
-    public void send_search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, long start, int fetch, long minimumNumberOfHits, long maxQueryTime) throws TException
+    public void send_search(String table, SearchQuery searchQuery) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("search", TMessageType.CALL, ++seqid_));
       search_args args = new search_args();
       args.setTable(table);
-      args.setQuery(query);
-      args.setSuperQueryOn(superQueryOn);
-      args.setType(type);
-      args.setPostSuperFilter(postSuperFilter);
-      args.setPreSuperFilter(preSuperFilter);
-      args.setStart(start);
-      args.setFetch(fetch);
-      args.setMinimumNumberOfHits(minimumNumberOfHits);
-      args.setMaxQueryTime(maxQueryTime);
+      args.setSearchQuery(searchQuery);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1437,7 +1429,7 @@ public class Blur {
         iprot.readMessageEnd();
         search_result result = new search_result();
         try {
-          result.success = iface_.search(args.table, args.query, args.superQueryOn, args.type, args.postSuperFilter, args.preSuperFilter, args.start, args.fetch, args.minimumNumberOfHits, args.maxQueryTime);
+          result.success = iface_.search(args.table, args.searchQuery);
         } catch (BlurException be) {
           result.be = be;
         } catch (MissingShardException mse) {
@@ -10231,47 +10223,15 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("search_args");
 
     private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-    private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRING, (short)2);
-    private static final TField SUPER_QUERY_ON_FIELD_DESC = new TField("superQueryOn", TType.BOOL, (short)3);
-    private static final TField TYPE_FIELD_DESC = new TField("type", TType.I32, (short)4);
-    private static final TField POST_SUPER_FILTER_FIELD_DESC = new TField("postSuperFilter", TType.STRING, (short)5);
-    private static final TField PRE_SUPER_FILTER_FIELD_DESC = new TField("preSuperFilter", TType.STRING, (short)6);
-    private static final TField START_FIELD_DESC = new TField("start", TType.I64, (short)7);
-    private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)8);
-    private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)9);
-    private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)10);
+    private static final TField SEARCH_QUERY_FIELD_DESC = new TField("searchQuery", TType.STRUCT, (short)2);
 
     public String table;
-    public String query;
-    public boolean superQueryOn;
-    /**
-     * 
-     * @see ScoreType
-     */
-    public ScoreType type;
-    public String postSuperFilter;
-    public String preSuperFilter;
-    public long start;
-    public int fetch;
-    public long minimumNumberOfHits;
-    public long maxQueryTime;
+    public SearchQuery searchQuery;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       TABLE((short)1, "table"),
-      QUERY((short)2, "query"),
-      SUPER_QUERY_ON((short)3, "superQueryOn"),
-      /**
-       * 
-       * @see ScoreType
-       */
-      TYPE((short)4, "type"),
-      POST_SUPER_FILTER((short)5, "postSuperFilter"),
-      PRE_SUPER_FILTER((short)6, "preSuperFilter"),
-      START((short)7, "start"),
-      FETCH((short)8, "fetch"),
-      MINIMUM_NUMBER_OF_HITS((short)9, "minimumNumberOfHits"),
-      MAX_QUERY_TIME((short)10, "maxQueryTime");
+      SEARCH_QUERY((short)2, "searchQuery");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10288,24 +10248,8 @@ public class Blur {
         switch(fieldId) {
           case 1: // TABLE
             return TABLE;
-          case 2: // QUERY
-            return QUERY;
-          case 3: // SUPER_QUERY_ON
-            return SUPER_QUERY_ON;
-          case 4: // TYPE
-            return TYPE;
-          case 5: // POST_SUPER_FILTER
-            return POST_SUPER_FILTER;
-          case 6: // PRE_SUPER_FILTER
-            return PRE_SUPER_FILTER;
-          case 7: // START
-            return START;
-          case 8: // FETCH
-            return FETCH;
-          case 9: // MINIMUM_NUMBER_OF_HITS
-            return MINIMUM_NUMBER_OF_HITS;
-          case 10: // MAX_QUERY_TIME
-            return MAX_QUERY_TIME;
+          case 2: // SEARCH_QUERY
+            return SEARCH_QUERY;
           default:
             return null;
         }
@@ -10346,36 +10290,14 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __SUPERQUERYON_ISSET_ID = 0;
-    private static final int __START_ISSET_ID = 1;
-    private static final int __FETCH_ISSET_ID = 2;
-    private static final int __MINIMUMNUMBEROFHITS_ISSET_ID = 3;
-    private static final int __MAXQUERYTIME_ISSET_ID = 4;
-    private BitSet __isset_bit_vector = new BitSet(5);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.SUPER_QUERY_ON, new FieldMetaData("superQueryOn", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.BOOL)));
-      tmpMap.put(_Fields.TYPE, new FieldMetaData("type", TFieldRequirementType.DEFAULT, 
-          new EnumMetaData(TType.ENUM, ScoreType.class)));
-      tmpMap.put(_Fields.POST_SUPER_FILTER, new FieldMetaData("postSuperFilter", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.PRE_SUPER_FILTER, new FieldMetaData("preSuperFilter", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.START, new FieldMetaData("start", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
-      tmpMap.put(_Fields.FETCH, new FieldMetaData("fetch", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I32)));
-      tmpMap.put(_Fields.MINIMUM_NUMBER_OF_HITS, new FieldMetaData("minimumNumberOfHits", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
-      tmpMap.put(_Fields.MAX_QUERY_TIME, new FieldMetaData("maxQueryTime", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.I64)));
+      tmpMap.put(_Fields.SEARCH_QUERY, new FieldMetaData("searchQuery", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, SearchQuery.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(search_args.class, metaDataMap);
     }
@@ -10385,60 +10307,23 @@ public class Blur {
 
     public search_args(
       String table,
-      String query,
-      boolean superQueryOn,
-      ScoreType type,
-      String postSuperFilter,
-      String preSuperFilter,
-      long start,
-      int fetch,
-      long minimumNumberOfHits,
-      long maxQueryTime)
+      SearchQuery searchQuery)
     {
       this();
       this.table = table;
-      this.query = query;
-      this.superQueryOn = superQueryOn;
-      setSuperQueryOnIsSet(true);
-      this.type = type;
-      this.postSuperFilter = postSuperFilter;
-      this.preSuperFilter = preSuperFilter;
-      this.start = start;
-      setStartIsSet(true);
-      this.fetch = fetch;
-      setFetchIsSet(true);
-      this.minimumNumberOfHits = minimumNumberOfHits;
-      setMinimumNumberOfHitsIsSet(true);
-      this.maxQueryTime = maxQueryTime;
-      setMaxQueryTimeIsSet(true);
+      this.searchQuery = searchQuery;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public search_args(search_args other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      if (other.isSetQuery()) {
-        this.query = other.query;
+      if (other.isSetSearchQuery()) {
+        this.searchQuery = new SearchQuery(other.searchQuery);
       }
-      this.superQueryOn = other.superQueryOn;
-      if (other.isSetType()) {
-        this.type = other.type;
-      }
-      if (other.isSetPostSuperFilter()) {
-        this.postSuperFilter = other.postSuperFilter;
-      }
-      if (other.isSetPreSuperFilter()) {
-        this.preSuperFilter = other.preSuperFilter;
-      }
-      this.start = other.start;
-      this.fetch = other.fetch;
-      this.minimumNumberOfHits = other.minimumNumberOfHits;
-      this.maxQueryTime = other.maxQueryTime;
     }
 
     public search_args deepCopy() {
@@ -10474,223 +10359,28 @@ public class Blur {
       }
     }
 
-    public String getQuery() {
-      return this.query;
+    public SearchQuery getSearchQuery() {
+      return this.searchQuery;
     }
 
-    public search_args setQuery(String query) {
-      this.query = query;
+    public search_args setSearchQuery(SearchQuery searchQuery) {
+      this.searchQuery = searchQuery;
       return this;
     }
 
-    public void unsetQuery() {
-      this.query = null;
+    public void unsetSearchQuery() {
+      this.searchQuery = null;
     }
 
-    /** Returns true if field query is set (has been asigned a value) and false otherwise */
-    public boolean isSetQuery() {
-      return this.query != null;
+    /** Returns true if field searchQuery is set (has been asigned a value) and false otherwise */
+    public boolean isSetSearchQuery() {
+      return this.searchQuery != null;
     }
 
-    public void setQueryIsSet(boolean value) {
+    public void setSearchQueryIsSet(boolean value) {
       if (!value) {
-        this.query = null;
+        this.searchQuery = null;
       }
-    }
-
-    public boolean isSuperQueryOn() {
-      return this.superQueryOn;
-    }
-
-    public search_args setSuperQueryOn(boolean superQueryOn) {
-      this.superQueryOn = superQueryOn;
-      setSuperQueryOnIsSet(true);
-      return this;
-    }
-
-    public void unsetSuperQueryOn() {
-      __isset_bit_vector.clear(__SUPERQUERYON_ISSET_ID);
-    }
-
-    /** Returns true if field superQueryOn is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuperQueryOn() {
-      return __isset_bit_vector.get(__SUPERQUERYON_ISSET_ID);
-    }
-
-    public void setSuperQueryOnIsSet(boolean value) {
-      __isset_bit_vector.set(__SUPERQUERYON_ISSET_ID, value);
-    }
-
-    /**
-     * 
-     * @see ScoreType
-     */
-    public ScoreType getType() {
-      return this.type;
-    }
-
-    /**
-     * 
-     * @see ScoreType
-     */
-    public search_args setType(ScoreType type) {
-      this.type = type;
-      return this;
-    }
-
-    public void unsetType() {
-      this.type = null;
-    }
-
-    /** Returns true if field type is set (has been asigned a value) and false otherwise */
-    public boolean isSetType() {
-      return this.type != null;
-    }
-
-    public void setTypeIsSet(boolean value) {
-      if (!value) {
-        this.type = null;
-      }
-    }
-
-    public String getPostSuperFilter() {
-      return this.postSuperFilter;
-    }
-
-    public search_args setPostSuperFilter(String postSuperFilter) {
-      this.postSuperFilter = postSuperFilter;
-      return this;
-    }
-
-    public void unsetPostSuperFilter() {
-      this.postSuperFilter = null;
-    }
-
-    /** Returns true if field postSuperFilter is set (has been asigned a value) and false otherwise */
-    public boolean isSetPostSuperFilter() {
-      return this.postSuperFilter != null;
-    }
-
-    public void setPostSuperFilterIsSet(boolean value) {
-      if (!value) {
-        this.postSuperFilter = null;
-      }
-    }
-
-    public String getPreSuperFilter() {
-      return this.preSuperFilter;
-    }
-
-    public search_args setPreSuperFilter(String preSuperFilter) {
-      this.preSuperFilter = preSuperFilter;
-      return this;
-    }
-
-    public void unsetPreSuperFilter() {
-      this.preSuperFilter = null;
-    }
-
-    /** Returns true if field preSuperFilter is set (has been asigned a value) and false otherwise */
-    public boolean isSetPreSuperFilter() {
-      return this.preSuperFilter != null;
-    }
-
-    public void setPreSuperFilterIsSet(boolean value) {
-      if (!value) {
-        this.preSuperFilter = null;
-      }
-    }
-
-    public long getStart() {
-      return this.start;
-    }
-
-    public search_args setStart(long start) {
-      this.start = start;
-      setStartIsSet(true);
-      return this;
-    }
-
-    public void unsetStart() {
-      __isset_bit_vector.clear(__START_ISSET_ID);
-    }
-
-    /** Returns true if field start is set (has been asigned a value) and false otherwise */
-    public boolean isSetStart() {
-      return __isset_bit_vector.get(__START_ISSET_ID);
-    }
-
-    public void setStartIsSet(boolean value) {
-      __isset_bit_vector.set(__START_ISSET_ID, value);
-    }
-
-    public int getFetch() {
-      return this.fetch;
-    }
-
-    public search_args setFetch(int fetch) {
-      this.fetch = fetch;
-      setFetchIsSet(true);
-      return this;
-    }
-
-    public void unsetFetch() {
-      __isset_bit_vector.clear(__FETCH_ISSET_ID);
-    }
-
-    /** Returns true if field fetch is set (has been asigned a value) and false otherwise */
-    public boolean isSetFetch() {
-      return __isset_bit_vector.get(__FETCH_ISSET_ID);
-    }
-
-    public void setFetchIsSet(boolean value) {
-      __isset_bit_vector.set(__FETCH_ISSET_ID, value);
-    }
-
-    public long getMinimumNumberOfHits() {
-      return this.minimumNumberOfHits;
-    }
-
-    public search_args setMinimumNumberOfHits(long minimumNumberOfHits) {
-      this.minimumNumberOfHits = minimumNumberOfHits;
-      setMinimumNumberOfHitsIsSet(true);
-      return this;
-    }
-
-    public void unsetMinimumNumberOfHits() {
-      __isset_bit_vector.clear(__MINIMUMNUMBEROFHITS_ISSET_ID);
-    }
-
-    /** Returns true if field minimumNumberOfHits is set (has been asigned a value) and false otherwise */
-    public boolean isSetMinimumNumberOfHits() {
-      return __isset_bit_vector.get(__MINIMUMNUMBEROFHITS_ISSET_ID);
-    }
-
-    public void setMinimumNumberOfHitsIsSet(boolean value) {
-      __isset_bit_vector.set(__MINIMUMNUMBEROFHITS_ISSET_ID, value);
-    }
-
-    public long getMaxQueryTime() {
-      return this.maxQueryTime;
-    }
-
-    public search_args setMaxQueryTime(long maxQueryTime) {
-      this.maxQueryTime = maxQueryTime;
-      setMaxQueryTimeIsSet(true);
-      return this;
-    }
-
-    public void unsetMaxQueryTime() {
-      __isset_bit_vector.clear(__MAXQUERYTIME_ISSET_ID);
-    }
-
-    /** Returns true if field maxQueryTime is set (has been asigned a value) and false otherwise */
-    public boolean isSetMaxQueryTime() {
-      return __isset_bit_vector.get(__MAXQUERYTIME_ISSET_ID);
-    }
-
-    public void setMaxQueryTimeIsSet(boolean value) {
-      __isset_bit_vector.set(__MAXQUERYTIME_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
@@ -10703,75 +10393,11 @@ public class Blur {
         }
         break;
 
-      case QUERY:
+      case SEARCH_QUERY:
         if (value == null) {
-          unsetQuery();
+          unsetSearchQuery();
         } else {
-          setQuery((String)value);
-        }
-        break;
-
-      case SUPER_QUERY_ON:
-        if (value == null) {
-          unsetSuperQueryOn();
-        } else {
-          setSuperQueryOn((Boolean)value);
-        }
-        break;
-
-      case TYPE:
-        if (value == null) {
-          unsetType();
-        } else {
-          setType((ScoreType)value);
-        }
-        break;
-
-      case POST_SUPER_FILTER:
-        if (value == null) {
-          unsetPostSuperFilter();
-        } else {
-          setPostSuperFilter((String)value);
-        }
-        break;
-
-      case PRE_SUPER_FILTER:
-        if (value == null) {
-          unsetPreSuperFilter();
-        } else {
-          setPreSuperFilter((String)value);
-        }
-        break;
-
-      case START:
-        if (value == null) {
-          unsetStart();
-        } else {
-          setStart((Long)value);
-        }
-        break;
-
-      case FETCH:
-        if (value == null) {
-          unsetFetch();
-        } else {
-          setFetch((Integer)value);
-        }
-        break;
-
-      case MINIMUM_NUMBER_OF_HITS:
-        if (value == null) {
-          unsetMinimumNumberOfHits();
-        } else {
-          setMinimumNumberOfHits((Long)value);
-        }
-        break;
-
-      case MAX_QUERY_TIME:
-        if (value == null) {
-          unsetMaxQueryTime();
-        } else {
-          setMaxQueryTime((Long)value);
+          setSearchQuery((SearchQuery)value);
         }
         break;
 
@@ -10787,32 +10413,8 @@ public class Blur {
       case TABLE:
         return getTable();
 
-      case QUERY:
-        return getQuery();
-
-      case SUPER_QUERY_ON:
-        return new Boolean(isSuperQueryOn());
-
-      case TYPE:
-        return getType();
-
-      case POST_SUPER_FILTER:
-        return getPostSuperFilter();
-
-      case PRE_SUPER_FILTER:
-        return getPreSuperFilter();
-
-      case START:
-        return new Long(getStart());
-
-      case FETCH:
-        return new Integer(getFetch());
-
-      case MINIMUM_NUMBER_OF_HITS:
-        return new Long(getMinimumNumberOfHits());
-
-      case MAX_QUERY_TIME:
-        return new Long(getMaxQueryTime());
+      case SEARCH_QUERY:
+        return getSearchQuery();
 
       }
       throw new IllegalStateException();
@@ -10827,24 +10429,8 @@ public class Blur {
       switch (field) {
       case TABLE:
         return isSetTable();
-      case QUERY:
-        return isSetQuery();
-      case SUPER_QUERY_ON:
-        return isSetSuperQueryOn();
-      case TYPE:
-        return isSetType();
-      case POST_SUPER_FILTER:
-        return isSetPostSuperFilter();
-      case PRE_SUPER_FILTER:
-        return isSetPreSuperFilter();
-      case START:
-        return isSetStart();
-      case FETCH:
-        return isSetFetch();
-      case MINIMUM_NUMBER_OF_HITS:
-        return isSetMinimumNumberOfHits();
-      case MAX_QUERY_TIME:
-        return isSetMaxQueryTime();
+      case SEARCH_QUERY:
+        return isSetSearchQuery();
       }
       throw new IllegalStateException();
     }
@@ -10875,84 +10461,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_query = true && this.isSetQuery();
-      boolean that_present_query = true && that.isSetQuery();
-      if (this_present_query || that_present_query) {
-        if (!(this_present_query && that_present_query))
+      boolean this_present_searchQuery = true && this.isSetSearchQuery();
+      boolean that_present_searchQuery = true && that.isSetSearchQuery();
+      if (this_present_searchQuery || that_present_searchQuery) {
+        if (!(this_present_searchQuery && that_present_searchQuery))
           return false;
-        if (!this.query.equals(that.query))
-          return false;
-      }
-
-      boolean this_present_superQueryOn = true;
-      boolean that_present_superQueryOn = true;
-      if (this_present_superQueryOn || that_present_superQueryOn) {
-        if (!(this_present_superQueryOn && that_present_superQueryOn))
-          return false;
-        if (this.superQueryOn != that.superQueryOn)
-          return false;
-      }
-
-      boolean this_present_type = true && this.isSetType();
-      boolean that_present_type = true && that.isSetType();
-      if (this_present_type || that_present_type) {
-        if (!(this_present_type && that_present_type))
-          return false;
-        if (!this.type.equals(that.type))
-          return false;
-      }
-
-      boolean this_present_postSuperFilter = true && this.isSetPostSuperFilter();
-      boolean that_present_postSuperFilter = true && that.isSetPostSuperFilter();
-      if (this_present_postSuperFilter || that_present_postSuperFilter) {
-        if (!(this_present_postSuperFilter && that_present_postSuperFilter))
-          return false;
-        if (!this.postSuperFilter.equals(that.postSuperFilter))
-          return false;
-      }
-
-      boolean this_present_preSuperFilter = true && this.isSetPreSuperFilter();
-      boolean that_present_preSuperFilter = true && that.isSetPreSuperFilter();
-      if (this_present_preSuperFilter || that_present_preSuperFilter) {
-        if (!(this_present_preSuperFilter && that_present_preSuperFilter))
-          return false;
-        if (!this.preSuperFilter.equals(that.preSuperFilter))
-          return false;
-      }
-
-      boolean this_present_start = true;
-      boolean that_present_start = true;
-      if (this_present_start || that_present_start) {
-        if (!(this_present_start && that_present_start))
-          return false;
-        if (this.start != that.start)
-          return false;
-      }
-
-      boolean this_present_fetch = true;
-      boolean that_present_fetch = true;
-      if (this_present_fetch || that_present_fetch) {
-        if (!(this_present_fetch && that_present_fetch))
-          return false;
-        if (this.fetch != that.fetch)
-          return false;
-      }
-
-      boolean this_present_minimumNumberOfHits = true;
-      boolean that_present_minimumNumberOfHits = true;
-      if (this_present_minimumNumberOfHits || that_present_minimumNumberOfHits) {
-        if (!(this_present_minimumNumberOfHits && that_present_minimumNumberOfHits))
-          return false;
-        if (this.minimumNumberOfHits != that.minimumNumberOfHits)
-          return false;
-      }
-
-      boolean this_present_maxQueryTime = true;
-      boolean that_present_maxQueryTime = true;
-      if (this_present_maxQueryTime || that_present_maxQueryTime) {
-        if (!(this_present_maxQueryTime && that_present_maxQueryTime))
-          return false;
-        if (this.maxQueryTime != that.maxQueryTime)
+        if (!this.searchQuery.equals(that.searchQuery))
           return false;
       }
 
@@ -10981,83 +10495,11 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
+      lastComparison = Boolean.valueOf(isSetSearchQuery()).compareTo(typedOther.isSetSearchQuery());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetQuery()) {        lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetSuperQueryOn()).compareTo(typedOther.isSetSuperQueryOn());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuperQueryOn()) {        lastComparison = TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetType()).compareTo(typedOther.isSetType());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetType()) {        lastComparison = TBaseHelper.compareTo(this.type, typedOther.type);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetPostSuperFilter()).compareTo(typedOther.isSetPostSuperFilter());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetPostSuperFilter()) {        lastComparison = TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetPreSuperFilter()).compareTo(typedOther.isSetPreSuperFilter());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetPreSuperFilter()) {        lastComparison = TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetStart()).compareTo(typedOther.isSetStart());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetStart()) {        lastComparison = TBaseHelper.compareTo(this.start, typedOther.start);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetFetch()).compareTo(typedOther.isSetFetch());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetFetch()) {        lastComparison = TBaseHelper.compareTo(this.fetch, typedOther.fetch);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetMinimumNumberOfHits()).compareTo(typedOther.isSetMinimumNumberOfHits());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetMinimumNumberOfHits()) {        lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetMaxQueryTime()).compareTo(typedOther.isSetMaxQueryTime());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetMaxQueryTime()) {        lastComparison = TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
+      if (isSetSearchQuery()) {        lastComparison = TBaseHelper.compareTo(this.searchQuery, typedOther.searchQuery);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -11082,70 +10524,10 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // QUERY
-            if (field.type == TType.STRING) {
-              this.query = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 3: // SUPER_QUERY_ON
-            if (field.type == TType.BOOL) {
-              this.superQueryOn = iprot.readBool();
-              setSuperQueryOnIsSet(true);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 4: // TYPE
-            if (field.type == TType.I32) {
-              this.type = ScoreType.findByValue(iprot.readI32());
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 5: // POST_SUPER_FILTER
-            if (field.type == TType.STRING) {
-              this.postSuperFilter = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 6: // PRE_SUPER_FILTER
-            if (field.type == TType.STRING) {
-              this.preSuperFilter = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 7: // START
-            if (field.type == TType.I64) {
-              this.start = iprot.readI64();
-              setStartIsSet(true);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 8: // FETCH
-            if (field.type == TType.I32) {
-              this.fetch = iprot.readI32();
-              setFetchIsSet(true);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 9: // MINIMUM_NUMBER_OF_HITS
-            if (field.type == TType.I64) {
-              this.minimumNumberOfHits = iprot.readI64();
-              setMinimumNumberOfHitsIsSet(true);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 10: // MAX_QUERY_TIME
-            if (field.type == TType.I64) {
-              this.maxQueryTime = iprot.readI64();
-              setMaxQueryTimeIsSet(true);
+          case 2: // SEARCH_QUERY
+            if (field.type == TType.STRUCT) {
+              this.searchQuery = new SearchQuery();
+              this.searchQuery.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -11170,41 +10552,11 @@ public class Blur {
         oprot.writeString(this.table);
         oprot.writeFieldEnd();
       }
-      if (this.query != null) {
-        oprot.writeFieldBegin(QUERY_FIELD_DESC);
-        oprot.writeString(this.query);
+      if (this.searchQuery != null) {
+        oprot.writeFieldBegin(SEARCH_QUERY_FIELD_DESC);
+        this.searchQuery.write(oprot);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(SUPER_QUERY_ON_FIELD_DESC);
-      oprot.writeBool(this.superQueryOn);
-      oprot.writeFieldEnd();
-      if (this.type != null) {
-        oprot.writeFieldBegin(TYPE_FIELD_DESC);
-        oprot.writeI32(this.type.getValue());
-        oprot.writeFieldEnd();
-      }
-      if (this.postSuperFilter != null) {
-        oprot.writeFieldBegin(POST_SUPER_FILTER_FIELD_DESC);
-        oprot.writeString(this.postSuperFilter);
-        oprot.writeFieldEnd();
-      }
-      if (this.preSuperFilter != null) {
-        oprot.writeFieldBegin(PRE_SUPER_FILTER_FIELD_DESC);
-        oprot.writeString(this.preSuperFilter);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldBegin(START_FIELD_DESC);
-      oprot.writeI64(this.start);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(FETCH_FIELD_DESC);
-      oprot.writeI32(this.fetch);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(MINIMUM_NUMBER_OF_HITS_FIELD_DESC);
-      oprot.writeI64(this.minimumNumberOfHits);
-      oprot.writeFieldEnd();
-      oprot.writeFieldBegin(MAX_QUERY_TIME_FIELD_DESC);
-      oprot.writeI64(this.maxQueryTime);
-      oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -11222,56 +10574,12 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("query:");
-      if (this.query == null) {
+      sb.append("searchQuery:");
+      if (this.searchQuery == null) {
         sb.append("null");
       } else {
-        sb.append(this.query);
+        sb.append(this.searchQuery);
       }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("superQueryOn:");
-      sb.append(this.superQueryOn);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("type:");
-      if (this.type == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.type);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("postSuperFilter:");
-      if (this.postSuperFilter == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.postSuperFilter);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("preSuperFilter:");
-      if (this.preSuperFilter == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.preSuperFilter);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("start:");
-      sb.append(this.start);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("fetch:");
-      sb.append(this.fetch);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("minimumNumberOfHits:");
-      sb.append(this.minimumNumberOfHits);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("maxQueryTime:");
-      sb.append(this.maxQueryTime);
       first = false;
       sb.append(")");
       return sb.toString();

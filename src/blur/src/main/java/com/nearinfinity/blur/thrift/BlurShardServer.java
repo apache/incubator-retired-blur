@@ -13,7 +13,7 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -58,17 +58,15 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public Hits search(String table, String query, boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, 
-			final long start, final int fetch, long minimumNumberOfHits, long maxQueryTime) throws BlurException, TException {
+	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
         try {
-            HitsIterable hitsIterable = indexManager.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, minimumNumberOfHits, maxQueryTime);
-            return convertToHits(hitsIterable,start,fetch,minimumNumberOfHits);
+            HitsIterable hitsIterable = indexManager.search(table, searchQuery.queryStr, 
+                    searchQuery.superQueryOn, searchQuery.type, searchQuery.postSuperFilter, 
+                    searchQuery.preSuperFilter, searchQuery.minimumNumberOfHits, searchQuery.maxQueryTime);
+            return convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
         } catch (Exception e) {
             LOG.error("Unknown error during search of [" +
-                    getParametersList("table",table, "query", query, "superQueryOn", superQueryOn,
-                            "type", type, "postSuperFilter", postSuperFilter, "preSuperFilter", preSuperFilter, 
-                            "start", start, "fetch", fetch, "minimumNumberOfHits", minimumNumberOfHits, 
-                            "maxQueryTime", maxQueryTime) + "]",e);
+                    getParametersList("table",table, "searchquery", searchQuery) + "]",e);
             throw new BlurException(e.getMessage());
         }
 	}

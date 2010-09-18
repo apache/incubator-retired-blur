@@ -11,6 +11,7 @@ import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
 public class HitsIterableBlurClient implements HitsIterable {
@@ -34,26 +35,24 @@ public class HitsIterableBlurClient implements HitsIterable {
     private String hostnamePort;
     private long skipTo;
 
-    public HitsIterableBlurClient(Blur.Client client, String hostnamePort, String table, String query,
-            boolean superQueryOn, ScoreType type, String postSuperFilter, String preSuperFilter, 
-            long minimumNumberOfHits, long maxQueryTime) {
+    public HitsIterableBlurClient(Blur.Client client, String hostnamePort, String table, SearchQuery searchQuery) {
         this.client = client;
         this.hostnamePort = hostnamePort;
         this.table = table;
-        this.query = query;
-        this.superQueryOn = superQueryOn;
-        this.type = type;
-        this.postSuperFilter = postSuperFilter;
-        this.preSuperFilter = preSuperFilter;
-        this.minimumNumberOfHits = minimumNumberOfHits;
-        this.maxQueryTime = maxQueryTime;
+        this.query = searchQuery.queryStr;
+        this.superQueryOn = searchQuery.superQueryOn;
+        this.type = searchQuery.type;
+        this.postSuperFilter = searchQuery.postSuperFilter;
+        this.preSuperFilter = searchQuery.preSuperFilter;
+        this.minimumNumberOfHits = searchQuery.minimumNumberOfHits;
+        this.maxQueryTime = searchQuery.maxQueryTime;
         performSearch();
     }
 
     private void performSearch() {
         try {
             long cursor = fetchCount * batch;
-            hits = client.search(table, query, superQueryOn, type, postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfHits, maxQueryTime);
+            hits = client.search(table, new SearchQuery(query, superQueryOn, type, postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfHits, maxQueryTime));
             totalHits = hits.totalHits;
             shardInfo.putAll(hits.shardInfo);
             batch++;

@@ -18,18 +18,16 @@ public class RowSuperDocumentUtil {
 	public static Row getRow(String id, Iterable<Document> docs) {
 		Row row = new Row();
 		row.setId(id);
-		row.exists = false;
 		boolean empty = true;
 		if (docs == null) {
-		    return row;
+		    return null;
 		}
 		for (Document document : docs) {
 			empty = false;
-			row.exists = true;
 			addDocumentToRow(row, document);
 		}
 		if (empty) {
-			return row;
+			return null;
 		}
 		return row;
 	}

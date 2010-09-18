@@ -453,4 +453,14 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
         }
         return builder.toString();
     }
+
+    @Override
+    public void shutdownController(String node) throws BlurException, TException {
+        throw new BlurException("not implemented");
+    }
+
+    @Override
+    public void shutdownShard(String node) throws BlurException, TException {
+        throw new BlurException("not implemented");
+    }
 }

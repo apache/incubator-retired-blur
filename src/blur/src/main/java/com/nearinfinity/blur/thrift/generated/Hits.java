@@ -29,16 +29,19 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   private static final TField TOTAL_HITS_FIELD_DESC = new TField("totalHits", TType.I64, (short)1);
   private static final TField SHARD_INFO_FIELD_DESC = new TField("shardInfo", TType.MAP, (short)2);
   private static final TField HITS_FIELD_DESC = new TField("hits", TType.LIST, (short)3);
+  private static final TField EXCEPTIONS_FIELD_DESC = new TField("exceptions", TType.LIST, (short)4);
 
   public long totalHits;
   public Map<String,Long> shardInfo;
   public List<Hit> hits;
+  public List<BlurException> exceptions;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     TOTAL_HITS((short)1, "totalHits"),
     SHARD_INFO((short)2, "shardInfo"),
-    HITS((short)3, "hits");
+    HITS((short)3, "hits"),
+    EXCEPTIONS((short)4, "exceptions");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -59,6 +62,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
           return SHARD_INFO;
         case 3: // HITS
           return HITS;
+        case 4: // EXCEPTIONS
+          return EXCEPTIONS;
         default:
           return null;
       }
@@ -114,6 +119,9 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     tmpMap.put(_Fields.HITS, new FieldMetaData("hits", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
             new StructMetaData(TType.STRUCT, Hit.class))));
+    tmpMap.put(_Fields.EXCEPTIONS, new FieldMetaData("exceptions", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new FieldValueMetaData(TType.STRUCT))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Hits.class, metaDataMap);
   }
@@ -126,13 +134,15 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   public Hits(
     long totalHits,
     Map<String,Long> shardInfo,
-    List<Hit> hits)
+    List<Hit> hits,
+    List<BlurException> exceptions)
   {
     this();
     this.totalHits = totalHits;
     setTotalHitsIsSet(true);
     this.shardInfo = shardInfo;
     this.hits = hits;
+    this.exceptions = exceptions;
   }
 
   /**
@@ -163,6 +173,13 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         __this__hits.add(new Hit(other_element));
       }
       this.hits = __this__hits;
+    }
+    if (other.isSetExceptions()) {
+      List<BlurException> __this__exceptions = new ArrayList<BlurException>();
+      for (BlurException other_element : other.exceptions) {
+        __this__exceptions.add(new BlurException(other_element));
+      }
+      this.exceptions = __this__exceptions;
     }
   }
 
@@ -272,6 +289,45 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
   }
 
+  public int getExceptionsSize() {
+    return (this.exceptions == null) ? 0 : this.exceptions.size();
+  }
+
+  public java.util.Iterator<BlurException> getExceptionsIterator() {
+    return (this.exceptions == null) ? null : this.exceptions.iterator();
+  }
+
+  public void addToExceptions(BlurException elem) {
+    if (this.exceptions == null) {
+      this.exceptions = new ArrayList<BlurException>();
+    }
+    this.exceptions.add(elem);
+  }
+
+  public List<BlurException> getExceptions() {
+    return this.exceptions;
+  }
+
+  public Hits setExceptions(List<BlurException> exceptions) {
+    this.exceptions = exceptions;
+    return this;
+  }
+
+  public void unsetExceptions() {
+    this.exceptions = null;
+  }
+
+  /** Returns true if field exceptions is set (has been asigned a value) and false otherwise */
+  public boolean isSetExceptions() {
+    return this.exceptions != null;
+  }
+
+  public void setExceptionsIsSet(boolean value) {
+    if (!value) {
+      this.exceptions = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TOTAL_HITS:
@@ -298,6 +354,14 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       break;
 
+    case EXCEPTIONS:
+      if (value == null) {
+        unsetExceptions();
+      } else {
+        setExceptions((List<BlurException>)value);
+      }
+      break;
+
     }
   }
 
@@ -316,6 +380,9 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     case HITS:
       return getHits();
 
+    case EXCEPTIONS:
+      return getExceptions();
+
     }
     throw new IllegalStateException();
   }
@@ -333,6 +400,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       return isSetShardInfo();
     case HITS:
       return isSetHits();
+    case EXCEPTIONS:
+      return isSetExceptions();
     }
     throw new IllegalStateException();
   }
@@ -381,6 +450,15 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         return false;
     }
 
+    boolean this_present_exceptions = true && this.isSetExceptions();
+    boolean that_present_exceptions = true && that.isSetExceptions();
+    if (this_present_exceptions || that_present_exceptions) {
+      if (!(this_present_exceptions && that_present_exceptions))
+        return false;
+      if (!this.exceptions.equals(that.exceptions))
+        return false;
+    }
+
     return true;
   }
 
@@ -420,6 +498,15 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       return lastComparison;
     }
     if (isSetHits()) {      lastComparison = TBaseHelper.compareTo(this.hits, typedOther.hits);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetExceptions()).compareTo(typedOther.isSetExceptions());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExceptions()) {      lastComparison = TBaseHelper.compareTo(this.exceptions, typedOther.exceptions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -482,6 +569,24 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 4: // EXCEPTIONS
+          if (field.type == TType.LIST) {
+            {
+              TList _list7 = iprot.readListBegin();
+              this.exceptions = new ArrayList<BlurException>(_list7.size);
+              for (int _i8 = 0; _i8 < _list7.size; ++_i8)
+              {
+                BlurException _elem9;
+                _elem9 = new BlurException();
+                _elem9.read(iprot);
+                this.exceptions.add(_elem9);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -504,10 +609,10 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.I64, this.shardInfo.size()));
-        for (Map.Entry<String, Long> _iter7 : this.shardInfo.entrySet())
+        for (Map.Entry<String, Long> _iter10 : this.shardInfo.entrySet())
         {
-          oprot.writeString(_iter7.getKey());
-          oprot.writeI64(_iter7.getValue());
+          oprot.writeString(_iter10.getKey());
+          oprot.writeI64(_iter10.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -517,9 +622,21 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       oprot.writeFieldBegin(HITS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.hits.size()));
-        for (Hit _iter8 : this.hits)
+        for (Hit _iter11 : this.hits)
         {
-          _iter8.write(oprot);
+          _iter11.write(oprot);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.exceptions != null) {
+      oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.STRUCT, this.exceptions.size()));
+        for (BlurException _iter12 : this.exceptions)
+        {
+          _iter12.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -551,6 +668,14 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       sb.append("null");
     } else {
       sb.append(this.hits);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("exceptions:");
+    if (this.exceptions == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.exceptions);
     }
     first = false;
     sb.append(")");

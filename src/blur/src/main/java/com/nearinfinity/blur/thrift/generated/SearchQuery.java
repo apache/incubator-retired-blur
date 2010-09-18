@@ -35,6 +35,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)7);
   private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)8);
   private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)9);
+  private static final TField PROVIDED_UUID_FIELD_DESC = new TField("providedUuid", TType.I64, (short)10);
+  private static final TField SYSTEM_UUID_FIELD_DESC = new TField("systemUuid", TType.I64, (short)11);
 
   public String queryStr;
   public boolean superQueryOn;
@@ -49,6 +51,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   public int fetch;
   public long minimumNumberOfHits;
   public long maxQueryTime;
+  public long providedUuid;
+  public long systemUuid;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -64,7 +68,9 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     START((short)6, "start"),
     FETCH((short)7, "fetch"),
     MINIMUM_NUMBER_OF_HITS((short)8, "minimumNumberOfHits"),
-    MAX_QUERY_TIME((short)9, "maxQueryTime");
+    MAX_QUERY_TIME((short)9, "maxQueryTime"),
+    PROVIDED_UUID((short)10, "providedUuid"),
+    SYSTEM_UUID((short)11, "systemUuid");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -97,6 +103,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
           return MINIMUM_NUMBER_OF_HITS;
         case 9: // MAX_QUERY_TIME
           return MAX_QUERY_TIME;
+        case 10: // PROVIDED_UUID
+          return PROVIDED_UUID;
+        case 11: // SYSTEM_UUID
+          return SYSTEM_UUID;
         default:
           return null;
       }
@@ -142,7 +152,9 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   private static final int __FETCH_ISSET_ID = 2;
   private static final int __MINIMUMNUMBEROFHITS_ISSET_ID = 3;
   private static final int __MAXQUERYTIME_ISSET_ID = 4;
-  private BitSet __isset_bit_vector = new BitSet(5);
+  private static final int __PROVIDEDUUID_ISSET_ID = 5;
+  private static final int __SYSTEMUUID_ISSET_ID = 6;
+  private BitSet __isset_bit_vector = new BitSet(7);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -165,6 +177,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.MAX_QUERY_TIME, new FieldMetaData("maxQueryTime", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
+    tmpMap.put(_Fields.PROVIDED_UUID, new FieldMetaData("providedUuid", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I64)));
+    tmpMap.put(_Fields.SYSTEM_UUID, new FieldMetaData("systemUuid", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(SearchQuery.class, metaDataMap);
   }
@@ -181,7 +197,9 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     long start,
     int fetch,
     long minimumNumberOfHits,
-    long maxQueryTime)
+    long maxQueryTime,
+    long providedUuid,
+    long systemUuid)
   {
     this();
     this.queryStr = queryStr;
@@ -198,6 +216,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     setMinimumNumberOfHitsIsSet(true);
     this.maxQueryTime = maxQueryTime;
     setMaxQueryTimeIsSet(true);
+    this.providedUuid = providedUuid;
+    setProvidedUuidIsSet(true);
+    this.systemUuid = systemUuid;
+    setSystemUuidIsSet(true);
   }
 
   /**
@@ -223,6 +245,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     this.fetch = other.fetch;
     this.minimumNumberOfHits = other.minimumNumberOfHits;
     this.maxQueryTime = other.maxQueryTime;
+    this.providedUuid = other.providedUuid;
+    this.systemUuid = other.systemUuid;
   }
 
   public SearchQuery deepCopy() {
@@ -453,6 +477,52 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     __isset_bit_vector.set(__MAXQUERYTIME_ISSET_ID, value);
   }
 
+  public long getProvidedUuid() {
+    return this.providedUuid;
+  }
+
+  public SearchQuery setProvidedUuid(long providedUuid) {
+    this.providedUuid = providedUuid;
+    setProvidedUuidIsSet(true);
+    return this;
+  }
+
+  public void unsetProvidedUuid() {
+    __isset_bit_vector.clear(__PROVIDEDUUID_ISSET_ID);
+  }
+
+  /** Returns true if field providedUuid is set (has been asigned a value) and false otherwise */
+  public boolean isSetProvidedUuid() {
+    return __isset_bit_vector.get(__PROVIDEDUUID_ISSET_ID);
+  }
+
+  public void setProvidedUuidIsSet(boolean value) {
+    __isset_bit_vector.set(__PROVIDEDUUID_ISSET_ID, value);
+  }
+
+  public long getSystemUuid() {
+    return this.systemUuid;
+  }
+
+  public SearchQuery setSystemUuid(long systemUuid) {
+    this.systemUuid = systemUuid;
+    setSystemUuidIsSet(true);
+    return this;
+  }
+
+  public void unsetSystemUuid() {
+    __isset_bit_vector.clear(__SYSTEMUUID_ISSET_ID);
+  }
+
+  /** Returns true if field systemUuid is set (has been asigned a value) and false otherwise */
+  public boolean isSetSystemUuid() {
+    return __isset_bit_vector.get(__SYSTEMUUID_ISSET_ID);
+  }
+
+  public void setSystemUuidIsSet(boolean value) {
+    __isset_bit_vector.set(__SYSTEMUUID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY_STR:
@@ -527,6 +597,22 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       }
       break;
 
+    case PROVIDED_UUID:
+      if (value == null) {
+        unsetProvidedUuid();
+      } else {
+        setProvidedUuid((Long)value);
+      }
+      break;
+
+    case SYSTEM_UUID:
+      if (value == null) {
+        unsetSystemUuid();
+      } else {
+        setSystemUuid((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -563,6 +649,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     case MAX_QUERY_TIME:
       return new Long(getMaxQueryTime());
 
+    case PROVIDED_UUID:
+      return new Long(getProvidedUuid());
+
+    case SYSTEM_UUID:
+      return new Long(getSystemUuid());
+
     }
     throw new IllegalStateException();
   }
@@ -592,6 +684,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       return isSetMinimumNumberOfHits();
     case MAX_QUERY_TIME:
       return isSetMaxQueryTime();
+    case PROVIDED_UUID:
+      return isSetProvidedUuid();
+    case SYSTEM_UUID:
+      return isSetSystemUuid();
     }
     throw new IllegalStateException();
   }
@@ -694,6 +790,24 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         return false;
     }
 
+    boolean this_present_providedUuid = true;
+    boolean that_present_providedUuid = true;
+    if (this_present_providedUuid || that_present_providedUuid) {
+      if (!(this_present_providedUuid && that_present_providedUuid))
+        return false;
+      if (this.providedUuid != that.providedUuid)
+        return false;
+    }
+
+    boolean this_present_systemUuid = true;
+    boolean that_present_systemUuid = true;
+    if (this_present_systemUuid || that_present_systemUuid) {
+      if (!(this_present_systemUuid && that_present_systemUuid))
+        return false;
+      if (this.systemUuid != that.systemUuid)
+        return false;
+    }
+
     return true;
   }
 
@@ -791,6 +905,24 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetProvidedUuid()).compareTo(typedOther.isSetProvidedUuid());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetProvidedUuid()) {      lastComparison = TBaseHelper.compareTo(this.providedUuid, typedOther.providedUuid);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSystemUuid()).compareTo(typedOther.isSetSystemUuid());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSystemUuid()) {      lastComparison = TBaseHelper.compareTo(this.systemUuid, typedOther.systemUuid);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -872,6 +1004,22 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 10: // PROVIDED_UUID
+          if (field.type == TType.I64) {
+            this.providedUuid = iprot.readI64();
+            setProvidedUuidIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 11: // SYSTEM_UUID
+          if (field.type == TType.I64) {
+            this.systemUuid = iprot.readI64();
+            setSystemUuidIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -921,6 +1069,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     oprot.writeFieldEnd();
     oprot.writeFieldBegin(MAX_QUERY_TIME_FIELD_DESC);
     oprot.writeI64(this.maxQueryTime);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(PROVIDED_UUID_FIELD_DESC);
+    oprot.writeI64(this.providedUuid);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(SYSTEM_UUID_FIELD_DESC);
+    oprot.writeI64(this.systemUuid);
     oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -981,6 +1135,14 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (!first) sb.append(", ");
     sb.append("maxQueryTime:");
     sb.append(this.maxQueryTime);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("providedUuid:");
+    sb.append(this.providedUuid);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("systemUuid:");
+    sb.append(this.systemUuid);
     first = false;
     sb.append(")");
     return sb.toString();

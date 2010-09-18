@@ -34,6 +34,8 @@ public class HitsIterableBlurClient implements HitsIterable {
     private long totalHits;
     private String hostnamePort;
     private long skipTo;
+    private long providedUuid;
+    private long systemUuid;
 
     public HitsIterableBlurClient(Blur.Client client, String hostnamePort, String table, SearchQuery searchQuery) {
         this.client = client;
@@ -46,13 +48,17 @@ public class HitsIterableBlurClient implements HitsIterable {
         this.preSuperFilter = searchQuery.preSuperFilter;
         this.minimumNumberOfHits = searchQuery.minimumNumberOfHits;
         this.maxQueryTime = searchQuery.maxQueryTime;
+        this.providedUuid = searchQuery.providedUuid;
+        this.systemUuid = searchQuery.systemUuid;
         performSearch();
     }
 
     private void performSearch() {
         try {
             long cursor = fetchCount * batch;
-            hits = client.search(table, new SearchQuery(query, superQueryOn, type, postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfHits, maxQueryTime));
+            hits = client.search(table, new SearchQuery(query, superQueryOn, type, postSuperFilter, 
+                    preSuperFilter, cursor, fetchCount, minimumNumberOfHits, maxQueryTime, providedUuid,
+                    systemUuid));
             totalHits = hits.totalHits;
             shardInfo.putAll(hits.shardInfo);
             batch++;

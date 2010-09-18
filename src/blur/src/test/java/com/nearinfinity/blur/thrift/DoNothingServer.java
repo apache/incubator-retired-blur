@@ -7,6 +7,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -59,11 +60,6 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public Row fetchRow(String table, String id) throws BlurException, MissingShardException, TException {
-        return null;
-    }
-
-    @Override
     public String getDynamicTermQuery(String table, String term) throws BlurException, MissingShardException,
             TException {
         return null;
@@ -113,6 +109,30 @@ public class DoNothingServer implements Iface {
     @Override
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException {
         return null;
+    }
+
+    @Override
+    public void cancelSearch(long providedUuid) throws BlurException, TException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void shutdownController(String node) throws BlurException, TException {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void shutdownShard(String node) throws BlurException, TException {
+        // TODO Auto-generated method stub
+        
     }
 
 }

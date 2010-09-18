@@ -24,20 +24,14 @@ public class BlurThriftServer implements BlurConstants {
 	private static final Log LOG = LogFactory.getLog(BlurThriftServer.class);
 
     private static BlurThriftServer controllerServer;
-
     private static BlurThriftServer shardServer;
 	
 	private Iface iface;
 	private int port;
-
     private TThreadPoolServer server;
-
     private Factory protFactory;
-
     private Processor processor;
-
     private TServerSocket serverTransport;
-
     private Thread listeningThread;
 
 	public BlurThriftServer(int port, Iface iface) {

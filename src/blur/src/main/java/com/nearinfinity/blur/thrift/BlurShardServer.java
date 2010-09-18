@@ -10,6 +10,7 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManager.TableManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -77,8 +78,13 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public Row fetchRow(String table, String id) throws BlurException, TException, MissingShardException {
-        return indexManager.fetchRow(table,id);
+	public FetchResult fetchRow(String table, String id) throws BlurException, TException, MissingShardException {
+	    FetchResult fetchResult = new FetchResult();
+	    fetchResult.table = table;
+	    fetchResult.id = id;
+	    fetchResult.row = indexManager.fetchRow(table,id);
+	    fetchResult.exists = fetchResult.row == null ? false : true;
+        return fetchResult;
 	}
 
 	@Override
@@ -98,5 +104,10 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     public void close() throws InterruptedException {
         indexManager.close();
+    }
+
+    @Override
+    public void cancelSearch(long providedUuid) throws BlurException, TException {
+        throw new BlurException("not implemented");
     }
 }

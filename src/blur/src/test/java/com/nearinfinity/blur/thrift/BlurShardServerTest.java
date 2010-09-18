@@ -5,6 +5,7 @@ import static com.nearinfinity.blur.utils.ThriftUtil.newColumn;
 import static com.nearinfinity.blur.utils.ThriftUtil.newColumnFamily;
 import static com.nearinfinity.blur.utils.ThriftUtil.newRow;
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.manager.LocalHdfsMeleConfiguration;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
@@ -110,8 +112,9 @@ public class BlurShardServerTest {
                         newColumn("city","thecity")));
         
         client.replaceRow(TABLE_NAME, row);
-        Row fetchRow = client.fetchRow(TABLE_NAME, "1000");
-        assertEquals(row,fetchRow);
+        FetchResult fetchRow = client.fetchRow(TABLE_NAME, "1000");
+        assertTrue(fetchRow.exists);
+        assertEquals(row,fetchRow.row);
     }
 
 }

@@ -51,9 +51,11 @@ public class Blur {
 
     public void appendRow(String table, Row row) throws BlurException, MissingShardException, TException;
 
-    public Row fetchRow(String table, String id) throws BlurException, MissingShardException, TException;
+    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException;
 
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException;
+
+    public void cancelSearch(long providedUuid) throws BlurException, TException;
 
     public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException;
 
@@ -64,6 +66,10 @@ public class Blur {
     public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn) throws BlurException, MissingShardException, TException;
 
     public void deleteDynamicTermQuery(String table, String term) throws BlurException, MissingShardException, TException;
+
+    public void shutdownShard(String node) throws BlurException, TException;
+
+    public void shutdownController(String node) throws BlurException, TException;
 
   }
 
@@ -561,7 +567,7 @@ public class Blur {
       return;
     }
 
-    public Row fetchRow(String table, String id) throws BlurException, MissingShardException, TException
+    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException
     {
       send_fetchRow(table, id);
       return recv_fetchRow();
@@ -578,7 +584,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public Row recv_fetchRow() throws BlurException, MissingShardException, TException
+    public FetchResult recv_fetchRow() throws BlurException, MissingShardException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -645,6 +651,42 @@ public class Blur {
         throw result.mse;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
+    }
+
+    public void cancelSearch(long providedUuid) throws BlurException, TException
+    {
+      send_cancelSearch(providedUuid);
+      recv_cancelSearch();
+    }
+
+    public void send_cancelSearch(long providedUuid) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("cancelSearch", TMessageType.CALL, ++seqid_));
+      cancelSearch_args args = new cancelSearch_args();
+      args.setProvidedUuid(providedUuid);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_cancelSearch() throws BlurException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "cancelSearch failed: out of sequence response");
+      }
+      cancelSearch_result result = new cancelSearch_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.be != null) {
+        throw result.be;
+      }
+      return;
     }
 
     public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException
@@ -857,6 +899,78 @@ public class Blur {
       return;
     }
 
+    public void shutdownShard(String node) throws BlurException, TException
+    {
+      send_shutdownShard(node);
+      recv_shutdownShard();
+    }
+
+    public void send_shutdownShard(String node) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("shutdownShard", TMessageType.CALL, ++seqid_));
+      shutdownShard_args args = new shutdownShard_args();
+      args.setNode(node);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_shutdownShard() throws BlurException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "shutdownShard failed: out of sequence response");
+      }
+      shutdownShard_result result = new shutdownShard_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.be != null) {
+        throw result.be;
+      }
+      return;
+    }
+
+    public void shutdownController(String node) throws BlurException, TException
+    {
+      send_shutdownController(node);
+      recv_shutdownController();
+    }
+
+    public void send_shutdownController(String node) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("shutdownController", TMessageType.CALL, ++seqid_));
+      shutdownController_args args = new shutdownController_args();
+      args.setNode(node);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_shutdownController() throws BlurException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "shutdownController failed: out of sequence response");
+      }
+      shutdownController_result result = new shutdownController_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.be != null) {
+        throw result.be;
+      }
+      return;
+    }
+
   }
   public static class Processor implements TProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
@@ -877,11 +991,14 @@ public class Blur {
       processMap_.put("appendRow", new appendRow());
       processMap_.put("fetchRow", new fetchRow());
       processMap_.put("search", new search());
+      processMap_.put("cancelSearch", new cancelSearch());
       processMap_.put("getDynamicTerms", new getDynamicTerms());
       processMap_.put("getDynamicTermQuery", new getDynamicTermQuery());
       processMap_.put("isDynamicTermQuerySuperQuery", new isDynamicTermQuerySuperQuery());
       processMap_.put("createDynamicTermQuery", new createDynamicTermQuery());
       processMap_.put("deleteDynamicTermQuery", new deleteDynamicTermQuery());
+      processMap_.put("shutdownShard", new shutdownShard());
+      processMap_.put("shutdownController", new shutdownController());
     }
 
     protected static interface ProcessFunction {
@@ -1451,6 +1568,44 @@ public class Blur {
 
     }
 
+    private class cancelSearch implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        cancelSearch_args args = new cancelSearch_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        cancelSearch_result result = new cancelSearch_result();
+        try {
+          iface_.cancelSearch(args.providedUuid);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing cancelSearch", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing cancelSearch");
+          oprot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class getDynamicTerms implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
@@ -1645,6 +1800,82 @@ public class Blur {
           return;
         }
         oprot.writeMessageBegin(new TMessage("deleteDynamicTermQuery", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class shutdownShard implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        shutdownShard_args args = new shutdownShard_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("shutdownShard", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        shutdownShard_result result = new shutdownShard_result();
+        try {
+          iface_.shutdownShard(args.node);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing shutdownShard", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing shutdownShard");
+          oprot.writeMessageBegin(new TMessage("shutdownShard", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("shutdownShard", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class shutdownController implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        shutdownController_args args = new shutdownController_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("shutdownController", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        shutdownController_result result = new shutdownController_result();
+        try {
+          iface_.shutdownController(args.node);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing shutdownController", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing shutdownController");
+          oprot.writeMessageBegin(new TMessage("shutdownController", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("shutdownController", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -2166,13 +2397,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list30 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list30.size);
-                for (int _i31 = 0; _i31 < _list30.size; ++_i31)
+                TList _list34 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list34.size);
+                for (int _i35 = 0; _i35 < _list34.size; ++_i35)
                 {
-                  String _elem32;
-                  _elem32 = iprot.readString();
-                  this.success.add(_elem32);
+                  String _elem36;
+                  _elem36 = iprot.readString();
+                  this.success.add(_elem36);
                 }
                 iprot.readListEnd();
               }
@@ -2206,9 +2437,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter33 : this.success)
+          for (String _iter37 : this.success)
           {
-            oprot.writeString(_iter33);
+            oprot.writeString(_iter37);
           }
           oprot.writeListEnd();
         }
@@ -2764,13 +2995,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list34 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list34.size);
-                for (int _i35 = 0; _i35 < _list34.size; ++_i35)
+                TList _list38 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list38.size);
+                for (int _i39 = 0; _i39 < _list38.size; ++_i39)
                 {
-                  String _elem36;
-                  _elem36 = iprot.readString();
-                  this.success.add(_elem36);
+                  String _elem40;
+                  _elem40 = iprot.readString();
+                  this.success.add(_elem40);
                 }
                 iprot.readListEnd();
               }
@@ -2804,9 +3035,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter37 : this.success)
+          for (String _iter41 : this.success)
           {
-            oprot.writeString(_iter37);
+            oprot.writeString(_iter41);
           }
           oprot.writeListEnd();
         }
@@ -3362,13 +3593,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list38 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list38.size);
-                for (int _i39 = 0; _i39 < _list38.size; ++_i39)
+                TList _list42 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list42.size);
+                for (int _i43 = 0; _i43 < _list42.size; ++_i43)
                 {
-                  String _elem40;
-                  _elem40 = iprot.readString();
-                  this.success.add(_elem40);
+                  String _elem44;
+                  _elem44 = iprot.readString();
+                  this.success.add(_elem44);
                 }
                 iprot.readListEnd();
               }
@@ -3402,9 +3633,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter41 : this.success)
+          for (String _iter45 : this.success)
           {
-            oprot.writeString(_iter41);
+            oprot.writeString(_iter45);
           }
           oprot.writeListEnd();
         }
@@ -4713,15 +4944,15 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.MAP) {
               {
-                TMap _map42 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map42.size);
-                for (int _i43 = 0; _i43 < _map42.size; ++_i43)
+                TMap _map46 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map46.size);
+                for (int _i47 = 0; _i47 < _map46.size; ++_i47)
                 {
-                  String _key44;
-                  String _val45;
-                  _key44 = iprot.readString();
-                  _val45 = iprot.readString();
-                  this.success.put(_key44, _val45);
+                  String _key48;
+                  String _val49;
+                  _key48 = iprot.readString();
+                  _val49 = iprot.readString();
+                  this.success.put(_key48, _val49);
                 }
                 iprot.readMapEnd();
               }
@@ -4755,10 +4986,10 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter46 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter50 : this.success.entrySet())
           {
-            oprot.writeString(_iter46.getKey());
-            oprot.writeString(_iter46.getValue());
+            oprot.writeString(_iter50.getKey());
+            oprot.writeString(_iter50.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -9768,7 +9999,7 @@ public class Blur {
     private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
     private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
 
-    public Row success;
+    public FetchResult success;
     public BlurException be;
     public MissingShardException mse;
 
@@ -9842,7 +10073,7 @@ public class Blur {
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new StructMetaData(TType.STRUCT, Row.class)));
+          new StructMetaData(TType.STRUCT, FetchResult.class)));
       tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
@@ -9855,7 +10086,7 @@ public class Blur {
     }
 
     public fetchRow_result(
-      Row success,
+      FetchResult success,
       BlurException be,
       MissingShardException mse)
     {
@@ -9870,7 +10101,7 @@ public class Blur {
      */
     public fetchRow_result(fetchRow_result other) {
       if (other.isSetSuccess()) {
-        this.success = new Row(other.success);
+        this.success = new FetchResult(other.success);
       }
       if (other.isSetBe()) {
         this.be = new BlurException(other.be);
@@ -9889,11 +10120,11 @@ public class Blur {
       return new fetchRow_result(this);
     }
 
-    public Row getSuccess() {
+    public FetchResult getSuccess() {
       return this.success;
     }
 
-    public fetchRow_result setSuccess(Row success) {
+    public fetchRow_result setSuccess(FetchResult success) {
       this.success = success;
       return this;
     }
@@ -9967,7 +10198,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Row)value);
+          setSuccess((FetchResult)value);
         }
         break;
 
@@ -10128,7 +10359,7 @@ public class Blur {
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == TType.STRUCT) {
-              this.success = new Row();
+              this.success = new FetchResult();
               this.success.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
@@ -11049,6 +11280,571 @@ public class Blur {
 
   }
 
+  public static class cancelSearch_args implements TBase<cancelSearch_args, cancelSearch_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("cancelSearch_args");
+
+    private static final TField PROVIDED_UUID_FIELD_DESC = new TField("providedUuid", TType.I64, (short)1);
+
+    public long providedUuid;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      PROVIDED_UUID((short)1, "providedUuid");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // PROVIDED_UUID
+            return PROVIDED_UUID;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __PROVIDEDUUID_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.PROVIDED_UUID, new FieldMetaData("providedUuid", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.I64)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(cancelSearch_args.class, metaDataMap);
+    }
+
+    public cancelSearch_args() {
+    }
+
+    public cancelSearch_args(
+      long providedUuid)
+    {
+      this();
+      this.providedUuid = providedUuid;
+      setProvidedUuidIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public cancelSearch_args(cancelSearch_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      this.providedUuid = other.providedUuid;
+    }
+
+    public cancelSearch_args deepCopy() {
+      return new cancelSearch_args(this);
+    }
+
+    @Deprecated
+    public cancelSearch_args clone() {
+      return new cancelSearch_args(this);
+    }
+
+    public long getProvidedUuid() {
+      return this.providedUuid;
+    }
+
+    public cancelSearch_args setProvidedUuid(long providedUuid) {
+      this.providedUuid = providedUuid;
+      setProvidedUuidIsSet(true);
+      return this;
+    }
+
+    public void unsetProvidedUuid() {
+      __isset_bit_vector.clear(__PROVIDEDUUID_ISSET_ID);
+    }
+
+    /** Returns true if field providedUuid is set (has been asigned a value) and false otherwise */
+    public boolean isSetProvidedUuid() {
+      return __isset_bit_vector.get(__PROVIDEDUUID_ISSET_ID);
+    }
+
+    public void setProvidedUuidIsSet(boolean value) {
+      __isset_bit_vector.set(__PROVIDEDUUID_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case PROVIDED_UUID:
+        if (value == null) {
+          unsetProvidedUuid();
+        } else {
+          setProvidedUuid((Long)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case PROVIDED_UUID:
+        return new Long(getProvidedUuid());
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case PROVIDED_UUID:
+        return isSetProvidedUuid();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof cancelSearch_args)
+        return this.equals((cancelSearch_args)that);
+      return false;
+    }
+
+    public boolean equals(cancelSearch_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_providedUuid = true;
+      boolean that_present_providedUuid = true;
+      if (this_present_providedUuid || that_present_providedUuid) {
+        if (!(this_present_providedUuid && that_present_providedUuid))
+          return false;
+        if (this.providedUuid != that.providedUuid)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(cancelSearch_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      cancelSearch_args typedOther = (cancelSearch_args)other;
+
+      lastComparison = Boolean.valueOf(isSetProvidedUuid()).compareTo(typedOther.isSetProvidedUuid());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetProvidedUuid()) {        lastComparison = TBaseHelper.compareTo(this.providedUuid, typedOther.providedUuid);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // PROVIDED_UUID
+            if (field.type == TType.I64) {
+              this.providedUuid = iprot.readI64();
+              setProvidedUuidIsSet(true);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      oprot.writeFieldBegin(PROVIDED_UUID_FIELD_DESC);
+      oprot.writeI64(this.providedUuid);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("cancelSearch_args(");
+      boolean first = true;
+
+      sb.append("providedUuid:");
+      sb.append(this.providedUuid);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class cancelSearch_result implements TBase<cancelSearch_result, cancelSearch_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("cancelSearch_result");
+
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+
+    public BlurException be;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      BE((short)1, "be");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // BE
+            return BE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(cancelSearch_result.class, metaDataMap);
+    }
+
+    public cancelSearch_result() {
+    }
+
+    public cancelSearch_result(
+      BlurException be)
+    {
+      this();
+      this.be = be;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public cancelSearch_result(cancelSearch_result other) {
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+    }
+
+    public cancelSearch_result deepCopy() {
+      return new cancelSearch_result(this);
+    }
+
+    @Deprecated
+    public cancelSearch_result clone() {
+      return new cancelSearch_result(this);
+    }
+
+    public BlurException getBe() {
+      return this.be;
+    }
+
+    public cancelSearch_result setBe(BlurException be) {
+      this.be = be;
+      return this;
+    }
+
+    public void unsetBe() {
+      this.be = null;
+    }
+
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
+    }
+
+    public void setBeIsSet(boolean value) {
+      if (!value) {
+        this.be = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case BE:
+        if (value == null) {
+          unsetBe();
+        } else {
+          setBe((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case BE:
+        return getBe();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case BE:
+        return isSetBe();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof cancelSearch_result)
+        return this.equals((cancelSearch_result)that);
+      return false;
+    }
+
+    public boolean equals(cancelSearch_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
+          return false;
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(cancelSearch_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      cancelSearch_result typedOther = (cancelSearch_result)other;
+
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("cancelSearch_result(");
+      boolean first = true;
+
+      sb.append("be:");
+      if (this.be == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.be);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
   public static class getDynamicTerms_args implements TBase<getDynamicTerms_args, getDynamicTerms_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("getDynamicTerms_args");
 
@@ -11721,13 +12517,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list47 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list47.size);
-                for (int _i48 = 0; _i48 < _list47.size; ++_i48)
+                TList _list51 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list51.size);
+                for (int _i52 = 0; _i52 < _list51.size; ++_i52)
                 {
-                  String _elem49;
-                  _elem49 = iprot.readString();
-                  this.success.add(_elem49);
+                  String _elem53;
+                  _elem53 = iprot.readString();
+                  this.success.add(_elem53);
                 }
                 iprot.readListEnd();
               }
@@ -11769,9 +12565,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter50 : this.success)
+          for (String _iter54 : this.success)
           {
-            oprot.writeString(_iter50);
+            oprot.writeString(_iter54);
           }
           oprot.writeListEnd();
         }
@@ -15125,6 +15921,1142 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.mse);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class shutdownShard_args implements TBase<shutdownShard_args, shutdownShard_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("shutdownShard_args");
+
+    private static final TField NODE_FIELD_DESC = new TField("node", TType.STRING, (short)1);
+
+    public String node;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      NODE((short)1, "node");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // NODE
+            return NODE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NODE, new FieldMetaData("node", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(shutdownShard_args.class, metaDataMap);
+    }
+
+    public shutdownShard_args() {
+    }
+
+    public shutdownShard_args(
+      String node)
+    {
+      this();
+      this.node = node;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shutdownShard_args(shutdownShard_args other) {
+      if (other.isSetNode()) {
+        this.node = other.node;
+      }
+    }
+
+    public shutdownShard_args deepCopy() {
+      return new shutdownShard_args(this);
+    }
+
+    @Deprecated
+    public shutdownShard_args clone() {
+      return new shutdownShard_args(this);
+    }
+
+    public String getNode() {
+      return this.node;
+    }
+
+    public shutdownShard_args setNode(String node) {
+      this.node = node;
+      return this;
+    }
+
+    public void unsetNode() {
+      this.node = null;
+    }
+
+    /** Returns true if field node is set (has been asigned a value) and false otherwise */
+    public boolean isSetNode() {
+      return this.node != null;
+    }
+
+    public void setNodeIsSet(boolean value) {
+      if (!value) {
+        this.node = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case NODE:
+        if (value == null) {
+          unsetNode();
+        } else {
+          setNode((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case NODE:
+        return getNode();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case NODE:
+        return isSetNode();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shutdownShard_args)
+        return this.equals((shutdownShard_args)that);
+      return false;
+    }
+
+    public boolean equals(shutdownShard_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_node = true && this.isSetNode();
+      boolean that_present_node = true && that.isSetNode();
+      if (this_present_node || that_present_node) {
+        if (!(this_present_node && that_present_node))
+          return false;
+        if (!this.node.equals(that.node))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shutdownShard_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shutdownShard_args typedOther = (shutdownShard_args)other;
+
+      lastComparison = Boolean.valueOf(isSetNode()).compareTo(typedOther.isSetNode());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNode()) {        lastComparison = TBaseHelper.compareTo(this.node, typedOther.node);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // NODE
+            if (field.type == TType.STRING) {
+              this.node = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.node != null) {
+        oprot.writeFieldBegin(NODE_FIELD_DESC);
+        oprot.writeString(this.node);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("shutdownShard_args(");
+      boolean first = true;
+
+      sb.append("node:");
+      if (this.node == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.node);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class shutdownShard_result implements TBase<shutdownShard_result, shutdownShard_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("shutdownShard_result");
+
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+
+    public BlurException be;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      BE((short)1, "be");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // BE
+            return BE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(shutdownShard_result.class, metaDataMap);
+    }
+
+    public shutdownShard_result() {
+    }
+
+    public shutdownShard_result(
+      BlurException be)
+    {
+      this();
+      this.be = be;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shutdownShard_result(shutdownShard_result other) {
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+    }
+
+    public shutdownShard_result deepCopy() {
+      return new shutdownShard_result(this);
+    }
+
+    @Deprecated
+    public shutdownShard_result clone() {
+      return new shutdownShard_result(this);
+    }
+
+    public BlurException getBe() {
+      return this.be;
+    }
+
+    public shutdownShard_result setBe(BlurException be) {
+      this.be = be;
+      return this;
+    }
+
+    public void unsetBe() {
+      this.be = null;
+    }
+
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
+    }
+
+    public void setBeIsSet(boolean value) {
+      if (!value) {
+        this.be = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case BE:
+        if (value == null) {
+          unsetBe();
+        } else {
+          setBe((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case BE:
+        return getBe();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case BE:
+        return isSetBe();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shutdownShard_result)
+        return this.equals((shutdownShard_result)that);
+      return false;
+    }
+
+    public boolean equals(shutdownShard_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
+          return false;
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shutdownShard_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shutdownShard_result typedOther = (shutdownShard_result)other;
+
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("shutdownShard_result(");
+      boolean first = true;
+
+      sb.append("be:");
+      if (this.be == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.be);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class shutdownController_args implements TBase<shutdownController_args, shutdownController_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("shutdownController_args");
+
+    private static final TField NODE_FIELD_DESC = new TField("node", TType.STRING, (short)1);
+
+    public String node;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      NODE((short)1, "node");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // NODE
+            return NODE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.NODE, new FieldMetaData("node", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(shutdownController_args.class, metaDataMap);
+    }
+
+    public shutdownController_args() {
+    }
+
+    public shutdownController_args(
+      String node)
+    {
+      this();
+      this.node = node;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shutdownController_args(shutdownController_args other) {
+      if (other.isSetNode()) {
+        this.node = other.node;
+      }
+    }
+
+    public shutdownController_args deepCopy() {
+      return new shutdownController_args(this);
+    }
+
+    @Deprecated
+    public shutdownController_args clone() {
+      return new shutdownController_args(this);
+    }
+
+    public String getNode() {
+      return this.node;
+    }
+
+    public shutdownController_args setNode(String node) {
+      this.node = node;
+      return this;
+    }
+
+    public void unsetNode() {
+      this.node = null;
+    }
+
+    /** Returns true if field node is set (has been asigned a value) and false otherwise */
+    public boolean isSetNode() {
+      return this.node != null;
+    }
+
+    public void setNodeIsSet(boolean value) {
+      if (!value) {
+        this.node = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case NODE:
+        if (value == null) {
+          unsetNode();
+        } else {
+          setNode((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case NODE:
+        return getNode();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case NODE:
+        return isSetNode();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shutdownController_args)
+        return this.equals((shutdownController_args)that);
+      return false;
+    }
+
+    public boolean equals(shutdownController_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_node = true && this.isSetNode();
+      boolean that_present_node = true && that.isSetNode();
+      if (this_present_node || that_present_node) {
+        if (!(this_present_node && that_present_node))
+          return false;
+        if (!this.node.equals(that.node))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shutdownController_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shutdownController_args typedOther = (shutdownController_args)other;
+
+      lastComparison = Boolean.valueOf(isSetNode()).compareTo(typedOther.isSetNode());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNode()) {        lastComparison = TBaseHelper.compareTo(this.node, typedOther.node);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // NODE
+            if (field.type == TType.STRING) {
+              this.node = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.node != null) {
+        oprot.writeFieldBegin(NODE_FIELD_DESC);
+        oprot.writeString(this.node);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("shutdownController_args(");
+      boolean first = true;
+
+      sb.append("node:");
+      if (this.node == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.node);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class shutdownController_result implements TBase<shutdownController_result, shutdownController_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("shutdownController_result");
+
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+
+    public BlurException be;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      BE((short)1, "be");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // BE
+            return BE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(shutdownController_result.class, metaDataMap);
+    }
+
+    public shutdownController_result() {
+    }
+
+    public shutdownController_result(
+      BlurException be)
+    {
+      this();
+      this.be = be;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shutdownController_result(shutdownController_result other) {
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+    }
+
+    public shutdownController_result deepCopy() {
+      return new shutdownController_result(this);
+    }
+
+    @Deprecated
+    public shutdownController_result clone() {
+      return new shutdownController_result(this);
+    }
+
+    public BlurException getBe() {
+      return this.be;
+    }
+
+    public shutdownController_result setBe(BlurException be) {
+      this.be = be;
+      return this;
+    }
+
+    public void unsetBe() {
+      this.be = null;
+    }
+
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
+    }
+
+    public void setBeIsSet(boolean value) {
+      if (!value) {
+        this.be = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case BE:
+        if (value == null) {
+          unsetBe();
+        } else {
+          setBe((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case BE:
+        return getBe();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case BE:
+        return isSetBe();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shutdownController_result)
+        return this.equals((shutdownController_result)that);
+      return false;
+    }
+
+    public boolean equals(shutdownController_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
+          return false;
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shutdownController_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shutdownController_result typedOther = (shutdownController_result)other;
+
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("shutdownController_result(");
+      boolean first = true;
+
+      sb.append("be:");
+      if (this.be == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.be);
       }
       first = false;
       sb.append(")");

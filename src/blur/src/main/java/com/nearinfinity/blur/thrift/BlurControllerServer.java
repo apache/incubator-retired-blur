@@ -14,6 +14,7 @@ import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.thrift.BlurClientManager.Command;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -84,14 +85,14 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public Row fetchRow(final String table, final String id) throws BlurException,
+	public FetchResult fetchRow(final String table, final String id) throws BlurException,
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,id);
 		try {
 		    return BlurClientManager.execute(clientHostnamePort, 
-		        new Command<Row>() {
+		        new Command<FetchResult>() {
                     @Override
-                    public Row call(Client client) throws Exception {
+                    public FetchResult call(Client client) throws Exception {
                         return client.fetchRow(table, id);
                     }
                 });
@@ -142,6 +143,11 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
                     "] id [" + row.id + "]");
         }
 	}
+	
+    @Override
+    public void cancelSearch(long providedUuid) throws BlurException, TException {
+        throw new BlurException("not implemented");
+    }
 	   
     private String getClientHostnamePort(String table, String id) throws MissingShardException, BlurException, TException {
         Map<String, String> shardServerLayout = shardServerLayout(table);
@@ -154,4 +160,6 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         }
         return host + ":" + configuration.getBlurShardServerPort();
     }
+
+
 }

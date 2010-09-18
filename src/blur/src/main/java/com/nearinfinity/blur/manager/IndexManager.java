@@ -55,7 +55,7 @@ public class IndexManager {
 
 	private static final Version LUCENE_VERSION = Version.LUCENE_30;
     private static final Log LOG = LogFactory.getLog(IndexManager.class);
-	private static final long POLL_TIME = 5000;
+	private static final long POLL_TIME = 30000;
 	private static final TableManager ALWAYS_ON = new TableManager() {
 		@Override
 		public boolean isTableEnabled(String table) {
@@ -190,8 +190,8 @@ public class IndexManager {
 			IndexReader reader = getIndexReader(table,id);
 			checkIfShardIsNull(reader);
 			return getRow(id,  getDocs(reader,id));
-		} catch (IOException e) {
-			LOG.error("Unknown io error",e);
+		} catch (Exception e) {
+			LOG.error("Unknown error while trying to fetch row.",e);
 			throw new BlurException(e.getMessage());
 		}
 	}
@@ -297,11 +297,13 @@ public class IndexManager {
 			for (Entry<String, IndexWriter> shardEntry : tableEntry.getValue().entrySet()) {
 				String shard = shardEntry.getKey();
 				IndexWriter indexWriter = shardEntry.getValue();
-				try {
-					wal.commit(table,shard,indexWriter);
-				} catch (IOException e) {
-					LOG.error("Unknown error while commiting data to [" + table + "] [" + shard + "]",e);
-				}
+				synchronized (indexWriter) {
+				    try {
+	                    wal.commit(table,shard,indexWriter);
+	                } catch (IOException e) {
+	                    LOG.error("Unknown error while commiting data to [" + table + "] [" + shard + "]",e);
+	                }
+                }
 			}
 		}
 	}
@@ -442,6 +444,7 @@ public class IndexManager {
 		@Override
 		public void run() {
 			try {
+			    System.out.println("Closing index manager.");
                 indexManager.close();
             } catch (InterruptedException e) {
                 LOG.error("Error while closing index manager.",e);

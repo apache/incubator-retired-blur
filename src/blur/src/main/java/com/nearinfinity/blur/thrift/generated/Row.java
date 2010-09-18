@@ -29,16 +29,19 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
   private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)1);
   private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.SET, (short)2);
   private static final TField WAL_DISABLED_FIELD_DESC = new TField("walDisabled", TType.BOOL, (short)3);
+  private static final TField EXISTS_FIELD_DESC = new TField("exists", TType.BOOL, (short)4);
 
   public String id;
   public Set<ColumnFamily> columnFamilies;
   public boolean walDisabled;
+  public boolean exists;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     ID((short)1, "id"),
     COLUMN_FAMILIES((short)2, "columnFamilies"),
-    WAL_DISABLED((short)3, "walDisabled");
+    WAL_DISABLED((short)3, "walDisabled"),
+    EXISTS((short)4, "exists");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -59,6 +62,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
           return COLUMN_FAMILIES;
         case 3: // WAL_DISABLED
           return WAL_DISABLED;
+        case 4: // EXISTS
+          return EXISTS;
         default:
           return null;
       }
@@ -100,7 +105,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
 
   // isset id assignments
   private static final int __WALDISABLED_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
+  private static final int __EXISTS_ISSET_ID = 1;
+  private BitSet __isset_bit_vector = new BitSet(2);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -112,6 +118,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
             new StructMetaData(TType.STRUCT, ColumnFamily.class))));
     tmpMap.put(_Fields.WAL_DISABLED, new FieldMetaData("walDisabled", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.BOOL)));
+    tmpMap.put(_Fields.EXISTS, new FieldMetaData("exists", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
@@ -122,13 +130,16 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
   public Row(
     String id,
     Set<ColumnFamily> columnFamilies,
-    boolean walDisabled)
+    boolean walDisabled,
+    boolean exists)
   {
     this();
     this.id = id;
     this.columnFamilies = columnFamilies;
     this.walDisabled = walDisabled;
     setWalDisabledIsSet(true);
+    this.exists = exists;
+    setExistsIsSet(true);
   }
 
   /**
@@ -148,6 +159,7 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       this.columnFamilies = __this__columnFamilies;
     }
     this.walDisabled = other.walDisabled;
+    this.exists = other.exists;
   }
 
   public Row deepCopy() {
@@ -245,6 +257,29 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     __isset_bit_vector.set(__WALDISABLED_ISSET_ID, value);
   }
 
+  public boolean isExists() {
+    return this.exists;
+  }
+
+  public Row setExists(boolean exists) {
+    this.exists = exists;
+    setExistsIsSet(true);
+    return this;
+  }
+
+  public void unsetExists() {
+    __isset_bit_vector.clear(__EXISTS_ISSET_ID);
+  }
+
+  /** Returns true if field exists is set (has been asigned a value) and false otherwise */
+  public boolean isSetExists() {
+    return __isset_bit_vector.get(__EXISTS_ISSET_ID);
+  }
+
+  public void setExistsIsSet(boolean value) {
+    __isset_bit_vector.set(__EXISTS_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -271,6 +306,14 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       }
       break;
 
+    case EXISTS:
+      if (value == null) {
+        unsetExists();
+      } else {
+        setExists((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -289,6 +332,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     case WAL_DISABLED:
       return new Boolean(isWalDisabled());
 
+    case EXISTS:
+      return new Boolean(isExists());
+
     }
     throw new IllegalStateException();
   }
@@ -306,6 +352,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       return isSetColumnFamilies();
     case WAL_DISABLED:
       return isSetWalDisabled();
+    case EXISTS:
+      return isSetExists();
     }
     throw new IllegalStateException();
   }
@@ -354,6 +402,15 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
         return false;
     }
 
+    boolean this_present_exists = true;
+    boolean that_present_exists = true;
+    if (this_present_exists || that_present_exists) {
+      if (!(this_present_exists && that_present_exists))
+        return false;
+      if (this.exists != that.exists)
+        return false;
+    }
+
     return true;
   }
 
@@ -393,6 +450,15 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       return lastComparison;
     }
     if (isSetWalDisabled()) {      lastComparison = TBaseHelper.compareTo(this.walDisabled, typedOther.walDisabled);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetExists()).compareTo(typedOther.isSetExists());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExists()) {      lastComparison = TBaseHelper.compareTo(this.exists, typedOther.exists);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -443,6 +509,14 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 4: // EXISTS
+          if (field.type == TType.BOOL) {
+            this.exists = iprot.readBool();
+            setExistsIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -478,6 +552,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     oprot.writeFieldBegin(WAL_DISABLED_FIELD_DESC);
     oprot.writeBool(this.walDisabled);
     oprot.writeFieldEnd();
+    oprot.writeFieldBegin(EXISTS_FIELD_DESC);
+    oprot.writeBool(this.exists);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -505,6 +582,10 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     if (!first) sb.append(", ");
     sb.append("walDisabled:");
     sb.append(this.walDisabled);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("exists:");
+    sb.append(this.exists);
     first = false;
     sb.append(")");
     return sb.toString();

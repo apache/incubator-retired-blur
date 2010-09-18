@@ -14,7 +14,7 @@ public class Partitioner {
 	}
 	
 	public String getShard(String id) {
-		int hash = hash(id);
+		int hash = Math.abs(hash(id));
 		return shards.get(hash % shards.size());
 	}
 

@@ -53,6 +53,10 @@ public class TermDocIterable implements Iterable<Document> {
 	private boolean getNext() {
 		try {
 			boolean next = termDocs.next();
+			if (!next) {
+                termDocs.close();
+                return next;
+            }
 			while (reader.isDeleted(termDocs.doc())) {
 				next = termDocs.next();
 			}

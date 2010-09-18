@@ -71,6 +71,7 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
+		process(null);
 		this.mele = mele;
 	}
 	

@@ -70,7 +70,7 @@ public class BlurThriftServer implements BlurConstants {
         listeningThread.join();
     }
 
-    public BlurThriftServer start(String name) {
+    public BlurThriftServer start(final String name) {
 	    listeningThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -91,6 +91,7 @@ public class BlurThriftServer implements BlurConstants {
 	    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
+                System.out.println("Stoping thrift server " + name);
                 stop();
             }
         }));

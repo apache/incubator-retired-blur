@@ -80,7 +80,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
 	@Override
 	public Row fetchRow(String table, String id) throws BlurException, TException, MissingShardException {
-		return indexManager.fetchRow(table,id);
+        return indexManager.fetchRow(table,id);
 	}
 
 	@Override

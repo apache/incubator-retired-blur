@@ -50,7 +50,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 		                }
 		            });
 				}
-			}).merge(new MergerHitsIterable(searchQuery.minimumNumberOfHits));
+			}).merge(new MergerHitsIterable(searchQuery.minimumNumberOfHits,searchQuery.maxQueryTime));
 			return convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits);
 		} catch (Exception e) {
 			LOG.error("Unknown error during search of [" +

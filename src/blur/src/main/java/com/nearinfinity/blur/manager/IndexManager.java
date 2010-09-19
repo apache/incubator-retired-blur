@@ -218,7 +218,7 @@ public class IndexManager {
 		        searcher.setSimilarity(similarity);
 			    return new HitsIterableSearcher(superQueryOn, (Query) userQuery.clone(), entry.getKey(), searcher);
 			}
-		}).merge(new MergerHitsIterable(minimumNumberOfHits));
+		}).merge(new MergerHitsIterable(minimumNumberOfHits,maxQueryTime));
 	}
 
 	private Filter parseFilter(String table, String filter, boolean superQueryOn) throws ParseException, BlurException {

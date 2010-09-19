@@ -45,17 +45,17 @@ public class Blur {
 
     public void drop(String table) throws BlurException, TException;
 
-    public void removeRow(String table, String id) throws BlurException, MissingShardException, TException;
+    public void removeRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
-    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException;
+    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
-    public void appendRow(String table, Row row) throws BlurException, MissingShardException, TException;
+    public void appendRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
-    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException;
+    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
-    public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException;
+    public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
-    public void cancelSearch(long providedUuid) throws BlurException, TException;
+    public void cancelSearch(long providedUuid) throws BlurException, EventStoppedExecutionException, TException;
 
     public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException;
 
@@ -447,7 +447,7 @@ public class Blur {
       return;
     }
 
-    public void removeRow(String table, String id) throws BlurException, MissingShardException, TException
+    public void removeRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       send_removeRow(table, id);
       recv_removeRow();
@@ -464,7 +464,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public void recv_removeRow() throws BlurException, MissingShardException, TException
+    public void recv_removeRow() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -484,10 +484,13 @@ public class Blur {
       if (result.mse != null) {
         throw result.mse;
       }
+      if (result.esee != null) {
+        throw result.esee;
+      }
       return;
     }
 
-    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException
+    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       send_replaceRow(table, row);
       recv_replaceRow();
@@ -504,7 +507,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public void recv_replaceRow() throws BlurException, MissingShardException, TException
+    public void recv_replaceRow() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -524,10 +527,13 @@ public class Blur {
       if (result.mse != null) {
         throw result.mse;
       }
+      if (result.esee != null) {
+        throw result.esee;
+      }
       return;
     }
 
-    public void appendRow(String table, Row row) throws BlurException, MissingShardException, TException
+    public void appendRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       send_appendRow(table, row);
       recv_appendRow();
@@ -544,7 +550,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public void recv_appendRow() throws BlurException, MissingShardException, TException
+    public void recv_appendRow() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -564,10 +570,13 @@ public class Blur {
       if (result.mse != null) {
         throw result.mse;
       }
+      if (result.esee != null) {
+        throw result.esee;
+      }
       return;
     }
 
-    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException
+    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       send_fetchRow(table, id);
       return recv_fetchRow();
@@ -584,7 +593,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public FetchResult recv_fetchRow() throws BlurException, MissingShardException, TException
+    public FetchResult recv_fetchRow() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -607,10 +616,13 @@ public class Blur {
       if (result.mse != null) {
         throw result.mse;
       }
+      if (result.esee != null) {
+        throw result.esee;
+      }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
     }
 
-    public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException
+    public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       send_search(table, searchQuery);
       return recv_search();
@@ -627,7 +639,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public Hits recv_search() throws BlurException, MissingShardException, TException
+    public Hits recv_search() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -650,10 +662,13 @@ public class Blur {
       if (result.mse != null) {
         throw result.mse;
       }
+      if (result.esee != null) {
+        throw result.esee;
+      }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
     }
 
-    public void cancelSearch(long providedUuid) throws BlurException, TException
+    public void cancelSearch(long providedUuid) throws BlurException, EventStoppedExecutionException, TException
     {
       send_cancelSearch(providedUuid);
       recv_cancelSearch();
@@ -669,7 +684,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public void recv_cancelSearch() throws BlurException, TException
+    public void recv_cancelSearch() throws BlurException, EventStoppedExecutionException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -685,6 +700,9 @@ public class Blur {
       iprot_.readMessageEnd();
       if (result.be != null) {
         throw result.be;
+      }
+      if (result.esee != null) {
+        throw result.esee;
       }
       return;
     }
@@ -1391,6 +1409,8 @@ public class Blur {
           result.be = be;
         } catch (MissingShardException mse) {
           result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing removeRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing removeRow");
@@ -1431,6 +1451,8 @@ public class Blur {
           result.be = be;
         } catch (MissingShardException mse) {
           result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing replaceRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing replaceRow");
@@ -1471,6 +1493,8 @@ public class Blur {
           result.be = be;
         } catch (MissingShardException mse) {
           result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing appendRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing appendRow");
@@ -1511,6 +1535,8 @@ public class Blur {
           result.be = be;
         } catch (MissingShardException mse) {
           result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing fetchRow", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchRow");
@@ -1551,6 +1577,8 @@ public class Blur {
           result.be = be;
         } catch (MissingShardException mse) {
           result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing search", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing search");
@@ -1589,6 +1617,8 @@ public class Blur {
           iface_.cancelSearch(args.providedUuid);
         } catch (BlurException be) {
           result.be = be;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
         } catch (Throwable th) {
           LOGGER.error("Internal error processing cancelSearch", th);
           TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing cancelSearch");
@@ -7769,14 +7799,17 @@ public class Blur {
 
     private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
     private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
 
     public BlurException be;
     public MissingShardException mse;
+    public EventStoppedExecutionException esee;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       BE((short)1, "be"),
-      MSE((short)2, "mse");
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7795,6 +7828,8 @@ public class Blur {
             return BE;
           case 2: // MSE
             return MSE;
+          case 3: // ESEE
+            return ESEE;
           default:
             return null;
         }
@@ -7843,6 +7878,8 @@ public class Blur {
           new FieldValueMetaData(TType.STRUCT)));
       tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(removeRow_result.class, metaDataMap);
     }
@@ -7852,11 +7889,13 @@ public class Blur {
 
     public removeRow_result(
       BlurException be,
-      MissingShardException mse)
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
     {
       this();
       this.be = be;
       this.mse = mse;
+      this.esee = esee;
     }
 
     /**
@@ -7868,6 +7907,9 @@ public class Blur {
       }
       if (other.isSetMse()) {
         this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
       }
     }
 
@@ -7928,6 +7970,30 @@ public class Blur {
       }
     }
 
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public removeRow_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case BE:
@@ -7946,6 +8012,14 @@ public class Blur {
         }
         break;
 
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
       }
     }
 
@@ -7960,6 +8034,9 @@ public class Blur {
 
       case MSE:
         return getMse();
+
+      case ESEE:
+        return getEsee();
 
       }
       throw new IllegalStateException();
@@ -7976,6 +8053,8 @@ public class Blur {
         return isSetBe();
       case MSE:
         return isSetMse();
+      case ESEE:
+        return isSetEsee();
       }
       throw new IllegalStateException();
     }
@@ -8015,6 +8094,15 @@ public class Blur {
           return false;
       }
 
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
       return true;
     }
 
@@ -8049,6 +8137,15 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -8078,6 +8175,14 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             TProtocolUtil.skip(iprot, field.type);
         }
@@ -8099,6 +8204,10 @@ public class Blur {
       } else if (this.isSetMse()) {
         oprot.writeFieldBegin(MSE_FIELD_DESC);
         this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -8123,6 +8232,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
       }
       first = false;
       sb.append(")");
@@ -8512,14 +8629,17 @@ public class Blur {
 
     private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
     private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
 
     public BlurException be;
     public MissingShardException mse;
+    public EventStoppedExecutionException esee;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       BE((short)1, "be"),
-      MSE((short)2, "mse");
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -8538,6 +8658,8 @@ public class Blur {
             return BE;
           case 2: // MSE
             return MSE;
+          case 3: // ESEE
+            return ESEE;
           default:
             return null;
         }
@@ -8586,6 +8708,8 @@ public class Blur {
           new FieldValueMetaData(TType.STRUCT)));
       tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(replaceRow_result.class, metaDataMap);
     }
@@ -8595,11 +8719,13 @@ public class Blur {
 
     public replaceRow_result(
       BlurException be,
-      MissingShardException mse)
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
     {
       this();
       this.be = be;
       this.mse = mse;
+      this.esee = esee;
     }
 
     /**
@@ -8611,6 +8737,9 @@ public class Blur {
       }
       if (other.isSetMse()) {
         this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
       }
     }
 
@@ -8671,6 +8800,30 @@ public class Blur {
       }
     }
 
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public replaceRow_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case BE:
@@ -8689,6 +8842,14 @@ public class Blur {
         }
         break;
 
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
       }
     }
 
@@ -8703,6 +8864,9 @@ public class Blur {
 
       case MSE:
         return getMse();
+
+      case ESEE:
+        return getEsee();
 
       }
       throw new IllegalStateException();
@@ -8719,6 +8883,8 @@ public class Blur {
         return isSetBe();
       case MSE:
         return isSetMse();
+      case ESEE:
+        return isSetEsee();
       }
       throw new IllegalStateException();
     }
@@ -8758,6 +8924,15 @@ public class Blur {
           return false;
       }
 
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
       return true;
     }
 
@@ -8792,6 +8967,15 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -8821,6 +9005,14 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             TProtocolUtil.skip(iprot, field.type);
         }
@@ -8842,6 +9034,10 @@ public class Blur {
       } else if (this.isSetMse()) {
         oprot.writeFieldBegin(MSE_FIELD_DESC);
         this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -8866,6 +9062,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
       }
       first = false;
       sb.append(")");
@@ -9255,14 +9459,17 @@ public class Blur {
 
     private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
     private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
 
     public BlurException be;
     public MissingShardException mse;
+    public EventStoppedExecutionException esee;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       BE((short)1, "be"),
-      MSE((short)2, "mse");
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -9281,6 +9488,8 @@ public class Blur {
             return BE;
           case 2: // MSE
             return MSE;
+          case 3: // ESEE
+            return ESEE;
           default:
             return null;
         }
@@ -9329,6 +9538,8 @@ public class Blur {
           new FieldValueMetaData(TType.STRUCT)));
       tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(appendRow_result.class, metaDataMap);
     }
@@ -9338,11 +9549,13 @@ public class Blur {
 
     public appendRow_result(
       BlurException be,
-      MissingShardException mse)
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
     {
       this();
       this.be = be;
       this.mse = mse;
+      this.esee = esee;
     }
 
     /**
@@ -9354,6 +9567,9 @@ public class Blur {
       }
       if (other.isSetMse()) {
         this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
       }
     }
 
@@ -9414,6 +9630,30 @@ public class Blur {
       }
     }
 
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public appendRow_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case BE:
@@ -9432,6 +9672,14 @@ public class Blur {
         }
         break;
 
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
       }
     }
 
@@ -9446,6 +9694,9 @@ public class Blur {
 
       case MSE:
         return getMse();
+
+      case ESEE:
+        return getEsee();
 
       }
       throw new IllegalStateException();
@@ -9462,6 +9713,8 @@ public class Blur {
         return isSetBe();
       case MSE:
         return isSetMse();
+      case ESEE:
+        return isSetEsee();
       }
       throw new IllegalStateException();
     }
@@ -9501,6 +9754,15 @@ public class Blur {
           return false;
       }
 
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
       return true;
     }
 
@@ -9535,6 +9797,15 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -9564,6 +9835,14 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             TProtocolUtil.skip(iprot, field.type);
         }
@@ -9585,6 +9864,10 @@ public class Blur {
       } else if (this.isSetMse()) {
         oprot.writeFieldBegin(MSE_FIELD_DESC);
         this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -9609,6 +9892,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
       }
       first = false;
       sb.append(")");
@@ -9998,16 +10289,19 @@ public class Blur {
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
     private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
     private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
 
     public FetchResult success;
     public BlurException be;
     public MissingShardException mse;
+    public EventStoppedExecutionException esee;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
       BE((short)1, "be"),
-      MSE((short)2, "mse");
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10028,6 +10322,8 @@ public class Blur {
             return BE;
           case 2: // MSE
             return MSE;
+          case 3: // ESEE
+            return ESEE;
           default:
             return null;
         }
@@ -10078,6 +10374,8 @@ public class Blur {
           new FieldValueMetaData(TType.STRUCT)));
       tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(fetchRow_result.class, metaDataMap);
     }
@@ -10088,12 +10386,14 @@ public class Blur {
     public fetchRow_result(
       FetchResult success,
       BlurException be,
-      MissingShardException mse)
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
     {
       this();
       this.success = success;
       this.be = be;
       this.mse = mse;
+      this.esee = esee;
     }
 
     /**
@@ -10108,6 +10408,9 @@ public class Blur {
       }
       if (other.isSetMse()) {
         this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
       }
     }
 
@@ -10192,6 +10495,30 @@ public class Blur {
       }
     }
 
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public fetchRow_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -10218,6 +10545,14 @@ public class Blur {
         }
         break;
 
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
       }
     }
 
@@ -10236,6 +10571,9 @@ public class Blur {
       case MSE:
         return getMse();
 
+      case ESEE:
+        return getEsee();
+
       }
       throw new IllegalStateException();
     }
@@ -10253,6 +10591,8 @@ public class Blur {
         return isSetBe();
       case MSE:
         return isSetMse();
+      case ESEE:
+        return isSetEsee();
       }
       throw new IllegalStateException();
     }
@@ -10301,6 +10641,15 @@ public class Blur {
           return false;
       }
 
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
       return true;
     }
 
@@ -10344,6 +10693,15 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -10381,6 +10739,14 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             TProtocolUtil.skip(iprot, field.type);
         }
@@ -10406,6 +10772,10 @@ public class Blur {
       } else if (this.isSetMse()) {
         oprot.writeFieldBegin(MSE_FIELD_DESC);
         this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -10438,6 +10808,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
       }
       first = false;
       sb.append(")");
@@ -10828,16 +11206,19 @@ public class Blur {
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
     private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
     private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
 
     public Hits success;
     public BlurException be;
     public MissingShardException mse;
+    public EventStoppedExecutionException esee;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       SUCCESS((short)0, "success"),
       BE((short)1, "be"),
-      MSE((short)2, "mse");
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -10858,6 +11239,8 @@ public class Blur {
             return BE;
           case 2: // MSE
             return MSE;
+          case 3: // ESEE
+            return ESEE;
           default:
             return null;
         }
@@ -10908,6 +11291,8 @@ public class Blur {
           new FieldValueMetaData(TType.STRUCT)));
       tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(search_result.class, metaDataMap);
     }
@@ -10918,12 +11303,14 @@ public class Blur {
     public search_result(
       Hits success,
       BlurException be,
-      MissingShardException mse)
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
     {
       this();
       this.success = success;
       this.be = be;
       this.mse = mse;
+      this.esee = esee;
     }
 
     /**
@@ -10938,6 +11325,9 @@ public class Blur {
       }
       if (other.isSetMse()) {
         this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
       }
     }
 
@@ -11022,6 +11412,30 @@ public class Blur {
       }
     }
 
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public search_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case SUCCESS:
@@ -11048,6 +11462,14 @@ public class Blur {
         }
         break;
 
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
       }
     }
 
@@ -11066,6 +11488,9 @@ public class Blur {
       case MSE:
         return getMse();
 
+      case ESEE:
+        return getEsee();
+
       }
       throw new IllegalStateException();
     }
@@ -11083,6 +11508,8 @@ public class Blur {
         return isSetBe();
       case MSE:
         return isSetMse();
+      case ESEE:
+        return isSetEsee();
       }
       throw new IllegalStateException();
     }
@@ -11131,6 +11558,15 @@ public class Blur {
           return false;
       }
 
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
       return true;
     }
 
@@ -11174,6 +11610,15 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -11211,6 +11656,14 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
           default:
             TProtocolUtil.skip(iprot, field.type);
         }
@@ -11236,6 +11689,10 @@ public class Blur {
       } else if (this.isSetMse()) {
         oprot.writeFieldBegin(MSE_FIELD_DESC);
         this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -11268,6 +11725,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
       }
       first = false;
       sb.append(")");
@@ -11565,12 +12030,15 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("cancelSearch_result");
 
     private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
 
     public BlurException be;
+    public EventStoppedExecutionException esee;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      BE((short)1, "be");
+      BE((short)1, "be"),
+      ESEE((short)3, "esee");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -11587,6 +12055,8 @@ public class Blur {
         switch(fieldId) {
           case 1: // BE
             return BE;
+          case 3: // ESEE
+            return ESEE;
           default:
             return null;
         }
@@ -11633,6 +12103,8 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(cancelSearch_result.class, metaDataMap);
     }
@@ -11641,10 +12113,12 @@ public class Blur {
     }
 
     public cancelSearch_result(
-      BlurException be)
+      BlurException be,
+      EventStoppedExecutionException esee)
     {
       this();
       this.be = be;
+      this.esee = esee;
     }
 
     /**
@@ -11653,6 +12127,9 @@ public class Blur {
     public cancelSearch_result(cancelSearch_result other) {
       if (other.isSetBe()) {
         this.be = new BlurException(other.be);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
       }
     }
 
@@ -11689,6 +12166,30 @@ public class Blur {
       }
     }
 
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public cancelSearch_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       case BE:
@@ -11696,6 +12197,14 @@ public class Blur {
           unsetBe();
         } else {
           setBe((BlurException)value);
+        }
+        break;
+
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
         }
         break;
 
@@ -11711,6 +12220,9 @@ public class Blur {
       case BE:
         return getBe();
 
+      case ESEE:
+        return getEsee();
+
       }
       throw new IllegalStateException();
     }
@@ -11724,6 +12236,8 @@ public class Blur {
       switch (field) {
       case BE:
         return isSetBe();
+      case ESEE:
+        return isSetEsee();
       }
       throw new IllegalStateException();
     }
@@ -11754,6 +12268,15 @@ public class Blur {
           return false;
       }
 
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
       return true;
     }
 
@@ -11779,6 +12302,15 @@ public class Blur {
           return lastComparison;
         }
       }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       return 0;
     }
 
@@ -11796,6 +12328,14 @@ public class Blur {
             if (field.type == TType.STRUCT) {
               this.be = new BlurException();
               this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -11818,6 +12358,10 @@ public class Blur {
         oprot.writeFieldBegin(BE_FIELD_DESC);
         this.be.write(oprot);
         oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
+        oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -11833,6 +12377,14 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
       }
       first = false;
       sb.append(")");

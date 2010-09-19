@@ -26,6 +26,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.manager.LocalHdfsMeleConfiguration;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -105,7 +106,7 @@ public class BlurShardServerTest {
     }
     
     @Test
-    public void testAddData() throws BlurException, MissingShardException, TException {
+    public void testAddData() throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
         Row row = newRow("1000", 
                 newColumnFamily("person", "1234", 
                         newColumn("private","true"),

@@ -30,6 +30,7 @@ import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.events.EmptyEventHandler;
 import com.nearinfinity.blur.thrift.events.EventHandler;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -471,53 +472,61 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
     }
     
     @Override
-    public final void appendRow(String table, Row row) throws BlurException, MissingShardException, TException {
+    public final void appendRow(String table, Row row) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
         if (handler.beforeAppendRow(this, table, row)) {
             appendRowInternal(table, row);
             handler.afterAppendRow(this, table, row);
+            return;
         }
+        throw new EventStoppedExecutionException("Append Row Event Stopped.");
     }
 
     @Override
-    public final void cancelSearch(long providedUuid) throws BlurException, TException {
+    public final void cancelSearch(long providedUuid) throws BlurException, TException, EventStoppedExecutionException {
         if (handler.beforeCancelSearch(this, providedUuid)) {
             cancelSearchInternal(providedUuid);
             handler.afterCancelSearch(this, providedUuid);
+            return;
         }
+        throw new EventStoppedExecutionException("Concel Search Event Stopped.");
     }
 
     @Override
-    public final FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException {
+    public final FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
         if (handler.beforeFetchRow(this, table, id)) {
             FetchResult fetchResult = fetchRowInternal(table,id);
             return handler.afterFetchRow(this, table, id, fetchResult);
         }
-        throw new BlurException("FetchRow Event Stopped.");
+        throw new EventStoppedExecutionException("FetchRow Event Stopped.");
     }
     
     @Override
-    public final void removeRow(String table, String id) throws BlurException, MissingShardException, TException {
+    public final void removeRow(String table, String id) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
         if (handler.beforeRemoveRow(this, table, id)) {
             removeRowInternal(table,id);
             handler.afterRemoveRow(this, table, id);
+            return;
         }
+        throw new EventStoppedExecutionException("Remove Row Event Stopped.");
     }
 
     @Override
-    public final void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException {
+    public final void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
         if (handler.beforeReplaceRow(this, table, row)) {
             replaceRowInternal(table,row);
             handler.afterReplaceRow(this, table, row);
+            return;
         }
+        throw new EventStoppedExecutionException("Replace Row Event Stopped.");
     }
     
     @Override
-    public final Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException {
+    public final Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
         if (handler.beforeSearch(this, table, searchQuery)) {
             Hits hits = searchInternal(table, searchQuery);
             return handler.afterSearch(this, table, searchQuery, hits);
         }
-        throw new BlurException("Search Event Stopped.");
+        throw new EventStoppedExecutionException("Search Event Stopped.");
     }
 
     public abstract void appendRowInternal(String table, Row row) throws BlurException, MissingShardException, TException;

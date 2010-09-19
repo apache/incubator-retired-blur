@@ -38,7 +38,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public Hits search(final String table, final SearchQuery searchQuery) throws BlurException, TException {
+	public Hits searchInternal(final String table, final SearchQuery searchQuery) throws BlurException, TException {
 		try {
 			HitsIterable hitsIterable = ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,HitsIterable>() {
 				@Override
@@ -65,7 +65,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public void appendRow(final String table, final Row row) throws BlurException,
+	public void appendRowInternal(final String table, final Row row) throws BlurException,
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,row.id);
         try {
@@ -86,7 +86,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public FetchResult fetchRow(final String table, final String id) throws BlurException,
+	public FetchResult fetchRowInternal(final String table, final String id) throws BlurException,
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,id);
 		try {
@@ -106,7 +106,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public void removeRow(final String table, final String id) throws BlurException,
+	public void removeRowInternal(final String table, final String id) throws BlurException,
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,id);
         try {
@@ -126,7 +126,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public void replaceRow(final String table, final Row row) throws BlurException,
+	public void replaceRowInternal(final String table, final Row row) throws BlurException,
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,row.id);
 	    try {
@@ -146,7 +146,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 	
     @Override
-    public void cancelSearch(long providedUuid) throws BlurException, TException {
+    public void cancelSearchInternal(long providedUuid) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 	   

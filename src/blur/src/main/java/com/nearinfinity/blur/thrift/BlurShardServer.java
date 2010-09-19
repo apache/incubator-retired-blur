@@ -60,7 +60,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
+	public Hits searchInternal(String table, SearchQuery searchQuery) throws BlurException, TException {
         try {
             HitsIterable hitsIterable = indexManager.search(table, searchQuery.queryStr, 
                     searchQuery.superQueryOn, searchQuery.type, searchQuery.postSuperFilter, 
@@ -79,7 +79,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public FetchResult fetchRow(String table, String id) throws BlurException, TException, MissingShardException {
+	public FetchResult fetchRowInternal(String table, String id) throws BlurException, TException, MissingShardException {
 	    FetchResult fetchResult = new FetchResult();
 	    fetchResult.table = table;
 	    fetchResult.id = id;
@@ -89,26 +89,28 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public void appendRow(String table, Row row) throws BlurException, TException {
+	public void appendRowInternal(String table, Row row) throws BlurException, TException {
 		indexManager.appendRow(table,row);
 	}
 
 	@Override
-	public void removeRow(String table, String id) throws BlurException, TException {
+	public void removeRowInternal(String table, String id) throws BlurException, TException {
 		indexManager.removeRow(table,id);
 	}
 
 	@Override
-	public void replaceRow(String table, Row row) throws BlurException, TException, MissingShardException {
+	public void replaceRowInternal(String table, Row row) throws BlurException, TException, MissingShardException {
 		indexManager.replaceRow(table,row);
 	}
+	
+    @Override
+    public void cancelSearchInternal(long providedUuid) throws BlurException, TException {
+        throw new BlurException("not implemented");
+    }
 
     public void close() throws InterruptedException {
         indexManager.close();
     }
 
-    @Override
-    public void cancelSearch(long providedUuid) throws BlurException, TException {
-        throw new BlurException("not implemented");
-    }
+
 }

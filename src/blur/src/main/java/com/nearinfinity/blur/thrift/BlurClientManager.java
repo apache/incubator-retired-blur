@@ -19,6 +19,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
 public class BlurClientManager {
     
+    public static Void VOID = new Void();
     private static final Log LOG = LogFactory.getLog(BlurClientManager.class);
     private static final int MAX_RETIRES = 2;
     
@@ -27,6 +28,8 @@ public class BlurClientManager {
     public abstract static class Command<T> {
         public abstract T call(Client client) throws Exception;
     }
+    
+    public static class Void {}
 
     public static <T> T execute(String connectionStr, Command<T> command) throws Exception {
         int retries = 0;

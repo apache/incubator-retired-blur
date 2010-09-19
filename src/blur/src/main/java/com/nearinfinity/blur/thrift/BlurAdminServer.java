@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -27,6 +28,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.manager.hits.HitsIterable;
+import com.nearinfinity.blur.thrift.BlurClientManager.Command;
 import com.nearinfinity.blur.thrift.events.EmptyEventHandler;
 import com.nearinfinity.blur.thrift.events.EventHandler;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -39,6 +41,7 @@ import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -463,13 +466,41 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
     }
 
     @Override
-    public void shutdownController(String node) throws BlurException, TException {
-        throw new BlurException("not implemented");
+    public void shutdownController(final String node) throws BlurException, TException {
+        try {
+            if (isThisNode(node)) {
+                System.exit(0);
+            }
+            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new Command<Boolean>() {
+                @Override
+                public Boolean call(Client client) throws Exception {
+                    client.shutdownController(node);
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to shutdown controller [" + node + "]",e);
+            throw new BlurException("Unknown error while trying to shutdown controller [" + node + "]");
+        }
     }
 
     @Override
-    public void shutdownShard(String node) throws BlurException, TException {
-        throw new BlurException("not implemented");
+    public void shutdownShard(final String node) throws BlurException, TException {
+        try {
+            if (isThisNode(node)) {
+                System.exit(0);
+            }
+            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new Command<Boolean>() {
+                @Override
+                public Boolean call(Client client) throws Exception {
+                    client.shutdownShard(node);
+                    return true;
+                }
+            });
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to shutdown controller [" + node + "]",e);
+            throw new BlurException("Unknown error while trying to shutdown controller [" + node + "]");
+        }
     }
     
     @Override
@@ -536,4 +567,12 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
     public abstract void removeRowInternal(String table, String id) throws BlurException, MissingShardException, TException;
     public abstract void replaceRowInternal(String table, Row row) throws BlurException, MissingShardException, TException;
     public abstract Hits searchInternal(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException;
+    
+    
+    private boolean isThisNode(String node) throws UnknownHostException {
+        if (AddressUtil.getMyHostName().equals(node)) {
+            return true;
+        }
+        return false;
+    }
 }

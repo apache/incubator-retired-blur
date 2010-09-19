@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.apache.zookeeper.ZooKeeper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.store.zookeeper.NoOpWatcher;
 
 public class ComplexIndexManagerTest {
 
@@ -29,13 +31,16 @@ public class ComplexIndexManagerTest {
 	private static Mele mele;
 	private static IndexManager indexManager;
     private static ArrayList<Row> rows;
+    private static ZooKeeper zooKeeper;
 
     @BeforeClass
     public static void setUpOnce() throws Exception {
 	    String pathname = "target/test-tmp-complex";
         rm(new File(pathname));
 	    LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
-        mele = new Mele(configuration);
+	    zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
+	            configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
+        mele = new Mele(zooKeeper,configuration);
     	mele.createDirectoryCluster(TABLE_NAME);
     	mele.createDirectory(TABLE_NAME, SHARD_NAME);
     	
@@ -49,6 +54,7 @@ public class ComplexIndexManagerTest {
     @AfterClass
     public static void oneTimeTearDown() throws InterruptedException {
         indexManager.close();
+        zooKeeper.close();
     }
 
 	private static void populate() throws IOException, BlurException, MissingShardException {

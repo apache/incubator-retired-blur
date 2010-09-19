@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManager.TableManager;
@@ -25,8 +26,8 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
 	
-	public BlurShardServer(Mele mele, BlurConfiguration configuration) throws IOException, BlurException {
-		super(mele,configuration);
+	public BlurShardServer(ZooKeeper zooKeeper, Mele mele, BlurConfiguration configuration) throws IOException, BlurException {
+		super(zooKeeper,mele,configuration);
 		indexManager = new IndexManager(mele, new TableManager() {
 			@Override
 			public boolean isTableEnabled(String table) {

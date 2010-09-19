@@ -18,6 +18,7 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
+import org.apache.zookeeper.ZooKeeper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.store.zookeeper.NoOpWatcher;
 
 public class BlurShardServerTest {
     
@@ -43,18 +45,21 @@ public class BlurShardServerTest {
     private static Thread thread;
     private static Client client;
     private static BlurShardServer blurServer;
+    private static ZooKeeper zooKeeper;
 
     @BeforeClass
     public static void setUpOnce() throws Exception {
         String pathname = "target/test-tmp-blur-shard";
         rm(new File(pathname));
         LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
-        mele = new Mele(configuration);
+        zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
+                configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
+        mele = new Mele(zooKeeper,configuration);
         mele.createDirectoryCluster(TABLE_NAME);
         mele.createDirectory(TABLE_NAME, SHARD_NAME);
         
         TServerSocket serverTransport = new TServerSocket(PORT);
-        blurServer = new BlurShardServer(mele, new BlurConfiguration());
+        blurServer = new BlurShardServer(zooKeeper,mele, new BlurConfiguration());
         Blur.Processor processor = new Blur.Processor(blurServer);
         Factory protFactory = new TBinaryProtocol.Factory(true, true);
         server = new TThreadPoolServer(processor, serverTransport, protFactory);
@@ -96,6 +101,7 @@ public class BlurShardServerTest {
     @AfterClass
     public static void oneTimeTearDown() throws InterruptedException {
         blurServer.close();
+        zooKeeper.close();
     }
     
     @Test

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.Partitioner;
 import com.nearinfinity.blur.manager.PartitionerManager;
@@ -31,8 +32,8 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
     private PartitionerManager partitionerManager;
 
-	public BlurControllerServer(Mele mele, BlurConfiguration configuration) throws IOException {
-		super(mele,configuration);
+	public BlurControllerServer(ZooKeeper zooKeeper, Mele mele, BlurConfiguration configuration) throws IOException {
+		super(zooKeeper,mele,configuration);
 		this.partitionerManager = new PartitionerManager(mele);
 	}
 

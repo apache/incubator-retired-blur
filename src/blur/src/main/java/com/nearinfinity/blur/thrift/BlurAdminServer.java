@@ -37,7 +37,6 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
 import com.nearinfinity.mele.store.util.AddressUtil;
 import com.nearinfinity.mele.store.util.ZkUtils;
-import com.nearinfinity.mele.store.zookeeper.ZooKeeperFactory;
 
 public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 	
@@ -59,9 +58,9 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 	protected List<String> shardServerHosts = new ArrayList<String>();
 	protected List<String> controllerServerHosts = new ArrayList<String>();
 	
-	public BlurAdminServer(Mele mele, BlurConfiguration configuration) throws IOException {
+	public BlurAdminServer(ZooKeeper zooKeeper, Mele mele, BlurConfiguration configuration) throws IOException {
 	    this.configuration = configuration;
-		this.zk = ZooKeeperFactory.getZooKeeper();
+		this.zk = zooKeeper;
 		this.blurPath = configuration.get(BLUR_ZOOKEEPER_PATH,BLUR_ZOOKEEPER_PATH_DEFAULT);
 		this.blurNodePath = blurPath + "/" + NODES;
 		try {

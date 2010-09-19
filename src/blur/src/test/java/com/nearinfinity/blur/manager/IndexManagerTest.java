@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.zookeeper.ZooKeeper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,21 +20,29 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.store.zookeeper.NoOpWatcher;
 
 public class IndexManagerTest {
 	
 	private Mele mele;
+    private ZooKeeper zooKeeper;
 
 	@Before
     public void setUp() throws Exception {
 	    String pathname = "target/test-tmp-index-manager";
         rm(new File(pathname));
         LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
-        mele = new Mele(configuration);
+        zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
+                configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
+        mele = new Mele(zooKeeper,configuration);
 		mele.createDirectoryCluster("test");
 		mele.createDirectory("test", "s1");
 		mele.createDirectory("test", "s2");
 		mele.createDirectory("test", "s3");
+	}
+	
+	public void tearDown() throws Exception {
+	    zooKeeper.close();
 	}
 
 	public static void rm(File file) {

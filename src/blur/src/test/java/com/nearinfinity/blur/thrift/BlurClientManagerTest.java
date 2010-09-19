@@ -21,6 +21,7 @@ public class BlurClientManagerTest {
     @Test
     public void testBlurClientManager() throws Exception {
         startDoNothingServer();
+        Thread.sleep(5000);
         List<String> list = BlurClientManager.execute(CONNECTION_STR, new Command<List<String>>() {
             @Override
             public List<String> call(Client client) throws Exception {
@@ -29,9 +30,7 @@ public class BlurClientManagerTest {
         });
         assertEquals(Arrays.asList("donothing"),list);
         stopDoNothingServer();
-        
         Thread.sleep(5000);
-        
         try {
             BlurClientManager.execute(CONNECTION_STR, new Command<List<String>>() {
                 @Override

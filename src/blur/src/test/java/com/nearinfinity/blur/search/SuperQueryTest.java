@@ -25,7 +25,6 @@ import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
-import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.manager.IndexManager;
 
@@ -38,11 +37,10 @@ public class SuperQueryTest {
 		booleanQuery.add(wrapSuper(new TermQuery(new Term("address.street","sulgrave"))), Occur.MUST);
 		
 		Directory directory = createIndex();
-		SuperIndexReader reader = new SuperIndexReader(IndexReader.open(directory));
+		IndexReader reader = IndexManager.warmUpPrimeDocBitSets(IndexReader.open(directory));
 		printAll(new Term("person.name","aaron"),reader);
 		printAll(new Term("address.street","sulgrave"),reader);
 		printAll(new Term(SuperDocument.PRIME_DOC,SuperDocument.PRIME_DOC_VALUE),reader);
-		reader.waitForWarmUp();
 		IndexSearcher searcher = new IndexSearcher(reader);
 		TopDocs topDocs = searcher.search(booleanQuery, 10);
 		assertEquals(2, topDocs.totalHits);
@@ -51,7 +49,7 @@ public class SuperQueryTest {
 		
 	}
 
-	private void printAll(Term term, SuperIndexReader reader) throws IOException {
+	private void printAll(Term term, IndexReader reader) throws IOException {
 		TermDocs termDocs = reader.termDocs(term);
 		while (termDocs.next()) {
 			System.out.println(term + "=>" + termDocs.doc());

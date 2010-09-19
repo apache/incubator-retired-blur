@@ -28,7 +28,6 @@ import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
-import com.nearinfinity.blur.lucene.index.SuperIndexReader;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.IndexManager;
 
@@ -67,8 +66,7 @@ public class RandomSuperQueryTest {
 		System.out.flush();
 		Directory directory = createIndex(random, sampler);
 		IndexReader reader = IndexReader.open(directory);
-		SuperIndexReader indexReader = new SuperIndexReader(reader);
-		indexReader.waitForWarmUp();
+		IndexReader indexReader = IndexManager.warmUpPrimeDocBitSets(reader);
 		System.out.print("Running searches [" + sampler.size() + "]... ");
 		System.out.flush();
 		assertTrue(!sampler.isEmpty());

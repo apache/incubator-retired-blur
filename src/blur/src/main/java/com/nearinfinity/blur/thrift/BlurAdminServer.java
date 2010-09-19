@@ -37,6 +37,7 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
@@ -492,10 +493,10 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
     }
 
     @Override
-    public final FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
-        if (handler.beforeFetchRow(this, table, id)) {
-            FetchResult fetchResult = fetchRowInternal(table,id);
-            return handler.afterFetchRow(this, table, id, fetchResult);
+    public final FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
+        if (handler.beforeFetchRow(this, table, selector)) {
+            FetchResult fetchResult = fetchRowInternal(table,selector);
+            return handler.afterFetchRow(this, table, selector, fetchResult);
         }
         throw new EventStoppedExecutionException("FetchRow Event Stopped.");
     }
@@ -531,7 +532,7 @@ public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 
     public abstract void appendRowInternal(String table, Row row) throws BlurException, MissingShardException, TException;
     public abstract void cancelSearchInternal(long providedUuid) throws BlurException, TException;
-    public abstract FetchResult fetchRowInternal(String table, String id) throws BlurException, MissingShardException, TException;
+    public abstract FetchResult fetchRowInternal(String table, Selector selector) throws BlurException, MissingShardException, TException;
     public abstract void removeRowInternal(String table, String id) throws BlurException, MissingShardException, TException;
     public abstract void replaceRowInternal(String table, Row row) throws BlurException, MissingShardException, TException;
     public abstract Hits searchInternal(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException;

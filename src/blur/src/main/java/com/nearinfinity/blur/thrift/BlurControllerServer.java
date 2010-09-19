@@ -20,6 +20,7 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -86,22 +87,22 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public FetchResult fetchRowInternal(final String table, final String id) throws BlurException,
+	public FetchResult fetchRowInternal(final String table, final Selector selector) throws BlurException,
 			TException, MissingShardException {
-	    String clientHostnamePort = getClientHostnamePort(table,id);
+	    String clientHostnamePort = getClientHostnamePort(table,selector.id);
 		try {
 		    return BlurClientManager.execute(clientHostnamePort, 
 		        new Command<FetchResult>() {
                     @Override
                     public FetchResult call(Client client) throws Exception {
-                        return client.fetchRow(table, id);
+                        return client.fetchRow(table, selector);
                     }
                 });
 		} catch (Exception e) {
 		    LOG.error("Unknown error during fetch of row from table [" + table +
-		    		"] id [" + id + "]",e);
+		    		"] id [" + selector.id + "]",e);
 		    throw new BlurException("Unknown error during fetch of row from table [" + table +
-                    "] id [" + id + "]");
+                    "] id [" + selector.id + "]");
         }
 	}
 

@@ -5,6 +5,7 @@ import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.Selector;
 
 public interface EventHandler {
     
@@ -20,8 +21,8 @@ public interface EventHandler {
     boolean beforeCancelSearch(BlurAdminServer server, long providedUuid);
     void afterCancelSearch(BlurAdminServer server, long providedUuid);
     
-    boolean beforeFetchRow(BlurAdminServer server, String table, String id);
-    FetchResult afterFetchRow(BlurAdminServer server, String table, String id, FetchResult fetchResult);
+    boolean beforeFetchRow(BlurAdminServer server, String table, Selector selector);
+    FetchResult afterFetchRow(BlurAdminServer server, String table, Selector selector, FetchResult fetchResult);
     
     boolean beforeSearch(BlurAdminServer server, String table, SearchQuery query);
     Hits afterSearch(BlurAdminServer server, String table, SearchQuery query, Hits hits);

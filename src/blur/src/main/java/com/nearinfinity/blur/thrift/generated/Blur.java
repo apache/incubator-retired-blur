@@ -51,7 +51,7 @@ public class Blur {
 
     public void appendRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
-    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
+    public FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
@@ -576,18 +576,18 @@ public class Blur {
       return;
     }
 
-    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
+    public FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
-      send_fetchRow(table, id);
+      send_fetchRow(table, selector);
       return recv_fetchRow();
     }
 
-    public void send_fetchRow(String table, String id) throws TException
+    public void send_fetchRow(String table, Selector selector) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("fetchRow", TMessageType.CALL, ++seqid_));
       fetchRow_args args = new fetchRow_args();
       args.setTable(table);
-      args.setId(id);
+      args.setSelector(selector);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1530,7 +1530,7 @@ public class Blur {
         iprot.readMessageEnd();
         fetchRow_result result = new fetchRow_result();
         try {
-          result.success = iface_.fetchRow(args.table, args.id);
+          result.success = iface_.fetchRow(args.table, args.selector);
         } catch (BlurException be) {
           result.be = be;
         } catch (MissingShardException mse) {
@@ -2427,13 +2427,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list34 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list34.size);
-                for (int _i35 = 0; _i35 < _list34.size; ++_i35)
+                TList _list43 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list43.size);
+                for (int _i44 = 0; _i44 < _list43.size; ++_i44)
                 {
-                  String _elem36;
-                  _elem36 = iprot.readString();
-                  this.success.add(_elem36);
+                  String _elem45;
+                  _elem45 = iprot.readString();
+                  this.success.add(_elem45);
                 }
                 iprot.readListEnd();
               }
@@ -2467,9 +2467,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter37 : this.success)
+          for (String _iter46 : this.success)
           {
-            oprot.writeString(_iter37);
+            oprot.writeString(_iter46);
           }
           oprot.writeListEnd();
         }
@@ -3025,13 +3025,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list38 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list38.size);
-                for (int _i39 = 0; _i39 < _list38.size; ++_i39)
+                TList _list47 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list47.size);
+                for (int _i48 = 0; _i48 < _list47.size; ++_i48)
                 {
-                  String _elem40;
-                  _elem40 = iprot.readString();
-                  this.success.add(_elem40);
+                  String _elem49;
+                  _elem49 = iprot.readString();
+                  this.success.add(_elem49);
                 }
                 iprot.readListEnd();
               }
@@ -3065,9 +3065,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter41 : this.success)
+          for (String _iter50 : this.success)
           {
-            oprot.writeString(_iter41);
+            oprot.writeString(_iter50);
           }
           oprot.writeListEnd();
         }
@@ -3623,13 +3623,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list42 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list42.size);
-                for (int _i43 = 0; _i43 < _list42.size; ++_i43)
+                TList _list51 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list51.size);
+                for (int _i52 = 0; _i52 < _list51.size; ++_i52)
                 {
-                  String _elem44;
-                  _elem44 = iprot.readString();
-                  this.success.add(_elem44);
+                  String _elem53;
+                  _elem53 = iprot.readString();
+                  this.success.add(_elem53);
                 }
                 iprot.readListEnd();
               }
@@ -3663,9 +3663,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter45 : this.success)
+          for (String _iter54 : this.success)
           {
-            oprot.writeString(_iter45);
+            oprot.writeString(_iter54);
           }
           oprot.writeListEnd();
         }
@@ -4974,15 +4974,15 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.MAP) {
               {
-                TMap _map46 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map46.size);
-                for (int _i47 = 0; _i47 < _map46.size; ++_i47)
+                TMap _map55 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map55.size);
+                for (int _i56 = 0; _i56 < _map55.size; ++_i56)
                 {
-                  String _key48;
-                  String _val49;
-                  _key48 = iprot.readString();
-                  _val49 = iprot.readString();
-                  this.success.put(_key48, _val49);
+                  String _key57;
+                  String _val58;
+                  _key57 = iprot.readString();
+                  _val58 = iprot.readString();
+                  this.success.put(_key57, _val58);
                 }
                 iprot.readMapEnd();
               }
@@ -5016,10 +5016,10 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter50 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter59 : this.success.entrySet())
           {
-            oprot.writeString(_iter50.getKey());
-            oprot.writeString(_iter50.getValue());
+            oprot.writeString(_iter59.getKey());
+            oprot.writeString(_iter59.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -9916,15 +9916,15 @@ public class Blur {
     private static final TStruct STRUCT_DESC = new TStruct("fetchRow_args");
 
     private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-    private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)2);
+    private static final TField SELECTOR_FIELD_DESC = new TField("selector", TType.STRUCT, (short)2);
 
     public String table;
-    public String id;
+    public Selector selector;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       TABLE((short)1, "table"),
-      ID((short)2, "id");
+      SELECTOR((short)2, "selector");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -9941,8 +9941,8 @@ public class Blur {
         switch(fieldId) {
           case 1: // TABLE
             return TABLE;
-          case 2: // ID
-            return ID;
+          case 2: // SELECTOR
+            return SELECTOR;
           default:
             return null;
         }
@@ -9989,8 +9989,8 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.SELECTOR, new FieldMetaData("selector", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, Selector.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(fetchRow_args.class, metaDataMap);
     }
@@ -10000,11 +10000,11 @@ public class Blur {
 
     public fetchRow_args(
       String table,
-      String id)
+      Selector selector)
     {
       this();
       this.table = table;
-      this.id = id;
+      this.selector = selector;
     }
 
     /**
@@ -10014,8 +10014,8 @@ public class Blur {
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      if (other.isSetId()) {
-        this.id = other.id;
+      if (other.isSetSelector()) {
+        this.selector = new Selector(other.selector);
       }
     }
 
@@ -10052,27 +10052,27 @@ public class Blur {
       }
     }
 
-    public String getId() {
-      return this.id;
+    public Selector getSelector() {
+      return this.selector;
     }
 
-    public fetchRow_args setId(String id) {
-      this.id = id;
+    public fetchRow_args setSelector(Selector selector) {
+      this.selector = selector;
       return this;
     }
 
-    public void unsetId() {
-      this.id = null;
+    public void unsetSelector() {
+      this.selector = null;
     }
 
-    /** Returns true if field id is set (has been asigned a value) and false otherwise */
-    public boolean isSetId() {
-      return this.id != null;
+    /** Returns true if field selector is set (has been asigned a value) and false otherwise */
+    public boolean isSetSelector() {
+      return this.selector != null;
     }
 
-    public void setIdIsSet(boolean value) {
+    public void setSelectorIsSet(boolean value) {
       if (!value) {
-        this.id = null;
+        this.selector = null;
       }
     }
 
@@ -10086,11 +10086,11 @@ public class Blur {
         }
         break;
 
-      case ID:
+      case SELECTOR:
         if (value == null) {
-          unsetId();
+          unsetSelector();
         } else {
-          setId((String)value);
+          setSelector((Selector)value);
         }
         break;
 
@@ -10106,8 +10106,8 @@ public class Blur {
       case TABLE:
         return getTable();
 
-      case ID:
-        return getId();
+      case SELECTOR:
+        return getSelector();
 
       }
       throw new IllegalStateException();
@@ -10122,8 +10122,8 @@ public class Blur {
       switch (field) {
       case TABLE:
         return isSetTable();
-      case ID:
-        return isSetId();
+      case SELECTOR:
+        return isSetSelector();
       }
       throw new IllegalStateException();
     }
@@ -10154,12 +10154,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_id = true && this.isSetId();
-      boolean that_present_id = true && that.isSetId();
-      if (this_present_id || that_present_id) {
-        if (!(this_present_id && that_present_id))
+      boolean this_present_selector = true && this.isSetSelector();
+      boolean that_present_selector = true && that.isSetSelector();
+      if (this_present_selector || that_present_selector) {
+        if (!(this_present_selector && that_present_selector))
           return false;
-        if (!this.id.equals(that.id))
+        if (!this.selector.equals(that.selector))
           return false;
       }
 
@@ -10188,11 +10188,11 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
+      lastComparison = Boolean.valueOf(isSetSelector()).compareTo(typedOther.isSetSelector());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetId()) {        lastComparison = TBaseHelper.compareTo(this.id, typedOther.id);
+      if (isSetSelector()) {        lastComparison = TBaseHelper.compareTo(this.selector, typedOther.selector);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -10217,9 +10217,10 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // ID
-            if (field.type == TType.STRING) {
-              this.id = iprot.readString();
+          case 2: // SELECTOR
+            if (field.type == TType.STRUCT) {
+              this.selector = new Selector();
+              this.selector.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -10244,9 +10245,9 @@ public class Blur {
         oprot.writeString(this.table);
         oprot.writeFieldEnd();
       }
-      if (this.id != null) {
-        oprot.writeFieldBegin(ID_FIELD_DESC);
-        oprot.writeString(this.id);
+      if (this.selector != null) {
+        oprot.writeFieldBegin(SELECTOR_FIELD_DESC);
+        this.selector.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -10266,11 +10267,11 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("id:");
-      if (this.id == null) {
+      sb.append("selector:");
+      if (this.selector == null) {
         sb.append("null");
       } else {
-        sb.append(this.id);
+        sb.append(this.selector);
       }
       first = false;
       sb.append(")");
@@ -13069,13 +13070,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list51 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list51.size);
-                for (int _i52 = 0; _i52 < _list51.size; ++_i52)
+                TList _list60 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list60.size);
+                for (int _i61 = 0; _i61 < _list60.size; ++_i61)
                 {
-                  String _elem53;
-                  _elem53 = iprot.readString();
-                  this.success.add(_elem53);
+                  String _elem62;
+                  _elem62 = iprot.readString();
+                  this.success.add(_elem62);
                 }
                 iprot.readListEnd();
               }
@@ -13117,9 +13118,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter54 : this.success)
+          for (String _iter63 : this.success)
           {
-            oprot.writeString(_iter54);
+            oprot.writeString(_iter63);
           }
           oprot.writeListEnd();
         }

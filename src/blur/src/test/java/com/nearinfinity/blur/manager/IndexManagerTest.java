@@ -3,6 +3,7 @@ package com.nearinfinity.blur.manager;
 import static com.nearinfinity.blur.utils.ThriftUtil.newColumn;
 import static com.nearinfinity.blur.utils.ThriftUtil.newColumnFamily;
 import static com.nearinfinity.blur.utils.ThriftUtil.newRow;
+import static com.nearinfinity.blur.utils.ThriftUtil.newSelector;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
@@ -67,7 +68,7 @@ public class IndexManagerTest {
 		}
 		assertTrue(total > 0);
 		
-		Row r = indexManager.fetchRow("test", "1");
+		Row r = indexManager.fetchRow("test", newSelector("1"));
 		assertEquals(row,r);
 		
 		indexManager.close();

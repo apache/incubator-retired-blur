@@ -5,6 +5,7 @@ import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class EmptyEventHandler implements EventHandler {
 
@@ -19,7 +20,7 @@ public class EmptyEventHandler implements EventHandler {
     }
 
     @Override
-    public FetchResult afterFetchRow(BlurAdminServer server, String table, String id, FetchResult fetchResult) {
+    public FetchResult afterFetchRow(BlurAdminServer server, String table, Selector selector, FetchResult fetchResult) {
         return fetchResult;
     }
 
@@ -49,7 +50,7 @@ public class EmptyEventHandler implements EventHandler {
     }
 
     @Override
-    public boolean beforeFetchRow(BlurAdminServer server, String table, String id) {
+    public boolean beforeFetchRow(BlurAdminServer server, String table, Selector selector) {
         return true;
     }
 

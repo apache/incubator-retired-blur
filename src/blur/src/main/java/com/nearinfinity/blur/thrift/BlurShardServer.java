@@ -16,6 +16,7 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -79,11 +80,11 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public FetchResult fetchRowInternal(String table, String id) throws BlurException, TException, MissingShardException {
+	public FetchResult fetchRowInternal(String table, Selector selector) throws BlurException, TException, MissingShardException {
 	    FetchResult fetchResult = new FetchResult();
 	    fetchResult.table = table;
-	    fetchResult.id = id;
-	    fetchResult.row = indexManager.fetchRow(table,id);
+	    fetchResult.id = selector.id;
+	    fetchResult.row = indexManager.fetchRow(table,selector);
 	    fetchResult.exists = fetchResult.row == null ? false : true;
         return fetchResult;
 	}

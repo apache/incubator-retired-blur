@@ -7,11 +7,13 @@ import java.util.Map;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
@@ -113,26 +115,23 @@ public class DoNothingServer implements Iface {
 
     @Override
     public void cancelSearch(long providedUuid) throws BlurException, TException {
-        // TODO Auto-generated method stub
         
     }
 
     @Override
-    public FetchResult fetchRow(String table, String id) throws BlurException, MissingShardException, TException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
     public void shutdownController(String node) throws BlurException, TException {
-        // TODO Auto-generated method stub
         
     }
 
     @Override
     public void shutdownShard(String node) throws BlurException, TException {
-        // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    public FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException,
+            EventStoppedExecutionException, TException {
+        return null;
     }
 
 }

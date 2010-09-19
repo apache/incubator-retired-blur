@@ -4,6 +4,7 @@ import static com.nearinfinity.blur.manager.IndexManagerTest.rm;
 import static com.nearinfinity.blur.utils.ThriftUtil.newColumn;
 import static com.nearinfinity.blur.utils.ThriftUtil.newColumnFamily;
 import static com.nearinfinity.blur.utils.ThriftUtil.newRow;
+import static com.nearinfinity.blur.utils.ThriftUtil.newSelector;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -119,7 +120,7 @@ public class BlurShardServerTest {
                         newColumn("city","thecity")));
         
         client.replaceRow(TABLE_NAME, row);
-        FetchResult fetchRow = client.fetchRow(TABLE_NAME, "1000");
+        FetchResult fetchRow = client.fetchRow(TABLE_NAME, newSelector("1000"));
         assertTrue(fetchRow.exists);
         assertEquals(row,fetchRow.row);
     }

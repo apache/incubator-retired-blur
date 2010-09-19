@@ -45,6 +45,7 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.TermDocIterable;
@@ -187,11 +188,11 @@ public class IndexManager {
 		//@todo finish
 	}
 
-	public Row fetchRow(String table, String id) throws BlurException, MissingShardException {
+	public Row fetchRow(String table, Selector selector) throws BlurException, MissingShardException {
 		try {
-			IndexReader reader = getIndexReader(table,id);
+			IndexReader reader = getIndexReader(table,selector.id);
 			checkIfShardIsNull(reader);
-			return getRow(id,  getDocs(reader,id));
+			return getRow(selector, getDocs(reader,selector.id));
 		} catch (Exception e) {
 			LOG.error("Unknown error while trying to fetch row.",e);
 			throw new BlurException(e.getMessage());

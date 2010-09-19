@@ -7,8 +7,15 @@ import java.util.TreeSet;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class ThriftUtil {
+    
+    public static Selector newSelector(String id) {
+        Selector selector = new Selector();
+        selector.id = id;
+        return selector;
+    }
 
     public static Row newRow(String id, ColumnFamily... columnFamilies) {
         Row row = new Row().setId(id);

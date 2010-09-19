@@ -12,12 +12,13 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class RowSuperDocumentUtil {
 
-	public static Row getRow(String id, Iterable<Document> docs) {
+	public static Row getRow(Selector selector, Iterable<Document> docs) {
 		Row row = new Row();
-		row.setId(id);
+		row.setId(selector.id);
 		boolean empty = true;
 		if (docs == null) {
 		    return null;

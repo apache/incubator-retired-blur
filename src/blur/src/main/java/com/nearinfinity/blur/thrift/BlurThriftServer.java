@@ -41,7 +41,7 @@ public class BlurThriftServer implements BlurConstants {
 		this.iface = iface;
 	}
 
-	public static void main(String[] args) throws IOException, BlurException, InterruptedException {
+	public static void main(String... args) throws IOException, BlurException, InterruptedException {
 	    System.out.println("Using hostname [" + AddressUtil.getMyHostName() + "]");
 		BlurConfiguration configuration = new BlurConfiguration();
 		ZooKeeper zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 

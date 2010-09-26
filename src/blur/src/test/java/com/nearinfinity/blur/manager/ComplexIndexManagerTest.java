@@ -23,7 +23,7 @@ import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.mele.Mele;
-import com.nearinfinity.mele.store.zookeeper.NoOpWatcher;
+import com.nearinfinity.mele.zookeeper.NoOpWatcher;
 
 public class ComplexIndexManagerTest {
 

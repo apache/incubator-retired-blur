@@ -13,22 +13,15 @@
 			<artifactId>mele</artifactId>
 			<version>0.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.cassandra</groupId>
+			<artifactId>apache-cassandra</artifactId>
+			<version>0.6.5</version>
+		</dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-            <version>0.21.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-hdfs</artifactId>
-            <version>0.21.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapred</artifactId>
-            <version>0.21.0</version>
+            <artifactId>hadoop</artifactId>
+            <version>0.20.2-core</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -70,11 +63,11 @@
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.1</version>
 		</dependency>
-		<dependency>
+		<!--  dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>1.4</version>
-		</dependency>
+		</dependency -->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-jaxrs</artifactId>

@@ -46,8 +46,8 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
-import com.nearinfinity.mele.store.util.AddressUtil;
-import com.nearinfinity.mele.store.util.ZkUtils;
+import com.nearinfinity.mele.util.AddressUtil;
+import com.nearinfinity.mele.util.ZkUtils;
 
 public abstract class BlurAdminServer implements Iface, BlurConstants, Watcher {
 	

@@ -35,7 +35,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.mele.Mele;
-import com.nearinfinity.mele.store.zookeeper.NoOpWatcher;
+import com.nearinfinity.mele.zookeeper.NoOpWatcher;
 
 public class BlurShardServerTest {
     

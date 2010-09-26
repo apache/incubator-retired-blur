@@ -18,8 +18,8 @@ import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
-import com.nearinfinity.mele.store.util.AddressUtil;
-import com.nearinfinity.mele.store.zookeeper.NoOpWatcher;
+import com.nearinfinity.mele.util.AddressUtil;
+import com.nearinfinity.mele.zookeeper.NoOpWatcher;
 
 public class BlurThriftServer implements BlurConstants {
 

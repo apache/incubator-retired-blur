@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -94,7 +95,7 @@ public class BlurClientManager {
         String host = getHost(connectionStr);
         int port = getPort(connectionStr);
         TTransport trans = new TSocket(host, port);
-        TProtocol proto = new TBinaryProtocol(trans);
+        TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
         Client client = new Client(proto);
         try {
             trans.open();

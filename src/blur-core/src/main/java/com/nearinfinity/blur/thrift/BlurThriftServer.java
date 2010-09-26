@@ -7,8 +7,10 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TBinaryProtocol.Factory;
 import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
+import org.apache.thrift.transport.TTransportFactory;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.thrift.generated.Blur;
@@ -34,6 +36,7 @@ public class BlurThriftServer implements BlurConstants {
     private Factory protFactory;
     private Processor processor;
     private TServerSocket serverTransport;
+    private TTransportFactory transportFactory;
     private Thread listeningThread;
 
 	public BlurThriftServer(int port, Iface iface) {
@@ -71,13 +74,16 @@ public class BlurThriftServer implements BlurConstants {
 
     public BlurThriftServer start(final String name) {
 	    listeningThread = new Thread(new Runnable() {
+
             @Override
             public void run() {
                 try {
                     serverTransport = new TServerSocket(port);
+                    transportFactory = new TFramedTransport.Factory();
                     processor = new Blur.Processor(iface);
                     protFactory = new TBinaryProtocol.Factory(true, true);
                     server = new TThreadPoolServer(processor, serverTransport, protFactory);
+                    new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
                     LOG.info("Starting server on port [" + port + "]");
                     server.serve();
                 } catch (TTransportException e) {

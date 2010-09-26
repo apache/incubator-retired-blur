@@ -11,8 +11,6 @@ import static junit.framework.TestCase.*;
 
 public class BlurClientManagerTest {
     
-    
-    
     private static final String CONNECTION_STR = "localhost:" + 7832;
     private static final int PORT = 7832;
     private Thread serverThread;

@@ -62,6 +62,12 @@ struct FetchResult {
   4:bool exists
 }
 
+struct Selector {
+  1:string id,
+  2:list<string> columnFamilies,
+  3:map<string,string> columns
+}
+
 struct SearchQuery {
   1:string queryStr,
   2:bool superQueryOn,
@@ -92,10 +98,12 @@ service Blur {
   void create(1:string table, 2:TableDescriptor desc) throws (1:BlurException ex)
   void drop(1:string table) throws (1:BlurException ex)
 
+  void batchUpdate(1:string table, 2:string shardId, 3:string uri) throws (1:BlurException be, 2: MissingShardException mse)
+
   void removeRow(1:string table, 2:string id) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   void replaceRow(1:string table, 2:Row row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   void appendRow(1:string table, 2:Row row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-  FetchResult fetchRow(1:string table, 2:string id) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
+  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
 
   Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   void cancelSearch(1:i64 providedUuid) throws (1:BlurException be, 3: EventStoppedExecutionException esee)
@@ -108,7 +116,6 @@ service Blur {
 
   void shutdownShard(1:string node) throws (1:BlurException be)
   void shutdownController(1:string node) throws (1:BlurException be)
-
 }
 
 

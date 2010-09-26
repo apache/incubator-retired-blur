@@ -41,7 +41,7 @@
 	<repositories>
         <repository>
             <id>libdir</id>
-            <url>file://${basedir}../lib</url>
+            <url>file://${basedir}/../lib</url>
         </repository>
     </repositories>
 	

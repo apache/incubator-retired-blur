@@ -11,6 +11,7 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManager.TableManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
@@ -111,6 +112,29 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     public void close() throws InterruptedException {
         indexManager.close();
+    }
+
+    @Override
+    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException {
+        throw new RuntimeException("not implemented");
+    }
+    
+    @Override
+    public void appendRowBinary(String table, String id, byte[] rowBytes) throws BlurException, MissingShardException, EventStoppedExecutionException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+
+    @Override
+    public byte[] fetchRowBinary(String table, String id, byte[] selector) throws BlurException, MissingShardException,
+            EventStoppedExecutionException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    public void replaceRowBinary(String table, String id, byte[] rowBytes) throws BlurException, MissingShardException,
+            EventStoppedExecutionException, TException {
+        throw new RuntimeException("not implemented");
     }
 
 

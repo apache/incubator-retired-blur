@@ -45,13 +45,21 @@ public class Blur {
 
     public void drop(String table) throws BlurException, TException;
 
+    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException;
+
     public void removeRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
     public void replaceRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
+    public void replaceRowBinary(String table, String id, byte[] row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
+
     public void appendRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
+    public void appendRowBinary(String table, String id, byte[] row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
+
     public FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
+
+    public byte[] fetchRowBinary(String table, String id, byte[] selector) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
@@ -447,6 +455,47 @@ public class Blur {
       return;
     }
 
+    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException
+    {
+      send_batchUpdate(table, shardId, uri);
+      recv_batchUpdate();
+    }
+
+    public void send_batchUpdate(String table, String shardId, String uri) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("batchUpdate", TMessageType.CALL, ++seqid_));
+      batchUpdate_args args = new batchUpdate_args();
+      args.setTable(table);
+      args.setShardId(shardId);
+      args.setUri(uri);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_batchUpdate() throws BlurException, MissingShardException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "batchUpdate failed: out of sequence response");
+      }
+      batchUpdate_result result = new batchUpdate_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
+      }
+      return;
+    }
+
     public void removeRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       send_removeRow(table, id);
@@ -533,6 +582,50 @@ public class Blur {
       return;
     }
 
+    public void replaceRowBinary(String table, String id, byte[] row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
+    {
+      send_replaceRowBinary(table, id, row);
+      recv_replaceRowBinary();
+    }
+
+    public void send_replaceRowBinary(String table, String id, byte[] row) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("replaceRowBinary", TMessageType.CALL, ++seqid_));
+      replaceRowBinary_args args = new replaceRowBinary_args();
+      args.setTable(table);
+      args.setId(id);
+      args.setRow(row);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_replaceRowBinary() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "replaceRowBinary failed: out of sequence response");
+      }
+      replaceRowBinary_result result = new replaceRowBinary_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
+      }
+      if (result.esee != null) {
+        throw result.esee;
+      }
+      return;
+    }
+
     public void appendRow(String table, Row row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
     {
       send_appendRow(table, row);
@@ -562,6 +655,50 @@ public class Blur {
         throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "appendRow failed: out of sequence response");
       }
       appendRow_result result = new appendRow_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
+      }
+      if (result.esee != null) {
+        throw result.esee;
+      }
+      return;
+    }
+
+    public void appendRowBinary(String table, String id, byte[] row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
+    {
+      send_appendRowBinary(table, id, row);
+      recv_appendRowBinary();
+    }
+
+    public void send_appendRowBinary(String table, String id, byte[] row) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("appendRowBinary", TMessageType.CALL, ++seqid_));
+      appendRowBinary_args args = new appendRowBinary_args();
+      args.setTable(table);
+      args.setId(id);
+      args.setRow(row);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_appendRowBinary() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "appendRowBinary failed: out of sequence response");
+      }
+      appendRowBinary_result result = new appendRowBinary_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.be != null) {
@@ -620,6 +757,53 @@ public class Blur {
         throw result.esee;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
+    }
+
+    public byte[] fetchRowBinary(String table, String id, byte[] selector) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
+    {
+      send_fetchRowBinary(table, id, selector);
+      return recv_fetchRowBinary();
+    }
+
+    public void send_fetchRowBinary(String table, String id, byte[] selector) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.CALL, ++seqid_));
+      fetchRowBinary_args args = new fetchRowBinary_args();
+      args.setTable(table);
+      args.setId(id);
+      args.setSelector(selector);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public byte[] recv_fetchRowBinary() throws BlurException, MissingShardException, EventStoppedExecutionException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "fetchRowBinary failed: out of sequence response");
+      }
+      fetchRowBinary_result result = new fetchRowBinary_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.be != null) {
+        throw result.be;
+      }
+      if (result.mse != null) {
+        throw result.mse;
+      }
+      if (result.esee != null) {
+        throw result.esee;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRowBinary failed: unknown result");
     }
 
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, EventStoppedExecutionException, TException
@@ -1004,10 +1188,14 @@ public class Blur {
       processMap_.put("disable", new disable());
       processMap_.put("create", new create());
       processMap_.put("drop", new drop());
+      processMap_.put("batchUpdate", new batchUpdate());
       processMap_.put("removeRow", new removeRow());
       processMap_.put("replaceRow", new replaceRow());
+      processMap_.put("replaceRowBinary", new replaceRowBinary());
       processMap_.put("appendRow", new appendRow());
+      processMap_.put("appendRowBinary", new appendRowBinary());
       processMap_.put("fetchRow", new fetchRow());
+      processMap_.put("fetchRowBinary", new fetchRowBinary());
       processMap_.put("search", new search());
       processMap_.put("cancelSearch", new cancelSearch());
       processMap_.put("getDynamicTerms", new getDynamicTerms());
@@ -1386,6 +1574,46 @@ public class Blur {
 
     }
 
+    private class batchUpdate implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        batchUpdate_args args = new batchUpdate_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("batchUpdate", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        batchUpdate_result result = new batchUpdate_result();
+        try {
+          iface_.batchUpdate(args.table, args.shardId, args.uri);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing batchUpdate", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing batchUpdate");
+          oprot.writeMessageBegin(new TMessage("batchUpdate", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("batchUpdate", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class removeRow implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
@@ -1470,6 +1698,48 @@ public class Blur {
 
     }
 
+    private class replaceRowBinary implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        replaceRowBinary_args args = new replaceRowBinary_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("replaceRowBinary", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        replaceRowBinary_result result = new replaceRowBinary_result();
+        try {
+          iface_.replaceRowBinary(args.table, args.id, args.row);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing replaceRowBinary", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing replaceRowBinary");
+          oprot.writeMessageBegin(new TMessage("replaceRowBinary", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("replaceRowBinary", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class appendRow implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
@@ -1512,6 +1782,48 @@ public class Blur {
 
     }
 
+    private class appendRowBinary implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        appendRowBinary_args args = new appendRowBinary_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("appendRowBinary", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        appendRowBinary_result result = new appendRowBinary_result();
+        try {
+          iface_.appendRowBinary(args.table, args.id, args.row);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing appendRowBinary", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing appendRowBinary");
+          oprot.writeMessageBegin(new TMessage("appendRowBinary", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("appendRowBinary", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class fetchRow implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
@@ -1547,6 +1859,48 @@ public class Blur {
           return;
         }
         oprot.writeMessageBegin(new TMessage("fetchRow", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class fetchRowBinary implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        fetchRowBinary_args args = new fetchRowBinary_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        fetchRowBinary_result result = new fetchRowBinary_result();
+        try {
+          result.success = iface_.fetchRowBinary(args.table, args.id, args.selector);
+        } catch (BlurException be) {
+          result.be = be;
+        } catch (MissingShardException mse) {
+          result.mse = mse;
+        } catch (EventStoppedExecutionException esee) {
+          result.esee = esee;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing fetchRowBinary", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchRowBinary");
+          oprot.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -7423,6 +7777,835 @@ public class Blur {
 
   }
 
+  public static class batchUpdate_args implements TBase<batchUpdate_args, batchUpdate_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("batchUpdate_args");
+
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+    private static final TField SHARD_ID_FIELD_DESC = new TField("shardId", TType.STRING, (short)2);
+    private static final TField URI_FIELD_DESC = new TField("uri", TType.STRING, (short)3);
+
+    public String table;
+    public String shardId;
+    public String uri;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TABLE((short)1, "table"),
+      SHARD_ID((short)2, "shardId"),
+      URI((short)3, "uri");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // SHARD_ID
+            return SHARD_ID;
+          case 3: // URI
+            return URI;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.SHARD_ID, new FieldMetaData("shardId", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.URI, new FieldMetaData("uri", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(batchUpdate_args.class, metaDataMap);
+    }
+
+    public batchUpdate_args() {
+    }
+
+    public batchUpdate_args(
+      String table,
+      String shardId,
+      String uri)
+    {
+      this();
+      this.table = table;
+      this.shardId = shardId;
+      this.uri = uri;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public batchUpdate_args(batchUpdate_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetShardId()) {
+        this.shardId = other.shardId;
+      }
+      if (other.isSetUri()) {
+        this.uri = other.uri;
+      }
+    }
+
+    public batchUpdate_args deepCopy() {
+      return new batchUpdate_args(this);
+    }
+
+    @Deprecated
+    public batchUpdate_args clone() {
+      return new batchUpdate_args(this);
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public batchUpdate_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public String getShardId() {
+      return this.shardId;
+    }
+
+    public batchUpdate_args setShardId(String shardId) {
+      this.shardId = shardId;
+      return this;
+    }
+
+    public void unsetShardId() {
+      this.shardId = null;
+    }
+
+    /** Returns true if field shardId is set (has been asigned a value) and false otherwise */
+    public boolean isSetShardId() {
+      return this.shardId != null;
+    }
+
+    public void setShardIdIsSet(boolean value) {
+      if (!value) {
+        this.shardId = null;
+      }
+    }
+
+    public String getUri() {
+      return this.uri;
+    }
+
+    public batchUpdate_args setUri(String uri) {
+      this.uri = uri;
+      return this;
+    }
+
+    public void unsetUri() {
+      this.uri = null;
+    }
+
+    /** Returns true if field uri is set (has been asigned a value) and false otherwise */
+    public boolean isSetUri() {
+      return this.uri != null;
+    }
+
+    public void setUriIsSet(boolean value) {
+      if (!value) {
+        this.uri = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case SHARD_ID:
+        if (value == null) {
+          unsetShardId();
+        } else {
+          setShardId((String)value);
+        }
+        break;
+
+      case URI:
+        if (value == null) {
+          unsetUri();
+        } else {
+          setUri((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case SHARD_ID:
+        return getShardId();
+
+      case URI:
+        return getUri();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case SHARD_ID:
+        return isSetShardId();
+      case URI:
+        return isSetUri();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof batchUpdate_args)
+        return this.equals((batchUpdate_args)that);
+      return false;
+    }
+
+    public boolean equals(batchUpdate_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_shardId = true && this.isSetShardId();
+      boolean that_present_shardId = true && that.isSetShardId();
+      if (this_present_shardId || that_present_shardId) {
+        if (!(this_present_shardId && that_present_shardId))
+          return false;
+        if (!this.shardId.equals(that.shardId))
+          return false;
+      }
+
+      boolean this_present_uri = true && this.isSetUri();
+      boolean that_present_uri = true && that.isSetUri();
+      if (this_present_uri || that_present_uri) {
+        if (!(this_present_uri && that_present_uri))
+          return false;
+        if (!this.uri.equals(that.uri))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(batchUpdate_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      batchUpdate_args typedOther = (batchUpdate_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetShardId()).compareTo(typedOther.isSetShardId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetShardId()) {        lastComparison = TBaseHelper.compareTo(this.shardId, typedOther.shardId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetUri()).compareTo(typedOther.isSetUri());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetUri()) {        lastComparison = TBaseHelper.compareTo(this.uri, typedOther.uri);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // SHARD_ID
+            if (field.type == TType.STRING) {
+              this.shardId = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // URI
+            if (field.type == TType.STRING) {
+              this.uri = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      if (this.shardId != null) {
+        oprot.writeFieldBegin(SHARD_ID_FIELD_DESC);
+        oprot.writeString(this.shardId);
+        oprot.writeFieldEnd();
+      }
+      if (this.uri != null) {
+        oprot.writeFieldBegin(URI_FIELD_DESC);
+        oprot.writeString(this.uri);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("batchUpdate_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("shardId:");
+      if (this.shardId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.shardId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("uri:");
+      if (this.uri == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.uri);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class batchUpdate_result implements TBase<batchUpdate_result, batchUpdate_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("batchUpdate_result");
+
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+
+    public BlurException be;
+    public MissingShardException mse;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      BE((short)1, "be"),
+      MSE((short)2, "mse");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(batchUpdate_result.class, metaDataMap);
+    }
+
+    public batchUpdate_result() {
+    }
+
+    public batchUpdate_result(
+      BlurException be,
+      MissingShardException mse)
+    {
+      this();
+      this.be = be;
+      this.mse = mse;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public batchUpdate_result(batchUpdate_result other) {
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
+      }
+    }
+
+    public batchUpdate_result deepCopy() {
+      return new batchUpdate_result(this);
+    }
+
+    @Deprecated
+    public batchUpdate_result clone() {
+      return new batchUpdate_result(this);
+    }
+
+    public BlurException getBe() {
+      return this.be;
+    }
+
+    public batchUpdate_result setBe(BlurException be) {
+      this.be = be;
+      return this;
+    }
+
+    public void unsetBe() {
+      this.be = null;
+    }
+
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
+    }
+
+    public void setBeIsSet(boolean value) {
+      if (!value) {
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public batchUpdate_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case BE:
+        if (value == null) {
+          unsetBe();
+        } else {
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof batchUpdate_result)
+        return this.equals((batchUpdate_result)that);
+      return false;
+    }
+
+    public boolean equals(batchUpdate_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
+          return false;
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(batchUpdate_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      batchUpdate_result typedOther = (batchUpdate_result)other;
+
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("batchUpdate_result(");
+      boolean first = true;
+
+      sb.append("be:");
+      if (this.be == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
   public static class removeRow_args implements TBase<removeRow_args, removeRow_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("removeRow_args");
 
@@ -9082,6 +10265,928 @@ public class Blur {
 
   }
 
+  public static class replaceRowBinary_args implements TBase<replaceRowBinary_args, replaceRowBinary_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("replaceRowBinary_args");
+
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+    private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)2);
+    private static final TField ROW_FIELD_DESC = new TField("row", TType.STRING, (short)3);
+
+    public String table;
+    public String id;
+    public byte[] row;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TABLE((short)1, "table"),
+      ID((short)2, "id"),
+      ROW((short)3, "row");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // ID
+            return ID;
+          case 3: // ROW
+            return ROW;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.ROW, new FieldMetaData("row", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(replaceRowBinary_args.class, metaDataMap);
+    }
+
+    public replaceRowBinary_args() {
+    }
+
+    public replaceRowBinary_args(
+      String table,
+      String id,
+      byte[] row)
+    {
+      this();
+      this.table = table;
+      this.id = id;
+      this.row = row;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public replaceRowBinary_args(replaceRowBinary_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetId()) {
+        this.id = other.id;
+      }
+      if (other.isSetRow()) {
+        this.row = new byte[other.row.length];
+        System.arraycopy(other.row, 0, row, 0, other.row.length);
+      }
+    }
+
+    public replaceRowBinary_args deepCopy() {
+      return new replaceRowBinary_args(this);
+    }
+
+    @Deprecated
+    public replaceRowBinary_args clone() {
+      return new replaceRowBinary_args(this);
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public replaceRowBinary_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public String getId() {
+      return this.id;
+    }
+
+    public replaceRowBinary_args setId(String id) {
+      this.id = id;
+      return this;
+    }
+
+    public void unsetId() {
+      this.id = null;
+    }
+
+    /** Returns true if field id is set (has been asigned a value) and false otherwise */
+    public boolean isSetId() {
+      return this.id != null;
+    }
+
+    public void setIdIsSet(boolean value) {
+      if (!value) {
+        this.id = null;
+      }
+    }
+
+    public byte[] getRow() {
+      return this.row;
+    }
+
+    public replaceRowBinary_args setRow(byte[] row) {
+      this.row = row;
+      return this;
+    }
+
+    public void unsetRow() {
+      this.row = null;
+    }
+
+    /** Returns true if field row is set (has been asigned a value) and false otherwise */
+    public boolean isSetRow() {
+      return this.row != null;
+    }
+
+    public void setRowIsSet(boolean value) {
+      if (!value) {
+        this.row = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case ID:
+        if (value == null) {
+          unsetId();
+        } else {
+          setId((String)value);
+        }
+        break;
+
+      case ROW:
+        if (value == null) {
+          unsetRow();
+        } else {
+          setRow((byte[])value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case ID:
+        return getId();
+
+      case ROW:
+        return getRow();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case ID:
+        return isSetId();
+      case ROW:
+        return isSetRow();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof replaceRowBinary_args)
+        return this.equals((replaceRowBinary_args)that);
+      return false;
+    }
+
+    public boolean equals(replaceRowBinary_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_id = true && this.isSetId();
+      boolean that_present_id = true && that.isSetId();
+      if (this_present_id || that_present_id) {
+        if (!(this_present_id && that_present_id))
+          return false;
+        if (!this.id.equals(that.id))
+          return false;
+      }
+
+      boolean this_present_row = true && this.isSetRow();
+      boolean that_present_row = true && that.isSetRow();
+      if (this_present_row || that_present_row) {
+        if (!(this_present_row && that_present_row))
+          return false;
+        if (!java.util.Arrays.equals(this.row, that.row))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(replaceRowBinary_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      replaceRowBinary_args typedOther = (replaceRowBinary_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetId()) {        lastComparison = TBaseHelper.compareTo(this.id, typedOther.id);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetRow()).compareTo(typedOther.isSetRow());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRow()) {        lastComparison = TBaseHelper.compareTo(this.row, typedOther.row);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // ID
+            if (field.type == TType.STRING) {
+              this.id = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // ROW
+            if (field.type == TType.STRING) {
+              this.row = iprot.readBinary();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      if (this.id != null) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        oprot.writeString(this.id);
+        oprot.writeFieldEnd();
+      }
+      if (this.row != null) {
+        oprot.writeFieldBegin(ROW_FIELD_DESC);
+        oprot.writeBinary(this.row);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("replaceRowBinary_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("id:");
+      if (this.id == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.id);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("row:");
+      if (this.row == null) {
+        sb.append("null");
+      } else {
+          int __row_size = Math.min(this.row.length, 128);
+          for (int i = 0; i < __row_size; i++) {
+            if (i != 0) sb.append(" ");
+            sb.append(Integer.toHexString(this.row[i]).length() > 1 ? Integer.toHexString(this.row[i]).substring(Integer.toHexString(this.row[i]).length() - 2).toUpperCase() : "0" + Integer.toHexString(this.row[i]).toUpperCase());
+          }
+          if (this.row.length > 128) sb.append(" ...");
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class replaceRowBinary_result implements TBase<replaceRowBinary_result, replaceRowBinary_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("replaceRowBinary_result");
+
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
+
+    public BlurException be;
+    public MissingShardException mse;
+    public EventStoppedExecutionException esee;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      BE((short)1, "be"),
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
+          case 3: // ESEE
+            return ESEE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(replaceRowBinary_result.class, metaDataMap);
+    }
+
+    public replaceRowBinary_result() {
+    }
+
+    public replaceRowBinary_result(
+      BlurException be,
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
+    {
+      this();
+      this.be = be;
+      this.mse = mse;
+      this.esee = esee;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public replaceRowBinary_result(replaceRowBinary_result other) {
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
+      }
+    }
+
+    public replaceRowBinary_result deepCopy() {
+      return new replaceRowBinary_result(this);
+    }
+
+    @Deprecated
+    public replaceRowBinary_result clone() {
+      return new replaceRowBinary_result(this);
+    }
+
+    public BlurException getBe() {
+      return this.be;
+    }
+
+    public replaceRowBinary_result setBe(BlurException be) {
+      this.be = be;
+      return this;
+    }
+
+    public void unsetBe() {
+      this.be = null;
+    }
+
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
+    }
+
+    public void setBeIsSet(boolean value) {
+      if (!value) {
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public replaceRowBinary_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
+      }
+    }
+
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public replaceRowBinary_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case BE:
+        if (value == null) {
+          unsetBe();
+        } else {
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
+        }
+        break;
+
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
+
+      case ESEE:
+        return getEsee();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
+      case ESEE:
+        return isSetEsee();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof replaceRowBinary_result)
+        return this.equals((replaceRowBinary_result)that);
+      return false;
+    }
+
+    public boolean equals(replaceRowBinary_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
+          return false;
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
+          return false;
+      }
+
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(replaceRowBinary_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      replaceRowBinary_result typedOther = (replaceRowBinary_result)other;
+
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("replaceRowBinary_result(");
+      boolean first = true;
+
+      sb.append("be:");
+      if (this.be == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
   public static class appendRow_args implements TBase<appendRow_args, appendRow_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("appendRow_args");
 
@@ -9877,6 +11982,928 @@ public class Blur {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("appendRow_result(");
+      boolean first = true;
+
+      sb.append("be:");
+      if (this.be == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class appendRowBinary_args implements TBase<appendRowBinary_args, appendRowBinary_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("appendRowBinary_args");
+
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+    private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)2);
+    private static final TField ROW_FIELD_DESC = new TField("row", TType.STRING, (short)3);
+
+    public String table;
+    public String id;
+    public byte[] row;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TABLE((short)1, "table"),
+      ID((short)2, "id"),
+      ROW((short)3, "row");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // ID
+            return ID;
+          case 3: // ROW
+            return ROW;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.ROW, new FieldMetaData("row", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(appendRowBinary_args.class, metaDataMap);
+    }
+
+    public appendRowBinary_args() {
+    }
+
+    public appendRowBinary_args(
+      String table,
+      String id,
+      byte[] row)
+    {
+      this();
+      this.table = table;
+      this.id = id;
+      this.row = row;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public appendRowBinary_args(appendRowBinary_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetId()) {
+        this.id = other.id;
+      }
+      if (other.isSetRow()) {
+        this.row = new byte[other.row.length];
+        System.arraycopy(other.row, 0, row, 0, other.row.length);
+      }
+    }
+
+    public appendRowBinary_args deepCopy() {
+      return new appendRowBinary_args(this);
+    }
+
+    @Deprecated
+    public appendRowBinary_args clone() {
+      return new appendRowBinary_args(this);
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public appendRowBinary_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public String getId() {
+      return this.id;
+    }
+
+    public appendRowBinary_args setId(String id) {
+      this.id = id;
+      return this;
+    }
+
+    public void unsetId() {
+      this.id = null;
+    }
+
+    /** Returns true if field id is set (has been asigned a value) and false otherwise */
+    public boolean isSetId() {
+      return this.id != null;
+    }
+
+    public void setIdIsSet(boolean value) {
+      if (!value) {
+        this.id = null;
+      }
+    }
+
+    public byte[] getRow() {
+      return this.row;
+    }
+
+    public appendRowBinary_args setRow(byte[] row) {
+      this.row = row;
+      return this;
+    }
+
+    public void unsetRow() {
+      this.row = null;
+    }
+
+    /** Returns true if field row is set (has been asigned a value) and false otherwise */
+    public boolean isSetRow() {
+      return this.row != null;
+    }
+
+    public void setRowIsSet(boolean value) {
+      if (!value) {
+        this.row = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case ID:
+        if (value == null) {
+          unsetId();
+        } else {
+          setId((String)value);
+        }
+        break;
+
+      case ROW:
+        if (value == null) {
+          unsetRow();
+        } else {
+          setRow((byte[])value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case ID:
+        return getId();
+
+      case ROW:
+        return getRow();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case ID:
+        return isSetId();
+      case ROW:
+        return isSetRow();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof appendRowBinary_args)
+        return this.equals((appendRowBinary_args)that);
+      return false;
+    }
+
+    public boolean equals(appendRowBinary_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_id = true && this.isSetId();
+      boolean that_present_id = true && that.isSetId();
+      if (this_present_id || that_present_id) {
+        if (!(this_present_id && that_present_id))
+          return false;
+        if (!this.id.equals(that.id))
+          return false;
+      }
+
+      boolean this_present_row = true && this.isSetRow();
+      boolean that_present_row = true && that.isSetRow();
+      if (this_present_row || that_present_row) {
+        if (!(this_present_row && that_present_row))
+          return false;
+        if (!java.util.Arrays.equals(this.row, that.row))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(appendRowBinary_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      appendRowBinary_args typedOther = (appendRowBinary_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetId()) {        lastComparison = TBaseHelper.compareTo(this.id, typedOther.id);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetRow()).compareTo(typedOther.isSetRow());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetRow()) {        lastComparison = TBaseHelper.compareTo(this.row, typedOther.row);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // ID
+            if (field.type == TType.STRING) {
+              this.id = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // ROW
+            if (field.type == TType.STRING) {
+              this.row = iprot.readBinary();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      if (this.id != null) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        oprot.writeString(this.id);
+        oprot.writeFieldEnd();
+      }
+      if (this.row != null) {
+        oprot.writeFieldBegin(ROW_FIELD_DESC);
+        oprot.writeBinary(this.row);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("appendRowBinary_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("id:");
+      if (this.id == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.id);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("row:");
+      if (this.row == null) {
+        sb.append("null");
+      } else {
+          int __row_size = Math.min(this.row.length, 128);
+          for (int i = 0; i < __row_size; i++) {
+            if (i != 0) sb.append(" ");
+            sb.append(Integer.toHexString(this.row[i]).length() > 1 ? Integer.toHexString(this.row[i]).substring(Integer.toHexString(this.row[i]).length() - 2).toUpperCase() : "0" + Integer.toHexString(this.row[i]).toUpperCase());
+          }
+          if (this.row.length > 128) sb.append(" ...");
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class appendRowBinary_result implements TBase<appendRowBinary_result, appendRowBinary_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("appendRowBinary_result");
+
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
+
+    public BlurException be;
+    public MissingShardException mse;
+    public EventStoppedExecutionException esee;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      BE((short)1, "be"),
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
+          case 3: // ESEE
+            return ESEE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(appendRowBinary_result.class, metaDataMap);
+    }
+
+    public appendRowBinary_result() {
+    }
+
+    public appendRowBinary_result(
+      BlurException be,
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
+    {
+      this();
+      this.be = be;
+      this.mse = mse;
+      this.esee = esee;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public appendRowBinary_result(appendRowBinary_result other) {
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
+      }
+    }
+
+    public appendRowBinary_result deepCopy() {
+      return new appendRowBinary_result(this);
+    }
+
+    @Deprecated
+    public appendRowBinary_result clone() {
+      return new appendRowBinary_result(this);
+    }
+
+    public BlurException getBe() {
+      return this.be;
+    }
+
+    public appendRowBinary_result setBe(BlurException be) {
+      this.be = be;
+      return this;
+    }
+
+    public void unsetBe() {
+      this.be = null;
+    }
+
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
+    }
+
+    public void setBeIsSet(boolean value) {
+      if (!value) {
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public appendRowBinary_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
+      }
+    }
+
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public appendRowBinary_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case BE:
+        if (value == null) {
+          unsetBe();
+        } else {
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
+        }
+        break;
+
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
+
+      case ESEE:
+        return getEsee();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
+      case ESEE:
+        return isSetEsee();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof appendRowBinary_result)
+        return this.equals((appendRowBinary_result)that);
+      return false;
+    }
+
+    public boolean equals(appendRowBinary_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
+          return false;
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
+          return false;
+      }
+
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(appendRowBinary_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      appendRowBinary_result typedOther = (appendRowBinary_result)other;
+
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("appendRowBinary_result(");
       boolean first = true;
 
       sb.append("be:");
@@ -10793,6 +13820,1020 @@ public class Blur {
         sb.append("null");
       } else {
         sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("be:");
+      if (this.be == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.be);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("mse:");
+      if (this.mse == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mse);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("esee:");
+      if (this.esee == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.esee);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class fetchRowBinary_args implements TBase<fetchRowBinary_args, fetchRowBinary_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchRowBinary_args");
+
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+    private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)2);
+    private static final TField SELECTOR_FIELD_DESC = new TField("selector", TType.STRING, (short)3);
+
+    public String table;
+    public String id;
+    public byte[] selector;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TABLE((short)1, "table"),
+      ID((short)2, "id"),
+      SELECTOR((short)3, "selector");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // ID
+            return ID;
+          case 3: // SELECTOR
+            return SELECTOR;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.SELECTOR, new FieldMetaData("selector", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(fetchRowBinary_args.class, metaDataMap);
+    }
+
+    public fetchRowBinary_args() {
+    }
+
+    public fetchRowBinary_args(
+      String table,
+      String id,
+      byte[] selector)
+    {
+      this();
+      this.table = table;
+      this.id = id;
+      this.selector = selector;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchRowBinary_args(fetchRowBinary_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetId()) {
+        this.id = other.id;
+      }
+      if (other.isSetSelector()) {
+        this.selector = new byte[other.selector.length];
+        System.arraycopy(other.selector, 0, selector, 0, other.selector.length);
+      }
+    }
+
+    public fetchRowBinary_args deepCopy() {
+      return new fetchRowBinary_args(this);
+    }
+
+    @Deprecated
+    public fetchRowBinary_args clone() {
+      return new fetchRowBinary_args(this);
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public fetchRowBinary_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public String getId() {
+      return this.id;
+    }
+
+    public fetchRowBinary_args setId(String id) {
+      this.id = id;
+      return this;
+    }
+
+    public void unsetId() {
+      this.id = null;
+    }
+
+    /** Returns true if field id is set (has been asigned a value) and false otherwise */
+    public boolean isSetId() {
+      return this.id != null;
+    }
+
+    public void setIdIsSet(boolean value) {
+      if (!value) {
+        this.id = null;
+      }
+    }
+
+    public byte[] getSelector() {
+      return this.selector;
+    }
+
+    public fetchRowBinary_args setSelector(byte[] selector) {
+      this.selector = selector;
+      return this;
+    }
+
+    public void unsetSelector() {
+      this.selector = null;
+    }
+
+    /** Returns true if field selector is set (has been asigned a value) and false otherwise */
+    public boolean isSetSelector() {
+      return this.selector != null;
+    }
+
+    public void setSelectorIsSet(boolean value) {
+      if (!value) {
+        this.selector = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case ID:
+        if (value == null) {
+          unsetId();
+        } else {
+          setId((String)value);
+        }
+        break;
+
+      case SELECTOR:
+        if (value == null) {
+          unsetSelector();
+        } else {
+          setSelector((byte[])value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case ID:
+        return getId();
+
+      case SELECTOR:
+        return getSelector();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case ID:
+        return isSetId();
+      case SELECTOR:
+        return isSetSelector();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof fetchRowBinary_args)
+        return this.equals((fetchRowBinary_args)that);
+      return false;
+    }
+
+    public boolean equals(fetchRowBinary_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_id = true && this.isSetId();
+      boolean that_present_id = true && that.isSetId();
+      if (this_present_id || that_present_id) {
+        if (!(this_present_id && that_present_id))
+          return false;
+        if (!this.id.equals(that.id))
+          return false;
+      }
+
+      boolean this_present_selector = true && this.isSetSelector();
+      boolean that_present_selector = true && that.isSetSelector();
+      if (this_present_selector || that_present_selector) {
+        if (!(this_present_selector && that_present_selector))
+          return false;
+        if (!java.util.Arrays.equals(this.selector, that.selector))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(fetchRowBinary_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      fetchRowBinary_args typedOther = (fetchRowBinary_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetId()).compareTo(typedOther.isSetId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetId()) {        lastComparison = TBaseHelper.compareTo(this.id, typedOther.id);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetSelector()).compareTo(typedOther.isSetSelector());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSelector()) {        lastComparison = TBaseHelper.compareTo(this.selector, typedOther.selector);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // ID
+            if (field.type == TType.STRING) {
+              this.id = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // SELECTOR
+            if (field.type == TType.STRING) {
+              this.selector = iprot.readBinary();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      if (this.id != null) {
+        oprot.writeFieldBegin(ID_FIELD_DESC);
+        oprot.writeString(this.id);
+        oprot.writeFieldEnd();
+      }
+      if (this.selector != null) {
+        oprot.writeFieldBegin(SELECTOR_FIELD_DESC);
+        oprot.writeBinary(this.selector);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("fetchRowBinary_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("id:");
+      if (this.id == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.id);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("selector:");
+      if (this.selector == null) {
+        sb.append("null");
+      } else {
+          int __selector_size = Math.min(this.selector.length, 128);
+          for (int i = 0; i < __selector_size; i++) {
+            if (i != 0) sb.append(" ");
+            sb.append(Integer.toHexString(this.selector[i]).length() > 1 ? Integer.toHexString(this.selector[i]).substring(Integer.toHexString(this.selector[i]).length() - 2).toUpperCase() : "0" + Integer.toHexString(this.selector[i]).toUpperCase());
+          }
+          if (this.selector.length > 128) sb.append(" ...");
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class fetchRowBinary_result implements TBase<fetchRowBinary_result, fetchRowBinary_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("fetchRowBinary_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
+    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
+    private static final TField MSE_FIELD_DESC = new TField("mse", TType.STRUCT, (short)2);
+    private static final TField ESEE_FIELD_DESC = new TField("esee", TType.STRUCT, (short)3);
+
+    public byte[] success;
+    public BlurException be;
+    public MissingShardException mse;
+    public EventStoppedExecutionException esee;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      BE((short)1, "be"),
+      MSE((short)2, "mse"),
+      ESEE((short)3, "esee");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // BE
+            return BE;
+          case 2: // MSE
+            return MSE;
+          case 3: // ESEE
+            return ESEE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.MSE, new FieldMetaData("mse", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      tmpMap.put(_Fields.ESEE, new FieldMetaData("esee", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(fetchRowBinary_result.class, metaDataMap);
+    }
+
+    public fetchRowBinary_result() {
+    }
+
+    public fetchRowBinary_result(
+      byte[] success,
+      BlurException be,
+      MissingShardException mse,
+      EventStoppedExecutionException esee)
+    {
+      this();
+      this.success = success;
+      this.be = be;
+      this.mse = mse;
+      this.esee = esee;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public fetchRowBinary_result(fetchRowBinary_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new byte[other.success.length];
+        System.arraycopy(other.success, 0, success, 0, other.success.length);
+      }
+      if (other.isSetBe()) {
+        this.be = new BlurException(other.be);
+      }
+      if (other.isSetMse()) {
+        this.mse = new MissingShardException(other.mse);
+      }
+      if (other.isSetEsee()) {
+        this.esee = new EventStoppedExecutionException(other.esee);
+      }
+    }
+
+    public fetchRowBinary_result deepCopy() {
+      return new fetchRowBinary_result(this);
+    }
+
+    @Deprecated
+    public fetchRowBinary_result clone() {
+      return new fetchRowBinary_result(this);
+    }
+
+    public byte[] getSuccess() {
+      return this.success;
+    }
+
+    public fetchRowBinary_result setSuccess(byte[] success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getBe() {
+      return this.be;
+    }
+
+    public fetchRowBinary_result setBe(BlurException be) {
+      this.be = be;
+      return this;
+    }
+
+    public void unsetBe() {
+      this.be = null;
+    }
+
+    /** Returns true if field be is set (has been asigned a value) and false otherwise */
+    public boolean isSetBe() {
+      return this.be != null;
+    }
+
+    public void setBeIsSet(boolean value) {
+      if (!value) {
+        this.be = null;
+      }
+    }
+
+    public MissingShardException getMse() {
+      return this.mse;
+    }
+
+    public fetchRowBinary_result setMse(MissingShardException mse) {
+      this.mse = mse;
+      return this;
+    }
+
+    public void unsetMse() {
+      this.mse = null;
+    }
+
+    /** Returns true if field mse is set (has been asigned a value) and false otherwise */
+    public boolean isSetMse() {
+      return this.mse != null;
+    }
+
+    public void setMseIsSet(boolean value) {
+      if (!value) {
+        this.mse = null;
+      }
+    }
+
+    public EventStoppedExecutionException getEsee() {
+      return this.esee;
+    }
+
+    public fetchRowBinary_result setEsee(EventStoppedExecutionException esee) {
+      this.esee = esee;
+      return this;
+    }
+
+    public void unsetEsee() {
+      this.esee = null;
+    }
+
+    /** Returns true if field esee is set (has been asigned a value) and false otherwise */
+    public boolean isSetEsee() {
+      return this.esee != null;
+    }
+
+    public void setEseeIsSet(boolean value) {
+      if (!value) {
+        this.esee = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((byte[])value);
+        }
+        break;
+
+      case BE:
+        if (value == null) {
+          unsetBe();
+        } else {
+          setBe((BlurException)value);
+        }
+        break;
+
+      case MSE:
+        if (value == null) {
+          unsetMse();
+        } else {
+          setMse((MissingShardException)value);
+        }
+        break;
+
+      case ESEE:
+        if (value == null) {
+          unsetEsee();
+        } else {
+          setEsee((EventStoppedExecutionException)value);
+        }
+        break;
+
+      }
+    }
+
+    public void setFieldValue(int fieldID, Object value) {
+      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case BE:
+        return getBe();
+
+      case MSE:
+        return getMse();
+
+      case ESEE:
+        return getEsee();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    public Object getFieldValue(int fieldId) {
+      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case BE:
+        return isSetBe();
+      case MSE:
+        return isSetMse();
+      case ESEE:
+        return isSetEsee();
+      }
+      throw new IllegalStateException();
+    }
+
+    public boolean isSet(int fieldID) {
+      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof fetchRowBinary_result)
+        return this.equals((fetchRowBinary_result)that);
+      return false;
+    }
+
+    public boolean equals(fetchRowBinary_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!java.util.Arrays.equals(this.success, that.success))
+          return false;
+      }
+
+      boolean this_present_be = true && this.isSetBe();
+      boolean that_present_be = true && that.isSetBe();
+      if (this_present_be || that_present_be) {
+        if (!(this_present_be && that_present_be))
+          return false;
+        if (!this.be.equals(that.be))
+          return false;
+      }
+
+      boolean this_present_mse = true && this.isSetMse();
+      boolean that_present_mse = true && that.isSetMse();
+      if (this_present_mse || that_present_mse) {
+        if (!(this_present_mse && that_present_mse))
+          return false;
+        if (!this.mse.equals(that.mse))
+          return false;
+      }
+
+      boolean this_present_esee = true && this.isSetEsee();
+      boolean that_present_esee = true && that.isSetEsee();
+      if (this_present_esee || that_present_esee) {
+        if (!(this_present_esee && that_present_esee))
+          return false;
+        if (!this.esee.equals(that.esee))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(fetchRowBinary_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      fetchRowBinary_result typedOther = (fetchRowBinary_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetMse()).compareTo(typedOther.isSetMse());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMse()) {        lastComparison = TBaseHelper.compareTo(this.mse, typedOther.mse);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEsee()).compareTo(typedOther.isSetEsee());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEsee()) {        lastComparison = TBaseHelper.compareTo(this.esee, typedOther.esee);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRING) {
+              this.success = iprot.readBinary();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // BE
+            if (field.type == TType.STRUCT) {
+              this.be = new BlurException();
+              this.be.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MSE
+            if (field.type == TType.STRUCT) {
+              this.mse = new MissingShardException();
+              this.mse.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 3: // ESEE
+            if (field.type == TType.STRUCT) {
+              this.esee = new EventStoppedExecutionException();
+              this.esee.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        oprot.writeBinary(this.success);
+        oprot.writeFieldEnd();
+      } else if (this.isSetBe()) {
+        oprot.writeFieldBegin(BE_FIELD_DESC);
+        this.be.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetMse()) {
+        oprot.writeFieldBegin(MSE_FIELD_DESC);
+        this.mse.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEsee()) {
+        oprot.writeFieldBegin(ESEE_FIELD_DESC);
+        this.esee.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("fetchRowBinary_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+          int __success_size = Math.min(this.success.length, 128);
+          for (int i = 0; i < __success_size; i++) {
+            if (i != 0) sb.append(" ");
+            sb.append(Integer.toHexString(this.success[i]).length() > 1 ? Integer.toHexString(this.success[i]).substring(Integer.toHexString(this.success[i]).length() - 2).toUpperCase() : "0" + Integer.toHexString(this.success[i]).toUpperCase());
+          }
+          if (this.success.length > 128) sb.append(" ...");
       }
       first = false;
       if (!first) sb.append(", ");

@@ -15,6 +15,7 @@ import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.thrift.BlurClientManager.Command;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
@@ -161,6 +162,95 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
                     "] for table [" + table + "] id [" + id + "]");
         }
         return host + ":" + configuration.getBlurShardServerPort();
+    }
+    
+    @Override
+    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException {
+        Map<String, String> shardServerLayout = shardServerLayout(table);
+        String host = shardServerLayout.get(shardId);
+        if (host == null) {
+            throw new MissingShardException("Controller can not locate shard [" + shardId + 
+                    "] for table [" + table + "]");
+        }
+        String clientHostnamePort = host + ":" + configuration.getBlurShardServerPort();
+        try {
+            BlurClientManager.execute(clientHostnamePort, 
+                new Command<Boolean>() {
+                    @Override
+                    public Boolean call(Client client) throws Exception {
+                        return true;
+                    }
+                });
+        } catch (Exception e) {
+            LOG.error("Unknown error during batch update of table [" + table +
+                    "] shardId [" + shardId + "] uri [" + uri +
+                    		"]",e);
+            throw new BlurException("Unknown error during batch update of table [" + table +
+                    "] shardId [" + shardId + "] uri [" + uri +
+                            "]");
+        }
+    }
+    
+    @Override
+    public void appendRowBinary(final String table, final String id, final byte[] rowBytes) throws BlurException, MissingShardException, EventStoppedExecutionException, TException {
+        String clientHostnamePort = getClientHostnamePort(table,id);
+        try {
+            BlurClientManager.execute(clientHostnamePort, 
+                new Command<Boolean>() {
+                    @Override
+                    public Boolean call(Client client) throws Exception {
+                        client.appendRowBinary(table, id, rowBytes);
+                        return true;
+                    }
+                });
+        } catch (Exception e) {
+            LOG.error("Unknown error during append of row from table [" + table +
+                    "] id [" + id + "]",e);
+            throw new BlurException("Unknown error during append of row from table [" + table +
+                    "] id [" + id + "]");
+        }
+    }
+
+
+    @Override
+    public byte[] fetchRowBinary(final String table, final String id, final byte[] selector) throws BlurException, MissingShardException,
+            EventStoppedExecutionException, TException {
+        String clientHostnamePort = getClientHostnamePort(table,id);
+        try {
+            return BlurClientManager.execute(clientHostnamePort, 
+                new Command<byte[]>() {
+                    @Override
+                    public byte[] call(Client client) throws Exception {
+                        return client.fetchRowBinary(table, id, selector);
+                    }
+                });
+        } catch (Exception e) {
+            LOG.error("Unknown error during fetch of row from table [" + table +
+                    "] id [" + id + "]",e);
+            throw new BlurException("Unknown error during fetch of row from table [" + table +
+                    "] id [" + id + "]");
+        }
+    }
+
+    @Override
+    public void replaceRowBinary(final String table, final String id, final byte[] rowBytes) throws BlurException, MissingShardException,
+            EventStoppedExecutionException, TException {
+        String clientHostnamePort = getClientHostnamePort(table,id);
+        try {
+            BlurClientManager.execute(clientHostnamePort, 
+                new Command<Boolean>() {
+                    @Override
+                    public Boolean call(Client client) throws Exception {
+                        client.replaceRowBinary(table, id, rowBytes);
+                        return true;
+                    }
+                });
+        } catch (Exception e) {
+            LOG.error("Unknown error during replacing of row from table [" + table +
+                    "] id [" + id + "]",e);
+            throw new BlurException("Unknown error during replacing of row from table [" + table +
+                    "] id [" + id + "]");
+        }
     }
 
 

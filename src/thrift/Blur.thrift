@@ -102,8 +102,11 @@ service Blur {
 
   void removeRow(1:string table, 2:string id) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   void replaceRow(1:string table, 2:Row row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
+  void replaceRowBinary(1:string table, 2:string id, 3:binary row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   void appendRow(1:string table, 2:Row row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
+  void appendRowBinary(1:string table, 2:string id, 3:binary row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
+  binary fetchRowBinary(1:string table, 2:string id, 3:binary selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
 
   Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   void cancelSearch(1:i64 providedUuid) throws (1:BlurException be, 3: EventStoppedExecutionException esee)

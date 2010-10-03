@@ -44,12 +44,12 @@ public class BlurClientManager {
                     throw e;
                 }
                 if (equals(e.getType(),TTransportException.NOT_OPEN,TTransportException.TIMED_OUT,TTransportException.UNKNOWN)) {
-                    LOG.error("Trash client [" + client + "] retry [" + retries + "] out of [" + MAX_RETIRES + "]");
+                    LOG.error("Trash client [" + client + "] retry [" + retries + "] out of [" + MAX_RETIRES + "]", e);
                     trashClient(connectionStr, client);
                     client = null;
                 }
                 retries++;
-                LOG.error("Retrying call [" + client + "] retry [" + retries + "] out of [" + MAX_RETIRES + "]");
+                LOG.error("Retrying call [" + client + "] retry [" + retries + "] out of [" + MAX_RETIRES + "]", e);
             } finally {
                 if (client != null) {
                     returnClient(connectionStr, client);

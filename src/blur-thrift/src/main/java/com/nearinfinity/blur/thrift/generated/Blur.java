@@ -45,7 +45,7 @@ public class Blur {
 
     public void drop(String table) throws BlurException, TException;
 
-    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException;
+    public void batchUpdate(String batchId, String table, Map<String,String> shardsToUris) throws BlurException, MissingShardException, TException;
 
     public void removeRow(String table, String id) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
@@ -455,19 +455,19 @@ public class Blur {
       return;
     }
 
-    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException
+    public void batchUpdate(String batchId, String table, Map<String,String> shardsToUris) throws BlurException, MissingShardException, TException
     {
-      send_batchUpdate(table, shardId, uri);
+      send_batchUpdate(batchId, table, shardsToUris);
       recv_batchUpdate();
     }
 
-    public void send_batchUpdate(String table, String shardId, String uri) throws TException
+    public void send_batchUpdate(String batchId, String table, Map<String,String> shardsToUris) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("batchUpdate", TMessageType.CALL, ++seqid_));
       batchUpdate_args args = new batchUpdate_args();
+      args.setBatchId(batchId);
       args.setTable(table);
-      args.setShardId(shardId);
-      args.setUri(uri);
+      args.setShardsToUris(shardsToUris);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1592,7 +1592,7 @@ public class Blur {
         iprot.readMessageEnd();
         batchUpdate_result result = new batchUpdate_result();
         try {
-          iface_.batchUpdate(args.table, args.shardId, args.uri);
+          iface_.batchUpdate(args.batchId, args.table, args.shardsToUris);
         } catch (BlurException be) {
           result.be = be;
         } catch (MissingShardException mse) {
@@ -7780,19 +7780,19 @@ public class Blur {
   public static class batchUpdate_args implements TBase<batchUpdate_args, batchUpdate_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("batchUpdate_args");
 
-    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-    private static final TField SHARD_ID_FIELD_DESC = new TField("shardId", TType.STRING, (short)2);
-    private static final TField URI_FIELD_DESC = new TField("uri", TType.STRING, (short)3);
+    private static final TField BATCH_ID_FIELD_DESC = new TField("batchId", TType.STRING, (short)1);
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)2);
+    private static final TField SHARDS_TO_URIS_FIELD_DESC = new TField("shardsToUris", TType.MAP, (short)3);
 
+    public String batchId;
     public String table;
-    public String shardId;
-    public String uri;
+    public Map<String,String> shardsToUris;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      TABLE((short)1, "table"),
-      SHARD_ID((short)2, "shardId"),
-      URI((short)3, "uri");
+      BATCH_ID((short)1, "batchId"),
+      TABLE((short)2, "table"),
+      SHARDS_TO_URIS((short)3, "shardsToUris");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -7807,12 +7807,12 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
+          case 1: // BATCH_ID
+            return BATCH_ID;
+          case 2: // TABLE
             return TABLE;
-          case 2: // SHARD_ID
-            return SHARD_ID;
-          case 3: // URI
-            return URI;
+          case 3: // SHARDS_TO_URIS
+            return SHARDS_TO_URIS;
           default:
             return null;
         }
@@ -7857,12 +7857,14 @@ public class Blur {
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.BATCH_ID, new FieldMetaData("batchId", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.SHARD_ID, new FieldMetaData("shardId", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.URI, new FieldMetaData("uri", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.SHARDS_TO_URIS, new FieldMetaData("shardsToUris", TFieldRequirementType.DEFAULT, 
+          new MapMetaData(TType.MAP, 
+              new FieldValueMetaData(TType.STRING), 
+              new FieldValueMetaData(TType.STRING))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(batchUpdate_args.class, metaDataMap);
     }
@@ -7871,28 +7873,40 @@ public class Blur {
     }
 
     public batchUpdate_args(
+      String batchId,
       String table,
-      String shardId,
-      String uri)
+      Map<String,String> shardsToUris)
     {
       this();
+      this.batchId = batchId;
       this.table = table;
-      this.shardId = shardId;
-      this.uri = uri;
+      this.shardsToUris = shardsToUris;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public batchUpdate_args(batchUpdate_args other) {
+      if (other.isSetBatchId()) {
+        this.batchId = other.batchId;
+      }
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      if (other.isSetShardId()) {
-        this.shardId = other.shardId;
-      }
-      if (other.isSetUri()) {
-        this.uri = other.uri;
+      if (other.isSetShardsToUris()) {
+        Map<String,String> __this__shardsToUris = new HashMap<String,String>();
+        for (Map.Entry<String, String> other_element : other.shardsToUris.entrySet()) {
+
+          String other_element_key = other_element.getKey();
+          String other_element_value = other_element.getValue();
+
+          String __this__shardsToUris_copy_key = other_element_key;
+
+          String __this__shardsToUris_copy_value = other_element_value;
+
+          __this__shardsToUris.put(__this__shardsToUris_copy_key, __this__shardsToUris_copy_value);
+        }
+        this.shardsToUris = __this__shardsToUris;
       }
     }
 
@@ -7903,6 +7917,30 @@ public class Blur {
     @Deprecated
     public batchUpdate_args clone() {
       return new batchUpdate_args(this);
+    }
+
+    public String getBatchId() {
+      return this.batchId;
+    }
+
+    public batchUpdate_args setBatchId(String batchId) {
+      this.batchId = batchId;
+      return this;
+    }
+
+    public void unsetBatchId() {
+      this.batchId = null;
+    }
+
+    /** Returns true if field batchId is set (has been asigned a value) and false otherwise */
+    public boolean isSetBatchId() {
+      return this.batchId != null;
+    }
+
+    public void setBatchIdIsSet(boolean value) {
+      if (!value) {
+        this.batchId = null;
+      }
     }
 
     public String getTable() {
@@ -7929,56 +7967,51 @@ public class Blur {
       }
     }
 
-    public String getShardId() {
-      return this.shardId;
+    public int getShardsToUrisSize() {
+      return (this.shardsToUris == null) ? 0 : this.shardsToUris.size();
     }
 
-    public batchUpdate_args setShardId(String shardId) {
-      this.shardId = shardId;
-      return this;
-    }
-
-    public void unsetShardId() {
-      this.shardId = null;
-    }
-
-    /** Returns true if field shardId is set (has been asigned a value) and false otherwise */
-    public boolean isSetShardId() {
-      return this.shardId != null;
-    }
-
-    public void setShardIdIsSet(boolean value) {
-      if (!value) {
-        this.shardId = null;
+    public void putToShardsToUris(String key, String val) {
+      if (this.shardsToUris == null) {
+        this.shardsToUris = new HashMap<String,String>();
       }
+      this.shardsToUris.put(key, val);
     }
 
-    public String getUri() {
-      return this.uri;
+    public Map<String,String> getShardsToUris() {
+      return this.shardsToUris;
     }
 
-    public batchUpdate_args setUri(String uri) {
-      this.uri = uri;
+    public batchUpdate_args setShardsToUris(Map<String,String> shardsToUris) {
+      this.shardsToUris = shardsToUris;
       return this;
     }
 
-    public void unsetUri() {
-      this.uri = null;
+    public void unsetShardsToUris() {
+      this.shardsToUris = null;
     }
 
-    /** Returns true if field uri is set (has been asigned a value) and false otherwise */
-    public boolean isSetUri() {
-      return this.uri != null;
+    /** Returns true if field shardsToUris is set (has been asigned a value) and false otherwise */
+    public boolean isSetShardsToUris() {
+      return this.shardsToUris != null;
     }
 
-    public void setUriIsSet(boolean value) {
+    public void setShardsToUrisIsSet(boolean value) {
       if (!value) {
-        this.uri = null;
+        this.shardsToUris = null;
       }
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case BATCH_ID:
+        if (value == null) {
+          unsetBatchId();
+        } else {
+          setBatchId((String)value);
+        }
+        break;
+
       case TABLE:
         if (value == null) {
           unsetTable();
@@ -7987,19 +8020,11 @@ public class Blur {
         }
         break;
 
-      case SHARD_ID:
+      case SHARDS_TO_URIS:
         if (value == null) {
-          unsetShardId();
+          unsetShardsToUris();
         } else {
-          setShardId((String)value);
-        }
-        break;
-
-      case URI:
-        if (value == null) {
-          unsetUri();
-        } else {
-          setUri((String)value);
+          setShardsToUris((Map<String,String>)value);
         }
         break;
 
@@ -8012,14 +8037,14 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case BATCH_ID:
+        return getBatchId();
+
       case TABLE:
         return getTable();
 
-      case SHARD_ID:
-        return getShardId();
-
-      case URI:
-        return getUri();
+      case SHARDS_TO_URIS:
+        return getShardsToUris();
 
       }
       throw new IllegalStateException();
@@ -8032,12 +8057,12 @@ public class Blur {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
+      case BATCH_ID:
+        return isSetBatchId();
       case TABLE:
         return isSetTable();
-      case SHARD_ID:
-        return isSetShardId();
-      case URI:
-        return isSetUri();
+      case SHARDS_TO_URIS:
+        return isSetShardsToUris();
       }
       throw new IllegalStateException();
     }
@@ -8059,6 +8084,15 @@ public class Blur {
       if (that == null)
         return false;
 
+      boolean this_present_batchId = true && this.isSetBatchId();
+      boolean that_present_batchId = true && that.isSetBatchId();
+      if (this_present_batchId || that_present_batchId) {
+        if (!(this_present_batchId && that_present_batchId))
+          return false;
+        if (!this.batchId.equals(that.batchId))
+          return false;
+      }
+
       boolean this_present_table = true && this.isSetTable();
       boolean that_present_table = true && that.isSetTable();
       if (this_present_table || that_present_table) {
@@ -8068,21 +8102,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_shardId = true && this.isSetShardId();
-      boolean that_present_shardId = true && that.isSetShardId();
-      if (this_present_shardId || that_present_shardId) {
-        if (!(this_present_shardId && that_present_shardId))
+      boolean this_present_shardsToUris = true && this.isSetShardsToUris();
+      boolean that_present_shardsToUris = true && that.isSetShardsToUris();
+      if (this_present_shardsToUris || that_present_shardsToUris) {
+        if (!(this_present_shardsToUris && that_present_shardsToUris))
           return false;
-        if (!this.shardId.equals(that.shardId))
-          return false;
-      }
-
-      boolean this_present_uri = true && this.isSetUri();
-      boolean that_present_uri = true && that.isSetUri();
-      if (this_present_uri || that_present_uri) {
-        if (!(this_present_uri && that_present_uri))
-          return false;
-        if (!this.uri.equals(that.uri))
+        if (!this.shardsToUris.equals(that.shardsToUris))
           return false;
       }
 
@@ -8102,6 +8127,15 @@ public class Blur {
       int lastComparison = 0;
       batchUpdate_args typedOther = (batchUpdate_args)other;
 
+      lastComparison = Boolean.valueOf(isSetBatchId()).compareTo(typedOther.isSetBatchId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBatchId()) {        lastComparison = TBaseHelper.compareTo(this.batchId, typedOther.batchId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
       if (lastComparison != 0) {
         return lastComparison;
@@ -8111,20 +8145,11 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetShardId()).compareTo(typedOther.isSetShardId());
+      lastComparison = Boolean.valueOf(isSetShardsToUris()).compareTo(typedOther.isSetShardsToUris());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetShardId()) {        lastComparison = TBaseHelper.compareTo(this.shardId, typedOther.shardId);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetUri()).compareTo(typedOther.isSetUri());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetUri()) {        lastComparison = TBaseHelper.compareTo(this.uri, typedOther.uri);
+      if (isSetShardsToUris()) {        lastComparison = TBaseHelper.compareTo(this.shardsToUris, typedOther.shardsToUris);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8142,23 +8167,35 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
+          case 1: // BATCH_ID
+            if (field.type == TType.STRING) {
+              this.batchId = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TABLE
             if (field.type == TType.STRING) {
               this.table = iprot.readString();
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // SHARD_ID
-            if (field.type == TType.STRING) {
-              this.shardId = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 3: // URI
-            if (field.type == TType.STRING) {
-              this.uri = iprot.readString();
+          case 3: // SHARDS_TO_URIS
+            if (field.type == TType.MAP) {
+              {
+                TMap _map60 = iprot.readMapBegin();
+                this.shardsToUris = new HashMap<String,String>(2*_map60.size);
+                for (int _i61 = 0; _i61 < _map60.size; ++_i61)
+                {
+                  String _key62;
+                  String _val63;
+                  _key62 = iprot.readString();
+                  _val63 = iprot.readString();
+                  this.shardsToUris.put(_key62, _val63);
+                }
+                iprot.readMapEnd();
+              }
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -8178,19 +8215,27 @@ public class Blur {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (this.batchId != null) {
+        oprot.writeFieldBegin(BATCH_ID_FIELD_DESC);
+        oprot.writeString(this.batchId);
+        oprot.writeFieldEnd();
+      }
       if (this.table != null) {
         oprot.writeFieldBegin(TABLE_FIELD_DESC);
         oprot.writeString(this.table);
         oprot.writeFieldEnd();
       }
-      if (this.shardId != null) {
-        oprot.writeFieldBegin(SHARD_ID_FIELD_DESC);
-        oprot.writeString(this.shardId);
-        oprot.writeFieldEnd();
-      }
-      if (this.uri != null) {
-        oprot.writeFieldBegin(URI_FIELD_DESC);
-        oprot.writeString(this.uri);
+      if (this.shardsToUris != null) {
+        oprot.writeFieldBegin(SHARDS_TO_URIS_FIELD_DESC);
+        {
+          oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.shardsToUris.size()));
+          for (Map.Entry<String, String> _iter64 : this.shardsToUris.entrySet())
+          {
+            oprot.writeString(_iter64.getKey());
+            oprot.writeString(_iter64.getValue());
+          }
+          oprot.writeMapEnd();
+        }
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -8202,6 +8247,14 @@ public class Blur {
       StringBuilder sb = new StringBuilder("batchUpdate_args(");
       boolean first = true;
 
+      sb.append("batchId:");
+      if (this.batchId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.batchId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("table:");
       if (this.table == null) {
         sb.append("null");
@@ -8210,19 +8263,11 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("shardId:");
-      if (this.shardId == null) {
+      sb.append("shardsToUris:");
+      if (this.shardsToUris == null) {
         sb.append("null");
       } else {
-        sb.append(this.shardId);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("uri:");
-      if (this.uri == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.uri);
+        sb.append(this.shardsToUris);
       }
       first = false;
       sb.append(")");
@@ -17111,13 +17156,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list60 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list60.size);
-                for (int _i61 = 0; _i61 < _list60.size; ++_i61)
+                TList _list65 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list65.size);
+                for (int _i66 = 0; _i66 < _list65.size; ++_i66)
                 {
-                  String _elem62;
-                  _elem62 = iprot.readString();
-                  this.success.add(_elem62);
+                  String _elem67;
+                  _elem67 = iprot.readString();
+                  this.success.add(_elem67);
                 }
                 iprot.readListEnd();
               }
@@ -17159,9 +17204,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter63 : this.success)
+          for (String _iter68 : this.success)
           {
-            oprot.writeString(_iter63);
+            oprot.writeString(_iter68);
           }
           oprot.writeListEnd();
         }

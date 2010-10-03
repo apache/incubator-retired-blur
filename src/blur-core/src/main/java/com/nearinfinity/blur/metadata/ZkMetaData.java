@@ -49,6 +49,7 @@ public class ZkMetaData implements MetaData, BlurConstants, Watcher {
         this.mele = mele;
         this.configuration = configuration;
         this.zk = zk;
+        process(null);
     }
 
     @Override

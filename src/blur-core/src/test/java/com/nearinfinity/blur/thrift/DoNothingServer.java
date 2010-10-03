@@ -141,12 +141,6 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public void batchUpdate(String arg0, String arg1, String arg2) throws BlurException, MissingShardException,
-            TException {
-        
-    }
-
-    @Override
     public byte[] fetchRowBinary(String arg0, String arg1, byte[] arg2) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
         return null;
@@ -155,6 +149,12 @@ public class DoNothingServer implements Iface {
     @Override
     public void replaceRowBinary(String arg0, String arg1, byte[] arg2) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
+        
+    }
+
+    @Override
+    public void batchUpdate(String arg0, String arg1, Map<String, String> arg2) throws BlurException,
+            MissingShardException, TException {
         
     }
 

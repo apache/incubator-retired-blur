@@ -158,23 +158,28 @@ public class IndexManager {
 	}
 
 	public void replaceRow(String table, Row row) throws BlurException, MissingShardException {
-	    if (!row.walDisabled) {
+	    try {
+    	    if (!row.walDisabled) {
+        		try {
+        			wal.replaceRow(table,row);
+        		} catch (IOException e) {
+        			LOG.error("Error writing to WAL",e);
+        			throw new BlurException("Error writing to WAL");
+        		}
+    	    }
+    		
+    		IndexWriter indexWriter = getIndexWriter(table, row.id);
+    		checkIfShardIsNull(indexWriter);
     		try {
-    			wal.replaceRow(table,row);
+    			replace(indexWriter,row);
     		} catch (IOException e) {
-    			LOG.error("Error writing to WAL",e);
-    			throw new BlurException("Error writing to WAL");
+    			LOG.error("Unknown error",e);
+    			throw new BlurException("Unknown error [" + e.getMessage() + "]");
     		}
-	    }
-		
-		IndexWriter indexWriter = getIndexWriter(table, row.id);
-		checkIfShardIsNull(indexWriter);
-		try {
-			replace(indexWriter,row);
-		} catch (IOException e) {
-			LOG.error("Unknown error",e);
-			throw new BlurException("Unknown error [" + e.getMessage() + "]");
-		}
+	    } catch (Exception e) {
+	        LOG.error("Unknown error",e);
+            throw new BlurException("Unknown error [" + e.getMessage() + "]");
+        }
 	}
 
 	public void removeRow(String table, String id) throws BlurException {

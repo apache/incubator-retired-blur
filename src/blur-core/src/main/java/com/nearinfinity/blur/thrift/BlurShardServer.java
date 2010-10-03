@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -110,8 +111,9 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     }
 
     @Override
-    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException {
-        throw new RuntimeException("not implemented");
+    public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
+            MissingShardException, TException {
+        
     }
     
     @Override

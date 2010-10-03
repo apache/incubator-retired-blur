@@ -163,32 +163,6 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         return host + ":" + configuration.getBlurShardServerPort();
     }
     
-    @Override
-    public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException {
-        Map<String, String> shardServerLayout = shardServerLayout(table);
-        String host = shardServerLayout.get(shardId);
-        if (host == null) {
-            throw new MissingShardException("Controller can not locate shard [" + shardId + 
-                    "] for table [" + table + "]");
-        }
-        String clientHostnamePort = host + ":" + configuration.getBlurShardServerPort();
-        try {
-            BlurClientManager.execute(clientHostnamePort, 
-                new Command<Boolean>() {
-                    @Override
-                    public Boolean call(Client client) throws Exception {
-                        return true;
-                    }
-                });
-        } catch (Exception e) {
-            LOG.error("Unknown error during batch update of table [" + table +
-                    "] shardId [" + shardId + "] uri [" + uri +
-                    		"]",e);
-            throw new BlurException("Unknown error during batch update of table [" + table +
-                    "] shardId [" + shardId + "] uri [" + uri +
-                            "]");
-        }
-    }
     
     @Override
     public void appendRowBinary(final String table, final String id, final byte[] rowBytes) throws BlurException, MissingShardException, EventStoppedExecutionException, TException {
@@ -250,6 +224,12 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
             throw new BlurException("Unknown error during replacing of row from table [" + table +
                     "] id [" + id + "]");
         }
+    }
+
+    @Override
+    public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
+            MissingShardException, TException {
+        
     }
 
 

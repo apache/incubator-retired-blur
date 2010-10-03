@@ -86,8 +86,8 @@ public class BlurThriftServer implements BlurConstants {
                     transportFactory = new TFramedTransport.Factory();
                     processor = new Blur.Processor(iface);
                     protFactory = new TBinaryProtocol.Factory(true, true);
-                    server = new TThreadPoolServer(processor, serverTransport, protFactory);
-                    new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
+//                    server = new TThreadPoolServer(processor, serverTransport, protFactory);
+                    server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
                     LOG.info("Starting server on port [" + port + "]");
                     server.serve();
                 } catch (TTransportException e) {

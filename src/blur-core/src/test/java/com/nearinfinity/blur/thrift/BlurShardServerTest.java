@@ -25,6 +25,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.nearinfinity.blur.manager.LocalHdfsMeleConfiguration;
+import com.nearinfinity.blur.metadata.ZkMetaData;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
@@ -35,6 +36,8 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.MeleBase;
+import com.nearinfinity.mele.store.noreplication.NoRepMeleDirectoryFactory;
 import com.nearinfinity.mele.zookeeper.NoOpWatcher;
 
 public class BlurShardServerTest {
@@ -56,12 +59,13 @@ public class BlurShardServerTest {
         LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
         zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
                 configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
-        mele = new Mele(zooKeeper,configuration);
+        mele = new MeleBase(new NoRepMeleDirectoryFactory(), configuration, zooKeeper);
         mele.createDirectoryCluster(TABLE_NAME);
         mele.createDirectory(TABLE_NAME, SHARD_NAME);
         
         TServerSocket serverTransport = new TServerSocket(PORT);
-        blurServer = new BlurShardServer(zooKeeper,mele, new BlurConfiguration());
+        ZkMetaData zkMetaData = new ZkMetaData(mele, configuration, zooKeeper);
+        blurServer = new BlurShardServer(zkMetaData, new BlurConfiguration());
         Blur.Processor processor = new Blur.Processor(blurServer);
         Factory protFactory = new TBinaryProtocol.Factory(true, true);
         server = new TThreadPoolServer(processor, serverTransport, protFactory);
@@ -78,8 +82,6 @@ public class BlurShardServerTest {
         TProtocol proto = new TBinaryProtocol(tr);
         client = new Blur.Client(proto);
         tr.open();
-        
-        
         
         List<String> tableList = client.tableList();
         if (tableList.contains(TABLE_NAME)) {

@@ -5,11 +5,11 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
-import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexManager.TableManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
+import com.nearinfinity.blur.metadata.MetaData;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
@@ -21,16 +21,15 @@ import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
-import com.nearinfinity.mele.Mele;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
 	
-	public BlurShardServer(ZooKeeper zooKeeper, Mele mele, BlurConfiguration configuration) throws IOException, BlurException {
-		super(zooKeeper,mele,configuration);
-		indexManager = new IndexManager(mele, new TableManager() {
+	public BlurShardServer(MetaData metaData, BlurConfiguration configuration) throws IOException, BlurException {
+		super(metaData,configuration);
+		indexManager = new IndexManager(metaData.getMele(), new TableManager() {
 			@Override
 			public boolean isTableEnabled(String table) {
 				try {
@@ -110,10 +109,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
         throw new BlurException("not implemented");
     }
 
-    public void close() throws InterruptedException {
-        indexManager.close();
-    }
-
     @Override
     public void batchUpdate(String table, String shardId, String uri) throws BlurException, MissingShardException, TException {
         throw new RuntimeException("not implemented");
@@ -123,7 +118,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     public void appendRowBinary(String table, String id, byte[] rowBytes) throws BlurException, MissingShardException, EventStoppedExecutionException, TException {
         throw new RuntimeException("not implemented");
     }
-
 
     @Override
     public byte[] fetchRowBinary(String table, String id, byte[] selector) throws BlurException, MissingShardException,
@@ -137,5 +131,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
         throw new RuntimeException("not implemented");
     }
 
-
+    public void close() throws InterruptedException {
+        indexManager.close();
+    }
 }

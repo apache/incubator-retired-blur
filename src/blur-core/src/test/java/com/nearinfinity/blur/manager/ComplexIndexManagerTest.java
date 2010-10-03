@@ -23,6 +23,8 @@ import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.MeleBase;
+import com.nearinfinity.mele.store.noreplication.NoRepMeleDirectoryFactory;
 import com.nearinfinity.mele.zookeeper.NoOpWatcher;
 
 public class ComplexIndexManagerTest {
@@ -41,7 +43,7 @@ public class ComplexIndexManagerTest {
 	    LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
 	    zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
 	            configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
-        mele = new Mele(zooKeeper,configuration);
+        mele = new MeleBase(new NoRepMeleDirectoryFactory(), configuration, zooKeeper);
     	mele.createDirectoryCluster(TABLE_NAME);
     	mele.createDirectory(TABLE_NAME, SHARD_NAME);
     	

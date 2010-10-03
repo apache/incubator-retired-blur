@@ -13,6 +13,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.metadata.ZkMetaData;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -20,6 +21,8 @@ import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
+import com.nearinfinity.mele.MeleBase;
+import com.nearinfinity.mele.store.noreplication.NoRepMeleDirectoryFactory;
 import com.nearinfinity.mele.util.AddressUtil;
 import com.nearinfinity.mele.zookeeper.NoOpWatcher;
 
@@ -49,15 +52,16 @@ public class BlurThriftServer implements BlurConstants {
 		BlurConfiguration configuration = new BlurConfiguration();
 		ZooKeeper zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
 		        configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
-		Mele mele = new Mele(zooKeeper,configuration);
+		Mele mele = new MeleBase(new NoRepMeleDirectoryFactory(), configuration, zooKeeper);
+		ZkMetaData zkMetaData = new ZkMetaData(mele, configuration, zooKeeper);
 		for (String arg : args) {
 		    if (SHARD.equals(arg) && shardServer == null) {
 		        shardServer = new BlurThriftServer(configuration.getBlurShardServerPort(), 
-		                new BlurShardServer(zooKeeper,mele,configuration)).start(SHARD);
+		                new BlurShardServer(zkMetaData,configuration)).start(SHARD);
 		        
 		    } else if (CONTROLLER.equals(arg) && controllerServer == null) {
 		        controllerServer = new BlurThriftServer(configuration.getBlurControllerServerPort(), 
-		                new BlurControllerServer(zooKeeper,mele,configuration)).start(CONTROLLER);
+		                new BlurControllerServer(zkMetaData,configuration)).start(CONTROLLER);
 		        
 		    }
 		}

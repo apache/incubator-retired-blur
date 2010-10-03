@@ -6,13 +6,13 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
-import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.Partitioner;
 import com.nearinfinity.blur.manager.PartitionerManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
+import com.nearinfinity.blur.metadata.MetaData;
 import com.nearinfinity.blur.thrift.BlurClientManager.Command;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
@@ -27,16 +27,15 @@ import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
-import com.nearinfinity.mele.Mele;
 
 public class BlurControllerServer extends BlurAdminServer implements BlurConstants {
 	
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
     private PartitionerManager partitionerManager;
 
-	public BlurControllerServer(ZooKeeper zooKeeper, Mele mele, BlurConfiguration configuration) throws IOException {
-		super(zooKeeper,mele,configuration);
-		this.partitionerManager = new PartitionerManager(mele);
+	public BlurControllerServer(MetaData metaData, BlurConfiguration configuration) throws IOException {
+		super(metaData, configuration);
+		this.partitionerManager = new PartitionerManager(metaData.getMele());
 	}
 
 	@Override

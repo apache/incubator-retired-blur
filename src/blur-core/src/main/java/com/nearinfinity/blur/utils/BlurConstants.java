@@ -28,4 +28,8 @@ public interface BlurConstants {
     public static final int BLUR_SERVER_CONTROLLER_PORT_DEFAULT = 40010;
     public static final String BLUR_SERVER_SHARD_PORT = "blur.server.shard.port";
     public static final int BLUR_SERVER_SHARD_PORT_DEFAULT = 40020;
+    
+    
+    public static final String DYNAMIC_TERMS = "dynamicTerms";
+    public static final String NODES = "nodes";
 }

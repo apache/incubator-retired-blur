@@ -1,29 +1,33 @@
 package com.nearinfinity.blur.utils;
 
+import java.io.IOException;
+
 import com.nearinfinity.mele.MeleConfiguration;
 
 public class BlurConfiguration extends MeleConfiguration implements BlurConstants {
     
-    public BlurConfiguration() {
+    private static final long serialVersionUID = -2541300525074540373L;
+
+    public BlurConfiguration() throws IOException {
         super();
-        addResource("blur-default.xml");
-        addResource("blur-site.xml");
+        addResource("blur-default.properties");
+        addResource("blur-site.properties");
     }
 
     public int getBlurShardServerPort() {
-        return getInt(BLUR_SERVER_SHARD_PORT,BLUR_SERVER_SHARD_PORT_DEFAULT);
+        return getPropertyInt(BLUR_SERVER_SHARD_PORT,BLUR_SERVER_SHARD_PORT_DEFAULT);
     }
     
     public void setBlurShardServerPort(int port) {
-        setInt(BLUR_SERVER_SHARD_PORT, port);
+        setPropertyInt(BLUR_SERVER_SHARD_PORT, port);
     }
 
     public int getBlurControllerServerPort() {
-        return getInt(BLUR_SERVER_CONTROLLER_PORT,BLUR_SERVER_CONTROLLER_PORT_DEFAULT);
+        return getPropertyInt(BLUR_SERVER_CONTROLLER_PORT,BLUR_SERVER_CONTROLLER_PORT_DEFAULT);
     }
     
     public void setBlurControllerServerPort(int port) {
-        setInt(BLUR_SERVER_CONTROLLER_PORT, port);
+        setPropertyInt(BLUR_SERVER_CONTROLLER_PORT, port);
     }
 
 }

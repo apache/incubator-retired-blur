@@ -277,11 +277,11 @@ public class IndexManager {
 			List<String> localDirectories = mele.listLocalDirectories(cluster);
 			openForWriting(cluster, localDirectories, map);
 		}
-
+		
 		// @todo once all are brought online, look for shards that are not
 		// online yet...
-		serverUnservedShards();
-		startDaemonUnservedShards();
+//		serverUnservedShards();
+//		startDaemonUnservedShards();
 		startDaemonWriterCommit();
 	}
 	

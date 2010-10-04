@@ -105,7 +105,7 @@ public class HitsIterableBlurClient implements HitsIterable {
 
         @Override
         public boolean hasNext() {
-            if (position < minimumNumberOfHits) {
+            if (position < minimumNumberOfHits && position < totalHits) {
                 return true;
             }
             return false;

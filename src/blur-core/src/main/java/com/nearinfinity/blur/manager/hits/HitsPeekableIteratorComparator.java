@@ -19,7 +19,7 @@ public class HitsPeekableIteratorComparator implements Comparator<PeekableIterat
         }
         int compare = Double.compare(hit2.score, hit1.score);
         if (compare == 0) {
-            return hit2.id.compareTo(hit1.id);
+            return hit2.locationId.compareTo(hit1.locationId);
         }
         return compare;
     }

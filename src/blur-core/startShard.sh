@@ -1,0 +1,3 @@
+export CLASSPATH=activation-1.1.jar:apache-cassandra-0.6.5.jar:blur-thrift-0.1-SNAPSHOT.jar:commons-collections-3.2.1.jar:commons-logging-1.1.1.jar:hadoop-0.20.2-core.jar:jackson-core-asl-1.5.5.jar:jackson-jaxrs-1.5.5.jar:jackson-mapper-asl-1.5.5.jar:jline-0.9.94.jar:jms-1.1.jar:jmxri-1.2.1.jar:jmxtools-1.2.1.jar:junit-4.7.jar:log4j-1.2.15.jar:lucene-core-high-scale-3.0.2.jar:mail-1.4.jar:mele-0.1.jar:slf4j-api-1.6.1.jar:startShard.sh:thrift-0.3.0.jar:zookeeper-3.3.1.jar
+
+nohup java -Xmx512m -cp $CLASSPATH com.nearinfinity.blur.thrift.BlurThriftServer shard > shard.log &

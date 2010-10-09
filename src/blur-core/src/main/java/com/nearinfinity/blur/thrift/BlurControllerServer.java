@@ -66,27 +66,6 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 
 	@Override
-	public void appendRowInternal(final String table, final Row row) throws BlurException,
-			TException, MissingShardException {
-	    String clientHostnamePort = getClientHostnamePort(table,row.id);
-        try {
-            BlurClientManager.execute(clientHostnamePort, 
-                new Command<Boolean>() {
-                    @Override
-                    public Boolean call(Client client) throws Exception {
-                        client.appendRow(table, row);
-                        return true;
-                    }
-                });
-        } catch (Exception e) {
-            LOG.error("Unknown error during append of row from table [" + table +
-                    "] id [" + row.id + "]",e);
-            throw new BlurException("Unknown error during append of row from table [" + table +
-                    "] id [" + row.id + "]");
-        }
-	}
-
-	@Override
 	public FetchResult fetchRowInternal(final String table, final Selector selector) throws BlurException,
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,selector.id);
@@ -163,28 +142,6 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         return host + ":" + configuration.getBlurShardServerPort();
     }
     
-    
-    @Override
-    public void appendRowBinary(final String table, final String id, final byte[] rowBytes) throws BlurException, MissingShardException, EventStoppedExecutionException, TException {
-        String clientHostnamePort = getClientHostnamePort(table,id);
-        try {
-            BlurClientManager.execute(clientHostnamePort, 
-                new Command<Boolean>() {
-                    @Override
-                    public Boolean call(Client client) throws Exception {
-                        client.appendRowBinary(table, id, rowBytes);
-                        return true;
-                    }
-                });
-        } catch (Exception e) {
-            LOG.error("Unknown error during append of row from table [" + table +
-                    "] id [" + id + "]",e);
-            throw new BlurException("Unknown error during append of row from table [" + table +
-                    "] id [" + id + "]");
-        }
-    }
-
-
     @Override
     public byte[] fetchRowBinary(final String table, final String id, final byte[] selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {

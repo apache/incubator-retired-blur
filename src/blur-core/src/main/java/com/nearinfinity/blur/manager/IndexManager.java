@@ -37,7 +37,6 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.lucene.search.SuperParser;
-import com.nearinfinity.blur.lucene.wal.BlurWriteAheadLog;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
@@ -79,7 +78,6 @@ public class IndexManager {
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	private TableManager manager;
 	private Thread daemonUnservedShards;
-	private BlurWriteAheadLog wal = BlurWriteAheadLog.NO_LOG;
 	private Thread daemonCommitDaemon;
 	
 	public interface TableManager {
@@ -143,31 +141,8 @@ public class IndexManager {
 		}
 	}
 
-	public void appendRow(String table, Row row) throws BlurException {
-	    if (!row.walDisabled) {
-    		try {
-    			wal.appendRow(table,row);
-    		} catch (IOException e) {
-    			LOG.error("Error writing to WAL",e);
-    			throw new BlurException("Error writing to WAL");
-    		}
-	    }
-		
-		//@todo finish
-		
-	}
-
 	public void replaceRow(String table, Row row) throws BlurException, MissingShardException {
 	    try {
-    	    if (!row.walDisabled) {
-        		try {
-        			wal.replaceRow(table,row);
-        		} catch (IOException e) {
-        			LOG.error("Error writing to WAL",e);
-        			throw new BlurException("Error writing to WAL");
-        		}
-    	    }
-    		
     		IndexWriter indexWriter = getIndexWriter(table, row.id);
     		checkIfShardIsNull(indexWriter);
     		try {
@@ -183,13 +158,6 @@ public class IndexManager {
 	}
 
 	public void removeRow(String table, String id) throws BlurException {
-		try {
-			wal.removeRow(table,id);
-		} catch (IOException e) {
-			LOG.error("Error writing to WAL",e);
-			throw new BlurException("Error writing to WAL");
-		}
-		
 		//@todo finish
 	}
 
@@ -220,9 +188,10 @@ public class IndexManager {
 		return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
 			@Override
 			public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
-			    IndexSearcher searcher = new IndexSearcher(entry.getValue());
+			    IndexReader reader = entry.getValue();
+                IndexSearcher searcher = new IndexSearcher(reader);
 		        searcher.setSimilarity(similarity);
-			    return new HitsIterableSearcher(superQueryOn, (Query) userQuery.clone(), entry.getKey(), searcher);
+			    return new HitsIterableSearcher((Query) userQuery.clone(), entry.getKey(), searcher, reader.getIndexCommit());
 			}
 		}).merge(new MergerHitsIterable(minimumNumberOfHits,maxQueryTime));
 	}
@@ -305,12 +274,10 @@ public class IndexManager {
 			for (Entry<String, IndexWriter> shardEntry : tableEntry.getValue().entrySet()) {
 				String shard = shardEntry.getKey();
 				IndexWriter indexWriter = shardEntry.getValue();
-				synchronized (indexWriter) {
-				    try {
-	                    wal.commit(table,shard,indexWriter);
-	                } catch (IOException e) {
-	                    LOG.error("Unknown error while commiting data to [" + table + "] [" + shard + "]",e);
-	                }
+				try {
+                    indexWriter.commit();
+                } catch (IOException e) {
+                    LOG.error("Unknown error while commiting shard [" + shard + "] in table [" + table + "]",e);
                 }
 			}
 		}
@@ -387,7 +354,6 @@ public class IndexManager {
 					IndexWriter indexWriter = new IndexWriter(directory, analyzer, deletionPolicy, MaxFieldLength.UNLIMITED);
 					LOG.info("Opening Table [" + table + "] shard [" + shard + "] for writing.");
 					indexWriter.setSimilarity(similarity);
-					wal.replay(table, shard, partitionerManager.getPartitioner(table), indexWriter);
 					writersMap.put(shard, indexWriter);
 				}
 			} catch (LockObtainFailedException e) {

@@ -91,11 +91,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public void appendRowInternal(String table, Row row) throws BlurException, TException {
-		indexManager.appendRow(table,row);
-	}
-
-	@Override
 	public void removeRowInternal(String table, String id) throws BlurException, TException {
 		indexManager.removeRow(table,id);
 	}
@@ -114,11 +109,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
             MissingShardException, TException {
         
-    }
-    
-    @Override
-    public void appendRowBinary(String table, String id, byte[] rowBytes) throws BlurException, MissingShardException, EventStoppedExecutionException, TException {
-        throw new RuntimeException("not implemented");
     }
 
     @Override

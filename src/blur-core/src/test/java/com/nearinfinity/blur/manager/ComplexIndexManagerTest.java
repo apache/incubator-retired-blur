@@ -104,8 +104,8 @@ public class ComplexIndexManagerTest {
 				null, null, Long.MAX_VALUE, Long.MAX_VALUE);
 		assertEquals(1, hits.getTotalHits());
 		Hit hit = hits.iterator().next();
-		assertEquals("1000", hit.id);
-		assertEquals(rows.get(0), indexManager.fetchRow(TABLE_NAME, newSelector(hit.id)));
+		assertEquals("1000", hit.locationId);
+		assertEquals(rows.get(0), indexManager.fetchRow(TABLE_NAME, newSelector(hit.locationId)));
 	}
 	
 	@Test
@@ -114,8 +114,8 @@ public class ComplexIndexManagerTest {
                 null, null, Long.MAX_VALUE, Long.MAX_VALUE);
         assertEquals(1, hitsNoFilter.getTotalHits());
         Hit hitNoFilter = hitsNoFilter.iterator().next();
-        assertEquals("2000", hitNoFilter.id);
-        assertEquals(rows.get(1), indexManager.fetchRow(TABLE_NAME, newSelector(hitNoFilter.id)));
+        assertEquals("2000", hitNoFilter.locationId);
+        assertEquals(rows.get(1), indexManager.fetchRow(TABLE_NAME, newSelector(hitNoFilter.locationId)));
     }
 	
 	@Test

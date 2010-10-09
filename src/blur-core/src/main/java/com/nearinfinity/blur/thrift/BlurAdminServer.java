@@ -154,6 +154,9 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
                 count++;
             }
         }
+        if (hits.hits == null) {
+            hits.hits = new ArrayList<Hit>();
+        }
         return hits;
     }
     
@@ -208,16 +211,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
     }
     
     @Override
-    public final void appendRow(String table, Row row) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
-        if (handler.beforeAppendRow(this, table, row)) {
-            appendRowInternal(table, row);
-            handler.afterAppendRow(this, table, row);
-            return;
-        }
-        throw new EventStoppedExecutionException("Append Row Event Stopped.");
-    }
-
-    @Override
     public final void cancelSearch(long providedUuid) throws BlurException, TException, EventStoppedExecutionException {
         if (handler.beforeCancelSearch(this, providedUuid)) {
             cancelSearchInternal(providedUuid);
@@ -265,13 +258,11 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
         throw new EventStoppedExecutionException("Search Event Stopped.");
     }
 
-    public abstract void appendRowInternal(String table, Row row) throws BlurException, MissingShardException, TException;
     public abstract void cancelSearchInternal(long providedUuid) throws BlurException, TException;
     public abstract FetchResult fetchRowInternal(String table, Selector selector) throws BlurException, MissingShardException, TException;
     public abstract void removeRowInternal(String table, String id) throws BlurException, MissingShardException, TException;
     public abstract void replaceRowInternal(String table, Row row) throws BlurException, MissingShardException, TException;
     public abstract Hits searchInternal(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException;
-    
     
     private boolean isThisNode(String node) throws UnknownHostException {
         if (AddressUtil.getMyHostName().equals(node)) {

@@ -16,6 +16,7 @@ public interface BlurConstants {
 	public static final String BLUR_TABLES_NODE = "tables";
 	public static final String CONTROLLER = "controller";
 	public static final String SHARD = "shard";
+	public static final String COMMIT_POINT = "commitPoint";
 	public static final Comparator<? super ColumnFamily> COLUMN_FAMILY_COMPARATOR = new ColumnFamilyComparator();
 	public static final Comparator<? super Column> COLUMN_COMPARATOR = new ColumnComparator();
     public static final Comparator<? super PeekableIterator<Hit>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new HitsPeekableIteratorComparator();

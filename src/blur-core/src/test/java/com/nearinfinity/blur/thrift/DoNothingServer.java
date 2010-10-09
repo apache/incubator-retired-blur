@@ -20,11 +20,6 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 public class DoNothingServer implements Iface {
 
     @Override
-    public void appendRow(String table, Row row) throws BlurException, MissingShardException, TException {
-        
-    }
-
-    @Override
     public void create(String table, TableDescriptor desc) throws BlurException, TException {
         
     }
@@ -132,12 +127,6 @@ public class DoNothingServer implements Iface {
     public FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
         return null;
-    }
-
-    @Override
-    public void appendRowBinary(String arg0, String arg1, byte[] arg2) throws BlurException, MissingShardException,
-            EventStoppedExecutionException, TException {
-        
     }
 
     @Override

@@ -1,27 +1,24 @@
 package com.nearinfinity.blur.manager.hits;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.MapFieldSelector;
+import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.utils.BlurConstants;
 
-public class HitsIterableSearcher implements HitsIterable {
+public class HitsIterableSearcher implements HitsIterable, BlurConstants {
     
     private static final Log LOG = LogFactory.getLog(HitsIterableSearcher.class);
-    private static final MapFieldSelector SELECTOR = new MapFieldSelector(Arrays.asList(SuperDocument.ID,SuperDocument.SUPER_KEY));
 
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private Query query;
@@ -32,13 +29,14 @@ public class HitsIterableSearcher implements HitsIterable {
     private TopDocs topDocs;
     private int fetchCount = 1000;
     private int batch = 0;
-    private boolean superOn;
+    private String commitPoint;
 
-    public HitsIterableSearcher(boolean superOn, Query query, String shard, IndexSearcher searcher) {
-        this.superOn = superOn;
+    public HitsIterableSearcher(Query query, String shard, IndexSearcher searcher, IndexCommit indexCommit) throws IOException {
         this.query = query;
         this.shard = shard;
         this.searcher = searcher;
+        Map<String, String> userData = indexCommit.getUserData();
+        this.commitPoint = userData.get(COMMIT_POINT);
         performSearch();
     }
 
@@ -111,19 +109,6 @@ public class HitsIterableSearcher implements HitsIterable {
     }
     
     private String resolveId(int docId) {
-        Document doc;
-        try {
-            doc = searcher.doc(docId, SELECTOR);
-        } catch (IOException e) {
-            LOG.error("Error while trying to fetch actual row ids from lucene doc id [" + docId +
-            		"]");
-            throw new RuntimeException();
-        }
-        String id = doc.get(SuperDocument.ID);
-        if (superOn) {
-            return id;
-        }
-        String superColumnid = doc.get(SuperDocument.SUPER_KEY);
-        return id + ":" + superColumnid;
+        return docId + "@" + shard + "." + commitPoint;
     }  
 }

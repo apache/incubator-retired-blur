@@ -13,7 +13,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
@@ -25,8 +24,10 @@ import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.utils.PrimeDocCache;
 
 public class SuperQueryTest {
 	
@@ -37,11 +38,11 @@ public class SuperQueryTest {
 		booleanQuery.add(wrapSuper(new TermQuery(new Term("address.street","sulgrave"))), Occur.MUST);
 		
 		Directory directory = createIndex();
-		IndexReader reader = IndexManager.warmUpPrimeDocBitSets(IndexReader.open(directory));
+		IndexReader reader = IndexReader.open(directory);
 		printAll(new Term("person.name","aaron"),reader);
 		printAll(new Term("address.street","sulgrave"),reader);
 		printAll(new Term(SuperDocument.PRIME_DOC,SuperDocument.PRIME_DOC_VALUE),reader);
-		IndexSearcher searcher = new IndexSearcher(reader);
+		BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test2").getIndexReaderCache("test2"));
 		TopDocs topDocs = searcher.search(booleanQuery, 10);
 		assertEquals(2, topDocs.totalHits);
 		assertEquals("1",searcher.doc(topDocs.scoreDocs[0].doc).get(SuperDocument.ID));

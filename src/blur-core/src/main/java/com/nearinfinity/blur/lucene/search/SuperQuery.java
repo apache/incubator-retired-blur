@@ -3,6 +3,7 @@ package com.nearinfinity.blur.lucene.search;
 import java.io.IOException;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
@@ -11,7 +12,7 @@ import org.apache.lucene.search.Weight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nearinfinity.blur.utils.PrimeDocCache;
+import com.nearinfinity.blur.utils.PrimeDocCache.IndexReaderCache;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class SuperQuery extends AbstractWrapperQuery {
@@ -31,7 +32,11 @@ public class SuperQuery extends AbstractWrapperQuery {
 	}
 
 	public Weight createWeight(Searcher searcher) throws IOException {
-		return new SuperWeight(query.createWeight(searcher),query.toString(),this);
+	    if (searcher instanceof BlurSearcher) {
+	        BlurSearcher blurSearcher = (BlurSearcher) searcher;
+	        return new SuperWeight(query.createWeight(searcher),query.toString(),this,blurSearcher.getIndexReaderCache());
+	    }
+		throw new UnsupportedOperationException("Searcher must be a blur seacher.");
 	}
 
 	public Query rewrite(IndexReader reader) throws IOException {
@@ -56,11 +61,13 @@ public class SuperQuery extends AbstractWrapperQuery {
 		private Weight weight;
 		private String originalQueryStr;
 		private Query query;
+        private IndexReaderCache indexReaderCache;
 
-		public SuperWeight(Weight weight, String originalQueryStr, Query query) {
+		public SuperWeight(Weight weight, String originalQueryStr, Query query, IndexReaderCache indexReaderCache) {
 			this.weight = weight;
 			this.originalQueryStr = originalQueryStr;
 			this.query = query;
+			this.indexReaderCache = indexReaderCache;
 		}
 
 		@Override
@@ -89,7 +96,11 @@ public class SuperQuery extends AbstractWrapperQuery {
 			if (scorer == null) {
 				return null;
 			}
-			return new SuperScorer(scorer,PrimeDocCache.getPrimeDoc(reader),originalQueryStr);
+			if (reader instanceof SegmentReader) {
+			    return new SuperScorer(scorer,indexReaderCache.getPrimeDocBitSet((SegmentReader) reader),originalQueryStr);
+			} else {
+			    throw new UnsupportedOperationException("Reader is not a segment reader.");
+			}
 		}
 
 		@Override

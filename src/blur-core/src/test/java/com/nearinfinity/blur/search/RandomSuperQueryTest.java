@@ -16,7 +16,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
@@ -28,8 +27,10 @@ import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.utils.PrimeDocCache;
 
 public class RandomSuperQueryTest {
 	
@@ -66,11 +67,10 @@ public class RandomSuperQueryTest {
 		System.out.flush();
 		Directory directory = createIndex(random, sampler);
 		IndexReader reader = IndexReader.open(directory);
-		IndexReader indexReader = IndexManager.warmUpPrimeDocBitSets(reader);
 		System.out.print("Running searches [" + sampler.size() + "]... ");
 		System.out.flush();
 		assertTrue(!sampler.isEmpty());
-		IndexSearcher searcher = new IndexSearcher(indexReader);
+		BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test").getIndexReaderCache("test"));
 		long s = System.currentTimeMillis();
 		for (String str : sampler) {
 			Query query = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30),true, filter).parse(str);

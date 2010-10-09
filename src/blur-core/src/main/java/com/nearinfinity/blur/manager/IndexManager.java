@@ -25,7 +25,6 @@ import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
-import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.Similarity;
@@ -35,6 +34,7 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
@@ -49,7 +49,6 @@ import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.TermDocIterable;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
-import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 import com.nearinfinity.mele.Mele;
 
 public class IndexManager {
@@ -57,7 +56,6 @@ public class IndexManager {
 	private static final Version LUCENE_VERSION = Version.LUCENE_30;
     private static final Log LOG = LogFactory.getLog(IndexManager.class);
 	private static final long POLL_TIME = 30000;
-	private static final Term PRIME_DOC_TERM = new Term(SuperDocument.PRIME_DOC,SuperDocument.PRIME_DOC_VALUE);
 	private static final TableManager ALWAYS_ON = new TableManager() {
 		@Override
 		public boolean isTableEnabled(String table) {
@@ -102,8 +100,7 @@ public class IndexManager {
 		Map<String, IndexWriter> map = indexWriters.get(table);
 		Map<String, IndexReader> reader = new HashMap<String, IndexReader>();
 		for (Entry<String, IndexWriter> writer : map.entrySet()) {
-			reader.put(writer.getKey(), 
-			        warmUpPrimeDocBitSets(writer.getValue().getReader()));
+			reader.put(writer.getKey(), writer.getValue().getReader());
 		}
 		return reader;
 	}
@@ -125,10 +122,14 @@ public class IndexManager {
 	}
 	
 	public void close() throws InterruptedException {
-	    daemonCommitDaemon.interrupt();
-	    daemonCommitDaemon.join();
-	    daemonUnservedShards.interrupt();
-	    daemonUnservedShards.join();
+	    if (daemonCommitDaemon != null) {
+    	    daemonCommitDaemon.interrupt();
+    	    daemonCommitDaemon.join();
+	    }
+	    if (daemonUnservedShards != null) {
+    	    daemonUnservedShards.interrupt();
+    	    daemonUnservedShards.join();
+	    }
 		for (Entry<String, Map<String, IndexWriter>> writers : indexWriters.entrySet()) {
 			for (Entry<String, IndexWriter> writer : writers.getValue().entrySet()) {
 				try {
@@ -172,7 +173,7 @@ public class IndexManager {
 		}
 	}
 	
-	public HitsIterable search(String table, String query, final boolean superQueryOn,
+	public HitsIterable search(final String table, String query, final boolean superQueryOn,
 			ScoreType type, String postSuperFilter, String preSuperFilter,
 			long minimumNumberOfHits, long maxQueryTime) throws Exception {
 		Map<String, IndexReader> indexReaders;
@@ -189,9 +190,10 @@ public class IndexManager {
 			@Override
 			public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
 			    IndexReader reader = entry.getValue();
-                IndexSearcher searcher = new IndexSearcher(reader);
+		        String shard = entry.getKey();
+                BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache(table).getIndexReaderCache(shard));
 		        searcher.setSimilarity(similarity);
-			    return new HitsIterableSearcher((Query) userQuery.clone(), entry.getKey(), searcher, reader.getIndexCommit());
+			    return new HitsIterableSearcher((Query) userQuery.clone(), shard, searcher, reader.getIndexCommit());
 			}
 		}).merge(new MergerHitsIterable(minimumNumberOfHits,maxQueryTime));
 	}
@@ -249,8 +251,8 @@ public class IndexManager {
 		
 		// @todo once all are brought online, look for shards that are not
 		// online yet...
-//		serverUnservedShards();
-//		startDaemonUnservedShards();
+		serverUnservedShards();
+		startDaemonUnservedShards();
 		startDaemonWriterCommit();
 	}
 	
@@ -440,28 +442,4 @@ public class IndexManager {
 			throw new MissingShardException();
 		}
 	}
-	
-    public static IndexReader warmUpPrimeDocBitSets(IndexReader indexReader) {
-        try {
-            IndexReader[] subReaders = indexReader.getSequentialSubReaders();
-            for (IndexReader reader : subReaders) {
-                if (!PrimeDocCache.isPrimeDocPopulated(reader)) {
-                    BlurBitSet bitSet = new BlurBitSet(reader.maxDoc());
-                    populatePrimeDocBitSet(bitSet, reader);
-                    PrimeDocCache.setPrimeDoc(reader, bitSet);
-                }
-            }
-            return indexReader;
-        } catch (Exception e) {
-            LOG.error("Unknown error during creation of prime doc bitsets.", e);
-            throw new RuntimeException(e);
-        }
-    }
-    
-    private static void populatePrimeDocBitSet(BlurBitSet primeDocBS, IndexReader reader) throws IOException {
-        TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
-        while (termDocs.next()) {
-            primeDocBS.set(termDocs.doc());
-        }
-    }
 }

@@ -27,18 +27,21 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   private static final TStruct STRUCT_DESC = new TStruct("Selector");
 
   private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)1);
-  private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.LIST, (short)2);
-  private static final TField COLUMNS_FIELD_DESC = new TField("columns", TType.MAP, (short)3);
+  private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)2);
+  private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.LIST, (short)3);
+  private static final TField COLUMNS_FIELD_DESC = new TField("columns", TType.MAP, (short)4);
 
   public String id;
+  public String locationId;
   public List<String> columnFamilies;
   public Map<String,String> columns;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     ID((short)1, "id"),
-    COLUMN_FAMILIES((short)2, "columnFamilies"),
-    COLUMNS((short)3, "columns");
+    LOCATION_ID((short)2, "locationId"),
+    COLUMN_FAMILIES((short)3, "columnFamilies"),
+    COLUMNS((short)4, "columns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -55,9 +58,11 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // COLUMN_FAMILIES
+        case 2: // LOCATION_ID
+          return LOCATION_ID;
+        case 3: // COLUMN_FAMILIES
           return COLUMN_FAMILIES;
-        case 3: // COLUMNS
+        case 4: // COLUMNS
           return COLUMNS;
         default:
           return null;
@@ -105,6 +110,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new FieldMetaData("id", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.LOCATION_ID, new FieldMetaData("locationId", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.COLUMN_FAMILIES, new FieldMetaData("columnFamilies", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
             new FieldValueMetaData(TType.STRING))));
@@ -121,11 +128,13 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
 
   public Selector(
     String id,
+    String locationId,
     List<String> columnFamilies,
     Map<String,String> columns)
   {
     this();
     this.id = id;
+    this.locationId = locationId;
     this.columnFamilies = columnFamilies;
     this.columns = columns;
   }
@@ -136,6 +145,9 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   public Selector(Selector other) {
     if (other.isSetId()) {
       this.id = other.id;
+    }
+    if (other.isSetLocationId()) {
+      this.locationId = other.locationId;
     }
     if (other.isSetColumnFamilies()) {
       List<String> __this__columnFamilies = new ArrayList<String>();
@@ -191,6 +203,30 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   public void setIdIsSet(boolean value) {
     if (!value) {
       this.id = null;
+    }
+  }
+
+  public String getLocationId() {
+    return this.locationId;
+  }
+
+  public Selector setLocationId(String locationId) {
+    this.locationId = locationId;
+    return this;
+  }
+
+  public void unsetLocationId() {
+    this.locationId = null;
+  }
+
+  /** Returns true if field locationId is set (has been asigned a value) and false otherwise */
+  public boolean isSetLocationId() {
+    return this.locationId != null;
+  }
+
+  public void setLocationIdIsSet(boolean value) {
+    if (!value) {
+      this.locationId = null;
     }
   }
 
@@ -278,6 +314,14 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       }
       break;
 
+    case LOCATION_ID:
+      if (value == null) {
+        unsetLocationId();
+      } else {
+        setLocationId((String)value);
+      }
+      break;
+
     case COLUMN_FAMILIES:
       if (value == null) {
         unsetColumnFamilies();
@@ -306,6 +350,9 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     case ID:
       return getId();
 
+    case LOCATION_ID:
+      return getLocationId();
+
     case COLUMN_FAMILIES:
       return getColumnFamilies();
 
@@ -325,6 +372,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     switch (field) {
     case ID:
       return isSetId();
+    case LOCATION_ID:
+      return isSetLocationId();
     case COLUMN_FAMILIES:
       return isSetColumnFamilies();
     case COLUMNS:
@@ -356,6 +405,15 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       if (!(this_present_id && that_present_id))
         return false;
       if (!this.id.equals(that.id))
+        return false;
+    }
+
+    boolean this_present_locationId = true && this.isSetLocationId();
+    boolean that_present_locationId = true && that.isSetLocationId();
+    if (this_present_locationId || that_present_locationId) {
+      if (!(this_present_locationId && that_present_locationId))
+        return false;
+      if (!this.locationId.equals(that.locationId))
         return false;
     }
 
@@ -402,6 +460,15 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetLocationId()).compareTo(typedOther.isSetLocationId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetLocationId()) {      lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetColumnFamilies()).compareTo(typedOther.isSetColumnFamilies());
     if (lastComparison != 0) {
       return lastComparison;
@@ -440,7 +507,14 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // COLUMN_FAMILIES
+        case 2: // LOCATION_ID
+          if (field.type == TType.STRING) {
+            this.locationId = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 3: // COLUMN_FAMILIES
           if (field.type == TType.LIST) {
             {
               TList _list34 = iprot.readListBegin();
@@ -457,7 +531,7 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // COLUMNS
+        case 4: // COLUMNS
           if (field.type == TType.MAP) {
             {
               TMap _map37 = iprot.readMapBegin();
@@ -494,6 +568,11 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     if (this.id != null) {
       oprot.writeFieldBegin(ID_FIELD_DESC);
       oprot.writeString(this.id);
+      oprot.writeFieldEnd();
+    }
+    if (this.locationId != null) {
+      oprot.writeFieldBegin(LOCATION_ID_FIELD_DESC);
+      oprot.writeString(this.locationId);
       oprot.writeFieldEnd();
     }
     if (this.columnFamilies != null) {
@@ -535,6 +614,14 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       sb.append("null");
     } else {
       sb.append(this.id);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("locationId:");
+    if (this.locationId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.locationId);
     }
     first = false;
     if (!first) sb.append(", ");

@@ -12,29 +12,34 @@ import org.apache.lucene.search.Weight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache.IndexReaderCache;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class SuperQuery extends AbstractWrapperQuery {
 
 	private static final long serialVersionUID = -5901574044714034398L;
+	private ScoreType scoreType;
 	
-	public SuperQuery(Query query) {
+	public SuperQuery(Query query, ScoreType scoreType) {
 		super(query,false);
+		this.scoreType = scoreType;
 	}
 	
-	public SuperQuery(Query query, boolean rewritten) {
+	public SuperQuery(Query query, ScoreType scoreType, boolean rewritten) {
 		super(query,rewritten);
+		this.scoreType = scoreType;
 	}
 
 	public Object clone() {
-		return new SuperQuery((Query) query.clone(),rewritten);
+		return new SuperQuery((Query) query.clone(), scoreType, rewritten);
 	}
 
 	public Weight createWeight(Searcher searcher) throws IOException {
 	    if (searcher instanceof BlurSearcher) {
-	        BlurSearcher blurSearcher = (BlurSearcher) searcher;
-	        return new SuperWeight(query.createWeight(searcher),query.toString(),this,blurSearcher.getIndexReaderCache());
+	        IndexReaderCache indexReaderCache = ((BlurSearcher) searcher).getIndexReaderCache();
+	        Weight weight = query.createWeight(searcher);
+			return new SuperWeight(weight, query.toString(), this, indexReaderCache, scoreType);
 	    }
 		throw new UnsupportedOperationException("Searcher must be a blur seacher.");
 	}
@@ -43,7 +48,7 @@ public class SuperQuery extends AbstractWrapperQuery {
 		if (rewritten) {
 			return this;
 		}
-		return new SuperQuery(query.rewrite(reader),true);
+		return new SuperQuery(query.rewrite(reader),scoreType, true);
 	}
 
 	public String toString() {
@@ -61,13 +66,15 @@ public class SuperQuery extends AbstractWrapperQuery {
 		private Weight weight;
 		private String originalQueryStr;
 		private Query query;
+		private ScoreType scoreType;
         private IndexReaderCache indexReaderCache;
 
-		public SuperWeight(Weight weight, String originalQueryStr, Query query, IndexReaderCache indexReaderCache) {
+		public SuperWeight(Weight weight, String originalQueryStr, Query query, IndexReaderCache indexReaderCache, ScoreType scoreType) {
 			this.weight = weight;
 			this.originalQueryStr = originalQueryStr;
 			this.query = query;
 			this.indexReaderCache = indexReaderCache;
+			this.scoreType = scoreType;
 		}
 
 		@Override
@@ -97,7 +104,8 @@ public class SuperQuery extends AbstractWrapperQuery {
 				return null;
 			}
 			if (reader instanceof SegmentReader) {
-			    return new SuperScorer(scorer,indexReaderCache.getPrimeDocBitSet((SegmentReader) reader),originalQueryStr);
+			    BlurBitSet primeDocBitSet = indexReaderCache.getPrimeDocBitSet((SegmentReader) reader);
+				return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
 			} else {
 			    throw new UnsupportedOperationException("Reader is not a segment reader.");
 			}
@@ -113,23 +121,43 @@ public class SuperQuery extends AbstractWrapperQuery {
 	public static class SuperScorer extends Scorer {
 		
 		private final static Logger LOG = LoggerFactory.getLogger(SuperScorer.class);
+		private static final double SUPER_POWER_CONSTANT = 2;
 		private Scorer scorer;
-		private float superDocScore = 1;
 		private BlurBitSet bitSet;
 		private int nextPrimeDoc;
 		private int primeDoc = -1;
 		private String originalQueryStr;
+		private ScoreType scoreType;
+		
+		private int numDocs;
+		private float bestScore;
+		private float aggregateScore;
+		private int hitsInEntity;
 
-		protected SuperScorer(Scorer scorer, BlurBitSet bitSet, String originalQueryStr) {
+		protected SuperScorer(Scorer scorer, BlurBitSet bitSet, String originalQueryStr, ScoreType scoreType) {
 			super(scorer.getSimilarity());
 			this.scorer = scorer;
 			this.bitSet = bitSet;
 			this.originalQueryStr = originalQueryStr;
+			this.scoreType = scoreType;
 		}
 
 		@Override
 		public float score() throws IOException {
-			return superDocScore;
+			switch(scoreType) {
+			case AGGREGATE:
+				return aggregateScore;
+			case BEST:
+				return bestScore;
+			case CONSTANT:
+				return 1;
+			case SUPER:
+				double log = Math.log10(aggregateScore) + 1.0;
+				double avg = aggregateScore / hitsInEntity;
+				double pow = Math.pow(avg, SUPER_POWER_CONSTANT);
+				return (float) Math.pow(log + pow,1.0/SUPER_POWER_CONSTANT);
+			}
+			throw new RuntimeException("Unknown Score type[" + scoreType + "]");
 		}
 		
 		@Override
@@ -177,15 +205,25 @@ public class SuperQuery extends AbstractWrapperQuery {
 			reset();
 			primeDoc = getPrimeDoc(doc);
 			nextPrimeDoc = getNextPrimeDoc(doc);
-			superDocScore += scorer.score();
-			while ((doc = scorer.nextDoc()) < nextPrimeDoc) {
-				superDocScore += scorer.score();
+			numDocs = nextPrimeDoc - primeDoc;
+			float currentDocScore = 0;
+			while (doc < nextPrimeDoc) {
+				currentDocScore = scorer.score();
+				aggregateScore += currentDocScore;
+				if(currentDocScore > bestScore){
+					bestScore = currentDocScore;
+				}
+				hitsInEntity++;
+				doc = scorer.nextDoc();
 			}
 			return primeDoc;
 		}
 		
 		private void reset() {
-			superDocScore = 0;
+			numDocs = 0;
+			bestScore = 0;
+			aggregateScore = 0;
+			hitsInEntity = 0;
 		}
 
 		private int getNextPrimeDoc(int doc) {

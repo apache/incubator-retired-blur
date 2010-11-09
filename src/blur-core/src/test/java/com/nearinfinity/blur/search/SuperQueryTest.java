@@ -27,6 +27,7 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 
 public class SuperQueryTest {
@@ -47,8 +48,70 @@ public class SuperQueryTest {
 		assertEquals(2, topDocs.totalHits);
 		assertEquals("1",searcher.doc(topDocs.scoreDocs[0].doc).get(SuperDocument.ID));
 		assertEquals("3",searcher.doc(topDocs.scoreDocs[1].doc).get(SuperDocument.ID));
+	}
+    
+    @Test
+    public void testAggregateScoreTypes() throws Exception {
+    	BlurSearcher searcher = createSearcher();
+		BooleanQuery booleanQuery = new BooleanQuery();
+		booleanQuery.add(wrapSuper("person.name","aaron", ScoreType.AGGREGATE), Occur.SHOULD);
+		booleanQuery.add(wrapSuper("address.street","sulgrave", ScoreType.AGGREGATE), Occur.MUST);
+		TopDocs topDocs = searcher.search(booleanQuery, 10);
+		printTopDocs(topDocs);
+		assertEquals(3, topDocs.totalHits);
+		assertEquals(3.30, topDocs.scoreDocs[0].score, 0.01);
+		assertEquals(2.20, topDocs.scoreDocs[1].score, 0.01);
+		assertEquals(0.55, topDocs.scoreDocs[2].score, 0.01);
+    }
+    
+    @Test
+    public void testBestScoreTypes() throws Exception {
+    	BlurSearcher searcher = createSearcher();
+		BooleanQuery booleanQuery = new BooleanQuery();
+		booleanQuery.add(wrapSuper("person.name","aaron", ScoreType.BEST), Occur.SHOULD);
+		booleanQuery.add(wrapSuper("address.street","sulgrave", ScoreType.BEST), Occur.MUST);
+		TopDocs topDocs = searcher.search(booleanQuery, 10);
+		assertEquals(3, topDocs.totalHits);
+		printTopDocs(topDocs);
+		assertEquals(2.20, topDocs.scoreDocs[0].score, 0.01);
+		assertEquals(2.20, topDocs.scoreDocs[1].score, 0.01);
+		assertEquals(0.55, topDocs.scoreDocs[2].score, 0.01);
+    }
+    
+    private void printTopDocs(TopDocs topDocs) {
+		for(int i = 0; i< topDocs.totalHits; i++){
+			System.out.println("doc " + i + " score " + topDocs.scoreDocs[i].score);
+		}
 		
 	}
+
+	@Test
+    public void testConstantScoreTypes() throws Exception {
+    	BlurSearcher searcher = createSearcher();
+		BooleanQuery booleanQuery = new BooleanQuery();
+		booleanQuery.add(wrapSuper("person.name","aaron", ScoreType.CONSTANT), Occur.SHOULD);
+		booleanQuery.add(wrapSuper("address.street","sulgrave", ScoreType.CONSTANT), Occur.MUST);
+		TopDocs topDocs = searcher.search(booleanQuery, 10);
+		assertEquals(3, topDocs.totalHits);
+		printTopDocs(topDocs);
+		assertEquals(2.0, topDocs.scoreDocs[0].score, 0.01);
+		assertEquals(2.0, topDocs.scoreDocs[1].score, 0.01);
+		assertEquals(0.5, topDocs.scoreDocs[2].score, 0.01);
+    }
+    
+    @Test
+    public void testSuperScoreTypes() throws Exception {
+    	BlurSearcher searcher = createSearcher();
+		BooleanQuery booleanQuery = new BooleanQuery();
+		booleanQuery.add(wrapSuper("person.name","aaron", ScoreType.SUPER), Occur.SHOULD);
+		booleanQuery.add(wrapSuper("address.street","sulgrave", ScoreType.SUPER), Occur.MUST);
+		TopDocs topDocs = searcher.search(booleanQuery, 10);
+		assertEquals(3, topDocs.totalHits);
+		printTopDocs(topDocs);
+		assertEquals(3.10, topDocs.scoreDocs[0].score, 0.01);
+		assertEquals(3.00, topDocs.scoreDocs[1].score, 0.01);
+		assertEquals(0.75, topDocs.scoreDocs[2].score, 0.01);
+    }
 
 	private void printAll(Term term, IndexReader reader) throws IOException {
 		TermDocs termDocs = reader.termDocs(term);
@@ -56,11 +119,17 @@ public class SuperQueryTest {
 			System.out.println(term + "=>" + termDocs.doc());
 		}
 	}
+	
+	private static BlurSearcher createSearcher() throws Exception {
+		Directory directory = createIndex();
+		IndexReader reader = IndexReader.open(directory);
+		return new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test2").getIndexReaderCache("test2"));
+	}
 
 	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
 		Directory directory = new RAMDirectory();
 		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
-		IndexManager.replace(writer, create("1","person.name:aaron","address.street:sulgrave"));
+		IndexManager.replace(writer, create("1","person.name:aaron","person.name:aaron","address.street:sulgrave"));
 		IndexManager.replace(writer, create("2","person.name:hannah","address.street:sulgrave"));
 		IndexManager.replace(writer, create("3","person.name:aaron","address.street:sulgrave court"));
 		writer.close();
@@ -81,7 +150,10 @@ public class SuperQueryTest {
 	}
 
 	private Query wrapSuper(Query query) {
-		return new SuperQuery(query);
+		return new SuperQuery(query, ScoreType.AGGREGATE);
+	}
+	private Query wrapSuper(String field, String value, ScoreType scoreType) {
+		return new SuperQuery(new TermQuery(new Term(field,value)), scoreType);
 	}
 
 }

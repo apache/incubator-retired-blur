@@ -21,6 +21,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.thrift.generated.ScoreType;
 
 public class SuperParser extends QueryParser {
 	
@@ -28,20 +29,22 @@ public class SuperParser extends QueryParser {
 	private Map<Query,String> fieldNames = new HashMap<Query, String>();
 	private boolean superSearch = true;
 	private Filter queryFilter;
+	private final ScoreType scoreType;
 	
 	public static void main(String[] args) throws ParseException {
-		SuperParser parser = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30),true,null);
+		SuperParser parser = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30),true,null, ScoreType.AGGREGATE);
 		Query query = parser.parse("address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query);
 		Query query2 = parser.parse("disabled address.street:sulgrave +(person.firstname:\"aaron patrick\" person.lastname:mccurry +(person.gender:(unknown male)))");
 		System.out.println(query2);
 	}
 
-	public SuperParser(Version matchVersion, Analyzer a, boolean superSearch, Filter queryFilter) {
+	public SuperParser(Version matchVersion, Analyzer a, boolean superSearch, Filter queryFilter, ScoreType scoreType) {
 		super(matchVersion, SUPER, a);
 		this.setAllowLeadingWildcard(true);
 		this.superSearch = superSearch;
 		this.queryFilter = queryFilter;
+		this.scoreType = scoreType;
 	}
 	
 	@Override
@@ -115,7 +118,7 @@ public class SuperParser extends QueryParser {
 		if (query instanceof BooleanQuery) {
 			BooleanQuery booleanQuery = (BooleanQuery) query;
 			if (isSameGroupName(booleanQuery)) {
-				return new SuperQuery(booleanQuery);
+				return new SuperQuery(booleanQuery, scoreType);
 			} else {
 				List<BooleanClause> clauses = booleanQuery.clauses();
 				for (BooleanClause clause : clauses) {
@@ -124,7 +127,7 @@ public class SuperParser extends QueryParser {
 				return booleanQuery;
 			}
 		} else {
-			return new SuperQuery(wrapFilter(query));
+			return new SuperQuery(wrapFilter(query), scoreType);
 		}
 	}
 

@@ -183,9 +183,9 @@ public class IndexManager {
 			LOG.error("Unknown error while trying to fetch index readers.",e);
 			throw new BlurException(e.getMessage());
 		}
-		Filter preFilter = parseFilter(table,preSuperFilter,false);
-		Filter postFilter = parseFilter(table,postSuperFilter,true);
-		final Query userQuery = parseQuery(query,superQueryOn,getAnalyzer(table),postFilter,preFilter);
+		Filter preFilter = parseFilter(table,preSuperFilter, false, type);
+		Filter postFilter = parseFilter(table,postSuperFilter, true, type);
+		final Query userQuery = parseQuery(query,superQueryOn, getAnalyzer(table), postFilter, preFilter, type);
 		return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
 			@Override
 			public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
@@ -198,11 +198,11 @@ public class IndexManager {
 		}).merge(new MergerHitsIterable(minimumNumberOfHits,maxQueryTime));
 	}
 
-	private Filter parseFilter(String table, String filter, boolean superQueryOn) throws ParseException, BlurException {
+	private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType) throws ParseException, BlurException {
 		if (filter == null) {
 			return null;
 		}
-		return new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, getAnalyzer(table),superQueryOn,null).parse(filter));
+		return new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, getAnalyzer(table), superQueryOn, null, scoreType).parse(filter));
 	}
 
 	private Analyzer getAnalyzer(String table) throws BlurException {
@@ -220,8 +220,8 @@ public class IndexManager {
 		}
 	}
 
-	private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter) throws ParseException {
-		Query result = new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, preFilter).parse(query);
+	private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException {
+		Query result = new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, preFilter, scoreType).parse(query);
 		if (postFilter == null) {
 			return result;	
 		}

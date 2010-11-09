@@ -30,6 +30,7 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 
 public class RandomSuperQueryTest {
@@ -73,7 +74,7 @@ public class RandomSuperQueryTest {
 		BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test").getIndexReaderCache("test"));
 		long s = System.currentTimeMillis();
 		for (String str : sampler) {
-			Query query = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30),true, filter).parse(str);
+			Query query = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30),true, filter, ScoreType.AGGREGATE).parse(str);
 			TopDocs topDocs = searcher.search(query, 10);
 			assertTrue("seed [" + seed + "] {" + query + "} {" + s + "}",topDocs.totalHits > 0);
 		}

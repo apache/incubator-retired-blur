@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -53,84 +52,6 @@ public class ZkMetaData implements MetaData, BlurConstants, Watcher {
     }
 
     @Override
-    public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn)
-            throws BlurException {
-        try {
-            ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table));
-            String path = ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table, term);
-            Stat stat = zk.exists(path, false);
-            if (stat != null) {
-                throw new BlurException("Dynamic term [" + term + "] already exists for table [" + table + "]");
-            }
-            byte[] bs = query.getBytes();
-            byte b = 0;
-            if (superQueryOn) {
-                b = 1;
-            }
-            ByteBuffer buffer = ByteBuffer.allocate(bs.length + 1);
-            zk.create(path, buffer.put(b).put(bs).array(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-
-        } catch (KeeperException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void deleteDynamicTermQuery(String table, String term) throws BlurException {
-        try {
-            ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table));
-            String path = ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table, term);
-            Stat stat = zk.exists(path, false);
-            if (stat == null) {
-                throw new BlurException("Dynamic term [" + term + "] does not exist for table [" + table + "]");
-            }
-            zk.delete(path, stat.getVersion());
-        } catch (KeeperException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public List<String> getDynamicTerms(String table) {
-        try {
-            ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table));
-            String path = ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table);
-            return zk.getChildren(path, false);
-        } catch (KeeperException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException {
-        try {
-            ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table));
-            String path = ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table, term);
-            Stat stat = zk.exists(path, false);
-            if (stat == null) {
-                throw new BlurException("Dynamic term [" + term + "] does not exist for table [" + table + "]");
-            }
-            ByteBuffer buffer = ByteBuffer.wrap(zk.getData(path, false, stat));
-            byte b = buffer.get();
-            if (b == 0) {
-                return false;
-            } else {
-                return true;
-            }
-        } catch (KeeperException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
     public List<String> tableList() throws BlurException {
         try {
             String path = ZkUtils.getPath(blurPath, BLUR_TABLES_NODE);
@@ -140,24 +61,6 @@ public class ZkMetaData implements MetaData, BlurConstants, Watcher {
             if (e.code().equals(Code.NONODE)) {
                 return new ArrayList<String>();
             }
-            throw new BlurException(e.getMessage());
-        } catch (InterruptedException e) {
-            throw new BlurException(e.getMessage());
-        }
-    }
-
-    @Override
-    public String getDynamicTermQuery(String table, String term) throws BlurException {
-        try {
-            ZkUtils.mkNodesStr(zk, ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table));
-            String path = ZkUtils.getPath(blurPath, DYNAMIC_TERMS, table, term);
-            Stat stat = zk.exists(path, false);
-            if (stat == null) {
-                throw new BlurException("Dynamic term [" + term + "] does not exist for table [" + table + "]");
-            }
-            ByteBuffer buffer = ByteBuffer.wrap(zk.getData(path, false, stat));
-            return new String(buffer.array(), 1, buffer.remaining());
-        } catch (KeeperException e) {
             throw new BlurException(e.getMessage());
         } catch (InterruptedException e) {
             throw new BlurException(e.getMessage());

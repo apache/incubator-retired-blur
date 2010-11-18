@@ -15,7 +15,8 @@ import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.metadata.MetaData;
-import com.nearinfinity.blur.thrift.BlurClientManager.Command;
+import com.nearinfinity.blur.thrift.BlurClientManager;
+import com.nearinfinity.blur.thrift.commands.BlurAdminCommand;
 import com.nearinfinity.blur.thrift.events.EmptyEventHandler;
 import com.nearinfinity.blur.thrift.events.EventHandler;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -28,8 +29,8 @@ import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.util.AddressUtil;
@@ -107,39 +108,11 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
 	}
 
 	@Override
-	public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn)
-		throws BlurException, TException {
-	    metaData.createDynamicTermQuery(table, term, query, superQueryOn);
-	}
-
-	@Override
-	public void deleteDynamicTermQuery(String table, String term) throws BlurException, TException {
-	    metaData.deleteDynamicTermQuery(table, term);
-	}
-
-	@Override
-	public String getDynamicTermQuery(String table, String term) throws BlurException, TException {
-	    return metaData.getDynamicTermQuery(table, term);
-	}
-	
-	@Override
-	public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, TException {
-	    return metaData.isDynamicTermQuerySuperQuery(table,term);
-	}
-
-	@Override
-	public List<String> getDynamicTerms(String table) throws BlurException, TException {
-	    return metaData.getDynamicTerms(table);
-	}
-
-	@Override
 	public List<String> tableList() throws BlurException, TException {
 	    return metaData.tableList();
 	}
 	
 	protected abstract NODE_TYPE getType();
-	
-	
 	
     public static Hits convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfHits) {
         Hits hits = new Hits();
@@ -178,7 +151,7 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
             if (isThisNode(node)) {
                 System.exit(0);
             }
-            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new Command<Boolean>() {
+            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new BlurAdminCommand<Boolean>() {
                 @Override
                 public Boolean call(Client client) throws Exception {
                     client.shutdownController(node);
@@ -197,7 +170,7 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
             if (isThisNode(node)) {
                 System.exit(0);
             }
-            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new Command<Boolean>() {
+            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new BlurAdminCommand<Boolean>() {
                 @Override
                 public Boolean call(Client client) throws Exception {
                     client.shutdownShard(node);

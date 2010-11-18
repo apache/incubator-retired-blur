@@ -10,18 +10,8 @@ import com.nearinfinity.mele.Mele;
 
 public interface MetaData {
 
-    void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn) throws BlurException;
-
-    void deleteDynamicTermQuery(String table, String term) throws BlurException;
-
-    boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException;
-
-    List<String> getDynamicTerms(String table);
-
     List<String> tableList() throws BlurException;
 
-    String getDynamicTermQuery(String table, String term) throws BlurException;
-    
     Map<String, String> shardServerLayout(String table) throws BlurException;
 
     void registerNode(String hostName, NODE_TYPE type);

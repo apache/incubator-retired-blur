@@ -7,7 +7,6 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
@@ -29,14 +28,13 @@ public class HitsIterableSearcher implements HitsIterable, BlurConstants {
     private TopDocs topDocs;
     private int fetchCount = 1000;
     private int batch = 0;
-    private String commitPoint;
+    private String table;
 
-    public HitsIterableSearcher(Query query, String shard, IndexSearcher searcher, IndexCommit indexCommit) throws IOException {
+    public HitsIterableSearcher(Query query, String table, String shard, IndexSearcher searcher) throws IOException {
         this.query = query;
+        this.table = table;
         this.shard = shard;
         this.searcher = searcher;
-        Map<String, String> userData = indexCommit.getUserData();
-        this.commitPoint = userData.get(COMMIT_POINT);
         performSearch();
     }
 
@@ -109,6 +107,6 @@ public class HitsIterableSearcher implements HitsIterable, BlurConstants {
     }
     
     private String resolveId(int docId) {
-        return docId + "@" + shard + "." + commitPoint;
+        return "/" + table + "/" + shard + "/" + docId;
     }  
 }

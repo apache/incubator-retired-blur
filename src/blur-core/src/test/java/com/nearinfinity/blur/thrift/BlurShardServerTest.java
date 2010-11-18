@@ -27,13 +27,14 @@ import org.junit.Test;
 import com.nearinfinity.blur.manager.LocalHdfsMeleConfiguration;
 import com.nearinfinity.blur.metadata.ZkMetaData;
 import com.nearinfinity.blur.thrift.generated.Blur;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.mele.Mele;
 import com.nearinfinity.mele.MeleBase;
@@ -80,7 +81,7 @@ public class BlurShardServerTest {
         
         TTransport tr = new TSocket("localhost", PORT);
         TProtocol proto = new TBinaryProtocol(tr);
-        client = new Blur.Client(proto);
+        client = new BlurAdmin.Client(proto);
         tr.open();
         
         List<String> tableList = client.tableList();

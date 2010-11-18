@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -13,7 +14,7 @@ import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.metadata.MetaData;
-import com.nearinfinity.blur.thrift.BlurClientManager.Command;
+import com.nearinfinity.blur.thrift.commands.BlurAdminCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
@@ -22,7 +23,7 @@ import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -44,7 +45,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 			HitsIterable hitsIterable = ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,HitsIterable>() {
 				@Override
 				public HitsIterable call(final String hostnamePort) throws Exception {
-					return BlurClientManager.execute(hostnamePort, new Command<HitsIterable>() {
+					return BlurClientManager.execute(hostnamePort, new BlurAdminCommand<HitsIterable>() {
 		                @Override
 		                public HitsIterable call(Client client) throws Exception {
 		                    return new HitsIterableBlurClient(client,hostnamePort,table,searchQuery);
@@ -71,7 +72,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	    String clientHostnamePort = getClientHostnamePort(table,selector.id);
 		try {
 		    return BlurClientManager.execute(clientHostnamePort, 
-		        new Command<FetchResult>() {
+		        new BlurAdminCommand<FetchResult>() {
                     @Override
                     public FetchResult call(Client client) throws Exception {
                         return client.fetchRow(table, selector);
@@ -90,7 +91,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,id);
         try {
-            BlurClientManager.execute(clientHostnamePort, new Command<Boolean>() {
+            BlurClientManager.execute(clientHostnamePort, new BlurAdminCommand<Boolean>() {
                     @Override
                     public Boolean call(Client client) throws Exception {
                         client.removeRow(table, id);
@@ -110,7 +111,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 			TException, MissingShardException {
 	    String clientHostnamePort = getClientHostnamePort(table,row.id);
 	    try {
-            BlurClientManager.execute(clientHostnamePort, new Command<Boolean>() {
+            BlurClientManager.execute(clientHostnamePort, new BlurAdminCommand<Boolean>() {
                     @Override
                     public Boolean call(Client client) throws Exception {
                         client.replaceRow(table, row);
@@ -126,7 +127,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	}
 	
     @Override
-    public void cancelSearchInternal(long providedUuid) throws BlurException, TException {
+    public void cancelSearchInternal(long userUuid) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 	   
@@ -148,7 +149,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         String clientHostnamePort = getClientHostnamePort(table,id);
         try {
             return BlurClientManager.execute(clientHostnamePort, 
-                new Command<byte[]>() {
+                new BlurAdminCommand<byte[]>() {
                     @Override
                     public byte[] call(Client client) throws Exception {
                         return client.fetchRowBinary(table, id, selector);
@@ -168,7 +169,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         String clientHostnamePort = getClientHostnamePort(table,id);
         try {
             BlurClientManager.execute(clientHostnamePort, 
-                new Command<Boolean>() {
+                new BlurAdminCommand<Boolean>() {
                     @Override
                     public Boolean call(Client client) throws Exception {
                         client.replaceRowBinary(table, id, rowBytes);
@@ -186,7 +187,12 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
     @Override
     public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
             MissingShardException, TException {
-        
+        throw new BlurException("not impl");
+    }
+
+    @Override
+    public List<SearchQuery> currentSearches(String arg0) throws BlurException, TException {
+        throw new BlurException("not impl");
     }
 
 

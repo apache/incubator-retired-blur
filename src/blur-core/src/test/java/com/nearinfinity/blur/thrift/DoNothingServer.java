@@ -15,24 +15,12 @@ import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Iface;
 
 public class DoNothingServer implements Iface {
 
     @Override
     public void create(String table, TableDescriptor desc) throws BlurException, TException {
-        
-    }
-
-    @Override
-    public void createDynamicTermQuery(String table, String term, String query, boolean superQueryOn)
-            throws BlurException, MissingShardException, TException {
-        
-    }
-
-    @Override
-    public void deleteDynamicTermQuery(String table, String term) throws BlurException, MissingShardException,
-            TException {
         
     }
 
@@ -54,23 +42,6 @@ public class DoNothingServer implements Iface {
     @Override
     public void enable(String table) throws BlurException, TException {
         
-    }
-
-    @Override
-    public String getDynamicTermQuery(String table, String term) throws BlurException, MissingShardException,
-            TException {
-        return null;
-    }
-
-    @Override
-    public List<String> getDynamicTerms(String table) throws BlurException, MissingShardException, TException {
-        return null;
-    }
-
-    @Override
-    public boolean isDynamicTermQuerySuperQuery(String table, String term) throws BlurException, MissingShardException,
-            TException {
-        return false;
     }
 
     @Override
@@ -145,6 +116,11 @@ public class DoNothingServer implements Iface {
     public void batchUpdate(String arg0, String arg1, Map<String, String> arg2) throws BlurException,
             MissingShardException, TException {
         
+    }
+
+    @Override
+    public List<SearchQuery> currentSearches(String arg0) throws BlurException, TException {
+        return null;
     }
 
 }

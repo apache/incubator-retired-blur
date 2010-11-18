@@ -183,8 +183,8 @@ public class IndexManager {
 			LOG.error("Unknown error while trying to fetch index readers.",e);
 			throw new BlurException(e.getMessage());
 		}
-		Filter preFilter = parseFilter(table,preSuperFilter, false, type);
-		Filter postFilter = parseFilter(table,postSuperFilter, true, type);
+		Filter preFilter = parseFilter(table, preSuperFilter, false, type);
+		Filter postFilter = parseFilter(table, postSuperFilter, true, type);
 		final Query userQuery = parseQuery(query,superQueryOn, getAnalyzer(table), postFilter, preFilter, type);
 		return ForkJoin.execute(executor, indexReaders.entrySet(), new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
 			@Override
@@ -193,7 +193,7 @@ public class IndexManager {
 		        String shard = entry.getKey();
                 BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache(table).getIndexReaderCache(shard));
 		        searcher.setSimilarity(similarity);
-			    return new HitsIterableSearcher((Query) userQuery.clone(), shard, searcher, reader.getIndexCommit());
+			    return new HitsIterableSearcher((Query) userQuery.clone(), table, shard, searcher);
 			}
 		}).merge(new MergerHitsIterable(minimumNumberOfHits,maxQueryTime));
 	}

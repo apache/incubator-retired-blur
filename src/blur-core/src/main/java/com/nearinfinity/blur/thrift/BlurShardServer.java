@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -101,7 +102,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 	
     @Override
-    public void cancelSearchInternal(long providedUuid) throws BlurException, TException {
+    public void cancelSearchInternal(long userUuid) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 
@@ -125,5 +126,10 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     public void close() throws InterruptedException {
         indexManager.close();
+    }
+
+    @Override
+    public List<SearchQuery> currentSearches(String arg0) throws BlurException, TException {
+        throw new BlurException("not implemented");
     }
 }

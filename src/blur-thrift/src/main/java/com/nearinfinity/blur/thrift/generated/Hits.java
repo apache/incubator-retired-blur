@@ -30,18 +30,27 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   private static final TField SHARD_INFO_FIELD_DESC = new TField("shardInfo", TType.MAP, (short)2);
   private static final TField HITS_FIELD_DESC = new TField("hits", TType.LIST, (short)3);
   private static final TField EXCEPTIONS_FIELD_DESC = new TField("exceptions", TType.LIST, (short)4);
+  private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)5);
+  private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)6);
+  private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)7);
 
   public long totalHits;
   public Map<String,Long> shardInfo;
   public List<Hit> hits;
   public List<BlurException> exceptions;
+  public SearchQuery query;
+  public long realTime;
+  public long cpuTime;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     TOTAL_HITS((short)1, "totalHits"),
     SHARD_INFO((short)2, "shardInfo"),
     HITS((short)3, "hits"),
-    EXCEPTIONS((short)4, "exceptions");
+    EXCEPTIONS((short)4, "exceptions"),
+    QUERY((short)5, "query"),
+    REAL_TIME((short)6, "realTime"),
+    CPU_TIME((short)7, "cpuTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -64,6 +73,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
           return HITS;
         case 4: // EXCEPTIONS
           return EXCEPTIONS;
+        case 5: // QUERY
+          return QUERY;
+        case 6: // REAL_TIME
+          return REAL_TIME;
+        case 7: // CPU_TIME
+          return CPU_TIME;
         default:
           return null;
       }
@@ -105,7 +120,9 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
 
   // isset id assignments
   private static final int __TOTALHITS_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
+  private static final int __REALTIME_ISSET_ID = 1;
+  private static final int __CPUTIME_ISSET_ID = 2;
+  private BitSet __isset_bit_vector = new BitSet(3);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -122,6 +139,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     tmpMap.put(_Fields.EXCEPTIONS, new FieldMetaData("exceptions", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
             new FieldValueMetaData(TType.STRUCT))));
+    tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
+        new StructMetaData(TType.STRUCT, SearchQuery.class)));
+    tmpMap.put(_Fields.REAL_TIME, new FieldMetaData("realTime", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I64)));
+    tmpMap.put(_Fields.CPU_TIME, new FieldMetaData("cpuTime", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Hits.class, metaDataMap);
   }
@@ -135,7 +158,10 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     long totalHits,
     Map<String,Long> shardInfo,
     List<Hit> hits,
-    List<BlurException> exceptions)
+    List<BlurException> exceptions,
+    SearchQuery query,
+    long realTime,
+    long cpuTime)
   {
     this();
     this.totalHits = totalHits;
@@ -143,6 +169,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     this.shardInfo = shardInfo;
     this.hits = hits;
     this.exceptions = exceptions;
+    this.query = query;
+    this.realTime = realTime;
+    setRealTimeIsSet(true);
+    this.cpuTime = cpuTime;
+    setCpuTimeIsSet(true);
   }
 
   /**
@@ -181,6 +212,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       this.exceptions = __this__exceptions;
     }
+    if (other.isSetQuery()) {
+      this.query = new SearchQuery(other.query);
+    }
+    this.realTime = other.realTime;
+    this.cpuTime = other.cpuTime;
   }
 
   public Hits deepCopy() {
@@ -328,6 +364,76 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
   }
 
+  public SearchQuery getQuery() {
+    return this.query;
+  }
+
+  public Hits setQuery(SearchQuery query) {
+    this.query = query;
+    return this;
+  }
+
+  public void unsetQuery() {
+    this.query = null;
+  }
+
+  /** Returns true if field query is set (has been asigned a value) and false otherwise */
+  public boolean isSetQuery() {
+    return this.query != null;
+  }
+
+  public void setQueryIsSet(boolean value) {
+    if (!value) {
+      this.query = null;
+    }
+  }
+
+  public long getRealTime() {
+    return this.realTime;
+  }
+
+  public Hits setRealTime(long realTime) {
+    this.realTime = realTime;
+    setRealTimeIsSet(true);
+    return this;
+  }
+
+  public void unsetRealTime() {
+    __isset_bit_vector.clear(__REALTIME_ISSET_ID);
+  }
+
+  /** Returns true if field realTime is set (has been asigned a value) and false otherwise */
+  public boolean isSetRealTime() {
+    return __isset_bit_vector.get(__REALTIME_ISSET_ID);
+  }
+
+  public void setRealTimeIsSet(boolean value) {
+    __isset_bit_vector.set(__REALTIME_ISSET_ID, value);
+  }
+
+  public long getCpuTime() {
+    return this.cpuTime;
+  }
+
+  public Hits setCpuTime(long cpuTime) {
+    this.cpuTime = cpuTime;
+    setCpuTimeIsSet(true);
+    return this;
+  }
+
+  public void unsetCpuTime() {
+    __isset_bit_vector.clear(__CPUTIME_ISSET_ID);
+  }
+
+  /** Returns true if field cpuTime is set (has been asigned a value) and false otherwise */
+  public boolean isSetCpuTime() {
+    return __isset_bit_vector.get(__CPUTIME_ISSET_ID);
+  }
+
+  public void setCpuTimeIsSet(boolean value) {
+    __isset_bit_vector.set(__CPUTIME_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TOTAL_HITS:
@@ -362,6 +468,30 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       break;
 
+    case QUERY:
+      if (value == null) {
+        unsetQuery();
+      } else {
+        setQuery((SearchQuery)value);
+      }
+      break;
+
+    case REAL_TIME:
+      if (value == null) {
+        unsetRealTime();
+      } else {
+        setRealTime((Long)value);
+      }
+      break;
+
+    case CPU_TIME:
+      if (value == null) {
+        unsetCpuTime();
+      } else {
+        setCpuTime((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -383,6 +513,15 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     case EXCEPTIONS:
       return getExceptions();
 
+    case QUERY:
+      return getQuery();
+
+    case REAL_TIME:
+      return new Long(getRealTime());
+
+    case CPU_TIME:
+      return new Long(getCpuTime());
+
     }
     throw new IllegalStateException();
   }
@@ -402,6 +541,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       return isSetHits();
     case EXCEPTIONS:
       return isSetExceptions();
+    case QUERY:
+      return isSetQuery();
+    case REAL_TIME:
+      return isSetRealTime();
+    case CPU_TIME:
+      return isSetCpuTime();
     }
     throw new IllegalStateException();
   }
@@ -459,6 +604,33 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         return false;
     }
 
+    boolean this_present_query = true && this.isSetQuery();
+    boolean that_present_query = true && that.isSetQuery();
+    if (this_present_query || that_present_query) {
+      if (!(this_present_query && that_present_query))
+        return false;
+      if (!this.query.equals(that.query))
+        return false;
+    }
+
+    boolean this_present_realTime = true;
+    boolean that_present_realTime = true;
+    if (this_present_realTime || that_present_realTime) {
+      if (!(this_present_realTime && that_present_realTime))
+        return false;
+      if (this.realTime != that.realTime)
+        return false;
+    }
+
+    boolean this_present_cpuTime = true;
+    boolean that_present_cpuTime = true;
+    if (this_present_cpuTime || that_present_cpuTime) {
+      if (!(this_present_cpuTime && that_present_cpuTime))
+        return false;
+      if (this.cpuTime != that.cpuTime)
+        return false;
+    }
+
     return true;
   }
 
@@ -507,6 +679,33 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       return lastComparison;
     }
     if (isSetExceptions()) {      lastComparison = TBaseHelper.compareTo(this.exceptions, typedOther.exceptions);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetQuery()) {      lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetRealTime()).compareTo(typedOther.isSetRealTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRealTime()) {      lastComparison = TBaseHelper.compareTo(this.realTime, typedOther.realTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetCpuTime()).compareTo(typedOther.isSetCpuTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCpuTime()) {      lastComparison = TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -587,6 +786,30 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 5: // QUERY
+          if (field.type == TType.STRUCT) {
+            this.query = new SearchQuery();
+            this.query.read(iprot);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 6: // REAL_TIME
+          if (field.type == TType.I64) {
+            this.realTime = iprot.readI64();
+            setRealTimeIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 7: // CPU_TIME
+          if (field.type == TType.I64) {
+            this.cpuTime = iprot.readI64();
+            setCpuTimeIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -642,6 +865,17 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       oprot.writeFieldEnd();
     }
+    if (this.query != null) {
+      oprot.writeFieldBegin(QUERY_FIELD_DESC);
+      this.query.write(oprot);
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldBegin(REAL_TIME_FIELD_DESC);
+    oprot.writeI64(this.realTime);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(CPU_TIME_FIELD_DESC);
+    oprot.writeI64(this.cpuTime);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -677,6 +911,22 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     } else {
       sb.append(this.exceptions);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("query:");
+    if (this.query == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.query);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("realTime:");
+    sb.append(this.realTime);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("cpuTime:");
+    sb.append(this.cpuTime);
     first = false;
     sb.append(")");
     return sb.toString();

@@ -14,9 +14,9 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import com.nearinfinity.blur.thrift.generated.Blur;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
 
 public class BlurClientManager {
     
@@ -25,19 +25,16 @@ public class BlurClientManager {
     
     private static Map<String,BlockingQueue<Client>> clientPool = new ConcurrentHashMap<String, BlockingQueue<Client>>();
     
-    public abstract static class Command<T> {
-        public abstract T call(Client client) throws Exception;
-    }
-
-    public static <T> T execute(String connectionStr, Command<T> command) throws Exception {
+    @SuppressWarnings("unchecked")
+    public static <CLIENT,T> T execute(String connectionStr, AbstractCommand<CLIENT,T> command) throws Exception {
         int retries = 0;
         while (true) {
-            Blur.Client client = getClient(connectionStr);
+            BlurAdmin.Client client = getClient(connectionStr);
             if (client == null) {
                 throw new BlurException("Host [" + connectionStr + "] can not be contacted.");
             }
             try {
-                return command.call(client);
+                return command.call((CLIENT) client);
             } catch (TTransportException e) {
                 if (retries >= MAX_RETIRES) {
                     LOG.error("No more retries [" + retries + "] out of [" + MAX_RETIRES + "]");

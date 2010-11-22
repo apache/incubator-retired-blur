@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexManager;
-import com.nearinfinity.blur.manager.IndexManager.TableManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.metadata.MetaData;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -20,7 +19,6 @@ import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 
@@ -31,39 +29,10 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	
 	public BlurShardServer(MetaData metaData, BlurConfiguration configuration) throws IOException, BlurException {
 		super(metaData,configuration);
-		indexManager = new IndexManager(metaData.getMele(), new TableManager() {
-			@Override
-			public boolean isTableEnabled(String table) {
-				try {
-					TableDescriptor describe = describe(table);
-					if (describe == null) {
-						return false;
-					}
-					return describe.isEnabled;
-				} catch (Exception e) {
-				    LOG.error("Unknown error while trying to check if table [" + table +
-				    		"] is enabled.",e);
-					return false;
-				}
-			}
-
-			@Override
-			public String getAnalyzerDefinitions(String table) {
-				try {
-					TableDescriptor describe = describe(table);
-					if (describe == null) {
-						return "";
-					}
-					return describe.analyzerDef;
-				} catch (Exception e) {
-					throw new RuntimeException();
-				}
-			}
-		});
 	}
 
-	@Override
-	public Hits searchInternal(String table, SearchQuery searchQuery) throws BlurException, TException {
+    @Override
+	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
         try {
             HitsIterable hitsIterable = indexManager.search(table, searchQuery.queryStr, 
                     searchQuery.superQueryOn, searchQuery.type, searchQuery.postSuperFilter, 
@@ -82,7 +51,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public FetchResult fetchRowInternal(String table, Selector selector) throws BlurException, TException, MissingShardException {
+	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException, MissingShardException {
 	    FetchResult fetchResult = new FetchResult();
 	    fetchResult.table = table;
 	    fetchResult.id = selector.id;
@@ -92,24 +61,24 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public void removeRowInternal(String table, String id) throws BlurException, TException {
-		indexManager.removeRow(table,id);
+	public void removeRow(String table, String id) throws BlurException, TException {
+	    throw new BlurException("not implemented");
 	}
 
 	@Override
-	public void replaceRowInternal(String table, Row row) throws BlurException, TException, MissingShardException {
-		indexManager.replaceRow(table,row);
+	public void replaceRow(String table, Row row) throws BlurException, TException, MissingShardException {
+	    throw new BlurException("not implemented");
 	}
 	
     @Override
-    public void cancelSearchInternal(long userUuid) throws BlurException, TException {
+    public void cancelSearch(long userUuid) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 
     @Override
     public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
             MissingShardException, TException {
-        
+        throw new BlurException("not implemented");
     }
 
     @Override
@@ -129,7 +98,15 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     }
 
     @Override
-    public List<SearchQuery> currentSearches(String arg0) throws BlurException, TException {
+    public List<SearchQuery> currentSearches(String userUuid) throws BlurException, TException {
         throw new BlurException("not implemented");
+    }
+    
+    public IndexManager getIndexManager() {
+        return indexManager;
+    }
+
+    public void setIndexManager(IndexManager indexManager) {
+        this.indexManager = indexManager;
     }
 }

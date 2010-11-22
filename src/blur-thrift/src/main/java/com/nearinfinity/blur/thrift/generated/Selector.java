@@ -28,13 +28,13 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
 
   private static final TField ID_FIELD_DESC = new TField("id", TType.STRING, (short)1);
   private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)2);
-  private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.LIST, (short)3);
+  private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.SET, (short)3);
   private static final TField COLUMNS_FIELD_DESC = new TField("columns", TType.MAP, (short)4);
 
   public String id;
   public String locationId;
-  public List<String> columnFamilies;
-  public Map<String,String> columns;
+  public Set<String> columnFamilies;
+  public Map<String,Set<String>> columns;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -113,12 +113,13 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     tmpMap.put(_Fields.LOCATION_ID, new FieldMetaData("locationId", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.COLUMN_FAMILIES, new FieldMetaData("columnFamilies", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
+        new SetMetaData(TType.SET, 
             new FieldValueMetaData(TType.STRING))));
     tmpMap.put(_Fields.COLUMNS, new FieldMetaData("columns", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
-            new FieldValueMetaData(TType.STRING))));
+            new SetMetaData(TType.SET, 
+                new FieldValueMetaData(TType.STRING)))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
@@ -129,8 +130,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   public Selector(
     String id,
     String locationId,
-    List<String> columnFamilies,
-    Map<String,String> columns)
+    Set<String> columnFamilies,
+    Map<String,Set<String>> columns)
   {
     this();
     this.id = id;
@@ -150,22 +151,25 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       this.locationId = other.locationId;
     }
     if (other.isSetColumnFamilies()) {
-      List<String> __this__columnFamilies = new ArrayList<String>();
+      Set<String> __this__columnFamilies = new HashSet<String>();
       for (String other_element : other.columnFamilies) {
         __this__columnFamilies.add(other_element);
       }
       this.columnFamilies = __this__columnFamilies;
     }
     if (other.isSetColumns()) {
-      Map<String,String> __this__columns = new HashMap<String,String>();
-      for (Map.Entry<String, String> other_element : other.columns.entrySet()) {
+      Map<String,Set<String>> __this__columns = new HashMap<String,Set<String>>();
+      for (Map.Entry<String, Set<String>> other_element : other.columns.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        String other_element_value = other_element.getValue();
+        Set<String> other_element_value = other_element.getValue();
 
         String __this__columns_copy_key = other_element_key;
 
-        String __this__columns_copy_value = other_element_value;
+        Set<String> __this__columns_copy_value = new HashSet<String>();
+        for (String other_element_value_element : other_element_value) {
+          __this__columns_copy_value.add(other_element_value_element);
+        }
 
         __this__columns.put(__this__columns_copy_key, __this__columns_copy_value);
       }
@@ -240,16 +244,16 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
 
   public void addToColumnFamilies(String elem) {
     if (this.columnFamilies == null) {
-      this.columnFamilies = new ArrayList<String>();
+      this.columnFamilies = new HashSet<String>();
     }
     this.columnFamilies.add(elem);
   }
 
-  public List<String> getColumnFamilies() {
+  public Set<String> getColumnFamilies() {
     return this.columnFamilies;
   }
 
-  public Selector setColumnFamilies(List<String> columnFamilies) {
+  public Selector setColumnFamilies(Set<String> columnFamilies) {
     this.columnFamilies = columnFamilies;
     return this;
   }
@@ -273,18 +277,18 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     return (this.columns == null) ? 0 : this.columns.size();
   }
 
-  public void putToColumns(String key, String val) {
+  public void putToColumns(String key, Set<String> val) {
     if (this.columns == null) {
-      this.columns = new HashMap<String,String>();
+      this.columns = new HashMap<String,Set<String>>();
     }
     this.columns.put(key, val);
   }
 
-  public Map<String,String> getColumns() {
+  public Map<String,Set<String>> getColumns() {
     return this.columns;
   }
 
-  public Selector setColumns(Map<String,String> columns) {
+  public Selector setColumns(Map<String,Set<String>> columns) {
     this.columns = columns;
     return this;
   }
@@ -326,7 +330,7 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       if (value == null) {
         unsetColumnFamilies();
       } else {
-        setColumnFamilies((List<String>)value);
+        setColumnFamilies((Set<String>)value);
       }
       break;
 
@@ -334,7 +338,7 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       if (value == null) {
         unsetColumns();
       } else {
-        setColumns((Map<String,String>)value);
+        setColumns((Map<String,Set<String>>)value);
       }
       break;
 
@@ -515,17 +519,17 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
           }
           break;
         case 3: // COLUMN_FAMILIES
-          if (field.type == TType.LIST) {
+          if (field.type == TType.SET) {
             {
-              TList _list34 = iprot.readListBegin();
-              this.columnFamilies = new ArrayList<String>(_list34.size);
-              for (int _i35 = 0; _i35 < _list34.size; ++_i35)
+              TSet _set34 = iprot.readSetBegin();
+              this.columnFamilies = new HashSet<String>(2*_set34.size);
+              for (int _i35 = 0; _i35 < _set34.size; ++_i35)
               {
                 String _elem36;
                 _elem36 = iprot.readString();
                 this.columnFamilies.add(_elem36);
               }
-              iprot.readListEnd();
+              iprot.readSetEnd();
             }
           } else { 
             TProtocolUtil.skip(iprot, field.type);
@@ -535,13 +539,23 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
           if (field.type == TType.MAP) {
             {
               TMap _map37 = iprot.readMapBegin();
-              this.columns = new HashMap<String,String>(2*_map37.size);
+              this.columns = new HashMap<String,Set<String>>(2*_map37.size);
               for (int _i38 = 0; _i38 < _map37.size; ++_i38)
               {
                 String _key39;
-                String _val40;
+                Set<String> _val40;
                 _key39 = iprot.readString();
-                _val40 = iprot.readString();
+                {
+                  TSet _set41 = iprot.readSetBegin();
+                  _val40 = new HashSet<String>(2*_set41.size);
+                  for (int _i42 = 0; _i42 < _set41.size; ++_i42)
+                  {
+                    String _elem43;
+                    _elem43 = iprot.readString();
+                    _val40.add(_elem43);
+                  }
+                  iprot.readSetEnd();
+                }
                 this.columns.put(_key39, _val40);
               }
               iprot.readMapEnd();
@@ -578,23 +592,30 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     if (this.columnFamilies != null) {
       oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRING, this.columnFamilies.size()));
-        for (String _iter41 : this.columnFamilies)
+        oprot.writeSetBegin(new TSet(TType.STRING, this.columnFamilies.size()));
+        for (String _iter44 : this.columnFamilies)
         {
-          oprot.writeString(_iter41);
+          oprot.writeString(_iter44);
         }
-        oprot.writeListEnd();
+        oprot.writeSetEnd();
       }
       oprot.writeFieldEnd();
     }
     if (this.columns != null) {
       oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.columns.size()));
-        for (Map.Entry<String, String> _iter42 : this.columns.entrySet())
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.columns.size()));
+        for (Map.Entry<String, Set<String>> _iter45 : this.columns.entrySet())
         {
-          oprot.writeString(_iter42.getKey());
-          oprot.writeString(_iter42.getValue());
+          oprot.writeString(_iter45.getKey());
+          {
+            oprot.writeSetBegin(new TSet(TType.STRING, _iter45.getValue().size()));
+            for (String _iter46 : _iter45.getValue())
+            {
+              oprot.writeString(_iter46);
+            }
+            oprot.writeSetEnd();
+          }
         }
         oprot.writeMapEnd();
       }

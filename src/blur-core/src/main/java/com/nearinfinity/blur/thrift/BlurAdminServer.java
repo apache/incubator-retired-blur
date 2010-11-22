@@ -15,10 +15,7 @@ import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.metadata.MetaData;
-import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.commands.BlurAdminCommand;
-import com.nearinfinity.blur.thrift.events.EmptyEventHandler;
-import com.nearinfinity.blur.thrift.events.EventHandler;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
@@ -26,7 +23,6 @@ import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
@@ -46,7 +42,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
 	
 	protected BlurConfiguration configuration;
 	protected MetaData metaData;
-	protected EventHandler handler = new EmptyEventHandler();
 	protected ExecutorService executor = Executors.newCachedThreadPool();
 	
 	public BlurAdminServer(MetaData metaData, BlurConfiguration configuration) throws IOException {
@@ -184,59 +179,25 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
     }
     
     @Override
-    public final void cancelSearch(long providedUuid) throws BlurException, TException, EventStoppedExecutionException {
-        if (handler.beforeCancelSearch(this, providedUuid)) {
-            cancelSearchInternal(providedUuid);
-            handler.afterCancelSearch(this, providedUuid);
-            return;
-        }
-        throw new EventStoppedExecutionException("Concel Search Event Stopped.");
+    public void cancelSearch(long providedUuid) throws BlurException, TException, EventStoppedExecutionException {
+        throw new BlurException("not implemented");
     }
 
     @Override
-    public final FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
-        if (handler.beforeFetchRow(this, table, selector)) {
-            FetchResult fetchResult = fetchRowInternal(table,selector);
-            return handler.afterFetchRow(this, table, selector, fetchResult);
-        }
-        throw new EventStoppedExecutionException("FetchRow Event Stopped.");
+    public FetchResult fetchRow(String table, Selector selector) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
+        throw new BlurException("not implemented");
     }
     
     @Override
-    public final void removeRow(String table, String id) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
-        if (handler.beforeRemoveRow(this, table, id)) {
-            removeRowInternal(table,id);
-            handler.afterRemoveRow(this, table, id);
-            return;
-        }
-        throw new EventStoppedExecutionException("Remove Row Event Stopped.");
+    public void removeRow(String table, String id) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
+        throw new BlurException("not implemented");
     }
 
     @Override
-    public final void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
-        if (handler.beforeReplaceRow(this, table, row)) {
-            replaceRowInternal(table,row);
-            handler.afterReplaceRow(this, table, row);
-            return;
-        }
-        throw new EventStoppedExecutionException("Replace Row Event Stopped.");
-    }
-    
-    @Override
-    public final Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
-        if (handler.beforeSearch(this, table, searchQuery)) {
-            Hits hits = searchInternal(table, searchQuery);
-            return handler.afterSearch(this, table, searchQuery, hits);
-        }
-        throw new EventStoppedExecutionException("Search Event Stopped.");
+    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException, EventStoppedExecutionException {
+        throw new BlurException("not implemented");
     }
 
-    public abstract void cancelSearchInternal(long providedUuid) throws BlurException, TException;
-    public abstract FetchResult fetchRowInternal(String table, Selector selector) throws BlurException, MissingShardException, TException;
-    public abstract void removeRowInternal(String table, String id) throws BlurException, MissingShardException, TException;
-    public abstract void replaceRowInternal(String table, Row row) throws BlurException, MissingShardException, TException;
-    public abstract Hits searchInternal(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, TException;
-    
     private boolean isThisNode(String node) throws UnknownHostException {
         if (AddressUtil.getMyHostName().equals(node)) {
             return true;

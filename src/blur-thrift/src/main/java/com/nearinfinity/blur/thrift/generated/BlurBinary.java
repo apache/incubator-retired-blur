@@ -25,7 +25,7 @@ import org.apache.thrift.protocol.*;
 
 public class BlurBinary {
 
-  public interface Iface extends Blur.Iface {
+  public interface Iface extends BlurUpdate.Iface {
 
     public void replaceRowBinary(String table, String id, byte[] row) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
@@ -33,7 +33,7 @@ public class BlurBinary {
 
   }
 
-  public static class Client extends Blur.Client implements TServiceClient, Iface {
+  public static class Client extends BlurUpdate.Client implements TServiceClient, Iface {
     public static class Factory implements TServiceClientFactory<Client> {
       public Factory() {}
       public Client getClient(TProtocol prot) {
@@ -146,7 +146,7 @@ public class BlurBinary {
     }
 
   }
-  public static class Processor extends Blur.Processor implements TProcessor {
+  public static class Processor extends BlurUpdate.Processor implements TProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
     public Processor(Iface iface)
     {

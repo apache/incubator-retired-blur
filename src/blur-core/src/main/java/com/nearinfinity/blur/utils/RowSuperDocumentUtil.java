@@ -12,13 +12,11 @@ import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class RowSuperDocumentUtil {
 
-	public static Row getRow(Selector selector, Iterable<Document> docs) {
+	public static Row getRow(Iterable<Document> docs) {
 		Row row = new Row();
-		row.setId(selector.id);
 		boolean empty = true;
 		if (docs == null) {
 		    return null;
@@ -34,6 +32,9 @@ public class RowSuperDocumentUtil {
 	}
 
 	public static void addDocumentToRow(Row row, Document document) {
+	    if (row.id == null) {
+	        row.setId(document.getField(SuperDocument.ID).stringValue());
+	    }
 		String superColumnId = document.getField(SuperDocument.SUPER_KEY).stringValue();
 		Map<String, Column> columns = new HashMap<String, Column>();
 		String superColumnFamily = null;

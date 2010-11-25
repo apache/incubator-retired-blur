@@ -65,7 +65,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	@Override
 	public FetchResult fetchRow(final String table, final Selector selector) throws BlurException,
 			TException, MissingShardException {
-	    String clientHostnamePort = getClientHostnamePort(table,selector.id);
+	    String clientHostnamePort = getClientHostnamePort(table,selector);
 		try {
 		    return BlurClientManager.execute(clientHostnamePort, 
 		        new BlurAdminCommand<FetchResult>() {
@@ -76,9 +76,9 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
                 });
 		} catch (Exception e) {
 		    LOG.error("Unknown error during fetch of row from table [" + table +
-		    		"] id [" + selector.id + "]",e);
+		    		"] selector [" + selector + "]",e);
 		    throw new BlurException("Unknown error during fetch of row from table [" + table +
-                    "] id [" + selector.id + "]");
+                    "] selector [" + selector + "]");
         }
 	}
 
@@ -99,60 +99,31 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         throw new BlurException("not implemented");
     }
 	   
-    private String getClientHostnamePort(String table, String id) throws MissingShardException, BlurException, TException {
+    private String getClientHostnamePort(String table, Selector selector) throws MissingShardException, BlurException, TException {
         throw new BlurException("not implemented");
     }
     
     @Override
     public byte[] fetchRowBinary(final String table, final String id, final byte[] selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
-        String clientHostnamePort = getClientHostnamePort(table,id);
-        try {
-            return BlurClientManager.execute(clientHostnamePort, 
-                new BlurAdminCommand<byte[]>() {
-                    @Override
-                    public byte[] call(Client client) throws Exception {
-                        return client.fetchRowBinary(table, id, selector);
-                    }
-                });
-        } catch (Exception e) {
-            LOG.error("Unknown error during fetch of row from table [" + table +
-                    "] id [" + id + "]",e);
-            throw new BlurException("Unknown error during fetch of row from table [" + table +
-                    "] id [" + id + "]");
-        }
+        throw new BlurException("not implemented");
     }
 
     @Override
     public void replaceRowBinary(final String table, final String id, final byte[] rowBytes) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
-        String clientHostnamePort = getClientHostnamePort(table,id);
-        try {
-            BlurClientManager.execute(clientHostnamePort, 
-                new BlurAdminCommand<Boolean>() {
-                    @Override
-                    public Boolean call(Client client) throws Exception {
-                        client.replaceRowBinary(table, id, rowBytes);
-                        return true;
-                    }
-                });
-        } catch (Exception e) {
-            LOG.error("Unknown error during replacing of row from table [" + table +
-                    "] id [" + id + "]",e);
-            throw new BlurException("Unknown error during replacing of row from table [" + table +
-                    "] id [" + id + "]");
-        }
+        throw new BlurException("not implemented");
     }
 
     @Override
     public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
             MissingShardException, TException {
-        throw new BlurException("not impl");
+        throw new BlurException("not implemented");
     }
 
     @Override
     public List<SearchQuery> currentSearches(String arg0) throws BlurException, TException {
-        throw new BlurException("not impl");
+        throw new BlurException("not implemented");
     }
 
 

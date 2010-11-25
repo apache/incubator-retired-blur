@@ -53,10 +53,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	@Override
 	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException, MissingShardException {
 	    FetchResult fetchResult = new FetchResult();
-	    fetchResult.table = table;
-	    fetchResult.id = selector.id;
-	    fetchResult.row = indexManager.fetchRow(table,selector);
-	    fetchResult.exists = fetchResult.row == null ? false : true;
+	    indexManager.fetchRow(table,selector, fetchResult);
         return fetchResult;
 	}
 

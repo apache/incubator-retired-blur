@@ -14,10 +14,10 @@ import org.apache.thrift.transport.TTransportFactory;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.metadata.ZkMetaData;
-import com.nearinfinity.blur.thrift.generated.Blur;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.Blur.Processor;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Iface;
+import com.nearinfinity.blur.thrift.generated.BlurAdmin.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.Mele;
@@ -84,7 +84,7 @@ public class BlurThriftServer implements BlurConstants {
                 try {
                     serverTransport = new TServerSocket(port);
                     transportFactory = new TFramedTransport.Factory();
-                    processor = new Blur.Processor(iface);
+                    processor = new BlurAdmin.Processor(iface);
                     protFactory = new TBinaryProtocol.Factory(true, true);
 //                    server = new TThreadPoolServer(processor, serverTransport, protFactory);
                     server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);

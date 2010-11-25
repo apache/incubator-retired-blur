@@ -11,9 +11,9 @@ import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class ThriftUtil {
     
-    public static Selector newSelector(String id) {
+    public static Selector newSelector(String locationId) {
         Selector selector = new Selector();
-        selector.id = id;
+        selector.locationId = locationId;
         return selector;
     }
 

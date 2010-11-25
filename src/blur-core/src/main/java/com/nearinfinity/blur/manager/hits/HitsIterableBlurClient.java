@@ -7,12 +7,12 @@ import java.util.TreeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import com.nearinfinity.blur.thrift.generated.Blur;
+import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 
 public class HitsIterableBlurClient implements HitsIterable {
     
@@ -38,7 +38,7 @@ public class HitsIterableBlurClient implements HitsIterable {
     private long systemUuid;
     private String user;
 
-    public HitsIterableBlurClient(Blur.Client client, String hostnamePort, String table, SearchQuery searchQuery) {
+    public HitsIterableBlurClient(BlurSearch.Client client, String hostnamePort, String table, SearchQuery searchQuery) {
         this.client = client;
         this.hostnamePort = hostnamePort;
         this.table = table;

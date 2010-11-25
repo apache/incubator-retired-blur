@@ -1,80 +1,110 @@
 package com.nearinfinity.blur.manager;
 
-import static com.nearinfinity.blur.utils.ThriftUtil.newColumn;
-import static com.nearinfinity.blur.utils.ThriftUtil.newColumnFamily;
-import static com.nearinfinity.blur.utils.ThriftUtil.newRow;
-import static com.nearinfinity.blur.utils.ThriftUtil.newSelector;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.lucene.index.IndexReader;
-import org.apache.zookeeper.ZooKeeper;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.manager.hits.HitsIterable;
+import com.nearinfinity.blur.manager.local.LocalIndexServer;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
-import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.mele.Mele;
-import com.nearinfinity.mele.MeleBase;
-import com.nearinfinity.mele.store.noreplication.NoRepMeleDirectoryFactory;
-import com.nearinfinity.mele.zookeeper.NoOpWatcher;
+import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class IndexManagerTest {
-	
-	private Mele mele;
-    private ZooKeeper zooKeeper;
 
-	@Before
-    public void setUp() throws Exception {
-	    String pathname = "target/test-tmp-index-manager";
-        rm(new File(pathname));
-        LocalHdfsMeleConfiguration configuration = new LocalHdfsMeleConfiguration(pathname);
-        zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
-                configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
-        mele = new MeleBase(new NoRepMeleDirectoryFactory(), configuration, zooKeeper);
-		mele.createDirectoryCluster("test");
-		mele.createDirectory("test", "s1");
-		mele.createDirectory("test", "s2");
-		mele.createDirectory("test", "s3");
-	}
-	
-	public void tearDown() throws Exception {
-	    zooKeeper.close();
-	}
+    private IndexServer server;
+    private IndexManager indexManager;
 
-	public static void rm(File file) {
-		if (file.isDirectory()) {
-			for (File f : file.listFiles()) {
-				rm(f);
-			}
-		}
-		file.delete();
-	}
+    // IndexWriter writer = new IndexWriter(FSDirectory.open(new File("./test-indexes/test1/table/shard2")), new
+    // StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
+    // writer.setSimilarity(new FairSimilarity());
+    // Row row = new Row().setId("2");
+    // ColumnFamily family = new ColumnFamily().setFamily("test-fam");
+    // Set<Column> val = new HashSet<Column>();
+    // Column column = new Column().setName("name");
+    // column.addToValues("value");
+    // val.add(column);
+    // family.putToColumns("id2", val);
+    // row.addToColumnFamilies(family);
+    // IndexManager.replace(writer, row);
+    // writer.close();
 
-	@Test
-	public void testIndexManager() throws IOException, BlurException, MissingShardException, InterruptedException {
-		IndexManager indexManager = new IndexManager(mele);
-		Row row = newRow("1", newColumnFamily("person", "1", newColumn("name", "aaron")));
-		indexManager.replaceRow("test",row);
-		
-		Map<String, IndexReader> indexReaders = indexManager.getIndexReaders("test");
-		int total = 0;
-		for (Entry<String, IndexReader> entry : indexReaders.entrySet()) {
-			total += entry.getValue().numDocs();
-		}
-		assertTrue(total > 0);
-		
-		Row r = indexManager.fetchRow("test", newSelector("1"));
-		assertEquals(row,r);
-		
-		indexManager.close();
-	}
+    @Before
+    public void setUp() {
+        server = new LocalIndexServer(new File("./test-indexes/test1"));
+        indexManager = new IndexManager();
+        indexManager.setIndexServer(server);
+        indexManager.init();
+    }
+    
+    @After
+    public void tearDown() throws InterruptedException {
+        indexManager.close();
+    }
 
+    @Test
+    public void testFetchRow1() throws Exception {
+        Selector selector = new Selector().setLocationId("shard1/0");
+        FetchResult fetchResult = new FetchResult();
+        indexManager.fetchRow("table", selector, fetchResult);
+        assertNotNull(fetchResult.row);
+    }
+    
+    @Test
+    public void testFetchRow2() throws Exception {
+        try {
+            Selector selector = new Selector().setLocationId("shard4/0");
+            FetchResult fetchResult = new FetchResult();
+            indexManager.fetchRow("table", selector, fetchResult);
+            fail("Should throw exception");
+        } catch (MissingShardException e) {
+        }
+    }
+    
+    @Test
+    public void testFetchRecord1() throws Exception {
+        Selector selector = new Selector().setLocationId("shard1/0").setRecordOnly(true);
+        FetchResult fetchResult = new FetchResult();
+        indexManager.fetchRow("table", selector, fetchResult);
+        assertNull(fetchResult.row);
+        assertNotNull(fetchResult.record);
+    }
+    
+    @Test
+    public void testSearch() throws Exception {
+        String query = "test-fam.name:value";
+        HitsIterable iterable = indexManager.search("table", query, true, ScoreType.SUPER, null, null, 10, Long.MAX_VALUE);
+        assertEquals(iterable.getTotalHits(),2);
+        for (Hit hit : iterable) {
+            System.out.println(hit);
+        }
+    }
+    
+    @Test
+    public void testRemoveRow() throws Exception {
+        try {
+            indexManager.removeRow(null, null);
+            fail("not implemented.");
+        } catch (Exception e) {
+        }
+    }
+    
+    @Test
+    public void testReplaceRow() throws Exception {
+        try {
+            indexManager.replaceRow(null, null);
+            fail("not implemented.");
+        } catch (Exception e) {
+        }
+    }
 
 }

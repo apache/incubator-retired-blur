@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.manager.local;
+package com.nearinfinity.blur.manager.indexserver;
 
 import java.io.File;
 import java.io.IOException;

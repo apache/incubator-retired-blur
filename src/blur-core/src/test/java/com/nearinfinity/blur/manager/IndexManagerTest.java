@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.manager.local.LocalIndexServer;
+import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;

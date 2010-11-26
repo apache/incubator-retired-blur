@@ -4,14 +4,20 @@ import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.createSuperDocume
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,12 +44,15 @@ import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
+import com.nearinfinity.blur.manager.status.SearchStatus;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -57,6 +66,8 @@ public class IndexManager {
 
     private IndexServer indexServer;
     private ExecutorService executor;
+    private Collection<SearchStatus> currentSearchStatusCollection = Collections.synchronizedSet(new HashSet<SearchStatus>());
+    private Timer searchStatusCleanupTimer;
 
     public IndexManager() {
         // do nothing
@@ -64,6 +75,14 @@ public class IndexManager {
 
     public void init() {
         executor = Executors.newCachedThreadPool();
+        searchStatusCleanupTimer = new Timer("Search-Status-Cleanup",true);
+        searchStatusCleanupTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                cleanupFinishedSearchStatuses();
+            }
+        }, TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(1));
+        
     }
 
     public static void replace(IndexWriter indexWriter, Row row) throws IOException {
@@ -114,32 +133,61 @@ public class IndexManager {
         }
     }
 
-    public HitsIterable search(final String table, String query, final boolean superQueryOn, ScoreType type,
-            String postSuperFilter, String preSuperFilter, long minimumNumberOfHits, long maxQueryTime)
-            throws Exception {
-        Map<String, IndexReader> indexReaders;
+    public HitsIterable search(final String table, SearchQuery searchQuery) throws Exception {
+        final SearchStatus status = new SearchStatus(table,searchQuery).attachThread();
+        addStatus(status);
         try {
-            indexReaders = indexServer.getIndexReaders(table);
-        } catch (IOException e) {
-            LOG.error("Unknown error while trying to fetch index readers.", e);
-            throw new BlurException(e.getMessage());
-        }
-        Filter preFilter = parseFilter(table, preSuperFilter, false, type);
-        Filter postFilter = parseFilter(table, postSuperFilter, true, type);
-        final Query userQuery = parseQuery(query, superQueryOn, indexServer.getAnalyzer(table), postFilter, preFilter,
-                type);
-        return ForkJoin.execute(executor, indexReaders.entrySet(),
+            Map<String, IndexReader> indexReaders;
+            try {
+                indexReaders = indexServer.getIndexReaders(table);
+            } catch (IOException e) {
+                LOG.error("Unknown error while trying to fetch index readers.", e);
+                throw new BlurException(e.getMessage());
+            }
+            Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, searchQuery.type);
+            Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, searchQuery.type);
+            final Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
+                    indexServer.getAnalyzer(table), postFilter, preFilter, searchQuery.type);
+            return ForkJoin.execute(executor, indexReaders.entrySet(),
                 new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
                     @Override
                     public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
-                        IndexReader reader = entry.getValue();
-                        String shard = entry.getKey();
-                        BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache(
-                                table).getIndexReaderCache(shard));
-                        searcher.setSimilarity(indexServer.getSimilarity());
-                        return new HitsIterableSearcher((Query) userQuery.clone(), table, shard, searcher);
+                        status.attachThread();
+                        try {
+                            IndexReader reader = entry.getValue();
+                            String shard = entry.getKey();
+                            BlurSearcher searcher = new BlurSearcher(reader, 
+                                    PrimeDocCache.getTableCache().getShardCache(table).
+                                    getIndexReaderCache(shard));
+                            searcher.setSimilarity(indexServer.getSimilarity());
+                            return new HitsIterableSearcher((Query) userQuery.clone(), table, shard, searcher);
+                        } finally {
+                            status.deattachThread();
+                        }
                     }
-                }).merge(new MergerHitsIterable(minimumNumberOfHits, maxQueryTime));
+                }).merge(new MergerHitsIterable(searchQuery.minimumNumberOfHits, searchQuery.maxQueryTime));
+        } finally {
+            status.deattachThread();
+            removeStatus(status);
+        }
+    }
+
+    public void cancelSearch(long userUuid) {
+        for (SearchStatus status : currentSearchStatusCollection) {
+            if (status.getUserUuid() == userUuid) {
+                status.cancelSearch();
+            }
+        }
+    }
+
+    public List<SearchQueryStatus> currentSearches(String table) {
+        List<SearchQueryStatus> result = new ArrayList<SearchQueryStatus>();
+        for (SearchStatus status : currentSearchStatusCollection) {
+            if (status.getTable().equals(table)) {
+                result.add(status.getSearchQueryStatus());
+            }
+        }
+        return result;
     }
 
     private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType)
@@ -299,5 +347,23 @@ public class IndexManager {
 
     public void setIndexServer(IndexServer indexServer) {
         this.indexServer = indexServer;
+    }
+    
+    private void removeStatus(SearchStatus status) {
+        status.setFinished(true);
+    }
+
+    private void addStatus(SearchStatus status) {
+        currentSearchStatusCollection.add(status);
+    }
+    
+    private void cleanupFinishedSearchStatuses() {
+        Collection<SearchStatus> remove = new HashSet<SearchStatus>();
+        for (SearchStatus status : currentSearchStatusCollection) {
+            if (status.isValidForCleanUp()) {
+                remove.add(status);
+            }
+        }
+        currentSearchStatusCollection.removeAll(remove);
     }
 }

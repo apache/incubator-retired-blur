@@ -35,9 +35,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     @Override
 	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
         try {
-            HitsIterable hitsIterable = indexManager.search(table, searchQuery.queryStr, 
-                    searchQuery.superQueryOn, searchQuery.type, searchQuery.postSuperFilter, 
-                    searchQuery.preSuperFilter, searchQuery.minimumNumberOfHits, searchQuery.maxQueryTime);
+            HitsIterable hitsIterable = indexManager.search(table, searchQuery);
             return convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
         } catch (Exception e) {
             LOG.error("Unknown error during search of [" +
@@ -60,12 +58,22 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     @Override
     public void cancelSearch(long userUuid) throws BlurException, TException {
-        throw new BlurException("not implemented");
+        try {
+            indexManager.cancelSearch(userUuid);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to cancel search [" + getParametersList("userUuid",userUuid) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
 
     @Override
     public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException {
-        throw new BlurException("not implemented");
+        try {
+            return indexManager.currentSearches(table);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get current search status [" + getParametersList("table",table) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
     
     @Override

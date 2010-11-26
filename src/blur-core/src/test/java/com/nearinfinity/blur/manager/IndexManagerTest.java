@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +18,8 @@ import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class IndexManagerTest {
@@ -81,14 +84,27 @@ public class IndexManagerTest {
     
     @Test
     public void testSearch() throws Exception {
-        String query = "test-fam.name:value";
-        HitsIterable iterable = indexManager.search("table", query, true, ScoreType.SUPER, null, null, 10, Long.MAX_VALUE);
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.queryStr = "test-fam.name:value";
+        searchQuery.superQueryOn = true;
+        searchQuery.type = ScoreType.SUPER;
+        searchQuery.fetch = 10;
+        searchQuery.minimumNumberOfHits = Long.MAX_VALUE;
+        searchQuery.maxQueryTime = Long.MAX_VALUE;
+        searchQuery.userUuid = 1;
+        
+        HitsIterable iterable = indexManager.search("table", searchQuery);
         assertEquals(iterable.getTotalHits(),2);
         for (Hit hit : iterable) {
             Selector selector = new Selector().setLocationId(hit.getLocationId());
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow("table", selector, fetchResult);
             System.out.println(fetchResult.getRow());
+        }
+        
+        List<SearchQueryStatus> currentSearches = indexManager.currentSearches("table");
+        for (SearchQueryStatus status : currentSearches) {
+            System.out.println(status);
         }
     }
     

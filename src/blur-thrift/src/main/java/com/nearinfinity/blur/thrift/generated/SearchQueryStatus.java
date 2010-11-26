@@ -30,18 +30,24 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)2);
   private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)3);
   private static final TField COMPLETE_FIELD_DESC = new TField("complete", TType.DOUBLE, (short)4);
+  private static final TField RUNNING_FIELD_DESC = new TField("running", TType.BOOL, (short)5);
+  private static final TField INTERRUPTED_FIELD_DESC = new TField("interrupted", TType.BOOL, (short)6);
 
   public SearchQuery query;
   public long realTime;
   public long cpuTime;
   public double complete;
+  public boolean running;
+  public boolean interrupted;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     QUERY((short)1, "query"),
     REAL_TIME((short)2, "realTime"),
     CPU_TIME((short)3, "cpuTime"),
-    COMPLETE((short)4, "complete");
+    COMPLETE((short)4, "complete"),
+    RUNNING((short)5, "running"),
+    INTERRUPTED((short)6, "interrupted");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -64,6 +70,10 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
           return CPU_TIME;
         case 4: // COMPLETE
           return COMPLETE;
+        case 5: // RUNNING
+          return RUNNING;
+        case 6: // INTERRUPTED
+          return INTERRUPTED;
         default:
           return null;
       }
@@ -107,7 +117,9 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   private static final int __REALTIME_ISSET_ID = 0;
   private static final int __CPUTIME_ISSET_ID = 1;
   private static final int __COMPLETE_ISSET_ID = 2;
-  private BitSet __isset_bit_vector = new BitSet(3);
+  private static final int __RUNNING_ISSET_ID = 3;
+  private static final int __INTERRUPTED_ISSET_ID = 4;
+  private BitSet __isset_bit_vector = new BitSet(5);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -120,6 +132,10 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.COMPLETE, new FieldMetaData("complete", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.DOUBLE)));
+    tmpMap.put(_Fields.RUNNING, new FieldMetaData("running", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
+    tmpMap.put(_Fields.INTERRUPTED, new FieldMetaData("interrupted", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(SearchQueryStatus.class, metaDataMap);
   }
@@ -131,7 +147,9 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     SearchQuery query,
     long realTime,
     long cpuTime,
-    double complete)
+    double complete,
+    boolean running,
+    boolean interrupted)
   {
     this();
     this.query = query;
@@ -141,6 +159,10 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     setCpuTimeIsSet(true);
     this.complete = complete;
     setCompleteIsSet(true);
+    this.running = running;
+    setRunningIsSet(true);
+    this.interrupted = interrupted;
+    setInterruptedIsSet(true);
   }
 
   /**
@@ -155,6 +177,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     this.realTime = other.realTime;
     this.cpuTime = other.cpuTime;
     this.complete = other.complete;
+    this.running = other.running;
+    this.interrupted = other.interrupted;
   }
 
   public SearchQueryStatus deepCopy() {
@@ -259,6 +283,52 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     __isset_bit_vector.set(__COMPLETE_ISSET_ID, value);
   }
 
+  public boolean isRunning() {
+    return this.running;
+  }
+
+  public SearchQueryStatus setRunning(boolean running) {
+    this.running = running;
+    setRunningIsSet(true);
+    return this;
+  }
+
+  public void unsetRunning() {
+    __isset_bit_vector.clear(__RUNNING_ISSET_ID);
+  }
+
+  /** Returns true if field running is set (has been asigned a value) and false otherwise */
+  public boolean isSetRunning() {
+    return __isset_bit_vector.get(__RUNNING_ISSET_ID);
+  }
+
+  public void setRunningIsSet(boolean value) {
+    __isset_bit_vector.set(__RUNNING_ISSET_ID, value);
+  }
+
+  public boolean isInterrupted() {
+    return this.interrupted;
+  }
+
+  public SearchQueryStatus setInterrupted(boolean interrupted) {
+    this.interrupted = interrupted;
+    setInterruptedIsSet(true);
+    return this;
+  }
+
+  public void unsetInterrupted() {
+    __isset_bit_vector.clear(__INTERRUPTED_ISSET_ID);
+  }
+
+  /** Returns true if field interrupted is set (has been asigned a value) and false otherwise */
+  public boolean isSetInterrupted() {
+    return __isset_bit_vector.get(__INTERRUPTED_ISSET_ID);
+  }
+
+  public void setInterruptedIsSet(boolean value) {
+    __isset_bit_vector.set(__INTERRUPTED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY:
@@ -293,6 +363,22 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       }
       break;
 
+    case RUNNING:
+      if (value == null) {
+        unsetRunning();
+      } else {
+        setRunning((Boolean)value);
+      }
+      break;
+
+    case INTERRUPTED:
+      if (value == null) {
+        unsetInterrupted();
+      } else {
+        setInterrupted((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -314,6 +400,12 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     case COMPLETE:
       return new Double(getComplete());
 
+    case RUNNING:
+      return new Boolean(isRunning());
+
+    case INTERRUPTED:
+      return new Boolean(isInterrupted());
+
     }
     throw new IllegalStateException();
   }
@@ -333,6 +425,10 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       return isSetCpuTime();
     case COMPLETE:
       return isSetComplete();
+    case RUNNING:
+      return isSetRunning();
+    case INTERRUPTED:
+      return isSetInterrupted();
     }
     throw new IllegalStateException();
   }
@@ -390,6 +486,24 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
         return false;
     }
 
+    boolean this_present_running = true;
+    boolean that_present_running = true;
+    if (this_present_running || that_present_running) {
+      if (!(this_present_running && that_present_running))
+        return false;
+      if (this.running != that.running)
+        return false;
+    }
+
+    boolean this_present_interrupted = true;
+    boolean that_present_interrupted = true;
+    if (this_present_interrupted || that_present_interrupted) {
+      if (!(this_present_interrupted && that_present_interrupted))
+        return false;
+      if (this.interrupted != that.interrupted)
+        return false;
+    }
+
     return true;
   }
 
@@ -442,6 +556,24 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetRunning()).compareTo(typedOther.isSetRunning());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRunning()) {      lastComparison = TBaseHelper.compareTo(this.running, typedOther.running);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetInterrupted()).compareTo(typedOther.isSetInterrupted());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetInterrupted()) {      lastComparison = TBaseHelper.compareTo(this.interrupted, typedOther.interrupted);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -487,6 +619,22 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 5: // RUNNING
+          if (field.type == TType.BOOL) {
+            this.running = iprot.readBool();
+            setRunningIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 6: // INTERRUPTED
+          if (field.type == TType.BOOL) {
+            this.interrupted = iprot.readBool();
+            setInterruptedIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -516,6 +664,12 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     oprot.writeFieldBegin(COMPLETE_FIELD_DESC);
     oprot.writeDouble(this.complete);
     oprot.writeFieldEnd();
+    oprot.writeFieldBegin(RUNNING_FIELD_DESC);
+    oprot.writeBool(this.running);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(INTERRUPTED_FIELD_DESC);
+    oprot.writeBool(this.interrupted);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -543,6 +697,14 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (!first) sb.append(", ");
     sb.append("complete:");
     sb.append(this.complete);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("running:");
+    sb.append(this.running);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("interrupted:");
+    sb.append(this.interrupted);
     first = false;
     sb.append(")");
     return sb.toString();

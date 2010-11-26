@@ -18,6 +18,7 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -57,21 +58,26 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
         return fetchResult;
 	}
 
-	@Override
-	public void removeRow(String table, String id) throws BlurException, TException {
-	    throw new BlurException("not implemented");
-	}
-
-	@Override
-	public void replaceRow(String table, Row row) throws BlurException, TException, MissingShardException {
-	    throw new BlurException("not implemented");
-	}
-	
     @Override
     public void cancelSearch(long userUuid) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 
+    @Override
+    public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException {
+        throw new BlurException("not implemented");
+    }
+    
+    @Override
+    public void removeRow(String table, String id) throws BlurException, TException {
+        throw new BlurException("not implemented");
+    }
+
+    @Override
+    public void replaceRow(String table, Row row) throws BlurException, TException, MissingShardException {
+        throw new BlurException("not implemented");
+    }
+    
     @Override
     public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
             MissingShardException, TException {
@@ -89,14 +95,9 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
             EventStoppedExecutionException, TException {
         throw new RuntimeException("not implemented");
     }
-
+    
     public void close() throws InterruptedException {
         indexManager.close();
-    }
-
-    @Override
-    public List<SearchQuery> currentSearches(String userUuid) throws BlurException, TException {
-        throw new BlurException("not implemented");
     }
     
     public IndexManager getIndexManager() {

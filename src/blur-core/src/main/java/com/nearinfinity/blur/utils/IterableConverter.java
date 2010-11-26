@@ -4,10 +4,6 @@ import java.util.Iterator;
 
 public class IterableConverter<F,T> implements Iterable<T> {
 	
-	public static interface Converter<F,T> {
-		T convert(F from) throws Exception;
-	}
-
 	private Converter<F, T> converter;
 	private Iterable<F> iterable;
 	
@@ -18,28 +14,7 @@ public class IterableConverter<F,T> implements Iterable<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		final Iterator<F> iterator = iterable.iterator();
-		return new Iterator<T>() {
-
-			@Override
-			public boolean hasNext() {
-				return iterator.hasNext();
-			}
-
-			@Override
-			public T next() {
-				try {
-					return converter.convert(iterator.next());
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-			}
-
-			@Override
-			public void remove() {
-				iterator.remove();
-			}
-		};
+		return new IteratorConverter<F,T>(iterable.iterator(),converter);
 	}
 
 }

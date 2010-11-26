@@ -85,7 +85,10 @@ public class IndexManagerTest {
         HitsIterable iterable = indexManager.search("table", query, true, ScoreType.SUPER, null, null, 10, Long.MAX_VALUE);
         assertEquals(iterable.getTotalHits(),2);
         for (Hit hit : iterable) {
-            System.out.println(hit);
+            Selector selector = new Selector().setLocationId(hit.getLocationId());
+            FetchResult fetchResult = new FetchResult();
+            indexManager.fetchRow("table", selector, fetchResult);
+            System.out.println(fetchResult.getRow());
         }
     }
     

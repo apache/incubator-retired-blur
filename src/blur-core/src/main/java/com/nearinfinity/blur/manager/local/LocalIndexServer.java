@@ -10,6 +10,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
+import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
@@ -74,7 +75,12 @@ public class LocalIndexServer implements IndexServer {
             Map<String, IndexReader> shards = new ConcurrentHashMap<String, IndexReader>();
             for (File f : tableFile.listFiles()) {
                 if (f.isDirectory()) {
-                    shards.put(f.getName(),openReader(f));
+                    Directory directory = FSDirectory.open(f);
+                    if (IndexReader.indexExists(directory)) {
+                        shards.put(f.getName(),openReader(directory));
+                    } else {
+                        directory.close();
+                    }
                 }
             }
             return shards;
@@ -82,8 +88,8 @@ public class LocalIndexServer implements IndexServer {
         throw new IOException("Table [" + table + "] not found.");
     }
 
-    private IndexReader openReader(File f) throws CorruptIndexException, IOException {
-        return IndexReader.open(FSDirectory.open(f));
+    private IndexReader openReader(Directory dir) throws CorruptIndexException, IOException {
+        return IndexReader.open(dir);
     }
 
     @Override

@@ -13,6 +13,7 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurAdmin.Iface;
@@ -119,7 +120,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public List<SearchQuery> currentSearches(String arg0) throws BlurException, TException {
+    public List<SearchQueryStatus> currentSearches(String arg0) throws BlurException, TException {
         return null;
     }
 

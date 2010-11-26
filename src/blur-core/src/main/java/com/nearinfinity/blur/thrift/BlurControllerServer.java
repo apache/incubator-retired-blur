@@ -20,6 +20,7 @@ import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
+import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
 import com.nearinfinity.blur.utils.BlurConfiguration;
@@ -81,21 +82,14 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
                     "] selector [" + selector + "]");
         }
 	}
-
-	@Override
-	public void removeRow(final String table, final String id) throws BlurException,
-			TException, MissingShardException {
-	    throw new BlurException("not implemented");
-	}
-
-	@Override
-	public void replaceRow(final String table, final Row row) throws BlurException,
-			TException, MissingShardException {
-	    throw new BlurException("not implemented");
-	}
 	
     @Override
     public void cancelSearch(long userUuid) throws BlurException, TException {
+        throw new BlurException("not implemented");
+    }
+    
+    @Override
+    public List<SearchQueryStatus> currentSearches(String arg0) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 	   
@@ -120,11 +114,16 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
             MissingShardException, TException {
         throw new BlurException("not implemented");
     }
-
+    
     @Override
-    public List<SearchQuery> currentSearches(String arg0) throws BlurException, TException {
+    public void removeRow(final String table, final String id) throws BlurException,
+            TException, MissingShardException {
         throw new BlurException("not implemented");
     }
 
-
+    @Override
+    public void replaceRow(final String table, final Row row) throws BlurException,
+            TException, MissingShardException {
+        throw new BlurException("not implemented");
+    }
 }

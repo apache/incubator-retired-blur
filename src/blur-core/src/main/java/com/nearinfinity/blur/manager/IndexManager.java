@@ -118,7 +118,19 @@ public class IndexManager {
             MissingShardException {
         IndexReader reader;
         try {
-            reader = indexServer.getIndexReader(table, selector);
+            String shard = getShard(selector.getLocationId());
+            Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
+            if (indexReaders == null) {
+                LOG.error("Table [" + table + "] not found");
+                throw new MissingShardException("Table [" + table + "] not found");
+            }
+            reader = indexReaders.get(shard);
+            if (reader == null) {
+                if (reader == null) {
+                    LOG.error("Shard [" + shard + "] not found in table [" + table + "]");
+                    throw new MissingShardException("Shard [" + shard + "] not found in table [" + table + "]");
+                }
+            }
         } catch (MissingShardException e) {
             throw e;
         } catch (Exception e) {
@@ -131,6 +143,19 @@ public class IndexManager {
             LOG.error("Unknown error while trying to fetch row.", e);
             throw new BlurException(e.getMessage());
         }
+    }
+    
+    /**
+     * Location id format is <shard>/luceneid.
+     * @param locationId
+     * @return
+     */
+    private String getShard(String locationId) {
+        String[] split = locationId.split("\\/");
+        if (split.length != 2) {
+            throw new IllegalArgumentException("Location id invalid [" + locationId + "]");
+        }
+        return split[0];
     }
 
     public HitsIterable search(final String table, SearchQuery searchQuery) throws Exception {

@@ -39,9 +39,9 @@ public class RandomSuperQueryTest {
 	private static final int MAX_NUM_OF_DOCS = 10000;//10000
 	private static final int MIN_NUM_COL_FAM = 1;//3
 	private static final int MAX_NUM_COL_FAM = 2;//20
-	private static final int MAX_NUM_DOCS_PER_COL_FAM = 2;//25
-	private static final int MAX_NUM_COLS = 3;//21
-	private static final int MIN_NUM_COLS = 1;//3
+	private static final int MAX_NUM_DOCS_PER_COL_FAM = 5;//25
+	private static final int MAX_NUM_COLS = 5;//21
+	private static final int MIN_NUM_COLS = 2;//3
 	private static final int MAX_NUM_OF_WORDS = 25000;
 	private static final int MOD_USED_FOR_SAMPLING = 1;//
 	

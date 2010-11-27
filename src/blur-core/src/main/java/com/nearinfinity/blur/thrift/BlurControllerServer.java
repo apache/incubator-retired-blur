@@ -1,8 +1,9 @@
 package com.nearinfinity.blur.thrift;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -11,7 +12,6 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
-import com.nearinfinity.blur.metadata.MetaData;
 import com.nearinfinity.blur.thrift.commands.BlurAdminCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
@@ -23,7 +23,6 @@ import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
-import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
@@ -31,10 +30,8 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 public class BlurControllerServer extends BlurAdminServer implements BlurConstants {
 	
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
-
-	public BlurControllerServer(MetaData metaData, BlurConfiguration configuration) throws IOException {
-		super(metaData, configuration);
-	}
+	
+	private ExecutorService executor = Executors.newCachedThreadPool();
 
 	@Override
 	public Hits search(final String table, final SearchQuery searchQuery) throws BlurException, TException {
@@ -124,6 +121,11 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
     @Override
     public void replaceRow(final String table, final Row row) throws BlurException,
             TException, MissingShardException {
+        throw new BlurException("not implemented");
+    }
+
+    @Override
+    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 }

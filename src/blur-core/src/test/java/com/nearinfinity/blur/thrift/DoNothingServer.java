@@ -21,28 +21,8 @@ import com.nearinfinity.blur.thrift.generated.BlurAdmin.Iface;
 public class DoNothingServer implements Iface {
 
     @Override
-    public void create(String table, TableDescriptor desc) throws BlurException, TException {
-        
-    }
-
-    @Override
     public TableDescriptor describe(String table) throws BlurException, TException {
         return null;
-    }
-
-    @Override
-    public void disable(String table) throws BlurException, TException {
-        
-    }
-
-    @Override
-    public void drop(String table) throws BlurException, TException {
-        
-    }
-
-    @Override
-    public void enable(String table) throws BlurException, TException {
-        
     }
 
     @Override

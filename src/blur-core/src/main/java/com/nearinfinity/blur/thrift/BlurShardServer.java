@@ -1,6 +1,5 @@
 package com.nearinfinity.blur.thrift;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +9,6 @@ import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.metadata.MetaData;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
@@ -20,7 +18,6 @@ import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
@@ -28,10 +25,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
 	
-	public BlurShardServer(MetaData metaData, BlurConfiguration configuration) throws IOException, BlurException {
-		super(metaData,configuration);
-	}
-
     @Override
 	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
         try {
@@ -114,5 +107,10 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     public void setIndexManager(IndexManager indexManager) {
         this.indexManager = indexManager;
+    }
+
+    @Override
+    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
     }
 }

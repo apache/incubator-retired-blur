@@ -13,16 +13,14 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.metadata.ZkMetaData;
+import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.thrift.generated.BlurAdmin;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurAdmin.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurAdmin.Processor;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
-import com.nearinfinity.mele.Mele;
-import com.nearinfinity.mele.MeleBase;
-import com.nearinfinity.mele.store.noreplication.NoRepMeleDirectoryFactory;
 import com.nearinfinity.mele.util.AddressUtil;
 import com.nearinfinity.mele.zookeeper.NoOpWatcher;
 
@@ -52,17 +50,27 @@ public class BlurThriftServer implements BlurConstants {
 		BlurConfiguration configuration = new BlurConfiguration();
 		ZooKeeper zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
 		        configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
-		Mele mele = new MeleBase(new NoRepMeleDirectoryFactory(), configuration, zooKeeper);
-		ZkMetaData zkMetaData = new ZkMetaData(mele, configuration, zooKeeper);
+		
+		IndexServer indexServer = null;
+		IndexManager indexManager = new IndexManager();
+		indexManager.setIndexServer(indexServer);
+		
 		for (String arg : args) {
 		    if (SHARD.equals(arg) && shardServer == null) {
-		        shardServer = new BlurThriftServer(configuration.getBlurShardServerPort(), 
-		                new BlurShardServer(zkMetaData,configuration)).start(SHARD);
+		        BlurShardServer blurShardServer = new BlurShardServer();
+		        blurShardServer.setConfiguration(configuration);
+		        blurShardServer.setIndexManager(indexManager);
+		        blurShardServer.setIndexServer(indexServer);
 		        
+                BlurThriftServer blurThriftServer = new BlurThriftServer(configuration.getBlurShardServerPort(), blurShardServer);
+                shardServer = blurThriftServer.start(SHARD);
 		    } else if (CONTROLLER.equals(arg) && controllerServer == null) {
-		        controllerServer = new BlurThriftServer(configuration.getBlurControllerServerPort(), 
-		                new BlurControllerServer(zkMetaData,configuration)).start(CONTROLLER);
+		        BlurControllerServer blurControllerServer = new BlurControllerServer();
+		        blurControllerServer.setConfiguration(configuration);
+		        blurControllerServer.setIndexServer(indexServer);
 		        
+                BlurThriftServer blurThriftServer = new BlurThriftServer(configuration.getBlurControllerServerPort(), blurControllerServer);
+                controllerServer = blurThriftServer.start(CONTROLLER);
 		    }
 		}
 		if (controllerServer != null)

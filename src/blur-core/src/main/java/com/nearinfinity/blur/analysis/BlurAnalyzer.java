@@ -3,7 +3,6 @@ package com.nearinfinity.blur.analysis;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
-import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
@@ -41,24 +40,23 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 
 	public static BlurAnalyzer create(String s) throws Exception {
 		if (s == null || s.trim().isEmpty()) {
-			return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
+			return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30),"");
 		}
 		ObjectMapper mapper = new ObjectMapper();
 		JsonNode jsonNode = mapper.readTree(s);
-		return create(jsonNode);
+		return create(jsonNode,s);
 	}
 
-	public BlurAnalyzer(Analyzer defaultAnalyzer, Map<String, Analyzer> fieldAnalyzers) {
-		super(defaultAnalyzer, fieldAnalyzers);
-	}
+    private String originalJsonStr;
 
-	public BlurAnalyzer(Analyzer defaultAnalyzer) {
+	private BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
 		super(defaultAnalyzer);
+		this.originalJsonStr = jsonStr;
 	}
 	
-	public static BlurAnalyzer create(JsonNode jsonNode) throws Exception {
+	private static BlurAnalyzer create(JsonNode jsonNode, String jsonStr) throws Exception {
 		Analyzer defaultAnalyzer = getAnalyzer(jsonNode.get(DEFAULT));
-		BlurAnalyzer analyzer = new BlurAnalyzer(defaultAnalyzer);
+		BlurAnalyzer analyzer = new BlurAnalyzer(defaultAnalyzer, jsonStr);
 		populate(analyzer, "", jsonNode.get(FIELDS));
 		return analyzer;
 	}
@@ -122,5 +120,10 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 			return (Analyzer) constructor.newInstance(Version.LUCENE_30);
 		}
 	}
+
+    @Override
+    public String toString() {
+        return originalJsonStr;
+    }
 
 }

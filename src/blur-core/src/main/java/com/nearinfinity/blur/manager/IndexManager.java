@@ -184,7 +184,7 @@ public class IndexManager {
                             BlurSearcher searcher = new BlurSearcher(reader, 
                                     PrimeDocCache.getTableCache().getShardCache(table).
                                     getIndexReaderCache(shard));
-                            searcher.setSimilarity(indexServer.getSimilarity());
+                            searcher.setSimilarity(indexServer.getSimilarity(table));
                             return new HitsIterableSearcher((Query) userQuery.clone(), table, shard, searcher);
                         } finally {
                             status.deattachThread();

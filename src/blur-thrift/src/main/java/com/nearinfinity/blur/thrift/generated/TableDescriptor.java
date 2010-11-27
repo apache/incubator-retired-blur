@@ -28,20 +28,17 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
 
   private static final TField IS_ENABLED_FIELD_DESC = new TField("isEnabled", TType.BOOL, (short)1);
   private static final TField ANALYZER_DEF_FIELD_DESC = new TField("analyzerDef", TType.STRING, (short)2);
-  private static final TField PARTITIONER_CLASS_FIELD_DESC = new TField("partitionerClass", TType.STRING, (short)3);
-  private static final TField SHARD_NAMES_FIELD_DESC = new TField("shardNames", TType.LIST, (short)4);
+  private static final TField SHARD_NAMES_FIELD_DESC = new TField("shardNames", TType.LIST, (short)3);
 
   public boolean isEnabled;
   public String analyzerDef;
-  public String partitionerClass;
   public List<String> shardNames;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     IS_ENABLED((short)1, "isEnabled"),
     ANALYZER_DEF((short)2, "analyzerDef"),
-    PARTITIONER_CLASS((short)3, "partitionerClass"),
-    SHARD_NAMES((short)4, "shardNames");
+    SHARD_NAMES((short)3, "shardNames");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -60,9 +57,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
           return IS_ENABLED;
         case 2: // ANALYZER_DEF
           return ANALYZER_DEF;
-        case 3: // PARTITIONER_CLASS
-          return PARTITIONER_CLASS;
-        case 4: // SHARD_NAMES
+        case 3: // SHARD_NAMES
           return SHARD_NAMES;
         default:
           return null;
@@ -114,8 +109,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
         new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.ANALYZER_DEF, new FieldMetaData("analyzerDef", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.PARTITIONER_CLASS, new FieldMetaData("partitionerClass", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.SHARD_NAMES, new FieldMetaData("shardNames", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
             new FieldValueMetaData(TType.STRING))));
@@ -129,14 +122,12 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   public TableDescriptor(
     boolean isEnabled,
     String analyzerDef,
-    String partitionerClass,
     List<String> shardNames)
   {
     this();
     this.isEnabled = isEnabled;
     setIsEnabledIsSet(true);
     this.analyzerDef = analyzerDef;
-    this.partitionerClass = partitionerClass;
     this.shardNames = shardNames;
   }
 
@@ -149,9 +140,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     this.isEnabled = other.isEnabled;
     if (other.isSetAnalyzerDef()) {
       this.analyzerDef = other.analyzerDef;
-    }
-    if (other.isSetPartitionerClass()) {
-      this.partitionerClass = other.partitionerClass;
     }
     if (other.isSetShardNames()) {
       List<String> __this__shardNames = new ArrayList<String>();
@@ -218,30 +206,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     }
   }
 
-  public String getPartitionerClass() {
-    return this.partitionerClass;
-  }
-
-  public TableDescriptor setPartitionerClass(String partitionerClass) {
-    this.partitionerClass = partitionerClass;
-    return this;
-  }
-
-  public void unsetPartitionerClass() {
-    this.partitionerClass = null;
-  }
-
-  /** Returns true if field partitionerClass is set (has been asigned a value) and false otherwise */
-  public boolean isSetPartitionerClass() {
-    return this.partitionerClass != null;
-  }
-
-  public void setPartitionerClassIsSet(boolean value) {
-    if (!value) {
-      this.partitionerClass = null;
-    }
-  }
-
   public int getShardNamesSize() {
     return (this.shardNames == null) ? 0 : this.shardNames.size();
   }
@@ -299,14 +263,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       }
       break;
 
-    case PARTITIONER_CLASS:
-      if (value == null) {
-        unsetPartitionerClass();
-      } else {
-        setPartitionerClass((String)value);
-      }
-      break;
-
     case SHARD_NAMES:
       if (value == null) {
         unsetShardNames();
@@ -330,9 +286,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     case ANALYZER_DEF:
       return getAnalyzerDef();
 
-    case PARTITIONER_CLASS:
-      return getPartitionerClass();
-
     case SHARD_NAMES:
       return getShardNames();
 
@@ -351,8 +304,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       return isSetIsEnabled();
     case ANALYZER_DEF:
       return isSetAnalyzerDef();
-    case PARTITIONER_CLASS:
-      return isSetPartitionerClass();
     case SHARD_NAMES:
       return isSetShardNames();
     }
@@ -391,15 +342,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       if (!(this_present_analyzerDef && that_present_analyzerDef))
         return false;
       if (!this.analyzerDef.equals(that.analyzerDef))
-        return false;
-    }
-
-    boolean this_present_partitionerClass = true && this.isSetPartitionerClass();
-    boolean that_present_partitionerClass = true && that.isSetPartitionerClass();
-    if (this_present_partitionerClass || that_present_partitionerClass) {
-      if (!(this_present_partitionerClass && that_present_partitionerClass))
-        return false;
-      if (!this.partitionerClass.equals(that.partitionerClass))
         return false;
     }
 
@@ -446,15 +388,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetPartitionerClass()).compareTo(typedOther.isSetPartitionerClass());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetPartitionerClass()) {      lastComparison = TBaseHelper.compareTo(this.partitionerClass, typedOther.partitionerClass);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetShardNames()).compareTo(typedOther.isSetShardNames());
     if (lastComparison != 0) {
       return lastComparison;
@@ -492,14 +425,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // PARTITIONER_CLASS
-          if (field.type == TType.STRING) {
-            this.partitionerClass = iprot.readString();
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 4: // SHARD_NAMES
+        case 3: // SHARD_NAMES
           if (field.type == TType.LIST) {
             {
               TList _list13 = iprot.readListBegin();
@@ -539,11 +465,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       oprot.writeString(this.analyzerDef);
       oprot.writeFieldEnd();
     }
-    if (this.partitionerClass != null) {
-      oprot.writeFieldBegin(PARTITIONER_CLASS_FIELD_DESC);
-      oprot.writeString(this.partitionerClass);
-      oprot.writeFieldEnd();
-    }
     if (this.shardNames != null) {
       oprot.writeFieldBegin(SHARD_NAMES_FIELD_DESC);
       {
@@ -574,14 +495,6 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       sb.append("null");
     } else {
       sb.append(this.analyzerDef);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("partitionerClass:");
-    if (this.partitionerClass == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.partitionerClass);
     }
     first = false;
     if (!first) sb.append(", ");

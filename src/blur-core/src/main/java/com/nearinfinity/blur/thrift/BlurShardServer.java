@@ -20,6 +20,7 @@ import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
@@ -73,7 +74,12 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     @Override
     public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
-        throw new RuntimeException("not implemented");
+        try {
+            return BlurUtil.toBytes(fetchRow(table,selector));
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get fetch row binary [" + getParametersList("table",table,"selector",selector) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
 
     public void close() throws InterruptedException {

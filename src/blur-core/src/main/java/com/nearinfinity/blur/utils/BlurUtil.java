@@ -63,7 +63,7 @@ public class BlurUtil {
         return builder.toString();
     }
     
-    public static byte[] toBytes(Serializable serializable) throws IOException {
+    public static byte[] toBytes(Serializable serializable) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             ObjectOutputStream stream = new ObjectOutputStream(outputStream);
@@ -75,14 +75,21 @@ public class BlurUtil {
         }
     }
     
-    public static Serializable fromBytes(byte[] bs) throws IOException {
-        ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(bs));
+    public static Serializable fromBytes(byte[] bs) {
+        ObjectInputStream stream = null;
         try {
+            stream = new ObjectInputStream(new ByteArrayInputStream(bs));
             return (Serializable) stream.readObject();
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            stream.close();
+            if (stream != null) {
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    //eat
+                }
+            }
         }
     }
 }

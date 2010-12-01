@@ -107,13 +107,10 @@ service BlurSearch {
   list<SearchQueryStatus> currentSearches(1:string table) throws (1:BlurException be)
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
+  binary fetchRowBinary(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
 }
 
-service BlurBinary extends BlurSearch {
-  binary fetchRowBinary(1:string table, 2:string id, 3:binary selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-}
-
-service BlurAdmin extends BlurBinary {
+service BlurAdmin extends BlurSearch {
   void shutdownShard(1:string node) throws (1:BlurException be)
   void shutdownController(1:string node) throws (1:BlurException be)
 }

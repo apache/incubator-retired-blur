@@ -25,7 +25,7 @@ import org.apache.thrift.protocol.*;
 
 public class BlurAdmin {
 
-  public interface Iface extends BlurBinary.Iface {
+  public interface Iface extends BlurSearch.Iface {
 
     public void shutdownShard(String node) throws BlurException, TException;
 
@@ -33,7 +33,7 @@ public class BlurAdmin {
 
   }
 
-  public static class Client extends BlurBinary.Client implements TServiceClient, Iface {
+  public static class Client extends BlurSearch.Client implements TServiceClient, Iface {
     public static class Factory implements TServiceClientFactory<Client> {
       public Factory() {}
       public Client getClient(TProtocol prot) {
@@ -127,7 +127,7 @@ public class BlurAdmin {
     }
 
   }
-  public static class Processor extends BlurBinary.Processor implements TProcessor {
+  public static class Processor extends BlurSearch.Processor implements TProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
     public Processor(Iface iface)
     {

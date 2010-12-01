@@ -71,7 +71,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public byte[] fetchRowBinary(String arg0, String arg1, byte[] arg2) throws BlurException, MissingShardException,
+    public byte[] fetchRowBinary(String arg0, Selector selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
         return null;
     }

@@ -135,7 +135,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
     }
 	   
     @Override
-    public byte[] fetchRowBinary(final String table, final String id, final byte[] selector) throws BlurException, MissingShardException,
+    public byte[] fetchRowBinary(final String table, Selector selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
         throw new BlurException("not implemented");
     }

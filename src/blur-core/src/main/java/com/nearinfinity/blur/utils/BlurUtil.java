@@ -1,5 +1,11 @@
 package com.nearinfinity.blur.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -57,4 +63,26 @@ public class BlurUtil {
         return builder.toString();
     }
     
+    public static byte[] toBytes(Serializable serializable) throws IOException {
+        try {
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            ObjectOutputStream stream = new ObjectOutputStream(outputStream);
+            stream.writeObject(serializable);
+            stream.close();
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    public static Serializable fromBytes(byte[] bs) throws IOException {
+        ObjectInputStream stream = new ObjectInputStream(new ByteArrayInputStream(bs));
+        try {
+            return (Serializable) stream.readObject();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            stream.close();
+        }
+    }
 }

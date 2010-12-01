@@ -51,11 +51,11 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
     @Override
-    public void cancelSearch(long userUuid) throws BlurException, TException {
+    public void cancelSearch(long uuid) throws BlurException, TException {
         try {
-            indexManager.cancelSearch(userUuid);
+            indexManager.cancelSearch(uuid);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to cancel search [" + getParametersList("userUuid",userUuid) + "]",e);
+            LOG.error("Unknown error while trying to cancel search [" + getParametersList("uuid",uuid) + "]",e);
             throw new BlurException(e.getMessage());
         }
     }

@@ -32,6 +32,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   private static final TField COMPLETE_FIELD_DESC = new TField("complete", TType.DOUBLE, (short)4);
   private static final TField RUNNING_FIELD_DESC = new TField("running", TType.BOOL, (short)5);
   private static final TField INTERRUPTED_FIELD_DESC = new TField("interrupted", TType.BOOL, (short)6);
+  private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)7);
 
   public SearchQuery query;
   public long realTime;
@@ -39,6 +40,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   public double complete;
   public boolean running;
   public boolean interrupted;
+  public long uuid;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -47,7 +49,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     CPU_TIME((short)3, "cpuTime"),
     COMPLETE((short)4, "complete"),
     RUNNING((short)5, "running"),
-    INTERRUPTED((short)6, "interrupted");
+    INTERRUPTED((short)6, "interrupted"),
+    UUID((short)7, "uuid");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -74,6 +77,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
           return RUNNING;
         case 6: // INTERRUPTED
           return INTERRUPTED;
+        case 7: // UUID
+          return UUID;
         default:
           return null;
       }
@@ -119,7 +124,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   private static final int __COMPLETE_ISSET_ID = 2;
   private static final int __RUNNING_ISSET_ID = 3;
   private static final int __INTERRUPTED_ISSET_ID = 4;
-  private BitSet __isset_bit_vector = new BitSet(5);
+  private static final int __UUID_ISSET_ID = 5;
+  private BitSet __isset_bit_vector = new BitSet(6);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -136,6 +142,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
         new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.INTERRUPTED, new FieldMetaData("interrupted", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.BOOL)));
+    tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(SearchQueryStatus.class, metaDataMap);
   }
@@ -149,7 +157,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     long cpuTime,
     double complete,
     boolean running,
-    boolean interrupted)
+    boolean interrupted,
+    long uuid)
   {
     this();
     this.query = query;
@@ -163,6 +172,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     setRunningIsSet(true);
     this.interrupted = interrupted;
     setInterruptedIsSet(true);
+    this.uuid = uuid;
+    setUuidIsSet(true);
   }
 
   /**
@@ -179,6 +190,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     this.complete = other.complete;
     this.running = other.running;
     this.interrupted = other.interrupted;
+    this.uuid = other.uuid;
   }
 
   public SearchQueryStatus deepCopy() {
@@ -329,6 +341,29 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     __isset_bit_vector.set(__INTERRUPTED_ISSET_ID, value);
   }
 
+  public long getUuid() {
+    return this.uuid;
+  }
+
+  public SearchQueryStatus setUuid(long uuid) {
+    this.uuid = uuid;
+    setUuidIsSet(true);
+    return this;
+  }
+
+  public void unsetUuid() {
+    __isset_bit_vector.clear(__UUID_ISSET_ID);
+  }
+
+  /** Returns true if field uuid is set (has been asigned a value) and false otherwise */
+  public boolean isSetUuid() {
+    return __isset_bit_vector.get(__UUID_ISSET_ID);
+  }
+
+  public void setUuidIsSet(boolean value) {
+    __isset_bit_vector.set(__UUID_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY:
@@ -379,6 +414,14 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       }
       break;
 
+    case UUID:
+      if (value == null) {
+        unsetUuid();
+      } else {
+        setUuid((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -406,6 +449,9 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     case INTERRUPTED:
       return new Boolean(isInterrupted());
 
+    case UUID:
+      return new Long(getUuid());
+
     }
     throw new IllegalStateException();
   }
@@ -429,6 +475,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       return isSetRunning();
     case INTERRUPTED:
       return isSetInterrupted();
+    case UUID:
+      return isSetUuid();
     }
     throw new IllegalStateException();
   }
@@ -504,6 +552,15 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
         return false;
     }
 
+    boolean this_present_uuid = true;
+    boolean that_present_uuid = true;
+    if (this_present_uuid || that_present_uuid) {
+      if (!(this_present_uuid && that_present_uuid))
+        return false;
+      if (this.uuid != that.uuid)
+        return false;
+    }
+
     return true;
   }
 
@@ -574,6 +631,15 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetUuid()).compareTo(typedOther.isSetUuid());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUuid()) {      lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -635,6 +701,14 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 7: // UUID
+          if (field.type == TType.I64) {
+            this.uuid = iprot.readI64();
+            setUuidIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -669,6 +743,9 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     oprot.writeFieldEnd();
     oprot.writeFieldBegin(INTERRUPTED_FIELD_DESC);
     oprot.writeBool(this.interrupted);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(UUID_FIELD_DESC);
+    oprot.writeI64(this.uuid);
     oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -705,6 +782,10 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (!first) sb.append(", ");
     sb.append("interrupted:");
     sb.append(this.interrupted);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("uuid:");
+    sb.append(this.uuid);
     first = false;
     sb.append(")");
     return sb.toString();

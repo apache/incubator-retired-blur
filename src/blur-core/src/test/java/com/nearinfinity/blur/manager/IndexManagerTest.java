@@ -91,7 +91,7 @@ public class IndexManagerTest {
         searchQuery.fetch = 10;
         searchQuery.minimumNumberOfHits = Long.MAX_VALUE;
         searchQuery.maxQueryTime = Long.MAX_VALUE;
-        searchQuery.userUuid = 1;
+        searchQuery.uuid = 1;
         
         HitsIterable iterable = indexManager.search("table", searchQuery);
         assertEquals(iterable.getTotalHits(),2);

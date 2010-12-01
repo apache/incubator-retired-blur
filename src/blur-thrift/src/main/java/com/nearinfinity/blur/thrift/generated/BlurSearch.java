@@ -39,7 +39,7 @@ public class BlurSearch {
 
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, MissingShardException, EventStoppedExecutionException, TException;
 
-    public void cancelSearch(long userUuid) throws BlurException, EventStoppedExecutionException, TException;
+    public void cancelSearch(long uuid) throws BlurException, EventStoppedExecutionException, TException;
 
     public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException;
 
@@ -322,17 +322,17 @@ public class BlurSearch {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
     }
 
-    public void cancelSearch(long userUuid) throws BlurException, EventStoppedExecutionException, TException
+    public void cancelSearch(long uuid) throws BlurException, EventStoppedExecutionException, TException
     {
-      send_cancelSearch(userUuid);
+      send_cancelSearch(uuid);
       recv_cancelSearch();
     }
 
-    public void send_cancelSearch(long userUuid) throws TException
+    public void send_cancelSearch(long uuid) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("cancelSearch", TMessageType.CALL, ++seqid_));
       cancelSearch_args args = new cancelSearch_args();
-      args.setUserUuid(userUuid);
+      args.setUuid(uuid);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -738,7 +738,7 @@ public class BlurSearch {
         iprot.readMessageEnd();
         cancelSearch_result result = new cancelSearch_result();
         try {
-          iface_.cancelSearch(args.userUuid);
+          iface_.cancelSearch(args.uuid);
         } catch (BlurException be) {
           result.be = be;
         } catch (EventStoppedExecutionException esee) {
@@ -4910,13 +4910,13 @@ public class BlurSearch {
   public static class cancelSearch_args implements TBase<cancelSearch_args, cancelSearch_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("cancelSearch_args");
 
-    private static final TField USER_UUID_FIELD_DESC = new TField("userUuid", TType.I64, (short)1);
+    private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)1);
 
-    public long userUuid;
+    public long uuid;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      USER_UUID((short)1, "userUuid");
+      UUID((short)1, "uuid");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4931,8 +4931,8 @@ public class BlurSearch {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // USER_UUID
-            return USER_UUID;
+          case 1: // UUID
+            return UUID;
           default:
             return null;
         }
@@ -4973,13 +4973,13 @@ public class BlurSearch {
     }
 
     // isset id assignments
-    private static final int __USERUUID_ISSET_ID = 0;
+    private static final int __UUID_ISSET_ID = 0;
     private BitSet __isset_bit_vector = new BitSet(1);
 
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.USER_UUID, new FieldMetaData("userUuid", TFieldRequirementType.DEFAULT, 
+      tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(cancelSearch_args.class, metaDataMap);
@@ -4989,11 +4989,11 @@ public class BlurSearch {
     }
 
     public cancelSearch_args(
-      long userUuid)
+      long uuid)
     {
       this();
-      this.userUuid = userUuid;
-      setUserUuidIsSet(true);
+      this.uuid = uuid;
+      setUuidIsSet(true);
     }
 
     /**
@@ -5002,7 +5002,7 @@ public class BlurSearch {
     public cancelSearch_args(cancelSearch_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
-      this.userUuid = other.userUuid;
+      this.uuid = other.uuid;
     }
 
     public cancelSearch_args deepCopy() {
@@ -5014,36 +5014,36 @@ public class BlurSearch {
       return new cancelSearch_args(this);
     }
 
-    public long getUserUuid() {
-      return this.userUuid;
+    public long getUuid() {
+      return this.uuid;
     }
 
-    public cancelSearch_args setUserUuid(long userUuid) {
-      this.userUuid = userUuid;
-      setUserUuidIsSet(true);
+    public cancelSearch_args setUuid(long uuid) {
+      this.uuid = uuid;
+      setUuidIsSet(true);
       return this;
     }
 
-    public void unsetUserUuid() {
-      __isset_bit_vector.clear(__USERUUID_ISSET_ID);
+    public void unsetUuid() {
+      __isset_bit_vector.clear(__UUID_ISSET_ID);
     }
 
-    /** Returns true if field userUuid is set (has been asigned a value) and false otherwise */
-    public boolean isSetUserUuid() {
-      return __isset_bit_vector.get(__USERUUID_ISSET_ID);
+    /** Returns true if field uuid is set (has been asigned a value) and false otherwise */
+    public boolean isSetUuid() {
+      return __isset_bit_vector.get(__UUID_ISSET_ID);
     }
 
-    public void setUserUuidIsSet(boolean value) {
-      __isset_bit_vector.set(__USERUUID_ISSET_ID, value);
+    public void setUuidIsSet(boolean value) {
+      __isset_bit_vector.set(__UUID_ISSET_ID, value);
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case USER_UUID:
+      case UUID:
         if (value == null) {
-          unsetUserUuid();
+          unsetUuid();
         } else {
-          setUserUuid((Long)value);
+          setUuid((Long)value);
         }
         break;
 
@@ -5056,8 +5056,8 @@ public class BlurSearch {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case USER_UUID:
-        return new Long(getUserUuid());
+      case UUID:
+        return new Long(getUuid());
 
       }
       throw new IllegalStateException();
@@ -5070,8 +5070,8 @@ public class BlurSearch {
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
       switch (field) {
-      case USER_UUID:
-        return isSetUserUuid();
+      case UUID:
+        return isSetUuid();
       }
       throw new IllegalStateException();
     }
@@ -5093,12 +5093,12 @@ public class BlurSearch {
       if (that == null)
         return false;
 
-      boolean this_present_userUuid = true;
-      boolean that_present_userUuid = true;
-      if (this_present_userUuid || that_present_userUuid) {
-        if (!(this_present_userUuid && that_present_userUuid))
+      boolean this_present_uuid = true;
+      boolean that_present_uuid = true;
+      if (this_present_uuid || that_present_uuid) {
+        if (!(this_present_uuid && that_present_uuid))
           return false;
-        if (this.userUuid != that.userUuid)
+        if (this.uuid != that.uuid)
           return false;
       }
 
@@ -5118,11 +5118,11 @@ public class BlurSearch {
       int lastComparison = 0;
       cancelSearch_args typedOther = (cancelSearch_args)other;
 
-      lastComparison = Boolean.valueOf(isSetUserUuid()).compareTo(typedOther.isSetUserUuid());
+      lastComparison = Boolean.valueOf(isSetUuid()).compareTo(typedOther.isSetUuid());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetUserUuid()) {        lastComparison = TBaseHelper.compareTo(this.userUuid, typedOther.userUuid);
+      if (isSetUuid()) {        lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5140,10 +5140,10 @@ public class BlurSearch {
           break;
         }
         switch (field.id) {
-          case 1: // USER_UUID
+          case 1: // UUID
             if (field.type == TType.I64) {
-              this.userUuid = iprot.readI64();
-              setUserUuidIsSet(true);
+              this.uuid = iprot.readI64();
+              setUuidIsSet(true);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -5163,8 +5163,8 @@ public class BlurSearch {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      oprot.writeFieldBegin(USER_UUID_FIELD_DESC);
-      oprot.writeI64(this.userUuid);
+      oprot.writeFieldBegin(UUID_FIELD_DESC);
+      oprot.writeI64(this.uuid);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -5175,8 +5175,8 @@ public class BlurSearch {
       StringBuilder sb = new StringBuilder("cancelSearch_args(");
       boolean first = true;
 
-      sb.append("userUuid:");
-      sb.append(this.userUuid);
+      sb.append("uuid:");
+      sb.append(this.uuid);
       first = false;
       sb.append(")");
       return sb.toString();

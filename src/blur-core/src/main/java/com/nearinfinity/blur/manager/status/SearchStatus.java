@@ -52,7 +52,7 @@ public class SearchStatus {
     }
 
     public long getUserUuid() {
-        return searchQuery.userUuid;
+        return searchQuery.uuid;
     }
 
     public void cancelSearch() {

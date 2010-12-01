@@ -29,9 +29,7 @@ struct SearchQuery {
   7:i32 fetch, 
   8:i64 minimumNumberOfHits,
   9:i64 maxQueryTime,
-  10:string user,
-  11:i64 userUuid,
-  12:i64 systemUuid
+  10:i64 uuid
 }
 
 struct Hit {
@@ -92,7 +90,8 @@ struct SearchQueryStatus {
   3:i64 cpuTime,
   4:double complete,
   5:bool running,
-  6:bool interrupted
+  6:bool interrupted,
+  7:i64 uuid
 }
 
 service BlurSearch {
@@ -104,7 +103,7 @@ service BlurSearch {
   TableDescriptor describe(1:string table) throws (1:BlurException ex)
 
   Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-  void cancelSearch(1:i64 userUuid) throws (1:BlurException be, 2: EventStoppedExecutionException esee)
+  void cancelSearch(1:i64 uuid) throws (1:BlurException be, 2: EventStoppedExecutionException esee)
   list<SearchQueryStatus> currentSearches(1:string table) throws (1:BlurException be)
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)

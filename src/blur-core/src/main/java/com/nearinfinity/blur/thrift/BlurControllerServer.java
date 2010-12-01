@@ -26,6 +26,7 @@ import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
+import static com.nearinfinity.blur.utils.BlurUtil.*;
 
 public class BlurControllerServer extends BlurAdminServer implements BlurConstants {
 	

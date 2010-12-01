@@ -53,8 +53,7 @@ struct Hits {
 struct TableDescriptor {
   1:bool isEnabled,
   2:string analyzerDef,
-  3:string partitionerClass,
-  4:list<string> shardNames
+  3:list<string> shardNames
 }
 
 struct Column {
@@ -73,15 +72,16 @@ struct Row {
 }
 
 struct FetchResult {
-  1:string table,
-  2:string id,
-  3:Row row,
-  4:bool exists
+  1:bool exists,
+  2:bool deleted,
+  3:string table,
+  4:Row row,
+  5:set<Column> record
 }
 
 struct Selector {
-  1:string id,
-  2:string locationId,
+  1:string locationId,
+  2:bool recordOnly,
   3:set<string> columnFamilies,
   4:map<string,set<string>> columns
 }
@@ -90,7 +90,9 @@ struct SearchQueryStatus {
   1:SearchQuery query,
   2:i64 realTime,
   3:i64 cpuTime,
-  4:double complete
+  4:double complete,
+  5:bool running,
+  6:bool interrupted
 }
 
 service BlurSearch {
@@ -103,28 +105,16 @@ service BlurSearch {
 
   Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
   void cancelSearch(1:i64 userUuid) throws (1:BlurException be, 2: EventStoppedExecutionException esee)
-  list<SearchQuery> currentSearches(1:string table) throws (1:BlurException be)
+  list<SearchQueryStatus> currentSearches(1:string table) throws (1:BlurException be)
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
 }
 
-service BlurUpdate extends BlurSearch {
-  void batchUpdate(1:string batchId, 2:string table, 3:map<string,string> shardsToUris) throws (1:BlurException be, 2: MissingShardException mse)
-  void removeRow(1:string table, 2:string id) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-  void replaceRow(1:string table, 2:Row row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-}
-
-service BlurBinary extends BlurUpdate {
-  void replaceRowBinary(1:string table, 2:string id, 3:binary row) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
+service BlurBinary extends BlurSearch {
   binary fetchRowBinary(1:string table, 2:string id, 3:binary selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
 }
 
 service BlurAdmin extends BlurBinary {
-  void enable(1:string table) throws (1:BlurException ex)
-  void disable(1:string table) throws (1:BlurException ex)
-  void create(1:string table, 2:TableDescriptor desc) throws (1:BlurException ex)
-  void drop(1:string table) throws (1:BlurException ex)
-
   void shutdownShard(1:string node) throws (1:BlurException be)
   void shutdownController(1:string node) throws (1:BlurException be)
 }

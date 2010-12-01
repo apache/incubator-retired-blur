@@ -91,18 +91,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
         return hits;
     }
     
-    public static String getParametersList(Object... params) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < params.length; i+=2) {
-            if (i != 0) {
-                builder.append(',');
-            }
-            builder.append('[').append(params[i]).
-                append(']').append('=').append('[').append(params[i+1]).append(']');
-        }
-        return builder.toString();
-    }
-
     @Override
     public void shutdownController(final String node) throws BlurException, TException {
         try {

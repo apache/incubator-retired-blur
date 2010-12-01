@@ -19,6 +19,7 @@ import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.BlurConstants;
+import static com.nearinfinity.blur.utils.BlurUtil.*;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 

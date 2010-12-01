@@ -1,9 +1,9 @@
 package com.nearinfinity.blur.manager;
 
-import static com.nearinfinity.blur.utils.ThriftUtil.newColumn;
-import static com.nearinfinity.blur.utils.ThriftUtil.newColumnFamily;
-import static com.nearinfinity.blur.utils.ThriftUtil.newRow;
-import static com.nearinfinity.blur.utils.ThriftUtil.newSelector;
+import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
+import static com.nearinfinity.blur.utils.BlurUtil.newColumnFamily;
+import static com.nearinfinity.blur.utils.BlurUtil.newRow;
+import static com.nearinfinity.blur.utils.BlurUtil.newSelector;
 import static junit.framework.Assert.assertEquals;
 
 import java.io.IOException;

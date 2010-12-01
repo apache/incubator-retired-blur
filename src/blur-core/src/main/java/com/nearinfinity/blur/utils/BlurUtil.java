@@ -9,7 +9,7 @@ import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.Selector;
 
-public class ThriftUtil {
+public class BlurUtil {
     
     public static Selector newSelector(String locationId) {
         Selector selector = new Selector();
@@ -43,6 +43,18 @@ public class ThriftUtil {
         TreeSet<Column> treeSet = new TreeSet<Column>(BlurConstants.COLUMN_COMPARATOR);
         treeSet.addAll(Arrays.asList(columns));
         return treeSet;
+    }
+    
+    public static String getParametersList(Object... params) {
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < params.length; i+=2) {
+            if (i != 0) {
+                builder.append(',');
+            }
+            builder.append('[').append(params[i]).
+                append(']').append('=').append('[').append(params[i+1]).append(']');
+        }
+        return builder.toString();
     }
     
 }

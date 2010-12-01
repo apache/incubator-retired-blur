@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -18,7 +20,6 @@ import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
-import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -26,7 +27,6 @@ import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
-import static com.nearinfinity.blur.utils.BlurUtil.*;
 
 public class BlurControllerServer extends BlurAdminServer implements BlurConstants {
 	
@@ -98,30 +98,6 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
     @Override
     public byte[] fetchRowBinary(final String table, final String id, final byte[] selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
-        throw new BlurException("not implemented");
-    }
-
-    @Override
-    public void replaceRowBinary(final String table, final String id, final byte[] rowBytes) throws BlurException, MissingShardException,
-            EventStoppedExecutionException, TException {
-        throw new BlurException("not implemented");
-    }
-
-    @Override
-    public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
-            MissingShardException, TException {
-        throw new BlurException("not implemented");
-    }
-    
-    @Override
-    public void removeRow(final String table, final String id) throws BlurException,
-            TException, MissingShardException {
-        throw new BlurException("not implemented");
-    }
-
-    @Override
-    public void replaceRow(final String table, final Row row) throws BlurException,
-            TException, MissingShardException {
         throw new BlurException("not implemented");
     }
 

@@ -11,7 +11,6 @@ import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
-import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -23,16 +22,6 @@ public class DoNothingServer implements Iface {
     @Override
     public TableDescriptor describe(String table) throws BlurException, TException {
         return null;
-    }
-
-    @Override
-    public void removeRow(String table, String id) throws BlurException, MissingShardException, TException {
-        
-    }
-
-    @Override
-    public void replaceRow(String table, Row row) throws BlurException, MissingShardException, TException {
-        
     }
 
     @Override
@@ -85,18 +74,6 @@ public class DoNothingServer implements Iface {
     public byte[] fetchRowBinary(String arg0, String arg1, byte[] arg2) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
         return null;
-    }
-
-    @Override
-    public void replaceRowBinary(String arg0, String arg1, byte[] arg2) throws BlurException, MissingShardException,
-            EventStoppedExecutionException, TException {
-        
-    }
-
-    @Override
-    public void batchUpdate(String arg0, String arg1, Map<String, String> arg2) throws BlurException,
-            MissingShardException, TException {
-        
     }
 
     @Override

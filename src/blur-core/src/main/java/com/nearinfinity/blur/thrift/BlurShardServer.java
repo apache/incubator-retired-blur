@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
+
 import java.util.List;
 import java.util.Map;
 
@@ -14,12 +16,10 @@ import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.MissingShardException;
-import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.BlurConstants;
-import static com.nearinfinity.blur.utils.BlurUtil.*;
 
 public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
@@ -71,35 +71,18 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     }
     
     @Override
-    public void removeRow(String table, String id) throws BlurException, TException {
-        throw new BlurException("not implemented");
-    }
-
-    @Override
-    public void replaceRow(String table, Row row) throws BlurException, TException, MissingShardException {
-        throw new BlurException("not implemented");
-    }
-    
-    @Override
-    public void batchUpdate(String batchId, String table, Map<String, String> shardsToUris) throws BlurException,
-            MissingShardException, TException {
-        throw new BlurException("not implemented");
-    }
-
-    @Override
     public byte[] fetchRowBinary(String table, String id, byte[] selector) throws BlurException, MissingShardException,
             EventStoppedExecutionException, TException {
         throw new RuntimeException("not implemented");
     }
 
-    @Override
-    public void replaceRowBinary(String table, String id, byte[] rowBytes) throws BlurException, MissingShardException,
-            EventStoppedExecutionException, TException {
-        throw new RuntimeException("not implemented");
-    }
-    
     public void close() throws InterruptedException {
         indexManager.close();
+    }
+    
+    @Override
+    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
     }
     
     public IndexManager getIndexManager() {
@@ -108,10 +91,5 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     public void setIndexManager(IndexManager indexManager) {
         this.indexManager = indexManager;
-    }
-
-    @Override
-    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
     }
 }

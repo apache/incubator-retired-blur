@@ -2,10 +2,15 @@ package com.nearinfinity.blur.thrift;
 
 import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,8 +41,21 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 	
 	private ExecutorService executor = Executors.newCachedThreadPool();
+	private AtomicReference<Map<String,Map<String,String>>> shardServerLayout = new AtomicReference<Map<String,Map<String,String>>>(new HashMap<String, Map<String,String>>());
 
-	@Override
+    private Timer shardLayoutTimer;
+    
+    public BlurControllerServer() {
+        shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
+        shardLayoutTimer.scheduleAtFixedRate(new TimerTask(){
+            @Override
+            public void run() {
+                updateShardLayout();
+            }
+        }, 0, TimeUnit.MILLISECONDS.toSeconds(5));
+    }
+
+    @Override
 	public Hits search(final String table, final SearchQuery searchQuery) throws BlurException, TException {
 		try {
 			HitsIterable hitsIterable = ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,HitsIterable>() {
@@ -142,10 +160,43 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 
     @Override
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-        throw new BlurException("not implemented");
+        return shardServerLayout.get().get(table);
     }
     
     private String getClientHostnamePort(String table, Selector selector) throws MissingShardException, BlurException, TException {
         throw new BlurException("not implemented");
+    }
+    
+    private void updateShardLayout() {
+        try {
+            Map<String,Map<String, String>> layout = new HashMap<String, Map<String,String>>();
+            for (String t : tableList()) {
+                final String table = t;
+                layout.put(table, ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,Map<String,String>>() {
+                    @Override
+                    public Map<String,String> call(String hostnamePort) throws Exception {
+                        return BlurClientManager.execute(hostnamePort, new BlurAdminCommand<Map<String,String>>() {
+                            @Override
+                            public Map<String,String> call(Client client) throws Exception {
+                                return client.shardServerLayout(table);
+                            }
+                        });
+                    }
+                }).merge(new Merger<Map<String,String>>() {
+                    @Override
+                    public Map<String, String> merge(BlurExecutorCompletionService<Map<String, String>> service)
+                            throws Exception {
+                        Map<String,String> result = new HashMap<String, String>();
+                        while (service.getRemainingCount() > 0) {
+                            result.putAll(service.take().get());
+                        }
+                        return result;
+                    }
+                }));
+            }
+            shardServerLayout.set(layout);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to update shard layout.",e);
+        }
     }
 }

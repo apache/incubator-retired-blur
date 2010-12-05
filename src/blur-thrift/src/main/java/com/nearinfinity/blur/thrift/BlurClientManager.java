@@ -14,9 +14,9 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
-import com.nearinfinity.blur.thrift.generated.BlurAdmin;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
+import com.nearinfinity.blur.thrift.generated.BlurSearch;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 
 public class BlurClientManager {
     
@@ -29,7 +29,7 @@ public class BlurClientManager {
     public static <CLIENT,T> T execute(String connectionStr, AbstractCommand<CLIENT,T> command) throws Exception {
         int retries = 0;
         while (true) {
-            BlurAdmin.Client client = getClient(connectionStr);
+            BlurSearch.Client client = getClient(connectionStr);
             if (client == null) {
                 throw new BlurException("Host [" + connectionStr + "] can not be contacted.");
             }

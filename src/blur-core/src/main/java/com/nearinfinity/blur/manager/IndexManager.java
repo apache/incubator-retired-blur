@@ -48,7 +48,6 @@ import com.nearinfinity.blur.manager.status.SearchStatus;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
-import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
@@ -106,7 +105,7 @@ public class IndexManager {
         indexServer.close();
     }
 
-    public void replaceRow(String table, Row row) throws BlurException, MissingShardException {
+    public void replaceRow(String table, Row row) throws BlurException {
         throw new RuntimeException("not implemented");
     }
 
@@ -114,24 +113,23 @@ public class IndexManager {
         throw new RuntimeException("not implemented");
     }
 
-    public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException,
-            MissingShardException {
+    public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
         IndexReader reader;
         try {
             String shard = getShard(selector.getLocationId());
             Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
             if (indexReaders == null) {
                 LOG.error("Table [" + table + "] not found");
-                throw new MissingShardException("Table [" + table + "] not found");
+                throw new BlurException("Table [" + table + "] not found");
             }
             reader = indexReaders.get(shard);
             if (reader == null) {
                 if (reader == null) {
                     LOG.error("Shard [" + shard + "] not found in table [" + table + "]");
-                    throw new MissingShardException("Shard [" + shard + "] not found in table [" + table + "]");
+                    throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]");
                 }
             }
-        } catch (MissingShardException e) {
+        } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get the correct index reader for selector [" + selector + "].", e);

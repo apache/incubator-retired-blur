@@ -1,32 +1,24 @@
 package com.nearinfinity.blur.thrift;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.thrift.commands.BlurAdminCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
-import com.nearinfinity.blur.thrift.generated.BlurAdmin.Iface;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
-import com.nearinfinity.mele.util.AddressUtil;
 
 public abstract class BlurAdminServer implements Iface, BlurConstants {
-	
-	private static final Log LOG = LogFactory.getLog(BlurAdminServer.class);
 	
 	public enum NODE_TYPE {
 		CONTROLLER,
@@ -36,16 +28,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
 	private BlurConfiguration configuration;
 	private IndexServer indexServer;
 	
-	@Override
-    public List<String> controllerServerList() throws BlurException, TException {
-        return indexServer.getControllerServerList();
-    }
-
-    @Override
-    public List<String> shardServerList() throws BlurException, TException {
-        return indexServer.getShardServerList();
-    }
-
     @Override
 	public TableDescriptor describe(String table) throws BlurException, TException {
         Map<String, String> shardServerLayout = shardServerLayout(table);
@@ -91,51 +73,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
         return hits;
     }
     
-    @Override
-    public void shutdownController(final String node) throws BlurException, TException {
-        try {
-            if (isThisNode(node)) {
-                System.exit(0);
-            }
-            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new BlurAdminCommand<Boolean>() {
-                @Override
-                public Boolean call(Client client) throws Exception {
-                    client.shutdownController(node);
-                    return true;
-                }
-            });
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to shutdown controller [" + node + "]",e);
-            throw new BlurException("Unknown error while trying to shutdown controller [" + node + "]");
-        }
-    }
-
-    @Override
-    public void shutdownShard(final String node) throws BlurException, TException {
-        try {
-            if (isThisNode(node)) {
-                System.exit(0);
-            }
-            BlurClientManager.execute(node + ":" + configuration.getBlurControllerServerPort(), new BlurAdminCommand<Boolean>() {
-                @Override
-                public Boolean call(Client client) throws Exception {
-                    client.shutdownShard(node);
-                    return true;
-                }
-            });
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to shutdown controller [" + node + "]",e);
-            throw new BlurException("Unknown error while trying to shutdown controller [" + node + "]");
-        }
-    }
-
-    private boolean isThisNode(String node) throws UnknownHostException {
-        if (AddressUtil.getMyHostName().equals(node)) {
-            return true;
-        }
-        return false;
-    }
-
     public IndexServer getIndexServer() {
         return indexServer;
     }
@@ -150,5 +87,17 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
 
     public void setConfiguration(BlurConfiguration configuration) {
         this.configuration = configuration;
+    }
+    
+    @Override
+    public List<String> controllerServerList() throws BlurException, TException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<String> shardServerList() throws BlurException, TException {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -1,24 +1,10 @@
 package com.nearinfinity.blur.manager;
 
-import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
-import static com.nearinfinity.blur.utils.BlurUtil.newColumnFamily;
-import static com.nearinfinity.blur.utils.BlurUtil.newRow;
-import static com.nearinfinity.blur.utils.BlurUtil.newSelector;
-import static junit.framework.Assert.assertEquals;
-
-import java.io.IOException;
 import java.util.ArrayList;
 
 import org.apache.zookeeper.ZooKeeper;
-import org.junit.AfterClass;
-import org.junit.Test;
 
-import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.mele.Mele;
 
 public class ComplexIndexManagerTest {

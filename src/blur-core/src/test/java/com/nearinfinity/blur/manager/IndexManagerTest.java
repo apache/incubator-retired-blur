@@ -14,9 +14,9 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.thrift.generated.MissingShardException;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
@@ -69,7 +69,7 @@ public class IndexManagerTest {
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow("table", selector, fetchResult);
             fail("Should throw exception");
-        } catch (MissingShardException e) {
+        } catch (BlurException e) {
         }
     }
     

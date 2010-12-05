@@ -3,7 +3,7 @@ package com.nearinfinity.blur.thrift;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 import com.nearinfinity.mele.Mele;
 
 public class BlurShardServerTest {

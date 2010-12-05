@@ -8,8 +8,8 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.nearinfinity.blur.thrift.commands.BlurAdminCommand;
-import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
+import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 
 public class BlurClientManagerTest {
     
@@ -22,7 +22,7 @@ public class BlurClientManagerTest {
     public void testBlurClientManager() throws Exception {
         startDoNothingServer();
         Thread.sleep(5000);
-        List<String> list = BlurClientManager.execute(CONNECTION_STR, new BlurAdminCommand<List<String>>() {
+        List<String> list = BlurClientManager.execute(CONNECTION_STR, new BlurSearchCommand<List<String>>() {
             @Override
             public List<String> call(Client client) throws Exception {
                 return client.tableList();
@@ -32,7 +32,7 @@ public class BlurClientManagerTest {
         stopDoNothingServer();
         Thread.sleep(5000);
         try {
-            BlurClientManager.execute(CONNECTION_STR, new BlurAdminCommand<List<String>>() {
+            BlurClientManager.execute(CONNECTION_STR, new BlurSearchCommand<List<String>>() {
                 @Override
                 public List<String> call(Client client) throws Exception {
                     return client.tableList();
@@ -48,7 +48,7 @@ public class BlurClientManagerTest {
         thriftServer.stop();
         serverThread.interrupt();
         try {
-            BlurClientManager.execute(CONNECTION_STR, new BlurAdminCommand<List<String>>() {
+            BlurClientManager.execute(CONNECTION_STR, new BlurSearchCommand<List<String>>() {
                 @Override
                 public List<String> call(Client client) throws Exception {
                     return client.tableList();

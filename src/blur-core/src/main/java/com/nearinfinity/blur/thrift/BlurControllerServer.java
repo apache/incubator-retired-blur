@@ -20,16 +20,17 @@ import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
-import com.nearinfinity.blur.thrift.commands.BlurAdminCommand;
+import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
+import com.nearinfinity.blur.thrift.generated.Facet;
+import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
-import com.nearinfinity.blur.thrift.generated.MissingShardException;
+import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.thrift.generated.BlurAdmin.Client;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -61,7 +62,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 			HitsIterable hitsIterable = ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,HitsIterable>() {
 				@Override
 				public HitsIterable call(final String hostnamePort) throws Exception {
-					return BlurClientManager.execute(hostnamePort, new BlurAdminCommand<HitsIterable>() {
+					return BlurClientManager.execute(hostnamePort, new BlurSearchCommand<HitsIterable>() {
 		                @Override
 		                public HitsIterable call(Client client) throws Exception {
 		                    return new HitsIterableBlurClient(client,hostnamePort,table,searchQuery);
@@ -84,11 +85,11 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 
 	@Override
 	public FetchResult fetchRow(final String table, final Selector selector) throws BlurException,
-			TException, MissingShardException {
+			TException {
 	    String clientHostnamePort = getClientHostnamePort(table,selector);
 		try {
 		    return BlurClientManager.execute(clientHostnamePort, 
-		        new BlurAdminCommand<FetchResult>() {
+		        new BlurSearchCommand<FetchResult>() {
                     @Override
                     public FetchResult call(Client client) throws Exception {
                         return client.fetchRow(table, selector);
@@ -108,7 +109,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
             ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,Void>() {
                 @Override
                 public Void call(String hostnamePort) throws Exception {
-                    BlurClientManager.execute(hostnamePort, new BlurAdminCommand<Void>() {
+                    BlurClientManager.execute(hostnamePort, new BlurSearchCommand<Void>() {
                         @Override
                         public Void call(Client client) throws Exception {
                             client.cancelSearch(uuid);
@@ -138,7 +139,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
             return ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,List<SearchQueryStatus>>() {
                 @Override
                 public List<SearchQueryStatus> call(String hostnamePort) throws Exception {
-                    return BlurClientManager.execute(hostnamePort, new BlurAdminCommand<List<SearchQueryStatus>>() {
+                    return BlurClientManager.execute(hostnamePort, new BlurSearchCommand<List<SearchQueryStatus>>() {
                         @Override
                         public List<SearchQueryStatus> call(Client client) throws Exception {
                             return client.currentSearches(table);
@@ -153,8 +154,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
     }
 	   
     @Override
-    public byte[] fetchRowBinary(final String table, Selector selector) throws BlurException, MissingShardException,
-            EventStoppedExecutionException, TException {
+    public byte[] fetchRowBinary(final String table, Selector selector) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
 
@@ -163,7 +163,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         return shardServerLayout.get().get(table);
     }
     
-    private String getClientHostnamePort(String table, Selector selector) throws MissingShardException, BlurException, TException {
+    private String getClientHostnamePort(String table, Selector selector) throws BlurException, TException {
         throw new BlurException("not implemented");
     }
     
@@ -175,7 +175,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
                 layout.put(table, ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,Map<String,String>>() {
                     @Override
                     public Map<String,String> call(String hostnamePort) throws Exception {
-                        return BlurClientManager.execute(hostnamePort, new BlurAdminCommand<Map<String,String>>() {
+                        return BlurClientManager.execute(hostnamePort, new BlurSearchCommand<Map<String,String>>() {
                             @Override
                             public Map<String,String> call(Client client) throws Exception {
                                 return client.shardServerLayout(table);
@@ -199,4 +199,24 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
             LOG.error("Unknown error while trying to update shard layout.",e);
         }
     }
+
+    public FacetResult facetSearch(String table, Facet facet) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    public Schema schema(String table) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
 }

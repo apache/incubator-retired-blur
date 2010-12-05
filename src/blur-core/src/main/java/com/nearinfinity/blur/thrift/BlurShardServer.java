@@ -12,10 +12,11 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.EventStoppedExecutionException;
+import com.nearinfinity.blur.thrift.generated.Facet;
+import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
-import com.nearinfinity.blur.thrift.generated.MissingShardException;
+import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -45,7 +46,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 	}
 
 	@Override
-	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException, MissingShardException {
+	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
 	    FetchResult fetchResult = new FetchResult();
 	    indexManager.fetchRow(table,selector, fetchResult);
         return fetchResult;
@@ -72,8 +73,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     }
     
     @Override
-    public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, MissingShardException,
-            EventStoppedExecutionException, TException {
+    public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, TException {
         try {
             return BlurUtil.toBytes(fetchRow(table,selector));
         } catch (Exception e) {
@@ -97,5 +97,25 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     public void setIndexManager(IndexManager indexManager) {
         this.indexManager = indexManager;
+    }
+
+    @Override
+    public FacetResult facetSearch(String table, Facet facet) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    public Schema schema(String table) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
+    }
+
+    @Override
+    public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
+        throw new RuntimeException("not implemented");
     }
 }

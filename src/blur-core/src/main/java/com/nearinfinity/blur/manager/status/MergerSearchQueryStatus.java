@@ -16,7 +16,7 @@ public class MergerSearchQueryStatus implements Merger<List<SearchQueryStatus>> 
     public List<SearchQueryStatus> merge(BlurExecutorCompletionService<List<SearchQueryStatus>> service) throws Exception {
         Map<Long,SearchQueryStatus> statusMap = new HashMap<Long,SearchQueryStatus>();
         while (service.getRemainingCount() > 0) {
-            Future<List<SearchQueryStatus>> future = service.poll();
+            Future<List<SearchQueryStatus>> future = service.take();
             addToMap(statusMap,future.get());
         }
         return new ArrayList<SearchQueryStatus>(statusMap.values());

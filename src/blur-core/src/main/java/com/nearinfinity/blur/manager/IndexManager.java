@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -31,6 +33,8 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
@@ -49,13 +53,16 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.TermDocIterable;
+import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class IndexManager {
@@ -388,5 +395,115 @@ public class IndexManager {
             }
         }
         currentSearchStatusCollection.removeAll(remove);
+    }
+
+    public long recordFrequency(String table, final String columnFamily, final String columnName, final String value) throws Exception {
+        Map<String, IndexReader> indexReaders;
+        try {
+            indexReaders = indexServer.getIndexReaders(table);
+        } catch (IOException e) {
+            LOG.error("Unknown error while trying to fetch index readers.", e);
+            throw new BlurException(e.getMessage());
+        }
+        return ForkJoin.execute(executor, indexReaders.entrySet(),
+            new ParallelCall<Entry<String, IndexReader>, Long>() {
+                @Override
+                public Long call(Entry<String, IndexReader> input) throws Exception {
+                    IndexReader reader = input.getValue();
+                    return recordFrequency(reader,columnFamily,columnName,value);
+                }
+        }).merge(new Merger<Long>() {
+            @Override
+            public Long merge(BlurExecutorCompletionService<Long> service) throws Exception {
+                long total = 0;
+                while (service.getRemainingCount() > 0) {
+                    total += service.take().get();
+                }
+                return total;
+            }
+        });
+    }
+
+    public List<String> terms(String table, final String columnFamily, final String columnName, final String startWith, final short size) throws Exception {
+        Map<String, IndexReader> indexReaders;
+        try {
+            indexReaders = indexServer.getIndexReaders(table);
+        } catch (IOException e) {
+            LOG.error("Unknown error while trying to fetch index readers.", e);
+            throw new BlurException(e.getMessage());
+        }
+        return ForkJoin.execute(executor, indexReaders.entrySet(),
+            new ParallelCall<Entry<String, IndexReader>, List<String>>() {
+                @Override
+                public List<String> call(Entry<String, IndexReader> input) throws Exception {
+                    IndexReader reader = input.getValue();
+                    return terms(reader,columnFamily,columnName,startWith,size);
+                }
+        }).merge(new Merger<List<String>>() {
+            @Override
+            public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws Exception {
+                TreeSet<String> terms = new TreeSet<String>();
+                while (service.getRemainingCount() > 0) {
+                    terms.addAll(service.take().get());
+                }
+                return new ArrayList<String>(terms).subList(0, Math.min(size, terms.size()));
+            }
+        });
+    }
+    
+    public static long recordFrequency(IndexReader reader, String columnFamily, String columnName, String value) throws IOException {
+        return reader.docFreq(getTerm(columnFamily,columnName,value));
+    }
+
+    public static List<String> terms(IndexReader reader, String columnFamily, String columnName, String startWith, short size) throws IOException {
+        Term term = getTerm(columnFamily, columnName, startWith);
+        String field = term.field();
+        List<String> terms = new ArrayList<String>(size);
+        TermEnum termEnum = reader.terms(term);
+        try {
+            do {
+                Term currentTerm = termEnum.term();
+                if (currentTerm == null) {
+                    return terms;
+                }
+                if (!currentTerm.field().equals(field)) {
+                    break;
+                }
+                terms.add(currentTerm.text());
+                if (terms.size() >= size) {
+                    return terms;
+                }
+            } while (termEnum.next());
+            return terms;
+        } finally {
+            termEnum.close();
+        }
+    }
+    
+    private static Term getTerm(String columnFamily, String columnName, String value) {
+        return new Term(columnFamily + "." + columnName, value);
+    }
+
+    public Schema schema(String table) throws IOException {
+        Schema schema = new Schema().setTable(table);
+        schema.columnFamilies = new TreeMap<String, Set<String>>();
+        Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
+        for (IndexReader reader : indexReaders.values()) {
+            Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+            for (String fieldName : fieldNames) {
+                int index = fieldName.indexOf('.');
+                if (index > 0) {
+                    String columnFamily = fieldName.substring(0, index);
+                    String column = fieldName.substring(index + 1);
+                    Set<String> set = schema.columnFamilies.get(columnFamily);
+                    if (set == null) {
+                        set = new TreeSet<String>();
+                        schema.columnFamilies.put(columnFamily, set);
+                    }
+                    set.add(column);
+                }
+            }
+        }
+        return schema;
     }
 }

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
@@ -17,6 +18,7 @@ import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
@@ -106,6 +108,24 @@ public class IndexManagerTest {
         for (SearchQueryStatus status : currentSearches) {
             System.out.println(status);
         }
+    }
+    
+    @Test
+    public void testTerms() throws Exception {
+        List<String> terms = indexManager.terms("table", "test-fam", "name", "", (short) 100);
+        assertEquals(Arrays.asList("value"),terms);
+    }
+    
+    @Test
+    public void testRecordFrequency() throws Exception {
+        assertEquals(2,indexManager.recordFrequency("table", "test-fam", "name", "value"));
+        assertEquals(0,indexManager.recordFrequency("table", "test-fam", "name", "value2"));
+    }
+    
+    @Test
+    public void testSchema() throws Exception {
+        Schema schema = indexManager.schema("table");
+        System.out.println(schema);
     }
     
     @Test

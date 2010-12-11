@@ -33,6 +33,8 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
         try {
             HitsIterable hitsIterable = indexManager.search(table, searchQuery);
             return convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
+        } catch (BlurException e) {
+            throw e;
         } catch (Exception e) {
             LOG.error("Unknown error during search of [" +
                     getParametersList("table",table, "searchquery", searchQuery) + "]",e);
@@ -47,9 +49,16 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
 	@Override
 	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
-	    FetchResult fetchResult = new FetchResult();
-	    indexManager.fetchRow(table,selector, fetchResult);
-        return fetchResult;
+        try {
+            FetchResult fetchResult = new FetchResult();
+            indexManager.fetchRow(table,selector, fetchResult);
+            return fetchResult;
+        } catch (BlurException e) {
+            throw e;
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get fetch row [" + getParametersList("table",table,"selector",selector) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
 	}
 
     @Override
@@ -76,6 +85,8 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, TException {
         try {
             return BlurUtil.toBytes(fetchRow(table,selector));
+        } catch (BlurException e) {
+            throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get fetch row binary [" + getParametersList("table",table,"selector",selector) + "]",e);
             throw new BlurException(e.getMessage());
@@ -106,16 +117,33 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
     @Override
     public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
+        try {
+            return indexManager.recordFrequency(table,columnFamily,columnName,value);
+        } catch (BlurException e) {
+            throw e;
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get record frequency for [" + getParametersList("table",table,"columnFamily",columnFamily,"columnName",columnName,"value",value) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
 
     @Override
     public Schema schema(String table) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
+        try {
+            return indexManager.schema(table);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get schema for table [" + getParametersList("table") + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
 
     @Override
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
+        try {
+            return indexManager.terms(table,columnFamily,columnName,startWith,size);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get terms list for [" + getParametersList("table",table,"columnFamily",columnFamily,"columnName",columnName,"startWith",startWith,"size",size) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
 }

@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.analysis;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
@@ -37,8 +40,28 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 		BlurAnalyzer analyzer = BlurAnalyzer.create(s);
 		System.out.println(analyzer);
 	}
+	
+	public static BlurAnalyzer create(InputStream input) throws Exception {
+	    return create(toString(input));
+	}
 
-	public static BlurAnalyzer create(String s) throws Exception {
+	private static String toString(InputStream input) {
+	    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+	    byte[] buffer = new byte[1024];
+	    int numb = 0;
+	    try {
+            while ((numb = input.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, numb);
+            }
+            outputStream.close();
+            input.close();
+            return new String(outputStream.toByteArray());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static BlurAnalyzer create(String s) throws Exception {
 		if (s == null || s.trim().isEmpty()) {
 			return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30),"");
 		}

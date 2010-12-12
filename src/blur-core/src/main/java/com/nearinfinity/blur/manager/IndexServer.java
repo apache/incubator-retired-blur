@@ -62,6 +62,13 @@ public interface IndexServer {
      */
     List<String> getTableList();
     
+    /** 
+     * The shard list for a given table.
+     * @param table the table name.
+     * @return the list of shards.
+     */
+    List<String> getShardList(String table);
+    
     /**
      * Closes the index server.
      */

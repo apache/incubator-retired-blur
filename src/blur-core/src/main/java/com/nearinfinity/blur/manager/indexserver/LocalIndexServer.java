@@ -106,4 +106,26 @@ public class LocalIndexServer implements IndexServer {
     public List<String> getTableList() {
         return new ArrayList<String>(readersMap.keySet());
     }
+
+    @Override
+    public List<String> getShardList(String table) {
+        try {
+            List<String> result = new ArrayList<String>();
+            File tableFile = new File(localDir,table);
+            if (tableFile.isDirectory()) {
+                for (File f : tableFile.listFiles()) {
+                    if (f.isDirectory()) {
+                        Directory directory = FSDirectory.open(f);
+                        if (IndexReader.indexExists(directory)) {
+                            result.add(f.getName());
+                        }
+                        directory.close();
+                    }
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

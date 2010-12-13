@@ -27,18 +27,15 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
   private static final TStruct STRUCT_DESC = new TStruct("FacetResult");
 
   private static final TField FACET_QUERY_FIELD_DESC = new TField("facetQuery", TType.STRUCT, (short)1);
-  private static final TField HITS_FIELD_DESC = new TField("hits", TType.STRUCT, (short)2);
-  private static final TField COUNTS_FIELD_DESC = new TField("counts", TType.MAP, (short)3);
+  private static final TField COUNTS_FIELD_DESC = new TField("counts", TType.MAP, (short)2);
 
   public FacetQuery facetQuery;
-  public Hits hits;
-  public Map<String,Long> counts;
+  public Map<Facet,Long> counts;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     FACET_QUERY((short)1, "facetQuery"),
-    HITS((short)2, "hits"),
-    COUNTS((short)3, "counts");
+    COUNTS((short)2, "counts");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -55,9 +52,7 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
       switch(fieldId) {
         case 1: // FACET_QUERY
           return FACET_QUERY;
-        case 2: // HITS
-          return HITS;
-        case 3: // COUNTS
+        case 2: // COUNTS
           return COUNTS;
         default:
           return null;
@@ -105,11 +100,9 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.FACET_QUERY, new FieldMetaData("facetQuery", TFieldRequirementType.DEFAULT, 
         new StructMetaData(TType.STRUCT, FacetQuery.class)));
-    tmpMap.put(_Fields.HITS, new FieldMetaData("hits", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, Hits.class)));
     tmpMap.put(_Fields.COUNTS, new FieldMetaData("counts", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
-            new FieldValueMetaData(TType.STRING), 
+            new StructMetaData(TType.STRUCT, Facet.class), 
             new FieldValueMetaData(TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(FacetResult.class, metaDataMap);
@@ -120,12 +113,10 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
 
   public FacetResult(
     FacetQuery facetQuery,
-    Hits hits,
-    Map<String,Long> counts)
+    Map<Facet,Long> counts)
   {
     this();
     this.facetQuery = facetQuery;
-    this.hits = hits;
     this.counts = counts;
   }
 
@@ -136,17 +127,14 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     if (other.isSetFacetQuery()) {
       this.facetQuery = new FacetQuery(other.facetQuery);
     }
-    if (other.isSetHits()) {
-      this.hits = new Hits(other.hits);
-    }
     if (other.isSetCounts()) {
-      Map<String,Long> __this__counts = new HashMap<String,Long>();
-      for (Map.Entry<String, Long> other_element : other.counts.entrySet()) {
+      Map<Facet,Long> __this__counts = new HashMap<Facet,Long>();
+      for (Map.Entry<Facet, Long> other_element : other.counts.entrySet()) {
 
-        String other_element_key = other_element.getKey();
+        Facet other_element_key = other_element.getKey();
         Long other_element_value = other_element.getValue();
 
-        String __this__counts_copy_key = other_element_key;
+        Facet __this__counts_copy_key = new Facet(other_element_key);
 
         Long __this__counts_copy_value = other_element_value;
 
@@ -189,46 +177,22 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     }
   }
 
-  public Hits getHits() {
-    return this.hits;
-  }
-
-  public FacetResult setHits(Hits hits) {
-    this.hits = hits;
-    return this;
-  }
-
-  public void unsetHits() {
-    this.hits = null;
-  }
-
-  /** Returns true if field hits is set (has been asigned a value) and false otherwise */
-  public boolean isSetHits() {
-    return this.hits != null;
-  }
-
-  public void setHitsIsSet(boolean value) {
-    if (!value) {
-      this.hits = null;
-    }
-  }
-
   public int getCountsSize() {
     return (this.counts == null) ? 0 : this.counts.size();
   }
 
-  public void putToCounts(String key, long val) {
+  public void putToCounts(Facet key, long val) {
     if (this.counts == null) {
-      this.counts = new HashMap<String,Long>();
+      this.counts = new HashMap<Facet,Long>();
     }
     this.counts.put(key, val);
   }
 
-  public Map<String,Long> getCounts() {
+  public Map<Facet,Long> getCounts() {
     return this.counts;
   }
 
-  public FacetResult setCounts(Map<String,Long> counts) {
+  public FacetResult setCounts(Map<Facet,Long> counts) {
     this.counts = counts;
     return this;
   }
@@ -258,19 +222,11 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
       }
       break;
 
-    case HITS:
-      if (value == null) {
-        unsetHits();
-      } else {
-        setHits((Hits)value);
-      }
-      break;
-
     case COUNTS:
       if (value == null) {
         unsetCounts();
       } else {
-        setCounts((Map<String,Long>)value);
+        setCounts((Map<Facet,Long>)value);
       }
       break;
 
@@ -285,9 +241,6 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     switch (field) {
     case FACET_QUERY:
       return getFacetQuery();
-
-    case HITS:
-      return getHits();
 
     case COUNTS:
       return getCounts();
@@ -305,8 +258,6 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     switch (field) {
     case FACET_QUERY:
       return isSetFacetQuery();
-    case HITS:
-      return isSetHits();
     case COUNTS:
       return isSetCounts();
     }
@@ -336,15 +287,6 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
       if (!(this_present_facetQuery && that_present_facetQuery))
         return false;
       if (!this.facetQuery.equals(that.facetQuery))
-        return false;
-    }
-
-    boolean this_present_hits = true && this.isSetHits();
-    boolean that_present_hits = true && that.isSetHits();
-    if (this_present_hits || that_present_hits) {
-      if (!(this_present_hits && that_present_hits))
-        return false;
-      if (!this.hits.equals(that.hits))
         return false;
     }
 
@@ -382,15 +324,6 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetHits()).compareTo(typedOther.isSetHits());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetHits()) {      lastComparison = TBaseHelper.compareTo(this.hits, typedOther.hits);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetCounts()).compareTo(typedOther.isSetCounts());
     if (lastComparison != 0) {
       return lastComparison;
@@ -421,24 +354,17 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // HITS
-          if (field.type == TType.STRUCT) {
-            this.hits = new Hits();
-            this.hits.read(iprot);
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 3: // COUNTS
+        case 2: // COUNTS
           if (field.type == TType.MAP) {
             {
               TMap _map55 = iprot.readMapBegin();
-              this.counts = new HashMap<String,Long>(2*_map55.size);
+              this.counts = new HashMap<Facet,Long>(2*_map55.size);
               for (int _i56 = 0; _i56 < _map55.size; ++_i56)
               {
-                String _key57;
+                Facet _key57;
                 long _val58;
-                _key57 = iprot.readString();
+                _key57 = new Facet();
+                _key57.read(iprot);
                 _val58 = iprot.readI64();
                 this.counts.put(_key57, _val58);
               }
@@ -468,18 +394,13 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
       this.facetQuery.write(oprot);
       oprot.writeFieldEnd();
     }
-    if (this.hits != null) {
-      oprot.writeFieldBegin(HITS_FIELD_DESC);
-      this.hits.write(oprot);
-      oprot.writeFieldEnd();
-    }
     if (this.counts != null) {
       oprot.writeFieldBegin(COUNTS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.I64, this.counts.size()));
-        for (Map.Entry<String, Long> _iter59 : this.counts.entrySet())
+        oprot.writeMapBegin(new TMap(TType.STRUCT, TType.I64, this.counts.size()));
+        for (Map.Entry<Facet, Long> _iter59 : this.counts.entrySet())
         {
-          oprot.writeString(_iter59.getKey());
+          _iter59.getKey().write(oprot);
           oprot.writeI64(_iter59.getValue());
         }
         oprot.writeMapEnd();
@@ -500,14 +421,6 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
       sb.append("null");
     } else {
       sb.append(this.facetQuery);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("hits:");
-    if (this.hits == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.hits);
     }
     first = false;
     if (!first) sb.append(", ");

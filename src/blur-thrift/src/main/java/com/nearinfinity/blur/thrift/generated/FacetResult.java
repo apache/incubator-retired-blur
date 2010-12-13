@@ -26,17 +26,17 @@ import org.apache.thrift.protocol.*;
 public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, java.io.Serializable, Cloneable {
   private static final TStruct STRUCT_DESC = new TStruct("FacetResult");
 
-  private static final TField FACET_FIELD_DESC = new TField("facet", TType.STRUCT, (short)1);
+  private static final TField FACET_QUERY_FIELD_DESC = new TField("facetQuery", TType.STRUCT, (short)1);
   private static final TField HITS_FIELD_DESC = new TField("hits", TType.STRUCT, (short)2);
   private static final TField COUNTS_FIELD_DESC = new TField("counts", TType.MAP, (short)3);
 
-  public Facet facet;
+  public FacetQuery facetQuery;
   public Hits hits;
   public Map<String,Long> counts;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    FACET((short)1, "facet"),
+    FACET_QUERY((short)1, "facetQuery"),
     HITS((short)2, "hits"),
     COUNTS((short)3, "counts");
 
@@ -53,8 +53,8 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // FACET
-          return FACET;
+        case 1: // FACET_QUERY
+          return FACET_QUERY;
         case 2: // HITS
           return HITS;
         case 3: // COUNTS
@@ -103,8 +103,8 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.FACET, new FieldMetaData("facet", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, Facet.class)));
+    tmpMap.put(_Fields.FACET_QUERY, new FieldMetaData("facetQuery", TFieldRequirementType.DEFAULT, 
+        new StructMetaData(TType.STRUCT, FacetQuery.class)));
     tmpMap.put(_Fields.HITS, new FieldMetaData("hits", TFieldRequirementType.DEFAULT, 
         new StructMetaData(TType.STRUCT, Hits.class)));
     tmpMap.put(_Fields.COUNTS, new FieldMetaData("counts", TFieldRequirementType.DEFAULT, 
@@ -119,12 +119,12 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
   }
 
   public FacetResult(
-    Facet facet,
+    FacetQuery facetQuery,
     Hits hits,
     Map<String,Long> counts)
   {
     this();
-    this.facet = facet;
+    this.facetQuery = facetQuery;
     this.hits = hits;
     this.counts = counts;
   }
@@ -133,8 +133,8 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
    * Performs a deep copy on <i>other</i>.
    */
   public FacetResult(FacetResult other) {
-    if (other.isSetFacet()) {
-      this.facet = new Facet(other.facet);
+    if (other.isSetFacetQuery()) {
+      this.facetQuery = new FacetQuery(other.facetQuery);
     }
     if (other.isSetHits()) {
       this.hits = new Hits(other.hits);
@@ -165,27 +165,27 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     return new FacetResult(this);
   }
 
-  public Facet getFacet() {
-    return this.facet;
+  public FacetQuery getFacetQuery() {
+    return this.facetQuery;
   }
 
-  public FacetResult setFacet(Facet facet) {
-    this.facet = facet;
+  public FacetResult setFacetQuery(FacetQuery facetQuery) {
+    this.facetQuery = facetQuery;
     return this;
   }
 
-  public void unsetFacet() {
-    this.facet = null;
+  public void unsetFacetQuery() {
+    this.facetQuery = null;
   }
 
-  /** Returns true if field facet is set (has been asigned a value) and false otherwise */
-  public boolean isSetFacet() {
-    return this.facet != null;
+  /** Returns true if field facetQuery is set (has been asigned a value) and false otherwise */
+  public boolean isSetFacetQuery() {
+    return this.facetQuery != null;
   }
 
-  public void setFacetIsSet(boolean value) {
+  public void setFacetQueryIsSet(boolean value) {
     if (!value) {
-      this.facet = null;
+      this.facetQuery = null;
     }
   }
 
@@ -250,11 +250,11 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case FACET:
+    case FACET_QUERY:
       if (value == null) {
-        unsetFacet();
+        unsetFacetQuery();
       } else {
-        setFacet((Facet)value);
+        setFacetQuery((FacetQuery)value);
       }
       break;
 
@@ -283,8 +283,8 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case FACET:
-      return getFacet();
+    case FACET_QUERY:
+      return getFacetQuery();
 
     case HITS:
       return getHits();
@@ -303,8 +303,8 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     switch (field) {
-    case FACET:
-      return isSetFacet();
+    case FACET_QUERY:
+      return isSetFacetQuery();
     case HITS:
       return isSetHits();
     case COUNTS:
@@ -330,12 +330,12 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     if (that == null)
       return false;
 
-    boolean this_present_facet = true && this.isSetFacet();
-    boolean that_present_facet = true && that.isSetFacet();
-    if (this_present_facet || that_present_facet) {
-      if (!(this_present_facet && that_present_facet))
+    boolean this_present_facetQuery = true && this.isSetFacetQuery();
+    boolean that_present_facetQuery = true && that.isSetFacetQuery();
+    if (this_present_facetQuery || that_present_facetQuery) {
+      if (!(this_present_facetQuery && that_present_facetQuery))
         return false;
-      if (!this.facet.equals(that.facet))
+      if (!this.facetQuery.equals(that.facetQuery))
         return false;
     }
 
@@ -373,11 +373,11 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     int lastComparison = 0;
     FacetResult typedOther = (FacetResult)other;
 
-    lastComparison = Boolean.valueOf(isSetFacet()).compareTo(typedOther.isSetFacet());
+    lastComparison = Boolean.valueOf(isSetFacetQuery()).compareTo(typedOther.isSetFacetQuery());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFacet()) {      lastComparison = TBaseHelper.compareTo(this.facet, typedOther.facet);
+    if (isSetFacetQuery()) {      lastComparison = TBaseHelper.compareTo(this.facetQuery, typedOther.facetQuery);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -413,10 +413,10 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
         break;
       }
       switch (field.id) {
-        case 1: // FACET
+        case 1: // FACET_QUERY
           if (field.type == TType.STRUCT) {
-            this.facet = new Facet();
-            this.facet.read(iprot);
+            this.facetQuery = new FacetQuery();
+            this.facetQuery.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -463,9 +463,9 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.facet != null) {
-      oprot.writeFieldBegin(FACET_FIELD_DESC);
-      this.facet.write(oprot);
+    if (this.facetQuery != null) {
+      oprot.writeFieldBegin(FACET_QUERY_FIELD_DESC);
+      this.facetQuery.write(oprot);
       oprot.writeFieldEnd();
     }
     if (this.hits != null) {
@@ -495,11 +495,11 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
     StringBuilder sb = new StringBuilder("FacetResult(");
     boolean first = true;
 
-    sb.append("facet:");
-    if (this.facet == null) {
+    sb.append("facetQuery:");
+    if (this.facetQuery == null) {
       sb.append("null");
     } else {
-      sb.append(this.facet);
+      sb.append(this.facetQuery);
     }
     first = false;
     if (!first) sb.append(", ");

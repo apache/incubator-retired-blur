@@ -39,7 +39,7 @@ public class BlurSearch {
 
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException;
 
-    public FacetResult facetSearch(String table, Facet facet) throws BlurException, TException;
+    public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException;
 
     public void cancelSearch(long uuid) throws BlurException, TException;
 
@@ -326,18 +326,18 @@ public class BlurSearch {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
     }
 
-    public FacetResult facetSearch(String table, Facet facet) throws BlurException, TException
+    public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException
     {
-      send_facetSearch(table, facet);
+      send_facetSearch(table, facetQuery);
       return recv_facetSearch();
     }
 
-    public void send_facetSearch(String table, Facet facet) throws TException
+    public void send_facetSearch(String table, FacetQuery facetQuery) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("facetSearch", TMessageType.CALL, ++seqid_));
       facetSearch_args args = new facetSearch_args();
       args.setTable(table);
-      args.setFacet(facet);
+      args.setFacetQuery(facetQuery);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -938,7 +938,7 @@ public class BlurSearch {
         iprot.readMessageEnd();
         facetSearch_result result = new facetSearch_result();
         try {
-          result.success = iface_.facetSearch(args.table, args.facet);
+          result.success = iface_.facetSearch(args.table, args.facetQuery);
         } catch (BlurException be) {
           result.be = be;
         } catch (Throwable th) {
@@ -5122,15 +5122,15 @@ public class BlurSearch {
     private static final TStruct STRUCT_DESC = new TStruct("facetSearch_args");
 
     private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-    private static final TField FACET_FIELD_DESC = new TField("facet", TType.STRUCT, (short)2);
+    private static final TField FACET_QUERY_FIELD_DESC = new TField("facetQuery", TType.STRUCT, (short)2);
 
     public String table;
-    public Facet facet;
+    public FacetQuery facetQuery;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       TABLE((short)1, "table"),
-      FACET((short)2, "facet");
+      FACET_QUERY((short)2, "facetQuery");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5147,8 +5147,8 @@ public class BlurSearch {
         switch(fieldId) {
           case 1: // TABLE
             return TABLE;
-          case 2: // FACET
-            return FACET;
+          case 2: // FACET_QUERY
+            return FACET_QUERY;
           default:
             return null;
         }
@@ -5195,8 +5195,8 @@ public class BlurSearch {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.FACET, new FieldMetaData("facet", TFieldRequirementType.DEFAULT, 
-          new StructMetaData(TType.STRUCT, Facet.class)));
+      tmpMap.put(_Fields.FACET_QUERY, new FieldMetaData("facetQuery", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, FacetQuery.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       FieldMetaData.addStructMetaDataMap(facetSearch_args.class, metaDataMap);
     }
@@ -5206,11 +5206,11 @@ public class BlurSearch {
 
     public facetSearch_args(
       String table,
-      Facet facet)
+      FacetQuery facetQuery)
     {
       this();
       this.table = table;
-      this.facet = facet;
+      this.facetQuery = facetQuery;
     }
 
     /**
@@ -5220,8 +5220,8 @@ public class BlurSearch {
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      if (other.isSetFacet()) {
-        this.facet = new Facet(other.facet);
+      if (other.isSetFacetQuery()) {
+        this.facetQuery = new FacetQuery(other.facetQuery);
       }
     }
 
@@ -5258,27 +5258,27 @@ public class BlurSearch {
       }
     }
 
-    public Facet getFacet() {
-      return this.facet;
+    public FacetQuery getFacetQuery() {
+      return this.facetQuery;
     }
 
-    public facetSearch_args setFacet(Facet facet) {
-      this.facet = facet;
+    public facetSearch_args setFacetQuery(FacetQuery facetQuery) {
+      this.facetQuery = facetQuery;
       return this;
     }
 
-    public void unsetFacet() {
-      this.facet = null;
+    public void unsetFacetQuery() {
+      this.facetQuery = null;
     }
 
-    /** Returns true if field facet is set (has been asigned a value) and false otherwise */
-    public boolean isSetFacet() {
-      return this.facet != null;
+    /** Returns true if field facetQuery is set (has been asigned a value) and false otherwise */
+    public boolean isSetFacetQuery() {
+      return this.facetQuery != null;
     }
 
-    public void setFacetIsSet(boolean value) {
+    public void setFacetQueryIsSet(boolean value) {
       if (!value) {
-        this.facet = null;
+        this.facetQuery = null;
       }
     }
 
@@ -5292,11 +5292,11 @@ public class BlurSearch {
         }
         break;
 
-      case FACET:
+      case FACET_QUERY:
         if (value == null) {
-          unsetFacet();
+          unsetFacetQuery();
         } else {
-          setFacet((Facet)value);
+          setFacetQuery((FacetQuery)value);
         }
         break;
 
@@ -5312,8 +5312,8 @@ public class BlurSearch {
       case TABLE:
         return getTable();
 
-      case FACET:
-        return getFacet();
+      case FACET_QUERY:
+        return getFacetQuery();
 
       }
       throw new IllegalStateException();
@@ -5328,8 +5328,8 @@ public class BlurSearch {
       switch (field) {
       case TABLE:
         return isSetTable();
-      case FACET:
-        return isSetFacet();
+      case FACET_QUERY:
+        return isSetFacetQuery();
       }
       throw new IllegalStateException();
     }
@@ -5360,12 +5360,12 @@ public class BlurSearch {
           return false;
       }
 
-      boolean this_present_facet = true && this.isSetFacet();
-      boolean that_present_facet = true && that.isSetFacet();
-      if (this_present_facet || that_present_facet) {
-        if (!(this_present_facet && that_present_facet))
+      boolean this_present_facetQuery = true && this.isSetFacetQuery();
+      boolean that_present_facetQuery = true && that.isSetFacetQuery();
+      if (this_present_facetQuery || that_present_facetQuery) {
+        if (!(this_present_facetQuery && that_present_facetQuery))
           return false;
-        if (!this.facet.equals(that.facet))
+        if (!this.facetQuery.equals(that.facetQuery))
           return false;
       }
 
@@ -5394,11 +5394,11 @@ public class BlurSearch {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetFacet()).compareTo(typedOther.isSetFacet());
+      lastComparison = Boolean.valueOf(isSetFacetQuery()).compareTo(typedOther.isSetFacetQuery());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetFacet()) {        lastComparison = TBaseHelper.compareTo(this.facet, typedOther.facet);
+      if (isSetFacetQuery()) {        lastComparison = TBaseHelper.compareTo(this.facetQuery, typedOther.facetQuery);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5423,10 +5423,10 @@ public class BlurSearch {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // FACET
+          case 2: // FACET_QUERY
             if (field.type == TType.STRUCT) {
-              this.facet = new Facet();
-              this.facet.read(iprot);
+              this.facetQuery = new FacetQuery();
+              this.facetQuery.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -5451,9 +5451,9 @@ public class BlurSearch {
         oprot.writeString(this.table);
         oprot.writeFieldEnd();
       }
-      if (this.facet != null) {
-        oprot.writeFieldBegin(FACET_FIELD_DESC);
-        this.facet.write(oprot);
+      if (this.facetQuery != null) {
+        oprot.writeFieldBegin(FACET_QUERY_FIELD_DESC);
+        this.facetQuery.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -5473,11 +5473,11 @@ public class BlurSearch {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("facet:");
-      if (this.facet == null) {
+      sb.append("facetQuery:");
+      if (this.facetQuery == null) {
         sb.append("null");
       } else {
-        sb.append(this.facet);
+        sb.append(this.facetQuery);
       }
       first = false;
       sb.append(")");

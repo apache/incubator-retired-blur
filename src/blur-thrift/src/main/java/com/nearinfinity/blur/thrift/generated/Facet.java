@@ -26,16 +26,16 @@ import org.apache.thrift.protocol.*;
 public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable, Cloneable {
   private static final TStruct STRUCT_DESC = new TStruct("Facet");
 
-  private static final TField SEARCH_QUERY_FIELD_DESC = new TField("searchQuery", TType.STRUCT, (short)1);
-  private static final TField FACETS_FIELD_DESC = new TField("facets", TType.LIST, (short)2);
+  private static final TField QUERY_STR_FIELD_DESC = new TField("queryStr", TType.STRING, (short)1);
+  private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)2);
 
-  public SearchQuery searchQuery;
-  public List<String> facets;
+  public String queryStr;
+  public long minimumNumberOfHits;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    SEARCH_QUERY((short)1, "searchQuery"),
-    FACETS((short)2, "facets");
+    QUERY_STR((short)1, "queryStr"),
+    MINIMUM_NUMBER_OF_HITS((short)2, "minimumNumberOfHits");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -50,10 +50,10 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // SEARCH_QUERY
-          return SEARCH_QUERY;
-        case 2: // FACETS
-          return FACETS;
+        case 1: // QUERY_STR
+          return QUERY_STR;
+        case 2: // MINIMUM_NUMBER_OF_HITS
+          return MINIMUM_NUMBER_OF_HITS;
         default:
           return null;
       }
@@ -94,15 +94,16 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
   }
 
   // isset id assignments
+  private static final int __MINIMUMNUMBEROFHITS_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SEARCH_QUERY, new FieldMetaData("searchQuery", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, SearchQuery.class)));
-    tmpMap.put(_Fields.FACETS, new FieldMetaData("facets", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new FieldValueMetaData(TType.STRING))));
+    tmpMap.put(_Fields.QUERY_STR, new FieldMetaData("queryStr", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_HITS, new FieldMetaData("minimumNumberOfHits", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Facet.class, metaDataMap);
   }
@@ -111,28 +112,25 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
   }
 
   public Facet(
-    SearchQuery searchQuery,
-    List<String> facets)
+    String queryStr,
+    long minimumNumberOfHits)
   {
     this();
-    this.searchQuery = searchQuery;
-    this.facets = facets;
+    this.queryStr = queryStr;
+    this.minimumNumberOfHits = minimumNumberOfHits;
+    setMinimumNumberOfHitsIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public Facet(Facet other) {
-    if (other.isSetSearchQuery()) {
-      this.searchQuery = new SearchQuery(other.searchQuery);
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
+    if (other.isSetQueryStr()) {
+      this.queryStr = other.queryStr;
     }
-    if (other.isSetFacets()) {
-      List<String> __this__facets = new ArrayList<String>();
-      for (String other_element : other.facets) {
-        __this__facets.add(other_element);
-      }
-      this.facets = __this__facets;
-    }
+    this.minimumNumberOfHits = other.minimumNumberOfHits;
   }
 
   public Facet deepCopy() {
@@ -144,84 +142,68 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     return new Facet(this);
   }
 
-  public SearchQuery getSearchQuery() {
-    return this.searchQuery;
+  public String getQueryStr() {
+    return this.queryStr;
   }
 
-  public Facet setSearchQuery(SearchQuery searchQuery) {
-    this.searchQuery = searchQuery;
+  public Facet setQueryStr(String queryStr) {
+    this.queryStr = queryStr;
     return this;
   }
 
-  public void unsetSearchQuery() {
-    this.searchQuery = null;
+  public void unsetQueryStr() {
+    this.queryStr = null;
   }
 
-  /** Returns true if field searchQuery is set (has been asigned a value) and false otherwise */
-  public boolean isSetSearchQuery() {
-    return this.searchQuery != null;
+  /** Returns true if field queryStr is set (has been asigned a value) and false otherwise */
+  public boolean isSetQueryStr() {
+    return this.queryStr != null;
   }
 
-  public void setSearchQueryIsSet(boolean value) {
+  public void setQueryStrIsSet(boolean value) {
     if (!value) {
-      this.searchQuery = null;
+      this.queryStr = null;
     }
   }
 
-  public int getFacetsSize() {
-    return (this.facets == null) ? 0 : this.facets.size();
+  public long getMinimumNumberOfHits() {
+    return this.minimumNumberOfHits;
   }
 
-  public java.util.Iterator<String> getFacetsIterator() {
-    return (this.facets == null) ? null : this.facets.iterator();
-  }
-
-  public void addToFacets(String elem) {
-    if (this.facets == null) {
-      this.facets = new ArrayList<String>();
-    }
-    this.facets.add(elem);
-  }
-
-  public List<String> getFacets() {
-    return this.facets;
-  }
-
-  public Facet setFacets(List<String> facets) {
-    this.facets = facets;
+  public Facet setMinimumNumberOfHits(long minimumNumberOfHits) {
+    this.minimumNumberOfHits = minimumNumberOfHits;
+    setMinimumNumberOfHitsIsSet(true);
     return this;
   }
 
-  public void unsetFacets() {
-    this.facets = null;
+  public void unsetMinimumNumberOfHits() {
+    __isset_bit_vector.clear(__MINIMUMNUMBEROFHITS_ISSET_ID);
   }
 
-  /** Returns true if field facets is set (has been asigned a value) and false otherwise */
-  public boolean isSetFacets() {
-    return this.facets != null;
+  /** Returns true if field minimumNumberOfHits is set (has been asigned a value) and false otherwise */
+  public boolean isSetMinimumNumberOfHits() {
+    return __isset_bit_vector.get(__MINIMUMNUMBEROFHITS_ISSET_ID);
   }
 
-  public void setFacetsIsSet(boolean value) {
-    if (!value) {
-      this.facets = null;
-    }
+  public void setMinimumNumberOfHitsIsSet(boolean value) {
+    __isset_bit_vector.set(__MINIMUMNUMBEROFHITS_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case SEARCH_QUERY:
+    case QUERY_STR:
       if (value == null) {
-        unsetSearchQuery();
+        unsetQueryStr();
       } else {
-        setSearchQuery((SearchQuery)value);
+        setQueryStr((String)value);
       }
       break;
 
-    case FACETS:
+    case MINIMUM_NUMBER_OF_HITS:
       if (value == null) {
-        unsetFacets();
+        unsetMinimumNumberOfHits();
       } else {
-        setFacets((List<String>)value);
+        setMinimumNumberOfHits((Long)value);
       }
       break;
 
@@ -234,11 +216,11 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case SEARCH_QUERY:
-      return getSearchQuery();
+    case QUERY_STR:
+      return getQueryStr();
 
-    case FACETS:
-      return getFacets();
+    case MINIMUM_NUMBER_OF_HITS:
+      return new Long(getMinimumNumberOfHits());
 
     }
     throw new IllegalStateException();
@@ -251,10 +233,10 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     switch (field) {
-    case SEARCH_QUERY:
-      return isSetSearchQuery();
-    case FACETS:
-      return isSetFacets();
+    case QUERY_STR:
+      return isSetQueryStr();
+    case MINIMUM_NUMBER_OF_HITS:
+      return isSetMinimumNumberOfHits();
     }
     throw new IllegalStateException();
   }
@@ -276,21 +258,21 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     if (that == null)
       return false;
 
-    boolean this_present_searchQuery = true && this.isSetSearchQuery();
-    boolean that_present_searchQuery = true && that.isSetSearchQuery();
-    if (this_present_searchQuery || that_present_searchQuery) {
-      if (!(this_present_searchQuery && that_present_searchQuery))
+    boolean this_present_queryStr = true && this.isSetQueryStr();
+    boolean that_present_queryStr = true && that.isSetQueryStr();
+    if (this_present_queryStr || that_present_queryStr) {
+      if (!(this_present_queryStr && that_present_queryStr))
         return false;
-      if (!this.searchQuery.equals(that.searchQuery))
+      if (!this.queryStr.equals(that.queryStr))
         return false;
     }
 
-    boolean this_present_facets = true && this.isSetFacets();
-    boolean that_present_facets = true && that.isSetFacets();
-    if (this_present_facets || that_present_facets) {
-      if (!(this_present_facets && that_present_facets))
+    boolean this_present_minimumNumberOfHits = true;
+    boolean that_present_minimumNumberOfHits = true;
+    if (this_present_minimumNumberOfHits || that_present_minimumNumberOfHits) {
+      if (!(this_present_minimumNumberOfHits && that_present_minimumNumberOfHits))
         return false;
-      if (!this.facets.equals(that.facets))
+      if (this.minimumNumberOfHits != that.minimumNumberOfHits)
         return false;
     }
 
@@ -310,20 +292,20 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     int lastComparison = 0;
     Facet typedOther = (Facet)other;
 
-    lastComparison = Boolean.valueOf(isSetSearchQuery()).compareTo(typedOther.isSetSearchQuery());
+    lastComparison = Boolean.valueOf(isSetQueryStr()).compareTo(typedOther.isSetQueryStr());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSearchQuery()) {      lastComparison = TBaseHelper.compareTo(this.searchQuery, typedOther.searchQuery);
+    if (isSetQueryStr()) {      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetFacets()).compareTo(typedOther.isSetFacets());
+    lastComparison = Boolean.valueOf(isSetMinimumNumberOfHits()).compareTo(typedOther.isSetMinimumNumberOfHits());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFacets()) {      lastComparison = TBaseHelper.compareTo(this.facets, typedOther.facets);
+    if (isSetMinimumNumberOfHits()) {      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -341,27 +323,17 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
         break;
       }
       switch (field.id) {
-        case 1: // SEARCH_QUERY
-          if (field.type == TType.STRUCT) {
-            this.searchQuery = new SearchQuery();
-            this.searchQuery.read(iprot);
+        case 1: // QUERY_STR
+          if (field.type == TType.STRING) {
+            this.queryStr = iprot.readString();
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // FACETS
-          if (field.type == TType.LIST) {
-            {
-              TList _list51 = iprot.readListBegin();
-              this.facets = new ArrayList<String>(_list51.size);
-              for (int _i52 = 0; _i52 < _list51.size; ++_i52)
-              {
-                String _elem53;
-                _elem53 = iprot.readString();
-                this.facets.add(_elem53);
-              }
-              iprot.readListEnd();
-            }
+        case 2: // MINIMUM_NUMBER_OF_HITS
+          if (field.type == TType.I64) {
+            this.minimumNumberOfHits = iprot.readI64();
+            setMinimumNumberOfHitsIsSet(true);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -381,23 +353,14 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.searchQuery != null) {
-      oprot.writeFieldBegin(SEARCH_QUERY_FIELD_DESC);
-      this.searchQuery.write(oprot);
+    if (this.queryStr != null) {
+      oprot.writeFieldBegin(QUERY_STR_FIELD_DESC);
+      oprot.writeString(this.queryStr);
       oprot.writeFieldEnd();
     }
-    if (this.facets != null) {
-      oprot.writeFieldBegin(FACETS_FIELD_DESC);
-      {
-        oprot.writeListBegin(new TList(TType.STRING, this.facets.size()));
-        for (String _iter54 : this.facets)
-        {
-          oprot.writeString(_iter54);
-        }
-        oprot.writeListEnd();
-      }
-      oprot.writeFieldEnd();
-    }
+    oprot.writeFieldBegin(MINIMUM_NUMBER_OF_HITS_FIELD_DESC);
+    oprot.writeI64(this.minimumNumberOfHits);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -407,20 +370,16 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     StringBuilder sb = new StringBuilder("Facet(");
     boolean first = true;
 
-    sb.append("searchQuery:");
-    if (this.searchQuery == null) {
+    sb.append("queryStr:");
+    if (this.queryStr == null) {
       sb.append("null");
     } else {
-      sb.append(this.searchQuery);
+      sb.append(this.queryStr);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("facets:");
-    if (this.facets == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.facets);
-    }
+    sb.append("minimumNumberOfHits:");
+    sb.append(this.minimumNumberOfHits);
     first = false;
     sb.append(")");
     return sb.toString();

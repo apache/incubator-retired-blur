@@ -51,6 +51,9 @@ import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.status.SearchStatus;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.Facet;
+import com.nearinfinity.blur.thrift.generated.FacetQuery;
+import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -505,5 +508,41 @@ public class IndexManager {
             }
         }
         return schema;
+    }
+
+    public void facetSearch(String table, FacetQuery facetQuery, FacetResult facetResult) throws Exception {
+        SearchQuery searchQuery = facetQuery.searchQuery;
+        Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, searchQuery.type);
+        Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, searchQuery.type);
+        Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
+                indexServer.getAnalyzer(table), postFilter, preFilter, searchQuery.type);
+        for (Facet facet : facetQuery.facets) {
+            long count = runFacet(table, userQuery, facet, Long.MAX_VALUE, facetQuery.maxQueryTime);
+            facetResult.putToCounts(facet, count);
+        }
+    }
+
+    private long runFacet(final String table, final Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime) throws Exception {
+        Map<String, IndexReader> indexReaders;
+        try {
+            indexReaders = indexServer.getIndexReaders(table);
+        } catch (IOException e) {
+            LOG.error("Unknown error while trying to fetch index readers.", e);
+            throw new BlurException(e.getMessage());
+        }
+        HitsIterable hitsIterable = ForkJoin.execute(executor, indexReaders.entrySet(),
+            new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
+                @Override
+                public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
+                    IndexReader reader = entry.getValue();
+                    String shard = entry.getKey();
+                    BlurSearcher searcher = new BlurSearcher(reader, 
+                            PrimeDocCache.getTableCache().getShardCache(table).
+                            getIndexReaderCache(shard));
+                    searcher.setSimilarity(indexServer.getSimilarity(table));
+                    return new HitsIterableSearcher((Query) userQuery.clone(), table, shard, searcher);
+                }
+            }).merge(new MergerHitsIterable(minimumNumberOfHits, maxQueryTime));
+        return hitsIterable.getTotalHits();
     }
 }

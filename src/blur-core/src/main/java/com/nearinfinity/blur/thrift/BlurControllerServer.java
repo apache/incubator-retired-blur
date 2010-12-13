@@ -22,7 +22,7 @@ import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
 import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Facet;
+import com.nearinfinity.blur.thrift.generated.FacetQuery;
 import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -200,7 +200,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
         }
     }
 
-    public FacetResult facetSearch(String table, Facet facet) throws BlurException, TException {
+    public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException {
         throw new RuntimeException("not implemented");
     }
 

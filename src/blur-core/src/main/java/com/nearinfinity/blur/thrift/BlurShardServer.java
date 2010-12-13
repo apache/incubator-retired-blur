@@ -12,7 +12,7 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Facet;
+import com.nearinfinity.blur.thrift.generated.FacetQuery;
 import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -111,8 +111,17 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
     }
 
     @Override
-    public FacetResult facetSearch(String table, Facet facet) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
+    public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException {
+        FacetResult facetResult = new FacetResult().setFacetQuery(facetQuery);
+        try {
+            indexManager.facetSearch(table, facetQuery, facetResult);
+            return facetResult;
+        } catch (BlurException e) {
+            throw e;
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get record frequency for [" + getParametersList("table",table,"facetQuery",facetQuery) + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
 
     @Override

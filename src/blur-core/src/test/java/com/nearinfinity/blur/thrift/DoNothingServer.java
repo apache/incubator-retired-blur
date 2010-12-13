@@ -7,7 +7,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Facet;
+import com.nearinfinity.blur.thrift.generated.FacetQuery;
 import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -71,11 +71,6 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public FacetResult facetSearch(String arg0, Facet arg1) throws BlurException, TException {
-        return null;
-    }
-
-    @Override
     public long recordFrequency(String arg0, String arg1, String arg2, String arg3) throws BlurException, TException {
         return 0;
     }
@@ -88,6 +83,11 @@ public class DoNothingServer implements Iface {
     @Override
     public List<String> terms(String arg0, String arg1, String arg2, String arg3, short arg4) throws BlurException,
             TException {
+        return null;
+    }
+
+    @Override
+    public FacetResult facetSearch(String arg0, FacetQuery arg1) throws BlurException, TException {
         return null;
     }
 

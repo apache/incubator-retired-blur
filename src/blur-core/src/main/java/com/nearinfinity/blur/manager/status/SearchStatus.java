@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 
@@ -16,6 +17,7 @@ public class SearchStatus {
     private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
     
     private SearchQuery searchQuery;
+    private Facet facet;
     private String table;
     private Map<Thread,Long> threads = new ConcurrentHashMap<Thread,Long>();
     private int totalThreads = 0;
@@ -31,6 +33,13 @@ public class SearchStatus {
         this.table = table;
         this.searchQuery = searchQuery;
         this.startingTime = System.currentTimeMillis();
+    }
+
+    public SearchStatus(String table, SearchQuery searchQuery, Facet facet) {
+        this.table = table;
+        this.searchQuery = searchQuery;
+        this.startingTime = System.currentTimeMillis();
+        this.facet = facet;
     }
 
     public SearchStatus attachThread() {
@@ -65,6 +74,9 @@ public class SearchStatus {
     public SearchQueryStatus getSearchQueryStatus() {
         SearchQueryStatus searchQueryStatus = new SearchQueryStatus();
         searchQueryStatus.query = searchQuery;
+        if (facet != null) {
+            searchQueryStatus.facet = facet;
+        }
         searchQueryStatus.complete = getCompleteStatus();
         if (CPU_TIME_SUPPORTED) {
             searchQueryStatus.cpuTime = getCpuTime();

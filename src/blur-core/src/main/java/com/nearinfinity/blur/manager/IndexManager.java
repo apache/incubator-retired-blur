@@ -527,27 +527,39 @@ public class IndexManager {
         Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
                 indexServer.getAnalyzer(table), postFilter, preFilter, searchQuery.type);
         for (Facet facet : facetQuery.facets) {
-            long count = runFacet(table, indexReaders, userQuery, facet, Long.MAX_VALUE, facetQuery.maxQueryTime);
+            long count = runFacet(table, indexReaders, userQuery, facet, Long.MAX_VALUE, facetQuery.maxQueryTime, searchQuery);
             facetResult.putToCounts(facet, count);
         }
     }
 
-    private long runFacet(final String table, Map<String, IndexReader> indexReaders, Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime) throws Exception {
-        Filter facetFilter = parseFilter(table, facet.queryStr, true, ScoreType.CONSTANT);
-        final FilteredQuery facetQuery = new FilteredQuery(userQuery, facetFilter);
-        HitsIterable hitsIterable = ForkJoin.execute(executor, indexReaders.entrySet(),
-            new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
-                @Override
-                public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
-                    IndexReader reader = entry.getValue();
-                    String shard = entry.getKey();
-                    BlurSearcher searcher = new BlurSearcher(reader, 
-                            PrimeDocCache.getTableCache().getShardCache(table).
-                            getIndexReaderCache(shard));
-                    searcher.setSimilarity(indexServer.getSimilarity(table));
-                    return new HitsIterableSearcher((Query) facetQuery, table, shard, searcher);
-                }
-            }).merge(new MergerHitsIterable(minimumNumberOfHits, maxQueryTime));
-        return hitsIterable.getTotalHits();
+    private long runFacet(final String table, Map<String, IndexReader> indexReaders, Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime, SearchQuery searchQuery) throws Exception {
+        final SearchStatus status = new SearchStatus(table,searchQuery,facet).attachThread();
+        addStatus(status);
+        try {
+            Filter facetFilter = parseFilter(table, facet.queryStr, true, ScoreType.CONSTANT);
+            final FilteredQuery facetQuery = new FilteredQuery(userQuery, facetFilter);
+            HitsIterable hitsIterable = ForkJoin.execute(executor, indexReaders.entrySet(),
+                new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
+                    @Override
+                    public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
+                        status.attachThread();
+                        try {
+                            IndexReader reader = entry.getValue();
+                            String shard = entry.getKey();
+                            BlurSearcher searcher = new BlurSearcher(reader, 
+                                    PrimeDocCache.getTableCache().getShardCache(table).
+                                    getIndexReaderCache(shard));
+                            searcher.setSimilarity(indexServer.getSimilarity(table));
+                            return new HitsIterableSearcher((Query) facetQuery, table, shard, searcher);
+                        } finally {
+                            status.deattachThread();
+                        }
+                    }
+                }).merge(new MergerHitsIterable(minimumNumberOfHits, maxQueryTime));
+            return hitsIterable.getTotalHits();
+        } finally {
+            status.deattachThread();
+            removeStatus(status);
+        }
     }
 }

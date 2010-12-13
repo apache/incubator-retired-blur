@@ -511,18 +511,6 @@ public class IndexManager {
     }
 
     public void facetSearch(String table, FacetQuery facetQuery, FacetResult facetResult) throws Exception {
-        SearchQuery searchQuery = facetQuery.searchQuery;
-        Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, searchQuery.type);
-        Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, searchQuery.type);
-        Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
-                indexServer.getAnalyzer(table), postFilter, preFilter, searchQuery.type);
-        for (Facet facet : facetQuery.facets) {
-            long count = runFacet(table, userQuery, facet, Long.MAX_VALUE, facetQuery.maxQueryTime);
-            facetResult.putToCounts(facet, count);
-        }
-    }
-
-    private long runFacet(final String table, final Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime) throws Exception {
         Map<String, IndexReader> indexReaders;
         try {
             indexReaders = indexServer.getIndexReaders(table);
@@ -530,6 +518,23 @@ public class IndexManager {
             LOG.error("Unknown error while trying to fetch index readers.", e);
             throw new BlurException(e.getMessage());
         }
+        SearchQuery searchQuery = facetQuery.searchQuery;
+        if (!searchQuery.superQueryOn) {
+            throw new BlurException("Only super queries are supported");
+        }
+        Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, searchQuery.type);
+        Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, searchQuery.type);
+        Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
+                indexServer.getAnalyzer(table), postFilter, preFilter, searchQuery.type);
+        for (Facet facet : facetQuery.facets) {
+            long count = runFacet(table, indexReaders, userQuery, facet, Long.MAX_VALUE, facetQuery.maxQueryTime);
+            facetResult.putToCounts(facet, count);
+        }
+    }
+
+    private long runFacet(final String table, Map<String, IndexReader> indexReaders, Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime) throws Exception {
+        Filter facetFilter = parseFilter(table, facet.queryStr, true, ScoreType.CONSTANT);
+        final FilteredQuery facetQuery = new FilteredQuery(userQuery, facetFilter);
         HitsIterable hitsIterable = ForkJoin.execute(executor, indexReaders.entrySet(),
             new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
                 @Override
@@ -540,7 +545,7 @@ public class IndexManager {
                             PrimeDocCache.getTableCache().getShardCache(table).
                             getIndexReaderCache(shard));
                     searcher.setSimilarity(indexServer.getSimilarity(table));
-                    return new HitsIterableSearcher((Query) userQuery.clone(), table, shard, searcher);
+                    return new HitsIterableSearcher((Query) facetQuery, table, shard, searcher);
                 }
             }).merge(new MergerHitsIterable(minimumNumberOfHits, maxQueryTime));
         return hitsIterable.getTotalHits();

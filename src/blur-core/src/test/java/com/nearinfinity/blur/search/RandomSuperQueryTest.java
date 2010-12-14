@@ -37,24 +37,15 @@ public class RandomSuperQueryTest {
 	
 	private static final int MOD_COLS_USED_FOR_SKIPPING = 3;
 	private static final int MAX_NUM_OF_DOCS = 10000;//10000
-	private static final int MIN_NUM_COL_FAM = 1;//3
-	private static final int MAX_NUM_COL_FAM = 2;//20
-	private static final int MAX_NUM_DOCS_PER_COL_FAM = 5;//25
-	private static final int MAX_NUM_COLS = 5;//21
-	private static final int MIN_NUM_COLS = 2;//3
-	private static final int MAX_NUM_OF_WORDS = 25000;
+	private static final int MIN_NUM_COL_FAM = 3;//3
+	private static final int MAX_NUM_COL_FAM = 20;//20
+	private static final int MAX_NUM_DOCS_PER_COL_FAM = 25;//25
+	private static final int MAX_NUM_COLS = 21;//21
+	private static final int MIN_NUM_COLS = 3;//3
+	private static final int MAX_NUM_OF_WORDS = 1000;
 	private static final int MOD_USED_FOR_SAMPLING = 1;//
 	
 	private Random seedGen = new Random(1);
-	
-	@Test
-	public void testSlowRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
-		for (int i = 0; i < 10; i++) {
-			System.out.print("Starting pass [" + i + "]... ");
-			System.out.flush();
-			testRandomSuperQuery();
-		}
-	}
 	
 	@Test
 	public void testRandomSuperQuery() throws CorruptIndexException, IOException, InterruptedException, ParseException {
@@ -115,6 +106,7 @@ public class RandomSuperQueryTest {
 			String[] cols = columns.get(colFam);
 			for (int i = 0; i < random.nextInt(MAX_NUM_DOCS_PER_COL_FAM); i++) {
 				String superKey = Long.toString(random.nextLong());
+				int staringLength = builder.length();
 				for (String column : cols) {
 					if (random.nextInt() % MOD_COLS_USED_FOR_SKIPPING == 0) {
 						String word = genWord(random,"word");
@@ -124,9 +116,12 @@ public class RandomSuperQueryTest {
 						}
 					}
 				}
+				if (builder.length() != staringLength) {
+				    builder.append(" nojoin.nojoin ");
+				}
 			}
 		}
-		String string = builder.toString();
+		String string = builder.toString().trim();
 		if (!string.isEmpty()) {
 			sampler.add(string);
 		}

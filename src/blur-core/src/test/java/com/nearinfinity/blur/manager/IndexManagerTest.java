@@ -1,8 +1,10 @@
 package com.nearinfinity.blur.manager;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -21,7 +23,6 @@ import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class IndexManagerTest {
@@ -46,9 +47,7 @@ public class IndexManagerTest {
     @Before
     public void setUp() {
         server = new LocalIndexServer(new File("./test-indexes/test1"));
-        indexManager = new IndexManager();
-        indexManager.setIndexServer(server);
-        indexManager.init();
+        indexManager = new IndexManager().setSearchStatusCleanupTimerDelay(2000).setIndexServer(server).init();
     }
     
     @After
@@ -104,10 +103,9 @@ public class IndexManagerTest {
             System.out.println(fetchResult.getRow());
         }
         
-        List<SearchQueryStatus> currentSearches = indexManager.currentSearches("table");
-        for (SearchQueryStatus status : currentSearches) {
-            System.out.println(status);
-        }
+        assertFalse(indexManager.currentSearches("table").isEmpty());
+        Thread.sleep(5000);//wait for cleanup to fire
+        assertTrue(indexManager.currentSearches("table").isEmpty());
     }
     
     @Test

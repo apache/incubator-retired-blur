@@ -15,7 +15,6 @@ import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
-import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public abstract class BlurAdminServer implements Iface, BlurConstants {
@@ -25,7 +24,6 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
 		SHARD
 	}
 	
-	private BlurConfiguration configuration;
 	private IndexServer indexServer;
 	
     @Override
@@ -81,23 +79,13 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
         this.indexServer = indexServer;
     }
 
-    public BlurConfiguration getConfiguration() {
-        return configuration;
-    }
-
-    public void setConfiguration(BlurConfiguration configuration) {
-        this.configuration = configuration;
-    }
-    
     @Override
     public List<String> controllerServerList() throws BlurException, TException {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public List<String> shardServerList() throws BlurException, TException {
-        // TODO Auto-generated method stub
         return null;
     }
 }

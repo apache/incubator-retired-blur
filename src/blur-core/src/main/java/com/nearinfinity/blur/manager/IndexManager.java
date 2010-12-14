@@ -77,12 +77,13 @@ public class IndexManager {
     private ExecutorService executor;
     private Collection<SearchStatus> currentSearchStatusCollection = Collections.synchronizedSet(new HashSet<SearchStatus>());
     private Timer searchStatusCleanupTimer;
+    private long searchStatusCleanupTimerDelay = TimeUnit.MINUTES.toMillis(1);
 
     public IndexManager() {
         // do nothing
     }
 
-    public void init() {
+    public IndexManager init() {
         executor = Executors.newCachedThreadPool();
         searchStatusCleanupTimer = new Timer("Search-Status-Cleanup",true);
         searchStatusCleanupTimer.schedule(new TimerTask() {
@@ -90,8 +91,8 @@ public class IndexManager {
             public void run() {
                 cleanupFinishedSearchStatuses();
             }
-        }, TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(1));
-        
+        }, searchStatusCleanupTimerDelay, searchStatusCleanupTimerDelay);
+        return this;
     }
 
     public static void replace(IndexWriter indexWriter, Row row) throws IOException {
@@ -113,6 +114,8 @@ public class IndexManager {
     public void close() throws InterruptedException {
         executor.shutdownNow();
         indexServer.close();
+        searchStatusCleanupTimer.cancel();
+        searchStatusCleanupTimer.purge();
     }
 
     public void replaceRow(String table, Row row) throws BlurException {
@@ -167,7 +170,7 @@ public class IndexManager {
     }
 
     public HitsIterable search(final String table, SearchQuery searchQuery) throws Exception {
-        final SearchStatus status = new SearchStatus(table,searchQuery).attachThread();
+        final SearchStatus status = new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery).attachThread();
         addStatus(status);
         try {
             Map<String, IndexReader> indexReaders;
@@ -378,8 +381,9 @@ public class IndexManager {
         return indexServer;
     }
 
-    public void setIndexServer(IndexServer indexServer) {
+    public IndexManager setIndexServer(IndexServer indexServer) {
         this.indexServer = indexServer;
+        return this;
     }
     
     private void removeStatus(SearchStatus status) {
@@ -533,7 +537,7 @@ public class IndexManager {
     }
 
     private long runFacet(final String table, Map<String, IndexReader> indexReaders, Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime, SearchQuery searchQuery) throws Exception {
-        final SearchStatus status = new SearchStatus(table,searchQuery,facet).attachThread();
+        final SearchStatus status = new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery,facet).attachThread();
         addStatus(status);
         try {
             Filter facetFilter = parseFilter(table, facet.queryStr, true, ScoreType.CONSTANT);
@@ -561,5 +565,14 @@ public class IndexManager {
             status.deattachThread();
             removeStatus(status);
         }
+    }
+
+    public long getSearchStatusCleanupTimerDelay() {
+        return searchStatusCleanupTimerDelay;
+    }
+
+    public IndexManager setSearchStatusCleanupTimerDelay(long searchStatusCleanupTimerDelay) {
+        this.searchStatusCleanupTimerDelay = searchStatusCleanupTimerDelay;
+        return this;
     }
 }

@@ -5,7 +5,6 @@ import java.lang.management.ThreadMXBean;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.nearinfinity.blur.thrift.generated.Facet;
@@ -26,16 +25,19 @@ public class SearchStatus {
     private long finishedTime;
     private AtomicLong cpuTimeOfFinishedThreads = new AtomicLong();
     private ThreadMXBean bean = ManagementFactory.getThreadMXBean();
+    private long ttl;
 
     private boolean interrupted;
 
-    public SearchStatus(String table, SearchQuery searchQuery) {
+    public SearchStatus(long ttl, String table, SearchQuery searchQuery) {
+        this.ttl = ttl;
         this.table = table;
         this.searchQuery = searchQuery;
         this.startingTime = System.currentTimeMillis();
     }
 
-    public SearchStatus(String table, SearchQuery searchQuery, Facet facet) {
+    public SearchStatus(long ttl, String table, SearchQuery searchQuery, Facet facet) {
+        this.ttl = ttl;
         this.table = table;
         this.searchQuery = searchQuery;
         this.startingTime = System.currentTimeMillis();
@@ -126,7 +128,7 @@ public class SearchStatus {
         if (!isFinished()) {
             return false;
         }
-        if (getFinishedTime() + TimeUnit.MINUTES.toMillis(1) < System.currentTimeMillis()) {
+        if (getFinishedTime() + ttl < System.currentTimeMillis()) {
             return true;
         }
         return false;

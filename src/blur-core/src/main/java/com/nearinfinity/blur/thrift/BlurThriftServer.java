@@ -19,7 +19,6 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
-import com.nearinfinity.blur.utils.BlurConfiguration;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.mele.util.AddressUtil;
 import com.nearinfinity.mele.zookeeper.NoOpWatcher;
@@ -47,9 +46,9 @@ public class BlurThriftServer implements BlurConstants {
 
 	public static void main(String... args) throws IOException, BlurException, InterruptedException {
 	    System.out.println("Using hostname [" + AddressUtil.getMyHostName() + "]");
-		BlurConfiguration configuration = new BlurConfiguration();
-		ZooKeeper zooKeeper = new ZooKeeper(configuration.getZooKeeperConnectionString(), 
-		        configuration.getZooKeeperSessionTimeout(), new NoOpWatcher());
+		int sessionTimeout = 10000;
+        String connectionStr = "localhost?";
+        ZooKeeper zooKeeper = new ZooKeeper(connectionStr, sessionTimeout, new NoOpWatcher());
 		
 		IndexServer indexServer = null;
 		IndexManager indexManager = new IndexManager();
@@ -58,18 +57,16 @@ public class BlurThriftServer implements BlurConstants {
 		for (String arg : args) {
 		    if (SHARD.equals(arg) && shardServer == null) {
 		        BlurShardServer blurShardServer = new BlurShardServer();
-		        blurShardServer.setConfiguration(configuration);
 		        blurShardServer.setIndexManager(indexManager);
 		        blurShardServer.setIndexServer(indexServer);
 		        
-                BlurThriftServer blurThriftServer = new BlurThriftServer(configuration.getBlurShardServerPort(), blurShardServer);
+                BlurThriftServer blurThriftServer = new BlurThriftServer(40020, blurShardServer);
                 shardServer = blurThriftServer.start(SHARD);
 		    } else if (CONTROLLER.equals(arg) && controllerServer == null) {
 		        BlurControllerServer blurControllerServer = new BlurControllerServer();
-		        blurControllerServer.setConfiguration(configuration);
 		        blurControllerServer.setIndexServer(indexServer);
 		        
-                BlurThriftServer blurThriftServer = new BlurThriftServer(configuration.getBlurControllerServerPort(), blurControllerServer);
+                BlurThriftServer blurThriftServer = new BlurThriftServer(40010, blurControllerServer);
                 controllerServer = blurThriftServer.start(CONTROLLER);
 		    }
 		}

@@ -33,7 +33,7 @@ public abstract class DistributedIndexServer implements IndexServer {
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private Timer readerCloserDaemon;
     private long delay = TimeUnit.MINUTES.toMillis(1);
-    private Map<String,LayoutManager> layoutManagers = new ConcurrentHashMap<String, LayoutManager>();
+    private Map<String,DistributedLayoutManager> layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
     private Map<String, Set<String>> layoutCache = new ConcurrentHashMap<String, Set<String>>();
     //need a GC daemon for closing indexes
     //need a daemon for tracking what indexes to open ???
@@ -163,7 +163,7 @@ public abstract class DistributedIndexServer implements IndexServer {
     }
     
     private Set<String> getShardsToServe(String table) {
-        LayoutManager layoutManager = layoutManagers.get(table);
+        DistributedLayoutManager layoutManager = layoutManagers.get(table);
         if (layoutManager == null) {
             return setupLayoutManager(table);
         } else {
@@ -172,7 +172,7 @@ public abstract class DistributedIndexServer implements IndexServer {
     }
     
     private synchronized Set<String> setupLayoutManager(String table) {
-        LayoutManager layoutManager = new LayoutManager();
+        DistributedLayoutManager layoutManager = new DistributedLayoutManager();
         layoutManager.setNodes(getShardServerList());
         layoutManager.setNodesOffline(getOfflineShardServers());
         layoutManager.setShards(getShardList(table));

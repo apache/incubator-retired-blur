@@ -11,7 +11,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-public class LayoutManager {
+public class DistributedLayoutManager {
     
     private static final SortedSet<String> EMPTY_SORTED_SET = new TreeSet<String>();
     
@@ -21,7 +21,7 @@ public class LayoutManager {
     private List<String> nodeList = new ArrayList<String>();
     private Map<String, String> cache = new TreeMap<String, String>();
 
-    public LayoutManager init() {
+    public DistributedLayoutManager init() {
         if (nodesOffline.equals(nodes)) {
             cache = getLockedMap(new TreeMap<String, String>());
             return this;
@@ -81,7 +81,7 @@ public class LayoutManager {
         return new TreeSet<String>(nodes);
     }
 
-    public LayoutManager setNodes(Collection<String> v) {
+    public DistributedLayoutManager setNodes(Collection<String> v) {
         this.nodes = new TreeSet<String>(v);
         this.nodeList = new ArrayList<String>(nodes);
         return this;
@@ -91,7 +91,7 @@ public class LayoutManager {
         return new TreeSet<String>(shards);
     }
 
-    public LayoutManager setShards(Collection<String> v) {
+    public DistributedLayoutManager setShards(Collection<String> v) {
         this.shards = new TreeSet<String>(v);
         return this;
     }
@@ -100,7 +100,7 @@ public class LayoutManager {
         return new TreeSet<String>(nodesOffline);
     }
 
-    public LayoutManager setNodesOffline(Collection<String> v) {
+    public DistributedLayoutManager setNodesOffline(Collection<String> v) {
         this.nodesOffline = new HashSet<String>(v);
         return this;
     }

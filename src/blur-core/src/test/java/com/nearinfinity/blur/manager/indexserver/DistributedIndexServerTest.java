@@ -1,12 +1,16 @@
 package com.nearinfinity.blur.manager.indexserver;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -41,18 +45,19 @@ public class DistributedIndexServerTest {
             DistributedIndexServer indexServer = new MockDistributedIndexServer(NODE_LIST,SHARD_LIST).
                 setNodeName(node).
                 init();
-            shardBeingServed.addAll(indexServer.getIndexReaders(TEST).keySet());
+            Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
+            shardBeingServed.addAll(keySet);
             indexServer.close();
         }
         Collections.sort(shardBeingServed);
         assertEquals(SHARD_LIST,shardBeingServed);
     }
     
-    @Test
+//    @Test
     public void testReaderCloserDaemon() throws IOException, InterruptedException {
         List<String> nodes = new ArrayList<String>(NODE_LIST);
         final List<String> toBeClosed = new ArrayList<String>();
-        toBeClosed.add("d");
+        toBeClosed.add("g");
         toBeClosed.add("h");
         DistributedIndexServer indexServer = new MockDistributedIndexServer(nodes, SHARD_LIST) {
             @Override
@@ -64,22 +69,113 @@ public class DistributedIndexServerTest {
             setNodeName("node2").
             setDelay(5000).
             init();
-        assertEquals(new TreeSet<String>(Arrays.asList("d","h")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
+        assertEquals(new TreeSet<String>(Arrays.asList("g","h")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
         nodes.remove(3);
-        assertEquals(new TreeSet<String>(Arrays.asList("c","f","i")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
+        assertEquals(new TreeSet<String>(Arrays.asList("a","b","c")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
         Thread.sleep(10000);
         assertTrue(toBeClosed.isEmpty());
         indexServer.close();
     }
     
+    @Test
+    public void testDistributedIndexServerTestingLayout() throws IOException {
+        List<String> shardBeingServed = new ArrayList<String>();
+        List<String> bigNodeList = getBigNodeList();
+        List<String> bigShardList = getBigShardList();
+        Map<String,Set<String>> nodesToShards1 = new HashMap<String,Set<String>>();
+        for (String node : bigNodeList) {
+            DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList).
+                setNodeName(node).
+                init();
+            Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
+            nodesToShards1.put(node, new TreeSet<String>(keySet));
+            shardBeingServed.addAll(keySet);
+            indexServer.close();
+        }
+        Collections.sort(shardBeingServed);
+        Collections.sort(bigShardList);
+        assertEquals(bigShardList,shardBeingServed);
+        
+        List<String> offlineNodes = Arrays.asList("node-7");
+        
+        Map<String,Set<String>> nodesToShards2 = new HashMap<String,Set<String>>();
+        for (String node : bigNodeList) {
+            
+            DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes).
+                setNodeName(node).
+                init();
+            Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
+            nodesToShards2.put(node, new TreeSet<String>(keySet));
+            shardBeingServed.addAll(keySet);
+            indexServer.close();
+        }
+        
+        for (String node : new TreeSet<String>(nodesToShards1.keySet())) {
+            Set<String> set1 = nodesToShards1.get(node);
+            Set<String> set2 = nodesToShards2.get(node);
+            System.out.println("node [" + node +
+            		"] removed [" + removed(set1,set2) +
+            		"] added [" + added(set1,set2) +
+            		"]");
+        }
+    }
+    
+    private Set<String> added(Set<String> before, Set<String> after) {
+        if (after == null) {
+            after = new TreeSet<String>();
+        }
+        Set<String> results = new TreeSet<String>();
+        for (String s : after) {
+            if (!before.contains(s)) {
+                results.add(s);
+            }
+        }
+        return results;
+    }
+
+    private Set<String> removed(Set<String> before, Set<String> after) {
+        if (after == null) {
+            after = new TreeSet<String>();
+        }
+        Set<String> results = new TreeSet<String>();
+        for (String s : before) {
+            if (!after.contains(s)) {
+                results.add(s);
+            }
+        }
+        return results;
+    }
+
+    private List<String> getBigShardList() {
+        List<String> shards = new ArrayList<String>();
+        for (int i = 0; i < 512; i++) {
+            shards.add("shard-"+i);
+        }
+        return shards;
+    }
+
+    private List<String> getBigNodeList() {
+        List<String> nodes = new ArrayList<String>();
+        for (int i = 0; i < 32; i++) {
+            nodes.add("node-"+i);
+        }
+        return nodes;
+    }
+
     public static class MockDistributedIndexServer extends DistributedIndexServer {
         
         private List<String> shards;
         private List<String> nodes;
-
+        private List<String> offlineNodes;
+        
         public MockDistributedIndexServer(List<String> nodes, List<String> shards) {
+            this(nodes,shards,new ArrayList<String>());
+        }
+
+        public MockDistributedIndexServer(List<String> nodes, List<String> shards, List<String> offlineNodes) {
             this.shards = shards;
             this.nodes = nodes;
+            this.offlineNodes = offlineNodes;
         }
 
         @Override
@@ -144,6 +240,11 @@ public class DistributedIndexServerTest {
         @Override
         protected void beforeClose(String shard, IndexReader indexReader) {
             throw new RuntimeException("not implement");            
+        }
+
+        @Override
+        public List<String> getOfflineShardServers() {
+            return offlineNodes;
         }
 
     }

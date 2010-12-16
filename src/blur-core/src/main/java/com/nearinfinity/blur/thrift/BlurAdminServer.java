@@ -75,8 +75,9 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
         return indexServer;
     }
 
-    public void setIndexServer(IndexServer indexServer) {
+    public BlurAdminServer setIndexServer(IndexServer indexServer) {
         this.indexServer = indexServer;
+        return this;
     }
 
     @Override

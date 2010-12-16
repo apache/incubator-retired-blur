@@ -113,4 +113,10 @@ public class HdfsIndexServer extends DistributedIndexServer {
     protected void beforeClose(String shard, IndexReader indexReader) {
         
     }
+
+    @Override
+    public List<String> getOfflineShardServers() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

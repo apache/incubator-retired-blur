@@ -128,4 +128,9 @@ public class LocalIndexServer implements IndexServer {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public List<String> getOfflineShardServers() {
+        return new ArrayList<String>();
+    }
 }

@@ -28,6 +28,13 @@ public interface IndexServer {
     List<String> getShardServerList();
     
     /**
+     * Gets a list of all the shard servers that are currently offline.
+     * NOTE: The node listed here are also in the shard server list.
+     * @return the offline shards servers.
+     */
+    List<String> getOfflineShardServers();
+    
+    /**
      * Gets the similarity object used by lucene for this table.
      * @param table the table name.
      * @return the similarity object.

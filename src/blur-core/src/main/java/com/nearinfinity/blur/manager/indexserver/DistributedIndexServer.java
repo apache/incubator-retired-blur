@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -32,6 +33,8 @@ public abstract class DistributedIndexServer implements IndexServer {
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private Timer readerCloserDaemon;
     private long delay = TimeUnit.MINUTES.toMillis(1);
+    private Map<String,LayoutManager> layoutManagers = new ConcurrentHashMap<String, LayoutManager>();
+    private Map<String, Set<String>> layoutCache = new ConcurrentHashMap<String, Set<String>>();
     //need a GC daemon for closing indexes
     //need a daemon for tracking what indexes to open ???
     //need a daemon to track reopening changed indexes
@@ -137,35 +140,33 @@ public abstract class DistributedIndexServer implements IndexServer {
     }
     
     private Set<String> getShardsToServe(String table) {
-        TreeSet<String> shards = new TreeSet<String>();
-        List<String> shardList = getShardList(table);
-        List<String> shardServerList = getShardServerList();
-        int index = getNodeIndex(table,shardServerList);
-        int serverCount = shardServerList.size();
-        int size = shardList.size();
-        for (int i = 0; i < size; i++) {
-            if (i % serverCount == index) {
-                shards.add(shardList.get(i));
-            }
+        LayoutManager layoutManager = layoutManagers.get(table);
+        if (layoutManager == null) {
+            return setupLayoutManager(table);
+        } else {
+            return layoutCache.get(table);
         }
-        return shards;
-    }
-
-    private int getNodeIndex(String table, List<String> shardServerList) {
-        int index = shardServerList.indexOf(getNodeName());
-        if (index == -1) {
-            throw new RuntimeException("Node [" + getNodeName() +
-                    "] is not currently online.");
-        }
-        int size = shardServerList.size();
-        int offset = Math.abs(table.hashCode() % size);
-        index += offset;
-        if (index >= size) {
-            index = index - size;
-        }
-        return index;
     }
     
+    private synchronized Set<String> setupLayoutManager(String table) {
+        LayoutManager layoutManager = new LayoutManager();
+        layoutManager.setNodes(getShardServerList());
+        layoutManager.setNodesOffline(getOfflineShardServers());
+        layoutManager.setShards(getShardList(table));
+        layoutManager.init();
+        Map<String, String> layout = layoutManager.getLayout();
+        String nodeName = getNodeName();
+        Set<String> shardsToServeCache = new TreeSet<String>();
+        for (Entry<String,String> entry : layout.entrySet()) {
+            if (entry.getValue().equals(nodeName)) {
+                shardsToServeCache.add(entry.getKey());
+            }
+        }
+        layoutCache.put(table, shardsToServeCache);
+        layoutManagers.put(table, layoutManager);
+        return shardsToServeCache;
+    }
+
     private void startIndexReopenerDaemon() {
         
     }

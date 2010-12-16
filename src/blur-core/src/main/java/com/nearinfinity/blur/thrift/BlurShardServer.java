@@ -106,8 +106,9 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
         return indexManager;
     }
 
-    public void setIndexManager(IndexManager indexManager) {
+    public BlurShardServer setIndexManager(IndexManager indexManager) {
         this.indexManager = indexManager;
+        return this;
     }
 
     @Override

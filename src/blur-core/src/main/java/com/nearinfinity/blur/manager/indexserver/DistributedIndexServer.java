@@ -48,6 +48,11 @@ public abstract class DistributedIndexServer implements IndexServer {
     protected abstract IndexReader openShard(String table, String shard);
     
     protected abstract void beforeClose(String shard, IndexReader indexReader);
+    
+    public void shardServerStateChange() {
+        layoutManagers.clear();
+        layoutCache.clear();
+    }
 
     @Override
     public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
@@ -96,6 +101,13 @@ public abstract class DistributedIndexServer implements IndexServer {
         }
     }
 
+    @Override
+    public void close() {
+        executorService.shutdownNow();
+    }
+    
+    //Getters and setters
+    
     public String getNodeName() {
         return nodeName;
     }
@@ -104,6 +116,17 @@ public abstract class DistributedIndexServer implements IndexServer {
         this.nodeName = nodeName;
         return this;
     }
+
+    public long getDelay() {
+        return delay;
+    }
+
+    public DistributedIndexServer setDelay(long delay) {
+        this.delay = delay;
+        return this;
+    }
+    
+    //Getters and setters
     
     private synchronized Map<String, IndexReader> openMissingShards(final String table, Set<String> shardsToServe, final Map<String, IndexReader> tableReaders) {
         Map<String, IndexReader> result = new HashMap<String, IndexReader>();
@@ -167,6 +190,8 @@ public abstract class DistributedIndexServer implements IndexServer {
         return shardsToServeCache;
     }
 
+    //Daemon threads
+    
     private void startIndexReopenerDaemon() {
         
     }
@@ -179,19 +204,5 @@ public abstract class DistributedIndexServer implements IndexServer {
                 closeOldReaders();
             }
         }, delay, delay);
-    }
-
-    @Override
-    public void close() {
-        executorService.shutdownNow();
-    }
-
-    public long getDelay() {
-        return delay;
-    }
-
-    public DistributedIndexServer setDelay(long delay) {
-        this.delay = delay;
-        return this;
     }
 }

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -82,33 +83,42 @@ public class DistributedIndexServerTest {
         List<String> shardBeingServed = new ArrayList<String>();
         List<String> bigNodeList = getBigNodeList();
         List<String> bigShardList = getBigShardList();
+        List<String> offlineNodes = new ArrayList<String>();
+        
         Map<String,Set<String>> nodesToShards1 = new HashMap<String,Set<String>>();
+        Map<String,DistributedIndexServer> servers = new TreeMap<String,DistributedIndexServer>();
         for (String node : bigNodeList) {
-            DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList).
+            DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes).
                 setNodeName(node).
                 init();
+            servers.put(node,indexServer);
             Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
             nodesToShards1.put(node, new TreeSet<String>(keySet));
             shardBeingServed.addAll(keySet);
-            indexServer.close();
         }
+        
         Collections.sort(shardBeingServed);
         Collections.sort(bigShardList);
         assertEquals(bigShardList,shardBeingServed);
         
-        List<String> offlineNodes = Arrays.asList("node-7");
+        shardBeingServed.clear();
+        
+        offlineNodes.add("node-7");
+        for (DistributedIndexServer indexServer : servers.values()) {
+            indexServer.shardServerStateChange();
+        }
         
         Map<String,Set<String>> nodesToShards2 = new HashMap<String,Set<String>>();
         for (String node : bigNodeList) {
-            
-            DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes).
-                setNodeName(node).
-                init();
+            DistributedIndexServer indexServer = servers.get(node);
             Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
             nodesToShards2.put(node, new TreeSet<String>(keySet));
             shardBeingServed.addAll(keySet);
-            indexServer.close();
         }
+        
+        Collections.sort(shardBeingServed);
+        Collections.sort(bigShardList);
+        assertEquals(bigShardList,shardBeingServed);
         
         for (String node : new TreeSet<String>(nodesToShards1.keySet())) {
             Set<String> set1 = nodesToShards1.get(node);
@@ -117,6 +127,10 @@ public class DistributedIndexServerTest {
             		"] removed [" + removed(set1,set2) +
             		"] added [" + added(set1,set2) +
             		"]");
+        }
+        
+        for (DistributedIndexServer indexServer : servers.values()) {
+            indexServer.close();
         }
     }
     

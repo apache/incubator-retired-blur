@@ -29,7 +29,7 @@ public class LayoutManager {
         Map<String, String> mappings = new TreeMap<String, String>();
         SortedSet<String> moveBecauseOfDownNodes = new TreeSet<String>();
         int nodeListSize = nodeList.size();
-        int nodeCount = 0;
+        int nodeCount = getStartingPoint();
         for (String shard : shards) {
             String node = nodeList.get(nodeCount);
             mappings.put(shard, node);
@@ -58,6 +58,15 @@ public class LayoutManager {
         }
         cache = getLockedMap(mappings);
         return this;
+    }
+
+    private int getStartingPoint() {
+        int size = nodes.size();
+        int hash = 37;
+        for (String node : nodes) {
+            hash += node.hashCode() * 17;
+        }
+        return Math.abs(hash % size);
     }
 
     public Map<String, String> getLayout() {

@@ -17,24 +17,12 @@ import org.apache.lucene.search.Similarity;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 
-public class HdfsIndexServer extends DistributedIndexServer {
+public class HdfsIndexServer extends ZookeeperManagedDistributedIndexServer {
     
     private FileSystem fileSystem;
     private Path blurBasePath;
     private Map<String,Analyzer> tableAnalyzers = new ConcurrentHashMap<String, Analyzer>();
 
-    //zookeeper
-    @Override
-    public List<String> getControllerServerList() {
-        return null;
-    }
-    
-    //zookeeper
-    @Override
-    public List<String> getShardServerList() {
-        return null;
-    }
-    
     @Override
     public List<String> getTableList() {
         List<String> result = new ArrayList<String>();
@@ -112,11 +100,5 @@ public class HdfsIndexServer extends DistributedIndexServer {
     @Override
     protected void beforeClose(String shard, IndexReader indexReader) {
         
-    }
-
-    @Override
-    public List<String> getOfflineShardServers() {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

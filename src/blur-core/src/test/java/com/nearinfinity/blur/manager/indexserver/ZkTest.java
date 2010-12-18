@@ -47,7 +47,7 @@ public class ZkTest {
         }, "test","test");
     }
     
-    class ZkInMemory extends Zk {
+    class ZkInMemory extends DistributedManager {
         
         private List<String> pathes = new ArrayList<String>();
 

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class Zk {
+public abstract class DistributedManager {
 
     public abstract void close();
     protected abstract boolean existsInternal(String path);

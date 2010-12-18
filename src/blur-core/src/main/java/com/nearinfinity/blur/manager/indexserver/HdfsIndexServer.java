@@ -17,7 +17,7 @@ import org.apache.lucene.search.Similarity;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 
-public class HdfsIndexServer extends ZookeeperManagedDistributedIndexServer {
+public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
     private FileSystem fileSystem;
     private Path blurBasePath;

@@ -12,7 +12,7 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
-public class ZkImpl extends Zk {
+public class ZkImpl extends DistributedManager {
     
     private static final Log LOG = LogFactory.getLog(ZkImpl.class);
     

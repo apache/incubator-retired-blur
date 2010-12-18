@@ -9,15 +9,15 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public abstract class ZookeeperManagedDistributedIndexServer extends DistributedIndexServer {
+public abstract class ManagedDistributedIndexServer extends DistributedIndexServer {
     
-    private static final Log LOG = LogFactory.getLog(ZookeeperManagedDistributedIndexServer.class);
+    private static final Log LOG = LogFactory.getLog(ManagedDistributedIndexServer.class);
     private static final String BLUR_BASE_PATH = "/blur";
     private static final String BLUR_REGISTERED_SHARDS_PATH = "/blur/shard-nodes";
     private static final String BLUR_ONLINE_SHARDS_PATH = "/blur/online/shard-nodes";
     private static final String BLUR_ONLINE_CONTROLLERS_PATH = "/blur/online/controller-nodes";
     
-    private Zk zk;
+    private DistributedManager dm;
 
     private List<String> controllers = new ArrayList<String>();
     private List<String> offlineShards = new ArrayList<String>();
@@ -26,7 +26,7 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
     private long zkPollDelay = TimeUnit.MINUTES.toMillis(1);
     
     @Override
-    public ZookeeperManagedDistributedIndexServer init() {
+    public ManagedDistributedIndexServer init() {
         super.init();
         setupZookeeper();
         registerMyself();
@@ -46,13 +46,13 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
     }
 
     private void registerMyself() {
-        zk.createEphemeralPath(BLUR_ONLINE_SHARDS_PATH,getNodeName());
+        dm.createEphemeralPath(BLUR_ONLINE_SHARDS_PATH,getNodeName());
     }
 
     private synchronized void pollForState() {
-        List<String> shardNodes = zk.list(BLUR_REGISTERED_SHARDS_PATH);
-        List<String> onlineShardNodes = zk.list(BLUR_ONLINE_SHARDS_PATH);
-        controllers = zk.list(BLUR_ONLINE_CONTROLLERS_PATH);
+        List<String> shardNodes = dm.list(BLUR_REGISTERED_SHARDS_PATH);
+        List<String> onlineShardNodes = dm.list(BLUR_ONLINE_SHARDS_PATH);
+        controllers = dm.list(BLUR_ONLINE_CONTROLLERS_PATH);
         List<String> offlineShardNodes = new ArrayList<String>(shardNodes);
         offlineShardNodes.removeAll(onlineShardNodes);
         boolean stateChange = false;
@@ -77,7 +77,7 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
     }
 
     private void register(String path) {
-        zk.registerCallableOnChange(new Runnable() {
+        dm.registerCallableOnChange(new Runnable() {
             @Override
             public void run() {
                 pollForState();
@@ -90,7 +90,7 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
         super.close();
         daemon.cancel();
         daemon.purge();
-        zk.close();
+        dm.close();
     }
 
     @Override
@@ -108,12 +108,12 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
         return shards;
     }
     
-    public Zk getZk() {
-        return zk;
+    public DistributedManager getZk() {
+        return dm;
     }
 
-    public ZookeeperManagedDistributedIndexServer setZk(Zk zk) {
-        this.zk = zk;
+    public ManagedDistributedIndexServer setZk(DistributedManager zk) {
+        this.dm = zk;
         return this;
     }
     
@@ -121,7 +121,7 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
         return zkPollDelay;
     }
 
-    public ZookeeperManagedDistributedIndexServer setZkPollDelay(long zkPollDelay) {
+    public ManagedDistributedIndexServer setZkPollDelay(long zkPollDelay) {
         this.zkPollDelay = zkPollDelay;
         return this;
     }
@@ -137,17 +137,17 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
     }
     
     private void setupZookeeper() {
-        if (!zk.exists(BLUR_BASE_PATH)) {
-            zk.createPath(BLUR_BASE_PATH);
+        if (!dm.exists(BLUR_BASE_PATH)) {
+            dm.createPath(BLUR_BASE_PATH);
         }
-        if (!zk.exists(BLUR_REGISTERED_SHARDS_PATH)) {
-            zk.createPath(BLUR_REGISTERED_SHARDS_PATH);
+        if (!dm.exists(BLUR_REGISTERED_SHARDS_PATH)) {
+            dm.createPath(BLUR_REGISTERED_SHARDS_PATH);
         }
-        if (!zk.exists(BLUR_ONLINE_SHARDS_PATH)) {
-            zk.createPath(BLUR_ONLINE_SHARDS_PATH);
+        if (!dm.exists(BLUR_ONLINE_SHARDS_PATH)) {
+            dm.createPath(BLUR_ONLINE_SHARDS_PATH);
         }
-        if (!zk.exists(BLUR_ONLINE_CONTROLLERS_PATH)) {
-            zk.createPath(BLUR_ONLINE_CONTROLLERS_PATH);
+        if (!dm.exists(BLUR_ONLINE_CONTROLLERS_PATH)) {
+            dm.createPath(BLUR_ONLINE_CONTROLLERS_PATH);
         }
     }
 }

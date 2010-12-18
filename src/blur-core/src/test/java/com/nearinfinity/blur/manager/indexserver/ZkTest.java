@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -40,10 +39,10 @@ public class ZkTest {
     
     @Test
     public void testCallable() {
-        zkInMemory.registerCallableOnChange(new Callable<Void>() {
+        zkInMemory.registerCallableOnChange(new Runnable() {
             @Override
-            public Void call() throws Exception {
-                return null;
+            public void run() {
+                
             }
         }, "test","test");
     }
@@ -84,7 +83,7 @@ public class ZkTest {
         }
 
         @Override
-        protected void registerCallableOnChangeInternal(Callable<?> n, String path) {
+        protected void registerCallableOnChangeInternal(Runnable runnable, String path) {
             
         }
         

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -78,11 +77,10 @@ public abstract class ZookeeperManagedDistributedIndexServer extends Distributed
     }
 
     private void register(String path) {
-        zk.registerCallableOnChange(new Callable<Void>() {
+        zk.registerCallableOnChange(new Runnable() {
             @Override
-            public Void call() throws Exception {
+            public void run() {
                 pollForState();
-                return null;
             }
         },path);
     }

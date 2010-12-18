@@ -3,7 +3,6 @@ package com.nearinfinity.blur.manager.indexserver;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Callable;
 
 public abstract class Zk {
 
@@ -12,7 +11,7 @@ public abstract class Zk {
     protected abstract void createPathInternal(String path);
     protected abstract void createEphemeralPathInternal(String path);
     protected abstract List<String> listInternal(String path);
-    protected abstract void registerCallableOnChangeInternal(Callable<?> n, String path);
+    protected abstract void registerCallableOnChangeInternal(Runnable runnable, String path);
 
     public boolean exists(String... pathes) {
         return existsInternal(resolvePath(pathes));
@@ -30,8 +29,8 @@ public abstract class Zk {
         return listInternal(resolvePath(pathes));
     }
 
-    public void registerCallableOnChange(Callable<?> n, String... pathes) {
-        registerCallableOnChangeInternal(n,resolvePath(pathes));
+    public void registerCallableOnChange(Runnable runnable, String... pathes) {
+        registerCallableOnChangeInternal(runnable,resolvePath(pathes));
     }
 
     private String resolvePath(String[] pathes) {

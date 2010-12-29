@@ -20,6 +20,7 @@ import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
+import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FacetQuery;
@@ -43,6 +44,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	
 	private ExecutorService executor = Executors.newCachedThreadPool();
 	private AtomicReference<Map<String,Map<String,String>>> shardServerLayout = new AtomicReference<Map<String,Map<String,String>>>(new HashMap<String, Map<String,String>>());
+	private BlurClient client;
 
     private Timer shardLayoutTimer;
     
@@ -62,7 +64,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 			HitsIterable hitsIterable = ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,HitsIterable>() {
 				@Override
 				public HitsIterable call(final String hostnamePort) throws Exception {
-					return BlurClientManager.execute(hostnamePort, new BlurSearchCommand<HitsIterable>() {
+					return client.execute(hostnamePort, new BlurSearchCommand<HitsIterable>() {
 		                @Override
 		                public HitsIterable call(Client client) throws Exception {
 		                    return new HitsIterableBlurClient(client,hostnamePort,table,searchQuery);
@@ -88,7 +90,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 			TException {
 	    String clientHostnamePort = getClientHostnamePort(table,selector);
 		try {
-		    return BlurClientManager.execute(clientHostnamePort, 
+		    return client.execute(clientHostnamePort, 
 		        new BlurSearchCommand<FetchResult>() {
                     @Override
                     public FetchResult call(Client client) throws Exception {
@@ -109,7 +111,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
             ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,Void>() {
                 @Override
                 public Void call(String hostnamePort) throws Exception {
-                    BlurClientManager.execute(hostnamePort, new BlurSearchCommand<Void>() {
+                    client.execute(hostnamePort, new BlurSearchCommand<Void>() {
                         @Override
                         public Void call(Client client) throws Exception {
                             client.cancelSearch(uuid);
@@ -139,7 +141,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
             return ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,List<SearchQueryStatus>>() {
                 @Override
                 public List<SearchQueryStatus> call(String hostnamePort) throws Exception {
-                    return BlurClientManager.execute(hostnamePort, new BlurSearchCommand<List<SearchQueryStatus>>() {
+                    return client.execute(hostnamePort, new BlurSearchCommand<List<SearchQueryStatus>>() {
                         @Override
                         public List<SearchQueryStatus> call(Client client) throws Exception {
                             return client.currentSearches(table);
@@ -175,7 +177,7 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
                 layout.put(table, ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,Map<String,String>>() {
                     @Override
                     public Map<String,String> call(String hostnamePort) throws Exception {
-                        return BlurClientManager.execute(hostnamePort, new BlurSearchCommand<Map<String,String>>() {
+                        return client.execute(hostnamePort, new BlurSearchCommand<Map<String,String>>() {
                             @Override
                             public Map<String,String> call(Client client) throws Exception {
                                 return client.shardServerLayout(table);
@@ -217,6 +219,14 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
     @Override
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
         throw new RuntimeException("not implemented");
+    }
+
+    public BlurClient getClient() {
+        return client;
+    }
+
+    public void setClient(BlurClient client) {
+        this.client = client;
     }
 
 }

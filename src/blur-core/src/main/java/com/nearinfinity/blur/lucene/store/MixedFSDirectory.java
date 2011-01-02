@@ -19,9 +19,14 @@ public class MixedFSDirectory extends FSDirectory {
     private MMapDirectory mMapDir;
     
     public MixedFSDirectory(File path, LockFactory lockFactory) throws IOException {
-        super(path, lockFactory);
+        super(createDir(path), lockFactory);
         baseDir = FSDirectory.open(path, lockFactory);
         mMapDir = new MMapDirectory(path);
+    }
+
+    private static File createDir(File path) {
+        path.mkdirs();
+        return path;
     }
 
     @Override

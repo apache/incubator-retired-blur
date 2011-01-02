@@ -64,7 +64,7 @@ public class BlurThriftServer implements BlurConstants {
                 shardServer = blurThriftServer.start(SHARD);
 		    } else if (CONTROLLER.equals(arg) && controllerServer == null) {
 		        BlurControllerServer blurControllerServer = new BlurControllerServer();
-		        blurControllerServer.setIndexServer(indexServer);
+//		        blurControllerServer.setIndexServer(indexServer);
 		        
                 BlurThriftServer blurThriftServer = new BlurThriftServer(40010, blurControllerServer);
                 controllerServer = blurThriftServer.start(CONTROLLER);

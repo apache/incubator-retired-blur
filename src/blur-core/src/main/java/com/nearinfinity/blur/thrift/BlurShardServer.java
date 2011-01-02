@@ -2,6 +2,7 @@ package com.nearinfinity.blur.thrift;
 
 import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.manager.IndexServer;
+import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FacetQuery;
@@ -20,6 +23,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
@@ -27,6 +31,7 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
+	private IndexServer indexServer;
 	
     @Override
 	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
@@ -42,11 +47,6 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
         }
 	}
 	
-    @Override
-	protected NODE_TYPE getType() {
-		return NODE_TYPE.SHARD;
-	}
-
 	@Override
 	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
         try {
@@ -155,5 +155,39 @@ public class BlurShardServer extends BlurAdminServer implements BlurConstants {
             LOG.error("Unknown error while trying to get terms list for [" + getParametersList("table",table,"columnFamily",columnFamily,"columnName",columnName,"startWith",startWith,"size",size) + "]",e);
             throw new BlurException(e.getMessage());
         }
+    }
+    
+    @Override
+    public List<String> tableList() throws BlurException, TException {
+        return indexServer.getTableList();
+    }
+    
+    @Override
+    public TableDescriptor describe(String table) throws BlurException, TException {
+        Map<String, String> shardServerLayout = shardServerLayout(table);
+        TableDescriptor descriptor = new TableDescriptor();
+        descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
+        descriptor.shardNames = new ArrayList<String>(shardServerLayout.keySet());
+        descriptor.isEnabled = isTableEnabled(table);
+        return descriptor;
+    }
+
+    public boolean isTableEnabled(String table) {
+        TABLE_STATUS tableStatus = indexServer.getTableStatus(table);
+        if (tableStatus == TABLE_STATUS.ENABLED) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    @Override
+    public IndexServer getIndexServer() {
+        return indexServer;
+    }
+
+    public BlurShardServer setIndexServer(IndexServer indexServer) {
+        this.indexServer = indexServer;
+        return this;
     }
 }

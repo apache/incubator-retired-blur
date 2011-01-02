@@ -16,6 +16,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
+import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerFacetResult;
@@ -32,6 +33,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
@@ -50,6 +52,8 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 	private long delay = TimeUnit.SECONDS.toMillis(5);
 
     private Timer shardLayoutTimer;
+
+    private IndexServer indexServer;
     
     public BlurControllerServer() {
         shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
@@ -81,11 +85,6 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
 		}
 	}
 	
-    @Override
-	protected NODE_TYPE getType() {
-		return NODE_TYPE.CONTROLLER;
-	}
-
 	@Override
 	public FetchResult fetchRow(final String table, final Selector selector) throws BlurException,
 			TException {
@@ -268,6 +267,28 @@ public class BlurControllerServer extends BlurAdminServer implements BlurConstan
                 return null;
             }
         });
+    }
+
+    @Override
+    public IndexServer getIndexServer() {
+        return indexServer;
+    }
+    
+    public BlurControllerServer setIndexServer(IndexServer indexServer) {
+        this.indexServer = indexServer;
+        return this;
+    }
+
+    @Override
+    public TableDescriptor describe(String table) throws BlurException, TException {
+        //call out to shard server
+        throw new RuntimeException();
+    }
+
+    @Override
+    public List<String> tableList() throws BlurException, TException {
+        //call out to shard server
+        throw new RuntimeException();
     }
 
 }

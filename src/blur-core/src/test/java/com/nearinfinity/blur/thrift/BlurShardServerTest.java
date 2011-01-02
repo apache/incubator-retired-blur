@@ -1,7 +1,5 @@
 package com.nearinfinity.blur.thrift;
 
-import static org.junit.Assert.*;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -11,11 +9,9 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
 
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
-import com.nearinfinity.blur.thrift.BlurAdminServer.NODE_TYPE;
 
 public class BlurShardServerTest {
     
@@ -35,14 +31,6 @@ public class BlurShardServerTest {
     public void tearDown() throws InterruptedException {
         blurShardServer.close();
     }
-    
-    @Test
-    public void testType() {
-        assertEquals(NODE_TYPE.SHARD, blurShardServer.getType());
-    }
-    
-    
-    
     
     private IndexServer getIndexServer() {
         return new IndexServer() {

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -26,12 +27,15 @@ import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.Test;
 
-import com.nearinfinity.blur.lucene.index.SuperDocument;
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperParser;
-import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.ColumnFamily;
+import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache;
+import com.nearinfinity.blur.utils.RowIndexWriter;
 
 public class RandomSuperQueryTest {
 	
@@ -82,9 +86,10 @@ public class RandomSuperQueryTest {
 		}
 		
 		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
+		RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30), ""));
 		int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
 		for (int i = 0; i < numberOfDocs; i++) {
-			IndexManager.replace(writer, generatSuperDoc(random, columns, sampler));
+		    indexWriter.replace(generatSuperDoc(random, columns, sampler));
 		}
 		writer.close();
 		return directory;
@@ -99,18 +104,24 @@ public class RandomSuperQueryTest {
 		return str;
 	}
 
-	private SuperDocument generatSuperDoc(Random random, Map<String, String[]> columns, Collection<String> sampler) {
-		SuperDocument document = new SuperDocument(Long.toString(random.nextLong()));
+	private Row generatSuperDoc(Random random, Map<String, String[]> columns, Collection<String> sampler) {
+		Row row = new Row().setId(Long.toString(random.nextLong()));
 		StringBuilder builder = new StringBuilder();
 		for (String colFam : columns.keySet()) {
 			String[] cols = columns.get(colFam);
+			ColumnFamily columnFamily = new ColumnFamily().setFamily(colFam);
+			row.addToColumnFamilies(columnFamily);
 			for (int i = 0; i < random.nextInt(MAX_NUM_DOCS_PER_COL_FAM); i++) {
 				String superKey = Long.toString(random.nextLong());
+				Set<Column> colSet = new HashSet<Column>();
+                columnFamily.putToColumns(superKey, colSet);
 				int staringLength = builder.length();
 				for (String column : cols) {
 					if (random.nextInt() % MOD_COLS_USED_FOR_SKIPPING == 0) {
 						String word = genWord(random,"word");
-						document.addFieldAnalyzedNoNorms(colFam, superKey, column, word);
+						Column c = new Column().setName(column);
+						c.addToValues(word);
+						colSet.add(c);
 						if (random.nextInt() % MOD_USED_FOR_SAMPLING == 0) {
 							builder.append(" +" + colFam + "." + column + ":" + word);
 						}
@@ -125,7 +136,7 @@ public class RandomSuperQueryTest {
 		if (!string.isEmpty()) {
 			sampler.add(string);
 		}
-		return document;
+		return row;
 	}
 	
 	private String genWord(Random random, String prefix) {

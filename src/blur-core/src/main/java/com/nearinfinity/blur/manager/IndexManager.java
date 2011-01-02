@@ -1,6 +1,5 @@
 package com.nearinfinity.blur.manager;
 
-import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.createSuperDocument;
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
@@ -42,7 +40,6 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
@@ -96,21 +93,21 @@ public class IndexManager implements BlurConstants {
         return this;
     }
 
-    public static void replace(IndexWriter indexWriter, Row row) throws IOException {
-        replace(indexWriter, createSuperDocument(row));
-    }
+//    public static void replace(IndexWriter indexWriter, Row row) throws IOException {
+//        replace(indexWriter, createSuperDocument(row));
+//    }
 
-    public static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
-        synchronized (indexWriter) {
-            indexWriter.deleteDocuments(new Term(ID, document.getId()));
-            if (!replaceInternal(indexWriter, document)) {
-                indexWriter.deleteDocuments(new Term(ID, document.getId()));
-                if (!replaceInternal(indexWriter, document)) {
-                    throw new IOException("SuperDocument too large, try increasing ram buffer size.");
-                }
-            }
-        }
-    }
+//    public static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
+//        synchronized (indexWriter) {
+//            indexWriter.deleteDocuments(new Term(ID, document.getId()));
+//            if (!replaceInternal(indexWriter, document)) {
+//                indexWriter.deleteDocuments(new Term(ID, document.getId()));
+//                if (!replaceInternal(indexWriter, document)) {
+//                    throw new IOException("SuperDocument too large, try increasing ram buffer size.");
+//                }
+//            }
+//        }
+//    }
 
     public void close() throws InterruptedException {
         executor.shutdownNow();
@@ -364,19 +361,19 @@ public class IndexManager implements BlurConstants {
         };
     }
 
-    private static boolean replaceInternal(IndexWriter indexWriter, SuperDocument document) throws IOException {
-        long oldRamSize = indexWriter.ramSizeInBytes();
-        for (Document doc : document.getAllDocumentsForIndexing()) {
-            long newRamSize = indexWriter.ramSizeInBytes();
-            if (newRamSize < oldRamSize) {
-                LOG.info("Flush occur during writing of super document, start over.");
-                return false;
-            }
-            oldRamSize = newRamSize;
-            indexWriter.addDocument(doc);
-        }
-        return true;
-    }
+//    private static boolean replaceInternal(IndexWriter indexWriter, SuperDocument document) throws IOException {
+//        long oldRamSize = indexWriter.ramSizeInBytes();
+//        for (Document doc : document.getAllDocumentsForIndexing()) {
+//            long newRamSize = indexWriter.ramSizeInBytes();
+//            if (newRamSize < oldRamSize) {
+//                LOG.info("Flush occur during writing of super document, start over.");
+//                return false;
+//            }
+//            oldRamSize = newRamSize;
+//            indexWriter.addDocument(doc);
+//        }
+//        return true;
+//    }
 
     public IndexServer getIndexServer() {
         return indexServer;

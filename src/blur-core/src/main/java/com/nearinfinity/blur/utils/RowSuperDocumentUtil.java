@@ -63,22 +63,23 @@ public class RowSuperDocumentUtil implements BlurConstants {
         row.addToColumnFamilies(columnFamily);
 	}
 	
-	public static SuperDocument createSuperDocument(Row row) {
-		SuperDocument document = new SuperDocument(row.id);
-		for (ColumnFamily columnFamily : row.columnFamilies) {
-			for (String id : columnFamily.columns.keySet()) {
-			    Set<Column> columns = columnFamily.columns.get(id);
-			    for (Column column : columns) {
-			        add(columnFamily.family,id,column,document);
-			    }
-			}
-		}
-		return document;
-	}
+//	public static SuperDocument createSuperDocument(Row row) {
+//		SuperDocument document = new SuperDocument(row.id);
+//		for (ColumnFamily columnFamily : row.columnFamilies) {
+//			for (String id : columnFamily.columns.keySet()) {
+//			    Set<Column> columns = columnFamily.columns.get(id);
+//			    for (Column column : columns) {
+//			        add(columnFamily.family,id,column,document);
+//			    }
+//			}
+//		}
+//		return document;
+//	}
+//	
+//	private static void add(String superColumnFamilyName, String superColumnId, Column column, SuperDocument document) {
+//		for (String value : column.values) {
+//			document.addFieldStoreAnalyzedNoNorms(superColumnFamilyName, superColumnId, column.name, value);
+//		}
+//	}
 	
-	private static void add(String superColumnFamilyName, String superColumnId, Column column, SuperDocument document) {
-		for (String value : column.values) {
-			document.addFieldStoreAnalyzedNoNorms(superColumnFamilyName, superColumnId, column.name, value);
-		}
-	}
 }

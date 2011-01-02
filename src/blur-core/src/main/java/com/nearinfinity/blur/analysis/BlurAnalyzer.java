@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -15,6 +17,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Field.Index;
+import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.util.Version;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -64,43 +68,85 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 	}
 
     private String originalJsonStr;
+    private Map<String,Store> storeMap = new HashMap<String, Store>();
 
-	private BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
+	public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
 		super(defaultAnalyzer);
 		this.originalJsonStr = jsonStr;
 	}
 	
 	private static BlurAnalyzer create(JsonNode jsonNode, String jsonStr) {
 	    try {
-    		Analyzer defaultAnalyzer = getAnalyzer(jsonNode.get(DEFAULT));
+	        Map<String,Class<? extends Analyzer>> aliases = getAliases(jsonNode.get("aliases"));
+    		Analyzer defaultAnalyzer = getAnalyzer(jsonNode.get(DEFAULT),aliases);
     		BlurAnalyzer analyzer = new BlurAnalyzer(defaultAnalyzer, jsonStr);
-    		populate(analyzer, "", jsonNode.get(FIELDS));
+    		populate(analyzer, "", jsonNode.get(FIELDS),Store.YES,aliases);
     		return analyzer;
 	    } catch (Exception e) {
 	        throw new RuntimeException(e);
         }
 	}
 
-	private static void populate(BlurAnalyzer analyzer, String name, JsonNode jsonNode) throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	private static Map<String, Class<? extends Analyzer>> getAliases(JsonNode jsonNode) throws ClassNotFoundException {
+	    Map<String, Class<? extends Analyzer>> map = new HashMap<String, Class<? extends Analyzer>>();
+	    if (jsonNode == null) {
+            return map;
+	    }
+	    if (jsonNode.isArray()) {
+	        Iterator<JsonNode> elements = jsonNode.getElements();
+	        while (elements.hasNext()) {
+	            JsonNode node = elements.next();
+	            if (node.isObject()) {
+	                addAlias(map,node);
+	            }
+	        }
+	        return map;
+	    }
+	    throw new IllegalArgumentException("aliases has to be an array.");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addAlias(Map<String, Class<? extends Analyzer>> map, JsonNode jsonNode) throws ClassNotFoundException {
+        Iterator<String> fieldNames = jsonNode.getFieldNames();
+        while (fieldNames.hasNext()) {
+            String name = fieldNames.next();
+            JsonNode value = jsonNode.get(name);
+            String className = value.getValueAsText();
+            Class<? extends Analyzer> clazz = (Class<? extends Analyzer>) Class.forName(className);
+            map.put(name, clazz);
+        }
+    }
+
+    private static void populate(BlurAnalyzer analyzer, String name, JsonNode jsonNode, Store store, Map<String, Class<? extends Analyzer>> aliases) throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		if (jsonNode == null) {
 			return;
 		}
 		if (jsonNode.isObject()) {
 			for (String key : it(jsonNode.getFieldNames())) {
-				populate(analyzer, getName(name,key.toString()), jsonNode.get(key));
+				populate(analyzer, getName(name,key.toString()), jsonNode.get(key), store, aliases);
 			}
 		} else if (jsonNode.isArray()) {
 			int size = jsonNode.size();
 			for (int i = 0; i < size; i++) {
-				populate(analyzer, name, jsonNode.get(i));
+				JsonNode node = jsonNode.get(i);
+				if (node.isObject()) {
+				    populate(analyzer, name, node, Store.NO, aliases);
+				} else {
+				    populate(analyzer, name, node, Store.YES, aliases);
+				}
 			}
 		} else {
-			Analyzer a = getAnalyzerByClassName(jsonNode.getValueAsText());
+			Analyzer a = getAnalyzerByClassName(jsonNode.getValueAsText(), aliases);
 			analyzer.addAnalyzer(name, a);
+			analyzer.putStore(name,store);
 		}
 	}
 
-	private static <T> Iterable<T> it(final Iterator<T> iterator) {
+	public void putStore(String name, Store store) {
+	    storeMap.put(name, store);
+    }
+
+    private static <T> Iterable<T> it(final Iterator<T> iterator) {
 		return new Iterable<T>() {
 			@Override
 			public Iterator<T> iterator() {
@@ -116,7 +162,7 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 		return baseName + SEP + newName;
 	}
 
-	private static Analyzer getAnalyzer(Object o) throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	private static Analyzer getAnalyzer(Object o, Map<String, Class<? extends Analyzer>> aliases) throws SecurityException, IllegalArgumentException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		if (o == null) {
 			throw new NullPointerException();
 		}
@@ -127,11 +173,15 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 		} else {
 			cn = o.toString();
 		}
-		return getAnalyzerByClassName(cn);
+		return getAnalyzerByClassName(cn, aliases);
 	}
 
-	private static Analyzer getAnalyzerByClassName(String className) throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
-		Class<?> clazz = Class.forName(className);
+	@SuppressWarnings("unchecked")
+    private static Analyzer getAnalyzerByClassName(String className, Map<String, Class<? extends Analyzer>> aliases) throws ClassNotFoundException, SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
+	    Class<? extends Analyzer> clazz = aliases.get(className);
+	    if (clazz == null) {
+	        clazz = (Class<? extends Analyzer>) Class.forName(className);
+	    }
 		try {
 			return (Analyzer) clazz.newInstance();
 		} catch (Exception e) {
@@ -143,6 +193,18 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
     @Override
     public String toString() {
         return originalJsonStr;
+    }
+
+    public Store getStore(String fieldName) {
+        Store store = storeMap.get(fieldName);
+        if (store == null) {
+            return Store.YES;
+        }
+        return store;
+    }
+    
+    public Index getIndex(String fieldName) {
+        return Index.ANALYZED_NO_NORMS;
     }
 
 }

@@ -13,7 +13,7 @@ import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
 
-public class RowSuperDocumentUtil {
+public class RowSuperDocumentUtil implements BlurConstants {
 
 	public static Row getRow(Iterable<Document> docs) {
 		Row row = new Row();
@@ -33,14 +33,14 @@ public class RowSuperDocumentUtil {
 
 	public static void addDocumentToRow(Row row, Document document) {
 	    if (row.id == null) {
-	        row.setId(document.getField(SuperDocument.ID).stringValue());
+	        row.setId(document.getField(ID).stringValue());
 	    }
-		String superColumnId = document.getField(SuperDocument.SUPER_KEY).stringValue();
+		String superColumnId = document.getField(SUPER_KEY).stringValue();
 		Map<String, Column> columns = new HashMap<String, Column>();
 		String superColumnFamily = null;
 		for (Fieldable fieldable : document.getFields()) {
 			String name = fieldable.name();
-			int index = name.indexOf(SuperDocument.SEP);
+			int index = name.indexOf(SEP);
 			if (index < 0) {
 				//skip non super columns names.
 				continue;

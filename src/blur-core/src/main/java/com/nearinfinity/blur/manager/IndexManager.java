@@ -61,6 +61,7 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -68,7 +69,7 @@ import com.nearinfinity.blur.utils.TermDocIterable;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class IndexManager {
+public class IndexManager implements BlurConstants {
 
     private static final Version LUCENE_VERSION = Version.LUCENE_30;
     private static final Log LOG = LogFactory.getLog(IndexManager.class);
@@ -101,9 +102,9 @@ public class IndexManager {
 
     public static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
         synchronized (indexWriter) {
-            indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
+            indexWriter.deleteDocuments(new Term(ID, document.getId()));
             if (!replaceInternal(indexWriter, document)) {
-                indexWriter.deleteDocuments(new Term(SuperDocument.ID, document.getId()));
+                indexWriter.deleteDocuments(new Term(ID, document.getId()));
                 if (!replaceInternal(indexWriter, document)) {
                     throw new IOException("SuperDocument too large, try increasing ram buffer size.");
                 }
@@ -272,7 +273,7 @@ public class IndexManager {
                 fetchResult.exists = true;
                 fetchResult.deleted = false;
                 String rowId = getRowId(reader, docId);
-                TermDocs termDocs = reader.termDocs(new Term(SuperDocument.ID, rowId));
+                TermDocs termDocs = reader.termDocs(new Term(ID, rowId));
                 fetchResult.row = getRow(new TermDocIterable(termDocs, reader));
                 return;
             }
@@ -285,13 +286,13 @@ public class IndexManager {
 
             @Override
             public FieldSelectorResult accept(String fieldName) {
-                if (SuperDocument.ID.equals(fieldName)) {
+                if (ID.equals(fieldName)) {
                     return FieldSelectorResult.LOAD_AND_BREAK;
                 }
                 return FieldSelectorResult.NO_LOAD;
             }
         });
-        return document.get(SuperDocument.ID);
+        return document.get(ID);
     }
 
     private Set<Column> getColumns(Document document) {
@@ -335,13 +336,13 @@ public class IndexManager {
 
             @Override
             public FieldSelectorResult accept(String fieldName) {
-                if (SuperDocument.ID.equals(fieldName)) {
+                if (ID.equals(fieldName)) {
                     return FieldSelectorResult.LOAD;
                 }
-                if (SuperDocument.SUPER_KEY.equals(fieldName)) {
+                if (SUPER_KEY.equals(fieldName)) {
                     return FieldSelectorResult.LOAD;
                 }
-                if (SuperDocument.PRIME_DOC.equals(fieldName)) {
+                if (PRIME_DOC.equals(fieldName)) {
                     return FieldSelectorResult.NO_LOAD;
                 }
                 if (selector.columnFamilies == null && selector.columns == null) {

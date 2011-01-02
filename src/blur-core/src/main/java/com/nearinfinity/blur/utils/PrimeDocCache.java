@@ -9,7 +9,6 @@ import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 
-import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class PrimeDocCache implements BlurConstants {
@@ -17,7 +16,7 @@ public class PrimeDocCache implements BlurConstants {
     private static final Log LOG = LogFactory.getLog(PrimeDocCache.class);
 
     public static final BlurBitSet EMPTY_BIT_SET = new BlurBitSet();
-    private static final Term PRIME_DOC_TERM = new Term(SuperDocument.PRIME_DOC,SuperDocument.PRIME_DOC_VALUE);
+    private static final Term PRIME_DOC_TERM = new Term(PRIME_DOC,PRIME_DOC_VALUE);
     
     private static Map<String,Map<String,Map<String,BlurBitSet>>> bitSets = new ConcurrentHashMap<String, Map<String,Map<String,BlurBitSet>>>();
 

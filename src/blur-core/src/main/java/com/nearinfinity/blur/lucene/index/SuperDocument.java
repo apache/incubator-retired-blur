@@ -15,13 +15,15 @@ import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 
-public class SuperDocument {
+import com.nearinfinity.blur.utils.BlurConstants;
+
+public class SuperDocument implements BlurConstants {
 	
-	public static final String PRIME_DOC = "_prime_";
-	public static final String PRIME_DOC_VALUE = "true";
-	public static final String ID = "_id_";
-	public static final String SUPER_KEY = "_superkey_";
-	public static final String SEP = ".";
+//	public static final String PRIME_DOC = "_prime_";
+//	public static final String PRIME_DOC_VALUE = "true";
+//	public static final String ID = "_id_";
+//	public static final String SUPER_KEY = "_superkey_";
+//	public static final String SEP = ".";
 	
 	private Map<String,Map<String,Document>> documents = new HashMap<String, Map<String,Document>>();
 	private String id;

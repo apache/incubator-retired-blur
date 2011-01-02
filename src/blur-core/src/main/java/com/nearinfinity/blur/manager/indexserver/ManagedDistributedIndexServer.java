@@ -22,8 +22,10 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private List<String> controllers = new ArrayList<String>();
     private List<String> offlineShards = new ArrayList<String>();
     private List<String> shards = new ArrayList<String>();
+    private List<String> onlineShards = new ArrayList<String>();
     private Timer daemon;
     private long zkPollDelay = TimeUnit.MINUTES.toMillis(1);
+    
     
     @Override
     public ManagedDistributedIndexServer init() {
@@ -51,10 +53,10 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
 
     private synchronized void pollForState() {
         List<String> shardNodes = dm.list(BLUR_REGISTERED_SHARDS_PATH);
-        List<String> onlineShardNodes = dm.list(BLUR_ONLINE_SHARDS_PATH);
+        onlineShards = dm.list(BLUR_ONLINE_SHARDS_PATH);
         controllers = dm.list(BLUR_ONLINE_CONTROLLERS_PATH);
         List<String> offlineShardNodes = new ArrayList<String>(shardNodes);
-        offlineShardNodes.removeAll(onlineShardNodes);
+        offlineShardNodes.removeAll(onlineShards);
         boolean stateChange = false;
         if (!shardNodes.equals(shards)) {
             LOG.info("Shard servers in the cluster changed from [" + shards +
@@ -101,6 +103,11 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     @Override
     public List<String> getOfflineShardServers() {
         return offlineShards;
+    }
+    
+    @Override
+    public List<String> getOnlineShardServers() {
+        return onlineShards;
     }
 
     @Override

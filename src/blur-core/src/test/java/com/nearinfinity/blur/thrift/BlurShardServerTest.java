@@ -84,6 +84,11 @@ public class BlurShardServerTest {
             public List<String> getOfflineShardServers() {
                 throw new RuntimeException("not impl");
             }
+
+            @Override
+            public List<String> getOnlineShardServers() {
+                throw new RuntimeException("no impl");
+            }
             
         };
     }

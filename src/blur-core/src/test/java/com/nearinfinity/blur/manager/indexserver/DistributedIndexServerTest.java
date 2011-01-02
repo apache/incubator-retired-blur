@@ -261,6 +261,13 @@ public class DistributedIndexServerTest {
             return offlineNodes;
         }
 
+        @Override
+        public List<String> getOnlineShardServers() {
+            List<String> list = new ArrayList<String>(getShardServerList());
+            list.removeAll(getOfflineShardServers());
+            return list;
+        }
+
     }
 
 }

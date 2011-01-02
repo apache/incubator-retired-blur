@@ -133,4 +133,9 @@ public class LocalIndexServer implements IndexServer {
     public List<String> getOfflineShardServers() {
         return new ArrayList<String>();
     }
+    
+    @Override
+    public List<String> getOnlineShardServers() {
+        return getShardServerList();
+    }
 }

@@ -68,7 +68,7 @@ public class BlurControllerServerTest {
     @Test
     public void testRecordFrequency() throws BlurException, TException {
         long recordFrequency = server.recordFrequency(TABLE, "cf", "cn", "value");
-        assertEquals(0,recordFrequency);
+        assertEquals(3,recordFrequency);
     }
 
     private IndexServer getIndexServer() {
@@ -125,6 +125,11 @@ public class BlurControllerServerTest {
             public TABLE_STATUS getTableStatus(String table) {
                 throw new RuntimeException("no impl");
             }
+
+            @Override
+            public List<String> getOnlineShardServers() {
+                throw new RuntimeException("no impl");
+            }
         };
     }
 
@@ -175,7 +180,7 @@ public class BlurControllerServerTest {
             
             @Override
             public long recordFrequency(String arg0, String arg1, String arg2, String arg3) throws BlurException, TException {
-                throw new RuntimeException("no impl");
+                return 1l;
             }
             
             @Override

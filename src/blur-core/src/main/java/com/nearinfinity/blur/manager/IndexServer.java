@@ -8,31 +8,12 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 
-public interface IndexServer {
+public interface IndexServer extends ClusterInfo {
     
     public enum TABLE_STATUS {
         ENABLED,
         DISABLED
     }
-    
-    /**
-     * Gets a list of all the controller nodes in the cluster.
-     * @return the controller node list.
-     */
-    List<String> getControllerServerList();
-    
-    /**
-     * Gets a list of all the shard servers in the cluster.
-     * @return the shard node list.
-     */
-    List<String> getShardServerList();
-    
-    /**
-     * Gets a list of all the shard servers that are currently offline.
-     * NOTE: The node listed here are also in the shard server list.
-     * @return the offline shards servers.
-     */
-    List<String> getOfflineShardServers();
     
     /**
      * Gets the similarity object used by lucene for this table.

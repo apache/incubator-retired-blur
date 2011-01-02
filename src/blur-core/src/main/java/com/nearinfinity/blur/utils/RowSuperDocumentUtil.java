@@ -8,7 +8,6 @@ import java.util.TreeSet;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 
-import com.nearinfinity.blur.lucene.index.SuperDocument;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;

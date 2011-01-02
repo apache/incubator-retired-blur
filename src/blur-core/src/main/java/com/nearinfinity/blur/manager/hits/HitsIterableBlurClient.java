@@ -32,13 +32,11 @@ public class HitsIterableBlurClient implements HitsIterable {
     private int fetchCount = 100;
     private int batch = 0;
     private long totalHits;
-    private String hostnamePort;
     private long skipTo;
     private long uuid;
 
-    public HitsIterableBlurClient(BlurSearch.Client client, String hostnamePort, String table, SearchQuery searchQuery) {
+    public HitsIterableBlurClient(BlurSearch.Client client, String table, SearchQuery searchQuery) {
         this.client = client;
-        this.hostnamePort = hostnamePort;
         this.table = table;
         this.query = searchQuery.queryStr;
         this.superQueryOn = searchQuery.superQueryOn;
@@ -60,9 +58,7 @@ public class HitsIterableBlurClient implements HitsIterable {
             shardInfo.putAll(hits.shardInfo);
             batch++;
         } catch (Exception e) {
-            LOG.error("Error during for [" + query +
-                    "] on node [" + hostnamePort + 
-                    "]",e);
+            LOG.error("Error during for [" + query + "]",e);
             throw new RuntimeException(e);
         }
     }

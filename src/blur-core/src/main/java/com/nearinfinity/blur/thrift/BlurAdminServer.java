@@ -82,11 +82,11 @@ public abstract class BlurAdminServer implements Iface, BlurConstants {
 
     @Override
     public List<String> controllerServerList() throws BlurException, TException {
-        return null;
+        return indexServer.getControllerServerList();
     }
 
     @Override
     public List<String> shardServerList() throws BlurException, TException {
-        return null;
+        return indexServer.getShardServerList();
     }
 }

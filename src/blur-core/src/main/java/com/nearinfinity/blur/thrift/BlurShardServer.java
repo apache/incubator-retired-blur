@@ -27,7 +27,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
-public class BlurShardServer extends BlurAdminServer implements BlurConstants {
+public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;

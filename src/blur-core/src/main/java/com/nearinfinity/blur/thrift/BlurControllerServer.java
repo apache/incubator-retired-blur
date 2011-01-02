@@ -42,7 +42,7 @@ import com.nearinfinity.blur.utils.LoggingBlurException;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class BlurControllerServer extends BlurAdminServer implements BlurConstants {
+public class BlurControllerServer extends BlurBaseServer implements BlurConstants {
 	
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 	

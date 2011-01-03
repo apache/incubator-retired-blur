@@ -4,14 +4,6 @@ exception BlurException {
   1:string message
 }
 
-exception MissingShardException {
-  1:string message
-}
-
-exception EventStoppedExecutionException {
-  1:string message
-}
-
 enum ScoreType {
   SUPER,
   AGGREGATE,
@@ -84,14 +76,36 @@ struct Selector {
   4:map<string,set<string>> columns
 }
 
+struct Facet {
+  1:string queryStr,
+  2:i64 minimumNumberOfHits
+}
+
+struct FacetQuery {
+  1:SearchQuery searchQuery,
+  2:list<Facet> facets,
+  3:i64 maxQueryTime
+}
+
+struct FacetResult {
+  1:FacetQuery facetQuery,
+  2:map<Facet,i64> counts
+}
+
 struct SearchQueryStatus {
   1:SearchQuery query,
-  2:i64 realTime,
-  3:i64 cpuTime,
-  4:double complete,
-  5:bool running,
-  6:bool interrupted,
-  7:i64 uuid
+  2:Facet facet,
+  3:i64 realTime,
+  4:i64 cpuTime,
+  5:double complete,
+  6:bool running,
+  7:bool interrupted,
+  8:i64 uuid
+}
+
+struct Schema {
+  1:string table,
+  2:map<string,set<string>> columnFamilies
 }
 
 service BlurSearch {
@@ -102,17 +116,16 @@ service BlurSearch {
   list<string> tableList() throws (1:BlurException ex)
   TableDescriptor describe(1:string table) throws (1:BlurException ex)
 
-  Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-  void cancelSearch(1:i64 uuid) throws (1:BlurException be, 2: EventStoppedExecutionException esee)
+  Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException be)
+  FacetResult facetSearch(1:string table, 2:FacetQuery facetQuery) throws (1:BlurException be)
+  void cancelSearch(1:i64 uuid) throws (1:BlurException be)
   list<SearchQueryStatus> currentSearches(1:string table) throws (1:BlurException be)
 
-  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-  binary fetchRowBinary(1:string table, 2:Selector selector) throws (1:BlurException be, 2: MissingShardException mse, 3: EventStoppedExecutionException esee)
-}
+  Schema schema(1:string table) throws (1:BlurException ex)
+  list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)
+  i64 recordFrequency(1:string table, 2:string columnFamily, 3:string columnName, 4:string value) throws (1:BlurException ex)
 
-service BlurAdmin extends BlurSearch {
-  void shutdownShard(1:string node) throws (1:BlurException be)
-  void shutdownController(1:string node) throws (1:BlurException be)
+  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be)
+  binary fetchRowBinary(1:string table, 2:Selector selector) throws (1:BlurException be)
 }
-
 

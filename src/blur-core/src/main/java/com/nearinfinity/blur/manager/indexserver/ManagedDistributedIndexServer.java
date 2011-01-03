@@ -11,6 +11,11 @@ import org.apache.commons.logging.LogFactory;
 
 public abstract class ManagedDistributedIndexServer extends DistributedIndexServer {
     
+    public enum NODE_TYPE {
+        SHARD,
+        CONTROLLER
+    }
+    
     private static final Log LOG = LogFactory.getLog(ManagedDistributedIndexServer.class);
     private static final String BLUR_BASE_PATH = "/blur";
     private static final String BLUR_REGISTERED_SHARDS_PATH = "/blur/shard-nodes";
@@ -26,7 +31,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private List<String> onlineShards = new ArrayList<String>();
     private Timer daemon;
     private long zkPollDelay = TimeUnit.MINUTES.toMillis(1);
-    
+    private NODE_TYPE type;
     
     @Override
     public ManagedDistributedIndexServer init() {
@@ -49,10 +54,16 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     }
 
     private void registerMyself() {
-        if (!dm.exists(BLUR_REGISTERED_SHARDS_PATH,getNodeName())) {
-            dm.createPath(BLUR_REGISTERED_SHARDS_PATH,getNodeName());
+        String path;
+        if (type == NODE_TYPE.SHARD) {
+            if (!dm.exists(BLUR_REGISTERED_SHARDS_PATH,getNodeName())) {
+                dm.createPath(BLUR_REGISTERED_SHARDS_PATH,getNodeName());
+            }
+            path = BLUR_ONLINE_SHARDS_PATH;
+        } else {
+            path = BLUR_ONLINE_CONTROLLERS_PATH;
         }
-        while (dm.exists(BLUR_ONLINE_SHARDS_PATH,getNodeName())) {
+        while (dm.exists(path,getNodeName())) {
             LOG.info("Waiting to register myself [" + getNodeName() + "].");
             try {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(3));
@@ -60,7 +71,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
                 throw new RuntimeException(e);
             }
         }
-        dm.createEphemeralPath(BLUR_ONLINE_SHARDS_PATH,getNodeName());
+        dm.createEphemeralPath(path,getNodeName());
         LOG.info("Registered [" + getNodeName() + "].");
     }
 
@@ -172,5 +183,13 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         if (!dm.exists(BLUR_ONLINE_CONTROLLERS_PATH)) {
             dm.createPath(BLUR_ONLINE_CONTROLLERS_PATH);
         }
+    }
+
+    public NODE_TYPE getType() {
+        return type;
+    }
+
+    public void setType(NODE_TYPE type) {
+        this.type = type;
     }
 }

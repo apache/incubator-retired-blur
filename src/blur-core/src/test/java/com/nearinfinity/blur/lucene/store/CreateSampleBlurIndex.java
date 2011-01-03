@@ -26,7 +26,7 @@ public class CreateSampleBlurIndex {
 
     public static void main(String[] args) throws IOException {
         FileSystem fileSystem = FileSystem.get(new Configuration());
-        Path hdfsDirPath = new Path("/Users/amccurry/Development/blur/blur/trunk/src/blur-core/local-testing/table/shard1");
+        Path hdfsDirPath = new Path("/Users/amccurry/Development/blur/blur/trunk/src/blur-core/local-testing/table/shard3");
         HdfsDirectory hdfsDir = new HdfsDirectory(hdfsDirPath, fileSystem);
 
         BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30), "");

@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -16,6 +17,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.indexserver.ControllerIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientRemote;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
@@ -26,13 +28,24 @@ public class ThriftBlurControllerServer {
     
     private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
     
-    private int port = 40010;
+    private String nodeName;
     private Iface iface;
     
     public static void main(String[] args) throws TTransportException, IOException {
-        ZooKeeper zooKeeper = new ZooKeeper("localhost", 10000, new Watcher() {
+        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
-            public void process(WatchedEvent arg0) {
+            public void uncaughtException(Thread t, Throwable e) {
+                LOG.error("Unknown error in thread [" + t +
+                        "]",e);
+            }
+        });
+        
+        String nodeName = args[0];
+        String zkConnectionStr = args[1];
+        
+        ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
+            @Override
+            public void process(WatchedEvent event) {
             }
         });
         
@@ -40,7 +53,8 @@ public class ThriftBlurControllerServer {
         dzk.setZooKeeper(zooKeeper);
         
         ControllerIndexServer indexServer = new ControllerIndexServer();
-        indexServer.setNodeName("localhost");
+        indexServer.setType(NODE_TYPE.CONTROLLER);
+        indexServer.setNodeName(nodeName);
         indexServer.setZk(dzk);
         indexServer.init();
         
@@ -51,27 +65,19 @@ public class ThriftBlurControllerServer {
         controllerServer.setIndexServer(indexServer);
         
         ThriftBlurControllerServer server = new ThriftBlurControllerServer();
-        server.setPort(40010);
+        server.setNodeName(nodeName);
         server.setIface(controllerServer);
         server.start();
     }
 
     public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(port);
+        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(nodeName));
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
         TThreadPoolServer server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
-        LOG.info("Starting server on port [" + port + "]");
+        LOG.info("Starting server [" + nodeName + "]");
         server.serve();
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
     }
 
     public Iface getIface() {
@@ -80,6 +86,14 @@ public class ThriftBlurControllerServer {
 
     public void setIface(Iface iface) {
         this.iface = iface;
+    }
+    
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
 }

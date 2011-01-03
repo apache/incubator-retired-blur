@@ -5,6 +5,7 @@ import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
@@ -50,6 +51,7 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
 	private AtomicReference<Map<String,Map<String,String>>> shardServerLayout = new AtomicReference<Map<String,Map<String,String>>>(new HashMap<String, Map<String,String>>());
 	private BlurClient client;
 	private long delay = TimeUnit.SECONDS.toMillis(5);
+	private Random random = new Random();
 
     private Timer shardLayoutTimer;
 
@@ -280,15 +282,39 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
     }
 
     @Override
-    public TableDescriptor describe(String table) throws BlurException, TException {
-        //call out to shard server
-        throw new RuntimeException();
+    public TableDescriptor describe(final String table) throws BlurException, TException {
+        try {
+            String hostname = getSingleOnlineShardServer();
+            return client.execute(hostname, new BlurSearchCommand<TableDescriptor>() {
+                @Override
+                public TableDescriptor call(Client client) throws Exception {
+                    return client.describe(table);
+                }
+            });
+        } catch (Exception e) {
+            throw new LoggingBlurException(LOG,e,"Unknown error while trying to describe table [" + table + "]");
+        }
     }
-
+    
     @Override
     public List<String> tableList() throws BlurException, TException {
-        //call out to shard server
-        throw new RuntimeException();
+        try {
+            String hostname = getSingleOnlineShardServer();
+            return client.execute(hostname, new BlurSearchCommand<List<String>>() {
+                @Override
+                public List<String> call(Client client) throws Exception {
+                    return client.tableList();
+                }
+            });
+        } catch (Exception e) {
+            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get table list.  Current online shard servers [" +
+            		indexServer.getOnlineShardServers() + "]");
+        }
+    }
+    
+    private String getSingleOnlineShardServer() throws BlurException, TException {
+        List<String> onlineShardServers = indexServer.getOnlineShardServers();
+        return onlineShardServers.get(random.nextInt(onlineShardServers.size()));
     }
 
 }

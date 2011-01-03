@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.index.IndexReader;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexManager;
@@ -104,10 +105,10 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
     @Override
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
         try {
-            List<String> shardList = indexServer.getShardList(table);
+            Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
             Map<String, String> result = new TreeMap<String, String>();
             String nodeName = indexServer.getNodeName();
-            for (String shard : shardList) {
+            for (String shard : indexReaders.keySet()) {
                 result.put(shard, nodeName);
             }
             return result;

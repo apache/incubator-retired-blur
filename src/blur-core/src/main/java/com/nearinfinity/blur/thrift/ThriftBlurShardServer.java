@@ -3,6 +3,7 @@ package com.nearinfinity.blur.thrift;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.List;
 
@@ -24,6 +25,7 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
@@ -32,7 +34,7 @@ public class ThriftBlurShardServer {
     
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
     
-    private int port = 40020;
+    private String nodeName;
     private Iface iface;
     
     public static void main(String[] args) throws TTransportException, IOException {
@@ -44,9 +46,9 @@ public class ThriftBlurShardServer {
             }
         });
         
+        String nodeName = args[0];
+        String zkConnectionStr = args[1];
         String hdfsPath = "/Users/amccurry/Development/blur/blur/trunk/src/blur-core/local-testing";
-        String nodeName = "localhost";
-        String zkConnectionStr = "localhost";
         List<File> localFileCaches = Arrays.asList(new File("/Users/amccurry/Development/blur/blur/trunk/src/blur-core/local-testing-cache"));
         
         ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
@@ -62,6 +64,7 @@ public class ThriftBlurShardServer {
         Path blurBasePath = new Path(hdfsPath);
         
         HdfsIndexServer indexServer = new HdfsIndexServer();
+        indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCaches(localFileCaches);
         indexServer.setFileSystem(fileSystem);
         indexServer.setBlurBasePath(blurBasePath);
@@ -78,27 +81,31 @@ public class ThriftBlurShardServer {
         shardServer.setIndexManager(indexManager);
         
         ThriftBlurShardServer server = new ThriftBlurShardServer();
-        server.setPort(40020);
+        server.setNodeName(nodeName);
         server.setIface(shardServer);
         server.start();
     }
 
     public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(port);
+        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(nodeName));
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
         TThreadPoolServer server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
-        LOG.info("Starting server on port [" + port + "]");
+        LOG.info("Starting server [" + nodeName + "]");
         server.serve();
     }
 
-    public int getPort() {
-        return port;
+    public static InetSocketAddress parse(String nodeName) {
+        return new InetSocketAddress(getHostname(nodeName), getPort(nodeName));
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    private static String getHostname(String nodeName) {
+        return nodeName.substring(0, nodeName.indexOf(':'));
+    }
+
+    private static int getPort(String nodeName) {
+        return Integer.parseInt(nodeName.substring(nodeName.indexOf(':') + 1));
     }
 
     public Iface getIface() {
@@ -107,6 +114,14 @@ public class ThriftBlurShardServer {
 
     public void setIface(Iface iface) {
         this.iface = iface;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
     }
 
 }

@@ -43,7 +43,7 @@ public abstract class BlurBaseServer implements Iface, BlurConstants {
 
     @Override
     public List<String> shardServerList() throws BlurException, TException {
-        return getIndexServer().getShardServerList();
+        return getIndexServer().getOnlineShardServers();
     }
     
     public abstract IndexServer getIndexServer();

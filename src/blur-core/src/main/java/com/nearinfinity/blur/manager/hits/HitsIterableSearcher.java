@@ -45,6 +45,7 @@ public class HitsIterableSearcher implements HitsIterable, BlurConstants {
                 return new Hit(resolveId(scoreDoc.doc), scoreDoc.score, "UNKNOWN");
             }
         });
+        shardInfo.put(shard, (long)totalHitsRef.totalHits());
     }
 
     @Override

@@ -104,7 +104,7 @@ public class HdfsDirectory extends Directory {
     
     @Override
     public IndexInput openInput(String name) throws IOException {
-        return super.openInput(name, BUFFER_SIZE);
+        return openInput(name, BUFFER_SIZE);
     }
 
     @Override

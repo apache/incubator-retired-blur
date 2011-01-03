@@ -45,7 +45,7 @@ public abstract class DistributedIndexServer implements IndexServer {
         return this;
     }
     
-    protected abstract IndexReader openShard(String table, String shard);
+    protected abstract IndexReader openShard(String table, String shard) throws IOException;
     
     protected abstract void beforeClose(String shard, IndexReader indexReader);
     
@@ -108,6 +108,7 @@ public abstract class DistributedIndexServer implements IndexServer {
     
     //Getters and setters
     
+    @Override
     public String getNodeName() {
         return nodeName;
     }
@@ -173,10 +174,16 @@ public abstract class DistributedIndexServer implements IndexServer {
     
     private synchronized Set<String> setupLayoutManager(String table) {
         DistributedLayoutManager layoutManager = new DistributedLayoutManager();
-        layoutManager.setNodes(getShardServerList());
-        layoutManager.setNodesOffline(getOfflineShardServers());
-        layoutManager.setShards(getShardList(table));
+        
+        List<String> shardServerList = getShardServerList();
+        List<String> offlineShardServers = getOfflineShardServers();
+        List<String> shardList = getShardList(table);
+        
+        layoutManager.setNodes(shardServerList);
+        layoutManager.setNodesOffline(offlineShardServers);
+        layoutManager.setShards(shardList);
         layoutManager.init();
+        
         Map<String, String> layout = layoutManager.getLayout();
         String nodeName = getNodeName();
         Set<String> shardsToServeCache = new TreeSet<String>();

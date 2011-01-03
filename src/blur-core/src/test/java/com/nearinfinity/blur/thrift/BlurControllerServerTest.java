@@ -130,6 +130,11 @@ public class BlurControllerServerTest {
             public List<String> getOnlineShardServers() {
                 throw new RuntimeException("no impl");
             }
+
+            @Override
+            public String getNodeName() {
+                throw new RuntimeException("no impl");
+            }
         };
     }
 

@@ -44,11 +44,20 @@ public abstract class DistributedManager {
     private String join(List<String> path) {
         StringBuilder builder = new StringBuilder();
         for (String p : path) {
+            if (isEmpty(p)) {
+                continue;
+            }
             builder.append('/').append(p);
         }
         return builder.toString();
     }
     
+    private boolean isEmpty(String p) {
+        if (p == null || p.trim().equals("")) {
+            return true;
+        }
+        return false;
+    }
     private List<String> getParts(String path) {
         return Arrays.asList(path.split("\\/"));
     }

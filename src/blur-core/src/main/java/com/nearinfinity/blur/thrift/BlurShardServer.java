@@ -5,6 +5,7 @@ import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,6 +36,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 	
     @Override
 	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
+        enabledTable(table);
         try {
             HitsIterable hitsIterable = indexManager.search(table, searchQuery);
             return convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
@@ -49,6 +51,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 	
 	@Override
 	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
+	    enabledTable(table);
         try {
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow(table,selector, fetchResult);
@@ -83,6 +86,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
     
     @Override
     public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, TException {
+        enabledTable(table);
         try {
             return BlurUtil.toBytes(fetchRow(table,selector));
         } catch (BlurException e) {
@@ -99,7 +103,18 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
     
     @Override
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
+        try {
+            List<String> shardList = indexServer.getShardList(table);
+            Map<String, String> result = new TreeMap<String, String>();
+            String nodeName = indexServer.getNodeName();
+            for (String shard : shardList) {
+                result.put(shard, nodeName);
+            }
+            return result;
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to getting shardServerLayout for table [" + table + "]",e);
+            throw new BlurException(e.getMessage());
+        }
     }
     
     public IndexManager getIndexManager() {
@@ -113,6 +128,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
     @Override
     public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException {
+        enabledTable(table);
         FacetResult facetResult = new FacetResult().setFacetQuery(facetQuery);
         try {
             indexManager.facetSearch(table, facetQuery, facetResult);
@@ -125,8 +141,17 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
         }
     }
 
+    private void enabledTable(String table) throws BlurException {
+        if (isTableEnabled(table)) {
+            return;
+        }
+        throw new BlurException("Table [" + table +
+        		"] is not enabled.");
+    }
+
     @Override
     public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
+        enabledTable(table);
         try {
             return indexManager.recordFrequency(table,columnFamily,columnName,value);
         } catch (BlurException e) {
@@ -139,6 +164,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
     @Override
     public Schema schema(String table) throws BlurException, TException {
+        enabledTable(table);
         try {
             return indexManager.schema(table);
         } catch (Exception e) {
@@ -149,6 +175,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
     @Override
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
+        enabledTable(table);
         try {
             return indexManager.terms(table,columnFamily,columnName,startWith,size);
         } catch (Exception e) {
@@ -164,12 +191,17 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
     
     @Override
     public TableDescriptor describe(String table) throws BlurException, TException {
-        Map<String, String> shardServerLayout = shardServerLayout(table);
-        TableDescriptor descriptor = new TableDescriptor();
-        descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
-        descriptor.shardNames = new ArrayList<String>(shardServerLayout.keySet());
-        descriptor.isEnabled = isTableEnabled(table);
-        return descriptor;
+        try {
+            Map<String, String> shardServerLayout = shardServerLayout(table);
+            TableDescriptor descriptor = new TableDescriptor();
+            descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
+            descriptor.shardNames = new ArrayList<String>(shardServerLayout.keySet());
+            descriptor.isEnabled = isTableEnabled(table);
+            return descriptor;
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to describe table [" + table + "]", e);
+            throw new BlurException(e.getMessage());
+        }
     }
 
     public boolean isTableEnabled(String table) {

@@ -138,4 +138,9 @@ public class LocalIndexServer implements IndexServer {
     public List<String> getOnlineShardServers() {
         return getShardServerList();
     }
+
+    @Override
+    public String getNodeName() {
+        return "localhost";
+    }
 }

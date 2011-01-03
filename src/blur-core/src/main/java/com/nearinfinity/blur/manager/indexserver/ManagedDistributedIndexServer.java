@@ -14,6 +14,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private static final Log LOG = LogFactory.getLog(ManagedDistributedIndexServer.class);
     private static final String BLUR_BASE_PATH = "/blur";
     private static final String BLUR_REGISTERED_SHARDS_PATH = "/blur/shard-nodes";
+    private static final String BLUR_ONLINE_PATH = "/blur/online";
     private static final String BLUR_ONLINE_SHARDS_PATH = "/blur/online/shard-nodes";
     private static final String BLUR_ONLINE_CONTROLLERS_PATH = "/blur/online/controller-nodes";
     
@@ -48,7 +49,19 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     }
 
     private void registerMyself() {
+        if (!dm.exists(BLUR_REGISTERED_SHARDS_PATH,getNodeName())) {
+            dm.createPath(BLUR_REGISTERED_SHARDS_PATH,getNodeName());
+        }
+        while (dm.exists(BLUR_ONLINE_SHARDS_PATH,getNodeName())) {
+            LOG.info("Waiting to register myself [" + getNodeName() + "].");
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
         dm.createEphemeralPath(BLUR_ONLINE_SHARDS_PATH,getNodeName());
+        LOG.info("Registered [" + getNodeName() + "].");
     }
 
     private synchronized void pollForState() {
@@ -149,6 +162,9 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         }
         if (!dm.exists(BLUR_REGISTERED_SHARDS_PATH)) {
             dm.createPath(BLUR_REGISTERED_SHARDS_PATH);
+        }
+        if (!dm.exists(BLUR_ONLINE_PATH)) {
+            dm.createPath(BLUR_ONLINE_PATH);
         }
         if (!dm.exists(BLUR_ONLINE_SHARDS_PATH)) {
             dm.createPath(BLUR_ONLINE_SHARDS_PATH);

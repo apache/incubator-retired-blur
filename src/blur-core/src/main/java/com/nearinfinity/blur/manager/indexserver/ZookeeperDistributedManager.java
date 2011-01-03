@@ -89,4 +89,12 @@ public class ZookeeperDistributedManager extends DistributedManager {
             throw new RuntimeException(e);
         }
     }
+
+    public ZooKeeper getZooKeeper() {
+        return zooKeeper;
+    }
+
+    public void setZooKeeper(ZooKeeper zooKeeper) {
+        this.zooKeeper = zooKeeper;
+    }
 }

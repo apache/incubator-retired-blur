@@ -93,22 +93,6 @@ public class IndexManager implements BlurConstants {
         return this;
     }
 
-//    public static void replace(IndexWriter indexWriter, Row row) throws IOException {
-//        replace(indexWriter, createSuperDocument(row));
-//    }
-
-//    public static void replace(IndexWriter indexWriter, SuperDocument document) throws IOException {
-//        synchronized (indexWriter) {
-//            indexWriter.deleteDocuments(new Term(ID, document.getId()));
-//            if (!replaceInternal(indexWriter, document)) {
-//                indexWriter.deleteDocuments(new Term(ID, document.getId()));
-//                if (!replaceInternal(indexWriter, document)) {
-//                    throw new IOException("SuperDocument too large, try increasing ram buffer size.");
-//                }
-//            }
-//        }
-//    }
-
     public void close() throws InterruptedException {
         executor.shutdownNow();
         indexServer.close();
@@ -178,10 +162,10 @@ public class IndexManager implements BlurConstants {
                 LOG.error("Unknown error while trying to fetch index readers.", e);
                 throw new BlurException(e.getMessage());
             }
-            Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, searchQuery.type);
-            Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, searchQuery.type);
+            Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, ScoreType.CONSTANT);
+            Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, ScoreType.CONSTANT);
             final Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
-                    indexServer.getAnalyzer(table), postFilter, preFilter, searchQuery.type);
+                    indexServer.getAnalyzer(table), postFilter, preFilter, getScoreType(searchQuery.type));
             return ForkJoin.execute(executor, indexReaders.entrySet(),
                 new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
                     @Override
@@ -204,6 +188,13 @@ public class IndexManager implements BlurConstants {
             status.deattachThread();
             removeStatus(status);
         }
+    }
+
+    private ScoreType getScoreType(ScoreType type) {
+        if (type == null) {
+            return ScoreType.SUPER;
+        }
+        return type;
     }
 
     public void cancelSearch(long userUuid) {

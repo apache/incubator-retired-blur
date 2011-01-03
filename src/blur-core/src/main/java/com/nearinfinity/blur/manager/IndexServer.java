@@ -8,7 +8,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 
-public interface IndexServer extends ClusterInfo {
+public interface IndexServer {
     
     public enum TABLE_STATUS {
         ENABLED,
@@ -61,5 +61,37 @@ public interface IndexServer extends ClusterInfo {
      * Closes the index server.
      */
     void close();
+    
+    /**
+     * Gets a list of all the controller nodes in the cluster.
+     * @return the controller node list.
+     */
+    List<String> getControllerServerList();
+    
+    /**
+     * Gets a list of all the shard servers in the cluster up or down.
+     * @return the shard node list.
+     */
+    List<String> getShardServerList();
+    
+    /**
+     * Gets a list of all the shard servers that are currently offline.
+     * NOTE: The node listed here are also in the shard server list.
+     * @return the offline shards servers.
+     */
+    List<String> getOfflineShardServers();
+    
+    /**
+     * Gets a list of all the shard servers that are currently offline.
+     * NOTE: The node listed here are also in the shard server list.
+     * @return the offline shards servers.
+     */
+    List<String> getOnlineShardServers();
+    
+    /**
+     * Gets the current nodes name.
+     * @return
+     */
+    String getNodeName();
 
 }

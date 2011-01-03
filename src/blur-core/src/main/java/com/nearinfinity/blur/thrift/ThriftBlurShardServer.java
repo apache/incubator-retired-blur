@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.InetSocketAddress;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -48,8 +48,11 @@ public class ThriftBlurShardServer {
         
         String nodeName = args[0];
         String zkConnectionStr = args[1];
-        String hdfsPath = "/Users/amccurry/Development/blur/blur/trunk/src/blur-core/local-testing";
-        List<File> localFileCaches = Arrays.asList(new File("/Users/amccurry/Development/blur/blur/trunk/src/blur-core/local-testing-cache"));
+        String hdfsPath = args[2];
+        List<File> localFileCaches = new ArrayList<File>();
+        for (String cachePath : args[3].split(",")) {
+            localFileCaches.add(new File(cachePath));
+        }
         
         ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
             @Override

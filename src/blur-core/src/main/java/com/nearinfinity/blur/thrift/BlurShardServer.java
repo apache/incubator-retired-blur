@@ -193,10 +193,9 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
     @Override
     public TableDescriptor describe(String table) throws BlurException, TException {
         try {
-            Map<String, String> shardServerLayout = shardServerLayout(table);
             TableDescriptor descriptor = new TableDescriptor();
             descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
-            descriptor.shardNames = new ArrayList<String>(shardServerLayout.keySet());
+            descriptor.shardNames = new ArrayList<String>(indexServer.getShardServerList());
             descriptor.isEnabled = isTableEnabled(table);
             return descriptor;
         } catch (Exception e) {

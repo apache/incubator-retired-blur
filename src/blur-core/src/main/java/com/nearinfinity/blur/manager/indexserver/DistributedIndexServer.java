@@ -91,6 +91,9 @@ public abstract class DistributedIndexServer implements IndexServer {
             return;
         }
         for (String shard : shardsOpen) {
+            LOG.info("Index for table [" + table +
+            		"] shard [" + shard +
+            		"] needs to be closed");
             IndexReader indexReader = tableReaders.remove(shard);
             beforeClose(shard,indexReader);
             try {
@@ -98,8 +101,11 @@ public abstract class DistributedIndexServer implements IndexServer {
             } catch (IOException e) {
                 LOG.error("Error while closing index reader [" + indexReader + "]",e);
             }
+            cleanupLocallyCachedIndexes(table,shard);
         }
     }
+
+    protected abstract void cleanupLocallyCachedIndexes(String table, String shard);
 
     @Override
     public void close() {

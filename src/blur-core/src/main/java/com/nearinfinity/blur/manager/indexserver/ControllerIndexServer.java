@@ -46,4 +46,9 @@ public class ControllerIndexServer extends ManagedDistributedIndexServer {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    protected void cleanupLocallyCachedIndexes(String table, String shard) {
+        //do nothing        
+    }
+
 }

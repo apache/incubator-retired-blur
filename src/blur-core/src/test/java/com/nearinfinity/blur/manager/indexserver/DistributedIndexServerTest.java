@@ -268,6 +268,11 @@ public class DistributedIndexServerTest {
             return list;
         }
 
+        @Override
+        protected void cleanupLocallyCachedIndexes(String table, String shard) {
+            
+        }
+
     }
 
 }

@@ -2,7 +2,6 @@ package com.nearinfinity.blur.manager.indexserver;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +19,6 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
-import com.nearinfinity.mele.util.AddressUtil;
 
 public class LocalIndexServer implements IndexServer {
     
@@ -86,20 +84,12 @@ public class LocalIndexServer implements IndexServer {
 
     @Override
     public List<String> getControllerServerList() {
-        try {
-            return Arrays.asList(AddressUtil.getMyHostName() + ":40010");
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
+        return Arrays.asList("localhost:40010");
     }
 
     @Override
     public List<String> getShardServerList() {
-        try {
-            return Arrays.asList(AddressUtil.getMyHostName() + ":40020");
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
+        return Arrays.asList("localhost:40020");
     }
 
     @Override

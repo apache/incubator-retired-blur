@@ -86,6 +86,11 @@ public class ZkTest {
         protected void registerCallableOnChangeInternal(Runnable runnable, String path) {
             
         }
+
+        @Override
+        protected void removeEphemeralPathOnShutdownInternal(String path) {
+            
+        }
         
     }
 }

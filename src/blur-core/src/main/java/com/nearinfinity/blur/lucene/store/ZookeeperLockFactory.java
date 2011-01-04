@@ -26,13 +26,11 @@ import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.KeeperException.Code;
-import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.KeeperException.Code;
+import org.apache.zookeeper.KeeperException.NodeExistsException;
+import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
-
-import com.nearinfinity.mele.util.AddressUtil;
-import com.nearinfinity.mele.util.ZkUtils;
 
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class ZookeeperLockFactory extends LockFactory {
@@ -44,7 +42,7 @@ public class ZookeeperLockFactory extends LockFactory {
     public ZookeeperLockFactory(ZooKeeper zk, String indexLockPath) {
         this.indexLockPath = indexLockPath;
         this.zk = zk;
-        ZkUtils.mkNodesStr(zk, indexLockPath);
+        mkNodesStr(zk, indexLockPath);
     }
 
     @Override
@@ -67,9 +65,9 @@ public class ZookeeperLockFactory extends LockFactory {
         private String instanceIndexLockPath;
 
         public ZookeeperLock(ZooKeeper zk, String indexLockPath, String name) throws IOException {
-            ZkUtils.mkNodesStr(zk, indexLockPath);
+            mkNodesStr(zk, indexLockPath);
             this.zk = zk;
-            this.instanceIndexLockPath = ZkUtils.getPath(indexLockPath, name);
+            this.instanceIndexLockPath = getPath(indexLockPath, name);
         }
 
         @Override
@@ -90,8 +88,7 @@ public class ZookeeperLockFactory extends LockFactory {
         @Override
         public boolean obtain() throws IOException {
             try {
-                zk.create(instanceIndexLockPath, AddressUtil.getMyHostName().getBytes(), Ids.OPEN_ACL_UNSAFE,
-                        CreateMode.EPHEMERAL);
+                zk.create(instanceIndexLockPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
                 return true;
             } catch (KeeperException e) {
                 if (e.code() == Code.NODEEXISTS) {
@@ -114,5 +111,50 @@ public class ZookeeperLockFactory extends LockFactory {
             }
         }
 
+    }
+    
+    public static void mkNodesStr(ZooKeeper zk, String path) {
+        if (path == null) {
+            return;
+        }
+        String[] split = path.split("/");
+        for (int i = 0; i < split.length; i++) {
+            StringBuilder builder = new StringBuilder();
+            for (int j = 0; j <= i; j++) {
+                if (!split[j].isEmpty()) {
+                    builder.append('/');
+                    builder.append(split[j]);
+                }
+            }
+            String pathToCheck = builder.toString();
+            if (pathToCheck.isEmpty()) {
+                continue;
+            }
+            try {
+                if (zk.exists(pathToCheck, false) == null) {
+                    zk.create(pathToCheck, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+                }
+            } catch (NodeExistsException e) {
+                // do nothing
+            } catch (KeeperException e) {
+                LOG.error("error", e);
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                LOG.error("error", e);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    public static String getPath(String... parts) {
+        if (parts == null || parts.length == 0) {
+            return null;
+        }
+        StringBuilder builder = new StringBuilder(parts[0]);
+        for (int i = 1; i < parts.length; i++) {
+            builder.append('/');
+            builder.append(parts[i]);
+        }
+        return builder.toString();
     }
 }

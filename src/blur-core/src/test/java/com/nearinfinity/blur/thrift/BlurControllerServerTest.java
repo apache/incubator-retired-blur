@@ -128,7 +128,7 @@ public class BlurControllerServerTest {
 
             @Override
             public List<String> getOnlineShardServers() {
-                throw new RuntimeException("no impl");
+                return getShardServerList();
             }
 
             @Override

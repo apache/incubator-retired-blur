@@ -72,6 +72,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
             }
         }
         dm.createEphemeralPath(path,getNodeName());
+        dm.removeEphemeralPathOnShutdown(path,getNodeName());
         LOG.info("Registered [" + getNodeName() + "].");
     }
 

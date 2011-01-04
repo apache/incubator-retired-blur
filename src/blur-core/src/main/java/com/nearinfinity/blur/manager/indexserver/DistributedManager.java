@@ -10,6 +10,7 @@ public abstract class DistributedManager {
     protected abstract boolean existsInternal(String path);
     protected abstract void createPathInternal(String path);
     protected abstract void createEphemeralPathInternal(String path);
+    protected abstract void removeEphemeralPathOnShutdownInternal(String path);
     protected abstract List<String> listInternal(String path);
     protected abstract void registerCallableOnChangeInternal(Runnable runnable, String path);
 
@@ -32,7 +33,11 @@ public abstract class DistributedManager {
     public void registerCallableOnChange(Runnable runnable, String... pathes) {
         registerCallableOnChangeInternal(runnable,resolvePath(pathes));
     }
-
+    
+    public void removeEphemeralPathOnShutdown(String... pathes) {
+        removeEphemeralPathOnShutdownInternal(resolvePath(pathes));
+    }
+    
     private String resolvePath(String[] pathes) {
         List<String> path = new ArrayList<String>();
         for (int i = 0; i < pathes.length; i++) {
@@ -61,5 +66,4 @@ public abstract class DistributedManager {
     private List<String> getParts(String path) {
         return Arrays.asList(path.split("\\/"));
     }
-
 }

@@ -29,7 +29,7 @@ public class ZookeeperDistributedManager extends DistributedManager {
             }
         }
     }
-
+    
     @Override
     protected void createEphemeralPathInternal(String path) {
         try {
@@ -89,6 +89,20 @@ public class ZookeeperDistributedManager extends DistributedManager {
             throw new RuntimeException(e);
         }
     }
+    
+    @Override
+    protected void removeEphemeralPathOnShutdownInternal(final String path) {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    zooKeeper.delete(path, -1);
+                } catch (Exception e) {
+                    LOG.error("Error while deleting path [" + path + "] during shutdown.",e);
+                }
+            }
+        }));
+    }
 
     public ZooKeeper getZooKeeper() {
         return zooKeeper;
@@ -97,4 +111,5 @@ public class ZookeeperDistributedManager extends DistributedManager {
     public void setZooKeeper(ZooKeeper zooKeeper) {
         this.zooKeeper = zooKeeper;
     }
+
 }

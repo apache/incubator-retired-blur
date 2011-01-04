@@ -14,16 +14,6 @@
             <version>0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.nearinfinity.mele</groupId>
-            <artifactId>mele</artifactId>
-            <version>0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cassandra</groupId>
-            <artifactId>apache-cassandra</artifactId>
-            <version>0.6.5</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop</artifactId>
             <version>0.20.2-core</version>

@@ -2,12 +2,15 @@ package com.nearinfinity.blur.thrift;
 
 import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -90,8 +93,9 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
 	@Override
 	public FetchResult fetchRow(final String table, final Selector selector) throws BlurException,
 			TException {
-	    String clientHostnamePort = getNode(table,selector);
+	    String clientHostnamePort = null;
 		try {
+		    clientHostnamePort = getNode(table,selector);
 		    return client.execute(clientHostnamePort, 
 		        new BlurSearchCommand<FetchResult>() {
                     @Override
@@ -101,7 +105,7 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
                 });
 		} catch (Exception e) {
 		    throw new LoggingBlurException(LOG,e,"Unknown error during fetch of row from table [" + table +
-                    "] selector [" + selector + "]");
+                    "] selector [" + selector + "] node [" + clientHostnamePort + "]");
         }
 	}
 	
@@ -136,8 +140,9 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
 	   
     @Override
     public byte[] fetchRowBinary(final String table, final Selector selector) throws BlurException, TException {
-        String clientHostnamePort = getNode(table,selector);
+        String clientHostnamePort = null;
         try {
+            clientHostnamePort = getNode(table,selector);
             return client.execute(clientHostnamePort, 
                 new BlurSearchCommand<byte[]>() {
                     @Override
@@ -147,7 +152,7 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
                 });
         } catch (Exception e) {
             throw new LoggingBlurException(LOG,e,"Unknown error during fetch of row from table [" + table +
-                    "] selector [" + selector + "]");
+                    "] selector [" + selector + "] node [" + clientHostnamePort + "]");
         }
     }
 
@@ -195,13 +200,61 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
     }
 
     @Override
-    public Schema schema(String table) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
+    public Schema schema(final String table) throws BlurException, TException {
+        try {
+            return scatterGather(
+                new BlurSearchCommand<Schema>() {
+                    @Override
+                    public Schema call(Client client) throws Exception {
+                        return client.schema(table);
+                    }
+                },new Merger<Schema>() {
+                    @Override
+                    public Schema merge(BlurExecutorCompletionService<Schema> service) throws Exception {
+                        Schema result = null;
+                        while (service.getRemainingCount() > 0) {
+                            Schema schema = service.take().get();
+                            if (result == null) {
+                                result = schema;
+                            } else {
+                                result = BlurControllerServer.merge(result,schema);
+                            }
+                        }
+                        return result;
+                    }
+                });
+        } catch (Exception e) {
+            throw new LoggingBlurException(LOG,e,"Unknown error while trying to schema table [" + table + "]");
+        }
     }
 
     @Override
-    public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
-        throw new RuntimeException("not implemented");
+    public List<String> terms(final String table, final String columnFamily, final String columnName, final String startWith, final short size) throws BlurException, TException {
+        try {
+            return scatterGather(
+                new BlurSearchCommand<List<String>>() {
+                    @Override
+                    public List<String> call(Client client) throws Exception {
+                        return client.terms(table,columnFamily,columnName,startWith,size);
+                    }
+                },new Merger<List<String>>() {
+                    @Override
+                    public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws Exception {
+                        TreeSet<String> terms = new TreeSet<String>();
+                        while (service.getRemainingCount() > 0) {
+                            terms.addAll(service.take().get());
+                        }
+                        return new ArrayList<String>(terms).subList(0, size);
+                    }
+                });
+        } catch (Exception e) {
+            throw new LoggingBlurException(LOG,e,"Unknown error while trying to terms table [" + table +
+            		"] columnFamily [" + columnFamily + 
+            		"] columnName [" + columnName + 
+            		"] startWith [" + startWith + 
+            		"] size [" + size + 
+            		"]");
+        }
     }
 
     public BlurClient getClient() {
@@ -213,7 +266,10 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
     }
     
     private String getNode(String table, Selector selector) throws BlurException, TException {
-        throw new BlurException("not implemented");
+        Map<String, String> layout = shardServerLayout(table);
+        String locationId = selector.locationId;
+        String shard = locationId.substring(0, locationId.indexOf('/'));
+        return layout.get(shard);
     }
     
     private void updateShardLayout() {
@@ -317,4 +373,18 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
         return onlineShardServers.get(random.nextInt(onlineShardServers.size()));
     }
 
+    public static Schema merge(Schema result, Schema schema) {
+        Map<String, Set<String>> destColumnFamilies = result.columnFamilies;
+        Map<String, Set<String>> srcColumnFamilies = schema.columnFamilies;
+        for (String srcColumnFamily : srcColumnFamilies.keySet()) {
+            Set<String> destColumnNames = destColumnFamilies.get(srcColumnFamily);
+            Set<String> srcColumnNames = srcColumnFamilies.get(srcColumnFamily);
+            if (destColumnNames == null) {
+                destColumnFamilies.put(srcColumnFamily, srcColumnNames);
+            } else {
+                destColumnNames.addAll(srcColumnNames);
+            }
+        }
+        return result;
+    }
 }

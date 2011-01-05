@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.TermDocs;
 
@@ -11,10 +12,12 @@ public class TermDocIterable implements Iterable<Document> {
 
 	private TermDocs termDocs;
 	private IndexReader reader;
+    private FieldSelector fieldSelector;
 	
-	public TermDocIterable(TermDocs termDocs, IndexReader reader) {
+	public TermDocIterable(TermDocs termDocs, IndexReader reader, FieldSelector fieldSelector) {
 		this.termDocs = termDocs;
 		this.reader = reader;
+		this.fieldSelector = fieldSelector;
 	}
 
 	@Override
@@ -47,7 +50,7 @@ public class TermDocIterable implements Iterable<Document> {
 	}
 	
 	private Document getDoc() throws IOException {
-		return reader.document(termDocs.doc());
+		return reader.document(termDocs.doc(),fieldSelector);
 	}
 
 	private boolean getNext() {

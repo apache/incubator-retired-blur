@@ -262,7 +262,7 @@ public class IndexManager implements BlurConstants {
                 fetchResult.deleted = false;
                 String rowId = getRowId(reader, docId);
                 TermDocs termDocs = reader.termDocs(new Term(ID, rowId));
-                fetchResult.row = getRow(new TermDocIterable(termDocs, reader));
+                fetchResult.row = getRow(new TermDocIterable(termDocs, reader, getFieldSelector(selector)));
                 return;
             }
         }

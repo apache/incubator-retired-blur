@@ -154,9 +154,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     @Override
     protected IndexReader openShard(String table, String shard) throws IOException {
-        LOG.info("Opening shard [" + shard +
-        		"] for table [" + table +
-        		"]");
+        LOG.info("Opening shard [" + shard + "] for table [" + table + "]");
         Path tablePath = new Path(blurBasePath,table);
         if (!exists(tablePath)) {
             throw new FileNotFoundException(tablePath.toString());

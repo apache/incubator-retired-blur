@@ -109,35 +109,53 @@ public class HdfsDirectory extends Directory {
 
     @Override
     public IndexInput openInput(final String name, int bufferSize) throws IOException {
+        long length = fileLength(name);
         final FSDataInputStream inputStream = fileSystem.open(new Path(hdfsDirPath, name));
-        return new BufferedIndexInput(bufferSize) {
+        return new HdfsBufferedIndexInput(inputStream,length,bufferSize);
+    }
+    
+    public static class HdfsBufferedIndexInput extends BufferedIndexInput {
+        
+        private long length;
+        private FSDataInputStream inputStream;
+        private boolean isClone = false;
+        
+        public HdfsBufferedIndexInput(FSDataInputStream inputStream, long length, int bufferSize) {
+            super(bufferSize);
+            this.length = length;
+            this.inputStream = inputStream;
+        }
 
-            private long length = fileLength(name);
+        @Override
+        public long length() {
+            return length;
+        }
 
-            @Override
-            public long length() {
-                return length;
+        @Override
+        public void close() throws IOException {
+            if (!isClone) inputStream.close();
+        }
+
+        @Override
+        protected void seekInternal(long pos) throws IOException {
+
+        }
+
+        @Override
+        protected void readInternal(byte[] b, int offset, int length) throws IOException {
+            synchronized (inputStream) {
+                long position = getFilePointer();
+                inputStream.seek(position);
+                inputStream.read(b, offset, length);
             }
+        }
 
-            @Override
-            public void close() throws IOException {
-                inputStream.close();
-            }
-
-            @Override
-            protected void seekInternal(long pos) throws IOException {
-
-            }
-
-            @Override
-            protected void readInternal(byte[] b, int offset, int length) throws IOException {
-                synchronized (inputStream) {
-                    long position = getFilePointer();
-                    inputStream.seek(position);
-                    inputStream.read(b, offset, length);
-                }
-            }
-        };
+        @Override
+        public Object clone() {
+            HdfsBufferedIndexInput clone = (HdfsBufferedIndexInput) super.clone();
+            clone.isClone = true;
+            return clone;
+        }
     }
 
     @Override

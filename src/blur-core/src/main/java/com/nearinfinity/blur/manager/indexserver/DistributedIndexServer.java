@@ -1,7 +1,6 @@
 package com.nearinfinity.blur.manager.indexserver;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -13,6 +12,7 @@ import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -20,13 +20,29 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.store.RAMDirectory;
 
 import com.nearinfinity.blur.manager.IndexServer;
 
 public abstract class DistributedIndexServer implements IndexServer {
     
     private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
+
+    private static final IndexReader EMPTY_INDEXREADER;
+    
+    static {
+        RAMDirectory directory = new RAMDirectory();
+        try {
+            new IndexWriter(directory,new KeywordAnalyzer(),MaxFieldLength.UNLIMITED).close();
+            EMPTY_INDEXREADER = IndexReader.open(directory);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     private ConcurrentHashMap<String,Map<String,IndexReader>> readers = new ConcurrentHashMap<String, Map<String,IndexReader>>();
     private String nodeName;
@@ -137,34 +153,40 @@ public abstract class DistributedIndexServer implements IndexServer {
     
     private synchronized Map<String, IndexReader> openMissingShards(final String table, Set<String> shardsToServe, final Map<String, IndexReader> tableReaders) {
         Map<String, IndexReader> result = new HashMap<String, IndexReader>();
-        List<Future<String>> futures = new ArrayList<Future<String>>();
+        Map<String,Future<Void>> futures = new HashMap<String, Future<Void>>();
         for (String s : shardsToServe) {
             final String shard = s;
             IndexReader indexReader = tableReaders.get(shard);
             if (indexReader == null) {
-                futures.add(executorService.submit(new Callable<String>() {
+                futures.put(shard,executorService.submit(new Callable<Void>() {
                     @Override
-                    public String call() throws Exception {
+                    public Void call() throws Exception {
                         tableReaders.put(shard, openShard(table,shard));
-                        return shard;
+                        return null;
                     }
                 }));
             } else {
                 result.put(shard, indexReader);
             }
         }
-        for (Future<String> future : futures) {
+        for (String shard : futures.keySet()) {
+            Future<Void> future = futures.get(shard);
             try {
-                String shard = future.get();
+                future.get();
                 IndexReader indexReader = tableReaders.get(shard);
                 result.put(shard, indexReader);
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
                 throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                LOG.error("Unknown error while opening shard [" + shard +
+                		"] for table [" + table +
+                		"].",e.getCause());
+                result.put(shard, EMPTY_INDEXREADER);
             }
         }
         return result;
     }
-    
+
     private void setupReaders(String table) {
         readers.putIfAbsent(table, new ConcurrentHashMap<String, IndexReader>());
     }

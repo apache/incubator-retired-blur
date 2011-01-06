@@ -11,16 +11,16 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
 
-public class LocalReplicaDirectory extends Directory implements Closeable {
+public class LocalReplicaDirectoryForWriting extends Directory implements Closeable {
 
-    private static final Log LOG = LogFactory.getLog(LocalReplicaDirectory.class);
+    private static final Log LOG = LogFactory.getLog(LocalReplicaDirectoryForWriting.class);
 
     private static final int BUFFER_SIZE = 16384;
 
     private HdfsDirectory remoteDirectory;
     private FSDirectory localDirectory;
 
-    public LocalReplicaDirectory(FSDirectory localDirectory, HdfsDirectory remoteDirectory, LockFactory lockFactory) throws IOException {
+    public LocalReplicaDirectoryForWriting(FSDirectory localDirectory, HdfsDirectory remoteDirectory, LockFactory lockFactory) throws IOException {
         this.localDirectory = localDirectory;
         this.remoteDirectory = remoteDirectory;
         setLockFactory(lockFactory);

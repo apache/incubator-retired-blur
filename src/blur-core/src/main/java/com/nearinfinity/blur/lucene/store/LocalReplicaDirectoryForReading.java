@@ -6,7 +6,6 @@ import java.io.IOException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
@@ -17,10 +16,10 @@ public class LocalReplicaDirectoryForReading extends Directory implements Closea
 
     private static final int BUFFER_SIZE = 16384;
 
-    private HdfsDirectory remoteDirectory;
-    private FSDirectory localDirectory;
+    private Directory remoteDirectory;
+    private Directory localDirectory;
 
-    public LocalReplicaDirectoryForReading(FSDirectory localDirectory, HdfsDirectory remoteDirectory, LockFactory lockFactory) throws IOException {
+    public LocalReplicaDirectoryForReading(Directory localDirectory, Directory remoteDirectory, LockFactory lockFactory) throws IOException {
         this.localDirectory = localDirectory;
         this.remoteDirectory = remoteDirectory;
         setLockFactory(lockFactory);

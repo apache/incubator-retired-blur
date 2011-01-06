@@ -123,7 +123,7 @@ public class MixedFSDirectoryTest {
         FileSystem fileSystem = FileSystem.get(new Configuration());
         HdfsDirectory hdfsDir = new HdfsDirectory(hdfsDirPath, fileSystem);
         MixedFSDirectory directory = new MixedFSDirectory(file, new NoLockFactory());
-        return new LocalReplicaDirectory(directory, hdfsDir, directory.getLockFactory());
+        return new LocalReplicaDirectoryForWriting(directory, hdfsDir, directory.getLockFactory());
     }
 
 }

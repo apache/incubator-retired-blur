@@ -23,14 +23,6 @@ public class LocalReplicaDirectoryForReading extends Directory implements Closea
         this.localDirectory = localDirectory;
         this.remoteDirectory = remoteDirectory;
         setLockFactory(lockFactory);
-        for (String name : remoteDirectory.listAll()) {
-            sync(name);
-        }
-        for (String name : localDirectory.listAll()) {
-            if (!remoteDirectory.fileExists(name)) {
-                localDirectory.deleteFile(name);
-            }
-        }
     }
 
     @Override
@@ -46,23 +38,22 @@ public class LocalReplicaDirectoryForReading extends Directory implements Closea
 
     @Override
     public IndexOutput createOutput(String name) throws IOException {
-        return localDirectory.createOutput(name);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public void deleteFile(String name) throws IOException {
-        localDirectory.deleteFile(name);
-        remoteDirectory.deleteFile(name);
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean fileExists(String name) throws IOException {
-        return localDirectory.fileExists(name);
+        return remoteDirectory.fileExists(name);
     }
 
     @Override
     public long fileLength(String name) throws IOException {
-        return localDirectory.fileLength(name);
+        return remoteDirectory.fileLength(name);
     }
 
     @Override
@@ -72,7 +63,7 @@ public class LocalReplicaDirectoryForReading extends Directory implements Closea
 
     @Override
     public String[] listAll() throws IOException {
-        return localDirectory.listAll();
+        return remoteDirectory.listAll();
     }
 
     @Override

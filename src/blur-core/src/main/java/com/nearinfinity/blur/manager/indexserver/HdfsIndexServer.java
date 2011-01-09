@@ -206,6 +206,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     }
     
     private void performCleanup() throws IOException {
+        
         LOG.debug("Performing local cleanup");
         for (String table : new TreeSet<String>(cleanupMap.keySet())) {
             LOG.info("Performing local cleanup table [" + table + "]");
@@ -213,6 +214,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
             if (map != null) {
                 for (String shard : new TreeSet<String>(map.keySet())) {
                     LOG.info("Performing local cleanup table [" + table + "] shard [" + shard + "]");
+                    System.err.println("Fix getIndexReaders, this will open all tables?");
                     Map<String, IndexReader> indexReaders = getIndexReaders(table);
                     if (!indexReaders.keySet().contains(shard)) {
                         long timestamp = map.get(shard);

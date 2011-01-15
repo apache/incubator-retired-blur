@@ -100,16 +100,16 @@ public class LocalReplicaDirectoryForWriting extends Directory implements Closea
                 return;
             }
         }
-        copyFile(name);
+        copyFile(name,localDirectory,remoteDirectory);
     }
 
-    private void copyFile(String name) throws IOException {
+    public static void copyFile(String name, Directory srcDirectory, Directory dstDirectory) throws IOException {
         IndexOutput os = null;
         IndexInput is = null;
         byte[] buf = new byte[BUFFER_SIZE];
         try {
-            os = remoteDirectory.createOutput(name);
-            is = localDirectory.openInput(name);
+            os = dstDirectory.createOutput(name);
+            is = srcDirectory.openInput(name);
             long len = is.length();
             long readCount = 0;
             while (readCount < len) {

@@ -300,7 +300,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         }
     }
 
-    protected static class FileNIOIndexInput extends FileIndexInput {
+    public static class FileNIOIndexInput extends FileIndexInput {
 
         private ByteBuffer byteBuf; // wraps the buffer for NIO
 

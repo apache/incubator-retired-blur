@@ -1,9 +1,12 @@
 package com.nearinfinity.blur.store;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,8 +30,8 @@ public class WritableHdfsDirectory extends HdfsDirectory {
 
     protected String dirName;
 
-    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, LocalFileCache localFileCache, LockFactory lockFactory)
-            throws IOException {
+    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
+            LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
         super(hdfsDirPath, fileSystem);
         this.dirName = dirName;
         File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);
@@ -118,13 +121,17 @@ public class WritableHdfsDirectory extends HdfsDirectory {
             return openFromLocal(name, bufferSize);
         }
     }
-    
+
     public boolean fileExistsLocally(String name) {
         return localFileCache.getLocalFile(dirName, name).exists();
     }
 
     public FileIndexInput openFromLocal(String name, int bufferSize) throws IOException {
-        return new FileIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
+        if (Constants.WINDOWS) {
+            return new FileIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
+        } else {
+            return new FileNIOIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
+        }
     }
 
     public IndexInput openFromHdfs(String name, int bufferSize) throws IOException {
@@ -158,7 +165,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         protected final Descriptor file;
         boolean isClone;
         // LUCENE-1566 - maximum read length on a 32bit JVM to prevent incorrect OOM
-        protected final int chunkSize = Constants.JRE_IS_64BIT ? Integer.MAX_VALUE: 100 * 1024 * 1024;
+        protected final int chunkSize = Constants.JRE_IS_64BIT ? Integer.MAX_VALUE : 100 * 1024 * 1024;
 
         public FileIndexInput(File path, int bufferSize) throws IOException {
             super(bufferSize);
@@ -235,7 +242,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
             return file.getFD().valid();
         }
     }
-    
+
     public static class FileIndexOutput extends BufferedIndexOutput {
 
         private RandomAccessFile file = null;
@@ -290,6 +297,107 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         @Override
         public void setLength(long length) throws IOException {
             file.setLength(length);
+        }
+    }
+
+    protected static class FileNIOIndexInput extends FileIndexInput {
+
+        private ByteBuffer byteBuf; // wraps the buffer for NIO
+
+        private byte[] otherBuffer;
+        private ByteBuffer otherByteBuf;
+
+        final FileChannel channel;
+
+        public FileNIOIndexInput(File path, int bufferSize) throws IOException {
+            super(path, bufferSize);
+            channel = file.getChannel();
+        }
+
+        @Override
+        protected void newBuffer(byte[] newBuffer) {
+            super.newBuffer(newBuffer);
+            byteBuf = ByteBuffer.wrap(newBuffer);
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (!isClone && file.isOpen) {
+                // Close the channel & file
+                try {
+                    channel.close();
+                } finally {
+                    file.close();
+                }
+            }
+        }
+
+        @Override
+        protected void readInternal(byte[] b, int offset, int len) throws IOException {
+
+            final ByteBuffer bb;
+
+            // Determine the ByteBuffer we should use
+            if (b == buffer && 0 == offset) {
+                // Use our own pre-wrapped byteBuf:
+                assert byteBuf != null;
+                byteBuf.clear();
+                byteBuf.limit(len);
+                bb = byteBuf;
+            } else {
+                if (offset == 0) {
+                    if (otherBuffer != b) {
+                        // Now wrap this other buffer; with compound
+                        // file, we are repeatedly called with its
+                        // buffer, so we wrap it once and then re-use it
+                        // on subsequent calls
+                        otherBuffer = b;
+                        otherByteBuf = ByteBuffer.wrap(b);
+                    } else
+                        otherByteBuf.clear();
+                    otherByteBuf.limit(len);
+                    bb = otherByteBuf;
+                } else {
+                    // Always wrap when offset != 0
+                    bb = ByteBuffer.wrap(b, offset, len);
+                }
+            }
+
+            int readOffset = bb.position();
+            int readLength = bb.limit() - readOffset;
+            assert readLength == len;
+
+            long pos = getFilePointer();
+
+            try {
+                while (readLength > 0) {
+                    final int limit;
+                    if (readLength > chunkSize) {
+                        // LUCENE-1566 - work around JVM Bug by breaking
+                        // very large reads into chunks
+                        limit = readOffset + chunkSize;
+                    } else {
+                        limit = readOffset + readLength;
+                    }
+                    bb.limit(limit);
+                    int i = channel.read(bb, pos);
+                    if (i == -1) {
+                        throw new IOException("read past EOF");
+                    }
+                    pos += i;
+                    readOffset += i;
+                    readLength -= i;
+                }
+            } catch (OutOfMemoryError e) {
+                // propagate OOM up and add a hint for 32bit VM Users hitting the bug
+                // with a large chunk size in the fast path.
+                final OutOfMemoryError outOfMemoryError = new OutOfMemoryError(
+                        "OutOfMemoryError likely caused by the Sun VM Bug described in "
+                                + "https://issues.apache.org/jira/browse/LUCENE-1566; try calling FSDirectory.setReadChunkSize "
+                                + "with a a value smaller than the current chunk size (" + chunkSize + ")");
+                outOfMemoryError.initCause(e);
+                throw outOfMemoryError;
+            }
         }
     }
 }

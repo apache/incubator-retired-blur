@@ -19,28 +19,29 @@ import org.apache.lucene.util.Constants;
 
 public class WritableHdfsDirectory extends HdfsDirectory {
 
+    private static final String SEGMENTS_GEN = "segments.gen";
+
     private static final Log LOG = LogFactory.getLog(WritableHdfsDirectory.class);
 
-    protected File tmpLocalDir;
+    protected LocalFileCache localFileCache;
 
-    public WritableHdfsDirectory(Path hdfsDirPath, FileSystem fileSystem, File tmpLocalDir, LockFactory lockFactory)
+    protected String dirName;
+
+    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, LocalFileCache localFileCache, LockFactory lockFactory)
             throws IOException {
         super(hdfsDirPath, fileSystem);
-        tmpLocalDir.mkdirs();
-        if (!tmpLocalDir.exists() || !tmpLocalDir.isDirectory()) {
-            throw new IOException("Dir [" + tmpLocalDir.getAbsolutePath() + "] invalid");
-        }
-        File segments = new File(tmpLocalDir, "segments.gen");
+        this.dirName = dirName;
+        File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);
         if (segments.exists()) {
             segments.delete();
         }
-        this.tmpLocalDir = tmpLocalDir;
+        this.localFileCache = localFileCache;
         setLockFactory(lockFactory);
     }
 
     @Override
     public IndexOutput createOutput(String name) throws IOException {
-        File file = new File(tmpLocalDir, name);
+        File file = localFileCache.getLocalFile(dirName, name);
         if (file.exists()) {
             file.delete();
         }
@@ -50,7 +51,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
 
     @Override
     public void sync(String name) throws IOException {
-        File file = new File(tmpLocalDir, name);
+        File file = localFileCache.getLocalFile(dirName, name);
         FSDataOutputStream outputStream = super.getOutputStream(name);
         FileInputStream inputStream = new FileInputStream(file);
         LOG.info("Syncing local file [" + file.getAbsolutePath() + "] to [" + hdfsDirPath + "]");
@@ -68,7 +69,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (super.fileExists(name)) {
             super.deleteFile(name);
         } else {
-            new File(tmpLocalDir, name).delete();
+            localFileCache.getLocalFile(dirName, name).delete();
         }
     }
 
@@ -88,7 +89,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (super.fileExists(name)) {
             return super.fileLength(name);
         } else {
-            return new File(tmpLocalDir, name).length();
+            return localFileCache.getLocalFile(dirName, name).length();
         }
     }
 
@@ -97,7 +98,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (super.fileExists(name)) {
             return super.fileModified(name);
         } else {
-            return new File(tmpLocalDir, name).lastModified();
+            return localFileCache.getLocalFile(dirName, name).lastModified();
         }
     }
 
@@ -119,11 +120,11 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     }
     
     public boolean fileExistsLocally(String name) {
-        return new File(tmpLocalDir, name).exists();
+        return localFileCache.getLocalFile(dirName, name).exists();
     }
 
     public FileIndexInput openFromLocal(String name, int bufferSize) throws IOException {
-        return new FileIndexInput(new File(tmpLocalDir, name), bufferSize);
+        return new FileIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
     }
 
     public IndexInput openFromHdfs(String name, int bufferSize) throws IOException {

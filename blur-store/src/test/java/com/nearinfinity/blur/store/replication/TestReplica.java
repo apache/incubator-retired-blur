@@ -28,6 +28,8 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.store.LocalFileCache;
+
 public class TestReplica {
     
     private static final long DELAY = 0;
@@ -42,9 +44,10 @@ public class TestReplica {
 //        FSDirectory localDir = FSDirectory.open(new File("./tmp-rep"));
 //        Directory.copy(directory, localDir, true);
 //        createIndex(directory);
-        
+
 //        HdfsDirectory directory = new HdfsDirectory(hdfsDirPath, fileSystem);
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(hdfsDirPath, fileSystem, new File("./tmp-indexing"), new NoLockFactory());
+        LocalFileCache localFileCache = new LocalFileCache(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table-shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory());
         
 //        Directory directory = FSDirectory.open(new File("./tmp-indexing"));
 //        SimpleFSDirectory directory = new SimpleFSDirectory(new File("./tmp-indexing"));

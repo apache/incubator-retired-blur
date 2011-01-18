@@ -16,6 +16,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
 import com.nearinfinity.blur.store.Constants;
+import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexInput;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexOutput;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory.ReplicaIndexInput;
@@ -30,12 +31,14 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     private LocalIOWrapper wrapper;
     private long period = TimeUnit.SECONDS.toMillis(1);
 
-    private File tmpLocalDir;
+    private LocalFileCache localFileCache;
     private ReplicaHdfsDirectory directory;
+    private String dirName;
 
-    public ReplicationDaemon(ReplicaHdfsDirectory directory, File tmpLocalDir, LocalIOWrapper wrapper) {
+    public ReplicationDaemon(String dirName, ReplicaHdfsDirectory directory, LocalFileCache localFileCache, LocalIOWrapper wrapper) {
+        this.dirName = dirName;
         this.directory = directory;
-        this.tmpLocalDir = tmpLocalDir;
+        this.localFileCache = localFileCache;
         this.wrapper = wrapper;
         this.daemon = new Timer("Replication-Thread", true);
         this.daemon.scheduleAtFixedRate(this, period, period);
@@ -51,7 +54,7 @@ public class ReplicationDaemon extends TimerTask implements Constants {
                 ReplicaIndexInput replicaIndexInput = replicaQueue.get(name);
                 IndexInput hdfsInput = directory.openFromHdfs(name, BUFFER_SIZE);
                 hdfsInput.seek(0);
-                File localFile = new File(tmpLocalDir, name);
+                File localFile = localFileCache.getLocalFile(dirName, name);
                 if (localFile.exists()) {
                     if (!localFile.delete()) {
                         LOG.error("Error trying to delete existing file during replication [" + localFile + "]");

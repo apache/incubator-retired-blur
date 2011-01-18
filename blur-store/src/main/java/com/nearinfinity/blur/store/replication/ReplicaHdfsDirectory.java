@@ -1,6 +1,5 @@
 package com.nearinfinity.blur.store.replication;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,6 +14,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
 
+import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
 
 
@@ -24,9 +24,9 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     private LocalIOWrapper wrapper;
     private ReplicationDaemon replicationDaemon;
 
-    public ReplicaHdfsDirectory(Path hdfsDirPath, FileSystem fileSystem, final File tmpLocalDir, LockFactory lockFactory)
+    public ReplicaHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, LockFactory lockFactory)
             throws IOException {
-        this(hdfsDirPath, fileSystem, tmpLocalDir, lockFactory, new LocalIOWrapper() {
+        this(dirName, hdfsDirPath, fileSystem, localFileCache, lockFactory, new LocalIOWrapper() {
             @Override
             public IndexOutput wrapOutput(IndexOutput indexOutput) {
                 return indexOutput;
@@ -39,11 +39,11 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         });
     }
 
-    public ReplicaHdfsDirectory(Path hdfsDirPath, FileSystem fileSystem, final File tmpLocalDir,
+    public ReplicaHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
             LockFactory lockFactory, final LocalIOWrapper wrapper) throws IOException {
-        super(hdfsDirPath, fileSystem, tmpLocalDir, lockFactory);
+        super(dirName, hdfsDirPath, fileSystem, localFileCache, lockFactory);
         this.wrapper = wrapper;
-        this.replicationDaemon = new ReplicationDaemon(this, tmpLocalDir, wrapper);
+        this.replicationDaemon = new ReplicationDaemon(dirName, this, localFileCache, wrapper);
     }
 
     @Override

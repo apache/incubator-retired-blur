@@ -35,6 +35,8 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     private ReplicaHdfsDirectory directory;
     private String dirName;
 
+    private volatile String beingProcessedName;
+
     public ReplicationDaemon(String dirName, ReplicaHdfsDirectory directory, LocalFileCache localFileCache, LocalIOWrapper wrapper) {
         this.dirName = dirName;
         this.directory = directory;
@@ -50,8 +52,9 @@ public class ReplicationDaemon extends TimerTask implements Constants {
             byte[] buffer = new byte[1024 * 1024];
             Set<String> fileNames = new TreeSet<String>(replicaQueue.keySet());
             for (String name : fileNames) {
-                System.out.println("Replicating [" + name + "]");
+                beingProcessedName = name;
                 ReplicaIndexInput replicaIndexInput = replicaQueue.get(name);
+                LOG.info("Replicating to local machine [" + replicaIndexInput + "]");
                 IndexInput hdfsInput = directory.openFromHdfs(name, BUFFER_SIZE);
                 hdfsInput.seek(0);
                 File localFile = localFileCache.getLocalFile(dirName, name);
@@ -61,30 +64,35 @@ public class ReplicationDaemon extends TimerTask implements Constants {
                     }
                 }
                 IndexOutput indexOutput = wrapper.wrapOutput(new FileIndexOutput(localFile));
-                copy(hdfsInput, indexOutput, buffer);
-                IndexInput localInput = wrapper.wrapInput(new FileIndexInput(localFile,
-                        BUFFER_SIZE));
+                copy(replicaIndexInput, hdfsInput, indexOutput, buffer);
+                IndexInput localInput = wrapper.wrapInput(new FileIndexInput(localFile, BUFFER_SIZE));
                 replicaIndexInput.localInput.set(localInput);
-            }
-            for (String name : fileNames) {
                 replicaQueue.remove(name);
+                beingProcessedName = null;
             }
         } catch (Exception e) {
             LOG.error("Error during local replication.", e);
         }
     }
 
-    private void copy(IndexInput is, IndexOutput os, byte[] buffer) throws IOException {
+    private void copy(ReplicaIndexInput replicaIndexInput, IndexInput is, IndexOutput os, byte[] buffer) throws IOException {
         try {
+            long start = System.currentTimeMillis();
+            long s = start;
             // and copy to dest directory
             long len = is.length();
             long readCount = 0;
             while (readCount < len) {
+                if (s + 1000 < System.currentTimeMillis()) {
+                    logStatus(readCount, len, start, replicaIndexInput);
+                    s = System.currentTimeMillis();
+                }
                 int toRead = readCount + buffer.length > len ? (int) (len - readCount) : buffer.length;
                 is.readBytes(buffer, 0, toRead);
                 os.writeBytes(buffer, toRead);
                 readCount += toRead;
             }
+            logStatus(readCount, len, start, replicaIndexInput);
         } finally {
             // graceful cleanup
             try {
@@ -99,8 +107,27 @@ public class ReplicationDaemon extends TimerTask implements Constants {
         }
     }
 
+    private void logStatus(long currentPosition, long totalLength, long startTime, ReplicaIndexInput replicaIndexInput) {
+        long now = System.currentTimeMillis();
+        double seconds = (now - startTime) / 1000.0;
+        double totalMBytes = totalLength / (1024.0 * 1024.0);
+        double currentMBytes = currentPosition / (1024.0 * 1024.0);
+        
+        int percentComplete = (int) Math.round(currentMBytes / totalMBytes * 100.0);
+        double mByteRate = currentMBytes / seconds;
+        
+        LOG.info("Replication of [" + replicaIndexInput + "] is [" + percentComplete + 
+        		"%] complete, at a rate of [" + mByteRate + 
+        		"] MB/s");
+        
+    }
+
     public void replicate(ReplicaIndexInput replicaIndexInput) {
         replicaQueue.putIfAbsent(replicaIndexInput.name, replicaIndexInput);
+    }
+
+    public boolean isBeingReplicated(String name) {
+        return name.equals(beingProcessedName);
     }
 
 }

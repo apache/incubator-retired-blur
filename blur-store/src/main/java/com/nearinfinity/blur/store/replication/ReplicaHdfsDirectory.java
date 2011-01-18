@@ -1,5 +1,6 @@
 package com.nearinfinity.blur.store.replication;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
@@ -54,11 +55,29 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         ReplicaIndexInput input = new ReplicaIndexInput(name, fileLength(name), BUFFER_SIZE, this);
         input.baseInput = new AtomicReference<IndexInput>(openFromHdfs(name, BUFFER_SIZE));
         if (fileExistsLocally(name)) {
-            input.localInput = new AtomicReference<IndexInput>(wrapper.wrapInput(openFromLocal(name, BUFFER_SIZE)));
+            if (isLocalFileValid(name)) {
+                input.localInput = new AtomicReference<IndexInput>(wrapper.wrapInput(openFromLocal(name, BUFFER_SIZE)));                
+            } else {
+                LOG.error("Local file [" + dirName + "/" + name + 
+                		"] is not valid, opening remote file.");
+                input.localInput = new AtomicReference<IndexInput>();
+            }
         } else {
             input.localInput = new AtomicReference<IndexInput>();
         }
         return input;
+    }
+
+    private synchronized boolean isLocalFileValid(String name) throws IOException {
+        if (replicationDaemon.isBeingReplicated(name)) {
+            return false;
+        }
+        File localFile = localFileCache.getLocalFile(dirName, name);
+        if (fileLength(name) != localFile.length()) {
+            localFile.delete();
+            return false;
+        }
+        return true;
     }
 
     protected void readInternal(ReplicaIndexInput replicaIndexInput, byte[] b, int offset, int length)
@@ -66,7 +85,6 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         IndexInput baseIndexInputSource = replicaIndexInput.baseInput.get();
         IndexInput localIndexInputSource = replicaIndexInput.localInput.get();
         long filePointer = replicaIndexInput.getFilePointer();
-        
         if (baseIndexInputSource == null) {
             throw new IOException("Fatal exception base indexinput is null, time to give up!");
         }
@@ -97,6 +115,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     private void resetLocal(ReplicaIndexInput replicaIndexInput) {
+        LOG.error("Local replica of [" + replicaIndexInput + "] is no longer valid, reseting.");
         try {
             replicaIndexInput.localInput.get().close();
         } catch (IOException e) {
@@ -149,7 +168,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
             baseIndexInput.close();
         }
     }
-
+    
     public static class ReplicaIndexInput extends BufferedIndexInput {
 
         protected AtomicReference<IndexInput> baseInput;
@@ -207,5 +226,15 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
             clone.localInputClone = null;
             return clone;
         }
+
+        @Override
+        public String toString() {
+            return "IndexInput {" + directory.dirName + "/" + name + "}";
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ReplicaHdfsDirectory [dirName=" + dirName + "]";
     }
 }

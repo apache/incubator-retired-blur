@@ -12,6 +12,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.lucene.store.LockFactory;
+import org.apache.lucene.store.NoLockFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -26,6 +28,7 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
+import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
@@ -65,10 +68,14 @@ public class ThriftBlurShardServer {
         
         FileSystem fileSystem = FileSystem.get(new Configuration());
         Path blurBasePath = new Path(hdfsPath);
+
+        LocalFileCache localFileCache = new LocalFileCache(localFileCaches.toArray(new File[]{}));
+        LockFactory lockFactory = new NoLockFactory();
         
         HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
-        indexServer.setLocalFileCaches(localFileCaches);
+        indexServer.setLocalFileCache(localFileCache);
+        indexServer.setLockFactory(lockFactory);
         indexServer.setFileSystem(fileSystem);
         indexServer.setBlurBasePath(blurBasePath);
         indexServer.setNodeName(nodeName);

@@ -10,6 +10,7 @@ import java.util.UUID;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -29,6 +30,7 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.store.LocalFileCache;
+import com.nearinfinity.blur.store.WritableHdfsDirectory;
 
 public class TestReplica {
     
@@ -47,7 +49,21 @@ public class TestReplica {
 
 //        HdfsDirectory directory = new HdfsDirectory(hdfsDirPath, fileSystem);
         LocalFileCache localFileCache = new LocalFileCache(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table-shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory());
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table-shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), new Progressable() {
+            @Override
+            public void progress() {
+//                System.out.println("go");
+            }
+        });
+        
+//        WritableHdfsDirectory directory = new WritableHdfsDirectory("table-shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), new Progressable() {
+//            @Override
+//            public void progress() {
+////                System.out.println("go");
+//            }
+//        });
+        
+//        createIndex(directory);
         
 //        Directory directory = FSDirectory.open(new File("./tmp-indexing"));
 //        SimpleFSDirectory directory = new SimpleFSDirectory(new File("./tmp-indexing"));

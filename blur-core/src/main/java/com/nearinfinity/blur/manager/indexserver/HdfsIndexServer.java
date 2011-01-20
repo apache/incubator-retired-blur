@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
@@ -140,7 +141,12 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         if (!exists(hdfsDirPath)) {
             throw new FileNotFoundException(hdfsDirPath.toString());
         }
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table + "__" + shard, hdfsDirPath, fileSystem, localFileCache, lockFactory);
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table + "__" + shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, new Progressable() {
+            @Override
+            public void progress() {
+                //do nothing for now
+            }
+        });
         return IndexReader.open(directory);
         
     }

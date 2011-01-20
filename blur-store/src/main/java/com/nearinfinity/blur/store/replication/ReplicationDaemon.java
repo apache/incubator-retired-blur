@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
@@ -34,14 +35,16 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     private LocalFileCache localFileCache;
     private ReplicaHdfsDirectory directory;
     private String dirName;
+    private Progressable progressable;
 
     private volatile String beingProcessedName;
 
-    public ReplicationDaemon(String dirName, ReplicaHdfsDirectory directory, LocalFileCache localFileCache, LocalIOWrapper wrapper) {
+    public ReplicationDaemon(String dirName, ReplicaHdfsDirectory directory, LocalFileCache localFileCache, LocalIOWrapper wrapper, Progressable progressable) {
         this.dirName = dirName;
         this.directory = directory;
         this.localFileCache = localFileCache;
         this.wrapper = wrapper;
+        this.progressable = progressable;
         this.daemon = new Timer("Replication-Thread", true);
         this.daemon.scheduleAtFixedRate(this, period, period);
     }
@@ -63,7 +66,7 @@ public class ReplicationDaemon extends TimerTask implements Constants {
                         LOG.error("Error trying to delete existing file during replication [" + localFile + "]");
                     }
                 }
-                IndexOutput indexOutput = wrapper.wrapOutput(new FileIndexOutput(localFile));
+                IndexOutput indexOutput = wrapper.wrapOutput(new FileIndexOutput(progressable,localFile));
                 copy(replicaIndexInput, hdfsInput, indexOutput, buffer);
                 IndexInput localInput = wrapper.wrapInput(new FileIndexInput(localFile, BUFFER_SIZE));
                 replicaIndexInput.localInput.set(localInput);

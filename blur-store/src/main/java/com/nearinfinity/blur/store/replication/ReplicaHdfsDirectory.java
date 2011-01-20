@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
@@ -25,9 +26,9 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     private LocalIOWrapper wrapper;
     private ReplicationDaemon replicationDaemon;
 
-    public ReplicaHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, LockFactory lockFactory)
+    public ReplicaHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable)
             throws IOException {
-        this(dirName, hdfsDirPath, fileSystem, localFileCache, lockFactory, new LocalIOWrapper() {
+        this(dirName, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, new LocalIOWrapper() {
             @Override
             public IndexOutput wrapOutput(IndexOutput indexOutput) {
                 return indexOutput;
@@ -41,10 +42,10 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     public ReplicaHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
-            LockFactory lockFactory, final LocalIOWrapper wrapper) throws IOException {
+            LockFactory lockFactory, Progressable progressable, final LocalIOWrapper wrapper) throws IOException {
         super(dirName, hdfsDirPath, fileSystem, localFileCache, lockFactory);
         this.wrapper = wrapper;
-        this.replicationDaemon = new ReplicationDaemon(dirName, this, localFileCache, wrapper);
+        this.replicationDaemon = new ReplicationDaemon(dirName, this, localFileCache, wrapper, progressable);
     }
 
     @Override

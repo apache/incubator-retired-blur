@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.BufferedIndexOutput;
 import org.apache.lucene.store.IndexInput;
@@ -27,13 +28,24 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     private static final Log LOG = LogFactory.getLog(WritableHdfsDirectory.class);
 
     protected LocalFileCache localFileCache;
-
     protected String dirName;
-
+    protected Progressable progressable;
+    
     public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
+        this(dirName,hdfsDirPath,fileSystem,localFileCache,lockFactory,new Progressable() {
+            @Override
+            public void progress() {
+                
+            }
+        });
+    }
+
+    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
+            LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable) throws IOException {
         super(hdfsDirPath, fileSystem);
         this.dirName = dirName;
+        this.progressable = progressable;
         File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);
         if (segments.exists()) {
             segments.delete();
@@ -49,7 +61,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
             file.delete();
         }
         LOG.info("Opening local file for writing [" + file.getAbsolutePath() + "]");
-        return new FileIndexOutput(file);
+        return new FileIndexOutput(progressable,file);
     }
 
     @Override
@@ -61,6 +73,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         byte[] buffer = new byte[BUFFER_SIZE];
         int num;
         while ((num = inputStream.read(buffer)) != -1) {
+            progressable.progress();
             outputStream.write(buffer, 0, num);
         }
         outputStream.close();
@@ -250,14 +263,18 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         // remember if the file is open, so that we don't try to close it more than once
         private volatile boolean isOpen;
 
-        public FileIndexOutput(File path) throws IOException {
+        private Progressable progressable;
+
+        public FileIndexOutput(Progressable progressable, File path) throws IOException {
             file = new RandomAccessFile(path, "rw");
             isOpen = true;
+            this.progressable = progressable;
         }
 
         @Override
         public void flushBuffer(byte[] b, int offset, int size) throws IOException {
             file.write(b, offset, size);
+            progressable.progress();
         }
 
         @Override

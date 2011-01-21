@@ -28,19 +28,19 @@ import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,BlurRecord> implements BlurConstants {
     
-    private static final Field PRIME_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.ANALYZED_NO_NORMS);
-    private IndexWriter writer;
-    private Directory directory;
-    private BlurAnalyzer analyzer;
-    private IndexDeletionPolicy deletionPolicy;
-    private LockFactory lockFactory;
-    private IndexCommit commitPoint;
-    private BlurTask blurTask;
-    private FileSystem fileSystem;
-    private LocalFileCache localFileCache;
-    private Counter recordCounter;
-    private Counter rowCounter;
-    private Counter fieldCounter;
+    protected static final Field PRIME_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.ANALYZED_NO_NORMS);
+    protected IndexWriter writer;
+    protected Directory directory;
+    protected BlurAnalyzer analyzer;
+    protected IndexDeletionPolicy deletionPolicy;
+    protected LockFactory lockFactory;
+    protected IndexCommit commitPoint;
+    protected BlurTask blurTask;
+    protected FileSystem fileSystem;
+    protected LocalFileCache localFileCache;
+    protected Counter recordCounter;
+    protected Counter rowCounter;
+    protected Counter fieldCounter;
     
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -59,7 +59,7 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         setupWriter(context);
     }
     
-    private void setupCounters(Context context) {
+    protected void setupCounters(Context context) {
         rowCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getRowCounterName());
         recordCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getRecordCounterName());
         fieldCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getFieldCounterName());
@@ -88,32 +88,32 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         writer.close();
     }
     
-    private void setupLocalFileCache(Context context) throws IOException {
+    protected void setupLocalFileCache(Context context) throws IOException {
         localFileCache = blurTask.getLocalFileCache();
     }
 
-    private void setupFileSystem(Context context) throws IOException {
+    protected void setupFileSystem(Context context) throws IOException {
         fileSystem = FileSystem.get(context.getConfiguration());
     }
 
-    private void setupLockFactory(Context context) throws IOException {
+    protected void setupLockFactory(Context context) throws IOException {
         //need to use zookeeper lock factory
         lockFactory = new NoLockFactory();
     }
     
-    private void setupDirectory(Context context) throws IOException {
+    protected void setupDirectory(Context context) throws IOException {
         directory = new WritableHdfsDirectory(nullCheck(blurTask.getDirectoryName()), nullCheck(blurTask.getDirectoryPath()),
-                nullCheck(fileSystem), nullCheck(localFileCache), nullCheck(lockFactory));
+                nullCheck(fileSystem), nullCheck(localFileCache), nullCheck(lockFactory),context);
     }
 
-    private <T> T nullCheck(T o) {
+    protected <T> T nullCheck(T o) {
         if (o == null) {
             throw new NullPointerException();
         }
         return o;
     }
     
-    private void setupEmptyIndex(Context context) throws IOException {
+    protected void setupEmptyIndex(Context context) throws IOException {
         nullCheck(directory);
         if (!IndexReader.indexExists(directory)) {
             IndexWriter indexWriter = new IndexWriter(nullCheck(directory), nullCheck(analyzer), 
@@ -125,24 +125,23 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         }        
     }
 
-    private void setupWriter(Context context) throws IOException {
+    protected void setupWriter(Context context) throws IOException {
         writer = new IndexWriter(nullCheck(directory), nullCheck(analyzer), 
                 nullCheck(deletionPolicy), MaxFieldLength.UNLIMITED, nullCheck(commitPoint));
         writer.setRAMBufferSizeMB(blurTask.getRamBufferSizeMB());
-        writer.setMergeFactor(Integer.MAX_VALUE);//never merge while indexing, this is done during optimize
         writer.setUseCompoundFile(false);
         writer.setSimilarity(new FairSimilarity());
     }
     
-    private void setupAnalyzer(Context context) {
+    protected void setupAnalyzer(Context context) {
         analyzer = blurTask.getAnalyzer();
     }
     
-    private void setupCommitPoint(Context context) throws IOException {
+    protected void setupCommitPoint(Context context) throws IOException {
         commitPoint = blurTask.getIndexCommitPointNameToOpen(IndexReader.listCommits(directory));
     }
     
-    private void setupIndexDeletionPolicy(Context context) {
+    protected void setupIndexDeletionPolicy(Context context) {
         deletionPolicy = new IndexDeletionPolicy() {
             @Override
             public void onInit(List<? extends IndexCommit> commits) throws IOException {
@@ -155,11 +154,11 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         };
     }
     
-    private void addPrimeDocumentField(Document document) {
+    protected void addPrimeDocumentField(Document document) {
         document.add(PRIME_FIELD);
     }
 
-    private Document toDocument(BlurRecord record) {
+    protected Document toDocument(BlurRecord record) {
         Document document = new Document();
         document.add(new Field(ID, record.getId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
         document.add(new Field(SUPER_KEY, record.getSuperKey(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
@@ -170,7 +169,7 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         return document;
     }
 
-    private void addField(Document document, BlurColumn column) {
+    protected void addField(Document document, BlurColumn column) {
         document.add(new Field(column.getName(),column.getValue(),Store.YES,Index.ANALYZED_NO_NORMS));
     }
 }

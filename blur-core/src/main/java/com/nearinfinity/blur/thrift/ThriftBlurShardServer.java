@@ -35,6 +35,8 @@ import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
 
 public class ThriftBlurShardServer {
     
+    private static final String _0_0_0_0 = "0.0.0.0";
+
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
     
     private String nodeName;
@@ -107,11 +109,7 @@ public class ThriftBlurShardServer {
     }
 
     public static InetSocketAddress parse(String nodeName) {
-        return new InetSocketAddress(getHostname(nodeName), getPort(nodeName));
-    }
-
-    private static String getHostname(String nodeName) {
-        return nodeName.substring(0, nodeName.indexOf(':'));
+        return new InetSocketAddress(_0_0_0_0, getPort(nodeName));
     }
 
     private static int getPort(String nodeName) {

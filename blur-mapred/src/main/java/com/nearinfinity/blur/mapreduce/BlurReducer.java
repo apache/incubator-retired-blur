@@ -162,14 +162,15 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         Document document = new Document();
         document.add(new Field(ID, record.getId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
         document.add(new Field(SUPER_KEY, record.getSuperKey(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+        String columnFamily = record.getColumnFamily();
         for (BlurColumn column : record.getColumns()) {
-            addField(document,column);
+            addField(columnFamily,document,column);
             fieldCounter.increment(1);
         }
         return document;
     }
 
-    protected void addField(Document document, BlurColumn column) {
-        document.add(new Field(column.getName(),column.getValue(),Store.YES,Index.ANALYZED_NO_NORMS));
+    protected void addField(String columnFamily, Document document, BlurColumn column) {
+        document.add(new Field(columnFamily + "." + column.getName(),column.getValue(),Store.YES,Index.ANALYZED_NO_NORMS));
     }
 }

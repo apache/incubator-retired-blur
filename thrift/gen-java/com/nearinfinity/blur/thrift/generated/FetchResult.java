@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, java.io.Serializable, Cloneable {
@@ -178,9 +181,15 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     return new FetchResult(this);
   }
 
-  @Deprecated
-  public FetchResult clone() {
-    return new FetchResult(this);
+  @Override
+  public void clear() {
+    setExistsIsSet(false);
+    this.exists = false;
+    setDeletedIsSet(false);
+    this.deleted = false;
+    this.table = null;
+    this.row = null;
+    this.record = null;
   }
 
   public boolean isExists() {
@@ -361,10 +370,6 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case EXISTS:
@@ -386,12 +391,12 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case EXISTS:
       return isSetExists();
@@ -405,10 +410,6 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       return isSetRecord();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -489,7 +490,8 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetExists()) {      lastComparison = TBaseHelper.compareTo(this.exists, typedOther.exists);
+    if (isSetExists()) {
+      lastComparison = TBaseHelper.compareTo(this.exists, typedOther.exists);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -498,7 +500,8 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetDeleted()) {      lastComparison = TBaseHelper.compareTo(this.deleted, typedOther.deleted);
+    if (isSetDeleted()) {
+      lastComparison = TBaseHelper.compareTo(this.deleted, typedOther.deleted);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -507,7 +510,8 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTable()) {      lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+    if (isSetTable()) {
+      lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -516,7 +520,8 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRow()) {      lastComparison = TBaseHelper.compareTo(this.row, typedOther.row);
+    if (isSetRow()) {
+      lastComparison = TBaseHelper.compareTo(this.row, typedOther.row);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -525,12 +530,17 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRecord()) {      lastComparison = TBaseHelper.compareTo(this.record, typedOther.record);
+    if (isSetRecord()) {
+      lastComparison = TBaseHelper.compareTo(this.record, typedOther.record);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

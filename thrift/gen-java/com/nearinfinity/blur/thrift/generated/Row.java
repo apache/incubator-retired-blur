@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Cloneable {
@@ -139,9 +142,10 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     return new Row(this);
   }
 
-  @Deprecated
-  public Row clone() {
-    return new Row(this);
+  @Override
+  public void clear() {
+    this.id = null;
+    this.columnFamilies = null;
   }
 
   public String getId() {
@@ -228,10 +232,6 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case ID:
@@ -244,12 +244,12 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case ID:
       return isSetId();
@@ -257,10 +257,6 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       return isSetColumnFamilies();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -314,7 +310,8 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetId()) {      lastComparison = TBaseHelper.compareTo(this.id, typedOther.id);
+    if (isSetId()) {
+      lastComparison = TBaseHelper.compareTo(this.id, typedOther.id);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -323,12 +320,17 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumnFamilies()) {      lastComparison = TBaseHelper.compareTo(this.columnFamilies, typedOther.columnFamilies);
+    if (isSetColumnFamilies()) {
+      lastComparison = TBaseHelper.compareTo(this.columnFamilies, typedOther.columnFamilies);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

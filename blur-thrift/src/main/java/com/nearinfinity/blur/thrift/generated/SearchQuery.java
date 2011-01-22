@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, java.io.Serializable, Cloneable {
@@ -241,9 +244,24 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return new SearchQuery(this);
   }
 
-  @Deprecated
-  public SearchQuery clone() {
-    return new SearchQuery(this);
+  @Override
+  public void clear() {
+    this.queryStr = null;
+    setSuperQueryOnIsSet(false);
+    this.superQueryOn = false;
+    this.type = null;
+    this.postSuperFilter = null;
+    this.preSuperFilter = null;
+    setStartIsSet(false);
+    this.start = 0;
+    setFetchIsSet(false);
+    this.fetch = 0;
+    setMinimumNumberOfHitsIsSet(false);
+    this.minimumNumberOfHits = 0;
+    setMaxQueryTimeIsSet(false);
+    this.maxQueryTime = 0;
+    setUuidIsSet(false);
+    this.uuid = 0;
   }
 
   public String getQueryStr() {
@@ -573,10 +591,6 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case QUERY_STR:
@@ -613,12 +627,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case QUERY_STR:
       return isSetQueryStr();
@@ -642,10 +656,6 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       return isSetUuid();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -771,7 +781,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQueryStr()) {      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
+    if (isSetQueryStr()) {
+      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -780,7 +791,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSuperQueryOn()) {      lastComparison = TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
+    if (isSetSuperQueryOn()) {
+      lastComparison = TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -789,7 +801,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetType()) {      lastComparison = TBaseHelper.compareTo(this.type, typedOther.type);
+    if (isSetType()) {
+      lastComparison = TBaseHelper.compareTo(this.type, typedOther.type);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -798,7 +811,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPostSuperFilter()) {      lastComparison = TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
+    if (isSetPostSuperFilter()) {
+      lastComparison = TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -807,7 +821,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetPreSuperFilter()) {      lastComparison = TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
+    if (isSetPreSuperFilter()) {
+      lastComparison = TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -816,7 +831,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetStart()) {      lastComparison = TBaseHelper.compareTo(this.start, typedOther.start);
+    if (isSetStart()) {
+      lastComparison = TBaseHelper.compareTo(this.start, typedOther.start);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -825,7 +841,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFetch()) {      lastComparison = TBaseHelper.compareTo(this.fetch, typedOther.fetch);
+    if (isSetFetch()) {
+      lastComparison = TBaseHelper.compareTo(this.fetch, typedOther.fetch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -834,7 +851,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMinimumNumberOfHits()) {      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
+    if (isSetMinimumNumberOfHits()) {
+      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -843,7 +861,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMaxQueryTime()) {      lastComparison = TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
+    if (isSetMaxQueryTime()) {
+      lastComparison = TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -852,12 +871,17 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetUuid()) {      lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
+    if (isSetUuid()) {
+      lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

@@ -27,7 +27,6 @@ import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
-import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
@@ -85,19 +84,6 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
         }
     }
     
-    @Override
-    public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, TException {
-        enabledTable(table);
-        try {
-            return BlurUtil.toBytes(fetchRow(table,selector));
-        } catch (BlurException e) {
-            throw e;
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to get fetch row binary [" + getParametersList("table",table,"selector",selector) + "]",e);
-            throw new BlurException(e.getMessage());
-        }
-    }
-
     public void close() throws InterruptedException {
         indexManager.close();
     }

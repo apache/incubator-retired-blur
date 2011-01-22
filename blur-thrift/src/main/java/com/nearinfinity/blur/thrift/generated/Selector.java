@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class Selector implements TBase<Selector, Selector._Fields>, java.io.Serializable, Cloneable {
@@ -184,9 +187,13 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     return new Selector(this);
   }
 
-  @Deprecated
-  public Selector clone() {
-    return new Selector(this);
+  @Override
+  public void clear() {
+    this.locationId = null;
+    setRecordOnlyIsSet(false);
+    this.recordOnly = false;
+    this.columnFamilies = null;
+    this.columns = null;
   }
 
   public String getLocationId() {
@@ -347,10 +354,6 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case LOCATION_ID:
@@ -369,12 +372,12 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case LOCATION_ID:
       return isSetLocationId();
@@ -386,10 +389,6 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       return isSetColumns();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -461,7 +460,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetLocationId()) {      lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
+    if (isSetLocationId()) {
+      lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -470,7 +470,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRecordOnly()) {      lastComparison = TBaseHelper.compareTo(this.recordOnly, typedOther.recordOnly);
+    if (isSetRecordOnly()) {
+      lastComparison = TBaseHelper.compareTo(this.recordOnly, typedOther.recordOnly);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -479,7 +480,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumnFamilies()) {      lastComparison = TBaseHelper.compareTo(this.columnFamilies, typedOther.columnFamilies);
+    if (isSetColumnFamilies()) {
+      lastComparison = TBaseHelper.compareTo(this.columnFamilies, typedOther.columnFamilies);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -488,12 +490,17 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumns()) {      lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
+    if (isSetColumns()) {
+      lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

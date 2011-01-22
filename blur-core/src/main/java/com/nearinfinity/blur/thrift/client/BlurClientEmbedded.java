@@ -89,11 +89,6 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, TException {
-            return face.fetchRowBinary(table, selector);
-        }
-
-        @Override
         public long recordFrequency(String table, String columnFamily, String columnName, String value)
                 throws BlurException, TException {
             return face.recordFrequency(table, columnFamily, columnName, value);
@@ -171,11 +166,6 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public byte[] recv_fetchRowBinary() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
         public long recv_recordFrequency() throws BlurException, TException {
             throw new RuntimeException("not impl");
         }
@@ -237,11 +227,6 @@ public class BlurClientEmbedded extends BlurClient {
 
         @Override
         public void send_fetchRow(String table, Selector selector) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_fetchRowBinary(String table, Selector selector) throws TException {
             throw new RuntimeException("not impl");
         }
 

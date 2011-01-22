@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cloneable {
@@ -223,9 +226,18 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     return new Hits(this);
   }
 
-  @Deprecated
-  public Hits clone() {
-    return new Hits(this);
+  @Override
+  public void clear() {
+    this.totalHits = 0L;
+
+    this.shardInfo = null;
+    this.hits = null;
+    this.exceptions = null;
+    this.query = null;
+    setRealTimeIsSet(false);
+    this.realTime = 0;
+    setCpuTimeIsSet(false);
+    this.cpuTime = 0;
   }
 
   public long getTotalHits() {
@@ -495,10 +507,6 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case TOTAL_HITS:
@@ -526,12 +534,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case TOTAL_HITS:
       return isSetTotalHits();
@@ -549,10 +557,6 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       return isSetCpuTime();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -651,7 +655,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTotalHits()) {      lastComparison = TBaseHelper.compareTo(this.totalHits, typedOther.totalHits);
+    if (isSetTotalHits()) {
+      lastComparison = TBaseHelper.compareTo(this.totalHits, typedOther.totalHits);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -660,7 +665,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetShardInfo()) {      lastComparison = TBaseHelper.compareTo(this.shardInfo, typedOther.shardInfo);
+    if (isSetShardInfo()) {
+      lastComparison = TBaseHelper.compareTo(this.shardInfo, typedOther.shardInfo);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -669,7 +675,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetHits()) {      lastComparison = TBaseHelper.compareTo(this.hits, typedOther.hits);
+    if (isSetHits()) {
+      lastComparison = TBaseHelper.compareTo(this.hits, typedOther.hits);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -678,7 +685,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetExceptions()) {      lastComparison = TBaseHelper.compareTo(this.exceptions, typedOther.exceptions);
+    if (isSetExceptions()) {
+      lastComparison = TBaseHelper.compareTo(this.exceptions, typedOther.exceptions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -687,7 +695,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQuery()) {      lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
+    if (isSetQuery()) {
+      lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -696,7 +705,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRealTime()) {      lastComparison = TBaseHelper.compareTo(this.realTime, typedOther.realTime);
+    if (isSetRealTime()) {
+      lastComparison = TBaseHelper.compareTo(this.realTime, typedOther.realTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -705,12 +715,17 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCpuTime()) {      lastComparison = TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
+    if (isSetCpuTime()) {
+      lastComparison = TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

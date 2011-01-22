@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, java.io.Serializable, Cloneable {
@@ -152,9 +155,10 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     return new ColumnFamily(this);
   }
 
-  @Deprecated
-  public ColumnFamily clone() {
-    return new ColumnFamily(this);
+  @Override
+  public void clear() {
+    this.family = null;
+    this.columns = null;
   }
 
   public String getFamily() {
@@ -237,10 +241,6 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case FAMILY:
@@ -253,12 +253,12 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case FAMILY:
       return isSetFamily();
@@ -266,10 +266,6 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
       return isSetColumns();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -323,7 +319,8 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFamily()) {      lastComparison = TBaseHelper.compareTo(this.family, typedOther.family);
+    if (isSetFamily()) {
+      lastComparison = TBaseHelper.compareTo(this.family, typedOther.family);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -332,12 +329,17 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumns()) {      lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
+    if (isSetColumns()) {
+      lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

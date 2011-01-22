@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class Column implements TBase<Column, Column._Fields>, java.io.Serializable, Cloneable {
@@ -139,9 +142,10 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     return new Column(this);
   }
 
-  @Deprecated
-  public Column clone() {
-    return new Column(this);
+  @Override
+  public void clear() {
+    this.name = null;
+    this.values = null;
   }
 
   public String getName() {
@@ -228,10 +232,6 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case NAME:
@@ -244,12 +244,12 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case NAME:
       return isSetName();
@@ -257,10 +257,6 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
       return isSetValues();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -314,7 +310,8 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetName()) {      lastComparison = TBaseHelper.compareTo(this.name, typedOther.name);
+    if (isSetName()) {
+      lastComparison = TBaseHelper.compareTo(this.name, typedOther.name);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -323,12 +320,17 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetValues()) {      lastComparison = TBaseHelper.compareTo(this.values, typedOther.values);
+    if (isSetValues()) {
+      lastComparison = TBaseHelper.compareTo(this.values, typedOther.values);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

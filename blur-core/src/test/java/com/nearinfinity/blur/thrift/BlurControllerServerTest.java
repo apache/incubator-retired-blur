@@ -189,11 +189,6 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public byte[] fetchRowBinary(String arg0, Selector arg1) throws BlurException, TException {
-                throw new RuntimeException("no impl");
-            }
-            
-            @Override
             public FetchResult fetchRow(String arg0, Selector arg1) throws BlurException, TException {
                 throw new RuntimeException("no impl");
             }

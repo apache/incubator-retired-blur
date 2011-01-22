@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class BlurException extends Exception implements TBase<BlurException, BlurException._Fields>, java.io.Serializable, Cloneable {
@@ -122,9 +125,9 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     return new BlurException(this);
   }
 
-  @Deprecated
-  public BlurException clone() {
-    return new BlurException(this);
+  @Override
+  public void clear() {
+    this.message = null;
   }
 
   public String getMessage() {
@@ -164,10 +167,6 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case MESSAGE:
@@ -177,21 +176,17 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case MESSAGE:
       return isSetMessage();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -236,12 +231,17 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMessage()) {      lastComparison = TBaseHelper.compareTo(this.message, typedOther.message);
+    if (isSetMessage()) {
+      lastComparison = TBaseHelper.compareTo(this.message, typedOther.message);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

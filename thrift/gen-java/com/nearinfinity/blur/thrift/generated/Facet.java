@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable, Cloneable {
@@ -137,9 +140,11 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     return new Facet(this);
   }
 
-  @Deprecated
-  public Facet clone() {
-    return new Facet(this);
+  @Override
+  public void clear() {
+    this.queryStr = null;
+    setMinimumNumberOfHitsIsSet(false);
+    this.minimumNumberOfHits = 0;
   }
 
   public String getQueryStr() {
@@ -210,10 +215,6 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case QUERY_STR:
@@ -226,12 +227,12 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case QUERY_STR:
       return isSetQueryStr();
@@ -239,10 +240,6 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
       return isSetMinimumNumberOfHits();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -296,7 +293,8 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQueryStr()) {      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
+    if (isSetQueryStr()) {
+      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -305,12 +303,17 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMinimumNumberOfHits()) {      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
+    if (isSetMinimumNumberOfHits()) {
+      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

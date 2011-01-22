@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class BlurSearch {
@@ -53,7 +56,35 @@ public class BlurSearch {
 
     public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException;
 
-    public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, TException;
+  }
+
+  public interface AsyncIface {
+
+    public void shardServerList(AsyncMethodCallback<AsyncClient.shardServerList_call> resultHandler) throws TException;
+
+    public void controllerServerList(AsyncMethodCallback<AsyncClient.controllerServerList_call> resultHandler) throws TException;
+
+    public void shardServerLayout(String table, AsyncMethodCallback<AsyncClient.shardServerLayout_call> resultHandler) throws TException;
+
+    public void tableList(AsyncMethodCallback<AsyncClient.tableList_call> resultHandler) throws TException;
+
+    public void describe(String table, AsyncMethodCallback<AsyncClient.describe_call> resultHandler) throws TException;
+
+    public void search(String table, SearchQuery searchQuery, AsyncMethodCallback<AsyncClient.search_call> resultHandler) throws TException;
+
+    public void facetSearch(String table, FacetQuery facetQuery, AsyncMethodCallback<AsyncClient.facetSearch_call> resultHandler) throws TException;
+
+    public void cancelSearch(long uuid, AsyncMethodCallback<AsyncClient.cancelSearch_call> resultHandler) throws TException;
+
+    public void currentSearches(String table, AsyncMethodCallback<AsyncClient.currentSearches_call> resultHandler) throws TException;
+
+    public void schema(String table, AsyncMethodCallback<AsyncClient.schema_call> resultHandler) throws TException;
+
+    public void terms(String table, String columnFamily, String columnName, String startWith, short size, AsyncMethodCallback<AsyncClient.terms_call> resultHandler) throws TException;
+
+    public void recordFrequency(String table, String columnFamily, String columnName, String value, AsyncMethodCallback<AsyncClient.recordFrequency_call> resultHandler) throws TException;
+
+    public void fetchRow(String table, Selector selector, AsyncMethodCallback<AsyncClient.fetchRow_call> resultHandler) throws TException;
 
   }
 
@@ -605,47 +636,450 @@ public class BlurSearch {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
     }
 
-    public byte[] fetchRowBinary(String table, Selector selector) throws BlurException, TException
-    {
-      send_fetchRowBinary(table, selector);
-      return recv_fetchRowBinary();
+  }
+  public static class AsyncClient extends TAsyncClient implements AsyncIface {
+    public static class Factory implements TAsyncClientFactory<AsyncClient> {
+      private TAsyncClientManager clientManager;
+      private TProtocolFactory protocolFactory;
+      public Factory(TAsyncClientManager clientManager, TProtocolFactory protocolFactory) {
+        this.clientManager = clientManager;
+        this.protocolFactory = protocolFactory;
+      }
+      public AsyncClient getAsyncClient(TNonblockingTransport transport) {
+        return new AsyncClient(protocolFactory, clientManager, transport);
+      }
     }
 
-    public void send_fetchRowBinary(String table, Selector selector) throws TException
-    {
-      oprot_.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.CALL, ++seqid_));
-      fetchRowBinary_args args = new fetchRowBinary_args();
-      args.setTable(table);
-      args.setSelector(selector);
-      args.write(oprot_);
-      oprot_.writeMessageEnd();
-      oprot_.getTransport().flush();
+    public AsyncClient(TProtocolFactory protocolFactory, TAsyncClientManager clientManager, TNonblockingTransport transport) {
+      super(protocolFactory, clientManager, transport);
     }
 
-    public byte[] recv_fetchRowBinary() throws BlurException, TException
-    {
-      TMessage msg = iprot_.readMessageBegin();
-      if (msg.type == TMessageType.EXCEPTION) {
-        TApplicationException x = TApplicationException.read(iprot_);
-        iprot_.readMessageEnd();
-        throw x;
+    public void shardServerList(AsyncMethodCallback<shardServerList_call> resultHandler) throws TException {
+      checkReady();
+      shardServerList_call method_call = new shardServerList_call(resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class shardServerList_call extends TAsyncMethodCall {
+      public shardServerList_call(AsyncMethodCallback<shardServerList_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
       }
-      if (msg.seqid != seqid_) {
-        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "fetchRowBinary failed: out of sequence response");
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("shardServerList", TMessageType.CALL, 0));
+        shardServerList_args args = new shardServerList_args();
+        args.write(prot);
+        prot.writeMessageEnd();
       }
-      fetchRowBinary_result result = new fetchRowBinary_result();
-      result.read(iprot_);
-      iprot_.readMessageEnd();
-      if (result.isSetSuccess()) {
-        return result.success;
+
+      public List<String> getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_shardServerList();
       }
-      if (result.be != null) {
-        throw result.be;
+    }
+
+    public void controllerServerList(AsyncMethodCallback<controllerServerList_call> resultHandler) throws TException {
+      checkReady();
+      controllerServerList_call method_call = new controllerServerList_call(resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class controllerServerList_call extends TAsyncMethodCall {
+      public controllerServerList_call(AsyncMethodCallback<controllerServerList_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
       }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRowBinary failed: unknown result");
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("controllerServerList", TMessageType.CALL, 0));
+        controllerServerList_args args = new controllerServerList_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<String> getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_controllerServerList();
+      }
+    }
+
+    public void shardServerLayout(String table, AsyncMethodCallback<shardServerLayout_call> resultHandler) throws TException {
+      checkReady();
+      shardServerLayout_call method_call = new shardServerLayout_call(table, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class shardServerLayout_call extends TAsyncMethodCall {
+      private String table;
+      public shardServerLayout_call(String table, AsyncMethodCallback<shardServerLayout_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("shardServerLayout", TMessageType.CALL, 0));
+        shardServerLayout_args args = new shardServerLayout_args();
+        args.setTable(table);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Map<String,String> getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_shardServerLayout();
+      }
+    }
+
+    public void tableList(AsyncMethodCallback<tableList_call> resultHandler) throws TException {
+      checkReady();
+      tableList_call method_call = new tableList_call(resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class tableList_call extends TAsyncMethodCall {
+      public tableList_call(AsyncMethodCallback<tableList_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("tableList", TMessageType.CALL, 0));
+        tableList_args args = new tableList_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<String> getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_tableList();
+      }
+    }
+
+    public void describe(String table, AsyncMethodCallback<describe_call> resultHandler) throws TException {
+      checkReady();
+      describe_call method_call = new describe_call(table, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class describe_call extends TAsyncMethodCall {
+      private String table;
+      public describe_call(String table, AsyncMethodCallback<describe_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("describe", TMessageType.CALL, 0));
+        describe_args args = new describe_args();
+        args.setTable(table);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public TableDescriptor getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_describe();
+      }
+    }
+
+    public void search(String table, SearchQuery searchQuery, AsyncMethodCallback<search_call> resultHandler) throws TException {
+      checkReady();
+      search_call method_call = new search_call(table, searchQuery, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class search_call extends TAsyncMethodCall {
+      private String table;
+      private SearchQuery searchQuery;
+      public search_call(String table, SearchQuery searchQuery, AsyncMethodCallback<search_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.searchQuery = searchQuery;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("search", TMessageType.CALL, 0));
+        search_args args = new search_args();
+        args.setTable(table);
+        args.setSearchQuery(searchQuery);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Hits getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_search();
+      }
+    }
+
+    public void facetSearch(String table, FacetQuery facetQuery, AsyncMethodCallback<facetSearch_call> resultHandler) throws TException {
+      checkReady();
+      facetSearch_call method_call = new facetSearch_call(table, facetQuery, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class facetSearch_call extends TAsyncMethodCall {
+      private String table;
+      private FacetQuery facetQuery;
+      public facetSearch_call(String table, FacetQuery facetQuery, AsyncMethodCallback<facetSearch_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.facetQuery = facetQuery;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("facetSearch", TMessageType.CALL, 0));
+        facetSearch_args args = new facetSearch_args();
+        args.setTable(table);
+        args.setFacetQuery(facetQuery);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public FacetResult getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_facetSearch();
+      }
+    }
+
+    public void cancelSearch(long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler) throws TException {
+      checkReady();
+      cancelSearch_call method_call = new cancelSearch_call(uuid, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class cancelSearch_call extends TAsyncMethodCall {
+      private long uuid;
+      public cancelSearch_call(long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.uuid = uuid;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.CALL, 0));
+        cancelSearch_args args = new cancelSearch_args();
+        args.setUuid(uuid);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_cancelSearch();
+      }
+    }
+
+    public void currentSearches(String table, AsyncMethodCallback<currentSearches_call> resultHandler) throws TException {
+      checkReady();
+      currentSearches_call method_call = new currentSearches_call(table, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class currentSearches_call extends TAsyncMethodCall {
+      private String table;
+      public currentSearches_call(String table, AsyncMethodCallback<currentSearches_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("currentSearches", TMessageType.CALL, 0));
+        currentSearches_args args = new currentSearches_args();
+        args.setTable(table);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<SearchQueryStatus> getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_currentSearches();
+      }
+    }
+
+    public void schema(String table, AsyncMethodCallback<schema_call> resultHandler) throws TException {
+      checkReady();
+      schema_call method_call = new schema_call(table, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class schema_call extends TAsyncMethodCall {
+      private String table;
+      public schema_call(String table, AsyncMethodCallback<schema_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("schema", TMessageType.CALL, 0));
+        schema_args args = new schema_args();
+        args.setTable(table);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public Schema getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_schema();
+      }
+    }
+
+    public void terms(String table, String columnFamily, String columnName, String startWith, short size, AsyncMethodCallback<terms_call> resultHandler) throws TException {
+      checkReady();
+      terms_call method_call = new terms_call(table, columnFamily, columnName, startWith, size, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class terms_call extends TAsyncMethodCall {
+      private String table;
+      private String columnFamily;
+      private String columnName;
+      private String startWith;
+      private short size;
+      public terms_call(String table, String columnFamily, String columnName, String startWith, short size, AsyncMethodCallback<terms_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.columnFamily = columnFamily;
+        this.columnName = columnName;
+        this.startWith = startWith;
+        this.size = size;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("terms", TMessageType.CALL, 0));
+        terms_args args = new terms_args();
+        args.setTable(table);
+        args.setColumnFamily(columnFamily);
+        args.setColumnName(columnName);
+        args.setStartWith(startWith);
+        args.setSize(size);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<String> getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_terms();
+      }
+    }
+
+    public void recordFrequency(String table, String columnFamily, String columnName, String value, AsyncMethodCallback<recordFrequency_call> resultHandler) throws TException {
+      checkReady();
+      recordFrequency_call method_call = new recordFrequency_call(table, columnFamily, columnName, value, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class recordFrequency_call extends TAsyncMethodCall {
+      private String table;
+      private String columnFamily;
+      private String columnName;
+      private String value;
+      public recordFrequency_call(String table, String columnFamily, String columnName, String value, AsyncMethodCallback<recordFrequency_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.columnFamily = columnFamily;
+        this.columnName = columnName;
+        this.value = value;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("recordFrequency", TMessageType.CALL, 0));
+        recordFrequency_args args = new recordFrequency_args();
+        args.setTable(table);
+        args.setColumnFamily(columnFamily);
+        args.setColumnName(columnName);
+        args.setValue(value);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public long getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_recordFrequency();
+      }
+    }
+
+    public void fetchRow(String table, Selector selector, AsyncMethodCallback<fetchRow_call> resultHandler) throws TException {
+      checkReady();
+      fetchRow_call method_call = new fetchRow_call(table, selector, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class fetchRow_call extends TAsyncMethodCall {
+      private String table;
+      private Selector selector;
+      public fetchRow_call(String table, Selector selector, AsyncMethodCallback<fetchRow_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.selector = selector;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("fetchRow", TMessageType.CALL, 0));
+        fetchRow_args args = new fetchRow_args();
+        args.setTable(table);
+        args.setSelector(selector);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public FetchResult getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_fetchRow();
+      }
     }
 
   }
+
   public static class Processor implements TProcessor {
     private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
     public Processor(Iface iface)
@@ -664,7 +1098,6 @@ public class BlurSearch {
       processMap_.put("terms", new terms());
       processMap_.put("recordFrequency", new recordFrequency());
       processMap_.put("fetchRow", new fetchRow());
-      processMap_.put("fetchRowBinary", new fetchRowBinary());
     }
 
     protected static interface ProcessFunction {
@@ -1187,44 +1620,6 @@ public class BlurSearch {
 
     }
 
-    private class fetchRowBinary implements ProcessFunction {
-      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
-      {
-        fetchRowBinary_args args = new fetchRowBinary_args();
-        try {
-          args.read(iprot);
-        } catch (TProtocolException e) {
-          iprot.readMessageEnd();
-          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        iprot.readMessageEnd();
-        fetchRowBinary_result result = new fetchRowBinary_result();
-        try {
-          result.success = iface_.fetchRowBinary(args.table, args.selector);
-        } catch (BlurException be) {
-          result.be = be;
-        } catch (Throwable th) {
-          LOGGER.error("Internal error processing fetchRowBinary", th);
-          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing fetchRowBinary");
-          oprot.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.EXCEPTION, seqid));
-          x.write(oprot);
-          oprot.writeMessageEnd();
-          oprot.getTransport().flush();
-          return;
-        }
-        oprot.writeMessageBegin(new TMessage("fetchRowBinary", TMessageType.REPLY, seqid));
-        result.write(oprot);
-        oprot.writeMessageEnd();
-        oprot.getTransport().flush();
-      }
-
-    }
-
   }
 
   public static class shardServerList_args implements TBase<shardServerList_args, shardServerList_args._Fields>, java.io.Serializable, Cloneable   {
@@ -1307,18 +1702,13 @@ public class BlurSearch {
       return new shardServerList_args(this);
     }
 
-    @Deprecated
-    public shardServerList_args clone() {
-      return new shardServerList_args(this);
+    @Override
+    public void clear() {
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
     }
 
     public Object getFieldValue(_Fields field) {
@@ -1327,19 +1717,15 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -1372,6 +1758,10 @@ public class BlurSearch {
       shardServerList_args typedOther = (shardServerList_args)other;
 
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -1534,9 +1924,10 @@ public class BlurSearch {
       return new shardServerList_result(this);
     }
 
-    @Deprecated
-    public shardServerList_result clone() {
-      return new shardServerList_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
     }
 
     public int getSuccessSize() {
@@ -1623,10 +2014,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -1639,12 +2026,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -1652,10 +2039,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -1709,7 +2092,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -1718,12 +2102,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -1905,18 +2294,13 @@ public class BlurSearch {
       return new controllerServerList_args(this);
     }
 
-    @Deprecated
-    public controllerServerList_args clone() {
-      return new controllerServerList_args(this);
+    @Override
+    public void clear() {
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
     }
 
     public Object getFieldValue(_Fields field) {
@@ -1925,19 +2309,15 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -1970,6 +2350,10 @@ public class BlurSearch {
       controllerServerList_args typedOther = (controllerServerList_args)other;
 
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -2132,9 +2516,10 @@ public class BlurSearch {
       return new controllerServerList_result(this);
     }
 
-    @Deprecated
-    public controllerServerList_result clone() {
-      return new controllerServerList_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
     }
 
     public int getSuccessSize() {
@@ -2221,10 +2606,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -2237,12 +2618,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -2250,10 +2631,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -2307,7 +2684,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -2316,12 +2694,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -2522,9 +2905,9 @@ public class BlurSearch {
       return new shardServerLayout_args(this);
     }
 
-    @Deprecated
-    public shardServerLayout_args clone() {
-      return new shardServerLayout_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
     }
 
     public String getTable() {
@@ -2564,10 +2947,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -2577,21 +2956,17 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -2636,12 +3011,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -2832,9 +3212,10 @@ public class BlurSearch {
       return new shardServerLayout_result(this);
     }
 
-    @Deprecated
-    public shardServerLayout_result clone() {
-      return new shardServerLayout_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
     }
 
     public int getSuccessSize() {
@@ -2917,10 +3298,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -2933,12 +3310,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -2946,10 +3323,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -3003,7 +3376,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -3012,12 +3386,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -3202,18 +3581,13 @@ public class BlurSearch {
       return new tableList_args(this);
     }
 
-    @Deprecated
-    public tableList_args clone() {
-      return new tableList_args(this);
+    @Override
+    public void clear() {
     }
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
       }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
     }
 
     public Object getFieldValue(_Fields field) {
@@ -3222,19 +3596,15 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -3267,6 +3637,10 @@ public class BlurSearch {
       tableList_args typedOther = (tableList_args)other;
 
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -3429,9 +3803,10 @@ public class BlurSearch {
       return new tableList_result(this);
     }
 
-    @Deprecated
-    public tableList_result clone() {
-      return new tableList_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
     }
 
     public int getSuccessSize() {
@@ -3518,10 +3893,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -3534,12 +3905,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -3547,10 +3918,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -3604,7 +3971,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -3613,12 +3981,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -3819,9 +4192,9 @@ public class BlurSearch {
       return new describe_args(this);
     }
 
-    @Deprecated
-    public describe_args clone() {
-      return new describe_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
     }
 
     public String getTable() {
@@ -3861,10 +4234,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -3874,21 +4243,17 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -3933,12 +4298,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -4115,9 +4485,10 @@ public class BlurSearch {
       return new describe_result(this);
     }
 
-    @Deprecated
-    public describe_result clone() {
-      return new describe_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
     }
 
     public TableDescriptor getSuccess() {
@@ -4189,10 +4560,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -4205,12 +4572,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -4218,10 +4585,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -4275,7 +4638,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -4284,12 +4648,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -4486,9 +4855,10 @@ public class BlurSearch {
       return new search_args(this);
     }
 
-    @Deprecated
-    public search_args clone() {
-      return new search_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
+      this.searchQuery = null;
     }
 
     public String getTable() {
@@ -4560,10 +4930,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -4576,12 +4942,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
@@ -4589,10 +4955,6 @@ public class BlurSearch {
         return isSetSearchQuery();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -4646,7 +5008,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -4655,12 +5018,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSearchQuery()) {        lastComparison = TBaseHelper.compareTo(this.searchQuery, typedOther.searchQuery);
+      if (isSetSearchQuery()) {
+        lastComparison = TBaseHelper.compareTo(this.searchQuery, typedOther.searchQuery);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -4858,9 +5226,10 @@ public class BlurSearch {
       return new search_result(this);
     }
 
-    @Deprecated
-    public search_result clone() {
-      return new search_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.be = null;
     }
 
     public Hits getSuccess() {
@@ -4932,10 +5301,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -4948,12 +5313,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -4961,10 +5326,6 @@ public class BlurSearch {
         return isSetBe();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -5018,7 +5379,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5027,12 +5389,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+      if (isSetBe()) {
+        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -5229,9 +5596,10 @@ public class BlurSearch {
       return new facetSearch_args(this);
     }
 
-    @Deprecated
-    public facetSearch_args clone() {
-      return new facetSearch_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
+      this.facetQuery = null;
     }
 
     public String getTable() {
@@ -5303,10 +5671,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -5319,12 +5683,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
@@ -5332,10 +5696,6 @@ public class BlurSearch {
         return isSetFacetQuery();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -5389,7 +5749,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5398,12 +5759,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetFacetQuery()) {        lastComparison = TBaseHelper.compareTo(this.facetQuery, typedOther.facetQuery);
+      if (isSetFacetQuery()) {
+        lastComparison = TBaseHelper.compareTo(this.facetQuery, typedOther.facetQuery);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -5601,9 +5967,10 @@ public class BlurSearch {
       return new facetSearch_result(this);
     }
 
-    @Deprecated
-    public facetSearch_result clone() {
-      return new facetSearch_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.be = null;
     }
 
     public FacetResult getSuccess() {
@@ -5675,10 +6042,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -5691,12 +6054,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -5704,10 +6067,6 @@ public class BlurSearch {
         return isSetBe();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -5761,7 +6120,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5770,12 +6130,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+      if (isSetBe()) {
+        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -5963,9 +6328,10 @@ public class BlurSearch {
       return new cancelSearch_args(this);
     }
 
-    @Deprecated
-    public cancelSearch_args clone() {
-      return new cancelSearch_args(this);
+    @Override
+    public void clear() {
+      setUuidIsSet(false);
+      this.uuid = 0;
     }
 
     public long getUuid() {
@@ -6004,10 +6370,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case UUID:
@@ -6017,21 +6379,17 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case UUID:
         return isSetUuid();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -6076,12 +6434,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetUuid()) {        lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
+      if (isSetUuid()) {
+        lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -6241,9 +6604,9 @@ public class BlurSearch {
       return new cancelSearch_result(this);
     }
 
-    @Deprecated
-    public cancelSearch_result clone() {
-      return new cancelSearch_result(this);
+    @Override
+    public void clear() {
+      this.be = null;
     }
 
     public BlurException getBe() {
@@ -6283,10 +6646,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case BE:
@@ -6296,21 +6655,17 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case BE:
         return isSetBe();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -6355,12 +6710,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+      if (isSetBe()) {
+        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -6525,9 +6885,9 @@ public class BlurSearch {
       return new currentSearches_args(this);
     }
 
-    @Deprecated
-    public currentSearches_args clone() {
-      return new currentSearches_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
     }
 
     public String getTable() {
@@ -6567,10 +6927,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -6580,21 +6936,17 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -6639,12 +6991,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -6826,9 +7183,10 @@ public class BlurSearch {
       return new currentSearches_result(this);
     }
 
-    @Deprecated
-    public currentSearches_result clone() {
-      return new currentSearches_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.be = null;
     }
 
     public int getSuccessSize() {
@@ -6915,10 +7273,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -6931,12 +7285,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -6944,10 +7298,6 @@ public class BlurSearch {
         return isSetBe();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -7001,7 +7351,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -7010,12 +7361,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+      if (isSetBe()) {
+        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -7217,9 +7573,9 @@ public class BlurSearch {
       return new schema_args(this);
     }
 
-    @Deprecated
-    public schema_args clone() {
-      return new schema_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
     }
 
     public String getTable() {
@@ -7259,10 +7615,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -7272,21 +7624,17 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -7331,12 +7679,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -7513,9 +7866,10 @@ public class BlurSearch {
       return new schema_result(this);
     }
 
-    @Deprecated
-    public schema_result clone() {
-      return new schema_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
     }
 
     public Schema getSuccess() {
@@ -7587,10 +7941,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -7603,12 +7953,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -7616,10 +7966,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -7673,7 +8019,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -7682,12 +8029,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -7923,9 +8275,14 @@ public class BlurSearch {
       return new terms_args(this);
     }
 
-    @Deprecated
-    public terms_args clone() {
-      return new terms_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
+      this.columnFamily = null;
+      this.columnName = null;
+      this.startWith = null;
+      setSizeIsSet(false);
+      this.size = 0;
     }
 
     public String getTable() {
@@ -8092,10 +8449,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -8117,12 +8470,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
@@ -8136,10 +8489,6 @@ public class BlurSearch {
         return isSetSize();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -8220,7 +8569,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8229,7 +8579,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetColumnFamily()) {        lastComparison = TBaseHelper.compareTo(this.columnFamily, typedOther.columnFamily);
+      if (isSetColumnFamily()) {
+        lastComparison = TBaseHelper.compareTo(this.columnFamily, typedOther.columnFamily);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8238,7 +8589,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetColumnName()) {        lastComparison = TBaseHelper.compareTo(this.columnName, typedOther.columnName);
+      if (isSetColumnName()) {
+        lastComparison = TBaseHelper.compareTo(this.columnName, typedOther.columnName);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8247,7 +8599,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetStartWith()) {        lastComparison = TBaseHelper.compareTo(this.startWith, typedOther.startWith);
+      if (isSetStartWith()) {
+        lastComparison = TBaseHelper.compareTo(this.startWith, typedOther.startWith);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8256,12 +8609,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSize()) {        lastComparison = TBaseHelper.compareTo(this.size, typedOther.size);
+      if (isSetSize()) {
+        lastComparison = TBaseHelper.compareTo(this.size, typedOther.size);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -8518,9 +8876,10 @@ public class BlurSearch {
       return new terms_result(this);
     }
 
-    @Deprecated
-    public terms_result clone() {
-      return new terms_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
     }
 
     public int getSuccessSize() {
@@ -8607,10 +8966,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -8623,12 +8978,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -8636,10 +8991,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -8693,7 +9044,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -8702,12 +9054,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -8944,9 +9301,12 @@ public class BlurSearch {
       return new recordFrequency_args(this);
     }
 
-    @Deprecated
-    public recordFrequency_args clone() {
-      return new recordFrequency_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
+      this.columnFamily = null;
+      this.columnName = null;
+      this.value = null;
     }
 
     public String getTable() {
@@ -9082,10 +9442,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -9104,12 +9460,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
@@ -9121,10 +9477,6 @@ public class BlurSearch {
         return isSetValue();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -9196,7 +9548,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9205,7 +9558,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetColumnFamily()) {        lastComparison = TBaseHelper.compareTo(this.columnFamily, typedOther.columnFamily);
+      if (isSetColumnFamily()) {
+        lastComparison = TBaseHelper.compareTo(this.columnFamily, typedOther.columnFamily);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9214,7 +9568,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetColumnName()) {        lastComparison = TBaseHelper.compareTo(this.columnName, typedOther.columnName);
+      if (isSetColumnName()) {
+        lastComparison = TBaseHelper.compareTo(this.columnName, typedOther.columnName);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9223,12 +9578,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetValue()) {        lastComparison = TBaseHelper.compareTo(this.value, typedOther.value);
+      if (isSetValue()) {
+        lastComparison = TBaseHelper.compareTo(this.value, typedOther.value);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -9468,9 +9828,11 @@ public class BlurSearch {
       return new recordFrequency_result(this);
     }
 
-    @Deprecated
-    public recordFrequency_result clone() {
-      return new recordFrequency_result(this);
+    @Override
+    public void clear() {
+      setSuccessIsSet(false);
+      this.success = 0;
+      this.ex = null;
     }
 
     public long getSuccess() {
@@ -9541,10 +9903,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -9557,12 +9915,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -9570,10 +9928,6 @@ public class BlurSearch {
         return isSetEx();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -9627,7 +9981,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -9636,12 +9991,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEx()) {        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -9834,9 +10194,10 @@ public class BlurSearch {
       return new fetchRow_args(this);
     }
 
-    @Deprecated
-    public fetchRow_args clone() {
-      return new fetchRow_args(this);
+    @Override
+    public void clear() {
+      this.table = null;
+      this.selector = null;
     }
 
     public String getTable() {
@@ -9908,10 +10269,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case TABLE:
@@ -9924,12 +10281,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case TABLE:
         return isSetTable();
@@ -9937,10 +10294,6 @@ public class BlurSearch {
         return isSetSelector();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -9994,7 +10347,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -10003,12 +10357,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSelector()) {        lastComparison = TBaseHelper.compareTo(this.selector, typedOther.selector);
+      if (isSetSelector()) {
+        lastComparison = TBaseHelper.compareTo(this.selector, typedOther.selector);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -10206,9 +10565,10 @@ public class BlurSearch {
       return new fetchRow_result(this);
     }
 
-    @Deprecated
-    public fetchRow_result clone() {
-      return new fetchRow_result(this);
+    @Override
+    public void clear() {
+      this.success = null;
+      this.be = null;
     }
 
     public FetchResult getSuccess() {
@@ -10280,10 +10640,6 @@ public class BlurSearch {
       }
     }
 
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
     public Object getFieldValue(_Fields field) {
       switch (field) {
       case SUCCESS:
@@ -10296,12 +10652,12 @@ public class BlurSearch {
       throw new IllegalStateException();
     }
 
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
     /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
     public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
       switch (field) {
       case SUCCESS:
         return isSetSuccess();
@@ -10309,10 +10665,6 @@ public class BlurSearch {
         return isSetBe();
       }
       throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
     }
 
     @Override
@@ -10366,7 +10718,8 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -10375,12 +10728,17 @@ public class BlurSearch {
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
+      if (isSetBe()) {
+        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
         if (lastComparison != 0) {
           return lastComparison;
         }
       }
       return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
     }
 
     public void read(TProtocol iprot) throws TException {
@@ -10446,754 +10804,6 @@ public class BlurSearch {
         sb.append("null");
       } else {
         sb.append(this.success);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("be:");
-      if (this.be == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.be);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws TException {
-      // check for required fields
-    }
-
-  }
-
-  public static class fetchRowBinary_args implements TBase<fetchRowBinary_args, fetchRowBinary_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("fetchRowBinary_args");
-
-    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-    private static final TField SELECTOR_FIELD_DESC = new TField("selector", TType.STRUCT, (short)2);
-
-    public String table;
-    public Selector selector;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements TFieldIdEnum {
-      TABLE((short)1, "table"),
-      SELECTOR((short)2, "selector");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // SELECTOR
-            return SELECTOR;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.SELECTOR, new FieldMetaData("selector", TFieldRequirementType.DEFAULT, 
-          new StructMetaData(TType.STRUCT, Selector.class)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(fetchRowBinary_args.class, metaDataMap);
-    }
-
-    public fetchRowBinary_args() {
-    }
-
-    public fetchRowBinary_args(
-      String table,
-      Selector selector)
-    {
-      this();
-      this.table = table;
-      this.selector = selector;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public fetchRowBinary_args(fetchRowBinary_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
-      if (other.isSetSelector()) {
-        this.selector = new Selector(other.selector);
-      }
-    }
-
-    public fetchRowBinary_args deepCopy() {
-      return new fetchRowBinary_args(this);
-    }
-
-    @Deprecated
-    public fetchRowBinary_args clone() {
-      return new fetchRowBinary_args(this);
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public fetchRowBinary_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been asigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
-    }
-
-    public Selector getSelector() {
-      return this.selector;
-    }
-
-    public fetchRowBinary_args setSelector(Selector selector) {
-      this.selector = selector;
-      return this;
-    }
-
-    public void unsetSelector() {
-      this.selector = null;
-    }
-
-    /** Returns true if field selector is set (has been asigned a value) and false otherwise */
-    public boolean isSetSelector() {
-      return this.selector != null;
-    }
-
-    public void setSelectorIsSet(boolean value) {
-      if (!value) {
-        this.selector = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
-      case SELECTOR:
-        if (value == null) {
-          unsetSelector();
-        } else {
-          setSelector((Selector)value);
-        }
-        break;
-
-      }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case TABLE:
-        return getTable();
-
-      case SELECTOR:
-        return getSelector();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      switch (field) {
-      case TABLE:
-        return isSetTable();
-      case SELECTOR:
-        return isSetSelector();
-      }
-      throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof fetchRowBinary_args)
-        return this.equals((fetchRowBinary_args)that);
-      return false;
-    }
-
-    public boolean equals(fetchRowBinary_args that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
-
-      boolean this_present_selector = true && this.isSetSelector();
-      boolean that_present_selector = true && that.isSetSelector();
-      if (this_present_selector || that_present_selector) {
-        if (!(this_present_selector && that_present_selector))
-          return false;
-        if (!this.selector.equals(that.selector))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(fetchRowBinary_args other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      fetchRowBinary_args typedOther = (fetchRowBinary_args)other;
-
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetSelector()).compareTo(typedOther.isSetSelector());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSelector()) {        lastComparison = TBaseHelper.compareTo(this.selector, typedOther.selector);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public void read(TProtocol iprot) throws TException {
-      TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 1: // TABLE
-            if (field.type == TType.STRING) {
-              this.table = iprot.readString();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 2: // SELECTOR
-            if (field.type == TType.STRUCT) {
-              this.selector = new Selector();
-              this.selector.read(iprot);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(TProtocol oprot) throws TException {
-      validate();
-
-      oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
-        oprot.writeFieldEnd();
-      }
-      if (this.selector != null) {
-        oprot.writeFieldBegin(SELECTOR_FIELD_DESC);
-        this.selector.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("fetchRowBinary_args(");
-      boolean first = true;
-
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("selector:");
-      if (this.selector == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.selector);
-      }
-      first = false;
-      sb.append(")");
-      return sb.toString();
-    }
-
-    public void validate() throws TException {
-      // check for required fields
-    }
-
-  }
-
-  public static class fetchRowBinary_result implements TBase<fetchRowBinary_result, fetchRowBinary_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("fetchRowBinary_result");
-
-    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short)0);
-    private static final TField BE_FIELD_DESC = new TField("be", TType.STRUCT, (short)1);
-
-    public byte[] success;
-    public BlurException be;
-
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-    public enum _Fields implements TFieldIdEnum {
-      SUCCESS((short)0, "success"),
-      BE((short)1, "be");
-
-      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
-
-      static {
-        for (_Fields field : EnumSet.allOf(_Fields.class)) {
-          byName.put(field.getFieldName(), field);
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, or null if its not found.
-       */
-      public static _Fields findByThriftId(int fieldId) {
-        switch(fieldId) {
-          case 0: // SUCCESS
-            return SUCCESS;
-          case 1: // BE
-            return BE;
-          default:
-            return null;
-        }
-      }
-
-      /**
-       * Find the _Fields constant that matches fieldId, throwing an exception
-       * if it is not found.
-       */
-      public static _Fields findByThriftIdOrThrow(int fieldId) {
-        _Fields fields = findByThriftId(fieldId);
-        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
-        return fields;
-      }
-
-      /**
-       * Find the _Fields constant that matches name, or null if its not found.
-       */
-      public static _Fields findByName(String name) {
-        return byName.get(name);
-      }
-
-      private final short _thriftId;
-      private final String _fieldName;
-
-      _Fields(short thriftId, String fieldName) {
-        _thriftId = thriftId;
-        _fieldName = fieldName;
-      }
-
-      public short getThriftFieldId() {
-        return _thriftId;
-      }
-
-      public String getFieldName() {
-        return _fieldName;
-      }
-    }
-
-    // isset id assignments
-
-    public static final Map<_Fields, FieldMetaData> metaDataMap;
-    static {
-      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.BE, new FieldMetaData("be", TFieldRequirementType.DEFAULT, 
-          new FieldValueMetaData(TType.STRUCT)));
-      metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(fetchRowBinary_result.class, metaDataMap);
-    }
-
-    public fetchRowBinary_result() {
-    }
-
-    public fetchRowBinary_result(
-      byte[] success,
-      BlurException be)
-    {
-      this();
-      this.success = success;
-      this.be = be;
-    }
-
-    /**
-     * Performs a deep copy on <i>other</i>.
-     */
-    public fetchRowBinary_result(fetchRowBinary_result other) {
-      if (other.isSetSuccess()) {
-        this.success = new byte[other.success.length];
-        System.arraycopy(other.success, 0, success, 0, other.success.length);
-      }
-      if (other.isSetBe()) {
-        this.be = new BlurException(other.be);
-      }
-    }
-
-    public fetchRowBinary_result deepCopy() {
-      return new fetchRowBinary_result(this);
-    }
-
-    @Deprecated
-    public fetchRowBinary_result clone() {
-      return new fetchRowBinary_result(this);
-    }
-
-    public byte[] getSuccess() {
-      return this.success;
-    }
-
-    public fetchRowBinary_result setSuccess(byte[] success) {
-      this.success = success;
-      return this;
-    }
-
-    public void unsetSuccess() {
-      this.success = null;
-    }
-
-    /** Returns true if field success is set (has been asigned a value) and false otherwise */
-    public boolean isSetSuccess() {
-      return this.success != null;
-    }
-
-    public void setSuccessIsSet(boolean value) {
-      if (!value) {
-        this.success = null;
-      }
-    }
-
-    public BlurException getBe() {
-      return this.be;
-    }
-
-    public fetchRowBinary_result setBe(BlurException be) {
-      this.be = be;
-      return this;
-    }
-
-    public void unsetBe() {
-      this.be = null;
-    }
-
-    /** Returns true if field be is set (has been asigned a value) and false otherwise */
-    public boolean isSetBe() {
-      return this.be != null;
-    }
-
-    public void setBeIsSet(boolean value) {
-      if (!value) {
-        this.be = null;
-      }
-    }
-
-    public void setFieldValue(_Fields field, Object value) {
-      switch (field) {
-      case SUCCESS:
-        if (value == null) {
-          unsetSuccess();
-        } else {
-          setSuccess((byte[])value);
-        }
-        break;
-
-      case BE:
-        if (value == null) {
-          unsetBe();
-        } else {
-          setBe((BlurException)value);
-        }
-        break;
-
-      }
-    }
-
-    public void setFieldValue(int fieldID, Object value) {
-      setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-    }
-
-    public Object getFieldValue(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return getSuccess();
-
-      case BE:
-        return getBe();
-
-      }
-      throw new IllegalStateException();
-    }
-
-    public Object getFieldValue(int fieldId) {
-      return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-    }
-
-    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
-    public boolean isSet(_Fields field) {
-      switch (field) {
-      case SUCCESS:
-        return isSetSuccess();
-      case BE:
-        return isSetBe();
-      }
-      throw new IllegalStateException();
-    }
-
-    public boolean isSet(int fieldID) {
-      return isSet(_Fields.findByThriftIdOrThrow(fieldID));
-    }
-
-    @Override
-    public boolean equals(Object that) {
-      if (that == null)
-        return false;
-      if (that instanceof fetchRowBinary_result)
-        return this.equals((fetchRowBinary_result)that);
-      return false;
-    }
-
-    public boolean equals(fetchRowBinary_result that) {
-      if (that == null)
-        return false;
-
-      boolean this_present_success = true && this.isSetSuccess();
-      boolean that_present_success = true && that.isSetSuccess();
-      if (this_present_success || that_present_success) {
-        if (!(this_present_success && that_present_success))
-          return false;
-        if (!java.util.Arrays.equals(this.success, that.success))
-          return false;
-      }
-
-      boolean this_present_be = true && this.isSetBe();
-      boolean that_present_be = true && that.isSetBe();
-      if (this_present_be || that_present_be) {
-        if (!(this_present_be && that_present_be))
-          return false;
-        if (!this.be.equals(that.be))
-          return false;
-      }
-
-      return true;
-    }
-
-    @Override
-    public int hashCode() {
-      return 0;
-    }
-
-    public int compareTo(fetchRowBinary_result other) {
-      if (!getClass().equals(other.getClass())) {
-        return getClass().getName().compareTo(other.getClass().getName());
-      }
-
-      int lastComparison = 0;
-      fetchRowBinary_result typedOther = (fetchRowBinary_result)other;
-
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetSuccess()) {        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetBe()).compareTo(typedOther.isSetBe());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetBe()) {        lastComparison = TBaseHelper.compareTo(this.be, typedOther.be);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      return 0;
-    }
-
-    public void read(TProtocol iprot) throws TException {
-      TField field;
-      iprot.readStructBegin();
-      while (true)
-      {
-        field = iprot.readFieldBegin();
-        if (field.type == TType.STOP) { 
-          break;
-        }
-        switch (field.id) {
-          case 0: // SUCCESS
-            if (field.type == TType.STRING) {
-              this.success = iprot.readBinary();
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 1: // BE
-            if (field.type == TType.STRUCT) {
-              this.be = new BlurException();
-              this.be.read(iprot);
-            } else { 
-              TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          default:
-            TProtocolUtil.skip(iprot, field.type);
-        }
-        iprot.readFieldEnd();
-      }
-      iprot.readStructEnd();
-
-      // check for required fields of primitive type, which can't be checked in the validate method
-      validate();
-    }
-
-    public void write(TProtocol oprot) throws TException {
-      oprot.writeStructBegin(STRUCT_DESC);
-
-      if (this.isSetSuccess()) {
-        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
-        oprot.writeBinary(this.success);
-        oprot.writeFieldEnd();
-      } else if (this.isSetBe()) {
-        oprot.writeFieldBegin(BE_FIELD_DESC);
-        this.be.write(oprot);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldStop();
-      oprot.writeStructEnd();
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder("fetchRowBinary_result(");
-      boolean first = true;
-
-      sb.append("success:");
-      if (this.success == null) {
-        sb.append("null");
-      } else {
-          int __success_size = Math.min(this.success.length, 128);
-          for (int i = 0; i < __success_size; i++) {
-            if (i != 0) sb.append(" ");
-            sb.append(Integer.toHexString(this.success[i]).length() > 1 ? Integer.toHexString(this.success[i]).substring(Integer.toHexString(this.success[i]).length() - 2).toUpperCase() : "0" + Integer.toHexString(this.success[i]).toUpperCase());
-          }
-          if (this.success.length > 128) sb.append(" ...");
       }
       first = false;
       if (!first) sb.append(", ");

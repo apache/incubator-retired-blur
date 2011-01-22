@@ -139,24 +139,6 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
     }
 	   
     @Override
-    public byte[] fetchRowBinary(final String table, final Selector selector) throws BlurException, TException {
-        String clientHostnamePort = null;
-        try {
-            clientHostnamePort = getNode(table,selector);
-            return client.execute(clientHostnamePort, 
-                new BlurSearchCommand<byte[]>() {
-                    @Override
-                    public byte[] call(Client client) throws Exception {
-                        return client.fetchRowBinary(table, selector);
-                    }
-                });
-        } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error during fetch of row from table [" + table +
-                    "] selector [" + selector + "] node [" + clientHostnamePort + "]");
-        }
-    }
-
-    @Override
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
         return shardServerLayout.get().get(table);
     }

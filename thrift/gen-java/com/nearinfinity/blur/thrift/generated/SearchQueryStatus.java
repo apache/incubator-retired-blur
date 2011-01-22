@@ -15,12 +15,15 @@ import java.util.HashSet;
 import java.util.EnumSet;
 import java.util.Collections;
 import java.util.BitSet;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.apache.thrift.*;
+import org.apache.thrift.async.*;
 import org.apache.thrift.meta_data.*;
+import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
 public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQueryStatus._Fields>, java.io.Serializable, Cloneable {
@@ -209,9 +212,22 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return new SearchQueryStatus(this);
   }
 
-  @Deprecated
-  public SearchQueryStatus clone() {
-    return new SearchQueryStatus(this);
+  @Override
+  public void clear() {
+    this.query = null;
+    this.facet = null;
+    setRealTimeIsSet(false);
+    this.realTime = 0;
+    setCpuTimeIsSet(false);
+    this.cpuTime = 0;
+    setCompleteIsSet(false);
+    this.complete = 0.0;
+    setRunningIsSet(false);
+    this.running = false;
+    setInterruptedIsSet(false);
+    this.interrupted = false;
+    setUuidIsSet(false);
+    this.uuid = 0;
   }
 
   public SearchQuery getQuery() {
@@ -469,10 +485,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     }
   }
 
-  public void setFieldValue(int fieldID, Object value) {
-    setFieldValue(_Fields.findByThriftIdOrThrow(fieldID), value);
-  }
-
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case QUERY:
@@ -503,12 +515,12 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     throw new IllegalStateException();
   }
 
-  public Object getFieldValue(int fieldId) {
-    return getFieldValue(_Fields.findByThriftIdOrThrow(fieldId));
-  }
-
   /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
+    if (field == null) {
+      throw new IllegalArgumentException();
+    }
+
     switch (field) {
     case QUERY:
       return isSetQuery();
@@ -528,10 +540,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       return isSetUuid();
     }
     throw new IllegalStateException();
-  }
-
-  public boolean isSet(int fieldID) {
-    return isSet(_Fields.findByThriftIdOrThrow(fieldID));
   }
 
   @Override
@@ -639,7 +647,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQuery()) {      lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
+    if (isSetQuery()) {
+      lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -648,7 +657,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetFacet()) {      lastComparison = TBaseHelper.compareTo(this.facet, typedOther.facet);
+    if (isSetFacet()) {
+      lastComparison = TBaseHelper.compareTo(this.facet, typedOther.facet);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -657,7 +667,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRealTime()) {      lastComparison = TBaseHelper.compareTo(this.realTime, typedOther.realTime);
+    if (isSetRealTime()) {
+      lastComparison = TBaseHelper.compareTo(this.realTime, typedOther.realTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -666,7 +677,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCpuTime()) {      lastComparison = TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
+    if (isSetCpuTime()) {
+      lastComparison = TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -675,7 +687,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetComplete()) {      lastComparison = TBaseHelper.compareTo(this.complete, typedOther.complete);
+    if (isSetComplete()) {
+      lastComparison = TBaseHelper.compareTo(this.complete, typedOther.complete);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -684,7 +697,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRunning()) {      lastComparison = TBaseHelper.compareTo(this.running, typedOther.running);
+    if (isSetRunning()) {
+      lastComparison = TBaseHelper.compareTo(this.running, typedOther.running);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -693,7 +707,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetInterrupted()) {      lastComparison = TBaseHelper.compareTo(this.interrupted, typedOther.interrupted);
+    if (isSetInterrupted()) {
+      lastComparison = TBaseHelper.compareTo(this.interrupted, typedOther.interrupted);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -702,12 +717,17 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetUuid()) {      lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
+    if (isSetUuid()) {
+      lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
     return 0;
+  }
+
+  public _Fields fieldForId(int fieldId) {
+    return _Fields.findByThriftId(fieldId);
   }
 
   public void read(TProtocol iprot) throws TException {

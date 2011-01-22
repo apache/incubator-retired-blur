@@ -61,11 +61,6 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public byte[] fetchRowBinary(String arg0, Selector selector) throws BlurException, TException {
-        return null;
-    }
-
-    @Override
     public List<SearchQueryStatus> currentSearches(String arg0) throws BlurException, TException {
         return null;
     }

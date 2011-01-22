@@ -1,18 +1,60 @@
 package com.nearinfinity.blur.store;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.UUID;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class LocalFileCache {
+    
+    private static Log LOG = LogFactory.getLog(LocalFileCache.class);
 
     private File[] files;
     private Random random = new Random();
 
     public LocalFileCache(File... files) {
-        this.files = files;
         for (int i = 0; i < files.length; i++) {
             files[i].mkdirs();
         }
+        this.files = getValid(files);
+    }
+
+    private File[] getValid(File[] files) {
+        List<File> result = new ArrayList<File>();
+        for (File f : files) {
+            if (isValid(f)) {
+                result.add(f);
+            }
+        }
+        if (result.isEmpty()) {
+            fatalNoLocalDirs();
+        }
+        return result.toArray(new File[]{});
+    }
+    
+    private void fatalNoLocalDirs() {
+        LOG.fatal("No valid local directories, JVM exiting.");
+        System.exit(1);
+    }
+
+    private boolean isValid(File f) {
+        if (f.exists() && f.isDirectory()) {
+            File file = new File(f,".blur.touchfile" + UUID.randomUUID().toString());
+            try {
+                if (file.createNewFile()) {
+                    file.delete();
+                    return true;
+                }
+            } catch (IOException e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     public File getLocalFile(String dirName, String name) {
@@ -25,11 +67,21 @@ public class LocalFileCache {
 
     private File newFile(String dirName, String name) {
         int index = random.nextInt(files.length);
-        File dir = new File(files[index],dirName);
-        if (!dir.exists()) {
-            dir.mkdirs();
+        for (int i = 0; i < files.length; i++) {
+            File dir = new File(files[index],dirName);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+            if (isValid(dir)) {
+                return dir;
+            }
+            index++;
+            if (index >= files.length) {
+                index = 0;
+            }
         }
-        return new File(dir,name);
+        fatalNoLocalDirs();
+        return null;
     }
 
     private File locateFileExistingFile(String dirName, String name) {

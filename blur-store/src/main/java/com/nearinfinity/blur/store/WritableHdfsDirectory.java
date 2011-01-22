@@ -135,7 +135,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         }
     }
 
-    public boolean fileExistsLocally(String name) {
+    public boolean fileExistsLocally(String name) throws IOException {
         return localFileCache.getLocalFile(dirName, name).exists();
     }
 

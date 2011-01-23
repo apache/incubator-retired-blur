@@ -86,6 +86,7 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         writer.optimize();
         writer.commit(blurTask.getCommitUserData());
         writer.close();
+        localFileCache.delete(blurTask.getDirectoryName());
     }
     
     protected void setupLocalFileCache(Context context) throws IOException {

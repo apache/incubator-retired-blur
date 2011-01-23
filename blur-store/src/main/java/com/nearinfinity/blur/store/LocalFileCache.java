@@ -23,6 +23,32 @@ public class LocalFileCache {
         }
         this.files = getValid(files);
     }
+    
+    public File getLocalFile(String dirName, String name) {
+        File file = locateFileExistingFile(dirName,name);
+        if (file != null) {
+            return file;
+        }
+        return newFile(dirName,name);
+    }
+    
+    public void delete(String dirName) {
+        for (File cacheDir : files) {
+            File dirFile = new File(cacheDir,dirName);
+            if (dirFile.exists()) {
+                rm(dirFile);
+            }
+        }
+    }
+
+    public static void rm(File file) {
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                rm(f);
+            }
+        }
+        file.delete();
+    }
 
     private File[] getValid(File[] files) {
         List<File> result = new ArrayList<File>();
@@ -55,14 +81,6 @@ public class LocalFileCache {
             }
         }
         return false;
-    }
-
-    public File getLocalFile(String dirName, String name) {
-        File file = locateFileExistingFile(dirName,name);
-        if (file != null) {
-            return file;
-        }
-        return newFile(dirName,name);
     }
 
     private File newFile(String dirName, String name) {

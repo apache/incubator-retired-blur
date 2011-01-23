@@ -34,6 +34,7 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.Query;
@@ -70,6 +71,7 @@ public class IndexManager implements BlurConstants {
 
     private static final Version LUCENE_VERSION = Version.LUCENE_30;
     private static final Log LOG = LogFactory.getLog(IndexManager.class);
+    private static final int MAX_CLAUSE_COUNT = Integer.getInteger("blur.max.clause.count", 1024 * 128);
 
     private IndexServer indexServer;
     private ExecutorService executor;
@@ -78,7 +80,7 @@ public class IndexManager implements BlurConstants {
     private long searchStatusCleanupTimerDelay = TimeUnit.MINUTES.toMillis(1);
 
     public IndexManager() {
-        // do nothing
+        BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
     }
 
     public IndexManager init() {

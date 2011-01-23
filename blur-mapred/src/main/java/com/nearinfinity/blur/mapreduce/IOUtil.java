@@ -4,7 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class Util {
+public class IOUtil {
     
     private static final String UTF_8 = "UTF-8";
 

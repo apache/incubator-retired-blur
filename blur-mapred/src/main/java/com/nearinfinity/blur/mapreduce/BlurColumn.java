@@ -37,13 +37,13 @@ public class BlurColumn implements Writable {
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        name = Util.readString(in);
-        value = Util.readString(in);
+        name = IOUtil.readString(in);
+        value = IOUtil.readString(in);
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        Util.writeString(out, name);
-        Util.writeString(out, value);
+        IOUtil.writeString(out, name);
+        IOUtil.writeString(out, value);
     }
 }

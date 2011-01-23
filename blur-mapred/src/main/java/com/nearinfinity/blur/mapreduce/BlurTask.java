@@ -27,6 +27,8 @@ public class BlurTask {
     public static final String BLUR_ANALYZER_JSON = "blur.analyzer.json";
     public static final String BLUR_RAM_BUFFER_SIZE = "blur.ram.buffer.size";
     public static final String MAPRED_LOCAL_DIR = "mapred.local.dir";
+    public static final String BLUR_MAPPER_MAX_RECORD_COUNT = "blur.mapper.max.record.count";
+    
     private Configuration configuration;
     private String shardName;
 
@@ -142,6 +144,14 @@ public class BlurTask {
         configuration.set(BLUR_BASE_PATH, tableName);
     }
     
+    public long getMaxRecordCount() {
+        return configuration.getLong(BLUR_MAPPER_MAX_RECORD_COUNT,-1L);
+    }
+
+    public void setMaxRecordCount(long maxRecordCount) {
+        configuration.setLong(BLUR_MAPPER_MAX_RECORD_COUNT, maxRecordCount);
+    }
+    
     private File[] getFiles(String dirs) {
         String[] split = dirs.split(",");
         File[] files = new File[split.length];
@@ -174,4 +184,5 @@ public class BlurTask {
     public String getRecordCounterName() {
         return "Records";
     }
+
 }

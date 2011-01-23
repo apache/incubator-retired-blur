@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.mapreduce;
+package com.nearinfinity.blur.mapreduce.example;
 
 import java.io.IOException;
 
@@ -10,7 +10,12 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class BlurIndexer {
+import com.nearinfinity.blur.mapreduce.BlurMapper;
+import com.nearinfinity.blur.mapreduce.BlurRecord;
+import com.nearinfinity.blur.mapreduce.BlurReducer;
+import com.nearinfinity.blur.mapreduce.BlurTask;
+
+public class BlurExampleIndexer {
 
     public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
         Configuration configuration = new Configuration();
@@ -28,7 +33,7 @@ public class BlurIndexer {
         blurTask.setBasePath("./blur-testing");
         
         Job job = new Job(configuration, "Blur Indexer");
-        job.setJarByClass(BlurIndexer.class);
+        job.setJarByClass(BlurExampleIndexer.class);
         job.setMapperClass(BlurMapper.class);
         job.setReducerClass(BlurReducer.class);
         job.setOutputKeyClass(BytesWritable.class);

@@ -17,10 +17,10 @@ public class BlurRecord implements Writable {
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        id = Util.readString(in);
-        superKey = Util.readString(in);
-        columnFamily = Util.readString(in);
-        int size = Util.readVInt(in);
+        id = IOUtil.readString(in);
+        superKey = IOUtil.readString(in);
+        columnFamily = IOUtil.readString(in);
+        int size = IOUtil.readVInt(in);
         columns.clear();
         for (int i = 0; i < size; i++) {
             BlurColumn column = new BlurColumn();
@@ -31,10 +31,10 @@ public class BlurRecord implements Writable {
 
     @Override
     public void write(DataOutput out) throws IOException {
-        Util.writeString(out, id);
-        Util.writeString(out, superKey);
-        Util.writeString(out, columnFamily);
-        Util.writeVInt(out, columns.size());
+        IOUtil.writeString(out, id);
+        IOUtil.writeString(out, superKey);
+        IOUtil.writeString(out, columnFamily);
+        IOUtil.writeVInt(out, columns.size());
         for (BlurColumn column : columns) {
             column.write(out);
         }

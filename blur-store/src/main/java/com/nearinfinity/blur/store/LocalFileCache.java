@@ -73,7 +73,7 @@ public class LocalFileCache {
                 dir.mkdirs();
             }
             if (isValid(dir)) {
-                return dir;
+                return new File(dir,name);
             }
             index++;
             if (index >= files.length) {

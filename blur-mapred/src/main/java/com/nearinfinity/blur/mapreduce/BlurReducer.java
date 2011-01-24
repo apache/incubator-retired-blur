@@ -16,6 +16,7 @@ import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockFactory;
@@ -75,7 +76,18 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
                 addPrimeDocumentField(document);
                 primeDoc = false;
             }
-            writer.addDocument(document);
+            switch (record.getOperation()) {
+            case CREATE_ROW:
+                writer.addDocument(document);
+                break;
+            case DELETE_ROW:
+                writer.deleteDocuments(new Term(ID,record.getId()));
+                break;
+            case REPLACE_ROW:
+                writer.deleteDocuments(new Term(ID,record.getId()));
+                writer.addDocument(document);
+                break;
+            }
             context.progress();
             recordCounter.increment(1);
         }

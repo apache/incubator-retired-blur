@@ -91,6 +91,26 @@ public class ZkTest {
         protected void removeEphemeralPathOnShutdownInternal(String path) {
             
         }
+
+        @Override
+        protected void fetchDataInternal(Value value, String path) {
+            
+        }
+
+        @Override
+        protected void lockInternal(String path) {
+            
+        }
+
+        @Override
+        protected boolean saveDataInternal(byte[] data, String path) {
+            return false;
+        }
+
+        @Override
+        protected void unlockInternal(String path) {
+            
+        }
         
     }
 }

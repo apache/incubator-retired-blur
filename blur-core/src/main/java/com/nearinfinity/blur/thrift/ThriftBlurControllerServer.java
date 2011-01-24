@@ -71,7 +71,7 @@ public class ThriftBlurControllerServer {
     }
 
     public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(nodeName));
+        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(System.getProperty(ThriftBlurShardServer.BLUR_BIND_ADDRESS, nodeName)));
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);

@@ -5,14 +5,39 @@ import java.util.Arrays;
 import java.util.List;
 
 public abstract class DistributedManager {
+    
+    public static class Value {
+        public int version;
+        public byte[] data;
+    }
 
     public abstract void close();
     protected abstract boolean existsInternal(String path);
+    protected abstract void lockInternal(String path);
+    protected abstract void unlockInternal(String path);
+    protected abstract void fetchDataInternal(Value value, String path);
+    protected abstract boolean saveDataInternal(byte[] data, String path);
     protected abstract void createPathInternal(String path);
     protected abstract void createEphemeralPathInternal(String path);
     protected abstract void removeEphemeralPathOnShutdownInternal(String path);
     protected abstract List<String> listInternal(String path);
     protected abstract void registerCallableOnChangeInternal(Runnable runnable, String path);
+    
+    public void lock(String... pathes) {
+        lockInternal(resolvePath(pathes));
+    }
+    
+    public void unlock(String... pathes) {
+        unlockInternal(resolvePath(pathes));
+    }
+    
+    public boolean saveData(byte[] data, String... pathes) {
+        return saveDataInternal(data, resolvePath(pathes));
+    }
+    
+    public void fetchData(Value value, String... pathes) {
+        fetchDataInternal(value, resolvePath(pathes));
+    }
 
     public boolean exists(String... pathes) {
         return existsInternal(resolvePath(pathes));

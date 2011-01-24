@@ -35,7 +35,7 @@ import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
 
 public class ThriftBlurShardServer {
     
-    private static final String _0_0_0_0 = "0.0.0.0";
+    public static final String BLUR_BIND_ADDRESS = "blur.bind.address";
 
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
     
@@ -99,7 +99,7 @@ public class ThriftBlurShardServer {
     }
 
     public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(nodeName));
+        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(System.getProperty(BLUR_BIND_ADDRESS, nodeName)));
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
@@ -109,7 +109,11 @@ public class ThriftBlurShardServer {
     }
 
     public static InetSocketAddress parse(String nodeName) {
-        return new InetSocketAddress(_0_0_0_0, getPort(nodeName));
+        return new InetSocketAddress(getHost(nodeName), getPort(nodeName));
+    }
+
+    private static String getHost(String nodeName) {
+        return nodeName.substring(0,nodeName.indexOf(':'));
     }
 
     private static int getPort(String nodeName) {

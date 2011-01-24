@@ -6,9 +6,11 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
@@ -31,6 +33,36 @@ public class ZookeeperDistributedManager extends DistributedManager {
     }
     
     @Override
+    protected boolean saveDataInternal(byte[] data, String path) {
+        try {
+            Stat stat = zooKeeper.exists(path, false);
+            zooKeeper.setData(path, data, stat.getVersion());
+            return true;
+        } catch (Exception e) {
+            if (e instanceof KeeperException) {
+                KeeperException exception = (KeeperException) e;
+                if (exception.code() == Code.BADVERSION) {
+                    return false;
+                }
+            }
+            LOG.error("Error while set data into path [" + path + "]",e);
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
+    protected void fetchDataInternal(Value value, String path) {
+        try {
+            Stat stat = new Stat();
+            value.data = zooKeeper.getData(path, false, stat);
+            value.version = stat.getVersion();
+        } catch (Exception e) {
+            LOG.error("Error while fetching data from path [" + path + "]",e);
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
     protected void createEphemeralPathInternal(String path) {
         try {
             zooKeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
@@ -45,6 +77,12 @@ public class ZookeeperDistributedManager extends DistributedManager {
         try {
             zooKeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         } catch (Exception e) {
+            if (e instanceof KeeperException) {
+                KeeperException exception = (KeeperException) e;
+                if (exception.code() == Code.NODEEXISTS) {
+                    return;
+                }
+            }
             LOG.error("Error while creating ephemeral path [" + path + "]",e);
             throw new RuntimeException(e);
         }
@@ -110,6 +148,44 @@ public class ZookeeperDistributedManager extends DistributedManager {
 
     public void setZooKeeper(ZooKeeper zooKeeper) {
         this.zooKeeper = zooKeeper;
+    }
+
+    @Override
+    protected void lockInternal(String path) {
+        LOG.info("Attempting o obtain lock [" + path + "]");
+        while (true) {
+            try {
+                zooKeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+                return;
+            } catch (KeeperException e) {
+                if (e.code() == Code.NODEEXISTS) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                    continue;
+                }
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Override
+    protected void unlockInternal(String path) {
+        LOG.info("Removing lock [" + path + "]");
+        try {
+            zooKeeper.delete(path, -1);
+        } catch (KeeperException e) {
+            if (e.code() == Code.NONODE) {
+                return;
+            }
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

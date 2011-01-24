@@ -1,18 +1,13 @@
 package com.nearinfinity.blur.manager;
 
-import java.util.ArrayList;
-
-import org.apache.zookeeper.ZooKeeper;
-
-import com.nearinfinity.blur.thrift.generated.Row;
 
 public class ComplexIndexManagerTest {
 
-    private static final String SHARD_NAME = "shard";
-    private static final String TABLE_NAME = "complex-test";
-	private static IndexManager indexManager;
-    private static ArrayList<Row> rows;
-    private static ZooKeeper zooKeeper;
+//    private static final String SHARD_NAME = "shard";
+//    private static final String TABLE_NAME = "complex-test";
+//	private static IndexManager indexManager;
+//    private static ArrayList<Row> rows;
+//    private static ZooKeeper zooKeeper;
 
 //    @BeforeClass
 //    public static void setUpOnce() throws Exception {

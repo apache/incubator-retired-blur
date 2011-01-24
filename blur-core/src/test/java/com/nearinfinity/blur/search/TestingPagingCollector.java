@@ -78,19 +78,19 @@ public class TestingPagingCollector {
 		return IndexReader.open(directory);
 	}
 	
-	private static IndexReader getReaderDifferentScores(int length) throws Exception {
-		RAMDirectory directory = new RAMDirectory();
-		IndexWriter indexWriter = new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED);
-		for (int i = 0; i < length; i++) {
-			Document document = new Document();
-			int totalAdded = i % 9;
-			for (int j = 0; j < totalAdded; j++) {
-				document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
-			}
-			indexWriter.addDocument(document);
-		}
-		indexWriter.close();
-		return IndexReader.open(directory);
-	}
+//	private static IndexReader getReaderDifferentScores(int length) throws Exception {
+//		RAMDirectory directory = new RAMDirectory();
+//		IndexWriter indexWriter = new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED);
+//		for (int i = 0; i < length; i++) {
+//			Document document = new Document();
+//			int totalAdded = i % 9;
+//			for (int j = 0; j < totalAdded; j++) {
+//				document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
+//			}
+//			indexWriter.addDocument(document);
+//		}
+//		indexWriter.close();
+//		return IndexReader.open(directory);
+//	}
 
 }

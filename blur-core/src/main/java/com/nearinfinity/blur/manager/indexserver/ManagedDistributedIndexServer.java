@@ -56,13 +56,8 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     }
 
     private void lockNodeState() {
+        dm.createPath(BLUR_SAFEMODE);
         dm.lock(BLUR_SAFEMODE_LOCK);
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
     }
 
     private void unlockNodeState() {

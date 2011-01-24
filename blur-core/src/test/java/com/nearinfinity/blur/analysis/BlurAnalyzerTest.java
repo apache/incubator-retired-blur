@@ -6,6 +6,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.document.Field.Store;
@@ -59,6 +61,17 @@ public class BlurAnalyzerTest {
         BlurAnalyzer analyzer = BlurAnalyzer.create(s);
         assertEquals(Store.NO,analyzer.getStore("b.c.sub1"));
         assertEquals(Store.YES,analyzer.getStore("b.c"));
+    }
+    
+    @Test
+    public void testGetSubFields() throws IOException {
+        BlurAnalyzer analyzer = BlurAnalyzer.create(s);
+        assertNull(analyzer.getSubIndexNames("b.d"));
+        Set<String> subIndexNames = analyzer.getSubIndexNames("b.c");
+        TreeSet<String> set = new TreeSet<String>();
+        set.add("b.c.sub1");
+        set.add("b.c.sub2");
+        assertEquals(set, subIndexNames);
     }
 
     private File newFile(String s) throws IOException {

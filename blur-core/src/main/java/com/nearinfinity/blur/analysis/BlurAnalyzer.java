@@ -10,6 +10,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -69,6 +71,22 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 
     private String originalJsonStr;
     private Map<String,Store> storeMap = new HashMap<String, Store>();
+    private Map<String,Set<String>> subIndexNameLookups = new HashMap<String, Set<String>>();
+    
+    public void addSubField(String name) {
+        int lastIndexOf = name.lastIndexOf('.');
+        String mainFieldName = name.substring(0,lastIndexOf);
+        Set<String> set = subIndexNameLookups.get(mainFieldName);
+        if (set == null) {
+            set = new TreeSet<String>();
+            subIndexNameLookups.put(mainFieldName, set);
+        }
+        set.add(name);
+    }
+    
+    public Set<String> getSubIndexNames(String indexName) {
+        return subIndexNameLookups.get(indexName);
+    }
 
 	public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
 		super(defaultAnalyzer);
@@ -139,6 +157,9 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 			Analyzer a = getAnalyzerByClassName(jsonNode.getValueAsText(), aliases);
 			analyzer.addAnalyzer(name, a);
 			analyzer.putStore(name,store);
+			if (store == Store.NO) {
+			    analyzer.addSubField(name);
+			}
 		}
 	}
 
@@ -195,15 +216,15 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
         return originalJsonStr;
     }
 
-    public Store getStore(String fieldName) {
-        Store store = storeMap.get(fieldName);
+    public Store getStore(String indexName) {
+        Store store = storeMap.get(indexName);
         if (store == null) {
             return Store.YES;
         }
         return store;
     }
     
-    public Index getIndex(String fieldName) {
+    public Index getIndex(String indexName) {
         return Index.ANALYZED_NO_NORMS;
     }
 

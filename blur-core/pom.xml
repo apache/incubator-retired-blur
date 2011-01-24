@@ -1,27 +1,32 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+	    <groupId>com.nearinfinity.blur</groupId>
+	    <artifactId>blur</artifactId>
+	    <version>1.0.b4</version>
+	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
 	<artifactId>blur-core</artifactId>
 	<packaging>jar</packaging>
-	<version>0.1-SNAPSHOT</version>
+	<version>1.0.b4</version>
 	<name>Blur Core</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>1.0.b4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-store</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>1.0.b4</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-jdbc</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>1.0.b4</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -82,21 +87,6 @@
 					<source>1.6</source>
 					<target>1.6</target>
 				</configuration>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<execution>
-						<phase>install</phase>
-						<goals>
-							<goal>copy-dependencies</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.directory}/lib</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>

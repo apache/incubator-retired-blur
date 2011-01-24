@@ -2,6 +2,7 @@ package com.nearinfinity.blur.mapreduce;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.io.BytesWritable;
@@ -172,6 +173,14 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
     }
 
     protected void addField(String columnFamily, Document document, BlurColumn column) {
-        document.add(new Field(columnFamily + "." + column.getName(),column.getValue(),Store.YES,Index.ANALYZED_NO_NORMS));
+        String indexName = columnFamily + "." + column.getName();
+        document.add(new Field(indexName,column.getValue(),Store.YES,Index.ANALYZED_NO_NORMS));
+        Set<String> subIndexNames = analyzer.getSubIndexNames(indexName);
+        if (subIndexNames == null) {
+            return;
+        }
+        for (String subIndexName : subIndexNames) {
+            document.add(new Field(subIndexName,column.getValue(),Store.NO,Index.ANALYZED_NO_NORMS));
+        }
     }
 }

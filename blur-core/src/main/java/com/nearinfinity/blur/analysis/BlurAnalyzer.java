@@ -18,6 +18,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
+import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
@@ -25,7 +26,9 @@ import org.apache.lucene.util.Version;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
-public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
+import com.nearinfinity.blur.utils.BlurConstants;
+
+public class BlurAnalyzer extends PerFieldAnalyzerWrapper implements BlurConstants {
 
 	private static final String SEP = ".";
 	private static final String FIELDS = "fields";
@@ -91,6 +94,9 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 	public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
 		super(defaultAnalyzer);
 		this.originalJsonStr = jsonStr;
+		addAnalyzer(ID, new WhitespaceAnalyzer());
+		addAnalyzer(SUPER_KEY, new WhitespaceAnalyzer());
+		addAnalyzer(PRIME_DOC, new WhitespaceAnalyzer());
 	}
 	
 	private static BlurAnalyzer create(JsonNode jsonNode, String jsonStr) {

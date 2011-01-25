@@ -109,7 +109,7 @@ public class BlurTask {
     }
 
     public void setBlurAnalyzerStr(String blurAnalyzerStr) {
-        configuration.get(BLUR_ANALYZER_JSON, blurAnalyzerStr);
+        configuration.set(BLUR_ANALYZER_JSON, blurAnalyzerStr);
     }
     
     public String getCommitPointToOpen() {

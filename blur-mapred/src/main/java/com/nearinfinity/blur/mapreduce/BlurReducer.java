@@ -72,22 +72,20 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         boolean primeDoc = true;
         for (BlurRecord record : values) {
             Document document = toDocument(record);
+            PRIMEDOC:
             if (primeDoc) {
                 addPrimeDocumentField(document);
                 primeDoc = false;
+                switch (record.getOperation()) {
+                case DELETE_ROW:
+                    writer.deleteDocuments(new Term(ID,record.getId()));
+                    return;
+                case REPLACE_ROW:
+                    writer.deleteDocuments(new Term(ID,record.getId()));
+                    break PRIMEDOC;
+                }
             }
-            switch (record.getOperation()) {
-            case CREATE_ROW:
-                writer.addDocument(document);
-                break;
-            case DELETE_ROW:
-                writer.deleteDocuments(new Term(ID,record.getId()));
-                break;
-            case REPLACE_ROW:
-                writer.deleteDocuments(new Term(ID,record.getId()));
-                writer.addDocument(document);
-                break;
-            }
+            writer.addDocument(document);
             context.progress();
             recordCounter.increment(1);
         }

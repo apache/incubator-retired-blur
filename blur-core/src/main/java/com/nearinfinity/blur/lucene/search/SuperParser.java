@@ -109,7 +109,7 @@ public class SuperParser extends QueryParser implements BlurConstants {
 		if (query instanceof BooleanQuery) {
 			BooleanQuery booleanQuery = (BooleanQuery) query;
 			if (isSameGroupName(booleanQuery)) {
-				return new SuperQuery(booleanQuery, scoreType);
+			    return newSuperQuery(query);
 			} else {
 				List<BooleanClause> clauses = booleanQuery.clauses();
 				for (BooleanClause clause : clauses) {
@@ -118,8 +118,12 @@ public class SuperParser extends QueryParser implements BlurConstants {
 				return booleanQuery;
 			}
 		} else {
-			return new SuperQuery(wrapFilter(query), scoreType);
+			return newSuperQuery(query);
 		}
+	}
+	
+	private SuperQuery newSuperQuery(Query query) {
+	    return new SuperQuery(wrapFilter(query), scoreType);
 	}
 
 	private Query wrapFilter(Query query) {

@@ -20,19 +20,28 @@ public class RowSuperDocumentUtil implements BlurConstants {
 		if (docs == null) {
 		    return null;
 		}
+		Map<String,ColumnFamily> columnFamilies = new HashMap<String, ColumnFamily>();
 		for (Document document : docs) {
 			empty = false;
-			addDocumentToRow(row, document);
+			ColumnFamily newColumnFamily = convertToColumnFamily(row, document);
+			String family = newColumnFamily.family;
+			ColumnFamily columnFamily = columnFamilies.get(family);
+			if (columnFamily == null) {
+			    columnFamilies.put(family, newColumnFamily);
+			} else {
+			    columnFamily.columns.putAll(newColumnFamily.columns);
+			}
 		}
 		if (empty) {
 			return null;
 		}
+		row.columnFamilies = new TreeSet<ColumnFamily>(columnFamilies.values());
 		return row;
 	}
 
-	public static void addDocumentToRow(Row row, Document document) {
+	public static ColumnFamily convertToColumnFamily(Row row, Document document) {
 	    if (row.id == null) {
-	        row.setId(document.getField(ID).stringValue());
+	        row.id = document.getField(ID).stringValue();
 	    }
 		String superColumnId = document.getField(SUPER_KEY).stringValue();
 		Map<String, Column> columns = new HashMap<String, Column>();
@@ -59,26 +68,6 @@ public class RowSuperDocumentUtil implements BlurConstants {
 		Set<Column> columnSet = new TreeSet<Column>(BlurConstants.COLUMN_COMPARATOR);
 		columnSet.addAll(columns.values());
         columnFamily.putToColumns(superColumnId, columnSet);
-        row.addToColumnFamilies(columnFamily);
+        return columnFamily;
 	}
-	
-//	public static SuperDocument createSuperDocument(Row row) {
-//		SuperDocument document = new SuperDocument(row.id);
-//		for (ColumnFamily columnFamily : row.columnFamilies) {
-//			for (String id : columnFamily.columns.keySet()) {
-//			    Set<Column> columns = columnFamily.columns.get(id);
-//			    for (Column column : columns) {
-//			        add(columnFamily.family,id,column,document);
-//			    }
-//			}
-//		}
-//		return document;
-//	}
-//	
-//	private static void add(String superColumnFamilyName, String superColumnId, Column column, SuperDocument document) {
-//		for (String value : column.values) {
-//			document.addFieldStoreAnalyzedNoNorms(superColumnFamilyName, superColumnId, column.name, value);
-//		}
-//	}
-	
 }

@@ -24,6 +24,7 @@ import org.apache.lucene.store.NoLockFactory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
+import com.nearinfinity.blur.store.HdfsUtil;
 import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -97,7 +98,7 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         writer.optimize();
         writer.commit(blurTask.getCommitUserData());
         writer.close();
-        localFileCache.delete(blurTask.getDirectoryName());
+        localFileCache.delete(HdfsUtil.getDirName(blurTask.getTableName(), blurTask.getShardName()));
     }
     
     protected void setupLocalFileCache(Context context) throws IOException {
@@ -114,8 +115,9 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
     }
     
     protected void setupDirectory(Context context) throws IOException {
-        directory = new WritableHdfsDirectory(nullCheck(blurTask.getDirectoryName()), nullCheck(blurTask.getDirectoryPath()),
-                nullCheck(fileSystem), nullCheck(localFileCache), nullCheck(lockFactory),context);
+        directory = new WritableHdfsDirectory(nullCheck(blurTask.getTableName()), nullCheck(blurTask.getShardName()), 
+                nullCheck(blurTask.getDirectoryPath()), nullCheck(fileSystem), nullCheck(localFileCache), 
+                nullCheck(lockFactory),context);
     }
 
     protected <T> T nullCheck(T o) {

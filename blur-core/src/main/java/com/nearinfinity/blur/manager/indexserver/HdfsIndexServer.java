@@ -56,7 +56,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         if (!exists(hdfsDirPath)) {
             throw new FileNotFoundException(hdfsDirPath.toString());
         }
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table + "__" + shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, new Progressable() {
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, new Progressable() {
             @Override
             public void progress() {
                 //do nothing for now

@@ -28,6 +28,7 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
+import com.nearinfinity.blur.store.HdfsExistenceCheck;
 import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
@@ -70,8 +71,10 @@ public class ThriftBlurShardServer {
         
         FileSystem fileSystem = FileSystem.get(new Configuration());
         Path blurBasePath = new Path(hdfsPath);
+        
+        HdfsExistenceCheck existenceCheck = new HdfsExistenceCheck(fileSystem, blurBasePath);
 
-        LocalFileCache localFileCache = new LocalFileCache(localFileCaches.toArray(new File[]{}));
+        LocalFileCache localFileCache = new LocalFileCache(existenceCheck,localFileCaches.toArray(new File[]{}));
         LockFactory lockFactory = new NoLockFactory();
         
         HdfsIndexServer indexServer = new HdfsIndexServer();

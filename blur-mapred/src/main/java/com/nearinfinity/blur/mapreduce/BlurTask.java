@@ -72,10 +72,6 @@ public class BlurTask {
         return userData;
     }
     
-    public String getDirectoryName() {
-        return getTableName() + "__" + getShardName();
-    }
-
     public IndexCommit getIndexCommitPointNameToOpen(Collection<IndexCommit> listCommits) throws IOException {
         String commitPointToOpen = getCommitPointToOpen();
         for (IndexCommit commit : listCommits) {

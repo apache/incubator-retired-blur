@@ -31,9 +31,9 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     protected String dirName;
     protected Progressable progressable;
     
-    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
+    public WritableHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
-        this(dirName,hdfsDirPath,fileSystem,localFileCache,lockFactory,new Progressable() {
+        this(table,shard,hdfsDirPath,fileSystem,localFileCache,lockFactory,new Progressable() {
             @Override
             public void progress() {
                 
@@ -41,10 +41,10 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         });
     }
 
-    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
+    public WritableHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable) throws IOException {
         super(hdfsDirPath, fileSystem);
-        this.dirName = dirName;
+        this.dirName = HdfsUtil.getDirName(table, shard);
         this.progressable = progressable;
         File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);
         if (segments.exists()) {

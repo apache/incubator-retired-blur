@@ -26,9 +26,9 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     private LocalIOWrapper wrapper;
     private ReplicationDaemon replicationDaemon;
 
-    public ReplicaHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable)
+    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable)
             throws IOException {
-        this(dirName, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, new LocalIOWrapper() {
+        this(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, new LocalIOWrapper() {
             @Override
             public IndexOutput wrapOutput(IndexOutput indexOutput) {
                 return indexOutput;
@@ -41,9 +41,9 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         });
     }
 
-    public ReplicaHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
+    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
             LockFactory lockFactory, Progressable progressable, final LocalIOWrapper wrapper) throws IOException {
-        super(dirName, hdfsDirPath, fileSystem, localFileCache, lockFactory);
+        super(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory);
         this.wrapper = wrapper;
         this.replicationDaemon = new ReplicationDaemon(dirName, this, localFileCache, wrapper, progressable);
     }

@@ -49,7 +49,7 @@ public class TestReplica {
 
 //        HdfsDirectory directory = new HdfsDirectory(hdfsDirPath, fileSystem);
         LocalFileCache localFileCache = new LocalFileCache(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table-shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), new Progressable() {
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), new Progressable() {
             @Override
             public void progress() {
 //                System.out.println("go");

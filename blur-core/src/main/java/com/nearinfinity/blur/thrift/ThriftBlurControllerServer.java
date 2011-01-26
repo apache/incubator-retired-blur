@@ -55,7 +55,7 @@ public class ThriftBlurControllerServer {
         ControllerIndexServer indexServer = new ControllerIndexServer();
         indexServer.setType(NODE_TYPE.CONTROLLER);
         indexServer.setNodeName(nodeName);
-        indexServer.setZk(dzk);
+        indexServer.setDistributedManager(dzk);
         indexServer.init();
         
         BlurClient client = new BlurClientRemote();

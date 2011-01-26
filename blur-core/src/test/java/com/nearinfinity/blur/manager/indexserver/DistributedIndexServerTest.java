@@ -14,19 +14,19 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
-import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Test;
+
+import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
 
 public class DistributedIndexServerTest {
     
@@ -43,9 +43,11 @@ public class DistributedIndexServerTest {
     public void testDistributedIndexServer() throws IOException {
         List<String> shardBeingServed = new ArrayList<String>();
         for (String node : NODE_LIST) {
-            DistributedIndexServer indexServer = new MockDistributedIndexServer(NODE_LIST,SHARD_LIST).
-                setNodeName(node).
-                init();
+            DistributedManager dm = new ZkInMemory();
+            DistributedIndexServer indexServer = new MockDistributedIndexServer(NODE_LIST,SHARD_LIST);
+            indexServer.setNodeName(node);
+            indexServer.setDistributedManager(dm);
+            indexServer.init();
             Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
             shardBeingServed.addAll(keySet);
             indexServer.close();
@@ -66,10 +68,10 @@ public class DistributedIndexServerTest {
                 assertTrue(toBeClosed.contains(shard));
                 toBeClosed.remove(shard);
             }
-        }.
-            setNodeName("node2").
-            setDelay(5000).
-            init();
+        };
+        indexServer.setNodeName("node2");
+        indexServer.setDelay(5000);
+        indexServer.init();
         assertEquals(new TreeSet<String>(Arrays.asList("g","h")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
         nodes.remove(3);
         assertEquals(new TreeSet<String>(Arrays.asList("a","b","c")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
@@ -88,9 +90,11 @@ public class DistributedIndexServerTest {
         Map<String,Set<String>> nodesToShards1 = new HashMap<String,Set<String>>();
         Map<String,DistributedIndexServer> servers = new TreeMap<String,DistributedIndexServer>();
         for (String node : bigNodeList) {
-            DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes).
-                setNodeName(node).
-                init();
+            DistributedManager dm = new ZkInMemory();
+            DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes);
+            indexServer.setNodeName(node);
+            indexServer.setDistributedManager(dm);
+            indexServer.init();
             servers.put(node,indexServer);
             Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
             nodesToShards1.put(node, new TreeSet<String>(keySet));
@@ -226,28 +230,9 @@ public class DistributedIndexServerTest {
             
         }
 
-        @Override
-        public Analyzer getAnalyzer(String table) {
-            throw new RuntimeException("not implement");
-        }
 
         @Override
         public List<String> getControllerServerList() {
-            throw new RuntimeException("not implement");
-        }
-        
-        @Override
-        public Similarity getSimilarity(String table) {
-            throw new RuntimeException("not implement");
-        }
-
-        @Override
-        public List<String> getTableList() {
-            return Arrays.asList(TEST);
-        }
-
-        @Override
-        public TABLE_STATUS getTableStatus(String table) {
             throw new RuntimeException("not implement");
         }
 

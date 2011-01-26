@@ -81,28 +81,25 @@ public class DistributedLayoutManager {
         return new TreeSet<String>(nodes);
     }
 
-    public DistributedLayoutManager setNodes(Collection<String> v) {
+    public void setNodes(Collection<String> v) {
         this.nodes = new TreeSet<String>(v);
         this.nodeList = new ArrayList<String>(nodes);
-        return this;
     }
 
     public Collection<String> getShards() {
         return new TreeSet<String>(shards);
     }
 
-    public DistributedLayoutManager setShards(Collection<String> v) {
+    public void setShards(Collection<String> v) {
         this.shards = new TreeSet<String>(v);
-        return this;
     }
 
     public Collection<String> getNodesOffline() {
         return new TreeSet<String>(nodesOffline);
     }
 
-    public DistributedLayoutManager setNodesOffline(Collection<String> v) {
+    public void setNodesOffline(Collection<String> v) {
         this.nodesOffline = new HashSet<String>(v);
-        return this;
     }
     
     private Map<String, String> getLockedMap(final Map<String, String> map) {

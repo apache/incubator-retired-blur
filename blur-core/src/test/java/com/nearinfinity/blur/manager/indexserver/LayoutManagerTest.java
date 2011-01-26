@@ -29,10 +29,17 @@ public class LayoutManagerTest {
         shards.add("s4");
         shards.add("s5");
         
-        DistributedLayoutManager layoutManager1 = new DistributedLayoutManager().setNodes(nodes).setShards(shards).init();
+        DistributedLayoutManager layoutManager1 = new DistributedLayoutManager();
+        layoutManager1.setNodes(nodes);
+        layoutManager1.setShards(shards);
+        layoutManager1.init();
         Map<String, String> layout1 = layoutManager1.getLayout();
         
-        DistributedLayoutManager layoutManager2 = new DistributedLayoutManager().setNodes(nodes).setShards(shards).setNodesOffline(nodesOffline).init();
+        DistributedLayoutManager layoutManager2 = new DistributedLayoutManager();
+        layoutManager2.setNodes(nodes);
+        layoutManager2.setShards(shards);
+        layoutManager2.setNodesOffline(nodesOffline);
+        layoutManager2.init();
         Map<String, String> layout2 = layoutManager2.getLayout();
         
         assertEquals(shards, new TreeSet<String>(layout1.keySet()));
@@ -47,7 +54,11 @@ public class LayoutManagerTest {
     
     @Test
     public void testLayoutManagerPerformance() {
-        DistributedLayoutManager perfTest = new DistributedLayoutManager().setNodes(getTestNodes()).setShards(getTestShards()).setNodesOffline(getTestOfflineNodes()).init();
+        DistributedLayoutManager perfTest = new DistributedLayoutManager();
+        perfTest.setNodes(getTestNodes());
+        perfTest.setShards(getTestShards());
+        perfTest.setNodesOffline(getTestOfflineNodes());
+        perfTest.init();
         int testSize = 100000;
         for (int i = 0; i < testSize; i++) {
             perfTest.getLayout();

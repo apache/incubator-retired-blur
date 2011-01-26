@@ -27,20 +27,22 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
     private static final Log LOG = LogFactory.getLog(AdminIndexServer.class);
 
     public static final Analyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer(), "");
-    private String nodeName;
-    private AtomicReference<Map<String,TABLE_STATUS>> statusMap = new AtomicReference<Map<String,TABLE_STATUS>>(new HashMap<String, TABLE_STATUS>());
-    private AtomicReference<List<String>> tableList = new AtomicReference<List<String>>(new ArrayList<String>());
-    private AtomicReference<Map<String, Analyzer>> analyzerMap = new AtomicReference<Map<String, Analyzer>>(new HashMap<String, Analyzer>());
-    private DistributedManager dm;
-    private Timer daemon;
+    protected String nodeName;
+    protected AtomicReference<Map<String,TABLE_STATUS>> statusMap = new AtomicReference<Map<String,TABLE_STATUS>>(new HashMap<String, TABLE_STATUS>());
+    protected AtomicReference<List<String>> tableList = new AtomicReference<List<String>>(new ArrayList<String>());
+    protected AtomicReference<Map<String, Analyzer>> analyzerMap = new AtomicReference<Map<String, Analyzer>>(new HashMap<String, Analyzer>());
+    protected DistributedManager dm;
+    protected Timer daemon;
     
     /**
      * All sub classes need to call super.init().
+     * @return 
      */
-    public void init() {
+    public AdminIndexServer init() {
         dm.createPath(BLUR_TABLES); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();
+        return this;
     }
 
     private void startUpdateStatusPollingDaemon() {
@@ -77,7 +79,19 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
     }
 
     private void updateTableList() {
-        tableList.set(dm.list(BLUR_TABLES));
+        List<String> newTables = dm.list(BLUR_TABLES);
+        List<String> oldTables = tableList.get();
+        tableList.set(newTables);
+        for (String table : newTables) {
+            if (!oldTables.contains(table)) {
+                LOG.info("Table [" + table + "] identified.");
+            }
+        }
+        for (String table : oldTables) {
+            if (!newTables.contains(table)) {
+                LOG.info("Table [" + table + "] removed.");
+            }
+        }
     }
     
     private void updateTableAnalyzers() {
@@ -103,6 +117,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
 
     private void updateTableStatus() {
         Map<String, TABLE_STATUS> newMap = new HashMap<String, TABLE_STATUS>();
+        Map<String, TABLE_STATUS> oldMap = statusMap.get();
         for (String table : tableList.get()) {
             TABLE_STATUS status;
             if (dm.exists(BLUR_TABLES,table,BLUR_TABLES_ENABLED)) {
@@ -111,12 +126,23 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
                 status = TABLE_STATUS.DISABLED;
             }
             newMap.put(table, status);
+            TABLE_STATUS oldStatus = oldMap.get(table);
+            if (oldStatus == null || oldStatus != status) {
+                LOG.info("Table [" + table +
+                		"] change status to [" + status +
+                		"]");
+            }
         }
         statusMap.set(newMap);
+        for (String table : oldMap.keySet()) {
+            if (!newMap.containsKey(table)) {
+                LOG.info("Status could not be found for table [" + table + "], possibly removed.");
+            }
+        }
     }
 
     @Override
-    public Analyzer getAnalyzer(String table) {
+    public final Analyzer getAnalyzer(String table) {
         Analyzer analyzer = analyzerMap.get().get(table);
         if (analyzer == null) {
             return BLANK_ANALYZER;
@@ -125,22 +151,22 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
     }
 
     @Override
-    public String getNodeName() {
+    public final String getNodeName() {
         return nodeName;
     }
 
     @Override
-    public Similarity getSimilarity(String table) {
+    public final Similarity getSimilarity(String table) {
         return new FairSimilarity();
     }
 
     @Override
-    public List<String> getTableList() {
+    public final List<String> getTableList() {
         return tableList.get();
     }
 
     @Override
-    public TABLE_STATUS getTableStatus(String table) {
+    public final TABLE_STATUS getTableStatus(String table) {
         TABLE_STATUS tableStatus = statusMap.get().get(table);
         if (tableStatus == null) {
             return TABLE_STATUS.DISABLED;

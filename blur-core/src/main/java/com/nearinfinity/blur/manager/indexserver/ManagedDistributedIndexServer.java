@@ -21,8 +21,6 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     
     private static final Log LOG = LogFactory.getLog(ManagedDistributedIndexServer.class);
     
-    private DistributedManager dm;
-
     private List<String> controllers = new ArrayList<String>();
     private List<String> offlineShards = new ArrayList<String>();
     private List<String> shards = new ArrayList<String>();
@@ -185,22 +183,12 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         return shards;
     }
     
-    public DistributedManager getDistributedManager() {
-        return dm;
-    }
-
-    public ManagedDistributedIndexServer setZk(DistributedManager distributedManager) {
-        this.dm = distributedManager;
-        return this;
-    }
-    
     public long getZkPollDelay() {
         return zkPollDelay;
     }
 
-    public ManagedDistributedIndexServer setZkPollDelay(long zkPollDelay) {
+    public void setZkPollDelay(long zkPollDelay) {
         this.zkPollDelay = zkPollDelay;
-        return this;
     }
 
     private void startPollingDaemon() {

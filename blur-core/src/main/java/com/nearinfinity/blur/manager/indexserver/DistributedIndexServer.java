@@ -26,9 +26,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.RAMDirectory;
 
-import com.nearinfinity.blur.manager.IndexServer;
-
-public abstract class DistributedIndexServer implements IndexServer {
+public abstract class DistributedIndexServer extends AdminIndexServer {
     
     private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
 
@@ -45,7 +43,6 @@ public abstract class DistributedIndexServer implements IndexServer {
     }
     
     private ConcurrentHashMap<String,Map<String,IndexReader>> readers = new ConcurrentHashMap<String, Map<String,IndexReader>>();
-    private String nodeName;
     private ExecutorService executorService = Executors.newCachedThreadPool();
     private Timer readerCloserDaemon;
     private long delay = TimeUnit.MINUTES.toMillis(1);
@@ -56,6 +53,7 @@ public abstract class DistributedIndexServer implements IndexServer {
     //need a daemon to track reopening changed indexes
     
     public DistributedIndexServer init() {
+        super.init();
         startIndexReaderCloserDaemon();
         startIndexReopenerDaemon();
         return this;
@@ -129,24 +127,13 @@ public abstract class DistributedIndexServer implements IndexServer {
     }
     
     //Getters and setters
-    
-    @Override
-    public String getNodeName() {
-        return nodeName;
-    }
-
-    public DistributedIndexServer setNodeName(String nodeName) {
-        this.nodeName = nodeName;
-        return this;
-    }
 
     public long getDelay() {
         return delay;
     }
 
-    public DistributedIndexServer setDelay(long delay) {
+    public void setDelay(long delay) {
         this.delay = delay;
-        return this;
     }
     
     //Getters and setters

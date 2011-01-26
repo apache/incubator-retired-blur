@@ -81,7 +81,7 @@ public class ThriftBlurShardServer {
         indexServer.setFileSystem(fileSystem);
         indexServer.setBlurBasePath(blurBasePath);
         indexServer.setNodeName(nodeName);
-        indexServer.setZk(dzk);
+        indexServer.setDistributedManager(dzk);
         indexServer.init();
         
         IndexManager indexManager = new IndexManager();

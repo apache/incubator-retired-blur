@@ -5,7 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -47,9 +49,12 @@ public class ZkTest {
         }, "test","test");
     }
     
-    class ZkInMemory extends DistributedManager {
+    public static class ZkInMemory extends DistributedManager {
         
-        private List<String> pathes = new ArrayList<String>();
+        public List<String> pathes = new ArrayList<String>();
+        public Map<String,byte[]> data = new HashMap<String, byte[]>();
+        public List<String> callbacks = new ArrayList<String>();
+        public List<Runnable> callbacksRunnable = new ArrayList<Runnable>();
 
         @Override
         public void close() {
@@ -58,12 +63,43 @@ public class ZkTest {
 
         @Override
         protected void createEphemeralPathInternal(String path) {
+            if (pathes.contains(path)) {
+                return;
+            }
             pathes.add(path);
         }
 
         @Override
         protected void createPathInternal(String path) {
+            if (pathes.contains(path)) {
+                return;
+            }
             pathes.add(path);
+            int size = callbacks.size();
+            for (int i = 0; i < size; i++) {
+                String callPath = callbacks.get(i);
+                if (callPath != null && path.startsWith(callPath)) {
+                    if (countSlashes(path) == countSlashes(callPath) + 1) {
+                        Runnable runnable = callbacksRunnable.get(i);
+                        if (runnable != null) {
+                            runnable.run();
+                            callbacks.set(i, null);
+                            callbacksRunnable.set(i, null);
+                        }
+                    }
+                }
+            }
+        }
+
+        private int countSlashes(String s) {
+            int count = 0;
+            char[] charArray = s.toCharArray();
+            for (int i = 0; i < charArray.length; i++) {
+                if (charArray[i] == '/') {
+                    count++;
+                }
+            }
+            return count;
         }
 
         @Override
@@ -75,8 +111,9 @@ public class ZkTest {
         protected List<String> listInternal(String path) {
             List<String> results = new ArrayList<String>();
             for (String p : pathes) {
-                if (p.startsWith(path)) {
-                    results.add(p.substring(path.length() + 1));
+                if (p.startsWith(path) && !p.equals(path)) {
+                    String str = p.substring(path.length() + 1);
+                    results.add(str);
                 }
             }
             return results;
@@ -84,7 +121,8 @@ public class ZkTest {
 
         @Override
         protected void registerCallableOnChangeInternal(Runnable runnable, String path) {
-            
+            callbacks.add(path);
+            callbacksRunnable.add(runnable);
         }
 
         @Override
@@ -94,7 +132,7 @@ public class ZkTest {
 
         @Override
         protected void fetchDataInternal(Value value, String path) {
-            
+            value.data = data.get(path);
         }
 
         @Override

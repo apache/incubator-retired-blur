@@ -12,7 +12,7 @@ import org.apache.commons.logging.LogFactory;
 
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 
-public abstract class ManagedDistributedIndexServer extends DistributedIndexServer {
+public abstract class ManagedDistributedIndexServer extends DistributedIndexServer implements ZookeeperPathContants {
     
     public enum NODE_TYPE {
         SHARD,
@@ -20,13 +20,6 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     }
     
     private static final Log LOG = LogFactory.getLog(ManagedDistributedIndexServer.class);
-    private static final String BLUR_SAFEMODE_LOCK = "/blur/safemode/lock";
-    private static final String BLUR_SAFEMODE = "/blur/safemode";
-    private static final String BLUR_BASE_PATH = "/blur";
-    private static final String BLUR_REGISTERED_SHARDS_PATH = "/blur/shard-nodes";
-    private static final String BLUR_ONLINE_PATH = "/blur/online";
-    private static final String BLUR_ONLINE_SHARDS_PATH = "/blur/online/shard-nodes";
-    private static final String BLUR_ONLINE_CONTROLLERS_PATH = "/blur/online/controller-nodes";
     
     private DistributedManager dm;
 
@@ -192,12 +185,12 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         return shards;
     }
     
-    public DistributedManager getZk() {
+    public DistributedManager getDistributedManager() {
         return dm;
     }
 
-    public ManagedDistributedIndexServer setZk(DistributedManager zk) {
-        this.dm = zk;
+    public ManagedDistributedIndexServer setZk(DistributedManager distributedManager) {
+        this.dm = distributedManager;
         return this;
     }
     

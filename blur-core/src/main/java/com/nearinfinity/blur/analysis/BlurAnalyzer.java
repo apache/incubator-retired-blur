@@ -234,4 +234,28 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper implements BlurConstan
         return Index.ANALYZED_NO_NORMS;
     }
 
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((originalJsonStr == null) ? 0 : originalJsonStr.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        BlurAnalyzer other = (BlurAnalyzer) obj;
+        if (originalJsonStr == null) {
+            if (other.originalJsonStr != null)
+                return false;
+        } else if (!originalJsonStr.equals(other.originalJsonStr))
+            return false;
+        return true;
+    }
 }

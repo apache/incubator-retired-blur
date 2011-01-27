@@ -1,9 +1,10 @@
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.store.cache;
 
 import java.io.IOException;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
 
 public class HdfsExistenceCheck implements ExistenceCheck {
     

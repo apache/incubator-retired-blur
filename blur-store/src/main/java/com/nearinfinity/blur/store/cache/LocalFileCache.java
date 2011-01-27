@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.store.cache;
 
 import java.io.File;
 import java.io.IOException;

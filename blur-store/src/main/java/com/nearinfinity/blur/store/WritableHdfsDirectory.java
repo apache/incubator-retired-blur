@@ -21,6 +21,9 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.util.Constants;
 
+import com.nearinfinity.blur.store.cache.HdfsUtil;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
+
 public class WritableHdfsDirectory extends HdfsDirectory {
 
     private static final String SEGMENTS_GEN = "segments.gen";

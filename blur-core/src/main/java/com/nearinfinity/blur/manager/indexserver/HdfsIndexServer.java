@@ -17,7 +17,7 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.LockFactory;
 
-import com.nearinfinity.blur.store.LocalFileCache;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {

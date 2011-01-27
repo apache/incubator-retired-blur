@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 
+import com.nearinfinity.blur.store.cache.HdfsUtil;
+
 public class HdfsUtilTest {
 
     @Test

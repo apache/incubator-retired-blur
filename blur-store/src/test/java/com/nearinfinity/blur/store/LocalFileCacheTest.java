@@ -15,6 +15,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.nearinfinity.blur.store.cache.ExistenceCheck;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
+
 public class LocalFileCacheTest {
     
     private static final File CACHE_BASE = new File("./tmp-test");

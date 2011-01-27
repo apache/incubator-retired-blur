@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.lucene.index.IndexCommit;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.store.LocalFileCache;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
 
 public class BlurTask {
 

@@ -16,8 +16,8 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
 
-import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
 
 
 public class ReplicaHdfsDirectory extends WritableHdfsDirectory {

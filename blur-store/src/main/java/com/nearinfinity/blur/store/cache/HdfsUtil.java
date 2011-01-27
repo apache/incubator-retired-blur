@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.store.cache;
 
 import org.apache.hadoop.fs.Path;
 

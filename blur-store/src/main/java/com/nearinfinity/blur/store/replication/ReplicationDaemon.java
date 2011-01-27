@@ -17,9 +17,9 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
 import com.nearinfinity.blur.store.Constants;
-import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexInput;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexOutput;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory.ReplicaIndexInput;
 
 

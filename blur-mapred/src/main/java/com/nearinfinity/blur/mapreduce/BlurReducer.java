@@ -24,9 +24,9 @@ import org.apache.lucene.store.NoLockFactory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
-import com.nearinfinity.blur.store.HdfsUtil;
-import com.nearinfinity.blur.store.LocalFileCache;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
+import com.nearinfinity.blur.store.cache.HdfsUtil;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,BlurRecord> implements BlurConstants {

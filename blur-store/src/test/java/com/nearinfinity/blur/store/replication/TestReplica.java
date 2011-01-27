@@ -29,7 +29,7 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.store.LocalFileCache;
+import com.nearinfinity.blur.store.cache.LocalFileCache;
 
 public class TestReplica {
     

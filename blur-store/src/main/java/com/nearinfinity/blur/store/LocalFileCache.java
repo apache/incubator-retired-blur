@@ -18,39 +18,73 @@ import org.apache.commons.logging.LogFactory;
 public class LocalFileCache {
     
     private static Log LOG = LogFactory.getLog(LocalFileCache.class);
-
+    private static final ExistenceCheck DEFAULT_EXISTENCE_CHECK = new ExistenceCheck() {
+        @Override
+        public boolean existsInBase(String dirName, String name) {
+            return true;
+        }
+    };
+    
     private File[] files;
     private Random random = new Random();
-    private ExistenceCheck existenceCheck;
-
+    private ExistenceCheck existenceCheck = DEFAULT_EXISTENCE_CHECK;
     private Timer daemon;
+    private File[] potentialDirs;
+    private boolean setup = false;
+    private Date gcStartTime = getStartTime();
+    private long gcWaitPeriod = TimeUnit.DAYS.toMillis(1);
     
-    public LocalFileCache(File... files) {
-        this(new ExistenceCheck() {
-            @Override
-            public boolean existsInBase(String dirName, String name) {
-                return true;
-            }
-        },files);
-    }
-
-    public LocalFileCache(ExistenceCheck existenceCheck, File... files) {
-        for (int i = 0; i < files.length; i++) {
-            files[i].mkdirs();
-        }
-        this.files = getValid(files);
-        this.existenceCheck = existenceCheck;
-        startFileGCDaemon();
-    }
-    
-    private void startFileGCDaemon() {
+    public void open() {
+        tryToCreateAllDirs();
+        files = getValid(potentialDirs);
         daemon = new Timer("LocalFileCache-FileGC-Daemon",true);
         daemon.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                fileGc();
+                try {
+                    fileGc();
+                } catch (Exception e) {
+                    LOG.error("Unknown error while trying to GC",e);
+                }
             }
-        }, getStartTime(), TimeUnit.DAYS.toMillis(1));
+        }, gcStartTime, gcWaitPeriod);
+        setup = true;
+    }
+    
+    public void close() {
+        daemon.cancel();
+        daemon.purge();
+    }
+    
+    public File getLocalFile(String dirName, String name) {
+        checkIfOpen();
+        File file = locateFileExistingFile(dirName,name);
+        if (file != null) {
+            return file;
+        }
+        return newFile(dirName,name);
+    }
+    
+    public void delete(String dirName) {
+        checkIfOpen();
+        for (File cacheDir : files) {
+            File dirFile = new File(cacheDir,dirName);
+            if (dirFile.exists()) {
+                rm(dirFile);
+            }
+        }
+    }
+
+    public static void rm(File file) {
+        if (!file.exists()) {
+            return;
+        }
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                rm(f);
+            }
+        }
+        file.delete();
     }
 
     private Date getStartTime() {
@@ -112,30 +146,11 @@ public class LocalFileCache {
         }
     }
 
-    public File getLocalFile(String dirName, String name) {
-        File file = locateFileExistingFile(dirName,name);
-        if (file != null) {
-            return file;
+    private void checkIfOpen() {
+        if (setup) {
+            return;
         }
-        return newFile(dirName,name);
-    }
-    
-    public void delete(String dirName) {
-        for (File cacheDir : files) {
-            File dirFile = new File(cacheDir,dirName);
-            if (dirFile.exists()) {
-                rm(dirFile);
-            }
-        }
-    }
-
-    public static void rm(File file) {
-        if (file.isDirectory()) {
-            for (File f : file.listFiles()) {
-                rm(f);
-            }
-        }
-        file.delete();
+        throw new RuntimeException("Local File Cache not open, run open().");
     }
 
     private File[] getValid(File[] files) {
@@ -200,5 +215,47 @@ public class LocalFileCache {
             }
         }
         return null;
+    }
+    
+    private void tryToCreateAllDirs() {
+        for (File f : potentialDirs) {
+            f.mkdirs();
+        }
+    }
+
+    public ExistenceCheck getExistenceCheck() {
+        return existenceCheck;
+    }
+
+    public void setExistenceCheck(ExistenceCheck existenceCheck) {
+        this.existenceCheck = existenceCheck;
+    }
+
+    public File[] getPotentialFiles() {
+        return potentialDirs;
+    }
+
+    public void setPotentialFiles(File... potentialFiles) {
+        this.potentialDirs = potentialFiles;
+    }
+
+    public File[] getFiles() {
+        return files;
+    }
+
+    public Date getGcStartTime() {
+        return gcStartTime;
+    }
+
+    public void setGcStartTime(Date gcStartTime) {
+        this.gcStartTime = gcStartTime;
+    }
+
+    public long getGcWaitPeriod() {
+        return gcWaitPeriod;
+    }
+
+    public void setGcWaitPeriod(long gcWaitPeriod) {
+        this.gcWaitPeriod = gcWaitPeriod;
     }
 }

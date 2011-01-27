@@ -99,6 +99,7 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         writer.commit(blurTask.getCommitUserData());
         writer.close();
         localFileCache.delete(HdfsUtil.getDirName(blurTask.getTableName(), blurTask.getShardName()));
+        localFileCache.close();
     }
     
     protected void setupLocalFileCache(Context context) throws IOException {

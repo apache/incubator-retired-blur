@@ -30,7 +30,6 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.store.LocalFileCache;
-import com.nearinfinity.blur.store.WritableHdfsDirectory;
 
 public class TestReplica {
     
@@ -48,7 +47,9 @@ public class TestReplica {
 //        createIndex(directory);
 
 //        HdfsDirectory directory = new HdfsDirectory(hdfsDirPath, fileSystem);
-        LocalFileCache localFileCache = new LocalFileCache(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
+        LocalFileCache localFileCache = new LocalFileCache();
+        localFileCache.setPotentialFiles(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
+        localFileCache.open();
         ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), new Progressable() {
             @Override
             public void progress() {

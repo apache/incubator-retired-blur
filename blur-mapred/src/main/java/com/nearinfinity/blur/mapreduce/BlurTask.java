@@ -56,7 +56,10 @@ public class BlurTask {
     }
 
     public LocalFileCache getLocalFileCache() {
-        return new LocalFileCache(getFiles(configuration.get(MAPRED_LOCAL_DIR)));
+        LocalFileCache localFileCache = new LocalFileCache();
+        localFileCache.setPotentialFiles(getFiles(configuration.get(MAPRED_LOCAL_DIR)));
+        localFileCache.open();
+        return localFileCache;
     }
 
     public Map<String, String> getCommitUserData() {

@@ -74,7 +74,11 @@ public class ThriftBlurShardServer {
         
         HdfsExistenceCheck existenceCheck = new HdfsExistenceCheck(fileSystem, blurBasePath);
 
-        LocalFileCache localFileCache = new LocalFileCache(existenceCheck,localFileCaches.toArray(new File[]{}));
+        LocalFileCache localFileCache = new LocalFileCache();
+        localFileCache.setExistenceCheck(existenceCheck);
+        localFileCache.setPotentialFiles(localFileCaches.toArray(new File[]{}));
+        localFileCache.open();
+        
         LockFactory lockFactory = new NoLockFactory();
         
         HdfsIndexServer indexServer = new HdfsIndexServer();

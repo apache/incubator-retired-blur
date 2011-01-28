@@ -30,7 +30,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private NODE_TYPE type;
     
     @Override
-    public ManagedDistributedIndexServer init() {
+    public void init() {
         super.init();
         setupZookeeper();
         lockNodeState();
@@ -43,7 +43,6 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         waitIfInSafeMode();
         startPollingDaemon();
         pollForState();
-        return this;
     }
 
     private void lockNodeState() {

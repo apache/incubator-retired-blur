@@ -63,6 +63,7 @@ public class ThriftBlurControllerServer {
         BlurControllerServer controllerServer = new BlurControllerServer();
         controllerServer.setClient(client);
         controllerServer.setIndexServer(indexServer);
+        controllerServer.open();
         
         ThriftBlurControllerServer server = new ThriftBlurControllerServer();
         server.setNodeName(nodeName);

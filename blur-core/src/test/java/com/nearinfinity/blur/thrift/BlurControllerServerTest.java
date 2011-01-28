@@ -49,6 +49,7 @@ public class BlurControllerServerTest {
         server = new BlurControllerServer();
         server.setClient(getClient());
         server.setIndexServer(getIndexServer());
+        server.open();
     }
     
     @After

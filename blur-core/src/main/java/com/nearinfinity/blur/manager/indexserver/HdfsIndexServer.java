@@ -31,13 +31,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private LockFactory lockFactory;
     
     @Override
-    public HdfsIndexServer init() {
-        super.init();
-        return this;
-    }
-
-    @Override
     public void close() {
+        super.close();
         try {
             fileSystem.close();
         } catch (IOException e) {
@@ -84,7 +79,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     @Override
     protected void beforeClose(String shard, IndexReader indexReader) {
-        
+
     }
     
     @Override

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -15,6 +17,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -33,16 +36,23 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
     protected AtomicReference<Map<String, Analyzer>> analyzerMap = new AtomicReference<Map<String, Analyzer>>(new HashMap<String, Analyzer>());
     protected DistributedManager dm;
     protected Timer daemon;
+    protected ExecutorService executorService;
     
     /**
      * All sub classes need to call super.init().
      * @return 
      */
-    public AdminIndexServer init() {
+    public void init() {
         dm.createPath(BLUR_TABLES); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();
-        return this;
+        executorService = Executors.newCachedThreadPool();
+    }
+    
+    public void close() {
+        daemon.cancel();
+        daemon.purge();
+        executorService.shutdownNow();
     }
 
     private void startUpdateStatusPollingDaemon() {
@@ -60,8 +70,34 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         updateTableAnalyzers();
         updateTableStatus();
         registerCallbackForChanges();
+        warmUpIndexes();
     }
     
+    private void warmUpIndexes() {
+        List<String> tableList = getTableList();
+        for (String t : tableList) {
+            final String table = t;
+            if (getTableStatus(table) == TABLE_STATUS.ENABLED) {
+                executorService.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        warmUpTable(table);
+                    }
+                });
+            }
+        }
+    }
+
+    private void warmUpTable(String table) {
+        try {
+            LOG.info("Warmup for table [" + table + "]");
+            Map<String, IndexReader> indexReaders = getIndexReaders(table);
+            LOG.info("Warmup complete for table [" + table + "] shards [" + indexReaders.keySet() + "]");
+        } catch (Exception e) {
+            LOG.error("Warmup error with table [" + table + "]", e);
+        }
+    }
+
     private void registerCallbackForChanges() {
         dm.registerCallableOnChange(newRunnableUpdateStatus(), BLUR_TABLES);
         for (String table : tableList.get()) {

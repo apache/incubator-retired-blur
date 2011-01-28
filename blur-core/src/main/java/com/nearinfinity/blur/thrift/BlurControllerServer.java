@@ -55,12 +55,11 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
 	private BlurClient client;
 	private long delay = TimeUnit.SECONDS.toMillis(5);
 	private Random random = new Random();
-
     private Timer shardLayoutTimer;
-
     private IndexServer indexServer;
     
-    public BlurControllerServer() {
+    public void open() {
+        updateShardLayout();
         shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
         shardLayoutTimer.scheduleAtFixedRate(new TimerTask(){
             @Override
@@ -72,6 +71,7 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
     
     public void close() {
         shardLayoutTimer.cancel();
+        executor.shutdownNow();
     }
 
     @Override
@@ -314,9 +314,8 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
         return indexServer;
     }
     
-    public BlurControllerServer setIndexServer(IndexServer indexServer) {
+    public void setIndexServer(IndexServer indexServer) {
         this.indexServer = indexServer;
-        return this;
     }
 
     @Override

@@ -13,8 +13,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -43,7 +41,6 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
     
     private ConcurrentHashMap<String,Map<String,IndexReader>> readers = new ConcurrentHashMap<String, Map<String,IndexReader>>();
-    private ExecutorService executorService = Executors.newCachedThreadPool();
     private Timer readerCloserDaemon;
     private long delay = TimeUnit.MINUTES.toMillis(1);
     private Map<String,DistributedLayoutManager> layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
@@ -52,11 +49,10 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     //need a daemon for tracking what indexes to open ???
     //need a daemon to track reopening changed indexes
     
-    public DistributedIndexServer init() {
+    public void init() {
         super.init();
         startIndexReaderCloserDaemon();
         startIndexReopenerDaemon();
-        return this;
     }
     
     protected abstract IndexReader openShard(String table, String shard) throws IOException;
@@ -123,7 +119,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
 
     @Override
     public void close() {
-        executorService.shutdownNow();
+        super.close();
     }
     
     //Getters and setters

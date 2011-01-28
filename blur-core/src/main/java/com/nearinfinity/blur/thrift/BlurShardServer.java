@@ -36,7 +36,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 	
     @Override
 	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
-        enabledTable(table);
+        checkTableStatus(table);
         try {
             HitsIterable hitsIterable = indexManager.search(table, searchQuery);
             return convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
@@ -51,7 +51,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 	
 	@Override
 	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
-	    enabledTable(table);
+	    checkTableStatus(table);
         try {
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow(table,selector, fetchResult);
@@ -76,6 +76,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
     @Override
     public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException {
+        checkTableStatus(table);
         try {
             return indexManager.currentSearches(table);
         } catch (Exception e) {
@@ -90,6 +91,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
     
     @Override
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+        checkTableStatus(table);
         try {
             Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
             Map<String, String> result = new TreeMap<String, String>();
@@ -99,11 +101,20 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
             }
             return result;
         } catch (Exception e) {
+            if (e instanceof BlurException) {
+                throw (BlurException) e;
+            }
             LOG.error("Unknown error while trying to getting shardServerLayout for table [" + table + "]",e);
             throw new BlurException(e.getMessage());
         }
     }
     
+    private void checkTableStatus(String table) throws BlurException {
+        if (isTableEnabled(table)) {
+            throw new BlurException("Table [" + table + "] is disabled.");
+        }
+    }
+
     public IndexManager getIndexManager() {
         return indexManager;
     }
@@ -115,7 +126,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
     @Override
     public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException {
-        enabledTable(table);
+        checkTableStatus(table);
         FacetResult facetResult = new FacetResult().setFacetQuery(facetQuery);
         try {
             indexManager.facetSearch(table, facetQuery, facetResult);
@@ -128,17 +139,9 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
         }
     }
 
-    private void enabledTable(String table) throws BlurException {
-        if (isTableEnabled(table)) {
-            return;
-        }
-        throw new BlurException("Table [" + table +
-        		"] is not enabled.");
-    }
-
     @Override
     public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
-        enabledTable(table);
+        checkTableStatus(table);
         try {
             return indexManager.recordFrequency(table,columnFamily,columnName,value);
         } catch (BlurException e) {
@@ -151,7 +154,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
     @Override
     public Schema schema(String table) throws BlurException, TException {
-        enabledTable(table);
+        checkTableStatus(table);
         try {
             return indexManager.schema(table);
         } catch (Exception e) {
@@ -162,7 +165,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
 
     @Override
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
-        enabledTable(table);
+        checkTableStatus(table);
         try {
             return indexManager.terms(table,columnFamily,columnName,startWith,size);
         } catch (Exception e) {

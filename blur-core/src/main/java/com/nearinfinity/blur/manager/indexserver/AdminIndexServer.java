@@ -43,10 +43,10 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
      * @return 
      */
     public void init() {
+        executorService = Executors.newCachedThreadPool();
         dm.createPath(BLUR_TABLES); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();
-        executorService = Executors.newCachedThreadPool();
     }
     
     public void close() {
@@ -90,9 +90,9 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
 
     private void warmUpTable(String table) {
         try {
-            LOG.info("Warmup for table [" + table + "]");
+            LOG.debug("Warmup for table [" + table + "]");
             Map<String, IndexReader> indexReaders = getIndexReaders(table);
-            LOG.info("Warmup complete for table [" + table + "] shards [" + indexReaders.keySet() + "]");
+            LOG.debug("Warmup complete for table [" + table + "] shards [" + indexReaders.keySet() + "]");
         } catch (Exception e) {
             LOG.error("Warmup error with table [" + table + "]", e);
         }

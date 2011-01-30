@@ -110,9 +110,10 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
     }
     
     private void checkTableStatus(String table) throws BlurException {
-        if (isTableEnabled(table)) {
+        if (!isTableEnabled(table)) {
             throw new BlurException("Table [" + table + "] is disabled.");
         }
+        System.out.println();
     }
 
     public IndexManager getIndexManager() {

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,9 +17,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.LockFactory;
 
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.store.replication.LuceneIndexFIleComparator;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
@@ -57,8 +62,26 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
                 //do nothing for now
             }
         });
+        touchFiles(directory,table,shard);
         return IndexReader.open(directory);
-        
+    }
+
+    private void touchFiles(Directory directory, String table, String shard) throws IOException {
+        LuceneIndexFIleComparator comparator = new LuceneIndexFIleComparator();
+        List<String> list = new ArrayList<String>(Arrays.asList(directory.listAll()));
+        Collections.sort(list,comparator);
+        for (String f : list) {
+            LOG.info("Touching file [" + f +
+            		"] from table [" + table +
+            		"] shard [" + shard + 
+            		"]");
+            IndexInput input = directory.openInput(f);
+            if (input.length() > 0) {
+                input.seek(0);
+                input.readByte();
+            }
+            input.close();
+        }
     }
 
     @Override

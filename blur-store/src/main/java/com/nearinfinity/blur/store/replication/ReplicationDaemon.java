@@ -52,7 +52,7 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     @Override
     public void run() {
         try {
-            byte[] buffer = new byte[1024 * 1024];
+            byte[] buffer = new byte[BUFFER_SIZE];
             Set<String> fileNames = new TreeSet<String>(replicaQueue.keySet());
             for (String name : fileNames) {
                 beingProcessedName = name;

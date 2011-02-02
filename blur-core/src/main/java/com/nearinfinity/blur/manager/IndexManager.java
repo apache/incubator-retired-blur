@@ -5,20 +5,16 @@ import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,6 +43,7 @@ import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.status.SearchStatus;
+import com.nearinfinity.blur.manager.status.SearchStatusManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Facet;
@@ -75,31 +72,21 @@ public class IndexManager implements BlurConstants {
 
     private IndexServer indexServer;
     private ExecutorService executor;
-    private Collection<SearchStatus> currentSearchStatusCollection = Collections.synchronizedSet(new HashSet<SearchStatus>());
-    private Timer searchStatusCleanupTimer;
-    private long searchStatusCleanupTimerDelay = TimeUnit.MINUTES.toMillis(1);
+    private SearchStatusManager statusManager = new SearchStatusManager();
 
     public IndexManager() {
         BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
     }
 
-    public IndexManager init() {
+    public void init() {
         executor = Executors.newCachedThreadPool();
-        searchStatusCleanupTimer = new Timer("Search-Status-Cleanup",true);
-        searchStatusCleanupTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                cleanupFinishedSearchStatuses();
-            }
-        }, searchStatusCleanupTimerDelay, searchStatusCleanupTimerDelay);
-        return this;
+        statusManager.init();
     }
 
     public void close() throws InterruptedException {
+        statusManager.close();
         executor.shutdownNow();
         indexServer.close();
-        searchStatusCleanupTimer.cancel();
-        searchStatusCleanupTimer.purge();
     }
 
     public void replaceRow(String table, Row row) throws BlurException {
@@ -154,8 +141,7 @@ public class IndexManager implements BlurConstants {
     }
 
     public HitsIterable search(final String table, SearchQuery searchQuery) throws Exception {
-        final SearchStatus status = new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery).attachThread();
-        addStatus(status);
+        final SearchStatus status = statusManager.newSearchStatus(table, searchQuery);
         try {
             Map<String, IndexReader> indexReaders;
             try {
@@ -188,7 +174,7 @@ public class IndexManager implements BlurConstants {
                 }).merge(new MergerHitsIterable(searchQuery.minimumNumberOfHits, searchQuery.maxQueryTime));
         } finally {
             status.deattachThread();
-            removeStatus(status);
+            statusManager.removeStatus(status);
         }
     }
 
@@ -199,22 +185,12 @@ public class IndexManager implements BlurConstants {
         return type;
     }
 
-    public void cancelSearch(long userUuid) {
-        for (SearchStatus status : currentSearchStatusCollection) {
-            if (status.getUserUuid() == userUuid) {
-                status.cancelSearch();
-            }
-        }
+    public void cancelSearch(long uuid) {
+        statusManager.cancelSearch(uuid);
     }
 
     public List<SearchQueryStatus> currentSearches(String table) {
-        List<SearchQueryStatus> result = new ArrayList<SearchQueryStatus>();
-        for (SearchStatus status : currentSearchStatusCollection) {
-            if (status.getTable().equals(table)) {
-                result.add(status.getSearchQueryStatus());
-            }
-        }
-        return result;
+        return statusManager.currentSearches(table);
     }
 
     private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType)
@@ -372,29 +348,10 @@ public class IndexManager implements BlurConstants {
         return indexServer;
     }
 
-    public IndexManager setIndexServer(IndexServer indexServer) {
+    public void setIndexServer(IndexServer indexServer) {
         this.indexServer = indexServer;
-        return this;
     }
     
-    private void removeStatus(SearchStatus status) {
-        status.setFinished(true);
-    }
-
-    private void addStatus(SearchStatus status) {
-        currentSearchStatusCollection.add(status);
-    }
-    
-    private void cleanupFinishedSearchStatuses() {
-        Collection<SearchStatus> remove = new HashSet<SearchStatus>();
-        for (SearchStatus status : currentSearchStatusCollection) {
-            if (status.isValidForCleanUp()) {
-                remove.add(status);
-            }
-        }
-        currentSearchStatusCollection.removeAll(remove);
-    }
-
     public long recordFrequency(String table, final String columnFamily, final String columnName, final String value) throws Exception {
         Map<String, IndexReader> indexReaders;
         try {
@@ -528,8 +485,7 @@ public class IndexManager implements BlurConstants {
     }
 
     private long runFacet(final String table, Map<String, IndexReader> indexReaders, Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime, SearchQuery searchQuery) throws Exception {
-        final SearchStatus status = new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery,facet).attachThread();
-        addStatus(status);
+        final SearchStatus status = statusManager.newSearchStatus(table, searchQuery, facet);
         try {
             Filter facetFilter = parseFilter(table, facet.queryStr, true, ScoreType.CONSTANT);
             final FilteredQuery facetQuery = new FilteredQuery(userQuery, facetFilter);
@@ -554,16 +510,11 @@ public class IndexManager implements BlurConstants {
             return hitsIterable.getTotalHits();
         } finally {
             status.deattachThread();
-            removeStatus(status);
+            statusManager.removeStatus(status);
         }
     }
 
-    public long getSearchStatusCleanupTimerDelay() {
-        return searchStatusCleanupTimerDelay;
-    }
-
-    public IndexManager setSearchStatusCleanupTimerDelay(long searchStatusCleanupTimerDelay) {
-        this.searchStatusCleanupTimerDelay = searchStatusCleanupTimerDelay;
-        return this;
+    public void setSearchStatusCleanupTimerDelay(long delay) {
+        statusManager.setSearchStatusCleanupTimerDelay(delay);
     }
 }

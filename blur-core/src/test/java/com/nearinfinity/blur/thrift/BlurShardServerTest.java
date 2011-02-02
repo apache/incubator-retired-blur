@@ -20,11 +20,12 @@ public class BlurShardServerTest {
     @Before
     public void setUp() {
         IndexServer indexServer = getIndexServer();
-        IndexManager indexManager = getIndexManager().setIndexServer(indexServer);
+        IndexManager indexManager = getIndexManager();
+        indexManager.setIndexServer(indexServer);
         indexManager.init();
-        blurShardServer = (BlurShardServer) new BlurShardServer().
-            setIndexManager(indexManager).
-            setIndexServer(indexServer);
+        blurShardServer = new BlurShardServer();
+        blurShardServer.setIndexManager(indexManager);
+        blurShardServer.setIndexServer(indexServer);
     }
     
     @After

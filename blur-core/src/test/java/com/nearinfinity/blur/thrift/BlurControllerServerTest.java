@@ -3,24 +3,19 @@ package com.nearinfinity.blur.thrift;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.Similarity;
 import org.apache.thrift.TException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nearinfinity.blur.manager.IndexServer;
+import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -48,10 +43,33 @@ public class BlurControllerServerTest {
         addShardServer("node3");
         server = new BlurControllerServer();
         server.setClient(getClient());
-        server.setIndexServer(getIndexServer());
+        server.setClusterStatus(getClusterStatus());
         server.open();
     }
     
+    private ClusterStatus getClusterStatus() {
+        return new ClusterStatus() {
+
+            @Override
+            public List<String> controllerServerList() {
+                throw new RuntimeException("no impl");
+            }
+
+            @Override
+            public List<String> getOnlineShardServers() {
+                return shardServerList();
+            }
+
+            @Override
+            public List<String> shardServerList() {
+                List<String> nodes = new ArrayList<String>(shardServers.keySet());
+                Collections.sort(nodes);
+                return nodes;
+            }
+            
+        };
+    }
+
     @After
     public void tearDown() {
         server.close();
@@ -70,73 +88,6 @@ public class BlurControllerServerTest {
     public void testRecordFrequency() throws BlurException, TException {
         long recordFrequency = server.recordFrequency(TABLE, "cf", "cn", "value");
         assertEquals(3,recordFrequency);
-    }
-
-    private IndexServer getIndexServer() {
-        return new IndexServer() {
-
-            @Override
-            public void close() {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public Analyzer getAnalyzer(String table) {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public List<String> getControllerServerList() {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public List<String> getOfflineShardServers() {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public List<String> getShardList(String table) {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public List<String> getShardServerList() {
-                List<String> nodes = new ArrayList<String>(shardServers.keySet());
-                Collections.sort(nodes);
-                return nodes;
-            }
-
-            @Override
-            public Similarity getSimilarity(String table) {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public List<String> getTableList() {
-                return Arrays.asList(TABLE);
-            }
-
-            @Override
-            public TABLE_STATUS getTableStatus(String table) {
-                throw new RuntimeException("no impl");
-            }
-
-            @Override
-            public List<String> getOnlineShardServers() {
-                return getShardServerList();
-            }
-
-            @Override
-            public String getNodeName() {
-                throw new RuntimeException("no impl");
-            }
-        };
     }
 
     private BlurClient getClient() {
@@ -159,7 +110,9 @@ public class BlurControllerServerTest {
             
             @Override
             public List<String> tableList() throws BlurException, TException {
-                throw new RuntimeException("no impl");
+                List<String> table = new ArrayList<String>();
+                table.add(TABLE);
+                return table;
             }
             
             @Override
@@ -168,8 +121,10 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public Map<String, String> shardServerLayout(String arg0) throws BlurException, TException {
-                throw new RuntimeException("no impl");
+            public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+                Map<String,String> layout = new HashMap<String, String>();
+                layout.put(node, node);
+                return layout;
             }
             
             @Override

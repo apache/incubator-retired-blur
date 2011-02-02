@@ -55,7 +55,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         executorService.shutdownNow();
     }
 
-    private void startUpdateStatusPollingDaemon() {
+    protected void startUpdateStatusPollingDaemon() {
         daemon = new Timer("AdminIndexServer-Status-Poller", true);
         daemon.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -65,7 +65,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         }, TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10));
     }
 
-    private synchronized void updateStatus() {
+    protected synchronized void updateStatus() {
         updateTableList();
         updateTableAnalyzers();
         updateTableStatus();
@@ -73,7 +73,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         warmUpIndexes();
     }
     
-    private void warmUpIndexes() {
+    protected void warmUpIndexes() {
         List<String> tableList = getTableList();
         for (String t : tableList) {
             final String table = t;
@@ -88,7 +88,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         }
     }
 
-    private void warmUpTable(String table) {
+    protected void warmUpTable(String table) {
         try {
             LOG.debug("Warmup for table [" + table + "]");
             Map<String, IndexReader> indexReaders = getIndexReaders(table);
@@ -98,14 +98,14 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         }
     }
 
-    private void registerCallbackForChanges() {
+    protected void registerCallbackForChanges() {
         dm.registerCallableOnChange(newRunnableUpdateStatus(), BLUR_TABLES);
         for (String table : tableList.get()) {
             dm.registerCallableOnChange(newRunnableUpdateStatus(), BLUR_TABLES,table);
         }        
     }
 
-    private Runnable newRunnableUpdateStatus() {
+    protected Runnable newRunnableUpdateStatus() {
         return new Runnable() {
             @Override
             public void run() {
@@ -114,7 +114,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         };
     }
 
-    private void updateTableList() {
+    protected void updateTableList() {
         List<String> newTables = dm.list(BLUR_TABLES);
         List<String> oldTables = tableList.get();
         tableList.set(newTables);
@@ -130,7 +130,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         }
     }
     
-    private void updateTableAnalyzers() {
+    protected void updateTableAnalyzers() {
         Map<String, Analyzer> newMap = new HashMap<String, Analyzer>();
         for (String table : tableList.get()) {
             Value value = new Value();
@@ -151,7 +151,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         analyzerMap.set(newMap);
     }
 
-    private void updateTableStatus() {
+    protected void updateTableStatus() {
         Map<String, TABLE_STATUS> newMap = new HashMap<String, TABLE_STATUS>();
         Map<String, TABLE_STATUS> oldMap = statusMap.get();
         for (String table : tableList.get()) {

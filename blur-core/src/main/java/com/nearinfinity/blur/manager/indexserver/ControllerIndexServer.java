@@ -26,4 +26,9 @@ public class ControllerIndexServer extends ManagedDistributedIndexServer {
         //do nothing        
     }
 
+    @Override
+    protected void warmUpIndexes() {
+      //do nothing
+    }
+
 }

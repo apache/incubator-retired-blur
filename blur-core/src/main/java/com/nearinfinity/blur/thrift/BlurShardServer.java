@@ -26,9 +26,10 @@ import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class BlurShardServer extends BlurBaseServer implements BlurConstants {
+public class BlurShardServer implements Iface, BlurConstants {
 
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
@@ -39,7 +40,7 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
         checkTableStatus(table);
         try {
             HitsIterable hitsIterable = indexManager.search(table, searchQuery);
-            return convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
+            return BlurBaseServer.convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
@@ -113,7 +114,6 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
         if (!isTableEnabled(table)) {
             throw new BlurException("Table [" + table + "] is disabled.");
         }
-        System.out.println();
     }
 
     public IndexManager getIndexManager() {
@@ -203,13 +203,21 @@ public class BlurShardServer extends BlurBaseServer implements BlurConstants {
         }
     }
     
-    @Override
     public IndexServer getIndexServer() {
         return indexServer;
     }
 
-    public BlurShardServer setIndexServer(IndexServer indexServer) {
+    public void setIndexServer(IndexServer indexServer) {
         this.indexServer = indexServer;
-        return this;
+    }
+    
+    @Override
+    public List<String> controllerServerList() throws BlurException, TException {
+        return indexServer.getControllerServerList();
+    }
+
+    @Override
+    public List<String> shardServerList() throws BlurException, TException {
+        return indexServer.getOnlineShardServers();
     }
 }

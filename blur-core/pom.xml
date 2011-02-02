@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<parent>
-	    <groupId>com.nearinfinity.blur</groupId>
-	    <artifactId>blur</artifactId>
-	    <version>1.0.b4</version>
+		<groupId>com.nearinfinity.blur</groupId>
+		<artifactId>blur</artifactId>
+		<version>1.0.b4</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
@@ -33,17 +33,22 @@
 			<artifactId>zookeeper</artifactId>
 			<version>3.3.1</version>
 		</dependency>
-		<dependency>
+		<!--dependency>
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>3.2.1</version>
-		</dependency>
+		</dependency -->
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-jaxrs</artifactId>
 			<version>1.5.5</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>r07</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop</artifactId>

@@ -20,11 +20,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
-import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerFacetResult;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
+import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
@@ -39,6 +39,7 @@ import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
+import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -46,7 +47,7 @@ import com.nearinfinity.blur.utils.LoggingBlurException;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class BlurControllerServer extends BlurBaseServer implements BlurConstants {
+public class BlurControllerServer implements Iface, BlurConstants {
 	
 	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 	
@@ -56,7 +57,7 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
 	private long delay = TimeUnit.SECONDS.toMillis(5);
 	private Random random = new Random();
     private Timer shardLayoutTimer;
-    private IndexServer indexServer;
+    private ClusterStatus clusterStatus;
     
     public void open() {
         updateShardLayout();
@@ -83,7 +84,7 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
                     return new HitsIterableBlurClient(client,table,searchQuery);
                 }
             },new MergerHitsIterable(searchQuery.minimumNumberOfHits,searchQuery.maxQueryTime));
-			return convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits);
+			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits);
 		} catch (Exception e) {
 			throw new LoggingBlurException(LOG,e,"Unknown error during search of [" +
                     getParametersList("table",table, "searchquery", searchQuery) + "]");
@@ -259,9 +260,9 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
             Map<String,Map<String, String>> layout = new HashMap<String, Map<String,String>>();
             for (String t : tableList()) {
                 final String table = t;
-                layout.put(table, ForkJoin.execute(executor, shardServerList(), new ParallelCall<String,Map<String,String>>() {
+                layout.put(table, ForkJoin.execute(executor, clusterStatus.getOnlineShardServers(), new ParallelCall<String,Map<String,String>>() {
                     @Override
-                    public Map<String,String> call(String hostnamePort) throws Exception {
+                    public Map<String,String> call(final String hostnamePort) throws Exception {
                         return client.execute(hostnamePort, new BlurSearchCommand<Map<String,String>>() {
                             @Override
                             public Map<String,String> call(Client client) throws Exception {
@@ -288,7 +289,7 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
     }
     
     private <R> R scatterGather(final BlurSearchCommand<R> command, Merger<R> merger) throws Exception {
-        return ForkJoin.execute(executor, shardServerList(), new ParallelCall<String, R>() {
+        return ForkJoin.execute(executor, clusterStatus.getOnlineShardServers(), new ParallelCall<String, R>() {
             @SuppressWarnings("unchecked")
             @Override
             public R call(String hostnamePort) throws Exception {
@@ -307,15 +308,6 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
                 return null;
             }
         });
-    }
-
-    @Override
-    public IndexServer getIndexServer() {
-        return indexServer;
-    }
-    
-    public void setIndexServer(IndexServer indexServer) {
-        this.indexServer = indexServer;
     }
 
     @Override
@@ -345,12 +337,12 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
             });
         } catch (Exception e) {
             throw new LoggingBlurException(LOG,e,"Unknown error while trying to get table list.  Current online shard servers [" +
-            		indexServer.getOnlineShardServers() + "]");
+            		clusterStatus.getOnlineShardServers() + "]");
         }
     }
     
     private String getSingleOnlineShardServer() throws BlurException, TException {
-        List<String> onlineShardServers = indexServer.getOnlineShardServers();
+        List<String> onlineShardServers = clusterStatus.getOnlineShardServers();
         return onlineShardServers.get(random.nextInt(onlineShardServers.size()));
     }
 
@@ -367,5 +359,31 @@ public class BlurControllerServer extends BlurBaseServer implements BlurConstant
             }
         }
         return result;
+    }
+
+    @Override
+    public List<String> controllerServerList() throws BlurException, TException {
+        try {
+            return clusterStatus.controllerServerList();
+        } catch (Exception e) {
+            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get a controller list.");
+        }
+    }
+
+    @Override
+    public List<String> shardServerList() throws BlurException, TException {
+        try {
+            return clusterStatus.shardServerList();
+        } catch (Exception e) {
+            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get a shard list.");
+        }
+    }
+
+    public ClusterStatus getClusterStatus() {
+        return clusterStatus;
+    }
+
+    public void setClusterStatus(ClusterStatus clusterStatus) {
+        this.clusterStatus = clusterStatus;
     }
 }

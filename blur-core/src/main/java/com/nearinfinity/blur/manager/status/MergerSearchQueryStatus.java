@@ -26,7 +26,7 @@ public class MergerSearchQueryStatus implements Merger<List<SearchQueryStatus>> 
         for (SearchQueryStatus status : list) {
             SearchQueryStatus searchQueryStatus = statusMap.get(status.uuid);
             if (searchQueryStatus == null) {
-                statusMap.put(status.uuid, searchQueryStatus);
+                statusMap.put(status.uuid, status);
             } else {
                 statusMap.put(status.uuid, merge(searchQueryStatus,status));
             }

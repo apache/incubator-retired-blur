@@ -11,7 +11,7 @@ import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 
-public class SearchStatus {
+public class SearchStatus implements Comparable<SearchStatus> {
 
     private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
     
@@ -85,7 +85,14 @@ public class SearchStatus {
         }
         searchQueryStatus.running = !finished;
         searchQueryStatus.interrupted = interrupted;
-        searchQueryStatus.realTime = System.currentTimeMillis() - startingTime;
+        if (searchQueryStatus.running) {
+            searchQueryStatus.realTime = System.currentTimeMillis() - startingTime;
+        } else {
+            searchQueryStatus.realTime = finishedTime - startingTime;
+        }
+        if (searchQueryStatus.query != null) {
+            searchQueryStatus.uuid = searchQueryStatus.query.uuid;
+        }
         return searchQueryStatus;
     }
 
@@ -132,5 +139,15 @@ public class SearchStatus {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public int compareTo(SearchStatus o) {
+        long startingTime2 = o.startingTime;
+        if (startingTime == startingTime2) {
+            int hashCode2 = o.hashCode();
+            return hashCode() < hashCode2 ? -1 : 1;
+        }
+        return startingTime < startingTime2 ? -1 : 1;
     }
 }

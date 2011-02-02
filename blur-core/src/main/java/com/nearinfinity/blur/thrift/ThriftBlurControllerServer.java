@@ -15,9 +15,8 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.manager.indexserver.ControllerIndexServer;
+import com.nearinfinity.blur.manager.indexserver.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
-import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientRemote;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
@@ -35,8 +34,7 @@ public class ThriftBlurControllerServer {
         Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                LOG.error("Unknown error in thread [" + t +
-                        "]",e);
+                LOG.error("Unknown error in thread [" + t + "]",e);
             }
         });
         
@@ -52,17 +50,21 @@ public class ThriftBlurControllerServer {
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
         
-        ControllerIndexServer indexServer = new ControllerIndexServer();
-        indexServer.setType(NODE_TYPE.CONTROLLER);
-        indexServer.setNodeName(nodeName);
-        indexServer.setDistributedManager(dzk);
-        indexServer.init();
+//        ControllerIndexServer indexServer = new ControllerIndexServer();
+//        indexServer.setType(NODE_TYPE.CONTROLLER);
+//        indexServer.setNodeName(nodeName);
+//        indexServer.setDistributedManager(dzk);
+//        indexServer.init();
+        
+        ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus();
+        clusterStatus.setDistributedManager(dzk);
+        clusterStatus.init();
         
         BlurClient client = new BlurClientRemote();
         
         BlurControllerServer controllerServer = new BlurControllerServer();
         controllerServer.setClient(client);
-        controllerServer.setIndexServer(indexServer);
+        controllerServer.setClusterStatus(clusterStatus);
         controllerServer.open();
         
         ThriftBlurControllerServer server = new ThriftBlurControllerServer();

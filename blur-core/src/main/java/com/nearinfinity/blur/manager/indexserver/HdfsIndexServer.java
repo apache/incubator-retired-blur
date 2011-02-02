@@ -22,7 +22,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.LockFactory;
 
 import com.nearinfinity.blur.store.cache.LocalFileCache;
-import com.nearinfinity.blur.store.replication.LuceneIndexFIleComparator;
+import com.nearinfinity.blur.store.replication.LuceneIndexFileComparator;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
@@ -67,7 +67,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     }
 
     private void touchFiles(Directory directory, String table, String shard) throws IOException {
-        LuceneIndexFIleComparator comparator = new LuceneIndexFIleComparator();
+        LuceneIndexFileComparator comparator = new LuceneIndexFileComparator();
         List<String> list = new ArrayList<String>(Arrays.asList(directory.listAll()));
         Collections.sort(list,comparator);
         for (String f : list) {

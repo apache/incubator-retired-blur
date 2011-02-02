@@ -2,7 +2,7 @@ package com.nearinfinity.blur.store.replication;
 
 import java.util.Comparator;
 
-public class LuceneIndexFIleComparator implements Comparator<String> {
+public class LuceneIndexFileComparator implements Comparator<String> {
 
     private String[] order = new String[]{"","del","tii","blf","tis","frq","prx","fdx","fdt"};
     

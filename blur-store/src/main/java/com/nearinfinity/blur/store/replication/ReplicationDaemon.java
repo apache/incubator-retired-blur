@@ -2,12 +2,10 @@ package com.nearinfinity.blur.store.replication;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -27,21 +25,22 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     
     private static final Log LOG = LogFactory.getLog(ReplicationDaemon.class);
     
+    static class RepliaWorkUnit {
+        ReplicaIndexInput input;
+        ReplicaHdfsDirectory directory;
+    }
+    
     private Timer daemon;
-    private ConcurrentMap<String, ReplicaIndexInput> replicaQueue = new ConcurrentHashMap<String, ReplicaIndexInput>();
     private LocalIOWrapper wrapper;
     private long period = TimeUnit.SECONDS.toMillis(1);
 
     private LocalFileCache localFileCache;
-    private ReplicaHdfsDirectory directory;
-    private String dirName;
     private Progressable progressable;
+    private BlockingQueue<RepliaWorkUnit> replicaQueue = new LinkedBlockingQueue<RepliaWorkUnit>();
 
     private volatile String beingProcessedName;
 
-    public ReplicationDaemon(String dirName, ReplicaHdfsDirectory directory, LocalFileCache localFileCache, LocalIOWrapper wrapper, Progressable progressable) {
-        this.dirName = dirName;
-        this.directory = directory;
+    public ReplicationDaemon(LocalFileCache localFileCache, LocalIOWrapper wrapper, Progressable progressable) {
         this.localFileCache = localFileCache;
         this.wrapper = wrapper;
         this.progressable = progressable;
@@ -49,18 +48,40 @@ public class ReplicationDaemon extends TimerTask implements Constants {
         this.daemon.scheduleAtFixedRate(this, period, period);
     }
     
+    public ReplicationDaemon(LocalFileCache localFileCache) {
+        this(localFileCache,new LocalIOWrapper() {
+            @Override
+            public IndexInput wrapInput(IndexInput fileIndexInput) {
+                return fileIndexInput;
+            }
+            @Override
+            public IndexOutput wrapOutput(IndexOutput fileIndexOutput) {
+                return fileIndexOutput;
+            }
+        }, new Progressable() {
+            @Override
+            public void progress() {
+            }
+        });
+    }
+
     @Override
     public void run() {
         try {
             byte[] buffer = new byte[BUFFER_SIZE];
-            Set<String> fileNames = new TreeSet<String>(replicaQueue.keySet());
-            for (String name : fileNames) {
-                beingProcessedName = name;
-                ReplicaIndexInput replicaIndexInput = replicaQueue.get(name);
+            while (!replicaQueue.isEmpty()) {
+                RepliaWorkUnit workUnit = replicaQueue.take();
+                ReplicaHdfsDirectory directory = workUnit.directory;
+                ReplicaIndexInput replicaIndexInput = workUnit.input;
+                String fileName = replicaIndexInput.fileName;
+                String dirName = replicaIndexInput.dirName;
+                
+                beingProcessedName = fileName;
                 LOG.info("Replicating to local machine [" + replicaIndexInput + "]");
-                IndexInput hdfsInput = directory.openFromHdfs(name, BUFFER_SIZE);
+                IndexInput hdfsInput = directory.openFromHdfs(fileName, BUFFER_SIZE);
                 hdfsInput.seek(0);
-                File localFile = localFileCache.getLocalFile(dirName, name);
+                
+                File localFile = localFileCache.getLocalFile(dirName, fileName);
                 if (localFile.exists()) {
                     if (!localFile.delete()) {
                         LOG.error("Error trying to delete existing file during replication [" + localFile + "]");
@@ -70,7 +91,6 @@ public class ReplicationDaemon extends TimerTask implements Constants {
                 copy(replicaIndexInput, hdfsInput, indexOutput, buffer);
                 IndexInput localInput = wrapper.wrapInput(new FileIndexInput(localFile, BUFFER_SIZE));
                 replicaIndexInput.localInput.set(localInput);
-                replicaQueue.remove(name);
                 beingProcessedName = null;
             }
         } catch (Exception e) {
@@ -125,8 +145,11 @@ public class ReplicationDaemon extends TimerTask implements Constants {
         
     }
 
-    public void replicate(ReplicaIndexInput replicaIndexInput) {
-        replicaQueue.putIfAbsent(replicaIndexInput.name, replicaIndexInput);
+    public void replicate(ReplicaHdfsDirectory directory, ReplicaIndexInput replicaIndexInput) {
+        RepliaWorkUnit unit = new RepliaWorkUnit();
+        unit.input = replicaIndexInput;
+        unit.directory = directory;
+        replicaQueue.add(unit);
     }
 
     public boolean isBeingReplicated(String name) {

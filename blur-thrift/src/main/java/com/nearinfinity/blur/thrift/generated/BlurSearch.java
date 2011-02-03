@@ -2128,13 +2128,13 @@ public class BlurSearch {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list69 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list69.size);
-                for (int _i70 = 0; _i70 < _list69.size; ++_i70)
+                TList _list73 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list73.size);
+                for (int _i74 = 0; _i74 < _list73.size; ++_i74)
                 {
-                  String _elem71;
-                  _elem71 = iprot.readString();
-                  this.success.add(_elem71);
+                  String _elem75;
+                  _elem75 = iprot.readString();
+                  this.success.add(_elem75);
                 }
                 iprot.readListEnd();
               }
@@ -2168,9 +2168,9 @@ public class BlurSearch {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter72 : this.success)
+          for (String _iter76 : this.success)
           {
-            oprot.writeString(_iter72);
+            oprot.writeString(_iter76);
           }
           oprot.writeListEnd();
         }
@@ -2720,13 +2720,13 @@ public class BlurSearch {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list73 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list73.size);
-                for (int _i74 = 0; _i74 < _list73.size; ++_i74)
+                TList _list77 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list77.size);
+                for (int _i78 = 0; _i78 < _list77.size; ++_i78)
                 {
-                  String _elem75;
-                  _elem75 = iprot.readString();
-                  this.success.add(_elem75);
+                  String _elem79;
+                  _elem79 = iprot.readString();
+                  this.success.add(_elem79);
                 }
                 iprot.readListEnd();
               }
@@ -2760,9 +2760,9 @@ public class BlurSearch {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter76 : this.success)
+          for (String _iter80 : this.success)
           {
-            oprot.writeString(_iter76);
+            oprot.writeString(_iter80);
           }
           oprot.writeListEnd();
         }
@@ -3412,15 +3412,15 @@ public class BlurSearch {
           case 0: // SUCCESS
             if (field.type == TType.MAP) {
               {
-                TMap _map77 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map77.size);
-                for (int _i78 = 0; _i78 < _map77.size; ++_i78)
+                TMap _map81 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map81.size);
+                for (int _i82 = 0; _i82 < _map81.size; ++_i82)
                 {
-                  String _key79;
-                  String _val80;
-                  _key79 = iprot.readString();
-                  _val80 = iprot.readString();
-                  this.success.put(_key79, _val80);
+                  String _key83;
+                  String _val84;
+                  _key83 = iprot.readString();
+                  _val84 = iprot.readString();
+                  this.success.put(_key83, _val84);
                 }
                 iprot.readMapEnd();
               }
@@ -3454,10 +3454,10 @@ public class BlurSearch {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter81 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter85 : this.success.entrySet())
           {
-            oprot.writeString(_iter81.getKey());
-            oprot.writeString(_iter81.getValue());
+            oprot.writeString(_iter85.getKey());
+            oprot.writeString(_iter85.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -4007,13 +4007,13 @@ public class BlurSearch {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list82 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list82.size);
-                for (int _i83 = 0; _i83 < _list82.size; ++_i83)
+                TList _list86 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list86.size);
+                for (int _i87 = 0; _i87 < _list86.size; ++_i87)
                 {
-                  String _elem84;
-                  _elem84 = iprot.readString();
-                  this.success.add(_elem84);
+                  String _elem88;
+                  _elem88 = iprot.readString();
+                  this.success.add(_elem88);
                 }
                 iprot.readListEnd();
               }
@@ -4047,9 +4047,9 @@ public class BlurSearch {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter85 : this.success)
+          for (String _iter89 : this.success)
           {
-            oprot.writeString(_iter85);
+            oprot.writeString(_iter89);
           }
           oprot.writeListEnd();
         }
@@ -7387,14 +7387,14 @@ public class BlurSearch {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list86 = iprot.readListBegin();
-                this.success = new ArrayList<SearchQueryStatus>(_list86.size);
-                for (int _i87 = 0; _i87 < _list86.size; ++_i87)
+                TList _list90 = iprot.readListBegin();
+                this.success = new ArrayList<SearchQueryStatus>(_list90.size);
+                for (int _i91 = 0; _i91 < _list90.size; ++_i91)
                 {
-                  SearchQueryStatus _elem88;
-                  _elem88 = new SearchQueryStatus();
-                  _elem88.read(iprot);
-                  this.success.add(_elem88);
+                  SearchQueryStatus _elem92;
+                  _elem92 = new SearchQueryStatus();
+                  _elem92.read(iprot);
+                  this.success.add(_elem92);
                 }
                 iprot.readListEnd();
               }
@@ -7428,9 +7428,9 @@ public class BlurSearch {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (SearchQueryStatus _iter89 : this.success)
+          for (SearchQueryStatus _iter93 : this.success)
           {
-            _iter89.write(oprot);
+            _iter93.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -9080,13 +9080,13 @@ public class BlurSearch {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list90 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list90.size);
-                for (int _i91 = 0; _i91 < _list90.size; ++_i91)
+                TList _list94 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list94.size);
+                for (int _i95 = 0; _i95 < _list94.size; ++_i95)
                 {
-                  String _elem92;
-                  _elem92 = iprot.readString();
-                  this.success.add(_elem92);
+                  String _elem96;
+                  _elem96 = iprot.readString();
+                  this.success.add(_elem96);
                 }
                 iprot.readListEnd();
               }
@@ -9120,9 +9120,9 @@ public class BlurSearch {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter93 : this.success)
+          for (String _iter97 : this.success)
           {
-            oprot.writeString(_iter93);
+            oprot.writeString(_iter97);
           }
           oprot.writeListEnd();
         }

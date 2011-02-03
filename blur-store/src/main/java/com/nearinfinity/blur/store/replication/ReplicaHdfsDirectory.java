@@ -26,9 +26,10 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     private LocalIOWrapper wrapper;
     private ReplicationDaemon replicationDaemon;
 
-    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable)
+    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, 
+            LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon)
             throws IOException {
-        this(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, new LocalIOWrapper() {
+        this(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, replicationDaemon, new LocalIOWrapper() {
             @Override
             public IndexOutput wrapOutput(IndexOutput indexOutput) {
                 return indexOutput;
@@ -42,10 +43,10 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
-            LockFactory lockFactory, Progressable progressable, final LocalIOWrapper wrapper) throws IOException {
-        super(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory);
+            LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, final LocalIOWrapper wrapper) throws IOException {
+        super(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable);
         this.wrapper = wrapper;
-        this.replicationDaemon = new ReplicationDaemon(dirName, this, localFileCache, wrapper, progressable);
+        this.replicationDaemon = replicationDaemon;
     }
 
     @Override
@@ -109,7 +110,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
                 resetLocal(replicaIndexInput);
                 // increment error after base read because index files might be bad
                 long numberOfErrors = replicaIndexInput.errorCounter.incrementAndGet();
-                LOG.error("Error reading from local [" + replicaIndexInput.name + "] at position [" + filePointer
+                LOG.error("Error reading from local [" + replicaIndexInput.fileName + "] at position [" + filePointer
                         + "], this file has errored out [" + numberOfErrors + "]");
             }
         }        
@@ -120,7 +121,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         try {
             replicaIndexInput.localInput.get().close();
         } catch (IOException e) {
-            LOG.error("Error trying to close file [" + replicaIndexInput.name + "] because needs to be replicated again.");
+            LOG.error("Error trying to close file [" + replicaIndexInput.fileName + "] because needs to be replicated again.");
         }
         replicaIndexInput.localInput.set(null);
         replicaIndexInput.localInputRef = null;
@@ -149,13 +150,13 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     private void replicate(ReplicaIndexInput replicaIndexInput) {
-        replicationDaemon.replicate(replicaIndexInput);
+        replicationDaemon.replicate(this, replicaIndexInput);
     }
 
     protected void close(ReplicaIndexInput replicaIndexInput) throws IOException {
         AtomicReference<IndexInput> baseInput = replicaIndexInput.baseInput;
         AtomicReference<IndexInput> localInput = replicaIndexInput.localInput;
-        String name = replicaIndexInput.name;
+        String name = replicaIndexInput.fileName;
         synchronized (baseInput) {
             IndexInput baseIndexInput = baseInput.get();
             IndexInput localIndexInput = localInput.get();
@@ -182,16 +183,18 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         protected IndexInput baseInputClone;
         protected IndexInput localInputClone;
 
-        private long length;
-        private boolean clone;
-        private ReplicaHdfsDirectory directory;
-        protected String name;
+        protected long length;
+        protected boolean clone;
+        protected ReplicaHdfsDirectory directory;
+        protected String fileName;
+        protected String dirName;
 
         public ReplicaIndexInput(String name, long length, int bufferSize, ReplicaHdfsDirectory directory) {
             super(bufferSize);
             this.length = length;
             this.directory = directory;
-            this.name = name;
+            this.fileName = name;
+            this.dirName = directory.dirName;
         }
 
         @Override
@@ -230,7 +233,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
 
         @Override
         public String toString() {
-            return "IndexInput {" + directory.dirName + "/" + name + "}";
+            return "IndexInput {" + directory.dirName + "/" + fileName + "}";
         }
     }
 

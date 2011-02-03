@@ -30,6 +30,7 @@ import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.store.cache.HdfsExistenceCheck;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
@@ -81,6 +82,8 @@ public class ThriftBlurShardServer {
         
         LockFactory lockFactory = new NoLockFactory();
         
+        ReplicationDaemon replicationDaemon = new ReplicationDaemon(localFileCache);
+        
         HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
@@ -89,6 +92,7 @@ public class ThriftBlurShardServer {
         indexServer.setBlurBasePath(blurBasePath);
         indexServer.setNodeName(nodeName);
         indexServer.setDistributedManager(dzk);
+        indexServer.setReplicationDaemon(replicationDaemon);
         indexServer.init();
         
         IndexManager indexManager = new IndexManager();

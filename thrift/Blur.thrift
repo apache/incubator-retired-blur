@@ -73,7 +73,8 @@ struct Selector {
   1:string locationId,
   2:bool recordOnly,
   3:set<string> columnFamilies,
-  4:map<string,set<string>> columns
+  4:map<string,set<string>> columns,
+  5:set<string> superKeys
 }
 
 struct Facet {

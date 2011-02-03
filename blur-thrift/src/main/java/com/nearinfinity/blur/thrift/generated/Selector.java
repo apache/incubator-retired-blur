@@ -33,18 +33,21 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   private static final TField RECORD_ONLY_FIELD_DESC = new TField("recordOnly", TType.BOOL, (short)2);
   private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.SET, (short)3);
   private static final TField COLUMNS_FIELD_DESC = new TField("columns", TType.MAP, (short)4);
+  private static final TField SUPER_KEYS_FIELD_DESC = new TField("superKeys", TType.SET, (short)5);
 
   public String locationId;
   public boolean recordOnly;
   public Set<String> columnFamilies;
   public Map<String,Set<String>> columns;
+  public Set<String> superKeys;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     LOCATION_ID((short)1, "locationId"),
     RECORD_ONLY((short)2, "recordOnly"),
     COLUMN_FAMILIES((short)3, "columnFamilies"),
-    COLUMNS((short)4, "columns");
+    COLUMNS((short)4, "columns"),
+    SUPER_KEYS((short)5, "superKeys");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
           return COLUMN_FAMILIES;
         case 4: // COLUMNS
           return COLUMNS;
+        case 5: // SUPER_KEYS
+          return SUPER_KEYS;
         default:
           return null;
       }
@@ -125,6 +130,9 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
             new FieldValueMetaData(TType.STRING), 
             new SetMetaData(TType.SET, 
                 new FieldValueMetaData(TType.STRING)))));
+    tmpMap.put(_Fields.SUPER_KEYS, new FieldMetaData("superKeys", TFieldRequirementType.DEFAULT, 
+        new SetMetaData(TType.SET, 
+            new FieldValueMetaData(TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
@@ -136,7 +144,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     String locationId,
     boolean recordOnly,
     Set<String> columnFamilies,
-    Map<String,Set<String>> columns)
+    Map<String,Set<String>> columns,
+    Set<String> superKeys)
   {
     this();
     this.locationId = locationId;
@@ -144,6 +153,7 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     setRecordOnlyIsSet(true);
     this.columnFamilies = columnFamilies;
     this.columns = columns;
+    this.superKeys = superKeys;
   }
 
   /**
@@ -181,6 +191,13 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       }
       this.columns = __this__columns;
     }
+    if (other.isSetSuperKeys()) {
+      Set<String> __this__superKeys = new HashSet<String>();
+      for (String other_element : other.superKeys) {
+        __this__superKeys.add(other_element);
+      }
+      this.superKeys = __this__superKeys;
+    }
   }
 
   public Selector deepCopy() {
@@ -194,6 +211,7 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     this.recordOnly = false;
     this.columnFamilies = null;
     this.columns = null;
+    this.superKeys = null;
   }
 
   public String getLocationId() {
@@ -317,6 +335,45 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     }
   }
 
+  public int getSuperKeysSize() {
+    return (this.superKeys == null) ? 0 : this.superKeys.size();
+  }
+
+  public java.util.Iterator<String> getSuperKeysIterator() {
+    return (this.superKeys == null) ? null : this.superKeys.iterator();
+  }
+
+  public void addToSuperKeys(String elem) {
+    if (this.superKeys == null) {
+      this.superKeys = new HashSet<String>();
+    }
+    this.superKeys.add(elem);
+  }
+
+  public Set<String> getSuperKeys() {
+    return this.superKeys;
+  }
+
+  public Selector setSuperKeys(Set<String> superKeys) {
+    this.superKeys = superKeys;
+    return this;
+  }
+
+  public void unsetSuperKeys() {
+    this.superKeys = null;
+  }
+
+  /** Returns true if field superKeys is set (has been asigned a value) and false otherwise */
+  public boolean isSetSuperKeys() {
+    return this.superKeys != null;
+  }
+
+  public void setSuperKeysIsSet(boolean value) {
+    if (!value) {
+      this.superKeys = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LOCATION_ID:
@@ -351,6 +408,14 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       }
       break;
 
+    case SUPER_KEYS:
+      if (value == null) {
+        unsetSuperKeys();
+      } else {
+        setSuperKeys((Set<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -367,6 +432,9 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
 
     case COLUMNS:
       return getColumns();
+
+    case SUPER_KEYS:
+      return getSuperKeys();
 
     }
     throw new IllegalStateException();
@@ -387,6 +455,8 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       return isSetColumnFamilies();
     case COLUMNS:
       return isSetColumns();
+    case SUPER_KEYS:
+      return isSetSuperKeys();
     }
     throw new IllegalStateException();
   }
@@ -437,6 +507,15 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       if (!(this_present_columns && that_present_columns))
         return false;
       if (!this.columns.equals(that.columns))
+        return false;
+    }
+
+    boolean this_present_superKeys = true && this.isSetSuperKeys();
+    boolean that_present_superKeys = true && that.isSetSuperKeys();
+    if (this_present_superKeys || that_present_superKeys) {
+      if (!(this_present_superKeys && that_present_superKeys))
+        return false;
+      if (!this.superKeys.equals(that.superKeys))
         return false;
     }
 
@@ -492,6 +571,16 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     }
     if (isSetColumns()) {
       lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetSuperKeys()).compareTo(typedOther.isSetSuperKeys());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSuperKeys()) {
+      lastComparison = TBaseHelper.compareTo(this.superKeys, typedOther.superKeys);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -574,6 +663,23 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 5: // SUPER_KEYS
+          if (field.type == TType.SET) {
+            {
+              TSet _set48 = iprot.readSetBegin();
+              this.superKeys = new HashSet<String>(2*_set48.size);
+              for (int _i49 = 0; _i49 < _set48.size; ++_i49)
+              {
+                String _elem50;
+                _elem50 = iprot.readString();
+                this.superKeys.add(_elem50);
+              }
+              iprot.readSetEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -601,9 +707,9 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
       {
         oprot.writeSetBegin(new TSet(TType.STRING, this.columnFamilies.size()));
-        for (String _iter48 : this.columnFamilies)
+        for (String _iter51 : this.columnFamilies)
         {
-          oprot.writeString(_iter48);
+          oprot.writeString(_iter51);
         }
         oprot.writeSetEnd();
       }
@@ -613,19 +719,31 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.columns.size()));
-        for (Map.Entry<String, Set<String>> _iter49 : this.columns.entrySet())
+        for (Map.Entry<String, Set<String>> _iter52 : this.columns.entrySet())
         {
-          oprot.writeString(_iter49.getKey());
+          oprot.writeString(_iter52.getKey());
           {
-            oprot.writeSetBegin(new TSet(TType.STRING, _iter49.getValue().size()));
-            for (String _iter50 : _iter49.getValue())
+            oprot.writeSetBegin(new TSet(TType.STRING, _iter52.getValue().size()));
+            for (String _iter53 : _iter52.getValue())
             {
-              oprot.writeString(_iter50);
+              oprot.writeString(_iter53);
             }
             oprot.writeSetEnd();
           }
         }
         oprot.writeMapEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    if (this.superKeys != null) {
+      oprot.writeFieldBegin(SUPER_KEYS_FIELD_DESC);
+      {
+        oprot.writeSetBegin(new TSet(TType.STRING, this.superKeys.size()));
+        for (String _iter54 : this.superKeys)
+        {
+          oprot.writeString(_iter54);
+        }
+        oprot.writeSetEnd();
       }
       oprot.writeFieldEnd();
     }
@@ -663,6 +781,14 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       sb.append("null");
     } else {
       sb.append(this.columns);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("superKeys:");
+    if (this.superKeys == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.superKeys);
     }
     first = false;
     sb.append(")");

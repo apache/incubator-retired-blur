@@ -315,8 +315,11 @@ public class IndexManager implements BlurConstants {
                     return FieldSelectorResult.LOAD;
                 }
                 String columnFamily = getColumnFamily(fieldName);
-                if (selector.columnFamilies != null && selector.columnFamilies.contains(columnFamily)) {
-                    return FieldSelectorResult.LOAD;
+                if (selector.columnFamilies != null) {
+                    if (selector.columnFamilies.contains(columnFamily)) {
+                        return FieldSelectorResult.LOAD;
+                    }
+                    return FieldSelectorResult.NO_LOAD;
                 }
                 String columnName = getColumnName(fieldName);
                 if (selector.columns != null) {

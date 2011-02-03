@@ -50,12 +50,26 @@ public class TestReplica {
         LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
         localFileCache.open();
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), new Progressable() {
+        
+        Progressable progressable = new Progressable() {
             @Override
             public void progress() {
-//                System.out.println("go");
             }
-        });
+        };
+        
+        ReplicationDaemon replicationDaemon = new ReplicationDaemon(localFileCache, new LocalIOWrapper() {
+            @Override
+            public IndexOutput wrapOutput(IndexOutput fileIndexOutput) {
+                return fileIndexOutput;
+            }
+            
+            @Override
+            public IndexInput wrapInput(IndexInput fileIndexInput) {
+                return fileIndexInput;
+            }
+        }, progressable);
+        
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), progressable, replicationDaemon);
         
 //        WritableHdfsDirectory directory = new WritableHdfsDirectory("table-shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), new Progressable() {
 //            @Override

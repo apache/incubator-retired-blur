@@ -359,16 +359,16 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
         case 2: // COUNTS
           if (field.type == TType.MAP) {
             {
-              TMap _map55 = iprot.readMapBegin();
-              this.counts = new HashMap<Facet,Long>(2*_map55.size);
-              for (int _i56 = 0; _i56 < _map55.size; ++_i56)
+              TMap _map59 = iprot.readMapBegin();
+              this.counts = new HashMap<Facet,Long>(2*_map59.size);
+              for (int _i60 = 0; _i60 < _map59.size; ++_i60)
               {
-                Facet _key57;
-                long _val58;
-                _key57 = new Facet();
-                _key57.read(iprot);
-                _val58 = iprot.readI64();
-                this.counts.put(_key57, _val58);
+                Facet _key61;
+                long _val62;
+                _key61 = new Facet();
+                _key61.read(iprot);
+                _val62 = iprot.readI64();
+                this.counts.put(_key61, _val62);
               }
               iprot.readMapEnd();
             }
@@ -400,10 +400,10 @@ public class FacetResult implements TBase<FacetResult, FacetResult._Fields>, jav
       oprot.writeFieldBegin(COUNTS_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRUCT, TType.I64, this.counts.size()));
-        for (Map.Entry<Facet, Long> _iter59 : this.counts.entrySet())
+        for (Map.Entry<Facet, Long> _iter63 : this.counts.entrySet())
         {
-          _iter59.getKey().write(oprot);
-          oprot.writeI64(_iter59.getValue());
+          _iter63.getKey().write(oprot);
+          oprot.writeI64(_iter63.getValue());
         }
         oprot.writeMapEnd();
       }

@@ -24,6 +24,7 @@ import org.apache.lucene.store.LockFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.LuceneIndexFileComparator;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
+import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
@@ -34,6 +35,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private Map<String,Map<String,Long>> cleanupMap = new ConcurrentHashMap<String, Map<String,Long>>();
     private LocalFileCache localFileCache;
     private LockFactory lockFactory;
+    private ReplicationDaemon replicationDaemon;
     
     @Override
     public void close() {
@@ -61,7 +63,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
             public void progress() {
                 //do nothing for now
             }
-        });
+        }, replicationDaemon);
         touchFiles(directory,table,shard);
         return IndexReader.open(directory);
     }
@@ -162,5 +164,13 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     public void setLockFactory(LockFactory lockFactory) {
         this.lockFactory = lockFactory;
+    }
+
+    public ReplicationDaemon getReplicationDaemon() {
+        return replicationDaemon;
+    }
+
+    public void setReplicationDaemon(ReplicationDaemon replicationDaemon) {
+        this.replicationDaemon = replicationDaemon;
     }
 }

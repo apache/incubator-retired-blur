@@ -426,14 +426,14 @@ public class FacetQuery implements TBase<FacetQuery, FacetQuery._Fields>, java.i
         case 2: // FACETS
           if (field.type == TType.LIST) {
             {
-              TList _list51 = iprot.readListBegin();
-              this.facets = new ArrayList<Facet>(_list51.size);
-              for (int _i52 = 0; _i52 < _list51.size; ++_i52)
+              TList _list55 = iprot.readListBegin();
+              this.facets = new ArrayList<Facet>(_list55.size);
+              for (int _i56 = 0; _i56 < _list55.size; ++_i56)
               {
-                Facet _elem53;
-                _elem53 = new Facet();
-                _elem53.read(iprot);
-                this.facets.add(_elem53);
+                Facet _elem57;
+                _elem57 = new Facet();
+                _elem57.read(iprot);
+                this.facets.add(_elem57);
               }
               iprot.readListEnd();
             }
@@ -473,9 +473,9 @@ public class FacetQuery implements TBase<FacetQuery, FacetQuery._Fields>, java.i
       oprot.writeFieldBegin(FACETS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.facets.size()));
-        for (Facet _iter54 : this.facets)
+        for (Facet _iter58 : this.facets)
         {
-          _iter54.write(oprot);
+          _iter58.write(oprot);
         }
         oprot.writeListEnd();
       }

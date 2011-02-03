@@ -23,7 +23,6 @@ public class SearchStatusManager {
     private Timer searchStatusCleanupTimer;
     private long searchStatusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(60);
     private ConcurrentHashMap<SearchStatus, Object> currentSearchStatusCollection = new ConcurrentHashMap<SearchStatus, Object>();
-    
 
     public void init() {
         searchStatusCleanupTimer = new Timer("Search-Status-Cleanup",true);
@@ -62,7 +61,7 @@ public class SearchStatusManager {
     }
     
     private void cleanupFinishedSearchStatuses() {
-        LOG.info("SearchStatus Start count [" + currentSearchStatusCollection.size() + "].");
+        LOG.debug("SearchStatus Start count [" + currentSearchStatusCollection.size() + "].");
         Iterator<SearchStatus> iterator = currentSearchStatusCollection.keySet().iterator();
         while (iterator.hasNext()) {
             SearchStatus status = iterator.next();
@@ -70,7 +69,7 @@ public class SearchStatusManager {
                 currentSearchStatusCollection.remove(status);
             }
         }
-        LOG.info("SearchStatus Finish count [" + currentSearchStatusCollection.size() + "].");
+        LOG.debug("SearchStatus Finish count [" + currentSearchStatusCollection.size() + "].");
     }
 
     public long getSearchStatusCleanupTimerDelay() {

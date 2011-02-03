@@ -2,10 +2,10 @@ package com.nearinfinity.blur.store.replication;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
@@ -26,17 +26,36 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     private static final Log LOG = LogFactory.getLog(ReplicationDaemon.class);
     
     static class RepliaWorkUnit {
-        ReplicaIndexInput input;
+        ReplicaIndexInput replicaIndexInput;
         ReplicaHdfsDirectory directory;
+        IndexInput source;
+        IndexOutput output;
+        File localFile;
+        long startTime;
+        long length;
+        long readCount;
+        boolean finished;
+        public long lastStatus;
     }
+    
+    static class RepliaWorkUnitCompartor implements Comparator<RepliaWorkUnit> {
+        
+        private LuceneIndexFileComparator comparator = new LuceneIndexFileComparator();
+
+        @Override
+        public int compare(RepliaWorkUnit o1, RepliaWorkUnit o2) {
+            return comparator.compare(o1.replicaIndexInput.fileName, o2.replicaIndexInput.fileName);
+        }
+    } 
     
     private Timer daemon;
     private LocalIOWrapper wrapper;
     private long period = TimeUnit.SECONDS.toMillis(1);
+    private int numberOfBlocksToMovePerPass = 16;
 
     private LocalFileCache localFileCache;
     private Progressable progressable;
-    private BlockingQueue<RepliaWorkUnit> replicaQueue = new LinkedBlockingQueue<RepliaWorkUnit>();
+    private PriorityBlockingQueue<RepliaWorkUnit> replicaQueue = new PriorityBlockingQueue<RepliaWorkUnit>(1024, new RepliaWorkUnitCompartor());
 
     private volatile String beingProcessedName;
 
@@ -72,82 +91,104 @@ public class ReplicationDaemon extends TimerTask implements Constants {
             while (!replicaQueue.isEmpty()) {
                 RepliaWorkUnit workUnit = replicaQueue.take();
                 ReplicaHdfsDirectory directory = workUnit.directory;
-                ReplicaIndexInput replicaIndexInput = workUnit.input;
+                ReplicaIndexInput replicaIndexInput = workUnit.replicaIndexInput;
                 String fileName = replicaIndexInput.fileName;
                 String dirName = replicaIndexInput.dirName;
-                
                 beingProcessedName = fileName;
-                LOG.info("Replicating to local machine [" + replicaIndexInput + "]");
-                IndexInput hdfsInput = directory.openFromHdfs(fileName, BUFFER_SIZE);
-                hdfsInput.seek(0);
-                
-                File localFile = localFileCache.getLocalFile(dirName, fileName);
-                if (localFile.exists()) {
-                    if (!localFile.delete()) {
-                        LOG.error("Error trying to delete existing file during replication [" + localFile + "]");
+                if (workUnit.source == null) {
+                    LOG.info("Setup for replicating [" + replicaIndexInput + "] to local machine.");
+                    workUnit.source = directory.openFromHdfs(fileName, BUFFER_SIZE);
+                    workUnit.source.seek(0);
+                    workUnit.localFile = localFileCache.getLocalFile(dirName, fileName);
+                    if (workUnit.localFile.exists()) {
+                        if (!workUnit.localFile.delete()) {
+                            LOG.error("Error trying to delete existing file during replication [" + workUnit.localFile + "]");
+                        }
                     }
+                    workUnit.output = wrapper.wrapOutput(new FileIndexOutput(progressable,workUnit.localFile));
+                    workUnit.startTime = System.currentTimeMillis();
+                    workUnit.length = workUnit.source.length();
                 }
-                IndexOutput indexOutput = wrapper.wrapOutput(new FileIndexOutput(progressable,localFile));
-                copy(replicaIndexInput, hdfsInput, indexOutput, buffer);
-                IndexInput localInput = wrapper.wrapInput(new FileIndexInput(localFile, BUFFER_SIZE));
-                replicaIndexInput.localInput.set(localInput);
+                copy(workUnit, buffer);
+                if (!workUnit.finished) {
+                    replicaQueue.put(workUnit);
+                } else {
+                    close(workUnit.source,workUnit.output);
+                    IndexInput localInput = wrapper.wrapInput(new FileIndexInput(workUnit.localFile, BUFFER_SIZE));
+                    replicaIndexInput.localInput.set(localInput);
+                }
                 beingProcessedName = null;
             }
         } catch (Exception e) {
             LOG.error("Error during local replication.", e);
         }
     }
+    
 
-    private void copy(ReplicaIndexInput replicaIndexInput, IndexInput is, IndexOutput os, byte[] buffer) throws IOException {
+    private void close(IndexInput source, IndexOutput output) throws IOException {
         try {
-            long start = System.currentTimeMillis();
-            long s = start;
-            // and copy to dest directory
-            long len = is.length();
-            long readCount = 0;
-            while (readCount < len) {
-                if (s + 1000 < System.currentTimeMillis()) {
-                    logStatus(readCount, len, start, replicaIndexInput);
-                    s = System.currentTimeMillis();
-                }
-                int toRead = readCount + buffer.length > len ? (int) (len - readCount) : buffer.length;
-                is.readBytes(buffer, 0, toRead);
-                os.writeBytes(buffer, toRead);
-                readCount += toRead;
+            if (output != null) {
+                output.close();
             }
-            logStatus(readCount, len, start, replicaIndexInput);
         } finally {
-            // graceful cleanup
-            try {
-                if (os != null) {
-                    os.close();
-                }
-            } finally {
-                if (is != null) {
-                    is.close();
-                }
+            if (source != null) {
+                source.close();
             }
         }
     }
 
-    private void logStatus(long currentPosition, long totalLength, long startTime, ReplicaIndexInput replicaIndexInput) {
+    private void copy(RepliaWorkUnit repliaWorkUnit, byte[] buffer) throws IOException {
+        if (isFinished(repliaWorkUnit)) {
+            repliaWorkUnit.finished = true;
+            logStatus(repliaWorkUnit);
+            return;
+        }
+        for (int i = 0; i < numberOfBlocksToMovePerPass; i++) {
+            int toRead = repliaWorkUnit.readCount + buffer.length > repliaWorkUnit.length ? (int) (repliaWorkUnit.length - repliaWorkUnit.readCount) : buffer.length;
+            repliaWorkUnit.source.readBytes(buffer, 0, toRead);
+            repliaWorkUnit.output.writeBytes(buffer, toRead);
+            repliaWorkUnit.readCount += toRead;
+            if (isFinished(repliaWorkUnit)) {
+                repliaWorkUnit.finished = true;
+                logStatus(repliaWorkUnit);
+                return;
+            }
+        }
+        logStatus(repliaWorkUnit);
+    }
+
+    private boolean isFinished(RepliaWorkUnit repliaWorkUnit) {
+        if (repliaWorkUnit.readCount < repliaWorkUnit.length) {
+            return false;
+        }
+        return true;
+    }
+
+    private void logStatus(RepliaWorkUnit workUnit) {
         long now = System.currentTimeMillis();
-        double seconds = (now - startTime) / 1000.0;
-        double totalMBytes = totalLength / (1024.0 * 1024.0);
-        double currentMBytes = currentPosition / (1024.0 * 1024.0);
+        if (workUnit.lastStatus + TimeUnit.SECONDS.toMillis(10) >= now) {
+            return;
+        }
+        workUnit.lastStatus = now;
+        long totalTime = now - workUnit.startTime;
+        double seconds = (totalTime == 0 ? 1 : totalTime) / 1000.0;
+        double totalMBytes = workUnit.length / (1024.0 * 1024.0);
+        double currentMBytes = workUnit.readCount / (1024.0 * 1024.0);
         
         int percentComplete = (int) Math.round(currentMBytes / totalMBytes * 100.0);
         double mByteRate = currentMBytes / seconds;
-        
-        LOG.info("Replication of [" + replicaIndexInput + "] is [" + percentComplete + 
-        		"%] complete, at a rate of [" + mByteRate + 
-        		"] MB/s");
-        
+
+        if (workUnit.finished) {
+            LOG.info("Replication Complete of [" + workUnit.replicaIndexInput + "] at a rate of [" + mByteRate + "] MB/s");
+        } else {
+            LOG.info("Replication of [" + workUnit.replicaIndexInput + "] is [" + percentComplete + 
+                    "%] complete, at a rate of [" + mByteRate + "] MB/s");
+        }
     }
 
     public void replicate(ReplicaHdfsDirectory directory, ReplicaIndexInput replicaIndexInput) {
         RepliaWorkUnit unit = new RepliaWorkUnit();
-        unit.input = replicaIndexInput;
+        unit.replicaIndexInput = replicaIndexInput;
         unit.directory = directory;
         replicaQueue.add(unit);
     }

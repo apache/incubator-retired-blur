@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -21,7 +22,8 @@ import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 public class BlurClientManager {
     
     private static final Log LOG = LogFactory.getLog(BlurClientManager.class);
-    private static final int MAX_RETIRES = 2;
+    private static final int MAX_RETIRES = 10;
+    private static final long BACK_OFF_TIME = TimeUnit.MILLISECONDS.toMillis(250);
     
     private static Map<String,BlockingQueue<Client>> clientPool = new ConcurrentHashMap<String, BlockingQueue<Client>>();
     
@@ -35,33 +37,22 @@ public class BlurClientManager {
             }
             try {
                 return command.call((CLIENT) client);
-            } catch (TTransportException e) {
+            } catch (Exception e) {
+                trashClient(connectionStr, client);
+                client = null;
                 if (retries >= MAX_RETIRES) {
                     LOG.error("No more retries [" + retries + "] out of [" + MAX_RETIRES + "]");
                     throw e;
                 }
-                if (equals(e.getType(),TTransportException.NOT_OPEN,TTransportException.TIMED_OUT,TTransportException.UNKNOWN)) {
-                    LOG.error("Trash client [" + client + "] retry [" + retries + "] out of [" + MAX_RETIRES + "]", e);
-                    trashClient(connectionStr, client);
-                    client = null;
-                }
                 retries++;
-                LOG.error("Retrying call [" + client + "] retry [" + retries + "] out of [" + MAX_RETIRES + "]", e);
+                LOG.error("Retrying call [" + command + "] retry [" + retries + "] out of [" + MAX_RETIRES + "] message [" + e.getMessage() + "]");
+                Thread.sleep(BACK_OFF_TIME);
             } finally {
                 if (client != null) {
                     returnClient(connectionStr, client);
                 }
             }
         }
-    }
-
-    private static boolean equals(int i, int... ors) {
-        for (int o : ors) {
-            if (i == o) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private static void returnClient(String connectionStr, Client client) throws InterruptedException {

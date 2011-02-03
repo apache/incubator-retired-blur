@@ -21,10 +21,6 @@ public class MergerHitsIterable implements Merger<HitsIterable> {
         HitsIterableMultiple iterable = new HitsIterableMultiple();
         while (service.getRemainingCount() > 0) {
             Future<HitsIterable> future = service.poll(maxQueryTime, TimeUnit.MILLISECONDS);
-//            if (future == null) {
-//                //@todo this is wrong, please fix
-//                continue;
-//            }
             iterable.addHitsIterable(future.get());
             if (iterable.getTotalHits() >= minimumNumberOfHits) {
                 return iterable;

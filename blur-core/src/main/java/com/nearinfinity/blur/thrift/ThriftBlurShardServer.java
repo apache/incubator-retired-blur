@@ -3,9 +3,13 @@ package com.nearinfinity.blur.thrift;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +41,7 @@ import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
 
 public class ThriftBlurShardServer {
     
+    public static final String CRAZY = "CRAZY";
     public static final String BLUR_BIND_ADDRESS = "blur.bind.address";
 
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
@@ -59,6 +64,10 @@ public class ThriftBlurShardServer {
         List<File> localFileCaches = new ArrayList<File>();
         for (String cachePath : args[3].split(",")) {
             localFileCaches.add(new File(cachePath));
+        }
+        boolean crazyMode = false;
+        if (args.length == 5 && args[4].equals(CRAZY)) {
+            crazyMode = true;
         }
         
         ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
@@ -105,8 +114,31 @@ public class ThriftBlurShardServer {
         
         ThriftBlurShardServer server = new ThriftBlurShardServer();
         server.setNodeName(nodeName);
-        server.setIface(shardServer);
+        if (crazyMode) {
+            System.err.println("Crazy mode!!!!!");
+            server.setIface(crazyMode(shardServer));            
+        } else {
+            server.setIface(shardServer);
+        }
         server.start();
+    }
+
+    public static Iface crazyMode(final Iface iface) {
+        return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
+                new InvocationHandler() {
+                    private Random random = new Random();
+                    private long strikeTime = System.currentTimeMillis() + 100;
+                    @Override
+                    public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        long now = System.currentTimeMillis();
+                        if (strikeTime < now) {
+                            strikeTime = now + random.nextInt(2000);
+                            System.err.println("Crazy Monkey Strikes!!! Next strike [" + strikeTime + "]");
+                            throw new RuntimeException("Crazy Monkey Strikes!!!");
+                        }
+                        return method.invoke(iface, args);
+                    }
+                });
     }
 
     public void start() throws TTransportException {

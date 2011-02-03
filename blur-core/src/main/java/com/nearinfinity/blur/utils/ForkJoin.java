@@ -1,9 +1,16 @@
 package com.nearinfinity.blur.utils;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class ForkJoin {
+    
+    private static Log LOG = LogFactory.getLog(ForkJoin.class);
 
 	public static interface ParallelCall<INPUT, OUTPUT> {
 		OUTPUT call(INPUT input) throws Exception;
@@ -34,4 +41,13 @@ public class ForkJoin {
 			}
 		};
 	}
+
+    public static <T> T ignoreExecutionException(Future<T> future, T defaultValue) throws InterruptedException {
+        try {
+            return future.get();
+        } catch (ExecutionException e) {
+            LOG.error("Error while trying to execute task [" + e.getMessage() + "]",e);
+            return defaultValue;
+        }
+    }
 }

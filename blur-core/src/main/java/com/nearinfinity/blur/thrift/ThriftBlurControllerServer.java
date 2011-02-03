@@ -40,6 +40,10 @@ public class ThriftBlurControllerServer {
         
         String nodeName = args[0];
         String zkConnectionStr = args[1];
+        boolean crazyMode = false;
+        if (args.length == 3 && args[2].equals(ThriftBlurShardServer.CRAZY)) {
+            crazyMode = true;
+        }
         
         ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
             @Override
@@ -49,12 +53,6 @@ public class ThriftBlurControllerServer {
         
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
-        
-//        ControllerIndexServer indexServer = new ControllerIndexServer();
-//        indexServer.setType(NODE_TYPE.CONTROLLER);
-//        indexServer.setNodeName(nodeName);
-//        indexServer.setDistributedManager(dzk);
-//        indexServer.init();
         
         ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus();
         clusterStatus.setDistributedManager(dzk);
@@ -69,7 +67,12 @@ public class ThriftBlurControllerServer {
         
         ThriftBlurControllerServer server = new ThriftBlurControllerServer();
         server.setNodeName(nodeName);
-        server.setIface(controllerServer);
+        if (crazyMode) {
+            System.err.println("Crazy mode!!!!!");
+            server.setIface(ThriftBlurShardServer.crazyMode(controllerServer));            
+        } else {
+            server.setIface(controllerServer);
+        }
         server.start();
     }
 

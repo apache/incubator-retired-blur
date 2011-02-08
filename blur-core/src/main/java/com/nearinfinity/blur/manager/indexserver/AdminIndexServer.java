@@ -13,14 +13,14 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
@@ -90,11 +90,11 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
 
     protected void warmUpTable(String table) {
         try {
-            LOG.debug("Warmup for table [" + table + "]");
+            LOG.debug("Warmup for table [{0}]",table);
             Map<String, IndexReader> indexReaders = getIndexReaders(table);
-            LOG.debug("Warmup complete for table [" + table + "] shards [" + indexReaders.keySet() + "]");
+            LOG.debug("Warmup complete for table [{0}] shards [{1}]",table,indexReaders.keySet());
         } catch (Exception e) {
-            LOG.error("Warmup error with table [" + table + "]", e);
+            LOG.error("Warmup error with table [{0}]",e,table);
         }
     }
 
@@ -120,12 +120,12 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
         tableList.set(newTables);
         for (String table : newTables) {
             if (!oldTables.contains(table)) {
-                LOG.info("Table [" + table + "] identified.");
+                LOG.info("Table [{0}] identified.",table);
             }
         }
         for (String table : oldTables) {
             if (!newTables.contains(table)) {
-                LOG.info("Table [" + table + "] removed.");
+                LOG.info("Table [{0}] removed.",table);
             }
         }
     }
@@ -142,7 +142,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
                 try {
                     analyzer = BlurAnalyzer.create(new ByteArrayInputStream(value.data));
                 } catch (IOException e) {
-                    LOG.error("Error trying to load analyzer for table [" + table + "], using blank analyzer.");
+                    LOG.error("Error trying to load analyzer for table [{0}], using blank analyzer.",table);
                     analyzer = BLANK_ANALYZER;
                 }
             }
@@ -164,15 +164,13 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
             newMap.put(table, status);
             TABLE_STATUS oldStatus = oldMap.get(table);
             if (oldStatus == null || oldStatus != status) {
-                LOG.info("Table [" + table +
-                		"] change status to [" + status +
-                		"]");
+                LOG.info("Table [{0}] change status to [{1}]",table,status);
             }
         }
         statusMap.set(newMap);
         for (String table : oldMap.keySet()) {
             if (!newMap.containsKey(table)) {
-                LOG.info("Status could not be found for table [" + table + "], possibly removed.");
+                LOG.info("Status could not be found for table [{0}], possibly removed.",table);
             }
         }
     }

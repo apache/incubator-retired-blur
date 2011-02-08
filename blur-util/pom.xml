@@ -7,20 +7,28 @@
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
-	<artifactId>blur-thrift</artifactId>
+	<artifactId>blur-util</artifactId>
 	<packaging>jar</packaging>
-	<name>Blur Thrift</name>
+	<name>Blur Util</name>
 
 	<dependencies>
 		<dependency>
-			<groupId>com.nearinfinity.blur</groupId>
-			<artifactId>blur-util</artifactId>
-			<version>${blur_version}</version>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.incubator</groupId>
-			<artifactId>thrift</artifactId>
-			<version>0.5.0</version>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.6.1</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 

@@ -16,8 +16,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -37,6 +35,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
@@ -103,20 +103,20 @@ public class IndexManager implements BlurConstants {
             String shard = getShard(selector.getLocationId());
             Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
             if (indexReaders == null) {
-                LOG.error("Table [" + table + "] not found");
+                LOG.error("Table [{0}] not found",table);
                 throw new BlurException("Table [" + table + "] not found");
             }
             reader = indexReaders.get(shard);
             if (reader == null) {
                 if (reader == null) {
-                    LOG.error("Shard [" + shard + "] not found in table [" + table + "]");
+                    LOG.error("Shard [{0}] not found in table [{1}]",shard,table);
                     throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]");
                 }
             }
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get the correct index reader for selector [" + selector + "].", e);
+            LOG.error("Unknown error while trying to get the correct index reader for selector [{0}].",e,selector);
             throw new BlurException(e.getMessage());
         }
         try {

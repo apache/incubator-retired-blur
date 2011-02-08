@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -28,6 +26,8 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
@@ -53,8 +53,7 @@ public class ThriftBlurShardServer {
         Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                LOG.error("Unknown error in thread [" + t +
-                		"]",e);
+                LOG.error("Unknown error in thread [{0}]",e,t);
             }
         });
         
@@ -147,7 +146,7 @@ public class ThriftBlurShardServer {
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
         TThreadPoolServer server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
-        LOG.info("Starting server [" + nodeName + "]");
+        LOG.info("Starting server [{0}]",nodeName);
         server.serve();
     }
 

@@ -3,8 +3,6 @@ package com.nearinfinity.blur.thrift;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TFramedTransport;
@@ -15,6 +13,8 @@ import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.thrift.client.BlurClient;
@@ -34,7 +34,7 @@ public class ThriftBlurControllerServer {
         Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                LOG.error("Unknown error in thread [" + t + "]",e);
+                LOG.error("Unknown error in thread [{0}]",e,t);
             }
         });
         
@@ -82,7 +82,7 @@ public class ThriftBlurControllerServer {
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
         TThreadPoolServer server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
-        LOG.info("Starting server [" + nodeName + "]");
+        LOG.info("Starting server [{0}]",nodeName);
         server.serve();
     }
 

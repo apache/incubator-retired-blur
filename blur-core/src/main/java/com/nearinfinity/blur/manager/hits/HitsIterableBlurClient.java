@@ -4,9 +4,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -58,7 +57,7 @@ public class HitsIterableBlurClient implements HitsIterable {
             shardInfo.putAll(hits.shardInfo);
             batch++;
         } catch (Exception e) {
-            LOG.error("Error during for [" + query + "]",e);
+            LOG.error("Error during for [{0}]",e,query);
             throw new RuntimeException(e);
         }
     }

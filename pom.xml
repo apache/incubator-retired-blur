@@ -4,13 +4,30 @@
 	<groupId>com.nearinfinity.blur</groupId>
 	<artifactId>blur</artifactId>
 	<packaging>pom</packaging>
-	<version>1.0.b4</version>
+	<version>${blur_version}</version>
 	<name>Blur</name>
+	
+	<properties>
+		<blur_version>1.0.b8</blur_version>
+	</properties>
+	
 	<modules>
 		<module>blur-core</module>
 		<module>blur-thrift</module>
 		<module>blur-jdbc</module>
 		<module>blur-store</module>
 		<module>blur-mapred</module>
+		<module>blur-writer</module>
+		<module>blur-util</module>
 	</modules>
+	
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.7</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
 </project>

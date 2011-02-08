@@ -1,17 +1,15 @@
 package com.nearinfinity.blur.thrift;
 
-import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.thrift.TException;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
@@ -44,8 +42,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error during search of [" +
-                    getParametersList("table",table, "searchquery", searchQuery) + "]",e);
+            LOG.error("Unknown error during search of [{0}={1},{2}={3}]",e,"table",table, "searchquery", searchQuery);
             throw new BlurException(e.getMessage());
         }
 	}
@@ -60,7 +57,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get fetch row [" + getParametersList("table",table,"selector",selector) + "]",e);
+            LOG.error("Unknown error while trying to get fetch row [{0}={1},{2}={3}]",e,"table",table,"selector",selector);
             throw new BlurException(e.getMessage());
         }
 	}
@@ -70,7 +67,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         try {
             indexManager.cancelSearch(uuid);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to cancel search [" + getParametersList("uuid",uuid) + "]",e);
+            LOG.error("Unknown error while trying to cancel search [{0}={1}]",e,"uuid",uuid);
             throw new BlurException(e.getMessage());
         }
     }
@@ -81,7 +78,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         try {
             return indexManager.currentSearches(table);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get current search status [" + getParametersList("table",table) + "]",e);
+            LOG.error("Unknown error while trying to get current search status [{0}={1}]",e,"table",table);
             throw new BlurException(e.getMessage());
         }
     }
@@ -135,7 +132,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get record frequency for [" + getParametersList("table",table,"facetQuery",facetQuery) + "]",e);
+            LOG.error("Unknown error while trying to get record frequency for [{0}={1},{2}={3}]",e,"table",table,"facetQuery",facetQuery);
             throw new BlurException(e.getMessage());
         }
     }
@@ -148,7 +145,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get record frequency for [" + getParametersList("table",table,"columnFamily",columnFamily,"columnName",columnName,"value",value) + "]",e);
+            LOG.error("Unknown error while trying to get record frequency for [{0}={1},{2}={3},{4}={5},{6}={7}]",e,"table",table,"columnFamily",columnFamily,"columnName",columnName,"value",value);
             throw new BlurException(e.getMessage());
         }
     }
@@ -159,7 +156,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         try {
             return indexManager.schema(table);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get schema for table [" + getParametersList("table") + "]",e);
+            LOG.error("Unknown error while trying to get schema for table [{0}={1}]",e,"table",table);
             throw new BlurException(e.getMessage());
         }
     }
@@ -170,7 +167,7 @@ public class BlurShardServer implements Iface, BlurConstants {
         try {
             return indexManager.terms(table,columnFamily,columnName,startWith,size);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get terms list for [" + getParametersList("table",table,"columnFamily",columnFamily,"columnName",columnName,"startWith",startWith,"size",size) + "]",e);
+            LOG.error("Unknown error while trying to get terms list for [{0}={1},{2}={3},{4}={5},{6}={7},{8}={9}]",e,"table",table,"columnFamily",columnFamily,"columnName",columnName,"startWith",startWith,"size",size);
             throw new BlurException(e.getMessage());
         }
     }

@@ -16,13 +16,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.RAMDirectory;
+
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 
 public abstract class DistributedIndexServer extends AdminIndexServer {
     
@@ -101,15 +102,13 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
             return;
         }
         for (String shard : shardsOpen) {
-            LOG.info("Index for table [" + table +
-            		"] shard [" + shard +
-            		"] needs to be closed");
+            LOG.info("Index for table [{0}] shard [{1}] needs to be closed",table,shard);
             IndexReader indexReader = tableReaders.remove(shard);
             beforeClose(shard,indexReader);
             try {
                 indexReader.close();
             } catch (IOException e) {
-                LOG.error("Error while closing index reader [" + indexReader + "]",e);
+                LOG.error("Error while closing index reader [{0}]",e,indexReader);
             }
             cleanupLocallyCachedIndexes(table,shard);
         }
@@ -161,9 +160,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             } catch (ExecutionException e) {
-                LOG.error("Unknown error while opening shard [" + shard +
-                		"] for table [" + table +
-                		"].",e.getCause());
+                LOG.error("Unknown error while opening shard [{0}] for table [{1}].",e.getCause(),shard,table);
                 result.put(shard, EMPTY_INDEXREADER);
             }
         }

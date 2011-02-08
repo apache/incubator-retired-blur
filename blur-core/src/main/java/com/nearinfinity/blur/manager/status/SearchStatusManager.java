@@ -8,9 +8,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
@@ -61,7 +60,7 @@ public class SearchStatusManager {
     }
     
     private void cleanupFinishedSearchStatuses() {
-        LOG.debug("SearchStatus Start count [" + currentSearchStatusCollection.size() + "].");
+        LOG.debug("SearchStatus Start count [{0}].",currentSearchStatusCollection.size());
         Iterator<SearchStatus> iterator = currentSearchStatusCollection.keySet().iterator();
         while (iterator.hasNext()) {
             SearchStatus status = iterator.next();
@@ -69,7 +68,7 @@ public class SearchStatusManager {
                 currentSearchStatusCollection.remove(status);
             }
         }
-        LOG.debug("SearchStatus Finish count [" + currentSearchStatusCollection.size() + "].");
+        LOG.debug("SearchStatus Finish count [{0}].",currentSearchStatusCollection.size());
     }
 
     public long getSearchStatusCleanupTimerDelay() {

@@ -7,9 +7,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 
 public abstract class ManagedDistributedIndexServer extends DistributedIndexServer implements ZookeeperPathContants {
@@ -77,8 +76,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         try {
             long waitTime =  waitUntil - System.currentTimeMillis();
             if (waitTime > 0L) {
-                LOG.info("Safe Mode On - Will resume in [" + TimeUnit.MILLISECONDS.toSeconds(waitTime) +
-                		"] seconds at [" + new Date(waitUntil) + "]");
+                LOG.info("Safe Mode On - Will resume in [{0}] seconds at [{1}]",TimeUnit.MILLISECONDS.toSeconds(waitTime),new Date(waitUntil));
                 Thread.sleep(waitTime);
                 LOG.info("Safe Mode Off");
             }
@@ -106,7 +104,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
             path = BLUR_ONLINE_CONTROLLERS_PATH;
         }
         while (dm.exists(path,getNodeName())) {
-            LOG.info("Waiting to register myself [" + getNodeName() + "].");
+            LOG.info("Waiting to register myself [{0}].",getNodeName());
             try {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(3));
             } catch (InterruptedException e) {
@@ -115,7 +113,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         }
         dm.createEphemeralPath(path,getNodeName());
         dm.removeEphemeralPathOnShutdown(path,getNodeName());
-        LOG.info("Registered [" + getNodeName() + "].");
+        LOG.info("Registered [{0}].",getNodeName());
     }
 
     private synchronized void pollForState() {
@@ -126,14 +124,12 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         offlineShardNodes.removeAll(onlineShards);
         boolean stateChange = false;
         if (!shardNodes.equals(shards)) {
-            LOG.info("Shard servers in the cluster changed from [" + shards +
-                    "] to [" + shardNodes + "]");
+            LOG.info("Shard servers in the cluster changed from [{0}] to [{1}]",shards,shardNodes);
             stateChange = true;
             shards = shardNodes;
         }
         if (!offlineShardNodes.equals(offlineShards)) {
-            LOG.info("Offline shard servers changed from [" + offlineShards +
-            		"] to [" + offlineShardNodes + "]");
+            LOG.info("Offline shard servers changed from [{0}] to [{1}]",offlineShards,offlineShardNodes);
             stateChange = true;
             offlineShards = offlineShardNodes;
         }

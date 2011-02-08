@@ -51,18 +51,6 @@ public class BlurUtil {
         return treeSet;
     }
     
-    public static String getParametersList(Object... params) {
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < params.length; i+=2) {
-            if (i != 0) {
-                builder.append(',');
-            }
-            builder.append('[').append(params[i]).
-                append(']').append('=').append('[').append(params[i+1]).append(']');
-        }
-        return builder.toString();
-    }
-    
     public static byte[] toBytes(Serializable serializable) {
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

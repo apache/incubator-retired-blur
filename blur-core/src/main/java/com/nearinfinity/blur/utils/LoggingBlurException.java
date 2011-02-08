@@ -1,7 +1,6 @@
 package com.nearinfinity.blur.utils;
 
-import org.apache.commons.logging.Log;
-
+import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 
 public class LoggingBlurException extends BlurException {

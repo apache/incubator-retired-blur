@@ -6,9 +6,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class ZookeeperClusterStatus extends ClusterStatus implements BlurConstants, ZookeeperPathContants {
@@ -61,14 +60,12 @@ public class ZookeeperClusterStatus extends ClusterStatus implements BlurConstan
         offlineShardNodes.removeAll(onlineShards);
 //        boolean stateChange = false;
         if (!shardNodes.equals(shards)) {
-            LOG.info("Shard servers in the cluster changed from [" + shards +
-                    "] to [" + shardNodes + "]");
+            LOG.info("Shard servers in the cluster changed from [{0}] to [{1}]",shards,shardNodes);
 //            stateChange = true;
             shards = shardNodes;
         }
         if (!offlineShardNodes.equals(offlineShards)) {
-            LOG.info("Offline shard servers changed from [" + offlineShards +
-                    "] to [" + offlineShardNodes + "]");
+            LOG.info("Offline shard servers changed from [{0}] to [{1}]",offlineShards,offlineShardNodes);
 //            stateChange = true;
             offlineShards = offlineShardNodes;
         }

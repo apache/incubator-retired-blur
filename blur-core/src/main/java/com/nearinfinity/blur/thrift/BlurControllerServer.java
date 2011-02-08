@@ -1,7 +1,5 @@
 package com.nearinfinity.blur.thrift;
 
-import static com.nearinfinity.blur.utils.BlurUtil.getParametersList;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,10 +14,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.TException;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
 import com.nearinfinity.blur.manager.hits.MergerFacetResult;
@@ -87,7 +85,7 @@ public class BlurControllerServer implements Iface, BlurConstants {
 			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits);
 		} catch (Exception e) {
 			throw new LoggingBlurException(LOG,e,"Unknown error during search of [" +
-                    getParametersList("table",table, "searchquery", searchQuery) + "]");
+                    "table=" + table + "searchquery=" + searchQuery + "]");
 		}
 	}
 	

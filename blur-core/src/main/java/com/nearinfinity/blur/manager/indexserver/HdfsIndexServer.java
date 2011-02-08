@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -21,6 +19,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.LockFactory;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.LuceneIndexFileComparator;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
@@ -49,7 +49,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     @Override
     protected IndexReader openShard(String table, String shard) throws IOException {
-        LOG.info("Opening shard [" + shard + "] for table [" + table + "]");
+        LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
         Path tablePath = new Path(blurBasePath,table);
         if (!exists(tablePath)) {
             throw new FileNotFoundException(tablePath.toString());
@@ -73,10 +73,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         List<String> list = new ArrayList<String>(Arrays.asList(directory.listAll()));
         Collections.sort(list,comparator);
         for (String f : list) {
-            LOG.info("Touching file [" + f +
-            		"] from table [" + table +
-            		"] shard [" + shard + 
-            		"]");
+            LOG.info("Touching file [{0}] from table [{1}] shard [{2}]",f,table,shard);
             IndexInput input = directory.openInput(f);
             if (input.length() > 0) {
                 input.seek(0);
@@ -109,9 +106,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
     @Override
     protected synchronized void cleanupLocallyCachedIndexes(String table, String shard) {
-        LOG.info("Local cleanup added for table [" + table +
-        		"] shard [" + shard + 
-        		"]");
+        LOG.info("Local cleanup added for table [{0}] shard [{1}]",table,shard);
         Map<String, Long> map = cleanupMap.get(table);
         if (map == null) {
             map = new ConcurrentHashMap<String, Long>();
@@ -121,7 +116,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     }
     
     protected static void rm(File file) {
-        LOG.info("Deleting file [" + file + "]");
+        LOG.info("Deleting file [{0}]",file);
         if (file.isDirectory()) {
             for (File f : file.listFiles()) {
                 rm(f);

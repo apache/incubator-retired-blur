@@ -8,8 +8,6 @@ import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -21,6 +19,8 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.util.Constants;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 
@@ -63,7 +63,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (file.exists()) {
             file.delete();
         }
-        LOG.info("Opening local file for writing [" + file.getAbsolutePath() + "]");
+        LOG.info("Opening local file for writing [{0}]",file.getAbsolutePath());
         return new FileIndexOutput(progressable,file);
     }
 
@@ -72,7 +72,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         File file = localFileCache.getLocalFile(dirName, name);
         FSDataOutputStream outputStream = super.getOutputStream(name);
         FileInputStream inputStream = new FileInputStream(file);
-        LOG.info("Syncing local file [" + file.getAbsolutePath() + "] to [" + hdfsDirPath + "]");
+        LOG.info("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
         byte[] buffer = new byte[BUFFER_SIZE];
         int num;
         while ((num = inputStream.read(buffer)) != -1) {

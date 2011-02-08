@@ -20,8 +20,6 @@ package com.nearinfinity.blur.store.lock;
 
 import java.io.IOException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 import org.apache.zookeeper.CreateMode;
@@ -30,6 +28,9 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
+
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class ZookeeperLockFactory extends LockFactory {
@@ -48,7 +49,7 @@ public class ZookeeperLockFactory extends LockFactory {
 
     @Override
     public void clearLock(String lockName) throws IOException {
-        LOG.info("Clearing Lock [" + lockName + "]");
+        LOG.info("Clearing Lock [{0}]",lockName);
     }
 
     @Override

@@ -6,8 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
@@ -15,6 +13,8 @@ import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
@@ -41,11 +41,11 @@ public class BlurClientManager {
                 trashClient(connectionStr, client);
                 client = null;
                 if (retries >= MAX_RETIRES) {
-                    LOG.error("No more retries [" + retries + "] out of [" + MAX_RETIRES + "]");
+                    LOG.error("No more retries [{0}] out of [{1}]",retries,MAX_RETIRES);
                     throw e;
                 }
                 retries++;
-                LOG.error("Retrying call [" + command + "] retry [" + retries + "] out of [" + MAX_RETIRES + "] message [" + e.getMessage() + "]");
+                LOG.error("Retrying call [{0}] retry [{1}] out of [{2}] message [{3}]",command,retries,MAX_RETIRES,e.getMessage());
                 Thread.sleep(BACK_OFF_TIME);
             } finally {
                 if (client != null) {
@@ -88,7 +88,7 @@ public class BlurClientManager {
         try {
             trans.open();
         } catch (Exception e) {
-            LOG.error("Error trying to open connection to [" + connectionStr + "]");
+            LOG.error("Error trying to open connection to [{0}]",connectionStr);
             return null;
         }
         return client;

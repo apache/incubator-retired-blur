@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
@@ -16,6 +14,8 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockFactory;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 
@@ -60,8 +60,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
             if (isLocalFileValid(name)) {
                 input.localInput = new AtomicReference<IndexInput>(wrapper.wrapInput(openFromLocal(name, BUFFER_SIZE)));                
             } else {
-                LOG.error("Local file [" + dirName + "/" + name + 
-                		"] is not valid, opening remote file.");
+                LOG.error("Local file [{0}/{1}] is not valid, opening remote file.",dirName,name);
                 input.localInput = new AtomicReference<IndexInput>();
             }
         } else {
@@ -110,18 +109,17 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
                 resetLocal(replicaIndexInput);
                 // increment error after base read because index files might be bad
                 long numberOfErrors = replicaIndexInput.errorCounter.incrementAndGet();
-                LOG.error("Error reading from local [" + replicaIndexInput.fileName + "] at position [" + filePointer
-                        + "], this file has errored out [" + numberOfErrors + "]");
+                LOG.error("Error reading from local [{0}] at position [{1}], this file has errored out [{2}]",replicaIndexInput.fileName,filePointer,numberOfErrors);
             }
         }        
     }
 
     private void resetLocal(ReplicaIndexInput replicaIndexInput) {
-        LOG.error("Local replica of [" + replicaIndexInput + "] is no longer valid, reseting.");
+        LOG.error("Local replica of [{0}] is no longer valid, reseting.",replicaIndexInput);
         try {
             replicaIndexInput.localInput.get().close();
         } catch (IOException e) {
-            LOG.error("Error trying to close file [" + replicaIndexInput.fileName + "] because needs to be replicated again.");
+            LOG.error("Error trying to close file [{0}] because needs to be replicated again.",replicaIndexInput.fileName);
         }
         replicaIndexInput.localInput.set(null);
         replicaIndexInput.localInputRef = null;
@@ -164,7 +162,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
                 try {
                     localIndexInput.close();
                 } catch (IOException e) {
-                    LOG.error("Error trying to close local file [" + name + "]", e);
+                    LOG.error("Error trying to close local file [{0}]",e,name);
                 }
             }
             baseIndexInput.close();

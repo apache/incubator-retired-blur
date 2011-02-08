@@ -12,8 +12,9 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
+
 
 public class LocalFileCache {
     
@@ -105,20 +106,20 @@ public class LocalFileCache {
                 if (isValid(baseDir)) {
                     fileGc(baseDir);
                 } else {
-                    LOG.info("Dir [" + baseDir + "] is not valid.");
+                    LOG.info("Dir [{0}] is not valid.",baseDir);
                 }
             } catch (Exception e) {
-                LOG.error("Error while trying gc files [" + baseDir.getAbsolutePath() + "].",e);
+                LOG.error("Error while trying gc files [{0}].",e,baseDir.getAbsolutePath());
             }
         }
     }
 
     private void fileGc(File baseDir) {
-        LOG.info("File gc processing base dir [" + baseDir.getAbsolutePath() + "].");
+        LOG.info("File gc processing base dir [{0}].",baseDir.getAbsolutePath());
         for (File dir : baseDir.listFiles()) {
             fileGc(dir.getName(),dir);
             if (isEmpty(dir)) {
-                LOG.info("Dir [" + dir.getAbsolutePath() + "] empty, removing.");
+                LOG.info("Dir [{0}] empty, removing.",dir.getAbsolutePath());
                 dir.delete();
             }
         }
@@ -133,15 +134,15 @@ public class LocalFileCache {
     }
 
     private void fileGc(String dirName, File dir) {
-        LOG.info("File gc processing dir [" + dirName + "] at [" + dir.getAbsolutePath() + "].");
+        LOG.info("File gc processing dir [{0}] at [{1}].",dirName,dir.getAbsolutePath());
         for (File file : dir.listFiles()) {
             try {
                 if (!existenceCheck.existsInBase(dirName,file.getName())) {
-                    LOG.info("Removing file [" + file.getAbsolutePath() + "] in dir [" + dirName + "] at [" + dir.getAbsolutePath() + "].");
+                    LOG.info("Removing file [{0}] in dir [{1}] at [{2}].",file.getAbsolutePath(),dirName,dir.getAbsolutePath());
                     file.delete();
                 }
             } catch (Exception e) {
-                LOG.info("Error while processing file [" + file.getAbsolutePath() + "] in dir [" + dirName + "] at [" + dir.getAbsolutePath() + "].",e);
+                LOG.info("Error while processing file [{0}] in dir [{1}] at [{2}].",e,file.getAbsolutePath(),dirName,dir.getAbsolutePath());
             }
         }
     }

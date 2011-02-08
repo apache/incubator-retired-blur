@@ -8,12 +8,12 @@ import java.util.TimerTask;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.Constants;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexInput;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexOutput;
@@ -96,13 +96,13 @@ public class ReplicationDaemon extends TimerTask implements Constants {
                 String dirName = replicaIndexInput.dirName;
                 beingProcessedName = fileName;
                 if (workUnit.source == null) {
-                    LOG.info("Setup for replicating [" + replicaIndexInput + "] to local machine.");
+                    LOG.info("Setup for replicating [{0}] to local machine.",replicaIndexInput);
                     workUnit.source = directory.openFromHdfs(fileName, BUFFER_SIZE);
                     workUnit.source.seek(0);
                     workUnit.localFile = localFileCache.getLocalFile(dirName, fileName);
                     if (workUnit.localFile.exists()) {
                         if (!workUnit.localFile.delete()) {
-                            LOG.error("Error trying to delete existing file during replication [" + workUnit.localFile + "]");
+                            LOG.error("Error trying to delete existing file during replication [{0}]", workUnit.localFile);
                         }
                     }
                     workUnit.output = wrapper.wrapOutput(new FileIndexOutput(progressable,workUnit.localFile));

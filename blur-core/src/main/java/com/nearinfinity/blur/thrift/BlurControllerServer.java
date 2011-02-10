@@ -10,12 +10,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.thrift.TException;
 
+import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
@@ -47,9 +47,11 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class BlurControllerServer implements Iface, BlurConstants {
 	
-	private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
+	private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
+
+    private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 	
-	private ExecutorService executor = Executors.newCachedThreadPool();
+	private ExecutorService executor = Executors.newCachedThreadPool(CONTROLLER_THREAD_POOL);
 	private AtomicReference<Map<String,Map<String,String>>> shardServerLayout = new AtomicReference<Map<String,Map<String,String>>>(new HashMap<String, Map<String,String>>());
 	private BlurClient client;
 	private long delay = TimeUnit.SECONDS.toMillis(5);

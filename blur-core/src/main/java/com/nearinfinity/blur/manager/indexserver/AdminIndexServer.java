@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -19,6 +18,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -43,7 +43,7 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
      * @return 
      */
     public void init() {
-        executorService = Executors.newCachedThreadPool();
+        executorService = Executors.newCachedThreadPool("admin-index-server");
         dm.createPath(BLUR_TABLES); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();

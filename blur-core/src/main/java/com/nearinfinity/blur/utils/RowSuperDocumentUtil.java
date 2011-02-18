@@ -24,6 +24,9 @@ public class RowSuperDocumentUtil implements BlurConstants {
 		for (Document document : docs) {
 			empty = false;
 			ColumnFamily newColumnFamily = convertToColumnFamily(row, document);
+			if (newColumnFamily == null) {
+			    continue;
+			}
 			String family = newColumnFamily.family;
 			ColumnFamily columnFamily = columnFamilies.get(family);
 			if (columnFamily == null) {
@@ -46,6 +49,7 @@ public class RowSuperDocumentUtil implements BlurConstants {
 		String superColumnId = document.getField(SUPER_KEY).stringValue();
 		Map<String, Column> columns = new HashMap<String, Column>();
 		String superColumnFamily = null;
+		boolean empty = true;
 		for (Fieldable fieldable : document.getFields()) {
 			String name = fieldable.name();
 			int index = name.indexOf(SEP);
@@ -62,7 +66,11 @@ public class RowSuperDocumentUtil implements BlurConstants {
 				column.name = name.substring(index+1);
 				columns.put(name, column);
 			}
+			empty = false;
 			column.addToValues(fieldable.stringValue());
+		}
+		if (empty) {
+		    return null;
 		}
 		ColumnFamily columnFamily = new ColumnFamily().setFamily(superColumnFamily);
 		Set<Column> columnSet = new TreeSet<Column>(BlurConstants.COLUMN_COMPARATOR);

@@ -15,7 +15,9 @@ public class BlurBitSetTest {
     @Test
 	public void testRandomBlurBitSet() {
 		BlurBitSet blurBitSet = new BlurBitSet();
-		populate(blurBitSet,1000000,10000);
+		long seed = getSeed();
+		System.out.println("Running with seed [" + seed + "]");
+        populate(blurBitSet,1000000,100000,new Random(seed));
 		
 		List<Long> setBits = new ArrayList<Long>();
 		long bit = -1;
@@ -31,15 +33,21 @@ public class BlurBitSetTest {
 		}
 	}
 	
+    private long getSeed() {
+        return new Random().nextLong();
+    }
+
     @Test
 	public void testPerformance() {
 		BlurBitSet blurBitSet = new BlurBitSet();
-		populate(blurBitSet,1000000,10000);
+		long seed = getSeed();
+        System.out.println("Running with seed [" + seed + "]");
+		populate(blurBitSet,1000000,10000,new Random(seed));
 		
 		long nextTime = 0;
 		long prevTime = 0;
 		
-		for (int i = 0; i < 1000; i++) {
+		for (int i = 0; i < 100; i++) {
 			long total1 = 0;
 			long bit = -1;
 			long s1 = System.nanoTime();
@@ -64,8 +72,7 @@ public class BlurBitSetTest {
 				"]");
 	}
 
-	private void populate(BlurBitSet blurBitSet, int maxSize, int maxPopulation) {
-		Random random = new Random();
+	private void populate(BlurBitSet blurBitSet, int maxSize, int maxPopulation, Random random) {
 		while (blurBitSet.cardinality() < maxPopulation) {
 			blurBitSet.set(random.nextInt(maxSize));
 		}

@@ -232,12 +232,17 @@ public class SuperQuery extends AbstractWrapperQuery {
 		}
 
 		private int getPrimeDoc(int doc) {
+//		    System.out.println("================================");
+//		    System.out.println("doc=" + doc);
+//		    System.out.println("prevSetBit [" + bitSet.prevSetBit(doc) + "]");
 			while (!bitSet.get(doc)) {
 				doc--;
 				if (doc <= 0) {
+//				    System.out.println("prime [" + 0 + "] but really [" + doc + "]");
 					return 0;
 				}
 			}
+//			System.out.println("prime [" + doc + "]");
 			return doc;
 		}
 

@@ -15,9 +15,11 @@ import org.apache.lucene.store.IndexOutput;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.Constants;
-import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexInput;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexOutput;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.store.indexinput.FileIndexInput;
+import com.nearinfinity.blur.store.indexinput.IndexInputFactory;
+//import com.nearinfinity.blur.store.indexinput.FileIndexInput;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory.ReplicaIndexInput;
 
 
@@ -25,7 +27,7 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     
     private static final Log LOG = LogFactory.getLog(ReplicationDaemon.class);
     
-    static class RepliaWorkUnit {
+    public static class RepliaWorkUnit {
         ReplicaIndexInput replicaIndexInput;
         ReplicaHdfsDirectory directory;
         IndexInput source;
@@ -56,6 +58,13 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     private LocalFileCache localFileCache;
     private Progressable progressable;
     private PriorityBlockingQueue<RepliaWorkUnit> replicaQueue = new PriorityBlockingQueue<RepliaWorkUnit>(1024, new RepliaWorkUnitCompartor());
+    private IndexInputFactory indexInputFactory = new IndexInputFactory() {
+        @Override
+        public void replicationComplete(RepliaWorkUnit workUnit, LocalIOWrapper wrapper, int bufferSize) throws IOException {
+          IndexInput localInput = wrapper.wrapInput(new FileIndexInput(workUnit.localFile, BUFFER_SIZE));
+          workUnit.replicaIndexInput.localInput.set(localInput);
+        }
+    };
 
     private volatile String beingProcessedName;
 
@@ -114,8 +123,7 @@ public class ReplicationDaemon extends TimerTask implements Constants {
                     replicaQueue.put(workUnit);
                 } else {
                     close(workUnit.source,workUnit.output);
-                    IndexInput localInput = wrapper.wrapInput(new FileIndexInput(workUnit.localFile, BUFFER_SIZE));
-                    replicaIndexInput.localInput.set(localInput);
+                    indexInputFactory.replicationComplete(workUnit, wrapper, BUFFER_SIZE);
                 }
                 beingProcessedName = null;
             }

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +88,8 @@ public class AdminIndexServerTest implements ZookeeperPathContants {
 
             @Override
             public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
-                throw new RuntimeException();
+                System.out.println("Do nothing.");
+                return new HashMap<String, IndexReader>();
             }
 
             @Override

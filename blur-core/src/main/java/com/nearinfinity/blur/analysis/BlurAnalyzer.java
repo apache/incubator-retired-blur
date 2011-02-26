@@ -94,8 +94,8 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper implements BlurConstan
 	public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
 		super(defaultAnalyzer);
 		this.originalJsonStr = jsonStr;
-		addAnalyzer(ID, new WhitespaceAnalyzer());
-		addAnalyzer(SUPER_KEY, new WhitespaceAnalyzer());
+		addAnalyzer(ROW_ID, new WhitespaceAnalyzer());
+		addAnalyzer(RECORD_ID, new WhitespaceAnalyzer());
 		addAnalyzer(PRIME_DOC, new WhitespaceAnalyzer());
 	}
 	

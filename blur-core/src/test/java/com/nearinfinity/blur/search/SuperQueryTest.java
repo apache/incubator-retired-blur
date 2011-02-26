@@ -50,8 +50,8 @@ public class SuperQueryTest implements BlurConstants {
 		BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test2").getIndexReaderCache("test2"));
 		TopDocs topDocs = searcher.search(booleanQuery, 10);
 		assertEquals(2, topDocs.totalHits);
-		assertEquals("1",searcher.doc(topDocs.scoreDocs[0].doc).get(ID));
-		assertEquals("3",searcher.doc(topDocs.scoreDocs[1].doc).get(ID));
+		assertEquals("1",searcher.doc(topDocs.scoreDocs[0].doc).get(ROW_ID));
+		assertEquals("3",searcher.doc(topDocs.scoreDocs[1].doc).get(ROW_ID));
 	}
     
     @Test

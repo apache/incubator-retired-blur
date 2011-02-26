@@ -44,9 +44,9 @@ public class RowSuperDocumentUtil implements BlurConstants {
 
 	public static ColumnFamily convertToColumnFamily(Row row, Document document) {
 	    if (row.id == null) {
-	        row.id = document.getField(ID).stringValue();
+	        row.id = document.getField(ROW_ID).stringValue();
 	    }
-		String superColumnId = document.getField(SUPER_KEY).stringValue();
+		String superColumnId = document.getField(RECORD_ID).stringValue();
 		Map<String, Column> columns = new HashMap<String, Column>();
 		String superColumnFamily = null;
 		boolean empty = true;

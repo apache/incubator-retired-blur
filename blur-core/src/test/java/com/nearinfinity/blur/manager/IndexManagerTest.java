@@ -30,20 +30,25 @@ public class IndexManagerTest {
     private IndexServer server;
     private IndexManager indexManager;
 
-    // IndexWriter writer = new IndexWriter(FSDirectory.open(new File("./test-indexes/test1/table/shard2")), new
-    // StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
-    // writer.setSimilarity(new FairSimilarity());
-    // Row row = new Row().setId("2");
-    // ColumnFamily family = new ColumnFamily().setFamily("test-fam");
-    // Set<Column> val = new HashSet<Column>();
-    // Column column = new Column().setName("name");
-    // column.addToValues("value");
-    // val.add(column);
-    // family.putToColumns("id2", val);
-    // row.addToColumnFamilies(family);
-    // IndexManager.replace(writer, row);
-    // writer.close();
-
+//    @BeforeClass
+//    public static void once() throws CorruptIndexException, LockObtainFailedException, IOException {
+//        IndexWriter writer = new IndexWriter(FSDirectory.open(new File("./test-indexes/test1/table/shard1")), new
+//                StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
+//                writer.setSimilarity(new FairSimilarity());
+//                writer.setUseCompoundFile(false);
+//                Row row = new Row().setId("2");
+//                ColumnFamily family = new ColumnFamily().setFamily("test-fam");
+//                Set<Column> val = new HashSet<Column>();
+//                Column column = new Column().setName("name");
+//                column.addToValues("value");
+//                val.add(column);
+//                family.putToColumns("id2", val);
+//                row.addToColumnFamilies(family);
+//                RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30), ""));
+//                indexWriter.replace(row);
+//                writer.close();
+//    }
+    
     @Before
     public void setUp() {
         server = new LocalIndexServer(new File("./test-indexes/test1"));
@@ -84,6 +89,7 @@ public class IndexManagerTest {
         indexManager.fetchRow("table", selector, fetchResult);
         assertNull(fetchResult.row);
         assertNotNull(fetchResult.record);
+        System.out.println(fetchResult.record);
     }
     
     @Test

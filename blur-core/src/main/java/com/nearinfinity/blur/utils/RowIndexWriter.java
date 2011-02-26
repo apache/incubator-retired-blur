@@ -24,8 +24,8 @@ public class RowIndexWriter implements BlurConstants {
     private static final Log LOG = LogFactory.getLog(RowIndexWriter.class);
 
     private static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.NOT_ANALYZED_NO_NORMS);
-    private Field idField = new Field(ID,"",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
-    private Field superKeyField = new Field(SUPER_KEY,"",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+    private Field rowIdField = new Field(ROW_ID,"",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
+    private Field recordIdField = new Field(RECORD_ID,"",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
     private Document document = new Document();
     private BlurAnalyzer analyzer;
     private IndexWriter indexWriter;
@@ -50,8 +50,8 @@ public class RowIndexWriter implements BlurConstants {
     }
 
     private void setupReplace(Row row) throws IOException {
-        idField.setValue(row.id);
-        indexWriter.deleteDocuments(new Term(ID,row.id));
+        rowIdField.setValue(row.id);
+        indexWriter.deleteDocuments(new Term(ROW_ID,row.id));
         primeDocSet = false;
     }
 
@@ -74,15 +74,15 @@ public class RowIndexWriter implements BlurConstants {
             throw new NullPointerException();
         }
         long oldRamSize = indexWriter.ramSizeInBytes();
-        for (String superKey : columns.keySet()) {
-            if (superKey == null) {
+        for (String recordId : columns.keySet()) {
+            if (recordId == null) {
                 continue;
             }
-            superKeyField.setValue(superKey);
+            recordIdField.setValue(recordId);
             document.getFields().clear();
-            document.add(idField);
-            document.add(superKeyField);
-            if (addColumns(columns.get(superKey),family)) {
+            document.add(rowIdField);
+            document.add(recordIdField);
+            if (addColumns(columns.get(recordId),family)) {
                 if (!primeDocSet) {
                     document.add(PRIME_DOC_FIELD);
                     primeDocSet = true;

@@ -240,7 +240,7 @@ public class IndexManager implements BlurConstants {
                 fetchResult.exists = true;
                 fetchResult.deleted = false;
                 String rowId = getRowId(reader, docId);
-                TermDocs termDocs = reader.termDocs(new Term(ID, rowId));
+                TermDocs termDocs = reader.termDocs(new Term(ROW_ID, rowId));
                 fetchResult.row = getRow(new TermDocIterable(termDocs, reader, getFieldSelector(selector)));
                 return;
             }
@@ -253,40 +253,30 @@ public class IndexManager implements BlurConstants {
 
             @Override
             public FieldSelectorResult accept(String fieldName) {
-                if (ID.equals(fieldName)) {
+                if (ROW_ID.equals(fieldName)) {
                     return FieldSelectorResult.LOAD_AND_BREAK;
                 }
                 return FieldSelectorResult.NO_LOAD;
             }
         });
-        return document.get(ID);
+        return document.get(ROW_ID);
     }
 
     private Set<Column> getColumns(Document document) {
         Map<String, Column> columns = new HashMap<String, Column>();
         List<Fieldable> fields = document.getFields();
-        String columnFamily = null;
         for (Fieldable field : fields) {
             String name = field.name();
-            if (columnFamily == null) {
-                columnFamily = getColumnFamily(name);
-            }
             String value = field.stringValue();
             Column column = columns.get(name);
             if (column == null) {
                 column = new Column();
-                column.setName(getColumnName(name));
+                column.setName(name);
                 columns.put(name, column);
             }
             column.addToValues(value);
         }
-        Set<Column> cols = new HashSet<Column>(columns.values());
-        if (columnFamily != null) {
-            Column column = new Column().setName("_columnFamily_");
-            column.addToValues(columnFamily);
-            cols.add(column);
-        }
-        return cols;
+        return new HashSet<Column>(columns.values());
     }
 
     private String getColumnName(String fieldName) {
@@ -303,10 +293,10 @@ public class IndexManager implements BlurConstants {
 
             @Override
             public FieldSelectorResult accept(String fieldName) {
-                if (ID.equals(fieldName)) {
+                if (ROW_ID.equals(fieldName)) {
                     return FieldSelectorResult.LOAD;
                 }
-                if (SUPER_KEY.equals(fieldName)) {
+                if (RECORD_ID.equals(fieldName)) {
                     return FieldSelectorResult.LOAD;
                 }
                 if (PRIME_DOC.equals(fieldName)) {

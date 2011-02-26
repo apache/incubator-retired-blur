@@ -79,10 +79,10 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
                 primeDoc = false;
                 switch (record.getOperation()) {
                 case DELETE_ROW:
-                    writer.deleteDocuments(new Term(ID,record.getId()));
+                    writer.deleteDocuments(new Term(ROW_ID,record.getId()));
                     return;
                 case REPLACE_ROW:
-                    writer.deleteDocuments(new Term(ID,record.getId()));
+                    writer.deleteDocuments(new Term(ROW_ID,record.getId()));
                     break PRIMEDOC;
                 }
             }
@@ -175,8 +175,8 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
 
     protected Document toDocument(BlurRecord record) {
         Document document = new Document();
-        document.add(new Field(ID, record.getId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-        document.add(new Field(SUPER_KEY, record.getSuperKey(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+        document.add(new Field(ROW_ID, record.getId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+        document.add(new Field(RECORD_ID, record.getSuperKey(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
         String columnFamily = record.getColumnFamily();
         for (BlurColumn column : record.getColumns()) {
             addField(columnFamily,document,column);

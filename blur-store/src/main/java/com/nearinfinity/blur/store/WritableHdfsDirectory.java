@@ -141,7 +141,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         return localFileCache.getLocalFile(dirName, name).exists();
     }
 
-    public FileIndexInput openFromLocal(String name, int bufferSize) throws IOException {
+    public IndexInput openFromLocal(String name, int bufferSize) throws IOException {
         if (Constants.WINDOWS) {
             return new FileIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
         } else {

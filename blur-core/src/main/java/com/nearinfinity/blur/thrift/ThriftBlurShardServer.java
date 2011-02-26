@@ -84,7 +84,7 @@ public class ThriftBlurShardServer {
         HdfsExistenceCheck existenceCheck = new HdfsExistenceCheck(fileSystem, blurBasePath);
 
         LocalFileCache localFileCache = new LocalFileCache();
-        localFileCache.setExistenceCheck(existenceCheck);
+        localFileCache.setLocalFileCacheCheck(existenceCheck);
         localFileCache.setPotentialFiles(localFileCaches.toArray(new File[]{}));
         localFileCache.open();
         

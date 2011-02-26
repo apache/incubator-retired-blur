@@ -70,7 +70,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     private synchronized boolean isLocalFileValid(String name) throws IOException {
-        if (replicationDaemon.isBeingReplicated(name)) {
+        if (replicationDaemon.isBeingReplicated(dirName, name)) {
             return false;
         }
         File localFile = localFileCache.getLocalFile(dirName, name);

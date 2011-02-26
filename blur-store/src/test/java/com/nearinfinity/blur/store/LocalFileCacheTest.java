@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
@@ -15,7 +14,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.nearinfinity.blur.store.cache.ExistenceCheck;
+import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 
 public class LocalFileCacheTest {
@@ -63,11 +62,10 @@ public class LocalFileCacheTest {
     public void testGc() throws IOException, InterruptedException {
         LocalFileCache test = new LocalFileCache();
         test.setPotentialFiles(CACHE3_FILE,CACHE4_FILE);
-        test.setGcStartTime(new Date());
         test.setGcWaitPeriod(TimeUnit.SECONDS.toMillis(5));
-        test.setExistenceCheck(new ExistenceCheck() {
+        test.setLocalFileCacheCheck(new LocalFileCacheCheck() {
             @Override
-            public boolean existsInBase(String dirName, String name) throws IOException {
+            public boolean isBeingServed(String dirName, String name) throws IOException {
                 if (name.startsWith("keep")) {
                     return true;
                 }

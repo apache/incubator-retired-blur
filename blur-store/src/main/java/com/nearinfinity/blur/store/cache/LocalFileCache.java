@@ -3,8 +3,6 @@ package com.nearinfinity.blur.store.cache;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
@@ -19,21 +17,20 @@ import com.nearinfinity.blur.log.LogFactory;
 public class LocalFileCache {
     
     private static Log LOG = LogFactory.getLog(LocalFileCache.class);
-    private static final ExistenceCheck DEFAULT_EXISTENCE_CHECK = new ExistenceCheck() {
+    private static final LocalFileCacheCheck DEFAULT_EXISTENCE_CHECK = new LocalFileCacheCheck() {
         @Override
-        public boolean existsInBase(String dirName, String name) {
+        public boolean isBeingServed(String dirName, String name) {
             return true;
         }
     };
     
     private File[] files;
     private Random random = new Random();
-    private ExistenceCheck existenceCheck = DEFAULT_EXISTENCE_CHECK;
+    private LocalFileCacheCheck localFileCacheCheck = DEFAULT_EXISTENCE_CHECK;
     private Timer daemon;
     private File[] potentialDirs;
     private boolean setup = false;
-    private Date gcStartTime = getStartTime();
-    private long gcWaitPeriod = TimeUnit.DAYS.toMillis(1);
+    private long gcWaitPeriod = TimeUnit.HOURS.toMillis(1);
     
     public void open() {
         tryToCreateAllDirs();
@@ -48,7 +45,7 @@ public class LocalFileCache {
                     LOG.error("Unknown error while trying to GC",e);
                 }
             }
-        }, gcStartTime, gcWaitPeriod);
+        }, TimeUnit.MINUTES.toMillis(5), gcWaitPeriod);
         setup = true;
     }
     
@@ -86,17 +83,6 @@ public class LocalFileCache {
             }
         }
         file.delete();
-    }
-
-    private Date getStartTime() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(new Date());
-        calendar.set(Calendar.HOUR, 1);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        calendar.add(Calendar.DATE, 1);
-        return calendar.getTime();
     }
 
     private synchronized void fileGc() {
@@ -137,7 +123,7 @@ public class LocalFileCache {
         LOG.info("File gc processing dir [{0}] at [{1}].",dirName,dir.getAbsolutePath());
         for (File file : dir.listFiles()) {
             try {
-                if (!existenceCheck.existsInBase(dirName,file.getName())) {
+                if (!localFileCacheCheck.isBeingServed(dirName,file.getName())) {
                     LOG.info("Removing file [{0}] in dir [{1}] at [{2}].",file.getAbsolutePath(),dirName,dir.getAbsolutePath());
                     file.delete();
                 }
@@ -224,36 +210,12 @@ public class LocalFileCache {
         }
     }
 
-    public ExistenceCheck getExistenceCheck() {
-        return existenceCheck;
-    }
-
-    public void setExistenceCheck(ExistenceCheck existenceCheck) {
-        this.existenceCheck = existenceCheck;
-    }
-
-    public File[] getPotentialFiles() {
-        return potentialDirs;
+    public void setLocalFileCacheCheck(LocalFileCacheCheck localFileCacheCheck) {
+        this.localFileCacheCheck = localFileCacheCheck;
     }
 
     public void setPotentialFiles(File... potentialFiles) {
         this.potentialDirs = potentialFiles;
-    }
-
-    public File[] getFiles() {
-        return files;
-    }
-
-    public Date getGcStartTime() {
-        return gcStartTime;
-    }
-
-    public void setGcStartTime(Date gcStartTime) {
-        this.gcStartTime = gcStartTime;
-    }
-
-    public long getGcWaitPeriod() {
-        return gcWaitPeriod;
     }
 
     public void setGcWaitPeriod(long gcWaitPeriod) {

@@ -4,7 +4,7 @@ import java.util.Comparator;
 
 public class LuceneIndexFileComparator implements Comparator<String> {
 
-    private String[] order = new String[]{"","del","tii","blf","tis","frq","prx","fdx","fdt"};
+    private String[] order = new String[]{"","fnm","del","tii","blf","nrm","tis","frq","prx","fdx","fdt"};
     
     @Override
     public int compare(String o1, String o2) {

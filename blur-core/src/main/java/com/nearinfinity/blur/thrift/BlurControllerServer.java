@@ -51,15 +51,17 @@ public class BlurControllerServer implements Iface, BlurConstants {
 
     private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 	
-	private ExecutorService executor = Executors.newCachedThreadPool(CONTROLLER_THREAD_POOL);
+	private ExecutorService executor;
 	private AtomicReference<Map<String,Map<String,String>>> shardServerLayout = new AtomicReference<Map<String,Map<String,String>>>(new HashMap<String, Map<String,String>>());
 	private BlurClient client;
 	private long delay = TimeUnit.SECONDS.toMillis(5);
 	private Random random = new Random();
     private Timer shardLayoutTimer;
     private ClusterStatus clusterStatus;
+    private int threadCount = 64;
     
     public void open() {
+        executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL,threadCount);
         updateShardLayout();
         shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
         shardLayoutTimer.scheduleAtFixedRate(new TimerTask(){

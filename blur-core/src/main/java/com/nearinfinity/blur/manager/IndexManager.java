@@ -72,6 +72,7 @@ public class IndexManager implements BlurConstants {
 
     private IndexServer indexServer;
     private ExecutorService executor;
+    private int threadCount = 32;
     private SearchStatusManager statusManager = new SearchStatusManager();
 
     public IndexManager() {
@@ -79,7 +80,7 @@ public class IndexManager implements BlurConstants {
     }
 
     public void init() {
-        executor = Executors.newCachedThreadPool("index-manager");
+        executor = Executors.newThreadPool("index-manager",threadCount);
         statusManager.init();
     }
 

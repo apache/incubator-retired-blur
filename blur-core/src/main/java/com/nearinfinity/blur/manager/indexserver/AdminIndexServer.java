@@ -37,13 +37,14 @@ public abstract class AdminIndexServer implements IndexServer, ZookeeperPathCont
     protected DistributedManager dm;
     protected Timer daemon;
     protected ExecutorService executorService;
+    private int threadCount = 32;
     
     /**
      * All sub classes need to call super.init().
      * @return 
      */
     public void init() {
-        executorService = Executors.newCachedThreadPool("admin-index-server");
+        executorService = Executors.newThreadPool("admin-index-server",threadCount);
         dm.createPath(BLUR_TABLES); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();

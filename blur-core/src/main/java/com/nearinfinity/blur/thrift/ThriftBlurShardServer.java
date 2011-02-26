@@ -9,11 +9,13 @@ import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -33,7 +35,9 @@ import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.store.cache.HdfsExistenceCheck;
+import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
@@ -103,6 +107,8 @@ public class ThriftBlurShardServer {
         indexServer.setReplicationDaemon(replicationDaemon);
         indexServer.init();
         
+        localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));
+        
         IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
         indexManager.init();
@@ -120,6 +126,18 @@ public class ThriftBlurShardServer {
             server.setIface(shardServer);
         }
         server.start();
+    }
+
+    private static LocalFileCacheCheck getLocalFileCacheCheck(final HdfsIndexServer indexServer) {
+        return new LocalFileCacheCheck() {
+            @Override
+            public boolean isBeingServed(String dirName, String name) throws IOException {
+                String table = HdfsUtil.getTable(dirName);
+                String shard = HdfsUtil.getShard(dirName);
+                Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
+                return indexReaders.containsKey(shard);
+            }
+        };
     }
 
     public static Iface crazyMode(final Iface iface) {

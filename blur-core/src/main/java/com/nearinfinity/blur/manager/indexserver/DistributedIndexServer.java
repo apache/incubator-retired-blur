@@ -43,7 +43,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     
     private ConcurrentHashMap<String,Map<String,IndexReader>> readers = new ConcurrentHashMap<String, Map<String,IndexReader>>();
     private Timer readerCloserDaemon;
-    private long delay = TimeUnit.MINUTES.toMillis(1);
+    private long delay = TimeUnit.SECONDS.toMillis(30);
     private Map<String,DistributedLayoutManager> layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
     private Map<String, Set<String>> layoutCache = new ConcurrentHashMap<String, Set<String>>();
     //need a GC daemon for closing indexes
@@ -53,7 +53,6 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     public void init() {
         super.init();
         startIndexReaderCloserDaemon();
-        startIndexReopenerDaemon();
     }
     
     protected abstract IndexReader openShard(String table, String shard) throws IOException;
@@ -88,6 +87,23 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
         for (String table : tableList) {
             closeOldReaders(table);
         }
+        closeOldReadersForTablesThatAreMissing();
+    }
+    
+    private void closeOldReadersForTablesThatAreMissing() {
+        Set<String> tablesWithOpenIndexes = readers.keySet();
+        List<String> currentTables = getTableList();
+        for (String table : tablesWithOpenIndexes) {
+            if (!currentTables.contains(table)) {
+                //close all readers
+                LOG.info("Table [" + table + "] no longer available, closing all indexes.");
+                Map<String, IndexReader> map = readers.get(table);
+                for (String shard : map.keySet()) {
+                    closeIndex(table, shard, map.get(shard));
+                }
+                readers.remove(table);
+            }
+        }
     }
 
     protected void closeOldReaders(String table) {
@@ -102,19 +118,20 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
             return;
         }
         for (String shard : shardsOpen) {
-            LOG.info("Index for table [{0}] shard [{1}] needs to be closed",table,shard);
             IndexReader indexReader = tableReaders.remove(shard);
-            beforeClose(shard,indexReader);
-            try {
-                indexReader.close();
-            } catch (IOException e) {
-                LOG.error("Error while closing index reader [{0}]",e,indexReader);
-            }
-            cleanupLocallyCachedIndexes(table,shard);
+            closeIndex(table, shard, indexReader);
         }
     }
 
-    protected abstract void cleanupLocallyCachedIndexes(String table, String shard);
+    private void closeIndex(String table, String shard, IndexReader indexReader) {
+        beforeClose(shard,indexReader);
+        try {
+            indexReader.close();
+        } catch (IOException e) {
+            LOG.error("Error while closing index reader [{0}]",e,indexReader);
+        }
+        LOG.info("Index for table [{0}] shard [{1}] closed.",table,shard);
+    }
 
     @Override
     public void close() {
@@ -206,10 +223,6 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
 
     //Daemon threads
-    
-    private void startIndexReopenerDaemon() {
-        
-    }
 
     private void startIndexReaderCloserDaemon() {
         readerCloserDaemon = new Timer("Reader-Closer-Daemon", true);

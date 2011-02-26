@@ -4,35 +4,31 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.store.LockFactory;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
-import com.nearinfinity.blur.store.replication.LuceneIndexFileComparator;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
+import com.nearinfinity.blur.utils.BlurConstants;
 
-public class HdfsIndexServer extends ManagedDistributedIndexServer {
+public class HdfsIndexServer extends ManagedDistributedIndexServer implements BlurConstants {
     
     private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
     
     private FileSystem fileSystem;
     private Path blurBasePath;
-    private Map<String,Map<String,Long>> cleanupMap = new ConcurrentHashMap<String, Map<String,Long>>();
     private LocalFileCache localFileCache;
     private LockFactory lockFactory;
     private ReplicationDaemon replicationDaemon;
@@ -64,23 +60,16 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
                 //do nothing for now
             }
         }, replicationDaemon);
-        touchFiles(directory,table,shard);
-        return IndexReader.open(directory);
+        return warmUp(IndexReader.open(directory));
     }
 
-    private void touchFiles(Directory directory, String table, String shard) throws IOException {
-        LuceneIndexFileComparator comparator = new LuceneIndexFileComparator();
-        List<String> list = new ArrayList<String>(Arrays.asList(directory.listAll()));
-        Collections.sort(list,comparator);
-        for (String f : list) {
-            LOG.info("Touching file [{0}] from table [{1}] shard [{2}]",f,table,shard);
-            IndexInput input = directory.openInput(f);
-            if (input.length() > 0) {
-                input.seek(0);
-                input.readByte();
-            }
-            input.close();
-        }
+    private IndexReader warmUp(IndexReader reader) throws IOException {
+        int maxDoc = reader.maxDoc();
+        int numDocs = reader.numDocs();
+        Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+        int primeDocCount = reader.docFreq(new Term(PRIME_DOC,PRIME_DOC_VALUE));
+        LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fields [" + fieldNames + "]");
+        return reader;
     }
 
     @Override
@@ -90,7 +79,10 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
             FileStatus[] listStatus = fileSystem.listStatus(new Path(blurBasePath,table));
             for (FileStatus status : listStatus) {
                 if (status.isDir()) {
-                    result.add(status.getPath().getName());
+                    String name = status.getPath().getName();
+                    if (name.startsWith(SHARD_PREFIX)) {
+                        result.add(name);
+                    }
                 }
             }
             return result;
@@ -104,17 +96,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     }
     
-    @Override
-    protected synchronized void cleanupLocallyCachedIndexes(String table, String shard) {
-        LOG.info("Local cleanup added for table [{0}] shard [{1}]",table,shard);
-        Map<String, Long> map = cleanupMap.get(table);
-        if (map == null) {
-            map = new ConcurrentHashMap<String, Long>();
-            cleanupMap.put(table, map);
-        }
-        map.put(shard, System.currentTimeMillis());
-    }
-    
     protected static void rm(File file) {
         LOG.info("Deleting file [{0}]",file);
         if (file.isDirectory()) {
@@ -124,48 +105,28 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         }
         file.delete();
     }
-
-    public FileSystem getFileSystem() {
-        return fileSystem;
+    
+    private boolean exists(Path path) throws IOException {
+        return fileSystem.exists(path);
     }
 
     public void setFileSystem(FileSystem fileSystem) {
         this.fileSystem = fileSystem;
     }
 
-    public Path getBlurBasePath() {
-        return blurBasePath;
-    }
-
-    public void setBlurBasePath(Path blurBasePath) {
-        this.blurBasePath = blurBasePath;
-    }
-
-    private boolean exists(Path path) throws IOException {
-        return fileSystem.exists(path);
-    }
-
-    public LocalFileCache getLocalFileCache() {
-        return localFileCache;
-    }
-
     public void setLocalFileCache(LocalFileCache localFileCache) {
         this.localFileCache = localFileCache;
-    }
-
-    public LockFactory getLockFactory() {
-        return lockFactory;
     }
 
     public void setLockFactory(LockFactory lockFactory) {
         this.lockFactory = lockFactory;
     }
 
-    public ReplicationDaemon getReplicationDaemon() {
-        return replicationDaemon;
-    }
-
     public void setReplicationDaemon(ReplicationDaemon replicationDaemon) {
         this.replicationDaemon = replicationDaemon;
+    }
+
+    public void setBlurBasePath(Path blurBasePath) {
+        this.blurBasePath = blurBasePath;
     }
 }

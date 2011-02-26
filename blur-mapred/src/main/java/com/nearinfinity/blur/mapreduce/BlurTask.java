@@ -14,10 +14,10 @@ import org.apache.lucene.index.IndexCommit;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.utils.BlurConstants;
 
-public class BlurTask {
+public class BlurTask implements BlurConstants {
 
-    public static final String SHARD_PREFIX = "shard-";
     public static final String EMPTY = "EMPTY";
     public static final String BLUR_COMMIT = "blur.commit";
     public static final String BLUR_TABLE_NAME = "blur.table.name";

@@ -6,13 +6,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.Test;
-
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class BlurBitSetTest {
 
-    @Test
+//    @Test
 	public void testRandomBlurBitSet() {
 		BlurBitSet blurBitSet = new BlurBitSet();
 		long seed = getSeed();
@@ -37,7 +35,7 @@ public class BlurBitSetTest {
         return new Random().nextLong();
     }
 
-    @Test
+//    @Test
 	public void testPerformance() {
 		BlurBitSet blurBitSet = new BlurBitSet();
 		long seed = getSeed();

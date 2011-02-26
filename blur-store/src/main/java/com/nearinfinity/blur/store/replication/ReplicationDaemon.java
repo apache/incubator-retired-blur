@@ -53,7 +53,7 @@ public class ReplicationDaemon extends TimerTask implements Constants {
     private Timer daemon;
     private LocalIOWrapper wrapper;
     private long period = TimeUnit.SECONDS.toMillis(1);
-    private int numberOfBlocksToMovePerPass = 16;
+    private int numberOfBlocksToMovePerPass = 256;
 
     private LocalFileCache localFileCache;
     private Progressable progressable;

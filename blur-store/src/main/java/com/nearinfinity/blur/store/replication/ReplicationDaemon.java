@@ -119,17 +119,21 @@ public class ReplicationDaemon implements Constants, Runnable {
             }
             setupWorkUnit(workUnit);
             copy(workUnit);
-            finishWorkUnit(workUnit);
+            if (finishWorkUnit(workUnit)) {
+                workUnit = null;
+            }
         }
     }
 
-    private void finishWorkUnit(RepliaWorkUnit workUnit) throws IOException {
+    private boolean finishWorkUnit(RepliaWorkUnit workUnit) throws IOException {
         if (workUnit.finished) {
             close(workUnit.source,workUnit.output);
             ReplicaIndexInput replicaIndexInput = workUnit.replicaIndexInput;
             replicaNames.remove(getLookupName(replicaIndexInput.dirName,replicaIndexInput.fileName));
             indexInputFactory.replicationComplete(workUnit, wrapper, BUFFER_SIZE);
+            return true;
         }
+        return false;
     }
 
     private void setupWorkUnit(RepliaWorkUnit workUnit) throws IOException {
@@ -226,7 +230,6 @@ public class ReplicationDaemon implements Constants, Runnable {
         }
         logStatus(repliaWorkUnit);
         throttleCopy(repliaWorkUnit);
-        
     }
 
     private void throttleCopy(RepliaWorkUnit repliaWorkUnit) {

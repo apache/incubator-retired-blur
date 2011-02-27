@@ -86,8 +86,10 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     public void deleteFile(String name) throws IOException {
         if (super.fileExists(name)) {
             super.deleteFile(name);
-        } else {
-            localFileCache.getLocalFile(dirName, name).delete();
+        }
+        File localFile = localFileCache.getLocalFile(dirName, name);
+        if (localFile.exists()) {
+            localFile.delete();
         }
     }
 
@@ -152,7 +154,6 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     public IndexInput openFromHdfs(String name, int bufferSize) throws IOException {
         return super.openInput(name, bufferSize);
     }
-
 
     public static class FileIndexOutput extends BufferedIndexOutput {
 

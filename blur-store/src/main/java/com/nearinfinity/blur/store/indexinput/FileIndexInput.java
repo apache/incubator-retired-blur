@@ -3,21 +3,24 @@ package com.nearinfinity.blur.store.indexinput;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.util.Constants;
 
 public class FileIndexInput extends BufferedIndexInput {
 
-    protected static class Descriptor extends RandomAccessFile {
+    public static class Descriptor extends RandomAccessFile {
         // remember if the file is open, so that we don't try to close it
         // more than once
         protected volatile boolean isOpen;
         long position;
         final long length;
+        public static AtomicInteger openCount = new AtomicInteger();
 
         public Descriptor(File file, String mode) throws IOException {
             super(file, mode);
+            openCount.incrementAndGet();
             isOpen = true;
             length = length();
         }
@@ -27,6 +30,7 @@ public class FileIndexInput extends BufferedIndexInput {
             if (isOpen) {
                 isOpen = false;
                 super.close();
+                openCount.decrementAndGet();
             }
         }
     }

@@ -69,7 +69,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     @Override
     public void sync(String name) throws IOException {
         File file = localFileCache.getLocalFile(dirName, name);
-        FSDataOutputStream outputStream = super.getOutputStream(name);
+        FSDataOutputStream outputStream = super.getOutputStream(name + ".sync");
         FileInputStream inputStream = new FileInputStream(file);
         LOG.info("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
         byte[] buffer = new byte[BUFFER_SIZE];
@@ -80,6 +80,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         }
         outputStream.close();
         inputStream.close();
+        rename(name + ".sync",name);
     }
 
     @Override

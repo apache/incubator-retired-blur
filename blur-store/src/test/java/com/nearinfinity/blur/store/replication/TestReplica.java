@@ -16,6 +16,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.TermEnum;
@@ -27,6 +28,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
@@ -130,10 +132,24 @@ public class TestReplica {
     private static void createIndex(Directory dir) throws IOException {
         IndexWriter writer = new IndexWriter(dir, new StandardAnalyzer(Version.LUCENE_30),MaxFieldLength.UNLIMITED);
         writer.setUseCompoundFile(false);
+        for (int j = 0; j < 10; j++) {
+            writer.addIndexesNoOptimize(index());
+            writer.commit();
+        }
+        writer.optimize(2);
+        writer.close();
+    }
+
+    private static Directory index() throws IOException {
+        RAMDirectory dir = new RAMDirectory();
+        IndexWriter writer = new IndexWriter(dir, new StandardAnalyzer(Version.LUCENE_30),MaxFieldLength.UNLIMITED);
+        writer.setUseCompoundFile(false);
         for (int i = 0; i < 100000; i++) {
             writer.addDocument(genDoc());
         }
+        writer.optimize();
         writer.close();
+        return dir;
     }
 
     private static Document genDoc() {

@@ -55,10 +55,19 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
             throw new FileNotFoundException(name);
         }
         ReplicaIndexInput input = new ReplicaIndexInput(name, fileLength(name), BUFFER_SIZE, this);
-        input.baseInput = new AtomicReference<IndexInput>(openFromHdfs(name, BUFFER_SIZE));
+        if (fileExistsHdfs(name)) {
+            input.baseInput = new AtomicReference<IndexInput>(openFromHdfs(name, BUFFER_SIZE));
+        } else {
+            // scary...
+            // The only way this would happen is during a write phase, once the commit is 
+            // called this file is synced to hdfs via WritableHdfsDirectory.  The index 
+            // reader reopens the file and will open the base from hdfs.
+            input.baseInput = new AtomicReference<IndexInput>(wrapper.wrapInput(openFromLocal(name, BUFFER_SIZE)));
+        }
+        
         if (fileExistsLocally(name)) {
             if (isLocalFileValid(name)) {
-                input.localInput = new AtomicReference<IndexInput>(wrapper.wrapInput(openFromLocal(name, BUFFER_SIZE)));                
+                input.localInput = new AtomicReference<IndexInput>(wrapper.wrapInput(openFromLocal(name, BUFFER_SIZE)));
             } else {
                 LOG.error("Local file [{0}/{1}] is not valid, opening remote file.",dirName,name);
                 input.localInput = new AtomicReference<IndexInput>();

@@ -101,6 +101,10 @@ public class HdfsDirectory extends Directory implements Constants {
         };
     }
 
+    protected void rename(String currentName, String newName) throws IOException {
+        fileSystem.rename(new Path(hdfsDirPath,currentName), new Path(hdfsDirPath,newName));
+    }
+    
     protected FSDataOutputStream getOutputStream(String name) throws IOException {
         return fileSystem.create(new Path(hdfsDirPath, name));
     }
@@ -173,6 +177,10 @@ public class HdfsDirectory extends Directory implements Constants {
 
     @Override
     public boolean fileExists(String name) throws IOException {
+        return fileExistsHdfs(name);
+    }
+    
+    public boolean fileExistsHdfs(String name) throws IOException {
         return fileSystem.exists(new Path(hdfsDirPath, name));
     }
 

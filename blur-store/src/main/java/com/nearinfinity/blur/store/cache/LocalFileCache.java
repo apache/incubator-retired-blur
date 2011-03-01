@@ -30,6 +30,7 @@ public class LocalFileCache {
     private Timer daemon;
     private File[] potentialDirs;
     private boolean setup = false;
+    private long gcStartDelay = TimeUnit.MINUTES.toMillis(5);
     private long gcWaitPeriod = TimeUnit.HOURS.toMillis(1);
     
     public void open() {
@@ -45,7 +46,7 @@ public class LocalFileCache {
                     LOG.error("Unknown error while trying to GC",e);
                 }
             }
-        }, TimeUnit.MINUTES.toMillis(5), gcWaitPeriod);
+        }, gcStartDelay, gcWaitPeriod);
         setup = true;
     }
     
@@ -220,5 +221,9 @@ public class LocalFileCache {
 
     public void setGcWaitPeriod(long gcWaitPeriod) {
         this.gcWaitPeriod = gcWaitPeriod;
+    }
+
+    public void setGcStartDelay(long gcStartDelay) {
+        this.gcStartDelay = gcStartDelay;
     }
 }

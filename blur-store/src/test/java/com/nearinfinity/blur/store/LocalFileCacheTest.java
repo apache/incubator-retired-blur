@@ -63,13 +63,11 @@ public class LocalFileCacheTest {
         LocalFileCache test = new LocalFileCache();
         test.setPotentialFiles(CACHE3_FILE,CACHE4_FILE);
         test.setGcWaitPeriod(TimeUnit.SECONDS.toMillis(5));
+        test.setGcStartDelay(TimeUnit.SECONDS.toMillis(1));
         test.setLocalFileCacheCheck(new LocalFileCacheCheck() {
             @Override
             public boolean isBeingServed(String dirName, String name) throws IOException {
-                if (name.startsWith("keep")) {
-                    return true;
-                }
-                return false;
+                return name.startsWith("keep");
             }
         });
         test.open();

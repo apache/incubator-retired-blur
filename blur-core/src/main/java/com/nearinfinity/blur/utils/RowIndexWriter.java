@@ -65,7 +65,7 @@ public class RowIndexWriter implements BlurConstants {
     }
 
     private boolean replace(ColumnFamily columnFamily) throws IOException {
-        Map<String, Set<Column>> columns = columnFamily.columns;
+        Map<String, Set<Column>> columns = columnFamily.records;
         if (columns == null) {
             return true;
         }

@@ -9,8 +9,6 @@ import org.apache.thrift.protocol.TProtocol;
 
 import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.FacetQuery;
-import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -76,11 +74,6 @@ public class BlurClientEmbedded extends BlurClient {
         @Override
         public TableDescriptor describe(String table) throws BlurException, TException {
             return face.describe(table);
-        }
-
-        @Override
-        public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException {
-            return face.facetSearch(table, facetQuery);
         }
 
         @Override
@@ -156,11 +149,6 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public FacetResult recv_facetSearch() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
         public FetchResult recv_fetchRow() throws BlurException, TException {
             throw new RuntimeException("not impl");
         }
@@ -217,11 +205,6 @@ public class BlurClientEmbedded extends BlurClient {
 
         @Override
         public void send_describe(String table) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_facetSearch(String table, FacetQuery facetQuery) throws TException {
             throw new RuntimeException("not impl");
         }
 

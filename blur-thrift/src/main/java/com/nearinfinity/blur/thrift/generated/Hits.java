@@ -36,6 +36,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)5);
   private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)6);
   private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)7);
+  private static final TField FACET_COUNTS_FIELD_DESC = new TField("facetCounts", TType.LIST, (short)8);
 
   public long totalHits;
   public Map<String,Long> shardInfo;
@@ -44,6 +45,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   public SearchQuery query;
   public long realTime;
   public long cpuTime;
+  public List<Long> facetCounts;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -53,7 +55,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     EXCEPTIONS((short)4, "exceptions"),
     QUERY((short)5, "query"),
     REAL_TIME((short)6, "realTime"),
-    CPU_TIME((short)7, "cpuTime");
+    CPU_TIME((short)7, "cpuTime"),
+    FACET_COUNTS((short)8, "facetCounts");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -82,6 +85,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
           return REAL_TIME;
         case 7: // CPU_TIME
           return CPU_TIME;
+        case 8: // FACET_COUNTS
+          return FACET_COUNTS;
         default:
           return null;
       }
@@ -148,6 +153,9 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.CPU_TIME, new FieldMetaData("cpuTime", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
+    tmpMap.put(_Fields.FACET_COUNTS, new FieldMetaData("facetCounts", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new FieldValueMetaData(TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Hits.class, metaDataMap);
   }
@@ -164,7 +172,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     List<BlurException> exceptions,
     SearchQuery query,
     long realTime,
-    long cpuTime)
+    long cpuTime,
+    List<Long> facetCounts)
   {
     this();
     this.totalHits = totalHits;
@@ -177,6 +186,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     setRealTimeIsSet(true);
     this.cpuTime = cpuTime;
     setCpuTimeIsSet(true);
+    this.facetCounts = facetCounts;
   }
 
   /**
@@ -220,6 +230,13 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
     this.realTime = other.realTime;
     this.cpuTime = other.cpuTime;
+    if (other.isSetFacetCounts()) {
+      List<Long> __this__facetCounts = new ArrayList<Long>();
+      for (Long other_element : other.facetCounts) {
+        __this__facetCounts.add(other_element);
+      }
+      this.facetCounts = __this__facetCounts;
+    }
   }
 
   public Hits deepCopy() {
@@ -238,6 +255,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     this.realTime = 0;
     setCpuTimeIsSet(false);
     this.cpuTime = 0;
+    this.facetCounts = null;
   }
 
   public long getTotalHits() {
@@ -446,6 +464,45 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     __isset_bit_vector.set(__CPUTIME_ISSET_ID, value);
   }
 
+  public int getFacetCountsSize() {
+    return (this.facetCounts == null) ? 0 : this.facetCounts.size();
+  }
+
+  public java.util.Iterator<Long> getFacetCountsIterator() {
+    return (this.facetCounts == null) ? null : this.facetCounts.iterator();
+  }
+
+  public void addToFacetCounts(long elem) {
+    if (this.facetCounts == null) {
+      this.facetCounts = new ArrayList<Long>();
+    }
+    this.facetCounts.add(elem);
+  }
+
+  public List<Long> getFacetCounts() {
+    return this.facetCounts;
+  }
+
+  public Hits setFacetCounts(List<Long> facetCounts) {
+    this.facetCounts = facetCounts;
+    return this;
+  }
+
+  public void unsetFacetCounts() {
+    this.facetCounts = null;
+  }
+
+  /** Returns true if field facetCounts is set (has been asigned a value) and false otherwise */
+  public boolean isSetFacetCounts() {
+    return this.facetCounts != null;
+  }
+
+  public void setFacetCountsIsSet(boolean value) {
+    if (!value) {
+      this.facetCounts = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TOTAL_HITS:
@@ -504,6 +561,14 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       break;
 
+    case FACET_COUNTS:
+      if (value == null) {
+        unsetFacetCounts();
+      } else {
+        setFacetCounts((List<Long>)value);
+      }
+      break;
+
     }
   }
 
@@ -530,6 +595,9 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     case CPU_TIME:
       return new Long(getCpuTime());
 
+    case FACET_COUNTS:
+      return getFacetCounts();
+
     }
     throw new IllegalStateException();
   }
@@ -555,6 +623,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       return isSetRealTime();
     case CPU_TIME:
       return isSetCpuTime();
+    case FACET_COUNTS:
+      return isSetFacetCounts();
     }
     throw new IllegalStateException();
   }
@@ -632,6 +702,15 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       if (!(this_present_cpuTime && that_present_cpuTime))
         return false;
       if (this.cpuTime != that.cpuTime)
+        return false;
+    }
+
+    boolean this_present_facetCounts = true && this.isSetFacetCounts();
+    boolean that_present_facetCounts = true && that.isSetFacetCounts();
+    if (this_present_facetCounts || that_present_facetCounts) {
+      if (!(this_present_facetCounts && that_present_facetCounts))
+        return false;
+      if (!this.facetCounts.equals(that.facetCounts))
         return false;
     }
 
@@ -721,6 +800,16 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetFacetCounts()).compareTo(typedOther.isSetFacetCounts());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFacetCounts()) {
+      lastComparison = TBaseHelper.compareTo(this.facetCounts, typedOther.facetCounts);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -749,15 +838,15 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         case 2: // SHARD_INFO
           if (field.type == TType.MAP) {
             {
-              TMap _map0 = iprot.readMapBegin();
-              this.shardInfo = new HashMap<String,Long>(2*_map0.size);
-              for (int _i1 = 0; _i1 < _map0.size; ++_i1)
+              TMap _map4 = iprot.readMapBegin();
+              this.shardInfo = new HashMap<String,Long>(2*_map4.size);
+              for (int _i5 = 0; _i5 < _map4.size; ++_i5)
               {
-                String _key2;
-                long _val3;
-                _key2 = iprot.readString();
-                _val3 = iprot.readI64();
-                this.shardInfo.put(_key2, _val3);
+                String _key6;
+                long _val7;
+                _key6 = iprot.readString();
+                _val7 = iprot.readI64();
+                this.shardInfo.put(_key6, _val7);
               }
               iprot.readMapEnd();
             }
@@ -768,14 +857,14 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         case 3: // HITS
           if (field.type == TType.LIST) {
             {
-              TList _list4 = iprot.readListBegin();
-              this.hits = new ArrayList<Hit>(_list4.size);
-              for (int _i5 = 0; _i5 < _list4.size; ++_i5)
+              TList _list8 = iprot.readListBegin();
+              this.hits = new ArrayList<Hit>(_list8.size);
+              for (int _i9 = 0; _i9 < _list8.size; ++_i9)
               {
-                Hit _elem6;
-                _elem6 = new Hit();
-                _elem6.read(iprot);
-                this.hits.add(_elem6);
+                Hit _elem10;
+                _elem10 = new Hit();
+                _elem10.read(iprot);
+                this.hits.add(_elem10);
               }
               iprot.readListEnd();
             }
@@ -786,14 +875,14 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         case 4: // EXCEPTIONS
           if (field.type == TType.LIST) {
             {
-              TList _list7 = iprot.readListBegin();
-              this.exceptions = new ArrayList<BlurException>(_list7.size);
-              for (int _i8 = 0; _i8 < _list7.size; ++_i8)
+              TList _list11 = iprot.readListBegin();
+              this.exceptions = new ArrayList<BlurException>(_list11.size);
+              for (int _i12 = 0; _i12 < _list11.size; ++_i12)
               {
-                BlurException _elem9;
-                _elem9 = new BlurException();
-                _elem9.read(iprot);
-                this.exceptions.add(_elem9);
+                BlurException _elem13;
+                _elem13 = new BlurException();
+                _elem13.read(iprot);
+                this.exceptions.add(_elem13);
               }
               iprot.readListEnd();
             }
@@ -825,6 +914,23 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 8: // FACET_COUNTS
+          if (field.type == TType.LIST) {
+            {
+              TList _list14 = iprot.readListBegin();
+              this.facetCounts = new ArrayList<Long>(_list14.size);
+              for (int _i15 = 0; _i15 < _list14.size; ++_i15)
+              {
+                long _elem16;
+                _elem16 = iprot.readI64();
+                this.facetCounts.add(_elem16);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -847,10 +953,10 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.I64, this.shardInfo.size()));
-        for (Map.Entry<String, Long> _iter10 : this.shardInfo.entrySet())
+        for (Map.Entry<String, Long> _iter17 : this.shardInfo.entrySet())
         {
-          oprot.writeString(_iter10.getKey());
-          oprot.writeI64(_iter10.getValue());
+          oprot.writeString(_iter17.getKey());
+          oprot.writeI64(_iter17.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -860,9 +966,9 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       oprot.writeFieldBegin(HITS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.hits.size()));
-        for (Hit _iter11 : this.hits)
+        for (Hit _iter18 : this.hits)
         {
-          _iter11.write(oprot);
+          _iter18.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -872,9 +978,9 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.exceptions.size()));
-        for (BlurException _iter12 : this.exceptions)
+        for (BlurException _iter19 : this.exceptions)
         {
-          _iter12.write(oprot);
+          _iter19.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -891,6 +997,18 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     oprot.writeFieldBegin(CPU_TIME_FIELD_DESC);
     oprot.writeI64(this.cpuTime);
     oprot.writeFieldEnd();
+    if (this.facetCounts != null) {
+      oprot.writeFieldBegin(FACET_COUNTS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.I64, this.facetCounts.size()));
+        for (long _iter20 : this.facetCounts)
+        {
+          oprot.writeI64(_iter20);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -942,6 +1060,14 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     if (!first) sb.append(", ");
     sb.append("cpuTime:");
     sb.append(this.cpuTime);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("facetCounts:");
+    if (this.facetCounts == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.facetCounts);
+    }
     first = false;
     sb.append(")");
     return sb.toString();

@@ -157,7 +157,7 @@ public class TestBlurIndex {
     private static ColumnFamily getColumnFamily(String name) {
         ColumnFamily family = new ColumnFamily();
         family.family = name;
-        family.columns = getRecords();
+        family.records = getRecords();
         return family;
     }
 

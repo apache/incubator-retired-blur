@@ -32,7 +32,7 @@ public class RowSuperDocumentUtil implements BlurConstants {
 			if (columnFamily == null) {
 			    columnFamilies.put(family, newColumnFamily);
 			} else {
-			    columnFamily.columns.putAll(newColumnFamily.columns);
+			    columnFamily.records.putAll(newColumnFamily.records);
 			}
 		}
 		if (empty) {
@@ -75,7 +75,7 @@ public class RowSuperDocumentUtil implements BlurConstants {
 		ColumnFamily columnFamily = new ColumnFamily().setFamily(superColumnFamily);
 		Set<Column> columnSet = new TreeSet<Column>(BlurConstants.COLUMN_COMPARATOR);
 		columnSet.addAll(columns.values());
-        columnFamily.putToColumns(superColumnId, columnSet);
+        columnFamily.putToRecords(superColumnId, columnSet);
         return columnFamily;
 	}
 }

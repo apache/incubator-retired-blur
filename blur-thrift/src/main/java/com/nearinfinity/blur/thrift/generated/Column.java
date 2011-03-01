@@ -353,13 +353,13 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
         case 2: // VALUES
           if (field.type == TType.LIST) {
             {
-              TList _list17 = iprot.readListBegin();
-              this.values = new ArrayList<String>(_list17.size);
-              for (int _i18 = 0; _i18 < _list17.size; ++_i18)
+              TList _list25 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list25.size);
+              for (int _i26 = 0; _i26 < _list25.size; ++_i26)
               {
-                String _elem19;
-                _elem19 = iprot.readString();
-                this.values.add(_elem19);
+                String _elem27;
+                _elem27 = iprot.readString();
+                this.values.add(_elem27);
               }
               iprot.readListEnd();
             }
@@ -391,9 +391,9 @@ public class Column implements TBase<Column, Column._Fields>, java.io.Serializab
       oprot.writeFieldBegin(VALUES_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRING, this.values.size()));
-        for (String _iter20 : this.values)
+        for (String _iter28 : this.values)
         {
-          oprot.writeString(_iter20);
+          oprot.writeString(_iter28);
         }
         oprot.writeListEnd();
       }

@@ -42,7 +42,7 @@ public class HitsIterableSearcher implements HitsIterable, BlurConstants {
         iterator = new IteratorConverter<ScoreDoc,Hit>(iterablePaging.iterator(), new Converter<ScoreDoc,Hit>() {
             @Override
             public Hit convert(ScoreDoc scoreDoc) throws Exception {
-                return new Hit(resolveId(scoreDoc.doc), scoreDoc.score, "UNKNOWN");
+                return new Hit(resolveId(scoreDoc.doc), null, null, scoreDoc.score, "UNKNOWN");
             }
         });
         shardInfo.put(shard, (long)totalHitsRef.totalHits());

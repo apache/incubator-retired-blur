@@ -30,16 +30,14 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   private static final TStruct STRUCT_DESC = new TStruct("SearchQueryStatus");
 
   private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)1);
-  private static final TField FACET_FIELD_DESC = new TField("facet", TType.STRUCT, (short)2);
-  private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)3);
-  private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)4);
-  private static final TField COMPLETE_FIELD_DESC = new TField("complete", TType.DOUBLE, (short)5);
-  private static final TField RUNNING_FIELD_DESC = new TField("running", TType.BOOL, (short)6);
-  private static final TField INTERRUPTED_FIELD_DESC = new TField("interrupted", TType.BOOL, (short)7);
-  private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)8);
+  private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)2);
+  private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)3);
+  private static final TField COMPLETE_FIELD_DESC = new TField("complete", TType.DOUBLE, (short)4);
+  private static final TField RUNNING_FIELD_DESC = new TField("running", TType.BOOL, (short)5);
+  private static final TField INTERRUPTED_FIELD_DESC = new TField("interrupted", TType.BOOL, (short)6);
+  private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)7);
 
   public SearchQuery query;
-  public Facet facet;
   public long realTime;
   public long cpuTime;
   public double complete;
@@ -50,13 +48,12 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     QUERY((short)1, "query"),
-    FACET((short)2, "facet"),
-    REAL_TIME((short)3, "realTime"),
-    CPU_TIME((short)4, "cpuTime"),
-    COMPLETE((short)5, "complete"),
-    RUNNING((short)6, "running"),
-    INTERRUPTED((short)7, "interrupted"),
-    UUID((short)8, "uuid");
+    REAL_TIME((short)2, "realTime"),
+    CPU_TIME((short)3, "cpuTime"),
+    COMPLETE((short)4, "complete"),
+    RUNNING((short)5, "running"),
+    INTERRUPTED((short)6, "interrupted"),
+    UUID((short)7, "uuid");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -73,19 +70,17 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       switch(fieldId) {
         case 1: // QUERY
           return QUERY;
-        case 2: // FACET
-          return FACET;
-        case 3: // REAL_TIME
+        case 2: // REAL_TIME
           return REAL_TIME;
-        case 4: // CPU_TIME
+        case 3: // CPU_TIME
           return CPU_TIME;
-        case 5: // COMPLETE
+        case 4: // COMPLETE
           return COMPLETE;
-        case 6: // RUNNING
+        case 5: // RUNNING
           return RUNNING;
-        case 7: // INTERRUPTED
+        case 6: // INTERRUPTED
           return INTERRUPTED;
-        case 8: // UUID
+        case 7: // UUID
           return UUID;
         default:
           return null;
@@ -140,8 +135,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
         new StructMetaData(TType.STRUCT, SearchQuery.class)));
-    tmpMap.put(_Fields.FACET, new FieldMetaData("facet", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, Facet.class)));
     tmpMap.put(_Fields.REAL_TIME, new FieldMetaData("realTime", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.CPU_TIME, new FieldMetaData("cpuTime", TFieldRequirementType.DEFAULT, 
@@ -163,7 +156,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
 
   public SearchQueryStatus(
     SearchQuery query,
-    Facet facet,
     long realTime,
     long cpuTime,
     double complete,
@@ -173,7 +165,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   {
     this();
     this.query = query;
-    this.facet = facet;
     this.realTime = realTime;
     setRealTimeIsSet(true);
     this.cpuTime = cpuTime;
@@ -197,9 +188,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (other.isSetQuery()) {
       this.query = new SearchQuery(other.query);
     }
-    if (other.isSetFacet()) {
-      this.facet = new Facet(other.facet);
-    }
     this.realTime = other.realTime;
     this.cpuTime = other.cpuTime;
     this.complete = other.complete;
@@ -215,7 +203,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   @Override
   public void clear() {
     this.query = null;
-    this.facet = null;
     setRealTimeIsSet(false);
     this.realTime = 0;
     setCpuTimeIsSet(false);
@@ -251,30 +238,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   public void setQueryIsSet(boolean value) {
     if (!value) {
       this.query = null;
-    }
-  }
-
-  public Facet getFacet() {
-    return this.facet;
-  }
-
-  public SearchQueryStatus setFacet(Facet facet) {
-    this.facet = facet;
-    return this;
-  }
-
-  public void unsetFacet() {
-    this.facet = null;
-  }
-
-  /** Returns true if field facet is set (has been asigned a value) and false otherwise */
-  public boolean isSetFacet() {
-    return this.facet != null;
-  }
-
-  public void setFacetIsSet(boolean value) {
-    if (!value) {
-      this.facet = null;
     }
   }
 
@@ -426,14 +389,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       }
       break;
 
-    case FACET:
-      if (value == null) {
-        unsetFacet();
-      } else {
-        setFacet((Facet)value);
-      }
-      break;
-
     case REAL_TIME:
       if (value == null) {
         unsetRealTime();
@@ -490,9 +445,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     case QUERY:
       return getQuery();
 
-    case FACET:
-      return getFacet();
-
     case REAL_TIME:
       return new Long(getRealTime());
 
@@ -524,8 +476,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     switch (field) {
     case QUERY:
       return isSetQuery();
-    case FACET:
-      return isSetFacet();
     case REAL_TIME:
       return isSetRealTime();
     case CPU_TIME:
@@ -561,15 +511,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       if (!(this_present_query && that_present_query))
         return false;
       if (!this.query.equals(that.query))
-        return false;
-    }
-
-    boolean this_present_facet = true && this.isSetFacet();
-    boolean that_present_facet = true && that.isSetFacet();
-    if (this_present_facet || that_present_facet) {
-      if (!(this_present_facet && that_present_facet))
-        return false;
-      if (!this.facet.equals(that.facet))
         return false;
     }
 
@@ -649,16 +590,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     }
     if (isSetQuery()) {
       lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetFacet()).compareTo(typedOther.isSetFacet());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetFacet()) {
-      lastComparison = TBaseHelper.compareTo(this.facet, typedOther.facet);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -748,15 +679,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // FACET
-          if (field.type == TType.STRUCT) {
-            this.facet = new Facet();
-            this.facet.read(iprot);
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 3: // REAL_TIME
+        case 2: // REAL_TIME
           if (field.type == TType.I64) {
             this.realTime = iprot.readI64();
             setRealTimeIsSet(true);
@@ -764,7 +687,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // CPU_TIME
+        case 3: // CPU_TIME
           if (field.type == TType.I64) {
             this.cpuTime = iprot.readI64();
             setCpuTimeIsSet(true);
@@ -772,7 +695,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5: // COMPLETE
+        case 4: // COMPLETE
           if (field.type == TType.DOUBLE) {
             this.complete = iprot.readDouble();
             setCompleteIsSet(true);
@@ -780,7 +703,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 6: // RUNNING
+        case 5: // RUNNING
           if (field.type == TType.BOOL) {
             this.running = iprot.readBool();
             setRunningIsSet(true);
@@ -788,7 +711,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 7: // INTERRUPTED
+        case 6: // INTERRUPTED
           if (field.type == TType.BOOL) {
             this.interrupted = iprot.readBool();
             setInterruptedIsSet(true);
@@ -796,7 +719,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 8: // UUID
+        case 7: // UUID
           if (field.type == TType.I64) {
             this.uuid = iprot.readI64();
             setUuidIsSet(true);
@@ -822,11 +745,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     if (this.query != null) {
       oprot.writeFieldBegin(QUERY_FIELD_DESC);
       this.query.write(oprot);
-      oprot.writeFieldEnd();
-    }
-    if (this.facet != null) {
-      oprot.writeFieldBegin(FACET_FIELD_DESC);
-      this.facet.write(oprot);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldBegin(REAL_TIME_FIELD_DESC);
@@ -861,14 +779,6 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       sb.append("null");
     } else {
       sb.append(this.query);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("facet:");
-    if (this.facet == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.facet);
     }
     first = false;
     if (!first) sb.append(", ");

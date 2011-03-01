@@ -10,7 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 
@@ -44,10 +43,6 @@ public class SearchStatusManager {
     
     public SearchStatus newSearchStatus(String table, SearchQuery searchQuery) {
         return addStatus(new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery).attachThread());
-    }
-    
-    public SearchStatus newSearchStatus(String table, SearchQuery searchQuery, Facet facet) {
-        return addStatus(new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery, facet).attachThread());
     }
     
     private SearchStatus addStatus(SearchStatus status) {

@@ -114,7 +114,7 @@ public class RandomSuperQueryTest {
 			for (int i = 0; i < random.nextInt(MAX_NUM_DOCS_PER_COL_FAM); i++) {
 				String superKey = Long.toString(random.nextLong());
 				Set<Column> colSet = new HashSet<Column>();
-                columnFamily.putToColumns(superKey, colSet);
+                columnFamily.putToRecords(superKey, colSet);
 				int staringLength = builder.length();
 				for (String column : cols) {
 					if (random.nextInt() % MOD_COLS_USED_FOR_SKIPPING == 0) {

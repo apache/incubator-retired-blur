@@ -29,25 +29,28 @@ import org.apache.thrift.protocol.*;
 public class Selector implements TBase<Selector, Selector._Fields>, java.io.Serializable, Cloneable {
   private static final TStruct STRUCT_DESC = new TStruct("Selector");
 
-  private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)1);
+  private static final TField ROW_ID_FIELD_DESC = new TField("rowId", TType.STRING, (short)1);
   private static final TField RECORD_ONLY_FIELD_DESC = new TField("recordOnly", TType.BOOL, (short)2);
-  private static final TField COLUMN_FAMILIES_FIELD_DESC = new TField("columnFamilies", TType.SET, (short)3);
-  private static final TField COLUMNS_FIELD_DESC = new TField("columns", TType.MAP, (short)4);
-  private static final TField SUPER_KEYS_FIELD_DESC = new TField("superKeys", TType.SET, (short)5);
+  private static final TField RECORD_ID_FIELD_DESC = new TField("recordId", TType.STRING, (short)3);
+  private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)4);
+  private static final TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new TField("columnFamiliesToFetch", TType.SET, (short)5);
+  private static final TField COLUMNS_TO_FETCH_FIELD_DESC = new TField("columnsToFetch", TType.MAP, (short)6);
 
-  public String locationId;
+  public String rowId;
   public boolean recordOnly;
-  public Set<String> columnFamilies;
-  public Map<String,Set<String>> columns;
-  public Set<String> superKeys;
+  public String recordId;
+  public String locationId;
+  public Set<String> columnFamiliesToFetch;
+  public Map<String,Set<String>> columnsToFetch;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    LOCATION_ID((short)1, "locationId"),
+    ROW_ID((short)1, "rowId"),
     RECORD_ONLY((short)2, "recordOnly"),
-    COLUMN_FAMILIES((short)3, "columnFamilies"),
-    COLUMNS((short)4, "columns"),
-    SUPER_KEYS((short)5, "superKeys");
+    RECORD_ID((short)3, "recordId"),
+    LOCATION_ID((short)4, "locationId"),
+    COLUMN_FAMILIES_TO_FETCH((short)5, "columnFamiliesToFetch"),
+    COLUMNS_TO_FETCH((short)6, "columnsToFetch");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -62,16 +65,18 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // LOCATION_ID
-          return LOCATION_ID;
+        case 1: // ROW_ID
+          return ROW_ID;
         case 2: // RECORD_ONLY
           return RECORD_ONLY;
-        case 3: // COLUMN_FAMILIES
-          return COLUMN_FAMILIES;
-        case 4: // COLUMNS
-          return COLUMNS;
-        case 5: // SUPER_KEYS
-          return SUPER_KEYS;
+        case 3: // RECORD_ID
+          return RECORD_ID;
+        case 4: // LOCATION_ID
+          return LOCATION_ID;
+        case 5: // COLUMN_FAMILIES_TO_FETCH
+          return COLUMN_FAMILIES_TO_FETCH;
+        case 6: // COLUMNS_TO_FETCH
+          return COLUMNS_TO_FETCH;
         default:
           return null;
       }
@@ -118,21 +123,22 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.LOCATION_ID, new FieldMetaData("locationId", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.ROW_ID, new FieldMetaData("rowId", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.RECORD_ONLY, new FieldMetaData("recordOnly", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.COLUMN_FAMILIES, new FieldMetaData("columnFamilies", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.RECORD_ID, new FieldMetaData("recordId", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.LOCATION_ID, new FieldMetaData("locationId", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.COLUMN_FAMILIES_TO_FETCH, new FieldMetaData("columnFamiliesToFetch", TFieldRequirementType.DEFAULT, 
         new SetMetaData(TType.SET, 
             new FieldValueMetaData(TType.STRING))));
-    tmpMap.put(_Fields.COLUMNS, new FieldMetaData("columns", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.COLUMNS_TO_FETCH, new FieldMetaData("columnsToFetch", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new SetMetaData(TType.SET, 
                 new FieldValueMetaData(TType.STRING)))));
-    tmpMap.put(_Fields.SUPER_KEYS, new FieldMetaData("superKeys", TFieldRequirementType.DEFAULT, 
-        new SetMetaData(TType.SET, 
-            new FieldValueMetaData(TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
@@ -141,19 +147,21 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   }
 
   public Selector(
-    String locationId,
+    String rowId,
     boolean recordOnly,
-    Set<String> columnFamilies,
-    Map<String,Set<String>> columns,
-    Set<String> superKeys)
+    String recordId,
+    String locationId,
+    Set<String> columnFamiliesToFetch,
+    Map<String,Set<String>> columnsToFetch)
   {
     this();
-    this.locationId = locationId;
+    this.rowId = rowId;
     this.recordOnly = recordOnly;
     setRecordOnlyIsSet(true);
-    this.columnFamilies = columnFamilies;
-    this.columns = columns;
-    this.superKeys = superKeys;
+    this.recordId = recordId;
+    this.locationId = locationId;
+    this.columnFamiliesToFetch = columnFamiliesToFetch;
+    this.columnsToFetch = columnsToFetch;
   }
 
   /**
@@ -162,41 +170,40 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
   public Selector(Selector other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
+    if (other.isSetRowId()) {
+      this.rowId = other.rowId;
+    }
+    this.recordOnly = other.recordOnly;
+    if (other.isSetRecordId()) {
+      this.recordId = other.recordId;
+    }
     if (other.isSetLocationId()) {
       this.locationId = other.locationId;
     }
-    this.recordOnly = other.recordOnly;
-    if (other.isSetColumnFamilies()) {
-      Set<String> __this__columnFamilies = new HashSet<String>();
-      for (String other_element : other.columnFamilies) {
-        __this__columnFamilies.add(other_element);
+    if (other.isSetColumnFamiliesToFetch()) {
+      Set<String> __this__columnFamiliesToFetch = new HashSet<String>();
+      for (String other_element : other.columnFamiliesToFetch) {
+        __this__columnFamiliesToFetch.add(other_element);
       }
-      this.columnFamilies = __this__columnFamilies;
+      this.columnFamiliesToFetch = __this__columnFamiliesToFetch;
     }
-    if (other.isSetColumns()) {
-      Map<String,Set<String>> __this__columns = new HashMap<String,Set<String>>();
-      for (Map.Entry<String, Set<String>> other_element : other.columns.entrySet()) {
+    if (other.isSetColumnsToFetch()) {
+      Map<String,Set<String>> __this__columnsToFetch = new HashMap<String,Set<String>>();
+      for (Map.Entry<String, Set<String>> other_element : other.columnsToFetch.entrySet()) {
 
         String other_element_key = other_element.getKey();
         Set<String> other_element_value = other_element.getValue();
 
-        String __this__columns_copy_key = other_element_key;
+        String __this__columnsToFetch_copy_key = other_element_key;
 
-        Set<String> __this__columns_copy_value = new HashSet<String>();
+        Set<String> __this__columnsToFetch_copy_value = new HashSet<String>();
         for (String other_element_value_element : other_element_value) {
-          __this__columns_copy_value.add(other_element_value_element);
+          __this__columnsToFetch_copy_value.add(other_element_value_element);
         }
 
-        __this__columns.put(__this__columns_copy_key, __this__columns_copy_value);
+        __this__columnsToFetch.put(__this__columnsToFetch_copy_key, __this__columnsToFetch_copy_value);
       }
-      this.columns = __this__columns;
-    }
-    if (other.isSetSuperKeys()) {
-      Set<String> __this__superKeys = new HashSet<String>();
-      for (String other_element : other.superKeys) {
-        __this__superKeys.add(other_element);
-      }
-      this.superKeys = __this__superKeys;
+      this.columnsToFetch = __this__columnsToFetch;
     }
   }
 
@@ -206,35 +213,36 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
 
   @Override
   public void clear() {
-    this.locationId = null;
+    this.rowId = null;
     setRecordOnlyIsSet(false);
     this.recordOnly = false;
-    this.columnFamilies = null;
-    this.columns = null;
-    this.superKeys = null;
+    this.recordId = null;
+    this.locationId = null;
+    this.columnFamiliesToFetch = null;
+    this.columnsToFetch = null;
   }
 
-  public String getLocationId() {
-    return this.locationId;
+  public String getRowId() {
+    return this.rowId;
   }
 
-  public Selector setLocationId(String locationId) {
-    this.locationId = locationId;
+  public Selector setRowId(String rowId) {
+    this.rowId = rowId;
     return this;
   }
 
-  public void unsetLocationId() {
-    this.locationId = null;
+  public void unsetRowId() {
+    this.rowId = null;
   }
 
-  /** Returns true if field locationId is set (has been asigned a value) and false otherwise */
-  public boolean isSetLocationId() {
-    return this.locationId != null;
+  /** Returns true if field rowId is set (has been asigned a value) and false otherwise */
+  public boolean isSetRowId() {
+    return this.rowId != null;
   }
 
-  public void setLocationIdIsSet(boolean value) {
+  public void setRowIdIsSet(boolean value) {
     if (!value) {
-      this.locationId = null;
+      this.rowId = null;
     }
   }
 
@@ -261,126 +269,135 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     __isset_bit_vector.set(__RECORDONLY_ISSET_ID, value);
   }
 
-  public int getColumnFamiliesSize() {
-    return (this.columnFamilies == null) ? 0 : this.columnFamilies.size();
+  public String getRecordId() {
+    return this.recordId;
   }
 
-  public java.util.Iterator<String> getColumnFamiliesIterator() {
-    return (this.columnFamilies == null) ? null : this.columnFamilies.iterator();
-  }
-
-  public void addToColumnFamilies(String elem) {
-    if (this.columnFamilies == null) {
-      this.columnFamilies = new HashSet<String>();
-    }
-    this.columnFamilies.add(elem);
-  }
-
-  public Set<String> getColumnFamilies() {
-    return this.columnFamilies;
-  }
-
-  public Selector setColumnFamilies(Set<String> columnFamilies) {
-    this.columnFamilies = columnFamilies;
+  public Selector setRecordId(String recordId) {
+    this.recordId = recordId;
     return this;
   }
 
-  public void unsetColumnFamilies() {
-    this.columnFamilies = null;
+  public void unsetRecordId() {
+    this.recordId = null;
   }
 
-  /** Returns true if field columnFamilies is set (has been asigned a value) and false otherwise */
-  public boolean isSetColumnFamilies() {
-    return this.columnFamilies != null;
+  /** Returns true if field recordId is set (has been asigned a value) and false otherwise */
+  public boolean isSetRecordId() {
+    return this.recordId != null;
   }
 
-  public void setColumnFamiliesIsSet(boolean value) {
+  public void setRecordIdIsSet(boolean value) {
     if (!value) {
-      this.columnFamilies = null;
+      this.recordId = null;
     }
   }
 
-  public int getColumnsSize() {
-    return (this.columns == null) ? 0 : this.columns.size();
+  public String getLocationId() {
+    return this.locationId;
   }
 
-  public void putToColumns(String key, Set<String> val) {
-    if (this.columns == null) {
-      this.columns = new HashMap<String,Set<String>>();
-    }
-    this.columns.put(key, val);
-  }
-
-  public Map<String,Set<String>> getColumns() {
-    return this.columns;
-  }
-
-  public Selector setColumns(Map<String,Set<String>> columns) {
-    this.columns = columns;
+  public Selector setLocationId(String locationId) {
+    this.locationId = locationId;
     return this;
   }
 
-  public void unsetColumns() {
-    this.columns = null;
+  public void unsetLocationId() {
+    this.locationId = null;
   }
 
-  /** Returns true if field columns is set (has been asigned a value) and false otherwise */
-  public boolean isSetColumns() {
-    return this.columns != null;
+  /** Returns true if field locationId is set (has been asigned a value) and false otherwise */
+  public boolean isSetLocationId() {
+    return this.locationId != null;
   }
 
-  public void setColumnsIsSet(boolean value) {
+  public void setLocationIdIsSet(boolean value) {
     if (!value) {
-      this.columns = null;
+      this.locationId = null;
     }
   }
 
-  public int getSuperKeysSize() {
-    return (this.superKeys == null) ? 0 : this.superKeys.size();
+  public int getColumnFamiliesToFetchSize() {
+    return (this.columnFamiliesToFetch == null) ? 0 : this.columnFamiliesToFetch.size();
   }
 
-  public java.util.Iterator<String> getSuperKeysIterator() {
-    return (this.superKeys == null) ? null : this.superKeys.iterator();
+  public java.util.Iterator<String> getColumnFamiliesToFetchIterator() {
+    return (this.columnFamiliesToFetch == null) ? null : this.columnFamiliesToFetch.iterator();
   }
 
-  public void addToSuperKeys(String elem) {
-    if (this.superKeys == null) {
-      this.superKeys = new HashSet<String>();
+  public void addToColumnFamiliesToFetch(String elem) {
+    if (this.columnFamiliesToFetch == null) {
+      this.columnFamiliesToFetch = new HashSet<String>();
     }
-    this.superKeys.add(elem);
+    this.columnFamiliesToFetch.add(elem);
   }
 
-  public Set<String> getSuperKeys() {
-    return this.superKeys;
+  public Set<String> getColumnFamiliesToFetch() {
+    return this.columnFamiliesToFetch;
   }
 
-  public Selector setSuperKeys(Set<String> superKeys) {
-    this.superKeys = superKeys;
+  public Selector setColumnFamiliesToFetch(Set<String> columnFamiliesToFetch) {
+    this.columnFamiliesToFetch = columnFamiliesToFetch;
     return this;
   }
 
-  public void unsetSuperKeys() {
-    this.superKeys = null;
+  public void unsetColumnFamiliesToFetch() {
+    this.columnFamiliesToFetch = null;
   }
 
-  /** Returns true if field superKeys is set (has been asigned a value) and false otherwise */
-  public boolean isSetSuperKeys() {
-    return this.superKeys != null;
+  /** Returns true if field columnFamiliesToFetch is set (has been asigned a value) and false otherwise */
+  public boolean isSetColumnFamiliesToFetch() {
+    return this.columnFamiliesToFetch != null;
   }
 
-  public void setSuperKeysIsSet(boolean value) {
+  public void setColumnFamiliesToFetchIsSet(boolean value) {
     if (!value) {
-      this.superKeys = null;
+      this.columnFamiliesToFetch = null;
+    }
+  }
+
+  public int getColumnsToFetchSize() {
+    return (this.columnsToFetch == null) ? 0 : this.columnsToFetch.size();
+  }
+
+  public void putToColumnsToFetch(String key, Set<String> val) {
+    if (this.columnsToFetch == null) {
+      this.columnsToFetch = new HashMap<String,Set<String>>();
+    }
+    this.columnsToFetch.put(key, val);
+  }
+
+  public Map<String,Set<String>> getColumnsToFetch() {
+    return this.columnsToFetch;
+  }
+
+  public Selector setColumnsToFetch(Map<String,Set<String>> columnsToFetch) {
+    this.columnsToFetch = columnsToFetch;
+    return this;
+  }
+
+  public void unsetColumnsToFetch() {
+    this.columnsToFetch = null;
+  }
+
+  /** Returns true if field columnsToFetch is set (has been asigned a value) and false otherwise */
+  public boolean isSetColumnsToFetch() {
+    return this.columnsToFetch != null;
+  }
+
+  public void setColumnsToFetchIsSet(boolean value) {
+    if (!value) {
+      this.columnsToFetch = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case LOCATION_ID:
+    case ROW_ID:
       if (value == null) {
-        unsetLocationId();
+        unsetRowId();
       } else {
-        setLocationId((String)value);
+        setRowId((String)value);
       }
       break;
 
@@ -392,27 +409,35 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       }
       break;
 
-    case COLUMN_FAMILIES:
+    case RECORD_ID:
       if (value == null) {
-        unsetColumnFamilies();
+        unsetRecordId();
       } else {
-        setColumnFamilies((Set<String>)value);
+        setRecordId((String)value);
       }
       break;
 
-    case COLUMNS:
+    case LOCATION_ID:
       if (value == null) {
-        unsetColumns();
+        unsetLocationId();
       } else {
-        setColumns((Map<String,Set<String>>)value);
+        setLocationId((String)value);
       }
       break;
 
-    case SUPER_KEYS:
+    case COLUMN_FAMILIES_TO_FETCH:
       if (value == null) {
-        unsetSuperKeys();
+        unsetColumnFamiliesToFetch();
       } else {
-        setSuperKeys((Set<String>)value);
+        setColumnFamiliesToFetch((Set<String>)value);
+      }
+      break;
+
+    case COLUMNS_TO_FETCH:
+      if (value == null) {
+        unsetColumnsToFetch();
+      } else {
+        setColumnsToFetch((Map<String,Set<String>>)value);
       }
       break;
 
@@ -421,20 +446,23 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case LOCATION_ID:
-      return getLocationId();
+    case ROW_ID:
+      return getRowId();
 
     case RECORD_ONLY:
       return new Boolean(isRecordOnly());
 
-    case COLUMN_FAMILIES:
-      return getColumnFamilies();
+    case RECORD_ID:
+      return getRecordId();
 
-    case COLUMNS:
-      return getColumns();
+    case LOCATION_ID:
+      return getLocationId();
 
-    case SUPER_KEYS:
-      return getSuperKeys();
+    case COLUMN_FAMILIES_TO_FETCH:
+      return getColumnFamiliesToFetch();
+
+    case COLUMNS_TO_FETCH:
+      return getColumnsToFetch();
 
     }
     throw new IllegalStateException();
@@ -447,16 +475,18 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     }
 
     switch (field) {
-    case LOCATION_ID:
-      return isSetLocationId();
+    case ROW_ID:
+      return isSetRowId();
     case RECORD_ONLY:
       return isSetRecordOnly();
-    case COLUMN_FAMILIES:
-      return isSetColumnFamilies();
-    case COLUMNS:
-      return isSetColumns();
-    case SUPER_KEYS:
-      return isSetSuperKeys();
+    case RECORD_ID:
+      return isSetRecordId();
+    case LOCATION_ID:
+      return isSetLocationId();
+    case COLUMN_FAMILIES_TO_FETCH:
+      return isSetColumnFamiliesToFetch();
+    case COLUMNS_TO_FETCH:
+      return isSetColumnsToFetch();
     }
     throw new IllegalStateException();
   }
@@ -474,12 +504,12 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     if (that == null)
       return false;
 
-    boolean this_present_locationId = true && this.isSetLocationId();
-    boolean that_present_locationId = true && that.isSetLocationId();
-    if (this_present_locationId || that_present_locationId) {
-      if (!(this_present_locationId && that_present_locationId))
+    boolean this_present_rowId = true && this.isSetRowId();
+    boolean that_present_rowId = true && that.isSetRowId();
+    if (this_present_rowId || that_present_rowId) {
+      if (!(this_present_rowId && that_present_rowId))
         return false;
-      if (!this.locationId.equals(that.locationId))
+      if (!this.rowId.equals(that.rowId))
         return false;
     }
 
@@ -492,30 +522,39 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
         return false;
     }
 
-    boolean this_present_columnFamilies = true && this.isSetColumnFamilies();
-    boolean that_present_columnFamilies = true && that.isSetColumnFamilies();
-    if (this_present_columnFamilies || that_present_columnFamilies) {
-      if (!(this_present_columnFamilies && that_present_columnFamilies))
+    boolean this_present_recordId = true && this.isSetRecordId();
+    boolean that_present_recordId = true && that.isSetRecordId();
+    if (this_present_recordId || that_present_recordId) {
+      if (!(this_present_recordId && that_present_recordId))
         return false;
-      if (!this.columnFamilies.equals(that.columnFamilies))
-        return false;
-    }
-
-    boolean this_present_columns = true && this.isSetColumns();
-    boolean that_present_columns = true && that.isSetColumns();
-    if (this_present_columns || that_present_columns) {
-      if (!(this_present_columns && that_present_columns))
-        return false;
-      if (!this.columns.equals(that.columns))
+      if (!this.recordId.equals(that.recordId))
         return false;
     }
 
-    boolean this_present_superKeys = true && this.isSetSuperKeys();
-    boolean that_present_superKeys = true && that.isSetSuperKeys();
-    if (this_present_superKeys || that_present_superKeys) {
-      if (!(this_present_superKeys && that_present_superKeys))
+    boolean this_present_locationId = true && this.isSetLocationId();
+    boolean that_present_locationId = true && that.isSetLocationId();
+    if (this_present_locationId || that_present_locationId) {
+      if (!(this_present_locationId && that_present_locationId))
         return false;
-      if (!this.superKeys.equals(that.superKeys))
+      if (!this.locationId.equals(that.locationId))
+        return false;
+    }
+
+    boolean this_present_columnFamiliesToFetch = true && this.isSetColumnFamiliesToFetch();
+    boolean that_present_columnFamiliesToFetch = true && that.isSetColumnFamiliesToFetch();
+    if (this_present_columnFamiliesToFetch || that_present_columnFamiliesToFetch) {
+      if (!(this_present_columnFamiliesToFetch && that_present_columnFamiliesToFetch))
+        return false;
+      if (!this.columnFamiliesToFetch.equals(that.columnFamiliesToFetch))
+        return false;
+    }
+
+    boolean this_present_columnsToFetch = true && this.isSetColumnsToFetch();
+    boolean that_present_columnsToFetch = true && that.isSetColumnsToFetch();
+    if (this_present_columnsToFetch || that_present_columnsToFetch) {
+      if (!(this_present_columnsToFetch && that_present_columnsToFetch))
+        return false;
+      if (!this.columnsToFetch.equals(that.columnsToFetch))
         return false;
     }
 
@@ -535,12 +574,12 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     int lastComparison = 0;
     Selector typedOther = (Selector)other;
 
-    lastComparison = Boolean.valueOf(isSetLocationId()).compareTo(typedOther.isSetLocationId());
+    lastComparison = Boolean.valueOf(isSetRowId()).compareTo(typedOther.isSetRowId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetLocationId()) {
-      lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
+    if (isSetRowId()) {
+      lastComparison = TBaseHelper.compareTo(this.rowId, typedOther.rowId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -555,32 +594,42 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetColumnFamilies()).compareTo(typedOther.isSetColumnFamilies());
+    lastComparison = Boolean.valueOf(isSetRecordId()).compareTo(typedOther.isSetRecordId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumnFamilies()) {
-      lastComparison = TBaseHelper.compareTo(this.columnFamilies, typedOther.columnFamilies);
+    if (isSetRecordId()) {
+      lastComparison = TBaseHelper.compareTo(this.recordId, typedOther.recordId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetColumns()).compareTo(typedOther.isSetColumns());
+    lastComparison = Boolean.valueOf(isSetLocationId()).compareTo(typedOther.isSetLocationId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumns()) {
-      lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
+    if (isSetLocationId()) {
+      lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetSuperKeys()).compareTo(typedOther.isSetSuperKeys());
+    lastComparison = Boolean.valueOf(isSetColumnFamiliesToFetch()).compareTo(typedOther.isSetColumnFamiliesToFetch());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetSuperKeys()) {
-      lastComparison = TBaseHelper.compareTo(this.superKeys, typedOther.superKeys);
+    if (isSetColumnFamiliesToFetch()) {
+      lastComparison = TBaseHelper.compareTo(this.columnFamiliesToFetch, typedOther.columnFamiliesToFetch);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetColumnsToFetch()).compareTo(typedOther.isSetColumnsToFetch());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetColumnsToFetch()) {
+      lastComparison = TBaseHelper.compareTo(this.columnsToFetch, typedOther.columnsToFetch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -602,9 +651,9 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
         break;
       }
       switch (field.id) {
-        case 1: // LOCATION_ID
+        case 1: // ROW_ID
           if (field.type == TType.STRING) {
-            this.locationId = iprot.readString();
+            this.rowId = iprot.readString();
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -617,16 +666,30 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // COLUMN_FAMILIES
+        case 3: // RECORD_ID
+          if (field.type == TType.STRING) {
+            this.recordId = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 4: // LOCATION_ID
+          if (field.type == TType.STRING) {
+            this.locationId = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 5: // COLUMN_FAMILIES_TO_FETCH
           if (field.type == TType.SET) {
             {
-              TSet _set38 = iprot.readSetBegin();
-              this.columnFamilies = new HashSet<String>(2*_set38.size);
-              for (int _i39 = 0; _i39 < _set38.size; ++_i39)
+              TSet _set46 = iprot.readSetBegin();
+              this.columnFamiliesToFetch = new HashSet<String>(2*_set46.size);
+              for (int _i47 = 0; _i47 < _set46.size; ++_i47)
               {
-                String _elem40;
-                _elem40 = iprot.readString();
-                this.columnFamilies.add(_elem40);
+                String _elem48;
+                _elem48 = iprot.readString();
+                this.columnFamiliesToFetch.add(_elem48);
               }
               iprot.readSetEnd();
             }
@@ -634,47 +697,30 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // COLUMNS
+        case 6: // COLUMNS_TO_FETCH
           if (field.type == TType.MAP) {
             {
-              TMap _map41 = iprot.readMapBegin();
-              this.columns = new HashMap<String,Set<String>>(2*_map41.size);
-              for (int _i42 = 0; _i42 < _map41.size; ++_i42)
+              TMap _map49 = iprot.readMapBegin();
+              this.columnsToFetch = new HashMap<String,Set<String>>(2*_map49.size);
+              for (int _i50 = 0; _i50 < _map49.size; ++_i50)
               {
-                String _key43;
-                Set<String> _val44;
-                _key43 = iprot.readString();
+                String _key51;
+                Set<String> _val52;
+                _key51 = iprot.readString();
                 {
-                  TSet _set45 = iprot.readSetBegin();
-                  _val44 = new HashSet<String>(2*_set45.size);
-                  for (int _i46 = 0; _i46 < _set45.size; ++_i46)
+                  TSet _set53 = iprot.readSetBegin();
+                  _val52 = new HashSet<String>(2*_set53.size);
+                  for (int _i54 = 0; _i54 < _set53.size; ++_i54)
                   {
-                    String _elem47;
-                    _elem47 = iprot.readString();
-                    _val44.add(_elem47);
+                    String _elem55;
+                    _elem55 = iprot.readString();
+                    _val52.add(_elem55);
                   }
                   iprot.readSetEnd();
                 }
-                this.columns.put(_key43, _val44);
+                this.columnsToFetch.put(_key51, _val52);
               }
               iprot.readMapEnd();
-            }
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 5: // SUPER_KEYS
-          if (field.type == TType.SET) {
-            {
-              TSet _set48 = iprot.readSetBegin();
-              this.superKeys = new HashSet<String>(2*_set48.size);
-              for (int _i49 = 0; _i49 < _set48.size; ++_i49)
-              {
-                String _elem50;
-                _elem50 = iprot.readString();
-                this.superKeys.add(_elem50);
-              }
-              iprot.readSetEnd();
             }
           } else { 
             TProtocolUtil.skip(iprot, field.type);
@@ -695,55 +741,53 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.locationId != null) {
-      oprot.writeFieldBegin(LOCATION_ID_FIELD_DESC);
-      oprot.writeString(this.locationId);
+    if (this.rowId != null) {
+      oprot.writeFieldBegin(ROW_ID_FIELD_DESC);
+      oprot.writeString(this.rowId);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldBegin(RECORD_ONLY_FIELD_DESC);
     oprot.writeBool(this.recordOnly);
     oprot.writeFieldEnd();
-    if (this.columnFamilies != null) {
-      oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
+    if (this.recordId != null) {
+      oprot.writeFieldBegin(RECORD_ID_FIELD_DESC);
+      oprot.writeString(this.recordId);
+      oprot.writeFieldEnd();
+    }
+    if (this.locationId != null) {
+      oprot.writeFieldBegin(LOCATION_ID_FIELD_DESC);
+      oprot.writeString(this.locationId);
+      oprot.writeFieldEnd();
+    }
+    if (this.columnFamiliesToFetch != null) {
+      oprot.writeFieldBegin(COLUMN_FAMILIES_TO_FETCH_FIELD_DESC);
       {
-        oprot.writeSetBegin(new TSet(TType.STRING, this.columnFamilies.size()));
-        for (String _iter51 : this.columnFamilies)
+        oprot.writeSetBegin(new TSet(TType.STRING, this.columnFamiliesToFetch.size()));
+        for (String _iter56 : this.columnFamiliesToFetch)
         {
-          oprot.writeString(_iter51);
+          oprot.writeString(_iter56);
         }
         oprot.writeSetEnd();
       }
       oprot.writeFieldEnd();
     }
-    if (this.columns != null) {
-      oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
+    if (this.columnsToFetch != null) {
+      oprot.writeFieldBegin(COLUMNS_TO_FETCH_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.columns.size()));
-        for (Map.Entry<String, Set<String>> _iter52 : this.columns.entrySet())
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.columnsToFetch.size()));
+        for (Map.Entry<String, Set<String>> _iter57 : this.columnsToFetch.entrySet())
         {
-          oprot.writeString(_iter52.getKey());
+          oprot.writeString(_iter57.getKey());
           {
-            oprot.writeSetBegin(new TSet(TType.STRING, _iter52.getValue().size()));
-            for (String _iter53 : _iter52.getValue())
+            oprot.writeSetBegin(new TSet(TType.STRING, _iter57.getValue().size()));
+            for (String _iter58 : _iter57.getValue())
             {
-              oprot.writeString(_iter53);
+              oprot.writeString(_iter58);
             }
             oprot.writeSetEnd();
           }
         }
         oprot.writeMapEnd();
-      }
-      oprot.writeFieldEnd();
-    }
-    if (this.superKeys != null) {
-      oprot.writeFieldBegin(SUPER_KEYS_FIELD_DESC);
-      {
-        oprot.writeSetBegin(new TSet(TType.STRING, this.superKeys.size()));
-        for (String _iter54 : this.superKeys)
-        {
-          oprot.writeString(_iter54);
-        }
-        oprot.writeSetEnd();
       }
       oprot.writeFieldEnd();
     }
@@ -756,6 +800,26 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     StringBuilder sb = new StringBuilder("Selector(");
     boolean first = true;
 
+    sb.append("rowId:");
+    if (this.rowId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.rowId);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("recordOnly:");
+    sb.append(this.recordOnly);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("recordId:");
+    if (this.recordId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.recordId);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("locationId:");
     if (this.locationId == null) {
       sb.append("null");
@@ -764,31 +828,19 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("recordOnly:");
-    sb.append(this.recordOnly);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("columnFamilies:");
-    if (this.columnFamilies == null) {
+    sb.append("columnFamiliesToFetch:");
+    if (this.columnFamiliesToFetch == null) {
       sb.append("null");
     } else {
-      sb.append(this.columnFamilies);
+      sb.append(this.columnFamiliesToFetch);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("columns:");
-    if (this.columns == null) {
+    sb.append("columnsToFetch:");
+    if (this.columnsToFetch == null) {
       sb.append("null");
     } else {
-      sb.append(this.columns);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("superKeys:");
-    if (this.superKeys == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.superKeys);
+      sb.append(this.columnsToFetch);
     }
     first = false;
     sb.append(")");

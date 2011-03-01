@@ -362,25 +362,25 @@ public class Schema implements TBase<Schema, Schema._Fields>, java.io.Serializab
         case 2: // COLUMN_FAMILIES
           if (field.type == TType.MAP) {
             {
-              TMap _map64 = iprot.readMapBegin();
-              this.columnFamilies = new HashMap<String,Set<String>>(2*_map64.size);
-              for (int _i65 = 0; _i65 < _map64.size; ++_i65)
+              TMap _map59 = iprot.readMapBegin();
+              this.columnFamilies = new HashMap<String,Set<String>>(2*_map59.size);
+              for (int _i60 = 0; _i60 < _map59.size; ++_i60)
               {
-                String _key66;
-                Set<String> _val67;
-                _key66 = iprot.readString();
+                String _key61;
+                Set<String> _val62;
+                _key61 = iprot.readString();
                 {
-                  TSet _set68 = iprot.readSetBegin();
-                  _val67 = new HashSet<String>(2*_set68.size);
-                  for (int _i69 = 0; _i69 < _set68.size; ++_i69)
+                  TSet _set63 = iprot.readSetBegin();
+                  _val62 = new HashSet<String>(2*_set63.size);
+                  for (int _i64 = 0; _i64 < _set63.size; ++_i64)
                   {
-                    String _elem70;
-                    _elem70 = iprot.readString();
-                    _val67.add(_elem70);
+                    String _elem65;
+                    _elem65 = iprot.readString();
+                    _val62.add(_elem65);
                   }
                   iprot.readSetEnd();
                 }
-                this.columnFamilies.put(_key66, _val67);
+                this.columnFamilies.put(_key61, _val62);
               }
               iprot.readMapEnd();
             }
@@ -412,14 +412,14 @@ public class Schema implements TBase<Schema, Schema._Fields>, java.io.Serializab
       oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.columnFamilies.size()));
-        for (Map.Entry<String, Set<String>> _iter71 : this.columnFamilies.entrySet())
+        for (Map.Entry<String, Set<String>> _iter66 : this.columnFamilies.entrySet())
         {
-          oprot.writeString(_iter71.getKey());
+          oprot.writeString(_iter66.getKey());
           {
-            oprot.writeSetBegin(new TSet(TType.STRING, _iter71.getValue().size()));
-            for (String _iter72 : _iter71.getValue())
+            oprot.writeSetBegin(new TSet(TType.STRING, _iter66.getValue().size()));
+            for (String _iter67 : _iter66.getValue())
             {
-              oprot.writeString(_iter72);
+              oprot.writeString(_iter67);
             }
             oprot.writeSetEnd();
           }

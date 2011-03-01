@@ -30,15 +30,15 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
   private static final TStruct STRUCT_DESC = new TStruct("ColumnFamily");
 
   private static final TField FAMILY_FIELD_DESC = new TField("family", TType.STRING, (short)1);
-  private static final TField COLUMNS_FIELD_DESC = new TField("columns", TType.MAP, (short)2);
+  private static final TField RECORDS_FIELD_DESC = new TField("records", TType.MAP, (short)2);
 
   public String family;
-  public Map<String,Set<Column>> columns;
+  public Map<String,Set<Column>> records;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     FAMILY((short)1, "family"),
-    COLUMNS((short)2, "columns");
+    RECORDS((short)2, "records");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -55,8 +55,8 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
       switch(fieldId) {
         case 1: // FAMILY
           return FAMILY;
-        case 2: // COLUMNS
-          return COLUMNS;
+        case 2: // RECORDS
+          return RECORDS;
         default:
           return null;
       }
@@ -103,7 +103,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.FAMILY, new FieldMetaData("family", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.COLUMNS, new FieldMetaData("columns", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.RECORDS, new FieldMetaData("records", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new SetMetaData(TType.SET, 
@@ -117,11 +117,11 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
 
   public ColumnFamily(
     String family,
-    Map<String,Set<Column>> columns)
+    Map<String,Set<Column>> records)
   {
     this();
     this.family = family;
-    this.columns = columns;
+    this.records = records;
   }
 
   /**
@@ -131,23 +131,23 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     if (other.isSetFamily()) {
       this.family = other.family;
     }
-    if (other.isSetColumns()) {
-      Map<String,Set<Column>> __this__columns = new HashMap<String,Set<Column>>();
-      for (Map.Entry<String, Set<Column>> other_element : other.columns.entrySet()) {
+    if (other.isSetRecords()) {
+      Map<String,Set<Column>> __this__records = new HashMap<String,Set<Column>>();
+      for (Map.Entry<String, Set<Column>> other_element : other.records.entrySet()) {
 
         String other_element_key = other_element.getKey();
         Set<Column> other_element_value = other_element.getValue();
 
-        String __this__columns_copy_key = other_element_key;
+        String __this__records_copy_key = other_element_key;
 
-        Set<Column> __this__columns_copy_value = new HashSet<Column>();
+        Set<Column> __this__records_copy_value = new HashSet<Column>();
         for (Column other_element_value_element : other_element_value) {
-          __this__columns_copy_value.add(new Column(other_element_value_element));
+          __this__records_copy_value.add(new Column(other_element_value_element));
         }
 
-        __this__columns.put(__this__columns_copy_key, __this__columns_copy_value);
+        __this__records.put(__this__records_copy_key, __this__records_copy_value);
       }
-      this.columns = __this__columns;
+      this.records = __this__records;
     }
   }
 
@@ -158,7 +158,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
   @Override
   public void clear() {
     this.family = null;
-    this.columns = null;
+    this.records = null;
   }
 
   public String getFamily() {
@@ -185,38 +185,38 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     }
   }
 
-  public int getColumnsSize() {
-    return (this.columns == null) ? 0 : this.columns.size();
+  public int getRecordsSize() {
+    return (this.records == null) ? 0 : this.records.size();
   }
 
-  public void putToColumns(String key, Set<Column> val) {
-    if (this.columns == null) {
-      this.columns = new HashMap<String,Set<Column>>();
+  public void putToRecords(String key, Set<Column> val) {
+    if (this.records == null) {
+      this.records = new HashMap<String,Set<Column>>();
     }
-    this.columns.put(key, val);
+    this.records.put(key, val);
   }
 
-  public Map<String,Set<Column>> getColumns() {
-    return this.columns;
+  public Map<String,Set<Column>> getRecords() {
+    return this.records;
   }
 
-  public ColumnFamily setColumns(Map<String,Set<Column>> columns) {
-    this.columns = columns;
+  public ColumnFamily setRecords(Map<String,Set<Column>> records) {
+    this.records = records;
     return this;
   }
 
-  public void unsetColumns() {
-    this.columns = null;
+  public void unsetRecords() {
+    this.records = null;
   }
 
-  /** Returns true if field columns is set (has been asigned a value) and false otherwise */
-  public boolean isSetColumns() {
-    return this.columns != null;
+  /** Returns true if field records is set (has been asigned a value) and false otherwise */
+  public boolean isSetRecords() {
+    return this.records != null;
   }
 
-  public void setColumnsIsSet(boolean value) {
+  public void setRecordsIsSet(boolean value) {
     if (!value) {
-      this.columns = null;
+      this.records = null;
     }
   }
 
@@ -230,11 +230,11 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
       }
       break;
 
-    case COLUMNS:
+    case RECORDS:
       if (value == null) {
-        unsetColumns();
+        unsetRecords();
       } else {
-        setColumns((Map<String,Set<Column>>)value);
+        setRecords((Map<String,Set<Column>>)value);
       }
       break;
 
@@ -246,8 +246,8 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     case FAMILY:
       return getFamily();
 
-    case COLUMNS:
-      return getColumns();
+    case RECORDS:
+      return getRecords();
 
     }
     throw new IllegalStateException();
@@ -262,8 +262,8 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     switch (field) {
     case FAMILY:
       return isSetFamily();
-    case COLUMNS:
-      return isSetColumns();
+    case RECORDS:
+      return isSetRecords();
     }
     throw new IllegalStateException();
   }
@@ -290,12 +290,12 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
         return false;
     }
 
-    boolean this_present_columns = true && this.isSetColumns();
-    boolean that_present_columns = true && that.isSetColumns();
-    if (this_present_columns || that_present_columns) {
-      if (!(this_present_columns && that_present_columns))
+    boolean this_present_records = true && this.isSetRecords();
+    boolean that_present_records = true && that.isSetRecords();
+    if (this_present_records || that_present_records) {
+      if (!(this_present_records && that_present_records))
         return false;
-      if (!this.columns.equals(that.columns))
+      if (!this.records.equals(that.records))
         return false;
     }
 
@@ -325,12 +325,12 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetColumns()).compareTo(typedOther.isSetColumns());
+    lastComparison = Boolean.valueOf(isSetRecords()).compareTo(typedOther.isSetRecords());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumns()) {
-      lastComparison = TBaseHelper.compareTo(this.columns, typedOther.columns);
+    if (isSetRecords()) {
+      lastComparison = TBaseHelper.compareTo(this.records, typedOther.records);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -359,29 +359,29 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // COLUMNS
+        case 2: // RECORDS
           if (field.type == TType.MAP) {
             {
-              TMap _map21 = iprot.readMapBegin();
-              this.columns = new HashMap<String,Set<Column>>(2*_map21.size);
-              for (int _i22 = 0; _i22 < _map21.size; ++_i22)
+              TMap _map29 = iprot.readMapBegin();
+              this.records = new HashMap<String,Set<Column>>(2*_map29.size);
+              for (int _i30 = 0; _i30 < _map29.size; ++_i30)
               {
-                String _key23;
-                Set<Column> _val24;
-                _key23 = iprot.readString();
+                String _key31;
+                Set<Column> _val32;
+                _key31 = iprot.readString();
                 {
-                  TSet _set25 = iprot.readSetBegin();
-                  _val24 = new HashSet<Column>(2*_set25.size);
-                  for (int _i26 = 0; _i26 < _set25.size; ++_i26)
+                  TSet _set33 = iprot.readSetBegin();
+                  _val32 = new HashSet<Column>(2*_set33.size);
+                  for (int _i34 = 0; _i34 < _set33.size; ++_i34)
                   {
-                    Column _elem27;
-                    _elem27 = new Column();
-                    _elem27.read(iprot);
-                    _val24.add(_elem27);
+                    Column _elem35;
+                    _elem35 = new Column();
+                    _elem35.read(iprot);
+                    _val32.add(_elem35);
                   }
                   iprot.readSetEnd();
                 }
-                this.columns.put(_key23, _val24);
+                this.records.put(_key31, _val32);
               }
               iprot.readMapEnd();
             }
@@ -409,18 +409,18 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
       oprot.writeString(this.family);
       oprot.writeFieldEnd();
     }
-    if (this.columns != null) {
-      oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
+    if (this.records != null) {
+      oprot.writeFieldBegin(RECORDS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.columns.size()));
-        for (Map.Entry<String, Set<Column>> _iter28 : this.columns.entrySet())
+        oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.records.size()));
+        for (Map.Entry<String, Set<Column>> _iter36 : this.records.entrySet())
         {
-          oprot.writeString(_iter28.getKey());
+          oprot.writeString(_iter36.getKey());
           {
-            oprot.writeSetBegin(new TSet(TType.STRUCT, _iter28.getValue().size()));
-            for (Column _iter29 : _iter28.getValue())
+            oprot.writeSetBegin(new TSet(TType.STRUCT, _iter36.getValue().size()));
+            for (Column _iter37 : _iter36.getValue())
             {
-              _iter29.write(oprot);
+              _iter37.write(oprot);
             }
             oprot.writeSetEnd();
           }
@@ -446,11 +446,11 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("columns:");
-    if (this.columns == null) {
+    sb.append("records:");
+    if (this.records == null) {
       sb.append("null");
     } else {
-      sb.append(this.columns);
+      sb.append(this.records);
     }
     first = false;
     sb.append(")");

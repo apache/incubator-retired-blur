@@ -19,8 +19,6 @@ import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.FacetQuery;
-import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -146,11 +144,6 @@ public class BlurControllerServerTest {
             
             @Override
             public FetchResult fetchRow(String arg0, Selector arg1) throws BlurException, TException {
-                throw new RuntimeException("no impl");
-            }
-            
-            @Override
-            public FacetResult facetSearch(String arg0, FacetQuery arg1) throws BlurException, TException {
                 throw new RuntimeException("no impl");
             }
             

@@ -11,6 +11,11 @@ enum ScoreType {
   CONSTANT
 }
 
+struct Facet {
+  1:string queryStr,
+  2:i64 minimumNumberOfHits
+}
+
 struct SearchQuery {
   1:string queryStr,
   2:bool superQueryOn,
@@ -21,13 +26,18 @@ struct SearchQuery {
   7:i32 fetch, 
   8:i64 minimumNumberOfHits,
   9:i64 maxQueryTime,
-  10:i64 uuid
+  10:i64 uuid,
+  11:string userId,
+  12:bool resolveIds,
+  13:list<Facet> facets
 }
 
 struct Hit {
   1:string locationId,
-  2:double score,
-  3:string reason = "UNKNOWN"
+  2:string rowId,
+  3:string recordId,
+  4:double score,
+  5:string reason = "UNKNOWN"
 }
 
 struct Hits {
@@ -37,7 +47,8 @@ struct Hits {
   4:list<BlurException> exceptions,
   5:SearchQuery query,
   6:i64 realTime,
-  7:i64 cpuTime
+  7:i64 cpuTime,
+  8:list<i64> facetCounts
 }
 
 struct TableDescriptor {
@@ -53,7 +64,7 @@ struct Column {
 
 struct ColumnFamily {
   1:string family,
-  2:map<string,set<Column>> columns
+  2:map<string,set<Column>> records
 }
 
 struct Row {
@@ -70,43 +81,53 @@ struct FetchResult {
 }
 
 struct Selector {
-  1:string locationId,
+  1:string rowId,
   2:bool recordOnly,
-  3:set<string> columnFamilies,
-  4:map<string,set<string>> columns,
-  5:set<string> superKeys
-}
-
-struct Facet {
-  1:string queryStr,
-  2:i64 minimumNumberOfHits
-}
-
-struct FacetQuery {
-  1:SearchQuery searchQuery,
-  2:list<Facet> facets,
-  3:i64 maxQueryTime
-}
-
-struct FacetResult {
-  1:FacetQuery facetQuery,
-  2:map<Facet,i64> counts
+  3:string recordId,
+  4:string locationId,
+  5:set<string> columnFamiliesToFetch,
+  6:map<string,set<string>> columnsToFetch
 }
 
 struct SearchQueryStatus {
   1:SearchQuery query,
-  2:Facet facet,
-  3:i64 realTime,
-  4:i64 cpuTime,
-  5:double complete,
-  6:bool running,
-  7:bool interrupted,
-  8:i64 uuid
+  2:i64 realTime,
+  3:i64 cpuTime,
+  4:double complete,
+  5:bool running,
+  6:bool interrupted,
+  7:i64 uuid
 }
 
 struct Schema {
   1:string table,
   2:map<string,set<string>> columnFamilies
+}
+
+enum RecordMutationType {
+  DELETE_ENTIRE_RECORD,
+  REPLACE_ENTIRE_RECORD,
+  REPLACE_COLUMNS,
+  APPEND_COLUMN_VALUES
+}
+
+struct RecordMutation {
+  1:RecordMutationType recordMutationType,
+  2:string family,
+  3:string recordId,
+  4:set<Column> record
+}
+
+enum RowMutationType {
+  DELETE,
+  REPLACE,
+  UPDATE
+}
+
+struct RowMutation {
+  1:RowMutationType rowMutationType,
+  2:string rowId,
+  3:list<RecordMutation> recordMutations
 }
 
 service BlurSearch {
@@ -117,15 +138,18 @@ service BlurSearch {
   list<string> tableList() throws (1:BlurException ex)
   TableDescriptor describe(1:string table) throws (1:BlurException ex)
 
-  Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException be)
-  FacetResult facetSearch(1:string table, 2:FacetQuery facetQuery) throws (1:BlurException be)
-  void cancelSearch(1:i64 uuid) throws (1:BlurException be)
-  list<SearchQueryStatus> currentSearches(1:string table) throws (1:BlurException be)
+  Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException ex)
+  void cancelSearch(1:i64 uuid) throws (1:BlurException ex)
+  list<SearchQueryStatus> currentSearches(1:string table) throws (1:BlurException ex)
 
   Schema schema(1:string table) throws (1:BlurException ex)
   list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)
   i64 recordFrequency(1:string table, 2:string columnFamily, 3:string columnName, 4:string value) throws (1:BlurException ex)
 
-  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException be)
+  FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
+}
+
+service BlurUpdate extends BlurSearch {
+  void update(1:list<RowMutation> mutations) throws (1:BlurException ex)
 }
 

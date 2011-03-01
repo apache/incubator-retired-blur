@@ -46,9 +46,6 @@ import com.nearinfinity.blur.manager.status.SearchStatus;
 import com.nearinfinity.blur.manager.status.SearchStatusManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.Facet;
-import com.nearinfinity.blur.thrift.generated.FacetQuery;
-import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -302,19 +299,19 @@ public class IndexManager implements BlurConstants {
                 if (PRIME_DOC.equals(fieldName)) {
                     return FieldSelectorResult.NO_LOAD;
                 }
-                if (selector.columnFamilies == null && selector.columns == null) {
+                if (selector.columnFamiliesToFetch == null && selector.columnsToFetch == null) {
                     return FieldSelectorResult.LOAD;
                 }
                 String columnFamily = getColumnFamily(fieldName);
-                if (selector.columnFamilies != null) {
-                    if (selector.columnFamilies.contains(columnFamily)) {
+                if (selector.columnFamiliesToFetch != null) {
+                    if (selector.columnFamiliesToFetch.contains(columnFamily)) {
                         return FieldSelectorResult.LOAD;
                     }
                     return FieldSelectorResult.NO_LOAD;
                 }
                 String columnName = getColumnName(fieldName);
-                if (selector.columns != null) {
-                    Set<String> columns = selector.columns.get(columnFamily);
+                if (selector.columnsToFetch != null) {
+                    Set<String> columns = selector.columnsToFetch.get(columnFamily);
                     if (columns != null && columns.contains(columnName)) {
                         return FieldSelectorResult.LOAD;
                     }
@@ -454,58 +451,6 @@ public class IndexManager implements BlurConstants {
             }
         }
         return schema;
-    }
-
-    public void facetSearch(String table, FacetQuery facetQuery, FacetResult facetResult) throws Exception {
-        Map<String, IndexReader> indexReaders;
-        try {
-            indexReaders = indexServer.getIndexReaders(table);
-        } catch (IOException e) {
-            LOG.error("Unknown error while trying to fetch index readers.", e);
-            throw new BlurException(e.getMessage());
-        }
-        SearchQuery searchQuery = facetQuery.searchQuery;
-        if (!searchQuery.superQueryOn) {
-            throw new BlurException("Only super queries are supported");
-        }
-        Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, searchQuery.type);
-        Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, searchQuery.type);
-        Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
-                indexServer.getAnalyzer(table), postFilter, preFilter, searchQuery.type);
-        for (Facet facet : facetQuery.facets) {
-            long count = runFacet(table, indexReaders, userQuery, facet, Long.MAX_VALUE, facetQuery.maxQueryTime, searchQuery);
-            facetResult.putToCounts(facet, count);
-        }
-    }
-
-    private long runFacet(final String table, Map<String, IndexReader> indexReaders, Query userQuery, Facet facet, long minimumNumberOfHits, long maxQueryTime, SearchQuery searchQuery) throws Exception {
-        final SearchStatus status = statusManager.newSearchStatus(table, searchQuery, facet);
-        try {
-            Filter facetFilter = parseFilter(table, facet.queryStr, true, ScoreType.CONSTANT);
-            final FilteredQuery facetQuery = new FilteredQuery(userQuery, facetFilter);
-            HitsIterable hitsIterable = ForkJoin.execute(executor, indexReaders.entrySet(),
-                new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
-                    @Override
-                    public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
-                        status.attachThread();
-                        try {
-                            IndexReader reader = entry.getValue();
-                            String shard = entry.getKey();
-                            BlurSearcher searcher = new BlurSearcher(reader, 
-                                    PrimeDocCache.getTableCache().getShardCache(table).
-                                    getIndexReaderCache(shard));
-                            searcher.setSimilarity(indexServer.getSimilarity(table));
-                            return new HitsIterableSearcher((Query) facetQuery, table, shard, searcher);
-                        } finally {
-                            status.deattachThread();
-                        }
-                    }
-                }).merge(new MergerHitsIterable(minimumNumberOfHits, maxQueryTime));
-            return hitsIterable.getTotalHits();
-        } finally {
-            status.deattachThread();
-            statusManager.removeStatus(status);
-        }
     }
 
     public void setSearchStatusCleanupTimerDelay(long delay) {

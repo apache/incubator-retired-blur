@@ -51,8 +51,12 @@ public class HitsIterableBlurClient implements HitsIterable {
     private void performSearch() {
         try {
             long cursor = fetchCount * batch;
-            hits = client.search(table, new SearchQuery(query, superQueryOn, type, postSuperFilter, 
-                    preSuperFilter, cursor, fetchCount, minimumNumberOfHits, maxQueryTime, uuid));
+            
+            SearchQuery searchQuery = new SearchQuery(query, superQueryOn, type, 
+                    postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfHits, 
+                    maxQueryTime, uuid, null, false, null);
+            
+            hits = client.search(table, searchQuery);
             totalHits = hits.totalHits;
             shardInfo.putAll(hits.shardInfo);
             batch++;

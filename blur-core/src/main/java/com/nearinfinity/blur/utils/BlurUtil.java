@@ -23,17 +23,17 @@ public class BlurUtil {
         return selector;
     }
 
-    public static Row newRow(String id, ColumnFamily... columnFamilies) {
-        Row row = new Row().setId(id);
+    public static Row newRow(String rowId, ColumnFamily... columnFamilies) {
+        Row row = new Row().setId(rowId);
         for (ColumnFamily columnFamily : columnFamilies) {
             row.addToColumnFamilies(columnFamily);
         }
         return row;
     }
     
-    public static ColumnFamily newColumnFamily(String family, String id, Column... columns) {
+    public static ColumnFamily newColumnFamily(String family, String recordId, Column... columns) {
         ColumnFamily columnFamily = new ColumnFamily().setFamily(family);
-        columnFamily.putToColumns(id, newColumnSet(columns));
+        columnFamily.putToRecords(recordId, newColumnSet(columns));
         return columnFamily;
     }
     

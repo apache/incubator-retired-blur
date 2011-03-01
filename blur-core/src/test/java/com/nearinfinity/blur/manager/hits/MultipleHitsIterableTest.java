@@ -27,7 +27,7 @@ public class MultipleHitsIterableTest {
     private HitsIterable newHitsIterable(double... ds) {
         List<Hit> hits = new ArrayList<Hit>();
         for (double d : ds) {
-            hits.add(new Hit(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
+            hits.add(new Hit(UUID.randomUUID().toString() + "-" + Double.toString(d),null,null,d,null));
         }
         return new HitsIterableSimple(UUID.randomUUID().toString(), hits);
     }

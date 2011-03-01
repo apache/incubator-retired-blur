@@ -26,28 +26,33 @@ import org.apache.thrift.meta_data.*;
 import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
-public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Hit");
+public class RecordMutation implements TBase<RecordMutation, RecordMutation._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("RecordMutation");
 
-  private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)1);
-  private static final TField ROW_ID_FIELD_DESC = new TField("rowId", TType.STRING, (short)2);
+  private static final TField RECORD_MUTATION_TYPE_FIELD_DESC = new TField("recordMutationType", TType.I32, (short)1);
+  private static final TField FAMILY_FIELD_DESC = new TField("family", TType.STRING, (short)2);
   private static final TField RECORD_ID_FIELD_DESC = new TField("recordId", TType.STRING, (short)3);
-  private static final TField SCORE_FIELD_DESC = new TField("score", TType.DOUBLE, (short)4);
-  private static final TField REASON_FIELD_DESC = new TField("reason", TType.STRING, (short)5);
+  private static final TField RECORD_FIELD_DESC = new TField("record", TType.SET, (short)4);
 
-  public String locationId;
-  public String rowId;
+  /**
+   * 
+   * @see RecordMutationType
+   */
+  public RecordMutationType recordMutationType;
+  public String family;
   public String recordId;
-  public double score;
-  public String reason;
+  public Set<Column> record;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    LOCATION_ID((short)1, "locationId"),
-    ROW_ID((short)2, "rowId"),
+    /**
+     * 
+     * @see RecordMutationType
+     */
+    RECORD_MUTATION_TYPE((short)1, "recordMutationType"),
+    FAMILY((short)2, "family"),
     RECORD_ID((short)3, "recordId"),
-    SCORE((short)4, "score"),
-    REASON((short)5, "reason");
+    RECORD((short)4, "record");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -62,16 +67,14 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // LOCATION_ID
-          return LOCATION_ID;
-        case 2: // ROW_ID
-          return ROW_ID;
+        case 1: // RECORD_MUTATION_TYPE
+          return RECORD_MUTATION_TYPE;
+        case 2: // FAMILY
+          return FAMILY;
         case 3: // RECORD_ID
           return RECORD_ID;
-        case 4: // SCORE
-          return SCORE;
-        case 5: // REASON
-          return REASON;
+        case 4: // RECORD
+          return RECORD;
         default:
           return null;
       }
@@ -112,128 +115,126 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
   }
 
   // isset id assignments
-  private static final int __SCORE_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.LOCATION_ID, new FieldMetaData("locationId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.ROW_ID, new FieldMetaData("rowId", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.RECORD_MUTATION_TYPE, new FieldMetaData("recordMutationType", TFieldRequirementType.DEFAULT, 
+        new EnumMetaData(TType.ENUM, RecordMutationType.class)));
+    tmpMap.put(_Fields.FAMILY, new FieldMetaData("family", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.RECORD_ID, new FieldMetaData("recordId", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.SCORE, new FieldMetaData("score", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.DOUBLE)));
-    tmpMap.put(_Fields.REASON, new FieldMetaData("reason", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.RECORD, new FieldMetaData("record", TFieldRequirementType.DEFAULT, 
+        new SetMetaData(TType.SET, 
+            new StructMetaData(TType.STRUCT, Column.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Hit.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(RecordMutation.class, metaDataMap);
   }
 
-  public Hit() {
-    this.reason = "UNKNOWN";
-
+  public RecordMutation() {
   }
 
-  public Hit(
-    String locationId,
-    String rowId,
+  public RecordMutation(
+    RecordMutationType recordMutationType,
+    String family,
     String recordId,
-    double score,
-    String reason)
+    Set<Column> record)
   {
     this();
-    this.locationId = locationId;
-    this.rowId = rowId;
+    this.recordMutationType = recordMutationType;
+    this.family = family;
     this.recordId = recordId;
-    this.score = score;
-    setScoreIsSet(true);
-    this.reason = reason;
+    this.record = record;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Hit(Hit other) {
-    __isset_bit_vector.clear();
-    __isset_bit_vector.or(other.__isset_bit_vector);
-    if (other.isSetLocationId()) {
-      this.locationId = other.locationId;
+  public RecordMutation(RecordMutation other) {
+    if (other.isSetRecordMutationType()) {
+      this.recordMutationType = other.recordMutationType;
     }
-    if (other.isSetRowId()) {
-      this.rowId = other.rowId;
+    if (other.isSetFamily()) {
+      this.family = other.family;
     }
     if (other.isSetRecordId()) {
       this.recordId = other.recordId;
     }
-    this.score = other.score;
-    if (other.isSetReason()) {
-      this.reason = other.reason;
+    if (other.isSetRecord()) {
+      Set<Column> __this__record = new HashSet<Column>();
+      for (Column other_element : other.record) {
+        __this__record.add(new Column(other_element));
+      }
+      this.record = __this__record;
     }
   }
 
-  public Hit deepCopy() {
-    return new Hit(this);
+  public RecordMutation deepCopy() {
+    return new RecordMutation(this);
   }
 
   @Override
   public void clear() {
-    this.locationId = null;
-    this.rowId = null;
+    this.recordMutationType = null;
+    this.family = null;
     this.recordId = null;
-    setScoreIsSet(false);
-    this.score = 0.0;
-    this.reason = "UNKNOWN";
-
+    this.record = null;
   }
 
-  public String getLocationId() {
-    return this.locationId;
+  /**
+   * 
+   * @see RecordMutationType
+   */
+  public RecordMutationType getRecordMutationType() {
+    return this.recordMutationType;
   }
 
-  public Hit setLocationId(String locationId) {
-    this.locationId = locationId;
+  /**
+   * 
+   * @see RecordMutationType
+   */
+  public RecordMutation setRecordMutationType(RecordMutationType recordMutationType) {
+    this.recordMutationType = recordMutationType;
     return this;
   }
 
-  public void unsetLocationId() {
-    this.locationId = null;
+  public void unsetRecordMutationType() {
+    this.recordMutationType = null;
   }
 
-  /** Returns true if field locationId is set (has been asigned a value) and false otherwise */
-  public boolean isSetLocationId() {
-    return this.locationId != null;
+  /** Returns true if field recordMutationType is set (has been asigned a value) and false otherwise */
+  public boolean isSetRecordMutationType() {
+    return this.recordMutationType != null;
   }
 
-  public void setLocationIdIsSet(boolean value) {
+  public void setRecordMutationTypeIsSet(boolean value) {
     if (!value) {
-      this.locationId = null;
+      this.recordMutationType = null;
     }
   }
 
-  public String getRowId() {
-    return this.rowId;
+  public String getFamily() {
+    return this.family;
   }
 
-  public Hit setRowId(String rowId) {
-    this.rowId = rowId;
+  public RecordMutation setFamily(String family) {
+    this.family = family;
     return this;
   }
 
-  public void unsetRowId() {
-    this.rowId = null;
+  public void unsetFamily() {
+    this.family = null;
   }
 
-  /** Returns true if field rowId is set (has been asigned a value) and false otherwise */
-  public boolean isSetRowId() {
-    return this.rowId != null;
+  /** Returns true if field family is set (has been asigned a value) and false otherwise */
+  public boolean isSetFamily() {
+    return this.family != null;
   }
 
-  public void setRowIdIsSet(boolean value) {
+  public void setFamilyIsSet(boolean value) {
     if (!value) {
-      this.rowId = null;
+      this.family = null;
     }
   }
 
@@ -241,7 +242,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     return this.recordId;
   }
 
-  public Hit setRecordId(String recordId) {
+  public RecordMutation setRecordId(String recordId) {
     this.recordId = recordId;
     return this;
   }
@@ -261,68 +262,60 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     }
   }
 
-  public double getScore() {
-    return this.score;
+  public int getRecordSize() {
+    return (this.record == null) ? 0 : this.record.size();
   }
 
-  public Hit setScore(double score) {
-    this.score = score;
-    setScoreIsSet(true);
+  public java.util.Iterator<Column> getRecordIterator() {
+    return (this.record == null) ? null : this.record.iterator();
+  }
+
+  public void addToRecord(Column elem) {
+    if (this.record == null) {
+      this.record = new HashSet<Column>();
+    }
+    this.record.add(elem);
+  }
+
+  public Set<Column> getRecord() {
+    return this.record;
+  }
+
+  public RecordMutation setRecord(Set<Column> record) {
+    this.record = record;
     return this;
   }
 
-  public void unsetScore() {
-    __isset_bit_vector.clear(__SCORE_ISSET_ID);
+  public void unsetRecord() {
+    this.record = null;
   }
 
-  /** Returns true if field score is set (has been asigned a value) and false otherwise */
-  public boolean isSetScore() {
-    return __isset_bit_vector.get(__SCORE_ISSET_ID);
+  /** Returns true if field record is set (has been asigned a value) and false otherwise */
+  public boolean isSetRecord() {
+    return this.record != null;
   }
 
-  public void setScoreIsSet(boolean value) {
-    __isset_bit_vector.set(__SCORE_ISSET_ID, value);
-  }
-
-  public String getReason() {
-    return this.reason;
-  }
-
-  public Hit setReason(String reason) {
-    this.reason = reason;
-    return this;
-  }
-
-  public void unsetReason() {
-    this.reason = null;
-  }
-
-  /** Returns true if field reason is set (has been asigned a value) and false otherwise */
-  public boolean isSetReason() {
-    return this.reason != null;
-  }
-
-  public void setReasonIsSet(boolean value) {
+  public void setRecordIsSet(boolean value) {
     if (!value) {
-      this.reason = null;
+      this.record = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case LOCATION_ID:
+    case RECORD_MUTATION_TYPE:
       if (value == null) {
-        unsetLocationId();
+        unsetRecordMutationType();
       } else {
-        setLocationId((String)value);
+        setRecordMutationType((RecordMutationType)value);
       }
       break;
 
-    case ROW_ID:
+    case FAMILY:
       if (value == null) {
-        unsetRowId();
+        unsetFamily();
       } else {
-        setRowId((String)value);
+        setFamily((String)value);
       }
       break;
 
@@ -334,19 +327,11 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
       }
       break;
 
-    case SCORE:
+    case RECORD:
       if (value == null) {
-        unsetScore();
+        unsetRecord();
       } else {
-        setScore((Double)value);
-      }
-      break;
-
-    case REASON:
-      if (value == null) {
-        unsetReason();
-      } else {
-        setReason((String)value);
+        setRecord((Set<Column>)value);
       }
       break;
 
@@ -355,20 +340,17 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case LOCATION_ID:
-      return getLocationId();
+    case RECORD_MUTATION_TYPE:
+      return getRecordMutationType();
 
-    case ROW_ID:
-      return getRowId();
+    case FAMILY:
+      return getFamily();
 
     case RECORD_ID:
       return getRecordId();
 
-    case SCORE:
-      return new Double(getScore());
-
-    case REASON:
-      return getReason();
+    case RECORD:
+      return getRecord();
 
     }
     throw new IllegalStateException();
@@ -381,16 +363,14 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     }
 
     switch (field) {
-    case LOCATION_ID:
-      return isSetLocationId();
-    case ROW_ID:
-      return isSetRowId();
+    case RECORD_MUTATION_TYPE:
+      return isSetRecordMutationType();
+    case FAMILY:
+      return isSetFamily();
     case RECORD_ID:
       return isSetRecordId();
-    case SCORE:
-      return isSetScore();
-    case REASON:
-      return isSetReason();
+    case RECORD:
+      return isSetRecord();
     }
     throw new IllegalStateException();
   }
@@ -399,30 +379,30 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof Hit)
-      return this.equals((Hit)that);
+    if (that instanceof RecordMutation)
+      return this.equals((RecordMutation)that);
     return false;
   }
 
-  public boolean equals(Hit that) {
+  public boolean equals(RecordMutation that) {
     if (that == null)
       return false;
 
-    boolean this_present_locationId = true && this.isSetLocationId();
-    boolean that_present_locationId = true && that.isSetLocationId();
-    if (this_present_locationId || that_present_locationId) {
-      if (!(this_present_locationId && that_present_locationId))
+    boolean this_present_recordMutationType = true && this.isSetRecordMutationType();
+    boolean that_present_recordMutationType = true && that.isSetRecordMutationType();
+    if (this_present_recordMutationType || that_present_recordMutationType) {
+      if (!(this_present_recordMutationType && that_present_recordMutationType))
         return false;
-      if (!this.locationId.equals(that.locationId))
+      if (!this.recordMutationType.equals(that.recordMutationType))
         return false;
     }
 
-    boolean this_present_rowId = true && this.isSetRowId();
-    boolean that_present_rowId = true && that.isSetRowId();
-    if (this_present_rowId || that_present_rowId) {
-      if (!(this_present_rowId && that_present_rowId))
+    boolean this_present_family = true && this.isSetFamily();
+    boolean that_present_family = true && that.isSetFamily();
+    if (this_present_family || that_present_family) {
+      if (!(this_present_family && that_present_family))
         return false;
-      if (!this.rowId.equals(that.rowId))
+      if (!this.family.equals(that.family))
         return false;
     }
 
@@ -435,21 +415,12 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
         return false;
     }
 
-    boolean this_present_score = true;
-    boolean that_present_score = true;
-    if (this_present_score || that_present_score) {
-      if (!(this_present_score && that_present_score))
+    boolean this_present_record = true && this.isSetRecord();
+    boolean that_present_record = true && that.isSetRecord();
+    if (this_present_record || that_present_record) {
+      if (!(this_present_record && that_present_record))
         return false;
-      if (this.score != that.score)
-        return false;
-    }
-
-    boolean this_present_reason = true && this.isSetReason();
-    boolean that_present_reason = true && that.isSetReason();
-    if (this_present_reason || that_present_reason) {
-      if (!(this_present_reason && that_present_reason))
-        return false;
-      if (!this.reason.equals(that.reason))
+      if (!this.record.equals(that.record))
         return false;
     }
 
@@ -461,30 +432,30 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     return 0;
   }
 
-  public int compareTo(Hit other) {
+  public int compareTo(RecordMutation other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    Hit typedOther = (Hit)other;
+    RecordMutation typedOther = (RecordMutation)other;
 
-    lastComparison = Boolean.valueOf(isSetLocationId()).compareTo(typedOther.isSetLocationId());
+    lastComparison = Boolean.valueOf(isSetRecordMutationType()).compareTo(typedOther.isSetRecordMutationType());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetLocationId()) {
-      lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
+    if (isSetRecordMutationType()) {
+      lastComparison = TBaseHelper.compareTo(this.recordMutationType, typedOther.recordMutationType);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetRowId()).compareTo(typedOther.isSetRowId());
+    lastComparison = Boolean.valueOf(isSetFamily()).compareTo(typedOther.isSetFamily());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRowId()) {
-      lastComparison = TBaseHelper.compareTo(this.rowId, typedOther.rowId);
+    if (isSetFamily()) {
+      lastComparison = TBaseHelper.compareTo(this.family, typedOther.family);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -499,22 +470,12 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetScore()).compareTo(typedOther.isSetScore());
+    lastComparison = Boolean.valueOf(isSetRecord()).compareTo(typedOther.isSetRecord());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetScore()) {
-      lastComparison = TBaseHelper.compareTo(this.score, typedOther.score);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetReason()).compareTo(typedOther.isSetReason());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetReason()) {
-      lastComparison = TBaseHelper.compareTo(this.reason, typedOther.reason);
+    if (isSetRecord()) {
+      lastComparison = TBaseHelper.compareTo(this.record, typedOther.record);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -536,16 +497,16 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
         break;
       }
       switch (field.id) {
-        case 1: // LOCATION_ID
-          if (field.type == TType.STRING) {
-            this.locationId = iprot.readString();
+        case 1: // RECORD_MUTATION_TYPE
+          if (field.type == TType.I32) {
+            this.recordMutationType = RecordMutationType.findByValue(iprot.readI32());
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // ROW_ID
+        case 2: // FAMILY
           if (field.type == TType.STRING) {
-            this.rowId = iprot.readString();
+            this.family = iprot.readString();
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -557,17 +518,20 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // SCORE
-          if (field.type == TType.DOUBLE) {
-            this.score = iprot.readDouble();
-            setScoreIsSet(true);
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 5: // REASON
-          if (field.type == TType.STRING) {
-            this.reason = iprot.readString();
+        case 4: // RECORD
+          if (field.type == TType.SET) {
+            {
+              TSet _set68 = iprot.readSetBegin();
+              this.record = new HashSet<Column>(2*_set68.size);
+              for (int _i69 = 0; _i69 < _set68.size; ++_i69)
+              {
+                Column _elem70;
+                _elem70 = new Column();
+                _elem70.read(iprot);
+                this.record.add(_elem70);
+              }
+              iprot.readSetEnd();
+            }
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -587,14 +551,14 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.locationId != null) {
-      oprot.writeFieldBegin(LOCATION_ID_FIELD_DESC);
-      oprot.writeString(this.locationId);
+    if (this.recordMutationType != null) {
+      oprot.writeFieldBegin(RECORD_MUTATION_TYPE_FIELD_DESC);
+      oprot.writeI32(this.recordMutationType.getValue());
       oprot.writeFieldEnd();
     }
-    if (this.rowId != null) {
-      oprot.writeFieldBegin(ROW_ID_FIELD_DESC);
-      oprot.writeString(this.rowId);
+    if (this.family != null) {
+      oprot.writeFieldBegin(FAMILY_FIELD_DESC);
+      oprot.writeString(this.family);
       oprot.writeFieldEnd();
     }
     if (this.recordId != null) {
@@ -602,12 +566,16 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
       oprot.writeString(this.recordId);
       oprot.writeFieldEnd();
     }
-    oprot.writeFieldBegin(SCORE_FIELD_DESC);
-    oprot.writeDouble(this.score);
-    oprot.writeFieldEnd();
-    if (this.reason != null) {
-      oprot.writeFieldBegin(REASON_FIELD_DESC);
-      oprot.writeString(this.reason);
+    if (this.record != null) {
+      oprot.writeFieldBegin(RECORD_FIELD_DESC);
+      {
+        oprot.writeSetBegin(new TSet(TType.STRUCT, this.record.size()));
+        for (Column _iter71 : this.record)
+        {
+          _iter71.write(oprot);
+        }
+        oprot.writeSetEnd();
+      }
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -616,22 +584,22 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Hit(");
+    StringBuilder sb = new StringBuilder("RecordMutation(");
     boolean first = true;
 
-    sb.append("locationId:");
-    if (this.locationId == null) {
+    sb.append("recordMutationType:");
+    if (this.recordMutationType == null) {
       sb.append("null");
     } else {
-      sb.append(this.locationId);
+      sb.append(this.recordMutationType);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("rowId:");
-    if (this.rowId == null) {
+    sb.append("family:");
+    if (this.family == null) {
       sb.append("null");
     } else {
-      sb.append(this.rowId);
+      sb.append(this.family);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -643,15 +611,11 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("score:");
-    sb.append(this.score);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("reason:");
-    if (this.reason == null) {
+    sb.append("record:");
+    if (this.record == null) {
       sb.append("null");
     } else {
-      sb.append(this.reason);
+      sb.append(this.record);
     }
     first = false;
     sb.append(")");

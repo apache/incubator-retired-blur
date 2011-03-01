@@ -433,13 +433,13 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
         case 3: // SHARD_NAMES
           if (field.type == TType.LIST) {
             {
-              TList _list13 = iprot.readListBegin();
-              this.shardNames = new ArrayList<String>(_list13.size);
-              for (int _i14 = 0; _i14 < _list13.size; ++_i14)
+              TList _list21 = iprot.readListBegin();
+              this.shardNames = new ArrayList<String>(_list21.size);
+              for (int _i22 = 0; _i22 < _list21.size; ++_i22)
               {
-                String _elem15;
-                _elem15 = iprot.readString();
-                this.shardNames.add(_elem15);
+                String _elem23;
+                _elem23 = iprot.readString();
+                this.shardNames.add(_elem23);
               }
               iprot.readListEnd();
             }
@@ -474,9 +474,9 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       oprot.writeFieldBegin(SHARD_NAMES_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRING, this.shardNames.size()));
-        for (String _iter16 : this.shardNames)
+        for (String _iter24 : this.shardNames)
         {
-          oprot.writeString(_iter16);
+          oprot.writeString(_iter24);
         }
         oprot.writeListEnd();
       }

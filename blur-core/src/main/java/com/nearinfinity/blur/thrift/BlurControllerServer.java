@@ -20,15 +20,12 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
-import com.nearinfinity.blur.manager.hits.MergerFacetResult;
 import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.FacetQuery;
-import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -146,20 +143,6 @@ public class BlurControllerServer implements Iface, BlurConstants {
         return shardServerLayout.get().get(table);
     }
     
-    public FacetResult facetSearch(final String table, final FacetQuery facetQuery) throws BlurException, TException {
-        try {
-            return scatterGather(
-                    new BlurSearchCommand<FacetResult>() {
-                        @Override
-                        public FacetResult call(Client client) throws Exception {
-                            return client.facetSearch(table,facetQuery);
-                        }
-                    },new MergerFacetResult());
-        } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error during facet search [" + table + "/" + facetQuery + "]");
-        }
-    }
-
     @Override
     public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value) throws BlurException, TException {
         try {

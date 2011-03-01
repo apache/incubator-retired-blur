@@ -15,8 +15,6 @@ import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.FacetQuery;
-import com.nearinfinity.blur.thrift.generated.FacetResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -120,21 +118,6 @@ public class BlurShardServer implements Iface, BlurConstants {
     public BlurShardServer setIndexManager(IndexManager indexManager) {
         this.indexManager = indexManager;
         return this;
-    }
-
-    @Override
-    public FacetResult facetSearch(String table, FacetQuery facetQuery) throws BlurException, TException {
-        checkTableStatus(table);
-        FacetResult facetResult = new FacetResult().setFacetQuery(facetQuery);
-        try {
-            indexManager.facetSearch(table, facetQuery, facetResult);
-            return facetResult;
-        } catch (BlurException e) {
-            throw e;
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to get record frequency for [{0}={1},{2}={3}]",e,"table",table,"facetQuery",facetQuery);
-            throw new BlurException(e.getMessage());
-        }
     }
 
     @Override

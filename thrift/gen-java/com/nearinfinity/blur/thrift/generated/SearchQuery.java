@@ -39,6 +39,9 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)8);
   private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)9);
   private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)10);
+  private static final TField USER_ID_FIELD_DESC = new TField("userId", TType.STRING, (short)11);
+  private static final TField RESOLVE_IDS_FIELD_DESC = new TField("resolveIds", TType.BOOL, (short)12);
+  private static final TField FACETS_FIELD_DESC = new TField("facets", TType.LIST, (short)13);
 
   public String queryStr;
   public boolean superQueryOn;
@@ -54,6 +57,9 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   public long minimumNumberOfHits;
   public long maxQueryTime;
   public long uuid;
+  public String userId;
+  public boolean resolveIds;
+  public List<Facet> facets;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
@@ -70,7 +76,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     FETCH((short)7, "fetch"),
     MINIMUM_NUMBER_OF_HITS((short)8, "minimumNumberOfHits"),
     MAX_QUERY_TIME((short)9, "maxQueryTime"),
-    UUID((short)10, "uuid");
+    UUID((short)10, "uuid"),
+    USER_ID((short)11, "userId"),
+    RESOLVE_IDS((short)12, "resolveIds"),
+    FACETS((short)13, "facets");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -105,6 +114,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
           return MAX_QUERY_TIME;
         case 10: // UUID
           return UUID;
+        case 11: // USER_ID
+          return USER_ID;
+        case 12: // RESOLVE_IDS
+          return RESOLVE_IDS;
+        case 13: // FACETS
+          return FACETS;
         default:
           return null;
       }
@@ -151,7 +166,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   private static final int __MINIMUMNUMBEROFHITS_ISSET_ID = 3;
   private static final int __MAXQUERYTIME_ISSET_ID = 4;
   private static final int __UUID_ISSET_ID = 5;
-  private BitSet __isset_bit_vector = new BitSet(6);
+  private static final int __RESOLVEIDS_ISSET_ID = 6;
+  private BitSet __isset_bit_vector = new BitSet(7);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
@@ -176,6 +192,13 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
+    tmpMap.put(_Fields.USER_ID, new FieldMetaData("userId", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.RESOLVE_IDS, new FieldMetaData("resolveIds", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.BOOL)));
+    tmpMap.put(_Fields.FACETS, new FieldMetaData("facets", TFieldRequirementType.DEFAULT, 
+        new ListMetaData(TType.LIST, 
+            new StructMetaData(TType.STRUCT, Facet.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(SearchQuery.class, metaDataMap);
   }
@@ -193,7 +216,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     int fetch,
     long minimumNumberOfHits,
     long maxQueryTime,
-    long uuid)
+    long uuid,
+    String userId,
+    boolean resolveIds,
+    List<Facet> facets)
   {
     this();
     this.queryStr = queryStr;
@@ -212,6 +238,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     setMaxQueryTimeIsSet(true);
     this.uuid = uuid;
     setUuidIsSet(true);
+    this.userId = userId;
+    this.resolveIds = resolveIds;
+    setResolveIdsIsSet(true);
+    this.facets = facets;
   }
 
   /**
@@ -238,6 +268,17 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     this.minimumNumberOfHits = other.minimumNumberOfHits;
     this.maxQueryTime = other.maxQueryTime;
     this.uuid = other.uuid;
+    if (other.isSetUserId()) {
+      this.userId = other.userId;
+    }
+    this.resolveIds = other.resolveIds;
+    if (other.isSetFacets()) {
+      List<Facet> __this__facets = new ArrayList<Facet>();
+      for (Facet other_element : other.facets) {
+        __this__facets.add(new Facet(other_element));
+      }
+      this.facets = __this__facets;
+    }
   }
 
   public SearchQuery deepCopy() {
@@ -262,6 +303,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     this.maxQueryTime = 0;
     setUuidIsSet(false);
     this.uuid = 0;
+    this.userId = null;
+    setResolveIdsIsSet(false);
+    this.resolveIds = false;
+    this.facets = null;
   }
 
   public String getQueryStr() {
@@ -506,6 +551,92 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     __isset_bit_vector.set(__UUID_ISSET_ID, value);
   }
 
+  public String getUserId() {
+    return this.userId;
+  }
+
+  public SearchQuery setUserId(String userId) {
+    this.userId = userId;
+    return this;
+  }
+
+  public void unsetUserId() {
+    this.userId = null;
+  }
+
+  /** Returns true if field userId is set (has been asigned a value) and false otherwise */
+  public boolean isSetUserId() {
+    return this.userId != null;
+  }
+
+  public void setUserIdIsSet(boolean value) {
+    if (!value) {
+      this.userId = null;
+    }
+  }
+
+  public boolean isResolveIds() {
+    return this.resolveIds;
+  }
+
+  public SearchQuery setResolveIds(boolean resolveIds) {
+    this.resolveIds = resolveIds;
+    setResolveIdsIsSet(true);
+    return this;
+  }
+
+  public void unsetResolveIds() {
+    __isset_bit_vector.clear(__RESOLVEIDS_ISSET_ID);
+  }
+
+  /** Returns true if field resolveIds is set (has been asigned a value) and false otherwise */
+  public boolean isSetResolveIds() {
+    return __isset_bit_vector.get(__RESOLVEIDS_ISSET_ID);
+  }
+
+  public void setResolveIdsIsSet(boolean value) {
+    __isset_bit_vector.set(__RESOLVEIDS_ISSET_ID, value);
+  }
+
+  public int getFacetsSize() {
+    return (this.facets == null) ? 0 : this.facets.size();
+  }
+
+  public java.util.Iterator<Facet> getFacetsIterator() {
+    return (this.facets == null) ? null : this.facets.iterator();
+  }
+
+  public void addToFacets(Facet elem) {
+    if (this.facets == null) {
+      this.facets = new ArrayList<Facet>();
+    }
+    this.facets.add(elem);
+  }
+
+  public List<Facet> getFacets() {
+    return this.facets;
+  }
+
+  public SearchQuery setFacets(List<Facet> facets) {
+    this.facets = facets;
+    return this;
+  }
+
+  public void unsetFacets() {
+    this.facets = null;
+  }
+
+  /** Returns true if field facets is set (has been asigned a value) and false otherwise */
+  public boolean isSetFacets() {
+    return this.facets != null;
+  }
+
+  public void setFacetsIsSet(boolean value) {
+    if (!value) {
+      this.facets = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY_STR:
@@ -588,6 +719,30 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       }
       break;
 
+    case USER_ID:
+      if (value == null) {
+        unsetUserId();
+      } else {
+        setUserId((String)value);
+      }
+      break;
+
+    case RESOLVE_IDS:
+      if (value == null) {
+        unsetResolveIds();
+      } else {
+        setResolveIds((Boolean)value);
+      }
+      break;
+
+    case FACETS:
+      if (value == null) {
+        unsetFacets();
+      } else {
+        setFacets((List<Facet>)value);
+      }
+      break;
+
     }
   }
 
@@ -623,6 +778,15 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     case UUID:
       return new Long(getUuid());
 
+    case USER_ID:
+      return getUserId();
+
+    case RESOLVE_IDS:
+      return new Boolean(isResolveIds());
+
+    case FACETS:
+      return getFacets();
+
     }
     throw new IllegalStateException();
   }
@@ -654,6 +818,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       return isSetMaxQueryTime();
     case UUID:
       return isSetUuid();
+    case USER_ID:
+      return isSetUserId();
+    case RESOLVE_IDS:
+      return isSetResolveIds();
+    case FACETS:
+      return isSetFacets();
     }
     throw new IllegalStateException();
   }
@@ -758,6 +928,33 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       if (!(this_present_uuid && that_present_uuid))
         return false;
       if (this.uuid != that.uuid)
+        return false;
+    }
+
+    boolean this_present_userId = true && this.isSetUserId();
+    boolean that_present_userId = true && that.isSetUserId();
+    if (this_present_userId || that_present_userId) {
+      if (!(this_present_userId && that_present_userId))
+        return false;
+      if (!this.userId.equals(that.userId))
+        return false;
+    }
+
+    boolean this_present_resolveIds = true;
+    boolean that_present_resolveIds = true;
+    if (this_present_resolveIds || that_present_resolveIds) {
+      if (!(this_present_resolveIds && that_present_resolveIds))
+        return false;
+      if (this.resolveIds != that.resolveIds)
+        return false;
+    }
+
+    boolean this_present_facets = true && this.isSetFacets();
+    boolean that_present_facets = true && that.isSetFacets();
+    if (this_present_facets || that_present_facets) {
+      if (!(this_present_facets && that_present_facets))
+        return false;
+      if (!this.facets.equals(that.facets))
         return false;
     }
 
@@ -877,6 +1074,36 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetUserId()).compareTo(typedOther.isSetUserId());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetUserId()) {
+      lastComparison = TBaseHelper.compareTo(this.userId, typedOther.userId);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetResolveIds()).compareTo(typedOther.isSetResolveIds());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetResolveIds()) {
+      lastComparison = TBaseHelper.compareTo(this.resolveIds, typedOther.resolveIds);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetFacets()).compareTo(typedOther.isSetFacets());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFacets()) {
+      lastComparison = TBaseHelper.compareTo(this.facets, typedOther.facets);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -970,6 +1197,39 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 11: // USER_ID
+          if (field.type == TType.STRING) {
+            this.userId = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 12: // RESOLVE_IDS
+          if (field.type == TType.BOOL) {
+            this.resolveIds = iprot.readBool();
+            setResolveIdsIsSet(true);
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 13: // FACETS
+          if (field.type == TType.LIST) {
+            {
+              TList _list0 = iprot.readListBegin();
+              this.facets = new ArrayList<Facet>(_list0.size);
+              for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+              {
+                Facet _elem2;
+                _elem2 = new Facet();
+                _elem2.read(iprot);
+                this.facets.add(_elem2);
+              }
+              iprot.readListEnd();
+            }
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -1023,6 +1283,26 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     oprot.writeFieldBegin(UUID_FIELD_DESC);
     oprot.writeI64(this.uuid);
     oprot.writeFieldEnd();
+    if (this.userId != null) {
+      oprot.writeFieldBegin(USER_ID_FIELD_DESC);
+      oprot.writeString(this.userId);
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldBegin(RESOLVE_IDS_FIELD_DESC);
+    oprot.writeBool(this.resolveIds);
+    oprot.writeFieldEnd();
+    if (this.facets != null) {
+      oprot.writeFieldBegin(FACETS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new TList(TType.STRUCT, this.facets.size()));
+        for (Facet _iter3 : this.facets)
+        {
+          _iter3.write(oprot);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -1086,6 +1366,26 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     if (!first) sb.append(", ");
     sb.append("uuid:");
     sb.append(this.uuid);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("userId:");
+    if (this.userId == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.userId);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("resolveIds:");
+    sb.append(this.resolveIds);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("facets:");
+    if (this.facets == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.facets);
+    }
     first = false;
     sb.append(")");
     return sb.toString();

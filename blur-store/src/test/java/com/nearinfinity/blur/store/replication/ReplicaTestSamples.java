@@ -34,7 +34,7 @@ import org.apache.lucene.util.Version;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 
-public class TestReplica {
+public class ReplicaTestSamples {
     
     private static final long DELAY = 0;
     private static final int CHAOS_NUMBER = 1000;

@@ -39,16 +39,16 @@ public class BlurRecord implements Writable {
     }
     
     private Operation operation = Operation.REPLACE_ROW;
-    private String id;
-    private String superKey;
+    private String rowId;
+    private String recordId;
     private String columnFamily;
     private List<BlurColumn> columns = new ArrayList<BlurColumn>();
 
     @Override
     public void readFields(DataInput in) throws IOException {
         Operation.value(IOUtil.readVInt(in));
-        id = IOUtil.readString(in);
-        superKey = IOUtil.readString(in);
+        rowId = IOUtil.readString(in);
+        recordId = IOUtil.readString(in);
         columnFamily = IOUtil.readString(in);
         int size = IOUtil.readVInt(in);
         columns.clear();
@@ -62,8 +62,8 @@ public class BlurRecord implements Writable {
     @Override
     public void write(DataOutput out) throws IOException {
         IOUtil.writeVInt(out, operation.getIntVal());
-        IOUtil.writeString(out, id);
-        IOUtil.writeString(out, superKey);
+        IOUtil.writeString(out, rowId);
+        IOUtil.writeString(out, recordId);
         IOUtil.writeString(out, columnFamily);
         IOUtil.writeVInt(out, columns.size());
         for (BlurColumn column : columns) {
@@ -71,20 +71,20 @@ public class BlurRecord implements Writable {
         }
     }
 
-    public String getId() {
-        return id;
+    public String getRowId() {
+        return rowId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setRowId(String rowId) {
+        this.rowId = rowId;
     }
 
-    public String getSuperKey() {
-        return superKey;
+    public String getRecorId() {
+        return recordId;
     }
 
-    public void setSuperKey(String superKey) {
-        this.superKey = superKey;
+    public void setRecordId(String recordId) {
+        this.recordId = recordId;
     }
 
     public String getColumnFamily() {

@@ -62,7 +62,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (file.exists()) {
             file.delete();
         }
-        LOG.info("Opening local file for writing [{0}]",file.getAbsolutePath());
+        LOG.debug("Opening local file for writing [{0}]",file.getAbsolutePath());
         return new FileIndexOutput(progressable,file);
     }
 
@@ -71,7 +71,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         File file = localFileCache.getLocalFile(dirName, name);
         FSDataOutputStream outputStream = super.getOutputStream(name + ".sync");
         FileInputStream inputStream = new FileInputStream(file);
-        LOG.info("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
+        LOG.debug("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
         byte[] buffer = new byte[BUFFER_SIZE];
         int num;
         while ((num = inputStream.read(buffer)) != -1) {

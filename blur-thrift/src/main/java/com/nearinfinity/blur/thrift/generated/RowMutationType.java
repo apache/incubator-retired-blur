@@ -11,9 +11,9 @@ import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
 public enum RowMutationType implements TEnum {
-  DELETE(0),
-  REPLACE(1),
-  UPDATE(2);
+  DELETE_ROW(0),
+  REPLACE_ROW(1),
+  UPDATE_ROW(2);
 
   private final int value;
 
@@ -35,11 +35,11 @@ public enum RowMutationType implements TEnum {
   public static RowMutationType findByValue(int value) { 
     switch (value) {
       case 0:
-        return DELETE;
+        return DELETE_ROW;
       case 1:
-        return REPLACE;
+        return REPLACE_ROW;
       case 2:
-        return UPDATE;
+        return UPDATE_ROW;
       default:
         return null;
     }

@@ -119,9 +119,9 @@ struct RecordMutation {
 }
 
 enum RowMutationType {
-  DELETE,
-  REPLACE,
-  UPDATE
+  DELETE_ROW,
+  REPLACE_ROW,
+  UPDATE_ROW
 }
 
 struct RowMutation {

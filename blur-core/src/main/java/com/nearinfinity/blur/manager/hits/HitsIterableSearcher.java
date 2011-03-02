@@ -13,11 +13,10 @@ import com.nearinfinity.blur.lucene.search.IterablePaging;
 import com.nearinfinity.blur.lucene.search.IterablePaging.ProgressRef;
 import com.nearinfinity.blur.lucene.search.IterablePaging.TotalHitsRef;
 import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IteratorConverter;
 
-public class HitsIterableSearcher implements HitsIterable, BlurConstants {
+public class HitsIterableSearcher implements HitsIterable {
     
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private String shard;

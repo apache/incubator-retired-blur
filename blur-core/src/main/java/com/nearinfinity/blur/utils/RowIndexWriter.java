@@ -1,5 +1,11 @@
 package com.nearinfinity.blur.utils;
 
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
+import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.SEP;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +25,7 @@ import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
 
-public class RowIndexWriter implements BlurConstants {
+public class RowIndexWriter {
     
     private static final Log LOG = LogFactory.getLog(RowIndexWriter.class);
 

@@ -1,5 +1,9 @@
 package com.nearinfinity.blur.analysis;
 
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,9 +30,7 @@ import org.apache.lucene.util.Version;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.nearinfinity.blur.utils.BlurConstants;
-
-public class BlurAnalyzer extends PerFieldAnalyzerWrapper implements BlurConstants {
+public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 
 	private static final String SEP = ".";
 	private static final String FIELDS = "fields";

@@ -10,8 +10,9 @@ import java.util.concurrent.TimeUnit;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
 
-public abstract class ManagedDistributedIndexServer extends DistributedIndexServer implements ZookeeperPathConstants {
+public abstract class ManagedDistributedIndexServer extends DistributedIndexServer {
     
     public enum NODE_TYPE {
         SHARD,

@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.manager.indexserver.utils;
 
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
+
 import java.io.IOException;
 
 import org.apache.zookeeper.KeeperException;
@@ -8,9 +11,8 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 
-public class DisableTable implements ZookeeperPathConstants {
+public class DisableTable {
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
         String zkConnectionStr = args[0];

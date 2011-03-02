@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.mapreduce;
 
+import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -14,9 +16,8 @@ import org.apache.lucene.index.IndexCommit;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
-import com.nearinfinity.blur.utils.BlurConstants;
 
-public class BlurTask implements BlurConstants {
+public class BlurTask {
 
     public static final String EMPTY = "EMPTY";
     public static final String BLUR_COMMIT = "blur.commit";

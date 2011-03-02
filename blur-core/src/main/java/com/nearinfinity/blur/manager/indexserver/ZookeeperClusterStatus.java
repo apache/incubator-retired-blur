@@ -1,5 +1,9 @@
 package com.nearinfinity.blur.manager.indexserver;
 
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_ONLINE_CONTROLLERS_PATH;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_ONLINE_SHARDS_PATH;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_REGISTERED_SHARDS_PATH;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -8,9 +12,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.utils.BlurConstants;
 
-public class ZookeeperClusterStatus extends ClusterStatus implements BlurConstants, ZookeeperPathConstants {
+public class ZookeeperClusterStatus extends ClusterStatus {
     
     private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatus.class);
     

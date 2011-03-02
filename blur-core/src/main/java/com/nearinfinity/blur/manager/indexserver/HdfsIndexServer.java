@@ -1,5 +1,9 @@
 package com.nearinfinity.blur.manager.indexserver;
 
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
+import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,9 +25,8 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
-import com.nearinfinity.blur.utils.BlurConstants;
 
-public class HdfsIndexServer extends ManagedDistributedIndexServer implements BlurConstants {
+public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
     private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
     

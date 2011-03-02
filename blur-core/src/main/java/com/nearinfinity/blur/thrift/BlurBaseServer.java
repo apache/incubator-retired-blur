@@ -12,9 +12,8 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
-import com.nearinfinity.blur.utils.BlurConstants;
 
-public abstract class BlurBaseServer implements Iface, BlurConstants {
+public abstract class BlurBaseServer implements Iface {
 	
     public static Hits convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfHits) {
         Hits hits = new Hits();

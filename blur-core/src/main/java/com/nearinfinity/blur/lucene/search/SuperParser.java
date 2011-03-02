@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.lucene.search;
 
+import static com.nearinfinity.blur.utils.BlurConstants.SEP;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +22,8 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.BlurConstants;
 
-public class SuperParser extends QueryParser implements BlurConstants {
+public class SuperParser extends QueryParser {
 	
 	public static final String SUPER = "super";
 	private Map<Query,String> fieldNames = new HashMap<Query, String>();

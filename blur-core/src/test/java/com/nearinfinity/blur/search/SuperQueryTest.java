@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.search;
 
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
 import static com.nearinfinity.blur.utils.BlurUtil.newColumnFamily;
 import static com.nearinfinity.blur.utils.BlurUtil.newRow;
@@ -30,11 +33,10 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
-public class SuperQueryTest implements BlurConstants {
+public class SuperQueryTest {
 	
     @Test
 	public void testSimpleSuperQuery() throws CorruptIndexException, IOException, InterruptedException {

@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.manager;
 
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
 import java.io.IOException;
@@ -53,7 +56,6 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -61,7 +63,7 @@ import com.nearinfinity.blur.utils.TermDocIterable;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class IndexManager implements BlurConstants {
+public class IndexManager {
 
     private static final Version LUCENE_VERSION = Version.LUCENE_30;
     private static final Log LOG = LogFactory.getLog(IndexManager.class);

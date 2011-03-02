@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.writer;
 
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,10 +22,9 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
-public class BlurIndex implements Runnable,BlurConstants {
+public class BlurIndex implements Runnable {
     
     private static final Log LOG =  LogFactory.getLog(BlurIndex.class);
     

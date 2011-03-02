@@ -23,9 +23,8 @@ import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
-import com.nearinfinity.blur.utils.BlurConstants;
 
-public class BlurShardServer implements Iface, BlurConstants {
+public class BlurShardServer implements Iface {
 
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;

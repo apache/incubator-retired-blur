@@ -35,14 +35,13 @@ import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.LoggingBlurException;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class BlurControllerServer implements Iface, BlurConstants {
+public class BlurControllerServer implements Iface {
 	
 	private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
 

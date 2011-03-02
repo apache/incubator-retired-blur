@@ -24,8 +24,9 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
 
-public abstract class AdminIndexServer implements IndexServer, ZookeeperPathConstants {
+public abstract class AdminIndexServer implements IndexServer {
     
     private static final Log LOG = LogFactory.getLog(AdminIndexServer.class);
 

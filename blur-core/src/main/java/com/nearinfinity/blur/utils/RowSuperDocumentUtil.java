@@ -1,5 +1,9 @@
 package com.nearinfinity.blur.utils;
 
+import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.SEP;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -12,7 +16,7 @@ import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
 
-public class RowSuperDocumentUtil implements BlurConstants {
+public class RowSuperDocumentUtil {
 
 	public static Row getRow(Iterable<Document> docs) {
 		Row row = new Row();

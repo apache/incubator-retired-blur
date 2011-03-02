@@ -8,8 +8,9 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
 
-public class BlurServerShutDown implements Watcher, ZookeeperPathConstants {
+public class BlurServerShutDown implements Watcher {
     
     private static final Log LOG = LogFactory.getLog(BlurServerShutDown.class);
 

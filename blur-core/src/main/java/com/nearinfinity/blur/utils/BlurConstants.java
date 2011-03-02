@@ -10,7 +10,7 @@ import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Hit;
 
 
-public interface BlurConstants {
+public class BlurConstants {
 	
 	public static final String CONTROLLER = "controller";
 	public static final String SHARD = "shard";

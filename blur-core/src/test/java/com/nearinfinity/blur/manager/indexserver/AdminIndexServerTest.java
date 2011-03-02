@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.manager.indexserver;
 
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -19,7 +21,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
 
-public class AdminIndexServerTest implements ZookeeperPathConstants {
+public class AdminIndexServerTest {
 
     private static final String TESTTABLE = "testtable";
     private AdminIndexServer adminIndexServer;

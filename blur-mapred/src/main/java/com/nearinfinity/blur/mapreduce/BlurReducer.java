@@ -1,5 +1,10 @@
 package com.nearinfinity.blur.mapreduce;
 
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
+import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -27,9 +32,8 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
-import com.nearinfinity.blur.utils.BlurConstants;
 
-public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,BlurRecord> implements BlurConstants {
+public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,BlurRecord> {
     
     protected static final Field PRIME_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.ANALYZED_NO_NORMS);
     protected IndexWriter writer;

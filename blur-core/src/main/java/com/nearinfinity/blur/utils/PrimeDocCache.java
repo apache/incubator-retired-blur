@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.utils;
 
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,7 +14,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
-public class PrimeDocCache implements BlurConstants {
+public class PrimeDocCache {
     
     private static final Log LOG = LogFactory.getLog(PrimeDocCache.class);
 

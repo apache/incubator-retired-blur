@@ -9,7 +9,7 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
-public class BlurServerShutDown implements Watcher, ZookeeperPathContants {
+public class BlurServerShutDown implements Watcher, ZookeeperPathConstants {
     
     private static final Log LOG = LogFactory.getLog(BlurServerShutDown.class);
 

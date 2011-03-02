@@ -1,6 +1,6 @@
 package com.nearinfinity.blur.manager.indexserver;
 
-public interface ZookeeperPathContants {
+public interface ZookeeperPathConstants {
     
     public static final String BLUR_BASE_PATH                  = "/blur";
     public static final String BLUR_ONLINE_PATH                = "/blur/online";

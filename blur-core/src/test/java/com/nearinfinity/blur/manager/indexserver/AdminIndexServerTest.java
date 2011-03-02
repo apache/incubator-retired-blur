@@ -19,7 +19,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
 
-public class AdminIndexServerTest implements ZookeeperPathContants {
+public class AdminIndexServerTest implements ZookeeperPathConstants {
 
     private static final String TESTTABLE = "testtable";
     private AdminIndexServer adminIndexServer;

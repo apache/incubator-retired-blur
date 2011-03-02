@@ -11,7 +11,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 
-public abstract class ManagedDistributedIndexServer extends DistributedIndexServer implements ZookeeperPathContants {
+public abstract class ManagedDistributedIndexServer extends DistributedIndexServer implements ZookeeperPathConstants {
     
     public enum NODE_TYPE {
         SHARD,

@@ -9,9 +9,9 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathContants;
+import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 
-public class CreateTable implements ZookeeperPathContants {
+public class CreateTable implements ZookeeperPathConstants {
 
     public static void main(String[] args) throws IOException {
         String zkConnectionStr = args[0];

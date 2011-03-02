@@ -8,9 +8,9 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathContants;
+import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 
-public class DisableTable implements ZookeeperPathContants {
+public class DisableTable implements ZookeeperPathConstants {
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
         String zkConnectionStr = args[0];

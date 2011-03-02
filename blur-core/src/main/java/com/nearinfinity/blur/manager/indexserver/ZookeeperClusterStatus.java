@@ -10,7 +10,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class ZookeeperClusterStatus extends ClusterStatus implements BlurConstants, ZookeeperPathContants {
+public class ZookeeperClusterStatus extends ClusterStatus implements BlurConstants, ZookeeperPathConstants {
     
     private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatus.class);
     

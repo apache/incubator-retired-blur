@@ -34,37 +34,13 @@ public class ZkUtils {
 
     private final static Log LOG = LogFactory.getLog(ZkUtils.class);
 
+    public static final int ANY_VERSION = -1;
+
     public static void mkNodesStr(ZooKeeper zk, String path) {
         if (path == null) {
             return;
         }
-        String[] split = path.split("/");
-        for (int i = 0; i < split.length; i++) {
-            StringBuilder builder = new StringBuilder();
-            for (int j = 0; j <= i; j++) {
-                if (!split[j].isEmpty()) {
-                    builder.append('/');
-                    builder.append(split[j]);
-                }
-            }
-            String pathToCheck = builder.toString();
-            if (pathToCheck.isEmpty()) {
-                continue;
-            }
-            try {
-                if (zk.exists(pathToCheck, false) == null) {
-                    zk.create(pathToCheck, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-                }
-            } catch (NodeExistsException e) {
-                // do nothing
-            } catch (KeeperException e) {
-                LOG.error("error", e);
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                LOG.error("error", e);
-                throw new RuntimeException(e);
-            }
-        }
+        mkNodes(zk, path.split("/"));
     }
 
     public static void mkNodes(ZooKeeper zk, String... path) {
@@ -138,7 +114,7 @@ public class ZkUtils {
             for (String c : children) {
                 deleteAnyVersion(zk, path + "/" + c);
             }
-            zk.delete(path, -1);
+            zk.delete(path, ANY_VERSION);
         } catch (KeeperException e) {
             if (e.code() == KeeperException.Code.NONODE) {
                 return;

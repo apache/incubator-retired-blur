@@ -14,6 +14,7 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.store.lock.ZkUtils;
 
 public class ZookeeperDistributedManager extends DistributedManager {
     
@@ -76,10 +77,11 @@ public class ZookeeperDistributedManager extends DistributedManager {
     @Override
     protected void createPathInternal(String path) {
         try {
-            zooKeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            ZkUtils.mkNodesStr(zooKeeper, path);
         } catch (Exception e) {
-            if (e instanceof KeeperException) {
-                KeeperException exception = (KeeperException) e;
+            Throwable cause = e.getCause();
+            if (cause instanceof KeeperException) {
+                KeeperException exception = (KeeperException) cause;
                 if (exception.code() == Code.NODEEXISTS) {
                     return;
                 }
@@ -98,10 +100,7 @@ public class ZookeeperDistributedManager extends DistributedManager {
             LOG.error("Error while checking path [{0}] for existance",e,path);
             throw new RuntimeException(e);
         }
-        if (stat == null) {
-            return false;
-        }
-        return true;
+        return stat != null;
     }
 
     @Override
@@ -153,7 +152,7 @@ public class ZookeeperDistributedManager extends DistributedManager {
 
     @Override
     protected void lockInternal(String path) {
-        LOG.info("Attempting o obtain lock [{0}]",path);
+        LOG.info("Attempting to obtain lock [{0}]",path);
         while (true) {
             try {
                 zooKeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);

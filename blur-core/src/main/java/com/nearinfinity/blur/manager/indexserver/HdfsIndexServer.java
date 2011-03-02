@@ -32,14 +32,18 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer implements Bl
     private LocalFileCache localFileCache;
     private LockFactory lockFactory;
     private ReplicationDaemon replicationDaemon;
+    private boolean closed;
     
     @Override
-    public void close() {
-        super.close();
-        try {
-            fileSystem.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            super.close();
+            try {
+                fileSystem.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 

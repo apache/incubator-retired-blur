@@ -35,7 +35,7 @@ public class LocalFileCacheTest {
     public void setup() {
         localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(CACHE1_FILE,CACHE2_FILE);
-        localFileCache.open();
+        localFileCache.init();
     }
     
     @After
@@ -70,7 +70,7 @@ public class LocalFileCacheTest {
                 return name.startsWith("keep");
             }
         });
-        test.open();
+        test.init();
         Thread.sleep(TimeUnit.SECONDS.toMillis(2));
         
         writeBytes(test.getLocalFile("gctest", "keeper"),1);

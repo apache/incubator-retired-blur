@@ -12,6 +12,7 @@ public interface ZookeeperPathContants {
     
     public static final String BLUR_SAFEMODE                   = "/blur/safemode";
     public static final String BLUR_SAFEMODE_LOCK              = "/blur/safemode/lock";
+    public static final String BLUR_SAFEMODE_SHUTDOWN          = "/blur/safemode/shutdown";
     public static final String BLUR_REGISTERED_SHARDS_PATH     = "/blur/shard-nodes";
 
 }

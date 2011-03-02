@@ -20,6 +20,7 @@ public abstract class DistributedManager {
     protected abstract void createPathInternal(String path);
     protected abstract void createEphemeralPathInternal(String path);
     protected abstract void removeEphemeralPathOnShutdownInternal(String path);
+    protected abstract void removePath(String path);
     protected abstract List<String> listInternal(String path);
     protected abstract void registerCallableOnChangeInternal(Runnable runnable, String path);
     
@@ -61,6 +62,10 @@ public abstract class DistributedManager {
     
     public void removeEphemeralPathOnShutdown(String... pathes) {
         removeEphemeralPathOnShutdownInternal(resolvePath(pathes));
+    }
+    
+    public void removePath(String... pathes) {
+        removePath(resolvePath(pathes));
     }
     
     private String resolvePath(String[] pathes) {

@@ -56,6 +56,7 @@ public class BlurControllerServer implements Iface, BlurConstants {
     private Timer shardLayoutTimer;
     private ClusterStatus clusterStatus;
     private int threadCount = 64;
+    private boolean closed;
     
     public void open() {
         executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL,threadCount);
@@ -69,9 +70,12 @@ public class BlurControllerServer implements Iface, BlurConstants {
         }, delay, delay);
     }
     
-    public void close() {
-        shardLayoutTimer.cancel();
-        executor.shutdownNow();
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            shardLayoutTimer.cancel();
+            executor.shutdownNow();
+        }
     }
 
     @Override

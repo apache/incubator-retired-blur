@@ -66,7 +66,12 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
             LOG.info("Setuping safe mode, first node online.");
             dm.createPath(BLUR_SAFEMODE);
             dm.saveData(getSafeModeEndTime(),BLUR_SAFEMODE);
+            removeShutdownFlag();
         }
+    }
+
+    private void removeShutdownFlag() {
+        dm.removePath(BLUR_SAFEMODE_SHUTDOWN);
     }
 
     private void waitIfInSafeMode() {

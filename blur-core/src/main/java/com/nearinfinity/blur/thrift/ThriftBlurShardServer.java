@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -31,8 +33,10 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
 import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
@@ -51,6 +55,8 @@ public class ThriftBlurShardServer {
     
     private String nodeName;
     private Iface iface;
+    private TThreadPoolServer server;
+    private boolean closed;
     
     public static void main(String[] args) throws TTransportException, IOException {
         Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
@@ -72,7 +78,7 @@ public class ThriftBlurShardServer {
             crazyMode = true;
         }
         
-        ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
+        final ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
             @Override
             public void process(WatchedEvent event) {
             }
@@ -84,15 +90,17 @@ public class ThriftBlurShardServer {
         FileSystem fileSystem = FileSystem.get(new Configuration());
         Path blurBasePath = new Path(hdfsPath);
         
-        LocalFileCache localFileCache = new LocalFileCache();
+        final LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(localFileCaches.toArray(new File[]{}));
-        localFileCache.open();
+        localFileCache.init();
         
         LockFactory lockFactory = new NoLockFactory();
         
-        ReplicationDaemon replicationDaemon = new ReplicationDaemon(localFileCache);
+        final ReplicationDaemon replicationDaemon = new ReplicationDaemon();
+        replicationDaemon.setLocalFileCache(localFileCache);
+        replicationDaemon.init();
         
-        HdfsIndexServer indexServer = new HdfsIndexServer();
+        final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
         indexServer.setLockFactory(lockFactory);
@@ -105,15 +113,15 @@ public class ThriftBlurShardServer {
         
         localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));
         
-        IndexManager indexManager = new IndexManager();
+        final IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
         indexManager.init();
         
-        BlurShardServer shardServer = new BlurShardServer();
+        final BlurShardServer shardServer = new BlurShardServer();
         shardServer.setIndexServer(indexServer);
         shardServer.setIndexManager(indexManager);
         
-        ThriftBlurShardServer server = new ThriftBlurShardServer();
+        final ThriftBlurShardServer server = new ThriftBlurShardServer();
         server.setNodeName(nodeName);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
@@ -121,7 +129,25 @@ public class ThriftBlurShardServer {
         } else {
             server.setIface(shardServer);
         }
+        
+        // This will shutdown the server when the correct path is set in zk
+        new BlurServerShutDown().register(new BlurShutdown() {
+            @Override
+            
+            public void shutdown() {
+                quietClose(replicationDaemon,server,shardServer,indexManager,indexServer,localFileCache);
+                System.exit(0);
+            }
+        }, zooKeeper);
+        
         server.start();
+    }
+
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            server.stop();
+        }
     }
 
     private static LocalFileCacheCheck getLocalFileCacheCheck(final HdfsIndexServer indexServer) {
@@ -159,7 +185,7 @@ public class ThriftBlurShardServer {
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
-        TThreadPoolServer server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
+        server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
         LOG.info("Starting server [{0}]",nodeName);
         server.serve();
     }

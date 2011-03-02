@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
+
 import java.io.IOException;
 import java.lang.Thread.UncaughtExceptionHandler;
 
@@ -15,8 +17,10 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientRemote;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
@@ -29,6 +33,10 @@ public class ThriftBlurControllerServer {
     
     private String nodeName;
     private Iface iface;
+
+    private TThreadPoolServer server;
+
+    private boolean closed;
     
     public static void main(String[] args) throws TTransportException, IOException {
         Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
@@ -45,7 +53,7 @@ public class ThriftBlurControllerServer {
             crazyMode = true;
         }
         
-        ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
+        final ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
             @Override
             public void process(WatchedEvent event) {
             }
@@ -54,18 +62,18 @@ public class ThriftBlurControllerServer {
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
         
-        ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus();
+        final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus();
         clusterStatus.setDistributedManager(dzk);
         clusterStatus.init();
         
         BlurClient client = new BlurClientRemote();
         
-        BlurControllerServer controllerServer = new BlurControllerServer();
+        final BlurControllerServer controllerServer = new BlurControllerServer();
         controllerServer.setClient(client);
         controllerServer.setClusterStatus(clusterStatus);
         controllerServer.open();
         
-        ThriftBlurControllerServer server = new ThriftBlurControllerServer();
+        final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
         server.setNodeName(nodeName);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
@@ -73,6 +81,16 @@ public class ThriftBlurControllerServer {
         } else {
             server.setIface(controllerServer);
         }
+        
+        // This will shutdown the server when the correct path is set in zk
+        new BlurServerShutDown().register(new BlurShutdown() {
+            @Override
+            public void shutdown() {
+                quietClose(server,controllerServer,clusterStatus,zooKeeper);
+                System.exit(0);
+            }
+        }, zooKeeper);
+        
         server.start();
     }
 
@@ -81,9 +99,16 @@ public class ThriftBlurControllerServer {
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new BlurSearch.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
-        TThreadPoolServer server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
+        server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
         LOG.info("Starting server [{0}]",nodeName);
         server.serve();
+    }
+    
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            server.stop();
+        }
     }
 
     public Iface getIface() {

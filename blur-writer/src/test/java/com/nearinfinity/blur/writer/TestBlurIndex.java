@@ -20,14 +20,11 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.IndexInput;
-import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
-import com.nearinfinity.blur.store.replication.LocalIOWrapper;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.thrift.generated.Column;
@@ -107,7 +104,7 @@ public class TestBlurIndex {
 
         LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
-        localFileCache.open();
+        localFileCache.init();
         
         Progressable progressable = new Progressable() {
             @Override
@@ -115,17 +112,9 @@ public class TestBlurIndex {
             }
         };
         
-        ReplicationDaemon replicationDaemon = new ReplicationDaemon(localFileCache, new LocalIOWrapper() {
-            @Override
-            public IndexOutput wrapOutput(IndexOutput fileIndexOutput) {
-                return fileIndexOutput;
-            }
-            
-            @Override
-            public IndexInput wrapInput(IndexInput fileIndexInput) {
-                return fileIndexInput;
-            }
-        }, progressable);
+        ReplicationDaemon replicationDaemon = new ReplicationDaemon();
+        replicationDaemon.setLocalFileCache(localFileCache);
+        replicationDaemon.init();
         
         return new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), progressable, replicationDaemon);
     }

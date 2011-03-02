@@ -42,14 +42,18 @@ public class BlurIndex implements Runnable,BlurConstants {
     private int maxBlockingTimePerUpdate = 10;
     
     public void init() throws IOException {
+        mutationQueue = new ArrayBlockingQueue<BlurIndexMutation>(maxNumberOfDirsMergedAtOnce);
         setupWriter();
+        startDaemon();
+    }
+    
+    private void startDaemon() {
         daemon = new Thread(this);
         daemon.setDaemon(true);
         daemon.setName("Blur-Update-Thread-" + directory.toString());
         daemon.start();
-        mutationQueue = new ArrayBlockingQueue<BlurIndexMutation>(maxNumberOfDirsMergedAtOnce);
     }
-    
+
     public void close() {
         daemon.interrupt();
     }
@@ -76,12 +80,12 @@ public class BlurIndex implements Runnable,BlurConstants {
     }
     
     private void setupWriter() throws IOException {
-        IndexWriter indexWriter = new IndexWriter(directory, analyzer, MaxFieldLength.UNLIMITED);
-        indexWriter.setSimilarity(new FairSimilarity());
-        indexWriter.setUseCompoundFile(false);
+        writer = new IndexWriter(directory, analyzer, MaxFieldLength.UNLIMITED);
+        writer.setSimilarity(new FairSimilarity());
+        writer.setUseCompoundFile(false);
         ConcurrentMergeScheduler mergeScheduler = new ConcurrentMergeScheduler();
         mergeScheduler.setMaxThreadCount(maxThreadCountForMerger);
-        indexWriter.setMergeScheduler(mergeScheduler);
+        writer.setMergeScheduler(mergeScheduler);
     }
 
     private Directory index(Collection<Row> rows) throws IOException {
@@ -123,10 +127,10 @@ public class BlurIndex implements Runnable,BlurConstants {
                 reader.close();
             }
             writer.addIndexesNoOptimize(getDirectories(mutations));
+            writer.commit();
             for (BlurIndexMutation mutation : mutations) {
                 mutation.indexed = true;
             }
-            writer.commit();
         } finally {
             if (mutations != null) {
                 for (BlurIndexMutation mutation : mutations) {

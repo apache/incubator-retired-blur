@@ -16,7 +16,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.TermEnum;
@@ -31,7 +30,6 @@ import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
-import com.nearinfinity.blur.store.WritableHdfsDirectory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 
 public class ReplicaTestSamples {
@@ -47,7 +45,7 @@ public class ReplicaTestSamples {
 
         LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(new File("./tmp/cache1/"),new File("./tmp/cache2/"));
-        localFileCache.open();
+        localFileCache.init();
         
         Progressable progressable = new Progressable() {
             @Override
@@ -55,17 +53,9 @@ public class ReplicaTestSamples {
             }
         };
         
-        ReplicationDaemon replicationDaemon = new ReplicationDaemon(localFileCache, new LocalIOWrapper() {
-            @Override
-            public IndexOutput wrapOutput(IndexOutput fileIndexOutput) {
-                return fileIndexOutput;
-            }
-            
-            @Override
-            public IndexInput wrapInput(IndexInput fileIndexInput) {
-                return fileIndexInput;
-            }
-        }, progressable);
+        ReplicationDaemon replicationDaemon = new ReplicationDaemon();
+        replicationDaemon.setLocalFileCache(localFileCache);
+        replicationDaemon.init();
         
         ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), progressable, replicationDaemon);
         

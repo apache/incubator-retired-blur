@@ -21,10 +21,19 @@ public class ZookeeperClusterStatus extends ClusterStatus implements BlurConstan
     private DistributedManager dm;
     private long zkPollDelay = TimeUnit.SECONDS.toMillis(15);
     private Timer daemon;
+    private boolean closed;
     
     public void init() {
         startPollingDaemon();
         pollForState();
+    }
+    
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            daemon.cancel();
+            daemon.purge();
+        }
     }
 
     @Override

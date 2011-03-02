@@ -24,14 +24,7 @@ public class ZookeeperDistributedManager extends DistributedManager {
 
     @Override
     public void close() {
-        if (zooKeeper != null) {
-            try {
-                zooKeeper.close();
-            } catch (InterruptedException e) {
-                LOG.error("Error while closing zookeeper",e);
-                throw new RuntimeException(e);
-            }
-        }
+        //do nothing, zooKeeper can close itself
     }
     
     @Override
@@ -135,6 +128,7 @@ public class ZookeeperDistributedManager extends DistributedManager {
             public void run() {
                 try {
                     zooKeeper.delete(path, -1);
+                    zooKeeper.close();
                 } catch (Exception e) {
                     LOG.error("Error while deleting path [{0}] during shutdown.",e,path);
                 }
@@ -176,6 +170,20 @@ public class ZookeeperDistributedManager extends DistributedManager {
     @Override
     protected void unlockInternal(String path) {
         LOG.info("Removing lock [{0}]",path);
+        try {
+            zooKeeper.delete(path, -1);
+        } catch (KeeperException e) {
+            if (e.code() == Code.NONODE) {
+                return;
+            }
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    protected void removePath(String path) {
         try {
             zooKeeper.delete(path, -1);
         } catch (KeeperException e) {

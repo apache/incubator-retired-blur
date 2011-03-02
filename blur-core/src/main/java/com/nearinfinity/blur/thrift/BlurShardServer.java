@@ -30,6 +30,7 @@ public class BlurShardServer implements Iface, BlurConstants {
 	private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
 	private IndexManager indexManager;
 	private IndexServer indexServer;
+    private boolean closed;
 	
     @Override
 	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
@@ -81,8 +82,11 @@ public class BlurShardServer implements Iface, BlurConstants {
         }
     }
     
-    public void close() throws InterruptedException {
-        indexManager.close();
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            indexManager.close();
+        }
     }
     
     @Override

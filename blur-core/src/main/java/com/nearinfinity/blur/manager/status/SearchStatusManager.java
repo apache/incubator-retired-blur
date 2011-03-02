@@ -36,7 +36,7 @@ public class SearchStatusManager {
         }, searchStatusCleanupTimerDelay, searchStatusCleanupTimerDelay);
     }
     
-    public void close() throws InterruptedException {
+    public void close() {
         searchStatusCleanupTimer.cancel();
         searchStatusCleanupTimer.purge();
     }

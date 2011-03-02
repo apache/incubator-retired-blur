@@ -71,6 +71,7 @@ public class IndexManager implements BlurConstants {
     private ExecutorService executor;
     private int threadCount = 32;
     private SearchStatusManager statusManager = new SearchStatusManager();
+    private boolean closed;
 
     public IndexManager() {
         BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
@@ -81,10 +82,13 @@ public class IndexManager implements BlurConstants {
         statusManager.init();
     }
 
-    public void close() throws InterruptedException {
-        statusManager.close();
-        executor.shutdownNow();
-        indexServer.close();
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            statusManager.close();
+            executor.shutdownNow();
+            indexServer.close();
+        }
     }
 
     public void replaceRow(String table, Row row) throws BlurException {

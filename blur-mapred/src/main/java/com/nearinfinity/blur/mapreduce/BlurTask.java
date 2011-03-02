@@ -58,7 +58,7 @@ public class BlurTask implements BlurConstants {
     public LocalFileCache getLocalFileCache() {
         LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(getFiles(configuration.get(MAPRED_LOCAL_DIR)));
-        localFileCache.open();
+        localFileCache.init();
         return localFileCache;
     }
 

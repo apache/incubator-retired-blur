@@ -48,15 +48,30 @@ public class ReplicationDaemon implements Constants, Runnable {
     } 
     
     private Thread daemon;
-    private LocalIOWrapper wrapper;
+    private LocalIOWrapper wrapper = new LocalIOWrapper() {
+        @Override
+        public IndexOutput wrapOutput(IndexOutput fileIndexOutput) {
+            return fileIndexOutput;
+        }
+        @Override
+        public IndexInput wrapInput(IndexInput fileIndexInput) {
+            return fileIndexInput;
+        }
+    };
     private long period = TimeUnit.SECONDS.toMillis(1);
     private int numberOfBlocksToMovePerPass = 256;
     private byte[] buffer = new byte[BUFFER_SIZE];
     private LocalFileCache localFileCache;
-    private Progressable progressable;
+    private Progressable progressable = new Progressable() {
+        @Override
+        public void progress() {
+            
+        }
+    };
     private PriorityBlockingQueue<RepliaWorkUnit> replicaQueue = new PriorityBlockingQueue<RepliaWorkUnit>(1024, new RepliaWorkUnitCompartor());
     private Collection<String> replicaNames = Collections.synchronizedCollection(new HashSet<String>());
     private LuceneIndexFileComparator comparator = new LuceneIndexFileComparator();
+    private volatile boolean closed;
     private IndexInputFactory indexInputFactory = new IndexInputFactory() {
         @Override
         public void replicationComplete(RepliaWorkUnit workUnit, LocalIOWrapper wrapper, int bufferSize) throws IOException {
@@ -64,37 +79,24 @@ public class ReplicationDaemon implements Constants, Runnable {
             workUnit.replicaIndexInput.localInput.set(localInput);
         }
     };
-
-    public ReplicationDaemon(LocalFileCache localFileCache, LocalIOWrapper wrapper, Progressable progressable) {
-        this.localFileCache = localFileCache;
-        this.wrapper = wrapper;
-        this.progressable = progressable;
+    
+    public void init() {
         this.daemon = new Thread(this);
         this.daemon.setDaemon(true);
         this.daemon.setPriority(Thread.MIN_PRIORITY);
         this.daemon.start();
     }
     
-    public ReplicationDaemon(LocalFileCache localFileCache) {
-        this(localFileCache,new LocalIOWrapper() {
-            @Override
-            public IndexInput wrapInput(IndexInput fileIndexInput) {
-                return fileIndexInput;
-            }
-            @Override
-            public IndexOutput wrapOutput(IndexOutput fileIndexOutput) {
-                return fileIndexOutput;
-            }
-        }, new Progressable() {
-            @Override
-            public void progress() {
-            }
-        });
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            daemon.interrupt();
+        }
     }
 
     @Override
     public void run() {
-        while (true) {
+        while (!closed) {
             try {
                 replicate();
             } catch (Exception e) {
@@ -103,6 +105,9 @@ public class ReplicationDaemon implements Constants, Runnable {
             try {
                 Thread.sleep(period);
             } catch (InterruptedException e) {
+                if (closed) {
+                    return;
+                }
                 throw new RuntimeException(e);
             }
         }
@@ -110,7 +115,7 @@ public class ReplicationDaemon implements Constants, Runnable {
 
     private void replicate() throws InterruptedException, IOException {
         RepliaWorkUnit workUnit = null;
-        while (!replicaQueue.isEmpty()) {
+        while (!replicaQueue.isEmpty() && !closed) {
             if (workUnit == null) {
                 workUnit = replicaQueue.take();
             } else {
@@ -285,6 +290,24 @@ public class ReplicationDaemon implements Constants, Runnable {
 
     public boolean isBeingReplicated(String dirName, String name) {
         return replicaNames.contains(getLookupName(dirName, name));
+    }
+
+
+
+    public void setWrapper(LocalIOWrapper wrapper) {
+        this.wrapper = wrapper;
+    }
+
+
+
+    public void setLocalFileCache(LocalFileCache localFileCache) {
+        this.localFileCache = localFileCache;
+    }
+
+
+
+    public void setProgressable(Progressable progressable) {
+        this.progressable = progressable;
     }
 
 }

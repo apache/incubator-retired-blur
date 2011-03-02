@@ -149,6 +149,11 @@ public class ZkTest {
         protected void unlockInternal(String path) {
             
         }
+
+        @Override
+        protected void removePath(String path) {
+            
+        }
         
     }
 }

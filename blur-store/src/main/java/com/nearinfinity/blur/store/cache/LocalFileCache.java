@@ -32,8 +32,9 @@ public class LocalFileCache {
     private boolean setup = false;
     private long gcStartDelay = TimeUnit.MINUTES.toMillis(5);
     private long gcWaitPeriod = TimeUnit.HOURS.toMillis(1);
+    private boolean closed;
     
-    public void open() {
+    public void init() {
         tryToCreateAllDirs();
         files = getValid(potentialDirs);
         daemon = new Timer("LocalFileCache-FileGC-Daemon",true);
@@ -50,9 +51,12 @@ public class LocalFileCache {
         setup = true;
     }
     
-    public void close() {
-        daemon.cancel();
-        daemon.purge();
+    public synchronized void close() {
+        if (!closed) {
+            closed = true;
+            daemon.cancel();
+            daemon.purge();
+        }
     }
     
     public File getLocalFile(String dirName, String name) {

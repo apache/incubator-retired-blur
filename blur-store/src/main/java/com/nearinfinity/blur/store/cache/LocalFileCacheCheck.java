@@ -4,6 +4,6 @@ import java.io.IOException;
 
 public interface LocalFileCacheCheck {
 
-    boolean isBeingServed(String dirName, String name) throws IOException;
+    boolean isSafeForRemoval(String table, String shard, String name) throws IOException;
 
 }

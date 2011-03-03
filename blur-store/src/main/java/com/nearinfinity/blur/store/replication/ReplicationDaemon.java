@@ -79,6 +79,12 @@ public class ReplicationDaemon implements Constants, Runnable {
             workUnit.replicaIndexInput.localInput.set(localInput);
         }
     };
+    private ReplicationStrategy replicationStrategy = new ReplicationStrategy() {
+        @Override
+        public boolean replicateLocally(String table, String name) {
+            return true;
+        }
+    };
     
     public void init() {
         this.daemon = new Thread(this);
@@ -274,6 +280,9 @@ public class ReplicationDaemon implements Constants, Runnable {
     }
     
     public void replicate(ReplicaHdfsDirectory directory, ReplicaIndexInput replicaIndexInput) {
+        if (!replicationStrategy.replicateLocally(replicaIndexInput.tableName, replicaIndexInput.fileName)) {
+            return;
+        }
         if (isBeingReplicated(replicaIndexInput.dirName,replicaIndexInput.fileName)) {
             return;
         }
@@ -292,19 +301,13 @@ public class ReplicationDaemon implements Constants, Runnable {
         return replicaNames.contains(getLookupName(dirName, name));
     }
 
-
-
     public void setWrapper(LocalIOWrapper wrapper) {
         this.wrapper = wrapper;
     }
 
-
-
     public void setLocalFileCache(LocalFileCache localFileCache) {
         this.localFileCache = localFileCache;
     }
-
-
 
     public void setProgressable(Progressable progressable) {
         this.progressable = progressable;

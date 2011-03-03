@@ -66,8 +66,11 @@ public class LocalFileCacheTest {
         test.setGcStartDelay(TimeUnit.SECONDS.toMillis(1));
         test.setLocalFileCacheCheck(new LocalFileCacheCheck() {
             @Override
-            public boolean isBeingServed(String dirName, String name) throws IOException {
-                return name.startsWith("keep");
+            public boolean isSafeForRemoval(String table, String shard, String name) throws IOException {
+                if (name.startsWith("keep")) {
+                    return false;
+                }
+                return true;
             }
         });
         test.init();

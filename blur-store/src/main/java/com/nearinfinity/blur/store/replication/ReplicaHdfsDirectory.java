@@ -17,6 +17,7 @@ import org.apache.lucene.store.LockFactory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
+import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 
 
@@ -195,6 +196,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         protected ReplicaHdfsDirectory directory;
         protected String fileName;
         protected String dirName;
+        protected String tableName;
 
         public ReplicaIndexInput(String name, long length, int bufferSize, ReplicaHdfsDirectory directory) {
             super(bufferSize);
@@ -202,6 +204,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
             this.directory = directory;
             this.fileName = name;
             this.dirName = directory.dirName;
+            this.tableName = HdfsUtil.getTable(dirName);
         }
 
         @Override

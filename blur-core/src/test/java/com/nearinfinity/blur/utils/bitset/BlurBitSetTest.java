@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.utils;
+package com.nearinfinity.blur.utils.bitset;
 
 import static junit.framework.Assert.*;
 
@@ -6,12 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.lucene.util.BitUtil;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class BlurBitSetTest {
+	
+	
 	private BlurBitSet bits;
 
 	@Before
@@ -126,6 +129,55 @@ public class BlurBitSetTest {
 				+ prevTime + "]");
 	}
 
+	@Test
+	public void testCount() {
+		assertEquals(2, countOldWay(3452473186819272400l));
+		assertEquals(2, BlurBitSet.countLeftZeros(3452473186819272400l));
+	}
+	@Test
+	public void testCountLeftZerosPerformance() {
+		int arrayCount=500000;
+		long[] ls = new long[arrayCount];
+		long seed = getSeed();
+		
+		System.out.println("testCountLeftZerosPerformance Running with seed [" + seed + "]");
+		Random rand = new Random(seed);
+		for(int i = 0; i<arrayCount; i++){
+			ls[i] = rand.nextLong();
+		}
+		
+		long newCounter = 0;
+		long s2 = System.nanoTime();
+		for(int i = 0; i < arrayCount; i++	){
+			newCounter += BlurBitSet.countLeftZeros(ls[i]);
+		}
+		long e2 = System.nanoTime();
+
+		
+		long oldCounter = 0;
+		long s1 = System.nanoTime();
+		for(int i = 0; i < arrayCount; i++	){
+			oldCounter += countOldWay(ls[i]);
+		}
+		long e1 = System.nanoTime();
+		
+		
+		System.out.println("old way took " + (e1-s1));
+		System.out.println("new way took " + (e2-s2));
+		System.out.println("new way is " + ((float)(e1-s1) / (float)(e2-s2)) + " times faster");
+		for(int i = 0; i < arrayCount; i++) {
+			assertEquals(i + " for number [" + ls[i] + "]", countOldWay(ls[i]), BlurBitSet.countLeftZeros(ls[i]));
+		}
+	}
+	
+	private int countOldWay(long word) {
+		word = Long.reverse(word);
+		int count = BitUtil.ntz(word);
+		return count;
+	}
+	
+	
+	
 	private void populate(BlurBitSet blurBitSet, int maxSize,
 			int maxPopulation, Random random) {
 		while (blurBitSet.cardinality() < maxPopulation) {

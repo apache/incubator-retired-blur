@@ -167,6 +167,9 @@ public class SuperQuery extends AbstractWrapperQuery {
 
 		@Override
 		public int advance(int target) throws IOException {
+		    if (target == NO_MORE_DOCS) {
+		        return scorer.advance(NO_MORE_DOCS);
+		    }
 			int doc = scorer.docID();
 			int odoc = doc;
 			if (isScorerExhausted(doc)) {

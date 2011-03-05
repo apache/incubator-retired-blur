@@ -58,5 +58,4 @@ public class BlurExampleIndexer {
         FileOutputFormat.setOutputPath(job, new Path(otherArgs[1],"job-" + System.currentTimeMillis()));
         System.exit(job.waitForCompletion(true) ? 0 : 1);
     }
-
 }

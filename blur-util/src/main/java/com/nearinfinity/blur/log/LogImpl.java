@@ -18,18 +18,8 @@ package com.nearinfinity.blur.log;
 
 import java.text.MessageFormat;
 
-import com.nearinfinity.blur.log.LogFactory;
-
 public class LogImpl implements Log {
     
-    public static void main(String[] args) {
-        LogImpl impl = new LogImpl(LogFactory.getLog(LogImpl.class));
-        impl.info("cool");
-        impl.info("cool",new Throwable());
-        impl.info("cool","nice");
-        impl.info("cool",new Throwable(),"nice");
-    }
-
     private org.apache.commons.logging.Log log;
     
     public LogImpl(org.apache.commons.logging.Log log) {

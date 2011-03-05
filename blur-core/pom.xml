@@ -24,11 +24,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
-			<artifactId>blur-jdbc</artifactId>
-			<version>${blur_version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-util</artifactId>
 			<version>${blur_version}</version>
 		</dependency>

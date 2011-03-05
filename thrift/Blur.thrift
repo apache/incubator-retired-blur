@@ -1,5 +1,6 @@
 namespace java com.nearinfinity.blur.thrift.generated
 
+
 exception BlurException {
   1:string message
 }

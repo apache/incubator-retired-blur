@@ -8,7 +8,7 @@
 	<name>Blur</name>
 	
 	<properties>
-		<blur_version>1.0.b8</blur_version>
+		<blur_version>0.1.0</blur_version>
 	</properties>
 	
 	<modules>

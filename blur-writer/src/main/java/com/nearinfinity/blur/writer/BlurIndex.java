@@ -42,6 +42,7 @@ import com.nearinfinity.blur.utils.RowIndexWriter;
 
 public class BlurIndex implements Runnable {
     
+    private static final String BLUR_UPDATE_THREAD = "Blur-Update-Thread-";
     private static final Log LOG =  LogFactory.getLog(BlurIndex.class);
     
     private class BlurIndexMutation {
@@ -67,7 +68,7 @@ public class BlurIndex implements Runnable {
     private void startDaemon() {
         daemon = new Thread(this);
         daemon.setDaemon(true);
-        daemon.setName("Blur-Update-Thread-" + directory.toString());
+        daemon.setName(BLUR_UPDATE_THREAD + directory.toString());
         daemon.start();
     }
 

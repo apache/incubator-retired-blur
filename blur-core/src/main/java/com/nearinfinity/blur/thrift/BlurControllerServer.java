@@ -40,7 +40,7 @@ import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
-import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
+import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -96,7 +96,7 @@ public class BlurControllerServer implements Iface {
     @Override
 	public Hits search(final String table, final SearchQuery searchQuery) throws BlurException, TException {
 		try {
-		    HitsIterable hitsIterable = scatterGather(new BlurSearchCommand<HitsIterable>() {
+		    HitsIterable hitsIterable = scatterGather(new BlurCommand<HitsIterable>() {
                 @Override
                 public HitsIterable call(Client client) throws Exception {
                     return new HitsIterableBlurClient(client,table,searchQuery);
@@ -116,7 +116,7 @@ public class BlurControllerServer implements Iface {
 		try {
 		    clientHostnamePort = getNode(table,selector);
 		    return client.execute(clientHostnamePort, 
-		        new BlurSearchCommand<FetchResult>() {
+		        new BlurCommand<FetchResult>() {
                     @Override
                     public FetchResult call(Client client) throws Exception {
                         return client.fetchRow(table, selector);
@@ -131,7 +131,7 @@ public class BlurControllerServer implements Iface {
     @Override
     public void cancelSearch(final long uuid) throws BlurException, TException {
         try {
-            scatter(new BlurSearchCommand<Void>() {
+            scatter(new BlurCommand<Void>() {
                 @Override
                 public Void call(Client client) throws Exception {
                     client.cancelSearch(uuid);
@@ -146,7 +146,7 @@ public class BlurControllerServer implements Iface {
     @Override
     public List<SearchQueryStatus> currentSearches(final String table) throws BlurException, TException {
         try {
-            return scatterGather(new BlurSearchCommand<List<SearchQueryStatus>>() {
+            return scatterGather(new BlurCommand<List<SearchQueryStatus>>() {
                 @Override
                 public List<SearchQueryStatus> call(Client client) throws Exception {
                     return client.currentSearches(table);
@@ -166,7 +166,7 @@ public class BlurControllerServer implements Iface {
     public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value) throws BlurException, TException {
         try {
             return scatterGather(
-                new BlurSearchCommand<Long>() {
+                new BlurCommand<Long>() {
                     @Override
                     public Long call(Client client) throws Exception {
                         return client.recordFrequency(table,columnFamily,columnName,value);
@@ -190,7 +190,7 @@ public class BlurControllerServer implements Iface {
     public Schema schema(final String table) throws BlurException, TException {
         try {
             return scatterGather(
-                new BlurSearchCommand<Schema>() {
+                new BlurCommand<Schema>() {
                     @Override
                     public Schema call(Client client) throws Exception {
                         return client.schema(table);
@@ -219,7 +219,7 @@ public class BlurControllerServer implements Iface {
     public List<String> terms(final String table, final String columnFamily, final String columnName, final String startWith, final short size) throws BlurException, TException {
         try {
             return scatterGather(
-                new BlurSearchCommand<List<String>>() {
+                new BlurCommand<List<String>>() {
                     @Override
                     public List<String> call(Client client) throws Exception {
                         return client.terms(table,columnFamily,columnName,startWith,size);
@@ -267,7 +267,7 @@ public class BlurControllerServer implements Iface {
                 layout.put(table, ForkJoin.execute(executor, clusterStatus.getOnlineShardServers(), new ParallelCall<String,Map<String,String>>() {
                     @Override
                     public Map<String,String> call(final String hostnamePort) throws Exception {
-                        return client.execute(hostnamePort, new BlurSearchCommand<Map<String,String>>() {
+                        return client.execute(hostnamePort, new BlurCommand<Map<String,String>>() {
                             @Override
                             public Map<String,String> call(Client client) throws Exception {
                                 return client.shardServerLayout(table);
@@ -292,17 +292,17 @@ public class BlurControllerServer implements Iface {
         }
     }
     
-    private <R> R scatterGather(final BlurSearchCommand<R> command, Merger<R> merger) throws Exception {
+    private <R> R scatterGather(final BlurCommand<R> command, Merger<R> merger) throws Exception {
         return ForkJoin.execute(executor, clusterStatus.getOnlineShardServers(), new ParallelCall<String, R>() {
             @SuppressWarnings("unchecked")
             @Override
             public R call(String hostnamePort) throws Exception {
-                return client.execute(hostnamePort, (BlurSearchCommand<R>) command.clone());
+                return client.execute(hostnamePort, (BlurCommand<R>) command.clone());
             }
         }).merge(merger);
     }
     
-    private <R> void scatter(BlurSearchCommand<R> command) throws Exception {
+    private <R> void scatter(BlurCommand<R> command) throws Exception {
         scatterGather(command,new Merger<R>() {
             @Override
             public R merge(BlurExecutorCompletionService<R> service) throws Exception {
@@ -318,7 +318,7 @@ public class BlurControllerServer implements Iface {
     public TableDescriptor describe(final String table) throws BlurException, TException {
         try {
             String hostname = getSingleOnlineShardServer();
-            return client.execute(hostname, new BlurSearchCommand<TableDescriptor>() {
+            return client.execute(hostname, new BlurCommand<TableDescriptor>() {
                 @Override
                 public TableDescriptor call(Client client) throws Exception {
                     return client.describe(table);
@@ -333,7 +333,7 @@ public class BlurControllerServer implements Iface {
     public List<String> tableList() throws BlurException, TException {
         try {
             String hostname = getSingleOnlineShardServer();
-            return client.execute(hostname, new BlurSearchCommand<List<String>>() {
+            return client.execute(hostname, new BlurCommand<List<String>>() {
                 @Override
                 public List<String> call(Client client) throws Exception {
                     return client.tableList();

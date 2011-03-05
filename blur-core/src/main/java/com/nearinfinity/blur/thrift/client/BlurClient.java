@@ -16,10 +16,10 @@
 
 package com.nearinfinity.blur.thrift.client;
 
-import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
+import com.nearinfinity.blur.thrift.commands.BlurCommand;
 
 public abstract class BlurClient {
     
-    public abstract <T> T execute(String node, BlurSearchCommand<T> command) throws Exception;
+    public abstract <T> T execute(String node, BlurCommand<T> command) throws Exception;
 
 }

@@ -23,7 +23,7 @@ import java.util.Map;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TProtocol;
 
-import com.nearinfinity.blur.thrift.commands.BlurSearchCommand;
+import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
@@ -40,7 +40,7 @@ public class BlurClientEmbedded extends BlurClient {
     private Map<String,Client> nodes = new HashMap<String,Client>();
 
     @Override
-    public <T> T execute(String node, BlurSearchCommand<T> command) throws Exception {
+    public <T> T execute(String node, BlurCommand<T> command) throws Exception {
         Client client = nodes.get(node);
         return command.call(client);
     }

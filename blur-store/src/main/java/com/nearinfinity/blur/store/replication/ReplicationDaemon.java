@@ -40,6 +40,7 @@ import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory.ReplicaIndex
 
 public class ReplicationDaemon implements Constants, Runnable {
     
+    private static final String EMPTY_STRING = "";
     private static final Log LOG = LogFactory.getLog(ReplicationDaemon.class);
     
     public static class RepliaWorkUnit {
@@ -221,7 +222,7 @@ public class ReplicationDaemon implements Constants, Runnable {
     private String getExt(String fileName) {
         int index = fileName.indexOf('.');
         if (index < 0) {
-            return "";
+            return EMPTY_STRING;
         }
         return fileName.substring(index + 1);
     }

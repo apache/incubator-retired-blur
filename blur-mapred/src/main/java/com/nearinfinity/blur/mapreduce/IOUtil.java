@@ -22,7 +22,7 @@ import java.io.IOException;
 
 public class IOUtil {
     
-    private static final String UTF_8 = "UTF-8";
+    public static final String UTF_8 = "UTF-8";
 
     public static String readString(DataInput input) throws IOException {
         int length = readVInt(input);

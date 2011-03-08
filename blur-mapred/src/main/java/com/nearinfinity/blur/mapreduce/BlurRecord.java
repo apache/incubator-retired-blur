@@ -95,7 +95,7 @@ public class BlurRecord implements Writable {
         this.rowId = rowId;
     }
 
-    public String getRecorId() {
+    public String getRecordId() {
         return recordId;
     }
 

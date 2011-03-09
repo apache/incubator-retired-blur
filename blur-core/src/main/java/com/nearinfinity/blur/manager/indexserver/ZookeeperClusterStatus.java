@@ -16,10 +16,6 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_ONLINE_CONTROLLERS_PATH;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_ONLINE_SHARDS_PATH;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_REGISTERED_SHARDS_PATH;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -29,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
-public class ZookeeperClusterStatus extends ClusterStatus {
+public class ZookeeperClusterStatus extends ClusterStatus implements ShardServerStateUpdater {
     
     private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatus.class);
     
@@ -41,7 +37,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     private long zkPollDelay = TimeUnit.SECONDS.toMillis(15);
     private Timer daemon;
     private boolean closed;
-    
+    private ShardServerStatePoller shardServerStatePoller = new ShardServerStatePoller();
+
     public void init() {
         startPollingDaemon();
         pollForState();
@@ -81,31 +78,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
     
     private synchronized void pollForState() {
-        List<String> shardNodes = dm.list(BLUR_REGISTERED_SHARDS_PATH);
-        onlineShards = dm.list(BLUR_ONLINE_SHARDS_PATH);
-        controllers = dm.list(BLUR_ONLINE_CONTROLLERS_PATH);
-        List<String> offlineShardNodes = new ArrayList<String>(shardNodes);
-        offlineShardNodes.removeAll(onlineShards);
-//        boolean stateChange = false;
-        if (!shardNodes.equals(shards)) {
-            LOG.info("Shard servers in the cluster changed from [{0}] to [{1}]",shards,shardNodes);
-//            stateChange = true;
-            shards = shardNodes;
-        }
-        if (!offlineShardNodes.equals(offlineShards)) {
-            LOG.info("Offline shard servers changed from [{0}] to [{1}]",offlineShards,offlineShardNodes);
-//            stateChange = true;
-            offlineShards = offlineShardNodes;
-        }
-//        if (stateChange) {
-//            shardServerStateChange();
-//        }
-        register(BLUR_REGISTERED_SHARDS_PATH);
-        register(BLUR_ONLINE_CONTROLLERS_PATH);
-        register(BLUR_ONLINE_SHARDS_PATH);
+        shardServerStatePoller.pollForStateChanges(this);
     }
-    
-    private void register(String path) {
+
+    @Override
+    public void register(String path) {
         dm.registerCallableOnChange(new Runnable() {
             @Override
             public void run() {
@@ -114,12 +91,58 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         },path);
     }
 
-    public DistributedManager getDistributedManager() {
-        return dm;
-    }
-
     public void setDistributedManager(DistributedManager dm) {
         this.dm = dm;
+    }
+
+    @Override
+    public DistributedManager getDistributedManager() {
+        return this.dm;
+    }
+
+    @Override
+    public List<String> getShards() {
+        return this.shards;
+    }
+
+    @Override
+    public void setShards(List<String> shards) {
+        this.shards = shards;
+    }
+
+    @Override
+    public List<String> getOnlineShards() {
+        return this.onlineShards;
+    }
+
+    @Override
+    public void setOnlineShards(List<String> onlineShards) {
+        this.onlineShards = onlineShards;
+    }
+
+    @Override
+    public List<String> getOfflineShards() {
+        return this.offlineShards;
+    }
+
+    @Override
+    public void setOfflineShards(List<String> offlineShards) {
+        this.offlineShards = offlineShards;
+    }
+
+    @Override
+    public List<String> getControllers() {
+        return this.controllers;
+    }
+
+    @Override
+    public void setControllers(List<String> controllers) {
+        this.controllers = controllers;
+    }
+
+    @Override
+    public void onShardServerStateChanged() {
+        // no-op
     }
 
 }

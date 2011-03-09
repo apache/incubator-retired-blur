@@ -28,7 +28,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
 
-public abstract class ManagedDistributedIndexServer extends DistributedIndexServer {
+public abstract class ManagedDistributedIndexServer extends DistributedIndexServer implements ShardServerStateUpdater {
     
     public enum NODE_TYPE {
         SHARD,
@@ -44,6 +44,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private Timer daemon;
     private long zkPollDelay = TimeUnit.MINUTES.toMillis(1);
     private NODE_TYPE type;
+    private ShardServerStatePoller shardServerStatePoller = new ShardServerStatePoller();
     
     @Override
     public void init() {
@@ -139,37 +140,67 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     }
 
     private synchronized void pollForState() {
-        List<String> shardNodes = dm.list(BLUR_REGISTERED_SHARDS_PATH);
-        onlineShards = dm.list(BLUR_ONLINE_SHARDS_PATH);
-        controllers = dm.list(BLUR_ONLINE_CONTROLLERS_PATH);
-        List<String> offlineShardNodes = new ArrayList<String>(shardNodes);
-        offlineShardNodes.removeAll(onlineShards);
-        boolean stateChange = false;
-        if (!shardNodes.equals(shards)) {
-            LOG.info("Shard servers in the cluster changed from [{0}] to [{1}]",shards,shardNodes);
-            stateChange = true;
-            shards = shardNodes;
-        }
-        if (!offlineShardNodes.equals(offlineShards)) {
-            LOG.info("Offline shard servers changed from [{0}] to [{1}]",offlineShards,offlineShardNodes);
-            stateChange = true;
-            offlineShards = offlineShardNodes;
-        }
-        if (stateChange) {
-            shardServerStateChange();
-        }
-        register(BLUR_REGISTERED_SHARDS_PATH);
-        register(BLUR_ONLINE_CONTROLLERS_PATH);
-        register(BLUR_ONLINE_SHARDS_PATH);
+        shardServerStatePoller.pollForStateChanges(this);
     }
 
-    private void register(String path) {
+    @Override
+    public void register(String path) {
         dm.registerCallableOnChange(new Runnable() {
             @Override
             public void run() {
                 pollForState();
             }
         },path);
+    }
+
+    @Override
+    public DistributedManager getDistributedManager() {
+        return this.dm;
+    }
+
+    @Override
+    public List<String> getShards() {
+        return this.shards;
+    }
+
+    @Override
+    public void setShards(List<String> shards) {
+        this.shards = shards;
+    }
+
+    @Override
+    public List<String> getOnlineShards() {
+        return this.onlineShards;
+    }
+
+    @Override
+    public void setOnlineShards(List<String> onlineShards) {
+        this.onlineShards = onlineShards;
+    }
+
+    @Override
+    public List<String> getOfflineShards() {
+        return this.offlineShards;
+    }
+
+    @Override
+    public void setOfflineShards(List<String> offlineShards) {
+        this.offlineShards = offlineShards;
+    }
+
+    @Override
+    public List<String> getControllers() {
+        return this.controllers;
+    }
+
+    @Override
+    public void setControllers(List<String> controllers) {
+        this.controllers = controllers;
+    }
+
+    @Override
+    public void onShardServerStateChanged() {
+        shardServerStateChange();
     }
 
     @Override

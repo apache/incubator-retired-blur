@@ -25,15 +25,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.lucene.index.IndexCommit;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 
 public class BlurTask {
+	
+	private static final Log log = LogFactory.getLog(BlurTask.class);
 
     public static final String EMPTY = "EMPTY";
     public static final String BLUR_COMMIT = "blur.commit";
@@ -55,6 +61,7 @@ public class BlurTask {
         TaskAttemptID taskAttemptID = context.getTaskAttemptID();
         int id = taskAttemptID.getTaskID().getId();
         shardName = SHARD_PREFIX + buffer(id,8);
+        
     }
     
     public BlurTask(Configuration configuration) {
@@ -70,6 +77,29 @@ public class BlurTask {
         String tableName = getTableName();
         String shardName = getShardName();
         return new Path(new Path(basePath, tableName), shardName);
+    }
+    
+    public int getNumReducers(int num) {
+    	Path shardPath = new Path(getBasePath(), getTableName());
+    	try {
+			FileSystem fileSystem = FileSystem.get(this.configuration);
+			FileStatus[] files = fileSystem.listStatus(shardPath);
+			int shardCount = 0;
+			for (FileStatus fileStatus : files) {
+				if(fileStatus.isDir()) {
+					shardCount++;
+				}
+			}
+			if(shardCount == 0) {
+				return num;
+			}
+			if(shardCount != num) {
+				log.warn("asked for " + num + " reducers, but existing table " + getTableName() + " has " + shardCount + " shards. Using " + shardCount + " reducers");
+			}
+			return shardCount;
+		} catch (IOException e) {
+			throw new RuntimeException("unable to connect to filesystem", e);
+		}
     }
 
     public LocalFileCache getLocalFileCache() {

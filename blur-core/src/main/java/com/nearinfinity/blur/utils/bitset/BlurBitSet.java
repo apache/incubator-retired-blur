@@ -16,23 +16,21 @@
 
 package com.nearinfinity.blur.utils.bitset;
 
-import org.apache.lucene.util.BitUtil;
 import org.apache.lucene.util.OpenBitSet;
 
 public class BlurBitSet extends OpenBitSet {
 
-    private static final long serialVersionUID = 8837907556056943537L;
-    
-    private static final long X0 =  0x8000000000000000l;
-	private static final long X1 =  0x4000000000000000l;
-	private static final long X2 =  0x2000000000000000l;
-	private static final long X3 =  0x1000000000000000l;
-	private static final long X4 =  0x0800000000000000l;
-	private static final long X5 =  0x0400000000000000l;
-	private static final long X6 =  0x0200000000000000l;
-	private static final long X7 =  0x0100000000000000l;
-	private static final long X8 =  0x0080000000000000l;
-	private static final long X9 =  0x0040000000000000l;
+	private static final long serialVersionUID = 8837907556056943537L;
+
+	private static final long X1 = 0x4000000000000000l;
+	private static final long X2 = 0x2000000000000000l;
+	private static final long X3 = 0x1000000000000000l;
+	private static final long X4 = 0x0800000000000000l;
+	private static final long X5 = 0x0400000000000000l;
+	private static final long X6 = 0x0200000000000000l;
+	private static final long X7 = 0x0100000000000000l;
+	private static final long X8 = 0x0080000000000000l;
+	private static final long X9 = 0x0040000000000000l;
 	private static final long X10 = 0x0020000000000000l;
 	private static final long X11 = 0x0010000000000000l;
 	private static final long X12 = 0x0008000000000000l;
@@ -87,99 +85,100 @@ public class BlurBitSet extends OpenBitSet {
 	private static final long X61 = 0x0000000000000004l;
 	private static final long X62 = 0x0000000000000002l;
 	private static final long X63 = 0x0000000000000001l;
-	private static final long X64 = 0x0000000000000000l;
 
-    public static void main(String[] args) {
+	public static void main(String[] args) {
 
-        BlurBitSet bitSet = new BlurBitSet();
-        bitSet.set(0);
-        bitSet.set(3);
-        bitSet.set(5);
+		BlurBitSet bitSet = new BlurBitSet();
+		bitSet.set(0);
+		bitSet.set(3);
+		bitSet.set(5);
 
-        System.out.println(bitSet.prevSetBit(2));
-        
-//        System.out.println(bitSet.prevSetBit(65));
+		System.out.println(bitSet.prevSetBit(2));
 
-        for (int i = 0; i < 70; i++) {
-            System.out.println(i + " " + bitSet.prevSetBit(i));
-        }
+		// System.out.println(bitSet.prevSetBit(65));
 
-    }
+		for (int i = 0; i < 70; i++) {
+			System.out.println(i + " " + bitSet.prevSetBit(i));
+		}
 
-    public BlurBitSet() {
-        super();
-    }
+	}
 
-    public BlurBitSet(long numBits) {
-        super(numBits);
-    }
+	public BlurBitSet() {
+		super();
+	}
 
-    public BlurBitSet(long[] bits, int numWords) {
-        super(bits, numWords);
-    }
+	public BlurBitSet(long numBits) {
+		super(numBits);
+	}
 
-    public int prevSetBit(int index) {
-        return (int) prevSetBit((long) index);
-    }
-    public long prevSetBit(long index) {
-    	if (index < 0) {
-            return -1;
-        }
-    	int initialWordNum = (int)(index >> 6);
-    	if (initialWordNum == -1) {
-    		initialWordNum = Integer.MAX_VALUE;
-        }
-    	int wordNum = initialWordNum;
-    	if(wordNum > wlen - 1) {
-    		wordNum = wlen - 1;
-    	}
-    	while(wordNum >= 0) {
-    		long word = bits[wordNum];
-    		if(word != 0) {
-    			if(wordNum == initialWordNum){
-    				int offset = ((int)(index & 0x3F));
-    				long mask = -1L >>> (63-offset);
-    				word = word & mask;
-    			}
-    			if(word != 0) {
-    				return (((long)wordNum)<<6) + (63-countLeftZeros(word));
-    			}
-    		}
-    		wordNum--;
-    	}
-    	return -1;
-    }
-    
-    static int countLeftZeros(long word) {
-		if(word < -1){
+	public BlurBitSet(long[] bits, int numWords) {
+		super(bits, numWords);
+	}
+
+	public int prevSetBit(int index) {
+		return (int) prevSetBit((long) index);
+	}
+
+	public long prevSetBit(long index) {
+		if (index < 0) {
+			return -1;
+		}
+		int initialWordNum = (int) (index >> 6);
+		if (initialWordNum == -1) {
+			initialWordNum = Integer.MAX_VALUE;
+		}
+		int wordNum = initialWordNum;
+		if (wordNum > wlen - 1) {
+			wordNum = wlen - 1;
+		}
+		while (wordNum >= 0) {
+			long word = bits[wordNum];
+			if (word != 0) {
+				if (wordNum == initialWordNum) {
+					int offset = ((int) (index & 0x3F));
+					long mask = -1L >>> (63 - offset);
+					word = word & mask;
+				}
+				if (word != 0) {
+					return (((long) wordNum) << 6)
+							+ (63 - countLeftZeros(word));
+				}
+			}
+			wordNum--;
+		}
+		return -1;
+	}
+
+	static int countLeftZeros(long word) {
+		if (word < -1) {
 			return 0;
 		}
-		if(word < X32) {
-			if(word < X48) {
-				if(word < X56) {
-					if(word < X60) {
-						if(word < X62) {
-							if(word < X63) {
+		if (word < X32) {
+			if (word < X48) {
+				if (word < X56) {
+					if (word < X60) {
+						if (word < X62) {
+							if (word < X63) {
 								return 64;
 							} else {
 								return 63;
 							}
 						} else {
-							if(word < X61){
-								return 62;		
+							if (word < X61) {
+								return 62;
 							} else {
 								return 61;
 							}
 						}
 					} else {
-						if(word < X58) {
-							if(word < X59) {
+						if (word < X58) {
+							if (word < X59) {
 								return 60;
 							} else {
 								return 59;
 							}
 						} else {
-							if(word < X57) {
+							if (word < X57) {
 								return 58;
 							} else {
 								return 57;
@@ -187,29 +186,29 @@ public class BlurBitSet extends OpenBitSet {
 						}
 					}
 				} else {
-					if(word < X52) {
-						if(word < X54) {
-							if(word < X55) {
+					if (word < X52) {
+						if (word < X54) {
+							if (word < X55) {
 								return 56;
 							} else {
 								return 55;
 							}
 						} else {
-							if(word < X53) {
+							if (word < X53) {
 								return 54;
 							} else {
 								return 53;
 							}
 						}
 					} else {
-						if(word < X50) {
-							if(word < X51) {
+						if (word < X50) {
+							if (word < X51) {
 								return 52;
 							} else {
 								return 51;
 							}
 						} else {
-							if(word < X49) {
+							if (word < X49) {
 								return 50;
 							} else {
 								return 49;
@@ -218,30 +217,30 @@ public class BlurBitSet extends OpenBitSet {
 					}
 				}
 			} else {
-				if(word < X40) {
-					if(word < X44) {
-						if(word < X46) {
-							if(word < X47) {
+				if (word < X40) {
+					if (word < X44) {
+						if (word < X46) {
+							if (word < X47) {
 								return 48;
 							} else {
 								return 47;
 							}
 						} else {
-							if(word < X45){
+							if (word < X45) {
 								return 46;
 							} else {
 								return 45;
 							}
 						}
 					} else {
-						if(word < X42) {
-							if(word < X43) {
+						if (word < X42) {
+							if (word < X43) {
 								return 44;
 							} else {
 								return 43;
 							}
 						} else {
-							if(word < X41) {
+							if (word < X41) {
 								return 42;
 							} else {
 								return 41;
@@ -249,29 +248,29 @@ public class BlurBitSet extends OpenBitSet {
 						}
 					}
 				} else {
-					if(word < X36) {
-						if(word < X38) {
-							if(word < X39){
+					if (word < X36) {
+						if (word < X38) {
+							if (word < X39) {
 								return 40;
 							} else {
 								return 39;
 							}
 						} else {
-							if(word < X37) {
+							if (word < X37) {
 								return 38;
 							} else {
 								return 37;
 							}
 						}
 					} else {
-						if(word < X34) {
-							if(word < X35) {
+						if (word < X34) {
+							if (word < X35) {
 								return 36;
 							} else {
 								return 35;
 							}
 						} else {
-							if(word < X33) {
+							if (word < X33) {
 								return 34;
 							} else {
 								return 33;
@@ -281,31 +280,31 @@ public class BlurBitSet extends OpenBitSet {
 				}
 			}
 		} else {
-			if(word < X16) {
-				if(word < X24){
-					if(word < X28){
-						if(word < X30){
-							if(word < X31) {
+			if (word < X16) {
+				if (word < X24) {
+					if (word < X28) {
+						if (word < X30) {
+							if (word < X31) {
 								return 32;
 							} else {
 								return 31;
 							}
 						} else {
-							if(word < X29) {
+							if (word < X29) {
 								return 30;
 							} else {
 								return 29;
 							}
 						}
 					} else {
-						if( word <X26) {
-							if(word < X27) {
+						if (word < X26) {
+							if (word < X27) {
 								return 28;
 							} else {
 								return 27;
 							}
 						} else {
-							if(word < X25) {
+							if (word < X25) {
 								return 26;
 							} else {
 								return 25;
@@ -313,91 +312,91 @@ public class BlurBitSet extends OpenBitSet {
 						}
 					}
 				} else {
-					if(word < X20){
-						if(word < X22) {
-							if(word < X23) {
+					if (word < X20) {
+						if (word < X22) {
+							if (word < X23) {
 								return 24;
 							} else {
 								return 23;
 							}
 						} else {
-							if(word < X21) {
+							if (word < X21) {
 								return 22;
 							} else {
 								return 21;
 							}
 						}
 					} else {
-						if( word <X18) {
-							if(word < X19) {
+						if (word < X18) {
+							if (word < X19) {
 								return 20;
 							} else {
 								return 19;
 							}
 						} else {
-							if(word < X17){
+							if (word < X17) {
 								return 18;
 							} else {
 								return 17;
 							}
 						}
-					}	
+					}
 				}
 			} else {
-				if(word < X8){
-					if(word < X12){
-						if(word < X14) {
-							if(word < X15){
+				if (word < X8) {
+					if (word < X12) {
+						if (word < X14) {
+							if (word < X15) {
 								return 16;
 							} else {
 								return 15;
 							}
 						} else {
-							if(word < X13){
+							if (word < X13) {
 								return 14;
 							} else {
 								return 13;
 							}
 						}
-					}else {
-						if(word < X10){
-							if(word < X11){
+					} else {
+						if (word < X10) {
+							if (word < X11) {
 								return 12;
 							} else {
 								return 11;
 							}
-						}else {
-							if(word < X9){
+						} else {
+							if (word < X9) {
 								return 10;
 							} else {
 								return 9;
 							}
 						}
 					}
-				}else {
-					if(word < X4) {
-						if(word < X6) {
-							if(word < X7) {
+				} else {
+					if (word < X4) {
+						if (word < X6) {
+							if (word < X7) {
 								return 8;
 							} else {
 								return 7;
 							}
 						} else {
-							if(word < X5){
+							if (word < X5) {
 								return 6;
 							} else {
 								return 5;
 							}
 						}
 					} else {
-						if(word < X2) {
-							if(word < X3) {
+						if (word < X2) {
+							if (word < X3) {
 								return 4;
 							} else {
 								return 3;
 							}
 						} else {
-							if(word < X1) {
+							if (word < X1) {
 								return 2;
 							} else {
 								return 1;
@@ -405,7 +404,7 @@ public class BlurBitSet extends OpenBitSet {
 						}
 					}
 				}
-			} 
+			}
 		}
-    }
+	}
 }

@@ -43,6 +43,7 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
+import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -132,7 +133,12 @@ public class TestBlurIndex {
         replicationDaemon.setLocalFileCache(localFileCache);
         replicationDaemon.init();
         
-        return new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), progressable, replicationDaemon);
+        return new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), progressable, replicationDaemon, new ReplicationStrategy() {
+            @Override
+            public boolean replicateLocally(String table, String name) {
+                return true;
+            }
+        });
     }
     
     private static Collection<Row> genRows(AtomicInteger count) {

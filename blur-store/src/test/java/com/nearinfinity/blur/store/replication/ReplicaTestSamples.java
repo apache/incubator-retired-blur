@@ -73,7 +73,16 @@ public class ReplicaTestSamples {
         replicationDaemon.setLocalFileCache(localFileCache);
         replicationDaemon.init();
         
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), progressable, replicationDaemon);
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, 
+                localFileCache, new NoLockFactory(), progressable, replicationDaemon, new ReplicationStrategy() {
+            @Override
+            public boolean replicateLocally(String table, String name) {
+                if (name.endsWith(".fdt")) {
+                    return false;
+                }
+                return true;
+            }
+        });
         
 //        WritableHdfsDirectory directory = new WritableHdfsDirectory("table", "shard-00000", hdfsDirPath, fileSystem, localFileCache, new NoLockFactory(), progressable);
         

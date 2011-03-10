@@ -57,6 +57,7 @@ import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.N
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
+import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 import com.nearinfinity.blur.thrift.generated.BlurSearch;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
@@ -115,6 +116,16 @@ public class ThriftBlurShardServer {
         replicationDaemon.setLocalFileCache(localFileCache);
         replicationDaemon.init();
         
+        ReplicationStrategy replicationStrategy = new ReplicationStrategy() {
+            @Override
+            public boolean replicateLocally(String table, String name) {
+                if (name.endsWith(".fdt")) {
+                    return false;
+                }
+                return false;
+            }
+        };
+        
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
@@ -124,6 +135,7 @@ public class ThriftBlurShardServer {
         indexServer.setNodeName(nodeName);
         indexServer.setDistributedManager(dzk);
         indexServer.setReplicationDaemon(replicationDaemon);
+        indexServer.setReplicationStrategy(replicationStrategy);
         indexServer.init();
         
         localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));

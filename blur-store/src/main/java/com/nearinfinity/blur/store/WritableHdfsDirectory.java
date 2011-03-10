@@ -48,6 +48,8 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     protected LocalFileCache localFileCache;
     protected String dirName;
     protected Progressable progressable;
+    protected String shard;
+    protected String table;
     
     public WritableHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
@@ -62,6 +64,8 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     public WritableHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable) throws IOException {
         super(hdfsDirPath, fileSystem);
+        this.table = table;
+        this.shard = shard;
         this.dirName = HdfsUtil.getDirName(table, shard);
         this.progressable = progressable;
         File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);

@@ -41,6 +41,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
+import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
@@ -52,6 +53,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private LockFactory lockFactory;
     private ReplicationDaemon replicationDaemon;
     private boolean closed;
+    private ReplicationStrategy replicationStrategy;
     
     @Override
     public synchronized void close() {
@@ -82,7 +84,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
             public void progress() {
                 //do nothing for now
             }
-        }, replicationDaemon);
+        }, replicationDaemon,replicationStrategy);
         return warmUp(IndexReader.open(directory));
     }
 
@@ -151,5 +153,9 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     public void setBlurBasePath(Path blurBasePath) {
         this.blurBasePath = blurBasePath;
+    }
+
+    public void setReplicationStrategy(ReplicationStrategy replicationStrategy) {
+        this.replicationStrategy = replicationStrategy;
     }
 }

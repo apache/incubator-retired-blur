@@ -72,6 +72,7 @@ public class ZookeeperClusterStatus extends ClusterStatus implements ShardServer
         daemon.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
+                LOG.info("Polling for state change.");
                 pollForState();
             }
         }, zkPollDelay, zkPollDelay);
@@ -86,6 +87,7 @@ public class ZookeeperClusterStatus extends ClusterStatus implements ShardServer
         dm.registerCallableOnChange(new Runnable() {
             @Override
             public void run() {
+                LOG.info("Zookeeper event signaled state change.");
                 pollForState();
             }
         },path);

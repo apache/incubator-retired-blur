@@ -42,11 +42,13 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     private static final Log LOG = LogFactory.getLog(ReplicaHdfsDirectory.class);
     private LocalIOWrapper wrapper;
     private ReplicationDaemon replicationDaemon;
+    private ReplicationStrategy replicationStrategy;
 
     public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, 
-            LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon)
+            LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, ReplicationStrategy replicationStrategy)
             throws IOException {
-        this(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, replicationDaemon, new LocalIOWrapper() {
+        this(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, replicationDaemon, 
+                replicationStrategy, new LocalIOWrapper() {
             @Override
             public IndexOutput wrapOutput(IndexOutput indexOutput) {
                 return indexOutput;
@@ -60,12 +62,13 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
-            LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, final LocalIOWrapper wrapper) throws IOException {
+            LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, ReplicationStrategy replicationStrategy, final LocalIOWrapper wrapper) throws IOException {
         super(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable);
         this.wrapper = wrapper;
         this.replicationDaemon = replicationDaemon;
+        this.replicationStrategy = replicationStrategy;
     }
-
+    
     @Override
     public IndexInput openInput(String name, int bufferSize) throws IOException {
         if (!fileExists(name)) {
@@ -174,6 +177,9 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     private void replicate(ReplicaIndexInput replicaIndexInput) {
+        if (!replicationStrategy.replicateLocally(table, replicaIndexInput.fileName)) {
+            return;
+        }
         replicationDaemon.replicate(this, replicaIndexInput);
     }
 
@@ -266,5 +272,14 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     @Override
     public String toString() {
         return "ReplicaHdfsDirectory [dirName=" + dirName + "]";
+    }
+
+    @Override
+    public void sync(String name) throws IOException {
+        super.sync(name);
+        if (!replicationStrategy.replicateLocally(table, name)) {
+            File file = localFileCache.getLocalFile(dirName, name);
+            file.delete();
+        }
     }
 }

@@ -23,9 +23,12 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -37,6 +40,17 @@ import com.nearinfinity.blur.thrift.generated.Selector;
 public class BlurUtil {
     
     private static final Log LOG = LogFactory.getLog(BlurUtil.class);
+    
+    public List<Long> getList(AtomicLongArray atomicLongArray) {
+        if (atomicLongArray == null) {
+            return null;
+        }
+        List<Long> counts = new ArrayList<Long>(atomicLongArray.length());
+        for (int i = 0; i < atomicLongArray.length(); i++) {
+            counts.add(atomicLongArray.get(i));
+        }
+        return counts;
+    }
     
     public static void quietClose(Object... close) {
         if (close == null) {
@@ -128,5 +142,24 @@ public class BlurUtil {
                 }
             }
         }
+    }
+
+    public static List<Long> toList(AtomicLongArray atomicLongArray) {
+        if (atomicLongArray == null) {
+            return null;
+        }
+        int length = atomicLongArray.length();
+        List<Long> result = new ArrayList<Long>(length);
+        for (int i = 0; i < length; i++) {
+            result.add(atomicLongArray.get(i));
+        }
+        return result;
+    }
+    
+    public static AtomicLongArray getAtomicLongArraySameLengthAsList(List<?> list) {
+        if (list == null) {
+            return null;
+        }
+        return new AtomicLongArray(list.size());
     }
 }

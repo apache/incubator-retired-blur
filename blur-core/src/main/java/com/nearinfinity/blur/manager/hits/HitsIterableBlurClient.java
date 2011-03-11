@@ -17,8 +17,10 @@
 package com.nearinfinity.blur.manager.hits;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -49,8 +51,11 @@ public class HitsIterableBlurClient implements HitsIterable {
     private long totalHits;
     private long skipTo;
     private long uuid;
+    private AtomicLongArray facetCounts;
 
-    public HitsIterableBlurClient(BlurSearch.Client client, String table, SearchQuery searchQuery) {
+    private boolean alreadyProcessed;
+
+    public HitsIterableBlurClient(BlurSearch.Client client, String table, SearchQuery searchQuery, AtomicLongArray facetCounts) {
         this.client = client;
         this.table = table;
         this.query = searchQuery.queryStr;
@@ -61,6 +66,7 @@ public class HitsIterableBlurClient implements HitsIterable {
         this.minimumNumberOfHits = searchQuery.minimumNumberOfHits;
         this.maxQueryTime = searchQuery.maxQueryTime;
         this.uuid = searchQuery.uuid;
+        this.facetCounts = facetCounts;
         performSearch();
     }
 
@@ -73,12 +79,26 @@ public class HitsIterableBlurClient implements HitsIterable {
                     maxQueryTime, uuid, null, false, null);
             
             hits = client.search(table, searchQuery);
+            addFacets();
             totalHits = hits.totalHits;
             shardInfo.putAll(hits.shardInfo);
             batch++;
         } catch (Exception e) {
             LOG.error("Error during for [{0}]",e,query);
             throw new RuntimeException(e);
+        }
+    }
+
+    private void addFacets() {
+        if (!alreadyProcessed) {
+            List<Long> counts = hits.facetCounts;
+            if (counts != null) {
+                int size = counts.size();
+                for (int i = 0; i < size; i++) {
+                    facetCounts.addAndGet(i, counts.get(i));
+                }
+            }
+            alreadyProcessed = true;
         }
     }
 

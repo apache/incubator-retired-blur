@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -57,6 +58,7 @@ import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
+import com.nearinfinity.blur.lucene.search.FacetQuery;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
@@ -160,7 +162,7 @@ public class IndexManager {
         return split[0];
     }
 
-    public HitsIterable search(final String table, SearchQuery searchQuery) throws Exception {
+    public HitsIterable search(final String table, SearchQuery searchQuery, AtomicLongArray facetedCounts) throws Exception {
         final SearchStatus status = statusManager.newSearchStatus(table, searchQuery);
         try {
             Map<String, IndexReader> indexReaders;
@@ -170,10 +172,12 @@ public class IndexManager {
                 LOG.error("Unknown error while trying to fetch index readers.", e);
                 throw new BlurException(e.getMessage());
             }
-            Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, ScoreType.CONSTANT);
-            Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, ScoreType.CONSTANT);
-            final Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
-                    indexServer.getAnalyzer(table), postFilter, preFilter, getScoreType(searchQuery.type));
+            Analyzer analyzer = indexServer.getAnalyzer(table);
+            Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
+            Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
+            Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
+                    analyzer, postFilter, preFilter, getScoreType(searchQuery.type));
+            final Query facetedQuery = getFacetedQuery(searchQuery,userQuery,facetedCounts, analyzer);
             return ForkJoin.execute(executor, indexReaders.entrySet(),
                 new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
                     @Override
@@ -186,7 +190,7 @@ public class IndexManager {
                                     PrimeDocCache.getTableCache().getShardCache(table).
                                     getIndexReaderCache(shard));
                             searcher.setSimilarity(indexServer.getSimilarity(table));
-                            return new HitsIterableSearcher((Query) userQuery.clone(), table, shard, searcher);
+                            return new HitsIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher);
                         } finally {
                             status.deattachThread();
                         }
@@ -196,6 +200,22 @@ public class IndexManager {
             status.deattachThread();
             statusManager.removeStatus(status);
         }
+    }
+
+    private Query getFacetedQuery(SearchQuery searchQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
+        if (searchQuery.facets == null) {
+            return userQuery;
+        }
+        return new FacetQuery(userQuery,getFacetQueries(searchQuery,analyzer),counts);
+    }
+
+    private Query[] getFacetQueries(SearchQuery searchQuery, Analyzer analyzer) throws ParseException {
+        int size = searchQuery.facets.size();
+        Query[] queries = new Query[size];
+        for (int i = 0; i < size; i++) {
+            queries[i] = parseQuery(searchQuery.facets.get(i).queryStr, searchQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
+        }
+        return queries;
     }
 
     private ScoreType getScoreType(ScoreType type) {
@@ -213,13 +233,12 @@ public class IndexManager {
         return statusManager.currentSearches(table);
     }
 
-    private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType)
+    private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType, Analyzer analyzer)
             throws ParseException, BlurException {
         if (filter == null) {
             return null;
         }
-        return new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, indexServer.getAnalyzer(table), superQueryOn,
-                null, scoreType).parse(filter));
+        return new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, scoreType).parse(filter));
     }
 
     private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter,

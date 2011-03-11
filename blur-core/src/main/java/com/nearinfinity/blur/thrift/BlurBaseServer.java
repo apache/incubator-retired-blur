@@ -19,6 +19,7 @@ package com.nearinfinity.blur.thrift;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.thrift.TException;
 
@@ -28,10 +29,11 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public abstract class BlurBaseServer implements Iface {
 	
-    public static Hits convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfHits) {
+    public static Hits convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfHits, AtomicLongArray facetCounts) {
         Hits hits = new Hits();
         hits.setTotalHits(hitsIterable.getTotalHits());
         hits.setShardInfo(hitsIterable.getShardInfo());
@@ -46,6 +48,9 @@ public abstract class BlurBaseServer implements Iface {
         }
         if (hits.hits == null) {
             hits.hits = new ArrayList<Hit>();
+        }
+        if (facetCounts != null) {
+            hits.facetCounts = BlurUtil.toList(facetCounts);
         }
         return hits;
     }

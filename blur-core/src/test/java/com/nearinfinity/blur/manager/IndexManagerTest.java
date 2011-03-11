@@ -26,6 +26,7 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.junit.After;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -119,7 +121,7 @@ public class IndexManagerTest {
         searchQuery.maxQueryTime = Long.MAX_VALUE;
         searchQuery.uuid = 1;
         
-        HitsIterable iterable = indexManager.search("table", searchQuery);
+        HitsIterable iterable = indexManager.search("table", searchQuery, null);
         assertEquals(iterable.getTotalHits(),2);
         for (Hit hit : iterable) {
             Selector selector = new Selector().setLocationId(hit.getLocationId());
@@ -127,6 +129,36 @@ public class IndexManagerTest {
             indexManager.fetchRow("table", selector, fetchResult);
             System.out.println(fetchResult.getRow());
         }
+        
+        assertFalse(indexManager.currentSearches("table").isEmpty());
+        Thread.sleep(5000);//wait for cleanup to fire
+        assertTrue(indexManager.currentSearches("table").isEmpty());
+    }
+    
+    @Test
+    public void testSearchWithFacets() throws Exception {
+        SearchQuery searchQuery = new SearchQuery();
+        searchQuery.queryStr = "test-fam.name:value";
+        searchQuery.superQueryOn = true;
+        searchQuery.type = ScoreType.SUPER;
+        searchQuery.fetch = 10;
+        searchQuery.minimumNumberOfHits = Long.MAX_VALUE;
+        searchQuery.maxQueryTime = Long.MAX_VALUE;
+        searchQuery.uuid = 1;
+        searchQuery.facets = Arrays.asList(new Facet("test-fam.name:value", Long.MAX_VALUE),new Facet("test-fam.name:value-nohit", Long.MAX_VALUE));
+        
+        AtomicLongArray facetedCounts = new AtomicLongArray(2);
+        HitsIterable iterable = indexManager.search("table", searchQuery, facetedCounts);
+        assertEquals(iterable.getTotalHits(),2);
+        for (Hit hit : iterable) {
+            Selector selector = new Selector().setLocationId(hit.getLocationId());
+            FetchResult fetchResult = new FetchResult();
+            indexManager.fetchRow("table", selector, fetchResult);
+            System.out.println(fetchResult.getRow());
+        }
+        
+        assertEquals(2, facetedCounts.get(0));
+        assertEquals(0, facetedCounts.get(1));
         
         assertFalse(indexManager.currentSearches("table").isEmpty());
         Thread.sleep(5000);//wait for cleanup to fire

@@ -27,6 +27,7 @@ import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.thrift.TException;
@@ -52,6 +53,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
+import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.LoggingBlurException;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
@@ -96,13 +98,14 @@ public class BlurControllerServer implements Iface {
     @Override
 	public Hits search(final String table, final SearchQuery searchQuery) throws BlurException, TException {
 		try {
+		    final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
 		    HitsIterable hitsIterable = scatterGather(new BlurCommand<HitsIterable>() {
                 @Override
                 public HitsIterable call(Client client) throws Exception {
-                    return new HitsIterableBlurClient(client,table,searchQuery);
+                    return new HitsIterableBlurClient(client,table,searchQuery,facetCounts);
                 }
             },new MergerHitsIterable(searchQuery.minimumNumberOfHits,searchQuery.maxQueryTime));
-			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits);
+			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits,facetCounts);
 		} catch (Exception e) {
 			throw new LoggingBlurException(LOG,e,"Unknown error during search of [" +
                     "table=" + table + "searchquery=" + searchQuery + "]");

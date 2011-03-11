@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.thrift.TException;
@@ -39,6 +40,7 @@ import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer implements Iface {
 
@@ -51,8 +53,9 @@ public class BlurShardServer implements Iface {
 	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
         checkTableStatus(table);
         try {
-            HitsIterable hitsIterable = indexManager.search(table, searchQuery);
-            return BlurBaseServer.convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits);
+            AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
+            HitsIterable hitsIterable = indexManager.search(table, searchQuery, facetCounts);
+            return BlurBaseServer.convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits, facetCounts);
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
@@ -61,7 +64,7 @@ public class BlurShardServer implements Iface {
         }
 	}
 	
-	@Override
+    @Override
 	public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
 	    checkTableStatus(table);
         try {

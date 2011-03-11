@@ -56,7 +56,7 @@ public class BlurShardServer implements Iface {
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error during search of [{0}={1},{2}={3}]",e,"table",table, "searchquery", searchQuery);
+            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, searchQuery);
             throw new BlurException(e.getMessage());
         }
 	}
@@ -71,7 +71,7 @@ public class BlurShardServer implements Iface {
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get fetch row [{0}={1},{2}={3}]",e,"table",table,"selector",selector);
+            LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]",e,table,selector);
             throw new BlurException(e.getMessage());
         }
 	}
@@ -81,7 +81,7 @@ public class BlurShardServer implements Iface {
         try {
             indexManager.cancelSearch(uuid);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to cancel search [{0}={1}]",e,"uuid",uuid);
+            LOG.error("Unknown error while trying to cancel search [uuid={0}]",e,uuid);
             throw new BlurException(e.getMessage());
         }
     }
@@ -92,7 +92,7 @@ public class BlurShardServer implements Iface {
         try {
             return indexManager.currentSearches(table);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get current search status [{0}={1}]",e,"table",table);
+            LOG.error("Unknown error while trying to get current search status [table={0}]",e,table);
             throw new BlurException(e.getMessage());
         }
     }
@@ -147,7 +147,7 @@ public class BlurShardServer implements Iface {
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get record frequency for [{0}={1},{2}={3},{4}={5},{6}={7}]",e,"table",table,"columnFamily",columnFamily,"columnName",columnName,"value",value);
+            LOG.error("Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]",e,table,columnFamily,columnName,value);
             throw new BlurException(e.getMessage());
         }
     }
@@ -169,7 +169,7 @@ public class BlurShardServer implements Iface {
         try {
             return indexManager.terms(table,columnFamily,columnName,startWith,size);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to get terms list for [{0}={1},{2}={3},{4}={5},{6}={7},{8}={9}]",e,"table",table,"columnFamily",columnFamily,"columnName",columnName,"startWith",startWith,"size",size);
+            LOG.error("Unknown error while trying to get terms list for [table={0},columnFamily={1},columnName={2},startWith={3},size={4}]",e,table,columnFamily,columnName,startWith,size);
             throw new BlurException(e.getMessage());
         }
     }

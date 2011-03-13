@@ -204,6 +204,18 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   }
 
   public SearchQuery() {
+    this.superQueryOn = true;
+
+    this.type = ScoreType.SUPER;
+
+    this.start = 0L;
+
+    this.fetch = 10;
+
+    this.minimumNumberOfHits = 9223372036854775807L;
+
+    this.maxQueryTime = 9223372036854775807L;
+
   }
 
   public SearchQuery(
@@ -288,19 +300,20 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   @Override
   public void clear() {
     this.queryStr = null;
-    setSuperQueryOnIsSet(false);
-    this.superQueryOn = false;
-    this.type = null;
+    this.superQueryOn = true;
+
+    this.type = ScoreType.SUPER;
+
     this.postSuperFilter = null;
     this.preSuperFilter = null;
-    setStartIsSet(false);
-    this.start = 0;
-    setFetchIsSet(false);
-    this.fetch = 0;
-    setMinimumNumberOfHitsIsSet(false);
-    this.minimumNumberOfHits = 0;
-    setMaxQueryTimeIsSet(false);
-    this.maxQueryTime = 0;
+    this.start = 0L;
+
+    this.fetch = 10;
+
+    this.minimumNumberOfHits = 9223372036854775807L;
+
+    this.maxQueryTime = 9223372036854775807L;
+
     setUuidIsSet(false);
     this.uuid = 0;
     this.userId = null;

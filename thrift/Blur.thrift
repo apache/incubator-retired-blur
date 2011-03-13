@@ -19,14 +19,14 @@ struct Facet {
 
 struct SearchQuery {
   1:string queryStr,
-  2:bool superQueryOn,
-  3:ScoreType type, 
+  2:bool superQueryOn = 1,
+  3:ScoreType type = ScoreType.SUPER, 
   4:string postSuperFilter,
   5:string preSuperFilter,
-  6:i64 start,
-  7:i32 fetch, 
-  8:i64 minimumNumberOfHits,
-  9:i64 maxQueryTime,
+  6:i64 start = 0,
+  7:i32 fetch = 10, 
+  8:i64 minimumNumberOfHits = 9223372036854775807,
+  9:i64 maxQueryTime = 9223372036854775807,
   10:i64 uuid,
   11:string userId,
   12:bool resolveIds,
@@ -35,10 +35,8 @@ struct SearchQuery {
 
 struct Hit {
   1:string locationId,
-  2:string rowId,
-  3:string recordId,
-  4:double score,
-  5:string reason = "UNKNOWN"
+  2:double score,
+  3:string reason = "UNKNOWN"
 }
 
 struct Hits {
@@ -82,12 +80,10 @@ struct FetchResult {
 }
 
 struct Selector {
-  1:string rowId,
-  2:bool recordOnly,
-  3:string recordId,
-  4:string locationId,
-  5:set<string> columnFamiliesToFetch,
-  6:map<string,set<string>> columnsToFetch
+  1:bool recordOnly,
+  2:string locationId,
+  3:set<string> columnFamiliesToFetch,
+  4:map<string,set<string>> columnsToFetch
 }
 
 struct SearchQueryStatus {
@@ -149,7 +145,7 @@ service Blur {
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
-  void update(1:list<RowMutation> mutations) throws (1:BlurException ex)
+  void mutate(1:list<RowMutation> mutations) throws (1:BlurException ex)
 }
 
 

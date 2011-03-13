@@ -47,7 +47,7 @@ public class HitsPeekableIteratorComparatorTest {
     }
 
     private Hit newHit(String id, double score) {
-        return new Hit(id, null, null, score, null);
+        return new Hit(id, score, null);
     }
 
 }

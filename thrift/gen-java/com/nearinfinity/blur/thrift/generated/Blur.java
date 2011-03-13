@@ -54,7 +54,7 @@ public class Blur {
 
     public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException;
 
-    public void update(List<RowMutation> mutations) throws BlurException, TException;
+    public void mutate(List<RowMutation> mutations) throws BlurException, TException;
 
   }
 
@@ -84,7 +84,7 @@ public class Blur {
 
     public void fetchRow(String table, Selector selector, AsyncMethodCallback<AsyncClient.fetchRow_call> resultHandler) throws TException;
 
-    public void update(List<RowMutation> mutations, AsyncMethodCallback<AsyncClient.update_call> resultHandler) throws TException;
+    public void mutate(List<RowMutation> mutations, AsyncMethodCallback<AsyncClient.mutate_call> resultHandler) throws TException;
 
   }
 
@@ -596,23 +596,23 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
     }
 
-    public void update(List<RowMutation> mutations) throws BlurException, TException
+    public void mutate(List<RowMutation> mutations) throws BlurException, TException
     {
-      send_update(mutations);
-      recv_update();
+      send_mutate(mutations);
+      recv_mutate();
     }
 
-    public void send_update(List<RowMutation> mutations) throws TException
+    public void send_mutate(List<RowMutation> mutations) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("update", TMessageType.CALL, ++seqid_));
-      update_args args = new update_args();
+      oprot_.writeMessageBegin(new TMessage("mutate", TMessageType.CALL, ++seqid_));
+      mutate_args args = new mutate_args();
       args.setMutations(mutations);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public void recv_update() throws BlurException, TException
+    public void recv_mutate() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -621,9 +621,9 @@ public class Blur {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "update failed: out of sequence response");
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "mutate failed: out of sequence response");
       }
-      update_result result = new update_result();
+      mutate_result result = new mutate_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.ex != null) {
@@ -1040,22 +1040,22 @@ public class Blur {
       }
     }
 
-    public void update(List<RowMutation> mutations, AsyncMethodCallback<update_call> resultHandler) throws TException {
+    public void mutate(List<RowMutation> mutations, AsyncMethodCallback<mutate_call> resultHandler) throws TException {
       checkReady();
-      update_call method_call = new update_call(mutations, resultHandler, this, protocolFactory, transport);
+      mutate_call method_call = new mutate_call(mutations, resultHandler, this, protocolFactory, transport);
       manager.call(method_call);
     }
 
-    public static class update_call extends TAsyncMethodCall {
+    public static class mutate_call extends TAsyncMethodCall {
       private List<RowMutation> mutations;
-      public update_call(List<RowMutation> mutations, AsyncMethodCallback<update_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+      public mutate_call(List<RowMutation> mutations, AsyncMethodCallback<mutate_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.mutations = mutations;
       }
 
       public void write_args(TProtocol prot) throws TException {
-        prot.writeMessageBegin(new TMessage("update", TMessageType.CALL, 0));
-        update_args args = new update_args();
+        prot.writeMessageBegin(new TMessage("mutate", TMessageType.CALL, 0));
+        mutate_args args = new mutate_args();
         args.setMutations(mutations);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1067,7 +1067,7 @@ public class Blur {
         }
         TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
         TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_update();
+        (new Client(prot)).recv_mutate();
       }
     }
 
@@ -1090,7 +1090,7 @@ public class Blur {
       processMap_.put("terms", new terms());
       processMap_.put("recordFrequency", new recordFrequency());
       processMap_.put("fetchRow", new fetchRow());
-      processMap_.put("update", new update());
+      processMap_.put("mutate", new mutate());
     }
 
     protected static interface ProcessFunction {
@@ -1575,37 +1575,37 @@ public class Blur {
 
     }
 
-    private class update implements ProcessFunction {
+    private class mutate implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
-        update_args args = new update_args();
+        mutate_args args = new mutate_args();
         try {
           args.read(iprot);
         } catch (TProtocolException e) {
           iprot.readMessageEnd();
           TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new TMessage("update", TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new TMessage("mutate", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        update_result result = new update_result();
+        mutate_result result = new mutate_result();
         try {
-          iface_.update(args.mutations);
+          iface_.mutate(args.mutations);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing update", th);
-          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing update");
-          oprot.writeMessageBegin(new TMessage("update", TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing mutate", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing mutate");
+          oprot.writeMessageBegin(new TMessage("mutate", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new TMessage("update", TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new TMessage("mutate", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -10076,8 +10076,8 @@ public class Blur {
 
   }
 
-  public static class update_args implements TBase<update_args, update_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("update_args");
+  public static class mutate_args implements TBase<mutate_args, mutate_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("mutate_args");
 
     private static final TField MUTATIONS_FIELD_DESC = new TField("mutations", TType.LIST, (short)1);
 
@@ -10150,13 +10150,13 @@ public class Blur {
           new ListMetaData(TType.LIST, 
               new StructMetaData(TType.STRUCT, RowMutation.class))));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(update_args.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(mutate_args.class, metaDataMap);
     }
 
-    public update_args() {
+    public mutate_args() {
     }
 
-    public update_args(
+    public mutate_args(
       List<RowMutation> mutations)
     {
       this();
@@ -10166,7 +10166,7 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public update_args(update_args other) {
+    public mutate_args(mutate_args other) {
       if (other.isSetMutations()) {
         List<RowMutation> __this__mutations = new ArrayList<RowMutation>();
         for (RowMutation other_element : other.mutations) {
@@ -10176,8 +10176,8 @@ public class Blur {
       }
     }
 
-    public update_args deepCopy() {
-      return new update_args(this);
+    public mutate_args deepCopy() {
+      return new mutate_args(this);
     }
 
     @Override
@@ -10204,7 +10204,7 @@ public class Blur {
       return this.mutations;
     }
 
-    public update_args setMutations(List<RowMutation> mutations) {
+    public mutate_args setMutations(List<RowMutation> mutations) {
       this.mutations = mutations;
       return this;
     }
@@ -10263,12 +10263,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof update_args)
-        return this.equals((update_args)that);
+      if (that instanceof mutate_args)
+        return this.equals((mutate_args)that);
       return false;
     }
 
-    public boolean equals(update_args that) {
+    public boolean equals(mutate_args that) {
       if (that == null)
         return false;
 
@@ -10289,13 +10289,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(update_args other) {
+    public int compareTo(mutate_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      update_args typedOther = (update_args)other;
+      mutate_args typedOther = (mutate_args)other;
 
       lastComparison = Boolean.valueOf(isSetMutations()).compareTo(typedOther.isSetMutations());
       if (lastComparison != 0) {
@@ -10375,7 +10375,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("update_args(");
+      StringBuilder sb = new StringBuilder("mutate_args(");
       boolean first = true;
 
       sb.append("mutations:");
@@ -10395,8 +10395,8 @@ public class Blur {
 
   }
 
-  public static class update_result implements TBase<update_result, update_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("update_result");
+  public static class mutate_result implements TBase<mutate_result, mutate_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("mutate_result");
 
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
@@ -10468,13 +10468,13 @@ public class Blur {
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(update_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(mutate_result.class, metaDataMap);
     }
 
-    public update_result() {
+    public mutate_result() {
     }
 
-    public update_result(
+    public mutate_result(
       BlurException ex)
     {
       this();
@@ -10484,14 +10484,14 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public update_result(update_result other) {
+    public mutate_result(mutate_result other) {
       if (other.isSetEx()) {
         this.ex = new BlurException(other.ex);
       }
     }
 
-    public update_result deepCopy() {
-      return new update_result(this);
+    public mutate_result deepCopy() {
+      return new mutate_result(this);
     }
 
     @Override
@@ -10503,7 +10503,7 @@ public class Blur {
       return this.ex;
     }
 
-    public update_result setEx(BlurException ex) {
+    public mutate_result setEx(BlurException ex) {
       this.ex = ex;
       return this;
     }
@@ -10562,12 +10562,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof update_result)
-        return this.equals((update_result)that);
+      if (that instanceof mutate_result)
+        return this.equals((mutate_result)that);
       return false;
     }
 
-    public boolean equals(update_result that) {
+    public boolean equals(mutate_result that) {
       if (that == null)
         return false;
 
@@ -10588,13 +10588,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(update_result other) {
+    public int compareTo(mutate_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      update_result typedOther = (update_result)other;
+      mutate_result typedOther = (mutate_result)other;
 
       lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
       if (lastComparison != 0) {
@@ -10656,7 +10656,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("update_result(");
+      StringBuilder sb = new StringBuilder("mutate_result(");
       boolean first = true;
 
       sb.append("ex:");

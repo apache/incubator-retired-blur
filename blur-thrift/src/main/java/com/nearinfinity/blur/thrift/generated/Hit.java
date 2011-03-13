@@ -30,24 +30,18 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
   private static final TStruct STRUCT_DESC = new TStruct("Hit");
 
   private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)1);
-  private static final TField ROW_ID_FIELD_DESC = new TField("rowId", TType.STRING, (short)2);
-  private static final TField RECORD_ID_FIELD_DESC = new TField("recordId", TType.STRING, (short)3);
-  private static final TField SCORE_FIELD_DESC = new TField("score", TType.DOUBLE, (short)4);
-  private static final TField REASON_FIELD_DESC = new TField("reason", TType.STRING, (short)5);
+  private static final TField SCORE_FIELD_DESC = new TField("score", TType.DOUBLE, (short)2);
+  private static final TField REASON_FIELD_DESC = new TField("reason", TType.STRING, (short)3);
 
   public String locationId;
-  public String rowId;
-  public String recordId;
   public double score;
   public String reason;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     LOCATION_ID((short)1, "locationId"),
-    ROW_ID((short)2, "rowId"),
-    RECORD_ID((short)3, "recordId"),
-    SCORE((short)4, "score"),
-    REASON((short)5, "reason");
+    SCORE((short)2, "score"),
+    REASON((short)3, "reason");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -64,13 +58,9 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
       switch(fieldId) {
         case 1: // LOCATION_ID
           return LOCATION_ID;
-        case 2: // ROW_ID
-          return ROW_ID;
-        case 3: // RECORD_ID
-          return RECORD_ID;
-        case 4: // SCORE
+        case 2: // SCORE
           return SCORE;
-        case 5: // REASON
+        case 3: // REASON
           return REASON;
         default:
           return null;
@@ -120,10 +110,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.LOCATION_ID, new FieldMetaData("locationId", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.ROW_ID, new FieldMetaData("rowId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.RECORD_ID, new FieldMetaData("recordId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.SCORE, new FieldMetaData("score", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.DOUBLE)));
     tmpMap.put(_Fields.REASON, new FieldMetaData("reason", TFieldRequirementType.DEFAULT, 
@@ -139,15 +125,11 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
 
   public Hit(
     String locationId,
-    String rowId,
-    String recordId,
     double score,
     String reason)
   {
     this();
     this.locationId = locationId;
-    this.rowId = rowId;
-    this.recordId = recordId;
     this.score = score;
     setScoreIsSet(true);
     this.reason = reason;
@@ -162,12 +144,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     if (other.isSetLocationId()) {
       this.locationId = other.locationId;
     }
-    if (other.isSetRowId()) {
-      this.rowId = other.rowId;
-    }
-    if (other.isSetRecordId()) {
-      this.recordId = other.recordId;
-    }
     this.score = other.score;
     if (other.isSetReason()) {
       this.reason = other.reason;
@@ -181,8 +157,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
   @Override
   public void clear() {
     this.locationId = null;
-    this.rowId = null;
-    this.recordId = null;
     setScoreIsSet(false);
     this.score = 0.0;
     this.reason = "UNKNOWN";
@@ -210,54 +184,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
   public void setLocationIdIsSet(boolean value) {
     if (!value) {
       this.locationId = null;
-    }
-  }
-
-  public String getRowId() {
-    return this.rowId;
-  }
-
-  public Hit setRowId(String rowId) {
-    this.rowId = rowId;
-    return this;
-  }
-
-  public void unsetRowId() {
-    this.rowId = null;
-  }
-
-  /** Returns true if field rowId is set (has been asigned a value) and false otherwise */
-  public boolean isSetRowId() {
-    return this.rowId != null;
-  }
-
-  public void setRowIdIsSet(boolean value) {
-    if (!value) {
-      this.rowId = null;
-    }
-  }
-
-  public String getRecordId() {
-    return this.recordId;
-  }
-
-  public Hit setRecordId(String recordId) {
-    this.recordId = recordId;
-    return this;
-  }
-
-  public void unsetRecordId() {
-    this.recordId = null;
-  }
-
-  /** Returns true if field recordId is set (has been asigned a value) and false otherwise */
-  public boolean isSetRecordId() {
-    return this.recordId != null;
-  }
-
-  public void setRecordIdIsSet(boolean value) {
-    if (!value) {
-      this.recordId = null;
     }
   }
 
@@ -318,22 +244,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
       }
       break;
 
-    case ROW_ID:
-      if (value == null) {
-        unsetRowId();
-      } else {
-        setRowId((String)value);
-      }
-      break;
-
-    case RECORD_ID:
-      if (value == null) {
-        unsetRecordId();
-      } else {
-        setRecordId((String)value);
-      }
-      break;
-
     case SCORE:
       if (value == null) {
         unsetScore();
@@ -358,12 +268,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     case LOCATION_ID:
       return getLocationId();
 
-    case ROW_ID:
-      return getRowId();
-
-    case RECORD_ID:
-      return getRecordId();
-
     case SCORE:
       return new Double(getScore());
 
@@ -383,10 +287,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     switch (field) {
     case LOCATION_ID:
       return isSetLocationId();
-    case ROW_ID:
-      return isSetRowId();
-    case RECORD_ID:
-      return isSetRecordId();
     case SCORE:
       return isSetScore();
     case REASON:
@@ -414,24 +314,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
       if (!(this_present_locationId && that_present_locationId))
         return false;
       if (!this.locationId.equals(that.locationId))
-        return false;
-    }
-
-    boolean this_present_rowId = true && this.isSetRowId();
-    boolean that_present_rowId = true && that.isSetRowId();
-    if (this_present_rowId || that_present_rowId) {
-      if (!(this_present_rowId && that_present_rowId))
-        return false;
-      if (!this.rowId.equals(that.rowId))
-        return false;
-    }
-
-    boolean this_present_recordId = true && this.isSetRecordId();
-    boolean that_present_recordId = true && that.isSetRecordId();
-    if (this_present_recordId || that_present_recordId) {
-      if (!(this_present_recordId && that_present_recordId))
-        return false;
-      if (!this.recordId.equals(that.recordId))
         return false;
     }
 
@@ -475,26 +357,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     }
     if (isSetLocationId()) {
       lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetRowId()).compareTo(typedOther.isSetRowId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetRowId()) {
-      lastComparison = TBaseHelper.compareTo(this.rowId, typedOther.rowId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetRecordId()).compareTo(typedOther.isSetRecordId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetRecordId()) {
-      lastComparison = TBaseHelper.compareTo(this.recordId, typedOther.recordId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -543,21 +405,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // ROW_ID
-          if (field.type == TType.STRING) {
-            this.rowId = iprot.readString();
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 3: // RECORD_ID
-          if (field.type == TType.STRING) {
-            this.recordId = iprot.readString();
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 4: // SCORE
+        case 2: // SCORE
           if (field.type == TType.DOUBLE) {
             this.score = iprot.readDouble();
             setScoreIsSet(true);
@@ -565,7 +413,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5: // REASON
+        case 3: // REASON
           if (field.type == TType.STRING) {
             this.reason = iprot.readString();
           } else { 
@@ -592,16 +440,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
       oprot.writeString(this.locationId);
       oprot.writeFieldEnd();
     }
-    if (this.rowId != null) {
-      oprot.writeFieldBegin(ROW_ID_FIELD_DESC);
-      oprot.writeString(this.rowId);
-      oprot.writeFieldEnd();
-    }
-    if (this.recordId != null) {
-      oprot.writeFieldBegin(RECORD_ID_FIELD_DESC);
-      oprot.writeString(this.recordId);
-      oprot.writeFieldEnd();
-    }
     oprot.writeFieldBegin(SCORE_FIELD_DESC);
     oprot.writeDouble(this.score);
     oprot.writeFieldEnd();
@@ -624,22 +462,6 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
       sb.append("null");
     } else {
       sb.append(this.locationId);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("rowId:");
-    if (this.rowId == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.rowId);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("recordId:");
-    if (this.recordId == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.recordId);
     }
     first = false;
     if (!first) sb.append(", ");

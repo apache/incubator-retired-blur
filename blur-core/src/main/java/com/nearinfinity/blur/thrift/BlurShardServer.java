@@ -225,7 +225,7 @@ public class BlurShardServer implements Iface {
     }
 
     @Override
-    public void update(List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(List<RowMutation> mutations) throws BlurException, TException {
         throw new RuntimeException("not impl");
     }
 }

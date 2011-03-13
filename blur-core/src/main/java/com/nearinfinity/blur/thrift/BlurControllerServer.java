@@ -45,13 +45,14 @@ import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
+import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -392,5 +393,10 @@ public class BlurControllerServer implements Iface {
 
     public void setClusterStatus(ClusterStatus clusterStatus) {
         this.clusterStatus = clusterStatus;
+    }
+    
+    @Override
+    public void update(List<RowMutation> mutations) throws BlurException, TException {
+        throw new RuntimeException("not impl");
     }
 }

@@ -25,12 +25,13 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class DoNothingServer implements Iface {
 
@@ -93,5 +94,10 @@ public class DoNothingServer implements Iface {
     public List<String> terms(String arg0, String arg1, String arg2, String arg3, short arg4) throws BlurException,
             TException {
         return null;
+    }
+
+    @Override
+    public void update(List<RowMutation> mutations) throws BlurException, TException {
+        
     }
 }

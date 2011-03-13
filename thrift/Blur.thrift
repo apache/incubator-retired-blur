@@ -131,7 +131,7 @@ struct RowMutation {
   3:list<RecordMutation> recordMutations
 }
 
-service BlurSearch {
+service Blur {
   list<string> shardServerList() throws (1:BlurException ex)
   list<string> controllerServerList() throws (1:BlurException ex)
   map<string,string> shardServerLayout(1:string table) throws (1:BlurException ex)
@@ -148,9 +148,8 @@ service BlurSearch {
   i64 recordFrequency(1:string table, 2:string columnFamily, 3:string columnName, 4:string value) throws (1:BlurException ex)
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
-}
 
-service BlurUpdate extends BlurSearch {
   void update(1:list<RowMutation> mutations) throws (1:BlurException ex)
 }
+
 

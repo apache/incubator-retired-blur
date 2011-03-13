@@ -37,12 +37,13 @@ import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurControllerServerTest {
     
@@ -181,6 +182,11 @@ public class BlurControllerServerTest {
             @Override
             public void cancelSearch(long arg0) throws BlurException, TException {
                 throw new RuntimeException("no impl");                
+            }
+
+            @Override
+            public void update(List<RowMutation> mutations) throws BlurException, TException {
+                throw new RuntimeException("no impl");
             }
         };
     }

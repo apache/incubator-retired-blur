@@ -24,12 +24,12 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.thrift.generated.BlurSearch;
+import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Client;
+import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
 public class HitsIterableBlurClient implements HitsIterable {
     
@@ -55,7 +55,7 @@ public class HitsIterableBlurClient implements HitsIterable {
 
     private boolean alreadyProcessed;
 
-    public HitsIterableBlurClient(BlurSearch.Client client, String table, SearchQuery searchQuery, AtomicLongArray facetCounts) {
+    public HitsIterableBlurClient(Blur.Client client, String table, SearchQuery searchQuery, AtomicLongArray facetCounts) {
         this.client = client;
         this.table = table;
         this.query = searchQuery.queryStr;

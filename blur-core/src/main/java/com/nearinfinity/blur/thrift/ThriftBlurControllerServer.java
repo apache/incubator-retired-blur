@@ -39,9 +39,9 @@ import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientRemote;
-import com.nearinfinity.blur.thrift.generated.BlurSearch;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
+import com.nearinfinity.blur.thrift.generated.Blur;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 
 public class ThriftBlurControllerServer {
     
@@ -113,7 +113,7 @@ public class ThriftBlurControllerServer {
     public void start() throws TTransportException {
         TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(System.getProperty(ThriftBlurShardServer.BLUR_BIND_ADDRESS, nodeName)));
         Factory transportFactory = new TFramedTransport.Factory();
-        Processor processor = new BlurSearch.Processor(iface);
+        Processor processor = new Blur.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
         server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
         LOG.info("Starting server [{0}]",nodeName);

@@ -34,12 +34,13 @@ import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer implements Iface {
@@ -221,5 +222,10 @@ public class BlurShardServer implements Iface {
     @Override
     public List<String> shardServerList() throws BlurException, TException {
         return indexServer.getOnlineShardServers();
+    }
+
+    @Override
+    public void update(List<RowMutation> mutations) throws BlurException, TException {
+        throw new RuntimeException("not impl");
     }
 }

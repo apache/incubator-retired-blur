@@ -58,9 +58,9 @@ import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.store.replication.ReplicationStrategy;
-import com.nearinfinity.blur.thrift.generated.BlurSearch;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Iface;
-import com.nearinfinity.blur.thrift.generated.BlurSearch.Processor;
+import com.nearinfinity.blur.thrift.generated.Blur;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 
 public class ThriftBlurShardServer {
     
@@ -211,7 +211,7 @@ public class ThriftBlurShardServer {
     public void start() throws TTransportException {
         TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(System.getProperty(BLUR_BIND_ADDRESS, nodeName)));
         Factory transportFactory = new TFramedTransport.Factory();
-        Processor processor = new BlurSearch.Processor(iface);
+        Processor processor = new Blur.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
         server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
         LOG.info("Starting server [{0}]",nodeName);

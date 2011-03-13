@@ -8,3 +8,4 @@
 **/*.iml
 **/target/**
 target/**
+blur-core/tmp/**

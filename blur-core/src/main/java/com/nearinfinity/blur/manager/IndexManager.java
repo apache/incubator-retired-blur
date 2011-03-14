@@ -225,8 +225,8 @@ public class IndexManager {
         return type;
     }
 
-    public void cancelSearch(long uuid) {
-        statusManager.cancelSearch(uuid);
+    public void cancelSearch(String table, long uuid) {
+        statusManager.cancelSearch(table, uuid);
     }
 
     public List<SearchQueryStatus> currentSearches(String table) {

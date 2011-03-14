@@ -133,12 +133,12 @@ public class BlurControllerServer implements Iface {
 	}
 	
     @Override
-    public void cancelSearch(final long uuid) throws BlurException, TException {
+    public void cancelSearch(final String table, final long uuid) throws BlurException, TException {
         try {
             scatter(new BlurCommand<Void>() {
                 @Override
                 public Void call(Client client) throws Exception {
-                    client.cancelSearch(uuid);
+                    client.cancelSearch(table, uuid);
                     return null;
                 }
             });

@@ -81,9 +81,9 @@ public class BlurShardServer implements Iface {
 	}
 
     @Override
-    public void cancelSearch(long uuid) throws BlurException, TException {
+    public void cancelSearch(String table, long uuid) throws BlurException, TException {
         try {
-            indexManager.cancelSearch(uuid);
+            indexManager.cancelSearch(table, uuid);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to cancel search [uuid={0}]",e,uuid);
             throw new BlurException(e.getMessage());

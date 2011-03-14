@@ -136,7 +136,7 @@ service Blur {
   TableDescriptor describe(1:string table) throws (1:BlurException ex)
 
   Hits search(1:string table, 2:SearchQuery searchQuery) throws (1:BlurException ex)
-  void cancelSearch(1:i64 uuid) throws (1:BlurException ex)
+  void cancelSearch(1:string table, 2:i64 uuid) throws (1:BlurException ex)
   list<SearchQueryStatus> currentSearches(1:string table) throws (1:BlurException ex)
 
   Schema schema(1:string table) throws (1:BlurException ex)

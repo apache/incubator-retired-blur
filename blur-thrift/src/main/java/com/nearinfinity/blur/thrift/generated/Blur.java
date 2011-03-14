@@ -42,7 +42,7 @@ public class Blur {
 
     public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException;
 
-    public void cancelSearch(long uuid) throws BlurException, TException;
+    public void cancelSearch(String table, long uuid) throws BlurException, TException;
 
     public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException;
 
@@ -72,7 +72,7 @@ public class Blur {
 
     public void search(String table, SearchQuery searchQuery, AsyncMethodCallback<AsyncClient.search_call> resultHandler) throws TException;
 
-    public void cancelSearch(long uuid, AsyncMethodCallback<AsyncClient.cancelSearch_call> resultHandler) throws TException;
+    public void cancelSearch(String table, long uuid, AsyncMethodCallback<AsyncClient.cancelSearch_call> resultHandler) throws TException;
 
     public void currentSearches(String table, AsyncMethodCallback<AsyncClient.currentSearches_call> resultHandler) throws TException;
 
@@ -357,16 +357,17 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
     }
 
-    public void cancelSearch(long uuid) throws BlurException, TException
+    public void cancelSearch(String table, long uuid) throws BlurException, TException
     {
-      send_cancelSearch(uuid);
+      send_cancelSearch(table, uuid);
       recv_cancelSearch();
     }
 
-    public void send_cancelSearch(long uuid) throws TException
+    public void send_cancelSearch(String table, long uuid) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("cancelSearch", TMessageType.CALL, ++seqid_));
       cancelSearch_args args = new cancelSearch_args();
+      args.setTable(table);
       args.setUuid(uuid);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -830,22 +831,25 @@ public class Blur {
       }
     }
 
-    public void cancelSearch(long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler) throws TException {
+    public void cancelSearch(String table, long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler) throws TException {
       checkReady();
-      cancelSearch_call method_call = new cancelSearch_call(uuid, resultHandler, this, protocolFactory, transport);
+      cancelSearch_call method_call = new cancelSearch_call(table, uuid, resultHandler, this, protocolFactory, transport);
       manager.call(method_call);
     }
 
     public static class cancelSearch_call extends TAsyncMethodCall {
+      private String table;
       private long uuid;
-      public cancelSearch_call(long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+      public cancelSearch_call(String table, long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
         this.uuid = uuid;
       }
 
       public void write_args(TProtocol prot) throws TException {
         prot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.CALL, 0));
         cancelSearch_args args = new cancelSearch_args();
+        args.setTable(table);
         args.setUuid(uuid);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1364,7 +1368,7 @@ public class Blur {
         iprot.readMessageEnd();
         cancelSearch_result result = new cancelSearch_result();
         try {
-          iface_.cancelSearch(args.uuid);
+          iface_.cancelSearch(args.table, args.uuid);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -5481,13 +5485,16 @@ public class Blur {
   public static class cancelSearch_args implements TBase<cancelSearch_args, cancelSearch_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("cancelSearch_args");
 
-    private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)1);
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+    private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)2);
 
+    public String table;
     public long uuid;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      UUID((short)1, "uuid");
+      TABLE((short)1, "table"),
+      UUID((short)2, "uuid");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -5502,7 +5509,9 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // UUID
+          case 1: // TABLE
+            return TABLE;
+          case 2: // UUID
             return UUID;
           default:
             return null;
@@ -5550,6 +5559,8 @@ public class Blur {
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -5560,9 +5571,11 @@ public class Blur {
     }
 
     public cancelSearch_args(
+      String table,
       long uuid)
     {
       this();
+      this.table = table;
       this.uuid = uuid;
       setUuidIsSet(true);
     }
@@ -5573,6 +5586,9 @@ public class Blur {
     public cancelSearch_args(cancelSearch_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
       this.uuid = other.uuid;
     }
 
@@ -5582,8 +5598,33 @@ public class Blur {
 
     @Override
     public void clear() {
+      this.table = null;
       setUuidIsSet(false);
       this.uuid = 0;
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public cancelSearch_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
     }
 
     public long getUuid() {
@@ -5611,6 +5652,14 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
       case UUID:
         if (value == null) {
           unsetUuid();
@@ -5624,6 +5673,9 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case TABLE:
+        return getTable();
+
       case UUID:
         return new Long(getUuid());
 
@@ -5638,6 +5690,8 @@ public class Blur {
       }
 
       switch (field) {
+      case TABLE:
+        return isSetTable();
       case UUID:
         return isSetUuid();
       }
@@ -5656,6 +5710,15 @@ public class Blur {
     public boolean equals(cancelSearch_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
 
       boolean this_present_uuid = true;
       boolean that_present_uuid = true;
@@ -5682,6 +5745,16 @@ public class Blur {
       int lastComparison = 0;
       cancelSearch_args typedOther = (cancelSearch_args)other;
 
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetUuid()).compareTo(typedOther.isSetUuid());
       if (lastComparison != 0) {
         return lastComparison;
@@ -5709,7 +5782,14 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // UUID
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // UUID
             if (field.type == TType.I64) {
               this.uuid = iprot.readI64();
               setUuidIsSet(true);
@@ -5732,6 +5812,11 @@ public class Blur {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldBegin(UUID_FIELD_DESC);
       oprot.writeI64(this.uuid);
       oprot.writeFieldEnd();
@@ -5744,6 +5829,14 @@ public class Blur {
       StringBuilder sb = new StringBuilder("cancelSearch_args(");
       boolean first = true;
 
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("uuid:");
       sb.append(this.uuid);
       first = false;

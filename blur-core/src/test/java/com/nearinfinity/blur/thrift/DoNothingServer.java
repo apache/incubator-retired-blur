@@ -66,7 +66,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public void cancelSearch(long providedUuid) throws BlurException, TException {
+    public void cancelSearch(String table, long providedUuid) throws BlurException, TException {
         
     }
 

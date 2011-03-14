@@ -73,8 +73,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void cancelSearch(long uuid) throws BlurException, TException {
-            face.cancelSearch(uuid);
+        public void cancelSearch(String table, long uuid) throws BlurException, TException {
+            face.cancelSearch(table, uuid);
         }
 
         @Override
@@ -205,7 +205,7 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void send_cancelSearch(long uuid) throws TException {
+        public void send_cancelSearch(String table, long uuid) throws TException {
             throw new RuntimeException("not impl");
         }
 

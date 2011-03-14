@@ -180,7 +180,7 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public void cancelSearch(long arg0) throws BlurException, TException {
+            public void cancelSearch(String table, long arg0) throws BlurException, TException {
                 throw new RuntimeException("no impl");                
             }
 

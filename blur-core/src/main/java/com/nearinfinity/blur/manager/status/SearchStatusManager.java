@@ -90,9 +90,9 @@ public class SearchStatusManager {
         this.searchStatusCleanupTimerDelay = searchStatusCleanupTimerDelay;
     }
 
-    public void cancelSearch(long uuid) {
+    public void cancelSearch(String table, long uuid) {
         for (SearchStatus status : currentSearchStatusCollection.keySet()) {
-            if (status.getUserUuid() == uuid) {
+            if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
                 status.cancelSearch();
             }
         }

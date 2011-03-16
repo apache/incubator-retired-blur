@@ -55,7 +55,7 @@ public class BlurShardServer implements Iface {
         checkTableStatus(table);
         try {
             AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
-            HitsIterable hitsIterable = indexManager.search(table, searchQuery, facetCounts);
+            HitsIterable hitsIterable = indexManager.query(table, searchQuery, facetCounts);
             return BlurBaseServer.convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfResults, facetCounts);
         } catch (BlurException e) {
             throw e;
@@ -83,7 +83,7 @@ public class BlurShardServer implements Iface {
     @Override
     public void cancelQuery(String table, long uuid) throws BlurException, TException {
         try {
-            indexManager.cancelSearch(table, uuid);
+            indexManager.cancelQuery(table, uuid);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to cancel search [uuid={0}]",e,uuid);
             throw new BlurException(e.getMessage());

@@ -121,7 +121,7 @@ public class IndexManagerTest {
         searchQuery.maxQueryTime = Long.MAX_VALUE;
         searchQuery.uuid = 1;
         
-        HitsIterable iterable = indexManager.search("table", searchQuery, null);
+        HitsIterable iterable = indexManager.query("table", searchQuery, null);
         assertEquals(iterable.getTotalHits(),2);
         for (BlurResult hit : iterable) {
             Selector selector = new Selector().setLocationId(hit.getLocationId());
@@ -148,7 +148,7 @@ public class IndexManagerTest {
         searchQuery.facets = Arrays.asList(new Facet("test-fam.name:value", Long.MAX_VALUE),new Facet("test-fam.name:value-nohit", Long.MAX_VALUE));
         
         AtomicLongArray facetedCounts = new AtomicLongArray(2);
-        HitsIterable iterable = indexManager.search("table", searchQuery, facetedCounts);
+        HitsIterable iterable = indexManager.query("table", searchQuery, facetedCounts);
         assertEquals(iterable.getTotalHits(),2);
         for (BlurResult hit : iterable) {
             Selector selector = new Selector().setLocationId(hit.getLocationId());

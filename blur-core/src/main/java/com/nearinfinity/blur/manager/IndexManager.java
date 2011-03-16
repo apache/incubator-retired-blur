@@ -162,8 +162,8 @@ public class IndexManager {
         return split[0];
     }
 
-    public HitsIterable search(final String table, BlurQuery searchQuery, AtomicLongArray facetedCounts) throws Exception {
-        final SearchStatus status = statusManager.newSearchStatus(table, searchQuery);
+    public HitsIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
+        final SearchStatus status = statusManager.newSearchStatus(table, blurQuery);
         try {
             Map<String, IndexReader> indexReaders;
             try {
@@ -173,11 +173,11 @@ public class IndexManager {
                 throw new BlurException(e.getMessage());
             }
             Analyzer analyzer = indexServer.getAnalyzer(table);
-            Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
-            Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
-            Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
-                    analyzer, postFilter, preFilter, getScoreType(searchQuery.type));
-            final Query facetedQuery = getFacetedQuery(searchQuery,userQuery,facetedCounts, analyzer);
+            Filter preFilter = parseFilter(table, blurQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
+            Filter postFilter = parseFilter(table, blurQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
+            Query userQuery = parseQuery(blurQuery.queryStr, blurQuery.superQueryOn, 
+                    analyzer, postFilter, preFilter, getScoreType(blurQuery.type));
+            final Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
             return ForkJoin.execute(executor, indexReaders.entrySet(),
                 new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
                     @Override
@@ -195,7 +195,7 @@ public class IndexManager {
                             status.deattachThread();
                         }
                     }
-                }).merge(new MergerHitsIterable(searchQuery.minimumNumberOfResults, searchQuery.maxQueryTime));
+                }).merge(new MergerHitsIterable(blurQuery.minimumNumberOfResults, blurQuery.maxQueryTime));
         } finally {
             status.deattachThread();
             statusManager.removeStatus(status);
@@ -225,7 +225,7 @@ public class IndexManager {
         return type;
     }
 
-    public void cancelSearch(String table, long uuid) {
+    public void cancelQuery(String table, long uuid) {
         statusManager.cancelSearch(table, uuid);
     }
 

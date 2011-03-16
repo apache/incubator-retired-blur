@@ -26,37 +26,34 @@ import org.apache.thrift.meta_data.*;
 import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
-public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("BlurResults");
+public class BlurQuerySuggestion implements TBase<BlurQuerySuggestion, BlurQuerySuggestion._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("BlurQuerySuggestion");
 
-  private static final TField TOTAL_RESULTS_FIELD_DESC = new TField("totalResults", TType.I64, (short)1);
-  private static final TField SHARD_INFO_FIELD_DESC = new TField("shardInfo", TType.MAP, (short)2);
-  private static final TField RESULTS_FIELD_DESC = new TField("results", TType.LIST, (short)3);
+  private static final TField QUERY_STR_FIELD_DESC = new TField("queryStr", TType.STRING, (short)1);
+  private static final TField TOTAL_RESULTS_FIELD_DESC = new TField("totalResults", TType.I64, (short)2);
+  private static final TField SHARD_INFO_FIELD_DESC = new TField("shardInfo", TType.MAP, (short)3);
   private static final TField EXCEPTIONS_FIELD_DESC = new TField("exceptions", TType.LIST, (short)4);
   private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)5);
   private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)6);
   private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)7);
-  private static final TField FACET_COUNTS_FIELD_DESC = new TField("facetCounts", TType.LIST, (short)8);
 
+  public String queryStr;
   public long totalResults;
   public Map<String,Long> shardInfo;
-  public List<BlurResult> results;
   public List<BlurException> exceptions;
   public BlurQuery query;
   public long realTime;
   public long cpuTime;
-  public List<Long> facetCounts;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    TOTAL_RESULTS((short)1, "totalResults"),
-    SHARD_INFO((short)2, "shardInfo"),
-    RESULTS((short)3, "results"),
+    QUERY_STR((short)1, "queryStr"),
+    TOTAL_RESULTS((short)2, "totalResults"),
+    SHARD_INFO((short)3, "shardInfo"),
     EXCEPTIONS((short)4, "exceptions"),
     QUERY((short)5, "query"),
     REAL_TIME((short)6, "realTime"),
-    CPU_TIME((short)7, "cpuTime"),
-    FACET_COUNTS((short)8, "facetCounts");
+    CPU_TIME((short)7, "cpuTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -71,12 +68,12 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // TOTAL_RESULTS
+        case 1: // QUERY_STR
+          return QUERY_STR;
+        case 2: // TOTAL_RESULTS
           return TOTAL_RESULTS;
-        case 2: // SHARD_INFO
+        case 3: // SHARD_INFO
           return SHARD_INFO;
-        case 3: // RESULTS
-          return RESULTS;
         case 4: // EXCEPTIONS
           return EXCEPTIONS;
         case 5: // QUERY
@@ -85,8 +82,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
           return REAL_TIME;
         case 7: // CPU_TIME
           return CPU_TIME;
-        case 8: // FACET_COUNTS
-          return FACET_COUNTS;
         default:
           return null;
       }
@@ -135,15 +130,14 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.QUERY_STR, new FieldMetaData("queryStr", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
     tmpMap.put(_Fields.TOTAL_RESULTS, new FieldMetaData("totalResults", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.SHARD_INFO, new FieldMetaData("shardInfo", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new FieldValueMetaData(TType.I64))));
-    tmpMap.put(_Fields.RESULTS, new FieldMetaData("results", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, BlurResult.class))));
     tmpMap.put(_Fields.EXCEPTIONS, new FieldMetaData("exceptions", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
             new FieldValueMetaData(TType.STRUCT))));
@@ -153,48 +147,46 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.CPU_TIME, new FieldMetaData("cpuTime", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
-    tmpMap.put(_Fields.FACET_COUNTS, new FieldMetaData("facetCounts", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new FieldValueMetaData(TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(BlurResults.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(BlurQuerySuggestion.class, metaDataMap);
   }
 
-  public BlurResults() {
+  public BlurQuerySuggestion() {
     this.totalResults = 0L;
 
   }
 
-  public BlurResults(
+  public BlurQuerySuggestion(
+    String queryStr,
     long totalResults,
     Map<String,Long> shardInfo,
-    List<BlurResult> results,
     List<BlurException> exceptions,
     BlurQuery query,
     long realTime,
-    long cpuTime,
-    List<Long> facetCounts)
+    long cpuTime)
   {
     this();
+    this.queryStr = queryStr;
     this.totalResults = totalResults;
     setTotalResultsIsSet(true);
     this.shardInfo = shardInfo;
-    this.results = results;
     this.exceptions = exceptions;
     this.query = query;
     this.realTime = realTime;
     setRealTimeIsSet(true);
     this.cpuTime = cpuTime;
     setCpuTimeIsSet(true);
-    this.facetCounts = facetCounts;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public BlurResults(BlurResults other) {
+  public BlurQuerySuggestion(BlurQuerySuggestion other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
+    if (other.isSetQueryStr()) {
+      this.queryStr = other.queryStr;
+    }
     this.totalResults = other.totalResults;
     if (other.isSetShardInfo()) {
       Map<String,Long> __this__shardInfo = new HashMap<String,Long>();
@@ -211,13 +203,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       }
       this.shardInfo = __this__shardInfo;
     }
-    if (other.isSetResults()) {
-      List<BlurResult> __this__results = new ArrayList<BlurResult>();
-      for (BlurResult other_element : other.results) {
-        __this__results.add(new BlurResult(other_element));
-      }
-      this.results = __this__results;
-    }
     if (other.isSetExceptions()) {
       List<BlurException> __this__exceptions = new ArrayList<BlurException>();
       for (BlurException other_element : other.exceptions) {
@@ -230,39 +215,55 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     }
     this.realTime = other.realTime;
     this.cpuTime = other.cpuTime;
-    if (other.isSetFacetCounts()) {
-      List<Long> __this__facetCounts = new ArrayList<Long>();
-      for (Long other_element : other.facetCounts) {
-        __this__facetCounts.add(other_element);
-      }
-      this.facetCounts = __this__facetCounts;
-    }
   }
 
-  public BlurResults deepCopy() {
-    return new BlurResults(this);
+  public BlurQuerySuggestion deepCopy() {
+    return new BlurQuerySuggestion(this);
   }
 
   @Override
   public void clear() {
+    this.queryStr = null;
     this.totalResults = 0L;
 
     this.shardInfo = null;
-    this.results = null;
     this.exceptions = null;
     this.query = null;
     setRealTimeIsSet(false);
     this.realTime = 0;
     setCpuTimeIsSet(false);
     this.cpuTime = 0;
-    this.facetCounts = null;
+  }
+
+  public String getQueryStr() {
+    return this.queryStr;
+  }
+
+  public BlurQuerySuggestion setQueryStr(String queryStr) {
+    this.queryStr = queryStr;
+    return this;
+  }
+
+  public void unsetQueryStr() {
+    this.queryStr = null;
+  }
+
+  /** Returns true if field queryStr is set (has been asigned a value) and false otherwise */
+  public boolean isSetQueryStr() {
+    return this.queryStr != null;
+  }
+
+  public void setQueryStrIsSet(boolean value) {
+    if (!value) {
+      this.queryStr = null;
+    }
   }
 
   public long getTotalResults() {
     return this.totalResults;
   }
 
-  public BlurResults setTotalResults(long totalResults) {
+  public BlurQuerySuggestion setTotalResults(long totalResults) {
     this.totalResults = totalResults;
     setTotalResultsIsSet(true);
     return this;
@@ -296,7 +297,7 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     return this.shardInfo;
   }
 
-  public BlurResults setShardInfo(Map<String,Long> shardInfo) {
+  public BlurQuerySuggestion setShardInfo(Map<String,Long> shardInfo) {
     this.shardInfo = shardInfo;
     return this;
   }
@@ -313,45 +314,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
   public void setShardInfoIsSet(boolean value) {
     if (!value) {
       this.shardInfo = null;
-    }
-  }
-
-  public int getResultsSize() {
-    return (this.results == null) ? 0 : this.results.size();
-  }
-
-  public java.util.Iterator<BlurResult> getResultsIterator() {
-    return (this.results == null) ? null : this.results.iterator();
-  }
-
-  public void addToResults(BlurResult elem) {
-    if (this.results == null) {
-      this.results = new ArrayList<BlurResult>();
-    }
-    this.results.add(elem);
-  }
-
-  public List<BlurResult> getResults() {
-    return this.results;
-  }
-
-  public BlurResults setResults(List<BlurResult> results) {
-    this.results = results;
-    return this;
-  }
-
-  public void unsetResults() {
-    this.results = null;
-  }
-
-  /** Returns true if field results is set (has been asigned a value) and false otherwise */
-  public boolean isSetResults() {
-    return this.results != null;
-  }
-
-  public void setResultsIsSet(boolean value) {
-    if (!value) {
-      this.results = null;
     }
   }
 
@@ -374,7 +336,7 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     return this.exceptions;
   }
 
-  public BlurResults setExceptions(List<BlurException> exceptions) {
+  public BlurQuerySuggestion setExceptions(List<BlurException> exceptions) {
     this.exceptions = exceptions;
     return this;
   }
@@ -398,7 +360,7 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     return this.query;
   }
 
-  public BlurResults setQuery(BlurQuery query) {
+  public BlurQuerySuggestion setQuery(BlurQuery query) {
     this.query = query;
     return this;
   }
@@ -422,7 +384,7 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     return this.realTime;
   }
 
-  public BlurResults setRealTime(long realTime) {
+  public BlurQuerySuggestion setRealTime(long realTime) {
     this.realTime = realTime;
     setRealTimeIsSet(true);
     return this;
@@ -445,7 +407,7 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     return this.cpuTime;
   }
 
-  public BlurResults setCpuTime(long cpuTime) {
+  public BlurQuerySuggestion setCpuTime(long cpuTime) {
     this.cpuTime = cpuTime;
     setCpuTimeIsSet(true);
     return this;
@@ -464,47 +426,16 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     __isset_bit_vector.set(__CPUTIME_ISSET_ID, value);
   }
 
-  public int getFacetCountsSize() {
-    return (this.facetCounts == null) ? 0 : this.facetCounts.size();
-  }
-
-  public java.util.Iterator<Long> getFacetCountsIterator() {
-    return (this.facetCounts == null) ? null : this.facetCounts.iterator();
-  }
-
-  public void addToFacetCounts(long elem) {
-    if (this.facetCounts == null) {
-      this.facetCounts = new ArrayList<Long>();
-    }
-    this.facetCounts.add(elem);
-  }
-
-  public List<Long> getFacetCounts() {
-    return this.facetCounts;
-  }
-
-  public BlurResults setFacetCounts(List<Long> facetCounts) {
-    this.facetCounts = facetCounts;
-    return this;
-  }
-
-  public void unsetFacetCounts() {
-    this.facetCounts = null;
-  }
-
-  /** Returns true if field facetCounts is set (has been asigned a value) and false otherwise */
-  public boolean isSetFacetCounts() {
-    return this.facetCounts != null;
-  }
-
-  public void setFacetCountsIsSet(boolean value) {
-    if (!value) {
-      this.facetCounts = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
+    case QUERY_STR:
+      if (value == null) {
+        unsetQueryStr();
+      } else {
+        setQueryStr((String)value);
+      }
+      break;
+
     case TOTAL_RESULTS:
       if (value == null) {
         unsetTotalResults();
@@ -518,14 +449,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         unsetShardInfo();
       } else {
         setShardInfo((Map<String,Long>)value);
-      }
-      break;
-
-    case RESULTS:
-      if (value == null) {
-        unsetResults();
-      } else {
-        setResults((List<BlurResult>)value);
       }
       break;
 
@@ -561,27 +484,19 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       }
       break;
 
-    case FACET_COUNTS:
-      if (value == null) {
-        unsetFacetCounts();
-      } else {
-        setFacetCounts((List<Long>)value);
-      }
-      break;
-
     }
   }
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
+    case QUERY_STR:
+      return getQueryStr();
+
     case TOTAL_RESULTS:
       return new Long(getTotalResults());
 
     case SHARD_INFO:
       return getShardInfo();
-
-    case RESULTS:
-      return getResults();
 
     case EXCEPTIONS:
       return getExceptions();
@@ -595,9 +510,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     case CPU_TIME:
       return new Long(getCpuTime());
 
-    case FACET_COUNTS:
-      return getFacetCounts();
-
     }
     throw new IllegalStateException();
   }
@@ -609,12 +521,12 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     }
 
     switch (field) {
+    case QUERY_STR:
+      return isSetQueryStr();
     case TOTAL_RESULTS:
       return isSetTotalResults();
     case SHARD_INFO:
       return isSetShardInfo();
-    case RESULTS:
-      return isSetResults();
     case EXCEPTIONS:
       return isSetExceptions();
     case QUERY:
@@ -623,8 +535,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       return isSetRealTime();
     case CPU_TIME:
       return isSetCpuTime();
-    case FACET_COUNTS:
-      return isSetFacetCounts();
     }
     throw new IllegalStateException();
   }
@@ -633,14 +543,23 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof BlurResults)
-      return this.equals((BlurResults)that);
+    if (that instanceof BlurQuerySuggestion)
+      return this.equals((BlurQuerySuggestion)that);
     return false;
   }
 
-  public boolean equals(BlurResults that) {
+  public boolean equals(BlurQuerySuggestion that) {
     if (that == null)
       return false;
+
+    boolean this_present_queryStr = true && this.isSetQueryStr();
+    boolean that_present_queryStr = true && that.isSetQueryStr();
+    if (this_present_queryStr || that_present_queryStr) {
+      if (!(this_present_queryStr && that_present_queryStr))
+        return false;
+      if (!this.queryStr.equals(that.queryStr))
+        return false;
+    }
 
     boolean this_present_totalResults = true;
     boolean that_present_totalResults = true;
@@ -657,15 +576,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       if (!(this_present_shardInfo && that_present_shardInfo))
         return false;
       if (!this.shardInfo.equals(that.shardInfo))
-        return false;
-    }
-
-    boolean this_present_results = true && this.isSetResults();
-    boolean that_present_results = true && that.isSetResults();
-    if (this_present_results || that_present_results) {
-      if (!(this_present_results && that_present_results))
-        return false;
-      if (!this.results.equals(that.results))
         return false;
     }
 
@@ -705,15 +615,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         return false;
     }
 
-    boolean this_present_facetCounts = true && this.isSetFacetCounts();
-    boolean that_present_facetCounts = true && that.isSetFacetCounts();
-    if (this_present_facetCounts || that_present_facetCounts) {
-      if (!(this_present_facetCounts && that_present_facetCounts))
-        return false;
-      if (!this.facetCounts.equals(that.facetCounts))
-        return false;
-    }
-
     return true;
   }
 
@@ -722,14 +623,24 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     return 0;
   }
 
-  public int compareTo(BlurResults other) {
+  public int compareTo(BlurQuerySuggestion other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    BlurResults typedOther = (BlurResults)other;
+    BlurQuerySuggestion typedOther = (BlurQuerySuggestion)other;
 
+    lastComparison = Boolean.valueOf(isSetQueryStr()).compareTo(typedOther.isSetQueryStr());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetQueryStr()) {
+      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetTotalResults()).compareTo(typedOther.isSetTotalResults());
     if (lastComparison != 0) {
       return lastComparison;
@@ -746,16 +657,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     }
     if (isSetShardInfo()) {
       lastComparison = TBaseHelper.compareTo(this.shardInfo, typedOther.shardInfo);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetResults()).compareTo(typedOther.isSetResults());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetResults()) {
-      lastComparison = TBaseHelper.compareTo(this.results, typedOther.results);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -800,16 +701,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetFacetCounts()).compareTo(typedOther.isSetFacetCounts());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetFacetCounts()) {
-      lastComparison = TBaseHelper.compareTo(this.facetCounts, typedOther.facetCounts);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -827,7 +718,14 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         break;
       }
       switch (field.id) {
-        case 1: // TOTAL_RESULTS
+        case 1: // QUERY_STR
+          if (field.type == TType.STRING) {
+            this.queryStr = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 2: // TOTAL_RESULTS
           if (field.type == TType.I64) {
             this.totalResults = iprot.readI64();
             setTotalResultsIsSet(true);
@@ -835,38 +733,20 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // SHARD_INFO
+        case 3: // SHARD_INFO
           if (field.type == TType.MAP) {
             {
-              TMap _map17 = iprot.readMapBegin();
-              this.shardInfo = new HashMap<String,Long>(2*_map17.size);
-              for (int _i18 = 0; _i18 < _map17.size; ++_i18)
+              TMap _map4 = iprot.readMapBegin();
+              this.shardInfo = new HashMap<String,Long>(2*_map4.size);
+              for (int _i5 = 0; _i5 < _map4.size; ++_i5)
               {
-                String _key19;
-                long _val20;
-                _key19 = iprot.readString();
-                _val20 = iprot.readI64();
-                this.shardInfo.put(_key19, _val20);
+                String _key6;
+                long _val7;
+                _key6 = iprot.readString();
+                _val7 = iprot.readI64();
+                this.shardInfo.put(_key6, _val7);
               }
               iprot.readMapEnd();
-            }
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 3: // RESULTS
-          if (field.type == TType.LIST) {
-            {
-              TList _list21 = iprot.readListBegin();
-              this.results = new ArrayList<BlurResult>(_list21.size);
-              for (int _i22 = 0; _i22 < _list21.size; ++_i22)
-              {
-                BlurResult _elem23;
-                _elem23 = new BlurResult();
-                _elem23.read(iprot);
-                this.results.add(_elem23);
-              }
-              iprot.readListEnd();
             }
           } else { 
             TProtocolUtil.skip(iprot, field.type);
@@ -875,14 +755,14 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         case 4: // EXCEPTIONS
           if (field.type == TType.LIST) {
             {
-              TList _list24 = iprot.readListBegin();
-              this.exceptions = new ArrayList<BlurException>(_list24.size);
-              for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+              TList _list8 = iprot.readListBegin();
+              this.exceptions = new ArrayList<BlurException>(_list8.size);
+              for (int _i9 = 0; _i9 < _list8.size; ++_i9)
               {
-                BlurException _elem26;
-                _elem26 = new BlurException();
-                _elem26.read(iprot);
-                this.exceptions.add(_elem26);
+                BlurException _elem10;
+                _elem10 = new BlurException();
+                _elem10.read(iprot);
+                this.exceptions.add(_elem10);
               }
               iprot.readListEnd();
             }
@@ -914,23 +794,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 8: // FACET_COUNTS
-          if (field.type == TType.LIST) {
-            {
-              TList _list27 = iprot.readListBegin();
-              this.facetCounts = new ArrayList<Long>(_list27.size);
-              for (int _i28 = 0; _i28 < _list27.size; ++_i28)
-              {
-                long _elem29;
-                _elem29 = iprot.readI64();
-                this.facetCounts.add(_elem29);
-              }
-              iprot.readListEnd();
-            }
-          } else { 
-            TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -946,6 +809,11 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
+    if (this.queryStr != null) {
+      oprot.writeFieldBegin(QUERY_STR_FIELD_DESC);
+      oprot.writeString(this.queryStr);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldBegin(TOTAL_RESULTS_FIELD_DESC);
     oprot.writeI64(this.totalResults);
     oprot.writeFieldEnd();
@@ -953,24 +821,12 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.I64, this.shardInfo.size()));
-        for (Map.Entry<String, Long> _iter30 : this.shardInfo.entrySet())
+        for (Map.Entry<String, Long> _iter11 : this.shardInfo.entrySet())
         {
-          oprot.writeString(_iter30.getKey());
-          oprot.writeI64(_iter30.getValue());
+          oprot.writeString(_iter11.getKey());
+          oprot.writeI64(_iter11.getValue());
         }
         oprot.writeMapEnd();
-      }
-      oprot.writeFieldEnd();
-    }
-    if (this.results != null) {
-      oprot.writeFieldBegin(RESULTS_FIELD_DESC);
-      {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.results.size()));
-        for (BlurResult _iter31 : this.results)
-        {
-          _iter31.write(oprot);
-        }
-        oprot.writeListEnd();
       }
       oprot.writeFieldEnd();
     }
@@ -978,9 +834,9 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.exceptions.size()));
-        for (BlurException _iter32 : this.exceptions)
+        for (BlurException _iter12 : this.exceptions)
         {
-          _iter32.write(oprot);
+          _iter12.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -997,27 +853,23 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     oprot.writeFieldBegin(CPU_TIME_FIELD_DESC);
     oprot.writeI64(this.cpuTime);
     oprot.writeFieldEnd();
-    if (this.facetCounts != null) {
-      oprot.writeFieldBegin(FACET_COUNTS_FIELD_DESC);
-      {
-        oprot.writeListBegin(new TList(TType.I64, this.facetCounts.size()));
-        for (long _iter33 : this.facetCounts)
-        {
-          oprot.writeI64(_iter33);
-        }
-        oprot.writeListEnd();
-      }
-      oprot.writeFieldEnd();
-    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("BlurResults(");
+    StringBuilder sb = new StringBuilder("BlurQuerySuggestion(");
     boolean first = true;
 
+    sb.append("queryStr:");
+    if (this.queryStr == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.queryStr);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("totalResults:");
     sb.append(this.totalResults);
     first = false;
@@ -1027,14 +879,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       sb.append("null");
     } else {
       sb.append(this.shardInfo);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("results:");
-    if (this.results == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.results);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -1060,14 +904,6 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
     if (!first) sb.append(", ");
     sb.append("cpuTime:");
     sb.append(this.cpuTime);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("facetCounts:");
-    if (this.facetCounts == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.facetCounts);
-    }
     first = false;
     sb.append(")");
     return sb.toString();

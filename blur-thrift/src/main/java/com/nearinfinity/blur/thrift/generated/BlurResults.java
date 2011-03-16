@@ -838,15 +838,15 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         case 2: // SHARD_INFO
           if (field.type == TType.MAP) {
             {
-              TMap _map4 = iprot.readMapBegin();
-              this.shardInfo = new HashMap<String,Long>(2*_map4.size);
-              for (int _i5 = 0; _i5 < _map4.size; ++_i5)
+              TMap _map17 = iprot.readMapBegin();
+              this.shardInfo = new HashMap<String,Long>(2*_map17.size);
+              for (int _i18 = 0; _i18 < _map17.size; ++_i18)
               {
-                String _key6;
-                long _val7;
-                _key6 = iprot.readString();
-                _val7 = iprot.readI64();
-                this.shardInfo.put(_key6, _val7);
+                String _key19;
+                long _val20;
+                _key19 = iprot.readString();
+                _val20 = iprot.readI64();
+                this.shardInfo.put(_key19, _val20);
               }
               iprot.readMapEnd();
             }
@@ -857,14 +857,14 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         case 3: // RESULTS
           if (field.type == TType.LIST) {
             {
-              TList _list8 = iprot.readListBegin();
-              this.results = new ArrayList<BlurResult>(_list8.size);
-              for (int _i9 = 0; _i9 < _list8.size; ++_i9)
+              TList _list21 = iprot.readListBegin();
+              this.results = new ArrayList<BlurResult>(_list21.size);
+              for (int _i22 = 0; _i22 < _list21.size; ++_i22)
               {
-                BlurResult _elem10;
-                _elem10 = new BlurResult();
-                _elem10.read(iprot);
-                this.results.add(_elem10);
+                BlurResult _elem23;
+                _elem23 = new BlurResult();
+                _elem23.read(iprot);
+                this.results.add(_elem23);
               }
               iprot.readListEnd();
             }
@@ -875,14 +875,14 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         case 4: // EXCEPTIONS
           if (field.type == TType.LIST) {
             {
-              TList _list11 = iprot.readListBegin();
-              this.exceptions = new ArrayList<BlurException>(_list11.size);
-              for (int _i12 = 0; _i12 < _list11.size; ++_i12)
+              TList _list24 = iprot.readListBegin();
+              this.exceptions = new ArrayList<BlurException>(_list24.size);
+              for (int _i25 = 0; _i25 < _list24.size; ++_i25)
               {
-                BlurException _elem13;
-                _elem13 = new BlurException();
-                _elem13.read(iprot);
-                this.exceptions.add(_elem13);
+                BlurException _elem26;
+                _elem26 = new BlurException();
+                _elem26.read(iprot);
+                this.exceptions.add(_elem26);
               }
               iprot.readListEnd();
             }
@@ -917,13 +917,13 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
         case 8: // FACET_COUNTS
           if (field.type == TType.LIST) {
             {
-              TList _list14 = iprot.readListBegin();
-              this.facetCounts = new ArrayList<Long>(_list14.size);
-              for (int _i15 = 0; _i15 < _list14.size; ++_i15)
+              TList _list27 = iprot.readListBegin();
+              this.facetCounts = new ArrayList<Long>(_list27.size);
+              for (int _i28 = 0; _i28 < _list27.size; ++_i28)
               {
-                long _elem16;
-                _elem16 = iprot.readI64();
-                this.facetCounts.add(_elem16);
+                long _elem29;
+                _elem29 = iprot.readI64();
+                this.facetCounts.add(_elem29);
               }
               iprot.readListEnd();
             }
@@ -953,10 +953,10 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.I64, this.shardInfo.size()));
-        for (Map.Entry<String, Long> _iter17 : this.shardInfo.entrySet())
+        for (Map.Entry<String, Long> _iter30 : this.shardInfo.entrySet())
         {
-          oprot.writeString(_iter17.getKey());
-          oprot.writeI64(_iter17.getValue());
+          oprot.writeString(_iter30.getKey());
+          oprot.writeI64(_iter30.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -966,9 +966,9 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       oprot.writeFieldBegin(RESULTS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.results.size()));
-        for (BlurResult _iter18 : this.results)
+        for (BlurResult _iter31 : this.results)
         {
-          _iter18.write(oprot);
+          _iter31.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -978,9 +978,9 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.exceptions.size()));
-        for (BlurException _iter19 : this.exceptions)
+        for (BlurException _iter32 : this.exceptions)
         {
-          _iter19.write(oprot);
+          _iter32.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -1001,9 +1001,9 @@ public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, jav
       oprot.writeFieldBegin(FACET_COUNTS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.I64, this.facetCounts.size()));
-        for (long _iter20 : this.facetCounts)
+        for (long _iter33 : this.facetCounts)
         {
-          oprot.writeI64(_iter20);
+          oprot.writeI64(_iter33);
         }
         oprot.writeListEnd();
       }

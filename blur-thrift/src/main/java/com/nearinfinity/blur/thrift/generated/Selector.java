@@ -531,13 +531,13 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
         case 3: // COLUMN_FAMILIES_TO_FETCH
           if (field.type == TType.SET) {
             {
-              TSet _set46 = iprot.readSetBegin();
-              this.columnFamiliesToFetch = new HashSet<String>(2*_set46.size);
-              for (int _i47 = 0; _i47 < _set46.size; ++_i47)
+              TSet _set59 = iprot.readSetBegin();
+              this.columnFamiliesToFetch = new HashSet<String>(2*_set59.size);
+              for (int _i60 = 0; _i60 < _set59.size; ++_i60)
               {
-                String _elem48;
-                _elem48 = iprot.readString();
-                this.columnFamiliesToFetch.add(_elem48);
+                String _elem61;
+                _elem61 = iprot.readString();
+                this.columnFamiliesToFetch.add(_elem61);
               }
               iprot.readSetEnd();
             }
@@ -548,25 +548,25 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
         case 4: // COLUMNS_TO_FETCH
           if (field.type == TType.MAP) {
             {
-              TMap _map49 = iprot.readMapBegin();
-              this.columnsToFetch = new HashMap<String,Set<String>>(2*_map49.size);
-              for (int _i50 = 0; _i50 < _map49.size; ++_i50)
+              TMap _map62 = iprot.readMapBegin();
+              this.columnsToFetch = new HashMap<String,Set<String>>(2*_map62.size);
+              for (int _i63 = 0; _i63 < _map62.size; ++_i63)
               {
-                String _key51;
-                Set<String> _val52;
-                _key51 = iprot.readString();
+                String _key64;
+                Set<String> _val65;
+                _key64 = iprot.readString();
                 {
-                  TSet _set53 = iprot.readSetBegin();
-                  _val52 = new HashSet<String>(2*_set53.size);
-                  for (int _i54 = 0; _i54 < _set53.size; ++_i54)
+                  TSet _set66 = iprot.readSetBegin();
+                  _val65 = new HashSet<String>(2*_set66.size);
+                  for (int _i67 = 0; _i67 < _set66.size; ++_i67)
                   {
-                    String _elem55;
-                    _elem55 = iprot.readString();
-                    _val52.add(_elem55);
+                    String _elem68;
+                    _elem68 = iprot.readString();
+                    _val65.add(_elem68);
                   }
                   iprot.readSetEnd();
                 }
-                this.columnsToFetch.put(_key51, _val52);
+                this.columnsToFetch.put(_key64, _val65);
               }
               iprot.readMapEnd();
             }
@@ -601,9 +601,9 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       oprot.writeFieldBegin(COLUMN_FAMILIES_TO_FETCH_FIELD_DESC);
       {
         oprot.writeSetBegin(new TSet(TType.STRING, this.columnFamiliesToFetch.size()));
-        for (String _iter56 : this.columnFamiliesToFetch)
+        for (String _iter69 : this.columnFamiliesToFetch)
         {
-          oprot.writeString(_iter56);
+          oprot.writeString(_iter69);
         }
         oprot.writeSetEnd();
       }
@@ -613,14 +613,14 @@ public class Selector implements TBase<Selector, Selector._Fields>, java.io.Seri
       oprot.writeFieldBegin(COLUMNS_TO_FETCH_FIELD_DESC);
       {
         oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.columnsToFetch.size()));
-        for (Map.Entry<String, Set<String>> _iter57 : this.columnsToFetch.entrySet())
+        for (Map.Entry<String, Set<String>> _iter70 : this.columnsToFetch.entrySet())
         {
-          oprot.writeString(_iter57.getKey());
+          oprot.writeString(_iter70.getKey());
           {
-            oprot.writeSetBegin(new TSet(TType.STRING, _iter57.getValue().size()));
-            for (String _iter58 : _iter57.getValue())
+            oprot.writeSetBegin(new TSet(TType.STRING, _iter70.getValue().size()));
+            for (String _iter71 : _iter70.getValue())
             {
-              oprot.writeString(_iter58);
+              oprot.writeString(_iter71);
             }
             oprot.writeSetEnd();
           }

@@ -33,6 +33,20 @@ struct BlurQuery {
   13:list<Facet> facets
 }
 
+struct BlurQuerySuggestion {
+  1:string queryStr,
+  2:i64 totalResults = 0,
+  3:map<string,i64> shardInfo,
+  4:list<BlurException> exceptions,
+  5:BlurQuery query,
+  6:i64 realTime,
+  7:i64 cpuTime
+}
+
+struct BlurQuerySuggestions {
+  1:list<BlurQuerySuggestion> querySuggestions
+}
+
 struct BlurResult {
   1:string locationId,
   2:double score,
@@ -138,6 +152,8 @@ service Blur {
   BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
   void cancelQuery(1:string table, 2:i64 uuid) throws (1:BlurException ex)
   list<BlurQueryStatus> currentQueries(1:string table) throws (1:BlurException ex)
+
+  BlurQuerySuggestions querySuggestions(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
 
   Schema schema(1:string table) throws (1:BlurException ex)
   list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)

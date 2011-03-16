@@ -46,6 +46,8 @@ public class Blur {
 
     public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException;
 
+    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException;
+
     public Schema schema(String table) throws BlurException, TException;
 
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException;
@@ -75,6 +77,8 @@ public class Blur {
     public void cancelQuery(String table, long uuid, AsyncMethodCallback<AsyncClient.cancelQuery_call> resultHandler) throws TException;
 
     public void currentQueries(String table, AsyncMethodCallback<AsyncClient.currentQueries_call> resultHandler) throws TException;
+
+    public void querySuggestions(String table, BlurQuery blurQuery, AsyncMethodCallback<AsyncClient.querySuggestions_call> resultHandler) throws TException;
 
     public void schema(String table, AsyncMethodCallback<AsyncClient.schema_call> resultHandler) throws TException;
 
@@ -431,6 +435,46 @@ public class Blur {
         throw result.ex;
       }
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "currentQueries failed: unknown result");
+    }
+
+    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException
+    {
+      send_querySuggestions(table, blurQuery);
+      return recv_querySuggestions();
+    }
+
+    public void send_querySuggestions(String table, BlurQuery blurQuery) throws TException
+    {
+      oprot_.writeMessageBegin(new TMessage("querySuggestions", TMessageType.CALL, ++seqid_));
+      querySuggestions_args args = new querySuggestions_args();
+      args.setTable(table);
+      args.setBlurQuery(blurQuery);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public BlurQuerySuggestions recv_querySuggestions() throws BlurException, TException
+    {
+      TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == TMessageType.EXCEPTION) {
+        TApplicationException x = TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "querySuggestions failed: out of sequence response");
+      }
+      querySuggestions_result result = new querySuggestions_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "querySuggestions failed: unknown result");
     }
 
     public Schema schema(String table) throws BlurException, TException
@@ -896,6 +940,40 @@ public class Blur {
       }
     }
 
+    public void querySuggestions(String table, BlurQuery blurQuery, AsyncMethodCallback<querySuggestions_call> resultHandler) throws TException {
+      checkReady();
+      querySuggestions_call method_call = new querySuggestions_call(table, blurQuery, resultHandler, this, protocolFactory, transport);
+      manager.call(method_call);
+    }
+
+    public static class querySuggestions_call extends TAsyncMethodCall {
+      private String table;
+      private BlurQuery blurQuery;
+      public querySuggestions_call(String table, BlurQuery blurQuery, AsyncMethodCallback<querySuggestions_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.blurQuery = blurQuery;
+      }
+
+      public void write_args(TProtocol prot) throws TException {
+        prot.writeMessageBegin(new TMessage("querySuggestions", TMessageType.CALL, 0));
+        querySuggestions_args args = new querySuggestions_args();
+        args.setTable(table);
+        args.setBlurQuery(blurQuery);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public BlurQuerySuggestions getResult() throws BlurException, TException {
+        if (getState() != State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
+        TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_querySuggestions();
+      }
+    }
+
     public void schema(String table, AsyncMethodCallback<schema_call> resultHandler) throws TException {
       checkReady();
       schema_call method_call = new schema_call(table, resultHandler, this, protocolFactory, transport);
@@ -1090,6 +1168,7 @@ public class Blur {
       processMap_.put("query", new query());
       processMap_.put("cancelQuery", new cancelQuery());
       processMap_.put("currentQueries", new currentQueries());
+      processMap_.put("querySuggestions", new querySuggestions());
       processMap_.put("schema", new schema());
       processMap_.put("terms", new terms());
       processMap_.put("recordFrequency", new recordFrequency());
@@ -1419,6 +1498,44 @@ public class Blur {
           return;
         }
         oprot.writeMessageBegin(new TMessage("currentQueries", TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class querySuggestions implements ProcessFunction {
+      public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
+      {
+        querySuggestions_args args = new querySuggestions_args();
+        try {
+          args.read(iprot);
+        } catch (TProtocolException e) {
+          iprot.readMessageEnd();
+          TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new TMessage("querySuggestions", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        querySuggestions_result result = new querySuggestions_result();
+        try {
+          result.success = iface_.querySuggestions(args.table, args.blurQuery);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing querySuggestions", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing querySuggestions");
+          oprot.writeMessageBegin(new TMessage("querySuggestions", TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new TMessage("querySuggestions", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -2125,13 +2242,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list76 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list76.size);
-                for (int _i77 = 0; _i77 < _list76.size; ++_i77)
+                TList _list89 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list89.size);
+                for (int _i90 = 0; _i90 < _list89.size; ++_i90)
                 {
-                  String _elem78;
-                  _elem78 = iprot.readString();
-                  this.success.add(_elem78);
+                  String _elem91;
+                  _elem91 = iprot.readString();
+                  this.success.add(_elem91);
                 }
                 iprot.readListEnd();
               }
@@ -2165,9 +2282,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter79 : this.success)
+          for (String _iter92 : this.success)
           {
-            oprot.writeString(_iter79);
+            oprot.writeString(_iter92);
           }
           oprot.writeListEnd();
         }
@@ -2717,13 +2834,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list80 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list80.size);
-                for (int _i81 = 0; _i81 < _list80.size; ++_i81)
+                TList _list93 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list93.size);
+                for (int _i94 = 0; _i94 < _list93.size; ++_i94)
                 {
-                  String _elem82;
-                  _elem82 = iprot.readString();
-                  this.success.add(_elem82);
+                  String _elem95;
+                  _elem95 = iprot.readString();
+                  this.success.add(_elem95);
                 }
                 iprot.readListEnd();
               }
@@ -2757,9 +2874,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter83 : this.success)
+          for (String _iter96 : this.success)
           {
-            oprot.writeString(_iter83);
+            oprot.writeString(_iter96);
           }
           oprot.writeListEnd();
         }
@@ -3409,15 +3526,15 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.MAP) {
               {
-                TMap _map84 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map84.size);
-                for (int _i85 = 0; _i85 < _map84.size; ++_i85)
+                TMap _map97 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map97.size);
+                for (int _i98 = 0; _i98 < _map97.size; ++_i98)
                 {
-                  String _key86;
-                  String _val87;
-                  _key86 = iprot.readString();
-                  _val87 = iprot.readString();
-                  this.success.put(_key86, _val87);
+                  String _key99;
+                  String _val100;
+                  _key99 = iprot.readString();
+                  _val100 = iprot.readString();
+                  this.success.put(_key99, _val100);
                 }
                 iprot.readMapEnd();
               }
@@ -3451,10 +3568,10 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new TMap(TType.STRING, TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter88 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter101 : this.success.entrySet())
           {
-            oprot.writeString(_iter88.getKey());
-            oprot.writeString(_iter88.getValue());
+            oprot.writeString(_iter101.getKey());
+            oprot.writeString(_iter101.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -4004,13 +4121,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list89 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list89.size);
-                for (int _i90 = 0; _i90 < _list89.size; ++_i90)
+                TList _list102 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list102.size);
+                for (int _i103 = 0; _i103 < _list102.size; ++_i103)
                 {
-                  String _elem91;
-                  _elem91 = iprot.readString();
-                  this.success.add(_elem91);
+                  String _elem104;
+                  _elem104 = iprot.readString();
+                  this.success.add(_elem104);
                 }
                 iprot.readListEnd();
               }
@@ -4044,9 +4161,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter92 : this.success)
+          for (String _iter105 : this.success)
           {
-            oprot.writeString(_iter92);
+            oprot.writeString(_iter105);
           }
           oprot.writeListEnd();
         }
@@ -6732,14 +6849,14 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list93 = iprot.readListBegin();
-                this.success = new ArrayList<BlurQueryStatus>(_list93.size);
-                for (int _i94 = 0; _i94 < _list93.size; ++_i94)
+                TList _list106 = iprot.readListBegin();
+                this.success = new ArrayList<BlurQueryStatus>(_list106.size);
+                for (int _i107 = 0; _i107 < _list106.size; ++_i107)
                 {
-                  BlurQueryStatus _elem95;
-                  _elem95 = new BlurQueryStatus();
-                  _elem95.read(iprot);
-                  this.success.add(_elem95);
+                  BlurQueryStatus _elem108;
+                  _elem108 = new BlurQueryStatus();
+                  _elem108.read(iprot);
+                  this.success.add(_elem108);
                 }
                 iprot.readListEnd();
               }
@@ -6773,9 +6890,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (BlurQueryStatus _iter96 : this.success)
+          for (BlurQueryStatus _iter109 : this.success)
           {
-            _iter96.write(oprot);
+            _iter109.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -6792,6 +6909,747 @@ public class Blur {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("currentQueries_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class querySuggestions_args implements TBase<querySuggestions_args, querySuggestions_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("querySuggestions_args");
+
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+    private static final TField BLUR_QUERY_FIELD_DESC = new TField("blurQuery", TType.STRUCT, (short)2);
+
+    public String table;
+    public BlurQuery blurQuery;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      TABLE((short)1, "table"),
+      BLUR_QUERY((short)2, "blurQuery");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // BLUR_QUERY
+            return BLUR_QUERY;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
+      tmpMap.put(_Fields.BLUR_QUERY, new FieldMetaData("blurQuery", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, BlurQuery.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(querySuggestions_args.class, metaDataMap);
+    }
+
+    public querySuggestions_args() {
+    }
+
+    public querySuggestions_args(
+      String table,
+      BlurQuery blurQuery)
+    {
+      this();
+      this.table = table;
+      this.blurQuery = blurQuery;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public querySuggestions_args(querySuggestions_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      if (other.isSetBlurQuery()) {
+        this.blurQuery = new BlurQuery(other.blurQuery);
+      }
+    }
+
+    public querySuggestions_args deepCopy() {
+      return new querySuggestions_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+      this.blurQuery = null;
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public querySuggestions_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public BlurQuery getBlurQuery() {
+      return this.blurQuery;
+    }
+
+    public querySuggestions_args setBlurQuery(BlurQuery blurQuery) {
+      this.blurQuery = blurQuery;
+      return this;
+    }
+
+    public void unsetBlurQuery() {
+      this.blurQuery = null;
+    }
+
+    /** Returns true if field blurQuery is set (has been asigned a value) and false otherwise */
+    public boolean isSetBlurQuery() {
+      return this.blurQuery != null;
+    }
+
+    public void setBlurQueryIsSet(boolean value) {
+      if (!value) {
+        this.blurQuery = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case BLUR_QUERY:
+        if (value == null) {
+          unsetBlurQuery();
+        } else {
+          setBlurQuery((BlurQuery)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case BLUR_QUERY:
+        return getBlurQuery();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case BLUR_QUERY:
+        return isSetBlurQuery();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof querySuggestions_args)
+        return this.equals((querySuggestions_args)that);
+      return false;
+    }
+
+    public boolean equals(querySuggestions_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_blurQuery = true && this.isSetBlurQuery();
+      boolean that_present_blurQuery = true && that.isSetBlurQuery();
+      if (this_present_blurQuery || that_present_blurQuery) {
+        if (!(this_present_blurQuery && that_present_blurQuery))
+          return false;
+        if (!this.blurQuery.equals(that.blurQuery))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(querySuggestions_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      querySuggestions_args typedOther = (querySuggestions_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetBlurQuery()).compareTo(typedOther.isSetBlurQuery());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetBlurQuery()) {
+        lastComparison = TBaseHelper.compareTo(this.blurQuery, typedOther.blurQuery);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // BLUR_QUERY
+            if (field.type == TType.STRUCT) {
+              this.blurQuery = new BlurQuery();
+              this.blurQuery.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      if (this.blurQuery != null) {
+        oprot.writeFieldBegin(BLUR_QUERY_FIELD_DESC);
+        this.blurQuery.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("querySuggestions_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("blurQuery:");
+      if (this.blurQuery == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.blurQuery);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws TException {
+      // check for required fields
+    }
+
+  }
+
+  public static class querySuggestions_result implements TBase<querySuggestions_result, querySuggestions_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("querySuggestions_result");
+
+    private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
+    private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
+
+    public BlurQuerySuggestions success;
+    public BlurException ex;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, BlurQuerySuggestions.class)));
+      tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      FieldMetaData.addStructMetaDataMap(querySuggestions_result.class, metaDataMap);
+    }
+
+    public querySuggestions_result() {
+    }
+
+    public querySuggestions_result(
+      BlurQuerySuggestions success,
+      BlurException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public querySuggestions_result(querySuggestions_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new BlurQuerySuggestions(other.success);
+      }
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public querySuggestions_result deepCopy() {
+      return new querySuggestions_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
+    }
+
+    public BlurQuerySuggestions getSuccess() {
+      return this.success;
+    }
+
+    public querySuggestions_result setSuccess(BlurQuerySuggestions success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been asigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public querySuggestions_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been asigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((BlurQuerySuggestions)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof querySuggestions_result)
+        return this.equals((querySuggestions_result)that);
+      return false;
+    }
+
+    public boolean equals(querySuggestions_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(querySuggestions_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      querySuggestions_result typedOther = (querySuggestions_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(TProtocol iprot) throws TException {
+      TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == TType.STRUCT) {
+              this.success = new BlurQuerySuggestions();
+              this.success.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // EX
+            if (field.type == TType.STRUCT) {
+              this.ex = new BlurException();
+              this.ex.read(iprot);
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(TProtocol oprot) throws TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("querySuggestions_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -8425,13 +9283,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == TType.LIST) {
               {
-                TList _list97 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list97.size);
-                for (int _i98 = 0; _i98 < _list97.size; ++_i98)
+                TList _list110 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list110.size);
+                for (int _i111 = 0; _i111 < _list110.size; ++_i111)
                 {
-                  String _elem99;
-                  _elem99 = iprot.readString();
-                  this.success.add(_elem99);
+                  String _elem112;
+                  _elem112 = iprot.readString();
+                  this.success.add(_elem112);
                 }
                 iprot.readListEnd();
               }
@@ -8465,9 +9323,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRING, this.success.size()));
-          for (String _iter100 : this.success)
+          for (String _iter113 : this.success)
           {
-            oprot.writeString(_iter100);
+            oprot.writeString(_iter113);
           }
           oprot.writeListEnd();
         }
@@ -10420,14 +11278,14 @@ public class Blur {
           case 1: // MUTATIONS
             if (field.type == TType.LIST) {
               {
-                TList _list101 = iprot.readListBegin();
-                this.mutations = new ArrayList<RowMutation>(_list101.size);
-                for (int _i102 = 0; _i102 < _list101.size; ++_i102)
+                TList _list114 = iprot.readListBegin();
+                this.mutations = new ArrayList<RowMutation>(_list114.size);
+                for (int _i115 = 0; _i115 < _list114.size; ++_i115)
                 {
-                  RowMutation _elem103;
-                  _elem103 = new RowMutation();
-                  _elem103.read(iprot);
-                  this.mutations.add(_elem103);
+                  RowMutation _elem116;
+                  _elem116 = new RowMutation();
+                  _elem116.read(iprot);
+                  this.mutations.add(_elem116);
                 }
                 iprot.readListEnd();
               }
@@ -10454,9 +11312,9 @@ public class Blur {
         oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.mutations.size()));
-          for (RowMutation _iter104 : this.mutations)
+          for (RowMutation _iter117 : this.mutations)
           {
-            _iter104.write(oprot);
+            _iter117.write(oprot);
           }
           oprot.writeListEnd();
         }

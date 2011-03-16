@@ -163,7 +163,7 @@ public class IndexManager {
     }
 
     public BlurResultIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
-        final QueryStatus status = statusManager.newSearchStatus(table, blurQuery);
+        final QueryStatus status = statusManager.newQueryStatus(table, blurQuery);
         try {
             Map<String, IndexReader> indexReaders;
             try {
@@ -202,18 +202,18 @@ public class IndexManager {
         }
     }
 
-    private Query getFacetedQuery(BlurQuery searchQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
-        if (searchQuery.facets == null) {
+    private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
+        if (blurQuery.facets == null) {
             return userQuery;
         }
-        return new FacetQuery(userQuery,getFacetQueries(searchQuery,analyzer),counts);
+        return new FacetQuery(userQuery,getFacetQueries(blurQuery,analyzer),counts);
     }
 
-    private Query[] getFacetQueries(BlurQuery searchQuery, Analyzer analyzer) throws ParseException {
-        int size = searchQuery.facets.size();
+    private Query[] getFacetQueries(BlurQuery blurQuery, Analyzer analyzer) throws ParseException {
+        int size = blurQuery.facets.size();
         Query[] queries = new Query[size];
         for (int i = 0; i < size; i++) {
-            queries[i] = parseQuery(searchQuery.facets.get(i).queryStr, searchQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
+            queries[i] = parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
         }
         return queries;
     }
@@ -226,7 +226,7 @@ public class IndexManager {
     }
 
     public void cancelQuery(String table, long uuid) {
-        statusManager.cancelSearch(table, uuid);
+        statusManager.cancelQuery(table, uuid);
     }
 
     public List<BlurQueryStatus> currentSearches(String table) {
@@ -494,7 +494,7 @@ public class IndexManager {
         return schema;
     }
 
-    public void setSearchStatusCleanupTimerDelay(long delay) {
-        statusManager.setSearchStatusCleanupTimerDelay(delay);
+    public void setStatusCleanupTimerDelay(long delay) {
+        statusManager.setStatusCleanupTimerDelay(delay);
     }
 }

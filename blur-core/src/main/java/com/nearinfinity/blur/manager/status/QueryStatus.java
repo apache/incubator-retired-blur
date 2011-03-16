@@ -72,7 +72,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
         return blurQuery.uuid;
     }
 
-    public void cancelSearch() {
+    public void cancelQuery() {
         interrupted = true;
         for (Thread t : threads.keySet()) {
             t.interrupt();

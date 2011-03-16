@@ -71,7 +71,7 @@ public class IndexManagerTest {
     public void setUp() {
         server = new LocalIndexServer(new File("./test-indexes/test1"));
         indexManager = new IndexManager();
-        indexManager.setSearchStatusCleanupTimerDelay(2000);
+        indexManager.setStatusCleanupTimerDelay(2000);
         indexManager.setIndexServer(server);
         indexManager.init();
     }

@@ -44,7 +44,7 @@ public class QueryStatusManager {
             @Override
             public void run() {
                 try {
-                    cleanupFinishedSearchStatuses();
+                    cleanupFinishedQueryStatuses();
                 } catch (Exception e) {
                     LOG.error("Unknown error while trying to cleanup finished queries.",e);
                 }
@@ -57,7 +57,7 @@ public class QueryStatusManager {
         statusCleanupTimer.purge();
     }
     
-    public QueryStatus newSearchStatus(String table, BlurQuery blurQuery) {
+    public QueryStatus newQueryStatus(String table, BlurQuery blurQuery) {
         return addStatus(new QueryStatus(statusCleanupTimerDelay,table,blurQuery).attachThread());
     }
     
@@ -70,7 +70,7 @@ public class QueryStatusManager {
         status.setFinished(true);
     }
     
-    private void cleanupFinishedSearchStatuses() {
+    private void cleanupFinishedQueryStatuses() {
         LOG.debug("QueryStatus Start count [{0}].",currentQueryStatusCollection.size());
         Iterator<QueryStatus> iterator = currentQueryStatusCollection.keySet().iterator();
         while (iterator.hasNext()) {
@@ -82,18 +82,18 @@ public class QueryStatusManager {
         LOG.debug("QueryStatus Finish count [{0}].",currentQueryStatusCollection.size());
     }
 
-    public long getSearchStatusCleanupTimerDelay() {
+    public long getStatusCleanupTimerDelay() {
         return statusCleanupTimerDelay;
     }
 
-    public void setSearchStatusCleanupTimerDelay(long searchStatusCleanupTimerDelay) {
-        this.statusCleanupTimerDelay = searchStatusCleanupTimerDelay;
+    public void setStatusCleanupTimerDelay(long statusCleanupTimerDelay) {
+        this.statusCleanupTimerDelay = statusCleanupTimerDelay;
     }
 
-    public void cancelSearch(String table, long uuid) {
+    public void cancelQuery(String table, long uuid) {
         for (QueryStatus status : currentQueryStatusCollection.keySet()) {
             if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
-                status.cancelSearch();
+                status.cancelQuery();
             }
         }
     }
@@ -107,5 +107,4 @@ public class QueryStatusManager {
         }
         return result;
     }
-
 }

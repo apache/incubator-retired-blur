@@ -16,28 +16,16 @@
 
 package com.nearinfinity.blur.manager.hits;
 
-import java.util.Comparator;
+import java.util.Map;
 
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
-public class HitsPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult>> {
+public interface BlurResultIterable extends Iterable<BlurResult> {
 
-    @Override
-    public int compare(PeekableIterator<BlurResult> o1, PeekableIterator<BlurResult> o2) {
-        BlurResult hit1 = o1.peek();
-        BlurResult hit2 = o2.peek();
-        if (hit1 == null && hit2 == null) {
-            return 0;
-        } else if (hit1 == null) {
-            return 1;
-        } else if (hit2 == null) {
-            return -1;
-        }
-        int compare = Double.compare(hit2.score, hit1.score);
-        if (compare == 0) {
-            return hit2.locationId.compareTo(hit1.locationId);
-        }
-        return compare;
-    }
+    void skipTo(long skipTo);
+
+    long getTotalResults();
+
+    Map<String, Long> getShardInfo();
 
 }

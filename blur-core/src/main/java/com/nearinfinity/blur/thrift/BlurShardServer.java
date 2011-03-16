@@ -30,7 +30,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
-import com.nearinfinity.blur.manager.hits.HitsIterable;
+import com.nearinfinity.blur.manager.hits.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -55,7 +55,7 @@ public class BlurShardServer implements Iface {
         checkTableStatus(table);
         try {
             AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
-            HitsIterable hitsIterable = indexManager.query(table, searchQuery, facetCounts);
+            BlurResultIterable hitsIterable = indexManager.query(table, searchQuery, facetCounts);
             return BlurBaseServer.convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfResults, facetCounts);
         } catch (BlurException e) {
             throw e;

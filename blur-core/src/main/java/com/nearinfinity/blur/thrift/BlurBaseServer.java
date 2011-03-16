@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexServer;
-import com.nearinfinity.blur.manager.hits.HitsIterable;
+import com.nearinfinity.blur.manager.hits.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
@@ -33,9 +33,9 @@ import com.nearinfinity.blur.utils.BlurUtil;
 
 public abstract class BlurBaseServer implements Iface {
 	
-    public static BlurResults convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfResults, AtomicLongArray facetCounts) {
+    public static BlurResults convertToHits(BlurResultIterable hitsIterable, long start, int fetch, long minimumNumberOfResults, AtomicLongArray facetCounts) {
         BlurResults hits = new BlurResults();
-        hits.setTotalResults(hitsIterable.getTotalHits());
+        hits.setTotalResults(hitsIterable.getTotalResults());
         hits.setShardInfo(hitsIterable.getShardInfo());
         if (minimumNumberOfResults > 0) {
             hitsIterable.skipTo(start);

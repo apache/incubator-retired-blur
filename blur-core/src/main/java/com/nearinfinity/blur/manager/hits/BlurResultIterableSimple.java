@@ -25,13 +25,13 @@ import java.util.TreeMap;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class HitsIterableSimple implements HitsIterable {
+public class BlurResultIterableSimple implements BlurResultIterable {
     
     private List<BlurResult> hits;
     private Map<String, Long> shardInfo;
     private long skipTo;
 
-    public HitsIterableSimple(String shard, List<BlurResult> hits) {
+    public BlurResultIterableSimple(String shard, List<BlurResult> hits) {
         Collections.sort(hits,BlurConstants.HITS_COMPARATOR);
         this.hits = hits;
         this.shardInfo = new TreeMap<String, Long>();
@@ -44,7 +44,7 @@ public class HitsIterableSimple implements HitsIterable {
     }
 
     @Override
-    public long getTotalHits() {
+    public long getTotalResults() {
         return hits.size();
     }
 

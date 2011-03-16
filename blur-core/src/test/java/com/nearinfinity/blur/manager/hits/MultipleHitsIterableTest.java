@@ -28,7 +28,7 @@ public class MultipleHitsIterableTest {
     
     @Test
     public void testMultipleHitsIterable() {
-        HitsIterableMultiple iterable = new HitsIterableMultiple();
+        BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
         iterable.addHitsIterable(newHitsIterable(0,0.1,3,2,9,10,2));
         iterable.addHitsIterable(newHitsIterable(7,2,9,1,34,53,12));
         iterable.addHitsIterable(newHitsIterable(4,3));
@@ -40,12 +40,12 @@ public class MultipleHitsIterableTest {
         }
     }
 
-    private HitsIterable newHitsIterable(double... ds) {
+    private BlurResultIterable newHitsIterable(double... ds) {
         List<BlurResult> hits = new ArrayList<BlurResult>();
         for (double d : ds) {
             hits.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
         }
-        return new HitsIterableSimple(UUID.randomUUID().toString(), hits);
+        return new BlurResultIterableSimple(UUID.randomUUID().toString(), hits);
     }
 
 }

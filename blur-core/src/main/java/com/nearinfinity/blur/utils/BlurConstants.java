@@ -19,7 +19,7 @@ package com.nearinfinity.blur.utils;
 import java.util.Comparator;
 
 import com.nearinfinity.blur.manager.hits.BlurResultComparator;
-import com.nearinfinity.blur.manager.hits.HitsPeekableIteratorComparator;
+import com.nearinfinity.blur.manager.hits.BlurResultPeekableIteratorComparator;
 import com.nearinfinity.blur.manager.hits.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.Column;
@@ -33,7 +33,7 @@ public class BlurConstants {
 	public static final String SHARD_PREFIX = "shard-";
 	public static final Comparator<? super ColumnFamily> COLUMN_FAMILY_COMPARATOR = new ColumnFamilyComparator();
 	public static final Comparator<? super Column> COLUMN_COMPARATOR = new ColumnComparator();
-    public static final Comparator<? super PeekableIterator<BlurResult>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new HitsPeekableIteratorComparator();
+    public static final Comparator<? super PeekableIterator<BlurResult>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
     public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
 
     public static final String PRIME_DOC = "_prime_";

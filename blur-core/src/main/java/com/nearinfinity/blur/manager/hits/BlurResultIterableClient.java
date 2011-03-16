@@ -31,9 +31,9 @@ import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
-public class HitsIterableBlurClient implements HitsIterable {
+public class BlurResultIterableClient implements BlurResultIterable {
     
-    private static final Log LOG = LogFactory.getLog(HitsIterableBlurClient.class);
+    private static final Log LOG = LogFactory.getLog(BlurResultIterableClient.class);
 
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private Client client;
@@ -55,7 +55,7 @@ public class HitsIterableBlurClient implements HitsIterable {
 
     private boolean alreadyProcessed;
 
-    public HitsIterableBlurClient(Blur.Client client, String table, BlurQuery searchQuery, AtomicLongArray facetCounts) {
+    public BlurResultIterableClient(Blur.Client client, String table, BlurQuery searchQuery, AtomicLongArray facetCounts) {
         this.client = client;
         this.table = table;
         this.query = searchQuery.queryStr;
@@ -108,7 +108,7 @@ public class HitsIterableBlurClient implements HitsIterable {
     }
 
     @Override
-    public long getTotalHits() {
+    public long getTotalResults() {
         return totalHits;
     }
 

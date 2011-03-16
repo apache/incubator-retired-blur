@@ -22,23 +22,23 @@ import java.util.concurrent.TimeUnit;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
-public class MergerHitsIterable implements Merger<HitsIterable> {
+public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
 
     private long minimumNumberOfHits;
     private long maxQueryTime;
 
-    public MergerHitsIterable(long minimumNumberOfHits, long maxQueryTime) {
+    public MergerBlurResultIterable(long minimumNumberOfHits, long maxQueryTime) {
         this.minimumNumberOfHits = minimumNumberOfHits;
         this.maxQueryTime = maxQueryTime;
     }
 
     @Override
-    public HitsIterable merge(BlurExecutorCompletionService<HitsIterable> service) throws Exception {
-        HitsIterableMultiple iterable = new HitsIterableMultiple();
+    public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws Exception {
+        BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
         while (service.getRemainingCount() > 0) {
-            Future<HitsIterable> future = service.poll(maxQueryTime, TimeUnit.MILLISECONDS);
+            Future<BlurResultIterable> future = service.poll(maxQueryTime, TimeUnit.MILLISECONDS);
             iterable.addHitsIterable(future.get());
-            if (iterable.getTotalHits() >= minimumNumberOfHits) {
+            if (iterable.getTotalResults() >= minimumNumberOfHits) {
                 return iterable;
             }
         }

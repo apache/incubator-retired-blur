@@ -35,9 +35,9 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.manager.hits.HitsIterableBlurClient;
-import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
+import com.nearinfinity.blur.manager.hits.BlurResultIterable;
+import com.nearinfinity.blur.manager.hits.BlurResultIterableClient;
+import com.nearinfinity.blur.manager.hits.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
@@ -100,12 +100,12 @@ public class BlurControllerServer implements Iface {
 	public BlurResults query(final String table, final BlurQuery searchQuery) throws BlurException, TException {
 		try {
 		    final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
-		    HitsIterable hitsIterable = scatterGather(new BlurCommand<HitsIterable>() {
+		    BlurResultIterable hitsIterable = scatterGather(new BlurCommand<BlurResultIterable>() {
                 @Override
-                public HitsIterable call(Client client) throws Exception {
-                    return new HitsIterableBlurClient(client,table,searchQuery,facetCounts);
+                public BlurResultIterable call(Client client) throws Exception {
+                    return new BlurResultIterableClient(client,table,searchQuery,facetCounts);
                 }
-            },new MergerHitsIterable(searchQuery.minimumNumberOfResults,searchQuery.maxQueryTime));
+            },new MergerBlurResultIterable(searchQuery.minimumNumberOfResults,searchQuery.maxQueryTime));
 			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfResults,facetCounts);
 		} catch (Exception e) {
 			throw new LoggingBlurException(LOG,e,"Unknown error during search of [" +

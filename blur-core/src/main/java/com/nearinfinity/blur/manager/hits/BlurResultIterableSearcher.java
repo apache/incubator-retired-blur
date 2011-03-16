@@ -32,7 +32,7 @@ import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IteratorConverter;
 
-public class HitsIterableSearcher implements HitsIterable {
+public class BlurResultIterableSearcher implements BlurResultIterable {
     
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private String shard;
@@ -45,7 +45,7 @@ public class HitsIterableSearcher implements HitsIterable {
     private TotalHitsRef totalHitsRef = new TotalHitsRef();
     private ProgressRef progressRef = new ProgressRef();
 
-    public HitsIterableSearcher(Query query, String table, String shard, IndexSearcher searcher) throws IOException {
+    public BlurResultIterableSearcher(Query query, String table, String shard, IndexSearcher searcher) throws IOException {
         this.query = query;
         this.shard = shard;
         this.searcher = searcher;
@@ -69,7 +69,7 @@ public class HitsIterableSearcher implements HitsIterable {
     }
 
     @Override
-    public long getTotalHits() {
+    public long getTotalResults() {
         return totalHitsRef.totalHits();
     }
 

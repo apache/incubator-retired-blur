@@ -60,9 +60,9 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.FacetQuery;
 import com.nearinfinity.blur.lucene.search.SuperParser;
-import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
-import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
+import com.nearinfinity.blur.manager.hits.BlurResultIterable;
+import com.nearinfinity.blur.manager.hits.BlurResultIterableSearcher;
+import com.nearinfinity.blur.manager.hits.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.status.SearchStatus;
 import com.nearinfinity.blur.manager.status.SearchStatusManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -162,7 +162,7 @@ public class IndexManager {
         return split[0];
     }
 
-    public HitsIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
+    public BlurResultIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
         final SearchStatus status = statusManager.newSearchStatus(table, blurQuery);
         try {
             Map<String, IndexReader> indexReaders;
@@ -179,9 +179,9 @@ public class IndexManager {
                     analyzer, postFilter, preFilter, getScoreType(blurQuery.type));
             final Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
             return ForkJoin.execute(executor, indexReaders.entrySet(),
-                new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
+                new ParallelCall<Entry<String, IndexReader>, BlurResultIterable>() {
                     @Override
-                    public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
+                    public BlurResultIterable call(Entry<String, IndexReader> entry) throws Exception {
                         status.attachThread();
                         try {
                             IndexReader reader = entry.getValue();
@@ -190,12 +190,12 @@ public class IndexManager {
                                     PrimeDocCache.getTableCache().getShardCache(table).
                                     getIndexReaderCache(shard));
                             searcher.setSimilarity(indexServer.getSimilarity(table));
-                            return new HitsIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher);
+                            return new BlurResultIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher);
                         } finally {
                             status.deattachThread();
                         }
                     }
-                }).merge(new MergerHitsIterable(blurQuery.minimumNumberOfResults, blurQuery.maxQueryTime));
+                }).merge(new MergerBlurResultIterable(blurQuery.minimumNumberOfResults, blurQuery.maxQueryTime));
         } finally {
             status.deattachThread();
             statusManager.removeStatus(status);

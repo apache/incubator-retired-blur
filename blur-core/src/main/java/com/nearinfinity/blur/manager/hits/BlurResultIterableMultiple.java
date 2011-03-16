@@ -26,15 +26,15 @@ import java.util.TreeMap;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class HitsIterableMultiple implements HitsIterable {
+public class BlurResultIterableMultiple implements BlurResultIterable {
     
     private long totalHits;
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private long skipTo;
-    private List<HitsIterable> hits = new ArrayList<HitsIterable>();
+    private List<BlurResultIterable> hits = new ArrayList<BlurResultIterable>();
 
-    public void addHitsIterable(HitsIterable iterable) {
-        totalHits += iterable.getTotalHits();
+    public void addHitsIterable(BlurResultIterable iterable) {
+        totalHits += iterable.getTotalResults();
         shardInfo.putAll(iterable.getShardInfo());
         hits.add(iterable);
     }
@@ -45,7 +45,7 @@ public class HitsIterableMultiple implements HitsIterable {
     }
 
     @Override
-    public long getTotalHits() {
+    public long getTotalResults() {
         return totalHits;
     }
 
@@ -70,8 +70,8 @@ public class HitsIterableMultiple implements HitsIterable {
         private List<PeekableIterator<BlurResult>> iterators = new ArrayList<PeekableIterator<BlurResult>>();
         private int length;
 
-        public MultipleHitsIterator(List<HitsIterable> hits) {
-            for (HitsIterable hitsIterable : hits) {
+        public MultipleHitsIterator(List<BlurResultIterable> hits) {
+            for (BlurResultIterable hitsIterable : hits) {
                 iterators.add(new PeekableIterator<BlurResult>(hitsIterable.iterator()));
             }
             length = iterators.size();

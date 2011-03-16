@@ -98,7 +98,7 @@ public class QueryStatusManager {
         }
     }
 
-    public List<BlurQueryStatus> currentSearches(String table) {
+    public List<BlurQueryStatus> currentQueries(String table) {
         List<BlurQueryStatus> result = new ArrayList<BlurQueryStatus>();
         for (QueryStatus status : currentQueryStatusCollection.keySet()) {
             if (status.getTable().equals(table)) {

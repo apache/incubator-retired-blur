@@ -229,8 +229,8 @@ public class IndexManager {
         statusManager.cancelQuery(table, uuid);
     }
 
-    public List<BlurQueryStatus> currentSearches(String table) {
-        return statusManager.currentSearches(table);
+    public List<BlurQueryStatus> currentQueries(String table) {
+        return statusManager.currentQueries(table);
     }
 
     private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType, Analyzer analyzer)

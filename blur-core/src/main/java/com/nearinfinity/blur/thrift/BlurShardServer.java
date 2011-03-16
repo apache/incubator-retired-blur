@@ -94,7 +94,7 @@ public class BlurShardServer implements Iface {
     public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
         checkTableStatus(table);
         try {
-            return indexManager.currentSearches(table);
+            return indexManager.currentQueries(table);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get current search status [table={0}]",e,table);
             throw new BlurException(e.getMessage());

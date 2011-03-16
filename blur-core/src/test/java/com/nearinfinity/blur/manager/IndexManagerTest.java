@@ -130,9 +130,9 @@ public class IndexManagerTest {
             System.out.println(fetchResult.getRow());
         }
         
-        assertFalse(indexManager.currentSearches("table").isEmpty());
+        assertFalse(indexManager.currentQueries("table").isEmpty());
         Thread.sleep(5000);//wait for cleanup to fire
-        assertTrue(indexManager.currentSearches("table").isEmpty());
+        assertTrue(indexManager.currentQueries("table").isEmpty());
     }
     
     @Test
@@ -160,9 +160,9 @@ public class IndexManagerTest {
         assertEquals(2, facetedCounts.get(0));
         assertEquals(0, facetedCounts.get(1));
         
-        assertFalse(indexManager.currentSearches("table").isEmpty());
+        assertFalse(indexManager.currentQueries("table").isEmpty());
         Thread.sleep(5000);//wait for cleanup to fire
-        assertTrue(indexManager.currentSearches("table").isEmpty());
+        assertTrue(indexManager.currentQueries("table").isEmpty());
     }
     
     @Test

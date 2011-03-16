@@ -18,14 +18,14 @@ package com.nearinfinity.blur.manager.hits;
 
 import java.util.Comparator;
 
-import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 
-public class HitsPeekableIteratorComparator implements Comparator<PeekableIterator<Hit>> {
+public class HitsPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult>> {
 
     @Override
-    public int compare(PeekableIterator<Hit> o1, PeekableIterator<Hit> o2) {
-        Hit hit1 = o1.peek();
-        Hit hit2 = o2.peek();
+    public int compare(PeekableIterator<BlurResult> o1, PeekableIterator<BlurResult> o2) {
+        BlurResult hit1 = o1.peek();
+        BlurResult hit2 = o2.peek();
         if (hit1 == null && hit2 == null) {
             return 0;
         } else if (hit1 == null) {

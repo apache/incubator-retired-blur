@@ -26,8 +26,8 @@ import org.apache.thrift.meta_data.*;
 import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
-public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("SearchQuery");
+public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("BlurQuery");
 
   private static final TField QUERY_STR_FIELD_DESC = new TField("queryStr", TType.STRING, (short)1);
   private static final TField SUPER_QUERY_ON_FIELD_DESC = new TField("superQueryOn", TType.BOOL, (short)2);
@@ -36,7 +36,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   private static final TField PRE_SUPER_FILTER_FIELD_DESC = new TField("preSuperFilter", TType.STRING, (short)5);
   private static final TField START_FIELD_DESC = new TField("start", TType.I64, (short)6);
   private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)7);
-  private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)8);
+  private static final TField MINIMUM_NUMBER_OF_RESULTS_FIELD_DESC = new TField("minimumNumberOfResults", TType.I64, (short)8);
   private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)9);
   private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)10);
   private static final TField USER_ID_FIELD_DESC = new TField("userId", TType.STRING, (short)11);
@@ -54,7 +54,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   public String preSuperFilter;
   public long start;
   public int fetch;
-  public long minimumNumberOfHits;
+  public long minimumNumberOfResults;
   public long maxQueryTime;
   public long uuid;
   public String userId;
@@ -74,7 +74,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     PRE_SUPER_FILTER((short)5, "preSuperFilter"),
     START((short)6, "start"),
     FETCH((short)7, "fetch"),
-    MINIMUM_NUMBER_OF_HITS((short)8, "minimumNumberOfHits"),
+    MINIMUM_NUMBER_OF_RESULTS((short)8, "minimumNumberOfResults"),
     MAX_QUERY_TIME((short)9, "maxQueryTime"),
     UUID((short)10, "uuid"),
     USER_ID((short)11, "userId"),
@@ -108,8 +108,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
           return START;
         case 7: // FETCH
           return FETCH;
-        case 8: // MINIMUM_NUMBER_OF_HITS
-          return MINIMUM_NUMBER_OF_HITS;
+        case 8: // MINIMUM_NUMBER_OF_RESULTS
+          return MINIMUM_NUMBER_OF_RESULTS;
         case 9: // MAX_QUERY_TIME
           return MAX_QUERY_TIME;
         case 10: // UUID
@@ -163,7 +163,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   private static final int __SUPERQUERYON_ISSET_ID = 0;
   private static final int __START_ISSET_ID = 1;
   private static final int __FETCH_ISSET_ID = 2;
-  private static final int __MINIMUMNUMBEROFHITS_ISSET_ID = 3;
+  private static final int __MINIMUMNUMBEROFRESULTS_ISSET_ID = 3;
   private static final int __MAXQUERYTIME_ISSET_ID = 4;
   private static final int __UUID_ISSET_ID = 5;
   private static final int __RESOLVEIDS_ISSET_ID = 6;
@@ -186,7 +186,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.FETCH, new FieldMetaData("fetch", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I32)));
-    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_HITS, new FieldMetaData("minimumNumberOfHits", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_RESULTS, new FieldMetaData("minimumNumberOfResults", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.MAX_QUERY_TIME, new FieldMetaData("maxQueryTime", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
@@ -200,10 +200,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         new ListMetaData(TType.LIST, 
             new StructMetaData(TType.STRUCT, Facet.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(SearchQuery.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
 
-  public SearchQuery() {
+  public BlurQuery() {
     this.superQueryOn = true;
 
     this.type = ScoreType.SUPER;
@@ -212,13 +212,13 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
 
     this.fetch = 10;
 
-    this.minimumNumberOfHits = 9223372036854775807L;
+    this.minimumNumberOfResults = 9223372036854775807L;
 
     this.maxQueryTime = 9223372036854775807L;
 
   }
 
-  public SearchQuery(
+  public BlurQuery(
     String queryStr,
     boolean superQueryOn,
     ScoreType type,
@@ -226,7 +226,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     String preSuperFilter,
     long start,
     int fetch,
-    long minimumNumberOfHits,
+    long minimumNumberOfResults,
     long maxQueryTime,
     long uuid,
     String userId,
@@ -244,8 +244,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     setStartIsSet(true);
     this.fetch = fetch;
     setFetchIsSet(true);
-    this.minimumNumberOfHits = minimumNumberOfHits;
-    setMinimumNumberOfHitsIsSet(true);
+    this.minimumNumberOfResults = minimumNumberOfResults;
+    setMinimumNumberOfResultsIsSet(true);
     this.maxQueryTime = maxQueryTime;
     setMaxQueryTimeIsSet(true);
     this.uuid = uuid;
@@ -259,7 +259,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public SearchQuery(SearchQuery other) {
+  public BlurQuery(BlurQuery other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetQueryStr()) {
@@ -277,7 +277,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     }
     this.start = other.start;
     this.fetch = other.fetch;
-    this.minimumNumberOfHits = other.minimumNumberOfHits;
+    this.minimumNumberOfResults = other.minimumNumberOfResults;
     this.maxQueryTime = other.maxQueryTime;
     this.uuid = other.uuid;
     if (other.isSetUserId()) {
@@ -293,8 +293,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     }
   }
 
-  public SearchQuery deepCopy() {
-    return new SearchQuery(this);
+  public BlurQuery deepCopy() {
+    return new BlurQuery(this);
   }
 
   @Override
@@ -310,7 +310,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
 
     this.fetch = 10;
 
-    this.minimumNumberOfHits = 9223372036854775807L;
+    this.minimumNumberOfResults = 9223372036854775807L;
 
     this.maxQueryTime = 9223372036854775807L;
 
@@ -326,7 +326,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.queryStr;
   }
 
-  public SearchQuery setQueryStr(String queryStr) {
+  public BlurQuery setQueryStr(String queryStr) {
     this.queryStr = queryStr;
     return this;
   }
@@ -350,7 +350,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.superQueryOn;
   }
 
-  public SearchQuery setSuperQueryOn(boolean superQueryOn) {
+  public BlurQuery setSuperQueryOn(boolean superQueryOn) {
     this.superQueryOn = superQueryOn;
     setSuperQueryOnIsSet(true);
     return this;
@@ -381,7 +381,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
    * 
    * @see ScoreType
    */
-  public SearchQuery setType(ScoreType type) {
+  public BlurQuery setType(ScoreType type) {
     this.type = type;
     return this;
   }
@@ -405,7 +405,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.postSuperFilter;
   }
 
-  public SearchQuery setPostSuperFilter(String postSuperFilter) {
+  public BlurQuery setPostSuperFilter(String postSuperFilter) {
     this.postSuperFilter = postSuperFilter;
     return this;
   }
@@ -429,7 +429,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.preSuperFilter;
   }
 
-  public SearchQuery setPreSuperFilter(String preSuperFilter) {
+  public BlurQuery setPreSuperFilter(String preSuperFilter) {
     this.preSuperFilter = preSuperFilter;
     return this;
   }
@@ -453,7 +453,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.start;
   }
 
-  public SearchQuery setStart(long start) {
+  public BlurQuery setStart(long start) {
     this.start = start;
     setStartIsSet(true);
     return this;
@@ -476,7 +476,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.fetch;
   }
 
-  public SearchQuery setFetch(int fetch) {
+  public BlurQuery setFetch(int fetch) {
     this.fetch = fetch;
     setFetchIsSet(true);
     return this;
@@ -495,34 +495,34 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     __isset_bit_vector.set(__FETCH_ISSET_ID, value);
   }
 
-  public long getMinimumNumberOfHits() {
-    return this.minimumNumberOfHits;
+  public long getMinimumNumberOfResults() {
+    return this.minimumNumberOfResults;
   }
 
-  public SearchQuery setMinimumNumberOfHits(long minimumNumberOfHits) {
-    this.minimumNumberOfHits = minimumNumberOfHits;
-    setMinimumNumberOfHitsIsSet(true);
+  public BlurQuery setMinimumNumberOfResults(long minimumNumberOfResults) {
+    this.minimumNumberOfResults = minimumNumberOfResults;
+    setMinimumNumberOfResultsIsSet(true);
     return this;
   }
 
-  public void unsetMinimumNumberOfHits() {
-    __isset_bit_vector.clear(__MINIMUMNUMBEROFHITS_ISSET_ID);
+  public void unsetMinimumNumberOfResults() {
+    __isset_bit_vector.clear(__MINIMUMNUMBEROFRESULTS_ISSET_ID);
   }
 
-  /** Returns true if field minimumNumberOfHits is set (has been asigned a value) and false otherwise */
-  public boolean isSetMinimumNumberOfHits() {
-    return __isset_bit_vector.get(__MINIMUMNUMBEROFHITS_ISSET_ID);
+  /** Returns true if field minimumNumberOfResults is set (has been asigned a value) and false otherwise */
+  public boolean isSetMinimumNumberOfResults() {
+    return __isset_bit_vector.get(__MINIMUMNUMBEROFRESULTS_ISSET_ID);
   }
 
-  public void setMinimumNumberOfHitsIsSet(boolean value) {
-    __isset_bit_vector.set(__MINIMUMNUMBEROFHITS_ISSET_ID, value);
+  public void setMinimumNumberOfResultsIsSet(boolean value) {
+    __isset_bit_vector.set(__MINIMUMNUMBEROFRESULTS_ISSET_ID, value);
   }
 
   public long getMaxQueryTime() {
     return this.maxQueryTime;
   }
 
-  public SearchQuery setMaxQueryTime(long maxQueryTime) {
+  public BlurQuery setMaxQueryTime(long maxQueryTime) {
     this.maxQueryTime = maxQueryTime;
     setMaxQueryTimeIsSet(true);
     return this;
@@ -545,7 +545,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.uuid;
   }
 
-  public SearchQuery setUuid(long uuid) {
+  public BlurQuery setUuid(long uuid) {
     this.uuid = uuid;
     setUuidIsSet(true);
     return this;
@@ -568,7 +568,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.userId;
   }
 
-  public SearchQuery setUserId(String userId) {
+  public BlurQuery setUserId(String userId) {
     this.userId = userId;
     return this;
   }
@@ -592,7 +592,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.resolveIds;
   }
 
-  public SearchQuery setResolveIds(boolean resolveIds) {
+  public BlurQuery setResolveIds(boolean resolveIds) {
     this.resolveIds = resolveIds;
     setResolveIdsIsSet(true);
     return this;
@@ -630,7 +630,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return this.facets;
   }
 
-  public SearchQuery setFacets(List<Facet> facets) {
+  public BlurQuery setFacets(List<Facet> facets) {
     this.facets = facets;
     return this;
   }
@@ -708,11 +708,11 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       }
       break;
 
-    case MINIMUM_NUMBER_OF_HITS:
+    case MINIMUM_NUMBER_OF_RESULTS:
       if (value == null) {
-        unsetMinimumNumberOfHits();
+        unsetMinimumNumberOfResults();
       } else {
-        setMinimumNumberOfHits((Long)value);
+        setMinimumNumberOfResults((Long)value);
       }
       break;
 
@@ -782,8 +782,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     case FETCH:
       return new Integer(getFetch());
 
-    case MINIMUM_NUMBER_OF_HITS:
-      return new Long(getMinimumNumberOfHits());
+    case MINIMUM_NUMBER_OF_RESULTS:
+      return new Long(getMinimumNumberOfResults());
 
     case MAX_QUERY_TIME:
       return new Long(getMaxQueryTime());
@@ -825,8 +825,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
       return isSetStart();
     case FETCH:
       return isSetFetch();
-    case MINIMUM_NUMBER_OF_HITS:
-      return isSetMinimumNumberOfHits();
+    case MINIMUM_NUMBER_OF_RESULTS:
+      return isSetMinimumNumberOfResults();
     case MAX_QUERY_TIME:
       return isSetMaxQueryTime();
     case UUID:
@@ -845,12 +845,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof SearchQuery)
-      return this.equals((SearchQuery)that);
+    if (that instanceof BlurQuery)
+      return this.equals((BlurQuery)that);
     return false;
   }
 
-  public boolean equals(SearchQuery that) {
+  public boolean equals(BlurQuery that) {
     if (that == null)
       return false;
 
@@ -917,12 +917,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         return false;
     }
 
-    boolean this_present_minimumNumberOfHits = true;
-    boolean that_present_minimumNumberOfHits = true;
-    if (this_present_minimumNumberOfHits || that_present_minimumNumberOfHits) {
-      if (!(this_present_minimumNumberOfHits && that_present_minimumNumberOfHits))
+    boolean this_present_minimumNumberOfResults = true;
+    boolean that_present_minimumNumberOfResults = true;
+    if (this_present_minimumNumberOfResults || that_present_minimumNumberOfResults) {
+      if (!(this_present_minimumNumberOfResults && that_present_minimumNumberOfResults))
         return false;
-      if (this.minimumNumberOfHits != that.minimumNumberOfHits)
+      if (this.minimumNumberOfResults != that.minimumNumberOfResults)
         return false;
     }
 
@@ -979,13 +979,13 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     return 0;
   }
 
-  public int compareTo(SearchQuery other) {
+  public int compareTo(BlurQuery other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    SearchQuery typedOther = (SearchQuery)other;
+    BlurQuery typedOther = (BlurQuery)other;
 
     lastComparison = Boolean.valueOf(isSetQueryStr()).compareTo(typedOther.isSetQueryStr());
     if (lastComparison != 0) {
@@ -1057,12 +1057,12 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetMinimumNumberOfHits()).compareTo(typedOther.isSetMinimumNumberOfHits());
+    lastComparison = Boolean.valueOf(isSetMinimumNumberOfResults()).compareTo(typedOther.isSetMinimumNumberOfResults());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMinimumNumberOfHits()) {
-      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
+    if (isSetMinimumNumberOfResults()) {
+      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfResults, typedOther.minimumNumberOfResults);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1186,10 +1186,10 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 8: // MINIMUM_NUMBER_OF_HITS
+        case 8: // MINIMUM_NUMBER_OF_RESULTS
           if (field.type == TType.I64) {
-            this.minimumNumberOfHits = iprot.readI64();
-            setMinimumNumberOfHitsIsSet(true);
+            this.minimumNumberOfResults = iprot.readI64();
+            setMinimumNumberOfResultsIsSet(true);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -1287,8 +1287,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     oprot.writeFieldBegin(FETCH_FIELD_DESC);
     oprot.writeI32(this.fetch);
     oprot.writeFieldEnd();
-    oprot.writeFieldBegin(MINIMUM_NUMBER_OF_HITS_FIELD_DESC);
-    oprot.writeI64(this.minimumNumberOfHits);
+    oprot.writeFieldBegin(MINIMUM_NUMBER_OF_RESULTS_FIELD_DESC);
+    oprot.writeI64(this.minimumNumberOfResults);
     oprot.writeFieldEnd();
     oprot.writeFieldBegin(MAX_QUERY_TIME_FIELD_DESC);
     oprot.writeI64(this.maxQueryTime);
@@ -1322,7 +1322,7 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("SearchQuery(");
+    StringBuilder sb = new StringBuilder("BlurQuery(");
     boolean first = true;
 
     sb.append("queryStr:");
@@ -1369,8 +1369,8 @@ public class SearchQuery implements TBase<SearchQuery, SearchQuery._Fields>, jav
     sb.append(this.fetch);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("minimumNumberOfHits:");
-    sb.append(this.minimumNumberOfHits);
+    sb.append("minimumNumberOfResults:");
+    sb.append(this.minimumNumberOfResults);
     first = false;
     if (!first) sb.append(", ");
     sb.append("maxQueryTime:");

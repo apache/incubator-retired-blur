@@ -40,11 +40,11 @@ public class Blur {
 
     public TableDescriptor describe(String table) throws BlurException, TException;
 
-    public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException;
+    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException;
 
-    public void cancelSearch(String table, long uuid) throws BlurException, TException;
+    public void cancelQuery(String table, long uuid) throws BlurException, TException;
 
-    public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException;
+    public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException;
 
     public Schema schema(String table) throws BlurException, TException;
 
@@ -70,11 +70,11 @@ public class Blur {
 
     public void describe(String table, AsyncMethodCallback<AsyncClient.describe_call> resultHandler) throws TException;
 
-    public void search(String table, SearchQuery searchQuery, AsyncMethodCallback<AsyncClient.search_call> resultHandler) throws TException;
+    public void query(String table, BlurQuery blurQuery, AsyncMethodCallback<AsyncClient.query_call> resultHandler) throws TException;
 
-    public void cancelSearch(String table, long uuid, AsyncMethodCallback<AsyncClient.cancelSearch_call> resultHandler) throws TException;
+    public void cancelQuery(String table, long uuid, AsyncMethodCallback<AsyncClient.cancelQuery_call> resultHandler) throws TException;
 
-    public void currentSearches(String table, AsyncMethodCallback<AsyncClient.currentSearches_call> resultHandler) throws TException;
+    public void currentQueries(String table, AsyncMethodCallback<AsyncClient.currentQueries_call> resultHandler) throws TException;
 
     public void schema(String table, AsyncMethodCallback<AsyncClient.schema_call> resultHandler) throws TException;
 
@@ -317,24 +317,24 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "describe failed: unknown result");
     }
 
-    public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException
+    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException
     {
-      send_search(table, searchQuery);
-      return recv_search();
+      send_query(table, blurQuery);
+      return recv_query();
     }
 
-    public void send_search(String table, SearchQuery searchQuery) throws TException
+    public void send_query(String table, BlurQuery blurQuery) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("search", TMessageType.CALL, ++seqid_));
-      search_args args = new search_args();
+      oprot_.writeMessageBegin(new TMessage("query", TMessageType.CALL, ++seqid_));
+      query_args args = new query_args();
       args.setTable(table);
-      args.setSearchQuery(searchQuery);
+      args.setBlurQuery(blurQuery);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public Hits recv_search() throws BlurException, TException
+    public BlurResults recv_query() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -343,9 +343,9 @@ public class Blur {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "search failed: out of sequence response");
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "query failed: out of sequence response");
       }
-      search_result result = new search_result();
+      query_result result = new query_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.isSetSuccess()) {
@@ -354,19 +354,19 @@ public class Blur {
       if (result.ex != null) {
         throw result.ex;
       }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "search failed: unknown result");
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "query failed: unknown result");
     }
 
-    public void cancelSearch(String table, long uuid) throws BlurException, TException
+    public void cancelQuery(String table, long uuid) throws BlurException, TException
     {
-      send_cancelSearch(table, uuid);
-      recv_cancelSearch();
+      send_cancelQuery(table, uuid);
+      recv_cancelQuery();
     }
 
-    public void send_cancelSearch(String table, long uuid) throws TException
+    public void send_cancelQuery(String table, long uuid) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("cancelSearch", TMessageType.CALL, ++seqid_));
-      cancelSearch_args args = new cancelSearch_args();
+      oprot_.writeMessageBegin(new TMessage("cancelQuery", TMessageType.CALL, ++seqid_));
+      cancelQuery_args args = new cancelQuery_args();
       args.setTable(table);
       args.setUuid(uuid);
       args.write(oprot_);
@@ -374,7 +374,7 @@ public class Blur {
       oprot_.getTransport().flush();
     }
 
-    public void recv_cancelSearch() throws BlurException, TException
+    public void recv_cancelQuery() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -383,9 +383,9 @@ public class Blur {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "cancelSearch failed: out of sequence response");
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "cancelQuery failed: out of sequence response");
       }
-      cancelSearch_result result = new cancelSearch_result();
+      cancelQuery_result result = new cancelQuery_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.ex != null) {
@@ -394,23 +394,23 @@ public class Blur {
       return;
     }
 
-    public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException
+    public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException
     {
-      send_currentSearches(table);
-      return recv_currentSearches();
+      send_currentQueries(table);
+      return recv_currentQueries();
     }
 
-    public void send_currentSearches(String table) throws TException
+    public void send_currentQueries(String table) throws TException
     {
-      oprot_.writeMessageBegin(new TMessage("currentSearches", TMessageType.CALL, ++seqid_));
-      currentSearches_args args = new currentSearches_args();
+      oprot_.writeMessageBegin(new TMessage("currentQueries", TMessageType.CALL, ++seqid_));
+      currentQueries_args args = new currentQueries_args();
       args.setTable(table);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
     }
 
-    public List<SearchQueryStatus> recv_currentSearches() throws BlurException, TException
+    public List<BlurQueryStatus> recv_currentQueries() throws BlurException, TException
     {
       TMessage msg = iprot_.readMessageBegin();
       if (msg.type == TMessageType.EXCEPTION) {
@@ -419,9 +419,9 @@ public class Blur {
         throw x;
       }
       if (msg.seqid != seqid_) {
-        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "currentSearches failed: out of sequence response");
+        throw new TApplicationException(TApplicationException.BAD_SEQUENCE_ID, "currentQueries failed: out of sequence response");
       }
-      currentSearches_result result = new currentSearches_result();
+      currentQueries_result result = new currentQueries_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       if (result.isSetSuccess()) {
@@ -430,7 +430,7 @@ public class Blur {
       if (result.ex != null) {
         throw result.ex;
       }
-      throw new TApplicationException(TApplicationException.MISSING_RESULT, "currentSearches failed: unknown result");
+      throw new TApplicationException(TApplicationException.MISSING_RESULT, "currentQueries failed: unknown result");
     }
 
     public Schema schema(String table) throws BlurException, TException
@@ -797,58 +797,58 @@ public class Blur {
       }
     }
 
-    public void search(String table, SearchQuery searchQuery, AsyncMethodCallback<search_call> resultHandler) throws TException {
+    public void query(String table, BlurQuery blurQuery, AsyncMethodCallback<query_call> resultHandler) throws TException {
       checkReady();
-      search_call method_call = new search_call(table, searchQuery, resultHandler, this, protocolFactory, transport);
+      query_call method_call = new query_call(table, blurQuery, resultHandler, this, protocolFactory, transport);
       manager.call(method_call);
     }
 
-    public static class search_call extends TAsyncMethodCall {
+    public static class query_call extends TAsyncMethodCall {
       private String table;
-      private SearchQuery searchQuery;
-      public search_call(String table, SearchQuery searchQuery, AsyncMethodCallback<search_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+      private BlurQuery blurQuery;
+      public query_call(String table, BlurQuery blurQuery, AsyncMethodCallback<query_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
-        this.searchQuery = searchQuery;
+        this.blurQuery = blurQuery;
       }
 
       public void write_args(TProtocol prot) throws TException {
-        prot.writeMessageBegin(new TMessage("search", TMessageType.CALL, 0));
-        search_args args = new search_args();
+        prot.writeMessageBegin(new TMessage("query", TMessageType.CALL, 0));
+        query_args args = new query_args();
         args.setTable(table);
-        args.setSearchQuery(searchQuery);
+        args.setBlurQuery(blurQuery);
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public Hits getResult() throws BlurException, TException {
+      public BlurResults getResult() throws BlurException, TException {
         if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
         TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_search();
+        return (new Client(prot)).recv_query();
       }
     }
 
-    public void cancelSearch(String table, long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler) throws TException {
+    public void cancelQuery(String table, long uuid, AsyncMethodCallback<cancelQuery_call> resultHandler) throws TException {
       checkReady();
-      cancelSearch_call method_call = new cancelSearch_call(table, uuid, resultHandler, this, protocolFactory, transport);
+      cancelQuery_call method_call = new cancelQuery_call(table, uuid, resultHandler, this, protocolFactory, transport);
       manager.call(method_call);
     }
 
-    public static class cancelSearch_call extends TAsyncMethodCall {
+    public static class cancelQuery_call extends TAsyncMethodCall {
       private String table;
       private long uuid;
-      public cancelSearch_call(String table, long uuid, AsyncMethodCallback<cancelSearch_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+      public cancelQuery_call(String table, long uuid, AsyncMethodCallback<cancelQuery_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
         this.uuid = uuid;
       }
 
       public void write_args(TProtocol prot) throws TException {
-        prot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.CALL, 0));
-        cancelSearch_args args = new cancelSearch_args();
+        prot.writeMessageBegin(new TMessage("cancelQuery", TMessageType.CALL, 0));
+        cancelQuery_args args = new cancelQuery_args();
         args.setTable(table);
         args.setUuid(uuid);
         args.write(prot);
@@ -861,38 +861,38 @@ public class Blur {
         }
         TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
         TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        (new Client(prot)).recv_cancelSearch();
+        (new Client(prot)).recv_cancelQuery();
       }
     }
 
-    public void currentSearches(String table, AsyncMethodCallback<currentSearches_call> resultHandler) throws TException {
+    public void currentQueries(String table, AsyncMethodCallback<currentQueries_call> resultHandler) throws TException {
       checkReady();
-      currentSearches_call method_call = new currentSearches_call(table, resultHandler, this, protocolFactory, transport);
+      currentQueries_call method_call = new currentQueries_call(table, resultHandler, this, protocolFactory, transport);
       manager.call(method_call);
     }
 
-    public static class currentSearches_call extends TAsyncMethodCall {
+    public static class currentQueries_call extends TAsyncMethodCall {
       private String table;
-      public currentSearches_call(String table, AsyncMethodCallback<currentSearches_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+      public currentQueries_call(String table, AsyncMethodCallback<currentQueries_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
       }
 
       public void write_args(TProtocol prot) throws TException {
-        prot.writeMessageBegin(new TMessage("currentSearches", TMessageType.CALL, 0));
-        currentSearches_args args = new currentSearches_args();
+        prot.writeMessageBegin(new TMessage("currentQueries", TMessageType.CALL, 0));
+        currentQueries_args args = new currentQueries_args();
         args.setTable(table);
         args.write(prot);
         prot.writeMessageEnd();
       }
 
-      public List<SearchQueryStatus> getResult() throws BlurException, TException {
+      public List<BlurQueryStatus> getResult() throws BlurException, TException {
         if (getState() != State.RESPONSE_READ) {
           throw new IllegalStateException("Method call not finished!");
         }
         TMemoryInputTransport memoryTransport = new TMemoryInputTransport(getFrameBuffer().array());
         TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_currentSearches();
+        return (new Client(prot)).recv_currentQueries();
       }
     }
 
@@ -1087,9 +1087,9 @@ public class Blur {
       processMap_.put("shardServerLayout", new shardServerLayout());
       processMap_.put("tableList", new tableList());
       processMap_.put("describe", new describe());
-      processMap_.put("search", new search());
-      processMap_.put("cancelSearch", new cancelSearch());
-      processMap_.put("currentSearches", new currentSearches());
+      processMap_.put("query", new query());
+      processMap_.put("cancelQuery", new cancelQuery());
+      processMap_.put("currentQueries", new currentQueries());
       processMap_.put("schema", new schema());
       processMap_.put("terms", new terms());
       processMap_.put("recordFrequency", new recordFrequency());
@@ -1312,37 +1312,37 @@ public class Blur {
 
     }
 
-    private class search implements ProcessFunction {
+    private class query implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
-        search_args args = new search_args();
+        query_args args = new query_args();
         try {
           args.read(iprot);
         } catch (TProtocolException e) {
           iprot.readMessageEnd();
           TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new TMessage("search", TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new TMessage("query", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        search_result result = new search_result();
+        query_result result = new query_result();
         try {
-          result.success = iface_.search(args.table, args.searchQuery);
+          result.success = iface_.query(args.table, args.blurQuery);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing search", th);
-          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing search");
-          oprot.writeMessageBegin(new TMessage("search", TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing query", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing query");
+          oprot.writeMessageBegin(new TMessage("query", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new TMessage("search", TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new TMessage("query", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -1350,37 +1350,37 @@ public class Blur {
 
     }
 
-    private class cancelSearch implements ProcessFunction {
+    private class cancelQuery implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
-        cancelSearch_args args = new cancelSearch_args();
+        cancelQuery_args args = new cancelQuery_args();
         try {
           args.read(iprot);
         } catch (TProtocolException e) {
           iprot.readMessageEnd();
           TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new TMessage("cancelQuery", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        cancelSearch_result result = new cancelSearch_result();
+        cancelQuery_result result = new cancelQuery_result();
         try {
-          iface_.cancelSearch(args.table, args.uuid);
+          iface_.cancelQuery(args.table, args.uuid);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing cancelSearch", th);
-          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing cancelSearch");
-          oprot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing cancelQuery", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing cancelQuery");
+          oprot.writeMessageBegin(new TMessage("cancelQuery", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new TMessage("cancelSearch", TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new TMessage("cancelQuery", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -1388,37 +1388,37 @@ public class Blur {
 
     }
 
-    private class currentSearches implements ProcessFunction {
+    private class currentQueries implements ProcessFunction {
       public void process(int seqid, TProtocol iprot, TProtocol oprot) throws TException
       {
-        currentSearches_args args = new currentSearches_args();
+        currentQueries_args args = new currentQueries_args();
         try {
           args.read(iprot);
         } catch (TProtocolException e) {
           iprot.readMessageEnd();
           TApplicationException x = new TApplicationException(TApplicationException.PROTOCOL_ERROR, e.getMessage());
-          oprot.writeMessageBegin(new TMessage("currentSearches", TMessageType.EXCEPTION, seqid));
+          oprot.writeMessageBegin(new TMessage("currentQueries", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
         iprot.readMessageEnd();
-        currentSearches_result result = new currentSearches_result();
+        currentQueries_result result = new currentQueries_result();
         try {
-          result.success = iface_.currentSearches(args.table);
+          result.success = iface_.currentQueries(args.table);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
-          LOGGER.error("Internal error processing currentSearches", th);
-          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing currentSearches");
-          oprot.writeMessageBegin(new TMessage("currentSearches", TMessageType.EXCEPTION, seqid));
+          LOGGER.error("Internal error processing currentQueries", th);
+          TApplicationException x = new TApplicationException(TApplicationException.INTERNAL_ERROR, "Internal error processing currentQueries");
+          oprot.writeMessageBegin(new TMessage("currentQueries", TMessageType.EXCEPTION, seqid));
           x.write(oprot);
           oprot.writeMessageEnd();
           oprot.getTransport().flush();
           return;
         }
-        oprot.writeMessageBegin(new TMessage("currentSearches", TMessageType.REPLY, seqid));
+        oprot.writeMessageBegin(new TMessage("currentQueries", TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -4741,19 +4741,19 @@ public class Blur {
 
   }
 
-  public static class search_args implements TBase<search_args, search_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("search_args");
+  public static class query_args implements TBase<query_args, query_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("query_args");
 
     private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
-    private static final TField SEARCH_QUERY_FIELD_DESC = new TField("searchQuery", TType.STRUCT, (short)2);
+    private static final TField BLUR_QUERY_FIELD_DESC = new TField("blurQuery", TType.STRUCT, (short)2);
 
     public String table;
-    public SearchQuery searchQuery;
+    public BlurQuery blurQuery;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
       TABLE((short)1, "table"),
-      SEARCH_QUERY((short)2, "searchQuery");
+      BLUR_QUERY((short)2, "blurQuery");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -4770,8 +4770,8 @@ public class Blur {
         switch(fieldId) {
           case 1: // TABLE
             return TABLE;
-          case 2: // SEARCH_QUERY
-            return SEARCH_QUERY;
+          case 2: // BLUR_QUERY
+            return BLUR_QUERY;
           default:
             return null;
         }
@@ -4818,51 +4818,51 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
-      tmpMap.put(_Fields.SEARCH_QUERY, new FieldMetaData("searchQuery", TFieldRequirementType.DEFAULT, 
-          new StructMetaData(TType.STRUCT, SearchQuery.class)));
+      tmpMap.put(_Fields.BLUR_QUERY, new FieldMetaData("blurQuery", TFieldRequirementType.DEFAULT, 
+          new StructMetaData(TType.STRUCT, BlurQuery.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(search_args.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(query_args.class, metaDataMap);
     }
 
-    public search_args() {
+    public query_args() {
     }
 
-    public search_args(
+    public query_args(
       String table,
-      SearchQuery searchQuery)
+      BlurQuery blurQuery)
     {
       this();
       this.table = table;
-      this.searchQuery = searchQuery;
+      this.blurQuery = blurQuery;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public search_args(search_args other) {
+    public query_args(query_args other) {
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      if (other.isSetSearchQuery()) {
-        this.searchQuery = new SearchQuery(other.searchQuery);
+      if (other.isSetBlurQuery()) {
+        this.blurQuery = new BlurQuery(other.blurQuery);
       }
     }
 
-    public search_args deepCopy() {
-      return new search_args(this);
+    public query_args deepCopy() {
+      return new query_args(this);
     }
 
     @Override
     public void clear() {
       this.table = null;
-      this.searchQuery = null;
+      this.blurQuery = null;
     }
 
     public String getTable() {
       return this.table;
     }
 
-    public search_args setTable(String table) {
+    public query_args setTable(String table) {
       this.table = table;
       return this;
     }
@@ -4882,27 +4882,27 @@ public class Blur {
       }
     }
 
-    public SearchQuery getSearchQuery() {
-      return this.searchQuery;
+    public BlurQuery getBlurQuery() {
+      return this.blurQuery;
     }
 
-    public search_args setSearchQuery(SearchQuery searchQuery) {
-      this.searchQuery = searchQuery;
+    public query_args setBlurQuery(BlurQuery blurQuery) {
+      this.blurQuery = blurQuery;
       return this;
     }
 
-    public void unsetSearchQuery() {
-      this.searchQuery = null;
+    public void unsetBlurQuery() {
+      this.blurQuery = null;
     }
 
-    /** Returns true if field searchQuery is set (has been asigned a value) and false otherwise */
-    public boolean isSetSearchQuery() {
-      return this.searchQuery != null;
+    /** Returns true if field blurQuery is set (has been asigned a value) and false otherwise */
+    public boolean isSetBlurQuery() {
+      return this.blurQuery != null;
     }
 
-    public void setSearchQueryIsSet(boolean value) {
+    public void setBlurQueryIsSet(boolean value) {
       if (!value) {
-        this.searchQuery = null;
+        this.blurQuery = null;
       }
     }
 
@@ -4916,11 +4916,11 @@ public class Blur {
         }
         break;
 
-      case SEARCH_QUERY:
+      case BLUR_QUERY:
         if (value == null) {
-          unsetSearchQuery();
+          unsetBlurQuery();
         } else {
-          setSearchQuery((SearchQuery)value);
+          setBlurQuery((BlurQuery)value);
         }
         break;
 
@@ -4932,8 +4932,8 @@ public class Blur {
       case TABLE:
         return getTable();
 
-      case SEARCH_QUERY:
-        return getSearchQuery();
+      case BLUR_QUERY:
+        return getBlurQuery();
 
       }
       throw new IllegalStateException();
@@ -4948,8 +4948,8 @@ public class Blur {
       switch (field) {
       case TABLE:
         return isSetTable();
-      case SEARCH_QUERY:
-        return isSetSearchQuery();
+      case BLUR_QUERY:
+        return isSetBlurQuery();
       }
       throw new IllegalStateException();
     }
@@ -4958,12 +4958,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof search_args)
-        return this.equals((search_args)that);
+      if (that instanceof query_args)
+        return this.equals((query_args)that);
       return false;
     }
 
-    public boolean equals(search_args that) {
+    public boolean equals(query_args that) {
       if (that == null)
         return false;
 
@@ -4976,12 +4976,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_searchQuery = true && this.isSetSearchQuery();
-      boolean that_present_searchQuery = true && that.isSetSearchQuery();
-      if (this_present_searchQuery || that_present_searchQuery) {
-        if (!(this_present_searchQuery && that_present_searchQuery))
+      boolean this_present_blurQuery = true && this.isSetBlurQuery();
+      boolean that_present_blurQuery = true && that.isSetBlurQuery();
+      if (this_present_blurQuery || that_present_blurQuery) {
+        if (!(this_present_blurQuery && that_present_blurQuery))
           return false;
-        if (!this.searchQuery.equals(that.searchQuery))
+        if (!this.blurQuery.equals(that.blurQuery))
           return false;
       }
 
@@ -4993,13 +4993,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(search_args other) {
+    public int compareTo(query_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      search_args typedOther = (search_args)other;
+      query_args typedOther = (query_args)other;
 
       lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
       if (lastComparison != 0) {
@@ -5011,12 +5011,12 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetSearchQuery()).compareTo(typedOther.isSetSearchQuery());
+      lastComparison = Boolean.valueOf(isSetBlurQuery()).compareTo(typedOther.isSetBlurQuery());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetSearchQuery()) {
-        lastComparison = TBaseHelper.compareTo(this.searchQuery, typedOther.searchQuery);
+      if (isSetBlurQuery()) {
+        lastComparison = TBaseHelper.compareTo(this.blurQuery, typedOther.blurQuery);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -5045,10 +5045,10 @@ public class Blur {
               TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // SEARCH_QUERY
+          case 2: // BLUR_QUERY
             if (field.type == TType.STRUCT) {
-              this.searchQuery = new SearchQuery();
-              this.searchQuery.read(iprot);
+              this.blurQuery = new BlurQuery();
+              this.blurQuery.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
             }
@@ -5073,9 +5073,9 @@ public class Blur {
         oprot.writeString(this.table);
         oprot.writeFieldEnd();
       }
-      if (this.searchQuery != null) {
-        oprot.writeFieldBegin(SEARCH_QUERY_FIELD_DESC);
-        this.searchQuery.write(oprot);
+      if (this.blurQuery != null) {
+        oprot.writeFieldBegin(BLUR_QUERY_FIELD_DESC);
+        this.blurQuery.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -5084,7 +5084,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("search_args(");
+      StringBuilder sb = new StringBuilder("query_args(");
       boolean first = true;
 
       sb.append("table:");
@@ -5095,11 +5095,11 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("searchQuery:");
-      if (this.searchQuery == null) {
+      sb.append("blurQuery:");
+      if (this.blurQuery == null) {
         sb.append("null");
       } else {
-        sb.append(this.searchQuery);
+        sb.append(this.blurQuery);
       }
       first = false;
       sb.append(")");
@@ -5112,13 +5112,13 @@ public class Blur {
 
   }
 
-  public static class search_result implements TBase<search_result, search_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("search_result");
+  public static class query_result implements TBase<query_result, query_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("query_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRUCT, (short)0);
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public Hits success;
+    public BlurResults success;
     public BlurException ex;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -5188,18 +5188,18 @@ public class Blur {
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
-          new StructMetaData(TType.STRUCT, Hits.class)));
+          new StructMetaData(TType.STRUCT, BlurResults.class)));
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(search_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(query_result.class, metaDataMap);
     }
 
-    public search_result() {
+    public query_result() {
     }
 
-    public search_result(
-      Hits success,
+    public query_result(
+      BlurResults success,
       BlurException ex)
     {
       this();
@@ -5210,17 +5210,17 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public search_result(search_result other) {
+    public query_result(query_result other) {
       if (other.isSetSuccess()) {
-        this.success = new Hits(other.success);
+        this.success = new BlurResults(other.success);
       }
       if (other.isSetEx()) {
         this.ex = new BlurException(other.ex);
       }
     }
 
-    public search_result deepCopy() {
-      return new search_result(this);
+    public query_result deepCopy() {
+      return new query_result(this);
     }
 
     @Override
@@ -5229,11 +5229,11 @@ public class Blur {
       this.ex = null;
     }
 
-    public Hits getSuccess() {
+    public BlurResults getSuccess() {
       return this.success;
     }
 
-    public search_result setSuccess(Hits success) {
+    public query_result setSuccess(BlurResults success) {
       this.success = success;
       return this;
     }
@@ -5257,7 +5257,7 @@ public class Blur {
       return this.ex;
     }
 
-    public search_result setEx(BlurException ex) {
+    public query_result setEx(BlurException ex) {
       this.ex = ex;
       return this;
     }
@@ -5283,7 +5283,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((Hits)value);
+          setSuccess((BlurResults)value);
         }
         break;
 
@@ -5329,12 +5329,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof search_result)
-        return this.equals((search_result)that);
+      if (that instanceof query_result)
+        return this.equals((query_result)that);
       return false;
     }
 
-    public boolean equals(search_result that) {
+    public boolean equals(query_result that) {
       if (that == null)
         return false;
 
@@ -5364,13 +5364,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(search_result other) {
+    public int compareTo(query_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      search_result typedOther = (search_result)other;
+      query_result typedOther = (query_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -5411,7 +5411,7 @@ public class Blur {
         switch (field.id) {
           case 0: // SUCCESS
             if (field.type == TType.STRUCT) {
-              this.success = new Hits();
+              this.success = new BlurResults();
               this.success.read(iprot);
             } else { 
               TProtocolUtil.skip(iprot, field.type);
@@ -5454,7 +5454,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("search_result(");
+      StringBuilder sb = new StringBuilder("query_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -5482,8 +5482,8 @@ public class Blur {
 
   }
 
-  public static class cancelSearch_args implements TBase<cancelSearch_args, cancelSearch_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("cancelSearch_args");
+  public static class cancelQuery_args implements TBase<cancelQuery_args, cancelQuery_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("cancelQuery_args");
 
     private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
     private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)2);
@@ -5564,13 +5564,13 @@ public class Blur {
       tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(cancelSearch_args.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(cancelQuery_args.class, metaDataMap);
     }
 
-    public cancelSearch_args() {
+    public cancelQuery_args() {
     }
 
-    public cancelSearch_args(
+    public cancelQuery_args(
       String table,
       long uuid)
     {
@@ -5583,7 +5583,7 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public cancelSearch_args(cancelSearch_args other) {
+    public cancelQuery_args(cancelQuery_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetTable()) {
@@ -5592,8 +5592,8 @@ public class Blur {
       this.uuid = other.uuid;
     }
 
-    public cancelSearch_args deepCopy() {
-      return new cancelSearch_args(this);
+    public cancelQuery_args deepCopy() {
+      return new cancelQuery_args(this);
     }
 
     @Override
@@ -5607,7 +5607,7 @@ public class Blur {
       return this.table;
     }
 
-    public cancelSearch_args setTable(String table) {
+    public cancelQuery_args setTable(String table) {
       this.table = table;
       return this;
     }
@@ -5631,7 +5631,7 @@ public class Blur {
       return this.uuid;
     }
 
-    public cancelSearch_args setUuid(long uuid) {
+    public cancelQuery_args setUuid(long uuid) {
       this.uuid = uuid;
       setUuidIsSet(true);
       return this;
@@ -5702,12 +5702,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof cancelSearch_args)
-        return this.equals((cancelSearch_args)that);
+      if (that instanceof cancelQuery_args)
+        return this.equals((cancelQuery_args)that);
       return false;
     }
 
-    public boolean equals(cancelSearch_args that) {
+    public boolean equals(cancelQuery_args that) {
       if (that == null)
         return false;
 
@@ -5737,13 +5737,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(cancelSearch_args other) {
+    public int compareTo(cancelQuery_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      cancelSearch_args typedOther = (cancelSearch_args)other;
+      cancelQuery_args typedOther = (cancelQuery_args)other;
 
       lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
       if (lastComparison != 0) {
@@ -5826,7 +5826,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("cancelSearch_args(");
+      StringBuilder sb = new StringBuilder("cancelQuery_args(");
       boolean first = true;
 
       sb.append("table:");
@@ -5850,8 +5850,8 @@ public class Blur {
 
   }
 
-  public static class cancelSearch_result implements TBase<cancelSearch_result, cancelSearch_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("cancelSearch_result");
+  public static class cancelQuery_result implements TBase<cancelQuery_result, cancelQuery_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("cancelQuery_result");
 
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
@@ -5923,13 +5923,13 @@ public class Blur {
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(cancelSearch_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(cancelQuery_result.class, metaDataMap);
     }
 
-    public cancelSearch_result() {
+    public cancelQuery_result() {
     }
 
-    public cancelSearch_result(
+    public cancelQuery_result(
       BlurException ex)
     {
       this();
@@ -5939,14 +5939,14 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public cancelSearch_result(cancelSearch_result other) {
+    public cancelQuery_result(cancelQuery_result other) {
       if (other.isSetEx()) {
         this.ex = new BlurException(other.ex);
       }
     }
 
-    public cancelSearch_result deepCopy() {
-      return new cancelSearch_result(this);
+    public cancelQuery_result deepCopy() {
+      return new cancelQuery_result(this);
     }
 
     @Override
@@ -5958,7 +5958,7 @@ public class Blur {
       return this.ex;
     }
 
-    public cancelSearch_result setEx(BlurException ex) {
+    public cancelQuery_result setEx(BlurException ex) {
       this.ex = ex;
       return this;
     }
@@ -6017,12 +6017,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof cancelSearch_result)
-        return this.equals((cancelSearch_result)that);
+      if (that instanceof cancelQuery_result)
+        return this.equals((cancelQuery_result)that);
       return false;
     }
 
-    public boolean equals(cancelSearch_result that) {
+    public boolean equals(cancelQuery_result that) {
       if (that == null)
         return false;
 
@@ -6043,13 +6043,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(cancelSearch_result other) {
+    public int compareTo(cancelQuery_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      cancelSearch_result typedOther = (cancelSearch_result)other;
+      cancelQuery_result typedOther = (cancelQuery_result)other;
 
       lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
       if (lastComparison != 0) {
@@ -6111,7 +6111,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("cancelSearch_result(");
+      StringBuilder sb = new StringBuilder("cancelQuery_result(");
       boolean first = true;
 
       sb.append("ex:");
@@ -6131,8 +6131,8 @@ public class Blur {
 
   }
 
-  public static class currentSearches_args implements TBase<currentSearches_args, currentSearches_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("currentSearches_args");
+  public static class currentQueries_args implements TBase<currentQueries_args, currentQueries_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("currentQueries_args");
 
     private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
 
@@ -6204,13 +6204,13 @@ public class Blur {
       tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRING)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(currentSearches_args.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(currentQueries_args.class, metaDataMap);
     }
 
-    public currentSearches_args() {
+    public currentQueries_args() {
     }
 
-    public currentSearches_args(
+    public currentQueries_args(
       String table)
     {
       this();
@@ -6220,14 +6220,14 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public currentSearches_args(currentSearches_args other) {
+    public currentQueries_args(currentQueries_args other) {
       if (other.isSetTable()) {
         this.table = other.table;
       }
     }
 
-    public currentSearches_args deepCopy() {
-      return new currentSearches_args(this);
+    public currentQueries_args deepCopy() {
+      return new currentQueries_args(this);
     }
 
     @Override
@@ -6239,7 +6239,7 @@ public class Blur {
       return this.table;
     }
 
-    public currentSearches_args setTable(String table) {
+    public currentQueries_args setTable(String table) {
       this.table = table;
       return this;
     }
@@ -6298,12 +6298,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof currentSearches_args)
-        return this.equals((currentSearches_args)that);
+      if (that instanceof currentQueries_args)
+        return this.equals((currentQueries_args)that);
       return false;
     }
 
-    public boolean equals(currentSearches_args that) {
+    public boolean equals(currentQueries_args that) {
       if (that == null)
         return false;
 
@@ -6324,13 +6324,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(currentSearches_args other) {
+    public int compareTo(currentQueries_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      currentSearches_args typedOther = (currentSearches_args)other;
+      currentQueries_args typedOther = (currentQueries_args)other;
 
       lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
       if (lastComparison != 0) {
@@ -6392,7 +6392,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("currentSearches_args(");
+      StringBuilder sb = new StringBuilder("currentQueries_args(");
       boolean first = true;
 
       sb.append("table:");
@@ -6412,13 +6412,13 @@ public class Blur {
 
   }
 
-  public static class currentSearches_result implements TBase<currentSearches_result, currentSearches_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final TStruct STRUCT_DESC = new TStruct("currentSearches_result");
+  public static class currentQueries_result implements TBase<currentQueries_result, currentQueries_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final TStruct STRUCT_DESC = new TStruct("currentQueries_result");
 
     private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.LIST, (short)0);
     private static final TField EX_FIELD_DESC = new TField("ex", TType.STRUCT, (short)1);
 
-    public List<SearchQueryStatus> success;
+    public List<BlurQueryStatus> success;
     public BlurException ex;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
@@ -6489,18 +6489,18 @@ public class Blur {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.SUCCESS, new FieldMetaData("success", TFieldRequirementType.DEFAULT, 
           new ListMetaData(TType.LIST, 
-              new StructMetaData(TType.STRUCT, SearchQueryStatus.class))));
+              new StructMetaData(TType.STRUCT, BlurQueryStatus.class))));
       tmpMap.put(_Fields.EX, new FieldMetaData("ex", TFieldRequirementType.DEFAULT, 
           new FieldValueMetaData(TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      FieldMetaData.addStructMetaDataMap(currentSearches_result.class, metaDataMap);
+      FieldMetaData.addStructMetaDataMap(currentQueries_result.class, metaDataMap);
     }
 
-    public currentSearches_result() {
+    public currentQueries_result() {
     }
 
-    public currentSearches_result(
-      List<SearchQueryStatus> success,
+    public currentQueries_result(
+      List<BlurQueryStatus> success,
       BlurException ex)
     {
       this();
@@ -6511,11 +6511,11 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public currentSearches_result(currentSearches_result other) {
+    public currentQueries_result(currentQueries_result other) {
       if (other.isSetSuccess()) {
-        List<SearchQueryStatus> __this__success = new ArrayList<SearchQueryStatus>();
-        for (SearchQueryStatus other_element : other.success) {
-          __this__success.add(new SearchQueryStatus(other_element));
+        List<BlurQueryStatus> __this__success = new ArrayList<BlurQueryStatus>();
+        for (BlurQueryStatus other_element : other.success) {
+          __this__success.add(new BlurQueryStatus(other_element));
         }
         this.success = __this__success;
       }
@@ -6524,8 +6524,8 @@ public class Blur {
       }
     }
 
-    public currentSearches_result deepCopy() {
-      return new currentSearches_result(this);
+    public currentQueries_result deepCopy() {
+      return new currentQueries_result(this);
     }
 
     @Override
@@ -6538,22 +6538,22 @@ public class Blur {
       return (this.success == null) ? 0 : this.success.size();
     }
 
-    public java.util.Iterator<SearchQueryStatus> getSuccessIterator() {
+    public java.util.Iterator<BlurQueryStatus> getSuccessIterator() {
       return (this.success == null) ? null : this.success.iterator();
     }
 
-    public void addToSuccess(SearchQueryStatus elem) {
+    public void addToSuccess(BlurQueryStatus elem) {
       if (this.success == null) {
-        this.success = new ArrayList<SearchQueryStatus>();
+        this.success = new ArrayList<BlurQueryStatus>();
       }
       this.success.add(elem);
     }
 
-    public List<SearchQueryStatus> getSuccess() {
+    public List<BlurQueryStatus> getSuccess() {
       return this.success;
     }
 
-    public currentSearches_result setSuccess(List<SearchQueryStatus> success) {
+    public currentQueries_result setSuccess(List<BlurQueryStatus> success) {
       this.success = success;
       return this;
     }
@@ -6577,7 +6577,7 @@ public class Blur {
       return this.ex;
     }
 
-    public currentSearches_result setEx(BlurException ex) {
+    public currentQueries_result setEx(BlurException ex) {
       this.ex = ex;
       return this;
     }
@@ -6603,7 +6603,7 @@ public class Blur {
         if (value == null) {
           unsetSuccess();
         } else {
-          setSuccess((List<SearchQueryStatus>)value);
+          setSuccess((List<BlurQueryStatus>)value);
         }
         break;
 
@@ -6649,12 +6649,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof currentSearches_result)
-        return this.equals((currentSearches_result)that);
+      if (that instanceof currentQueries_result)
+        return this.equals((currentQueries_result)that);
       return false;
     }
 
-    public boolean equals(currentSearches_result that) {
+    public boolean equals(currentQueries_result that) {
       if (that == null)
         return false;
 
@@ -6684,13 +6684,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(currentSearches_result other) {
+    public int compareTo(currentQueries_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      currentSearches_result typedOther = (currentSearches_result)other;
+      currentQueries_result typedOther = (currentQueries_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -6733,11 +6733,11 @@ public class Blur {
             if (field.type == TType.LIST) {
               {
                 TList _list93 = iprot.readListBegin();
-                this.success = new ArrayList<SearchQueryStatus>(_list93.size);
+                this.success = new ArrayList<BlurQueryStatus>(_list93.size);
                 for (int _i94 = 0; _i94 < _list93.size; ++_i94)
                 {
-                  SearchQueryStatus _elem95;
-                  _elem95 = new SearchQueryStatus();
+                  BlurQueryStatus _elem95;
+                  _elem95 = new BlurQueryStatus();
                   _elem95.read(iprot);
                   this.success.add(_elem95);
                 }
@@ -6773,7 +6773,7 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new TList(TType.STRUCT, this.success.size()));
-          for (SearchQueryStatus _iter96 : this.success)
+          for (BlurQueryStatus _iter96 : this.success)
           {
             _iter96.write(oprot);
           }
@@ -6791,7 +6791,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("currentSearches_result(");
+      StringBuilder sb = new StringBuilder("currentQueries_result(");
       boolean first = true;
 
       sb.append("success:");

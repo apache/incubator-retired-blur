@@ -26,8 +26,8 @@ import org.apache.thrift.meta_data.*;
 import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
-public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Hit");
+public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("BlurResult");
 
   private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)1);
   private static final TField SCORE_FIELD_DESC = new TField("score", TType.DOUBLE, (short)2);
@@ -115,15 +115,15 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     tmpMap.put(_Fields.REASON, new FieldMetaData("reason", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Hit.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(BlurResult.class, metaDataMap);
   }
 
-  public Hit() {
+  public BlurResult() {
     this.reason = "UNKNOWN";
 
   }
 
-  public Hit(
+  public BlurResult(
     String locationId,
     double score,
     String reason)
@@ -138,7 +138,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Hit(Hit other) {
+  public BlurResult(BlurResult other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetLocationId()) {
@@ -150,8 +150,8 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     }
   }
 
-  public Hit deepCopy() {
-    return new Hit(this);
+  public BlurResult deepCopy() {
+    return new BlurResult(this);
   }
 
   @Override
@@ -167,7 +167,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     return this.locationId;
   }
 
-  public Hit setLocationId(String locationId) {
+  public BlurResult setLocationId(String locationId) {
     this.locationId = locationId;
     return this;
   }
@@ -191,7 +191,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     return this.score;
   }
 
-  public Hit setScore(double score) {
+  public BlurResult setScore(double score) {
     this.score = score;
     setScoreIsSet(true);
     return this;
@@ -214,7 +214,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     return this.reason;
   }
 
-  public Hit setReason(String reason) {
+  public BlurResult setReason(String reason) {
     this.reason = reason;
     return this;
   }
@@ -299,12 +299,12 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof Hit)
-      return this.equals((Hit)that);
+    if (that instanceof BlurResult)
+      return this.equals((BlurResult)that);
     return false;
   }
 
-  public boolean equals(Hit that) {
+  public boolean equals(BlurResult that) {
     if (that == null)
       return false;
 
@@ -343,13 +343,13 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
     return 0;
   }
 
-  public int compareTo(Hit other) {
+  public int compareTo(BlurResult other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    Hit typedOther = (Hit)other;
+    BlurResult typedOther = (BlurResult)other;
 
     lastComparison = Boolean.valueOf(isSetLocationId()).compareTo(typedOther.isSetLocationId());
     if (lastComparison != 0) {
@@ -454,7 +454,7 @@ public class Hit implements TBase<Hit, Hit._Fields>, java.io.Serializable, Clone
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Hit(");
+    StringBuilder sb = new StringBuilder("BlurResult(");
     boolean first = true;
 
     sb.append("locationId:");

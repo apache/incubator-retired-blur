@@ -22,25 +22,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
-public class MergerSearchQueryStatus implements Merger<List<SearchQueryStatus>> {
+public class MergerSearchQueryStatus implements Merger<List<BlurQueryStatus>> {
 
     @Override
-    public List<SearchQueryStatus> merge(BlurExecutorCompletionService<List<SearchQueryStatus>> service) throws Exception {
-        Map<Long,SearchQueryStatus> statusMap = new HashMap<Long,SearchQueryStatus>();
+    public List<BlurQueryStatus> merge(BlurExecutorCompletionService<List<BlurQueryStatus>> service) throws Exception {
+        Map<Long,BlurQueryStatus> statusMap = new HashMap<Long,BlurQueryStatus>();
         while (service.getRemainingCount() > 0) {
-            Future<List<SearchQueryStatus>> future = service.take();
+            Future<List<BlurQueryStatus>> future = service.take();
             addToMap(statusMap,future.get());
         }
-        return new ArrayList<SearchQueryStatus>(statusMap.values());
+        return new ArrayList<BlurQueryStatus>(statusMap.values());
     }
 
-    private void addToMap(Map<Long, SearchQueryStatus> statusMap, List<SearchQueryStatus> list) {
-        for (SearchQueryStatus status : list) {
-            SearchQueryStatus searchQueryStatus = statusMap.get(status.uuid);
+    private void addToMap(Map<Long, BlurQueryStatus> statusMap, List<BlurQueryStatus> list) {
+        for (BlurQueryStatus status : list) {
+            BlurQueryStatus searchQueryStatus = statusMap.get(status.uuid);
             if (searchQueryStatus == null) {
                 statusMap.put(status.uuid, status);
             } else {
@@ -49,7 +49,7 @@ public class MergerSearchQueryStatus implements Merger<List<SearchQueryStatus>> 
         }
     }
 
-    private SearchQueryStatus merge(SearchQueryStatus s1, SearchQueryStatus s2) {
+    private BlurQueryStatus merge(BlurQueryStatus s1, BlurQueryStatus s2) {
         s1.complete = avg(s1.complete,s2.complete);
         s1.cpuTime = s1.cpuTime + s2.cpuTime;
         s1.interrupted = s1.interrupted || s2.interrupted;

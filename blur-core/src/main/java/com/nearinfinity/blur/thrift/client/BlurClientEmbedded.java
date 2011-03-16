@@ -25,11 +25,12 @@ import org.apache.thrift.protocol.TProtocol;
 
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
-import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
@@ -73,8 +74,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void cancelSearch(String table, long uuid) throws BlurException, TException {
-            face.cancelSearch(table, uuid);
+        public void cancelQuery(String table, long uuid) throws BlurException, TException {
+            face.cancelQuery(table, uuid);
         }
 
         @Override
@@ -83,8 +84,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException {
-            return face.currentSearches(table);
+        public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
+            return face.currentQueries(table);
         }
 
         @Override
@@ -109,8 +110,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
-            return face.search(table, searchQuery);
+        public BlurResults query(String table, BlurQuery searchQuery) throws BlurException, TException {
+            return face.query(table, searchQuery);
         }
 
         @Override
@@ -135,6 +136,11 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
+        public void mutate(List<RowMutation> mutations) throws BlurException, TException {
+            face.mutate(mutations);
+        }
+
+        @Override
         public TProtocol getInputProtocol() {
             throw new RuntimeException("not impl");
         }
@@ -145,17 +151,7 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void recv_cancelSearch() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
         public List<String> recv_controllerServerList() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public List<SearchQueryStatus> recv_currentSearches() throws BlurException, TException {
             throw new RuntimeException("not impl");
         }
 
@@ -180,11 +176,6 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public Hits recv_search() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
         public Map<String, String> recv_shardServerLayout() throws BlurException, TException {
             throw new RuntimeException("not impl");
         }
@@ -205,17 +196,7 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void send_cancelSearch(String table, long uuid) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
         public void send_controllerServerList() throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_currentSearches(String table) throws TException {
             throw new RuntimeException("not impl");
         }
 
@@ -241,11 +222,6 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void send_search(String table, SearchQuery searchQuery) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
         public void send_shardServerLayout(String table) throws TException {
             throw new RuntimeException("not impl");
         }
@@ -263,6 +239,46 @@ public class BlurClientEmbedded extends BlurClient {
         @Override
         public void send_terms(String table, String columnFamily, String columnName, String startWith, short size)
                 throws TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public void recv_cancelQuery() throws BlurException, TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public List<BlurQueryStatus> recv_currentQueries() throws BlurException, TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public void recv_mutate() throws BlurException, TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public BlurResults recv_query() throws BlurException, TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public void send_cancelQuery(String table, long uuid) throws TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public void send_currentQueries(String table) throws TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public void send_mutate(List<RowMutation> mutations) throws TException {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public void send_query(String table, BlurQuery blurQuery) throws TException {
             throw new RuntimeException("not impl");
         }
     }

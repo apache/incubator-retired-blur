@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 
 public class SearchStatusManager {
     
@@ -57,7 +57,7 @@ public class SearchStatusManager {
         searchStatusCleanupTimer.purge();
     }
     
-    public SearchStatus newSearchStatus(String table, SearchQuery searchQuery) {
+    public SearchStatus newSearchStatus(String table, BlurQuery searchQuery) {
         return addStatus(new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery).attachThread());
     }
     
@@ -98,8 +98,8 @@ public class SearchStatusManager {
         }
     }
 
-    public List<SearchQueryStatus> currentSearches(String table) {
-        List<SearchQueryStatus> result = new ArrayList<SearchQueryStatus>();
+    public List<BlurQueryStatus> currentSearches(String table) {
+        List<BlurQueryStatus> result = new ArrayList<BlurQueryStatus>();
         for (SearchStatus status : currentSearchStatusCollection.keySet()) {
             if (status.getTable().equals(table)) {
                 result.add(status.getSearchQueryStatus());

@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class HitsIterableMultiple implements HitsIterable {
@@ -55,7 +55,7 @@ public class HitsIterableMultiple implements HitsIterable {
     }
 
     @Override
-    public Iterator<Hit> iterator() {
+    public Iterator<BlurResult> iterator() {
         MultipleHitsIterator iterator = new MultipleHitsIterator(hits);
         long start = 0;
         while (iterator.hasNext() && start < skipTo) {
@@ -65,14 +65,14 @@ public class HitsIterableMultiple implements HitsIterable {
         return iterator;
     }
     
-    public static class MultipleHitsIterator implements Iterator<Hit> {
+    public static class MultipleHitsIterator implements Iterator<BlurResult> {
         
-        private List<PeekableIterator<Hit>> iterators = new ArrayList<PeekableIterator<Hit>>();
+        private List<PeekableIterator<BlurResult>> iterators = new ArrayList<PeekableIterator<BlurResult>>();
         private int length;
 
         public MultipleHitsIterator(List<HitsIterable> hits) {
             for (HitsIterable hitsIterable : hits) {
-                iterators.add(new PeekableIterator<Hit>(hitsIterable.iterator()));
+                iterators.add(new PeekableIterator<BlurResult>(hitsIterable.iterator()));
             }
             length = iterators.size();
         }
@@ -88,7 +88,7 @@ public class HitsIterableMultiple implements HitsIterable {
         }
 
         @Override
-        public Hit next() {
+        public BlurResult next() {
             Collections.sort(iterators, BlurConstants.HITS_PEEKABLE_ITERATOR_COMPARATOR);
             return iterators.get(0).next();
         }

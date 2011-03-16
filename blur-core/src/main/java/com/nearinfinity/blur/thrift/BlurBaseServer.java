@@ -26,28 +26,28 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
-import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public abstract class BlurBaseServer implements Iface {
 	
-    public static Hits convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfHits, AtomicLongArray facetCounts) {
-        Hits hits = new Hits();
-        hits.setTotalHits(hitsIterable.getTotalHits());
+    public static BlurResults convertToHits(HitsIterable hitsIterable, long start, int fetch, long minimumNumberOfResults, AtomicLongArray facetCounts) {
+        BlurResults hits = new BlurResults();
+        hits.setTotalResults(hitsIterable.getTotalHits());
         hits.setShardInfo(hitsIterable.getShardInfo());
-        if (minimumNumberOfHits > 0) {
+        if (minimumNumberOfResults > 0) {
             hitsIterable.skipTo(start);
             int count = 0;
-            Iterator<Hit> iterator = hitsIterable.iterator();
+            Iterator<BlurResult> iterator = hitsIterable.iterator();
             while (iterator.hasNext() && count < fetch) {
-                hits.addToHits(iterator.next());
+                hits.addToResults(iterator.next());
                 count++;
             }
         }
-        if (hits.hits == null) {
-            hits.hits = new ArrayList<Hit>();
+        if (hits.results == null) {
+            hits.results = new ArrayList<BlurResult>();
         }
         if (facetCounts != null) {
             hits.facetCounts = BlurUtil.toList(facetCounts);

@@ -26,32 +26,32 @@ import org.apache.thrift.meta_data.*;
 import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
-public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Hits");
+public class BlurResults implements TBase<BlurResults, BlurResults._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("BlurResults");
 
-  private static final TField TOTAL_HITS_FIELD_DESC = new TField("totalHits", TType.I64, (short)1);
+  private static final TField TOTAL_RESULTS_FIELD_DESC = new TField("totalResults", TType.I64, (short)1);
   private static final TField SHARD_INFO_FIELD_DESC = new TField("shardInfo", TType.MAP, (short)2);
-  private static final TField HITS_FIELD_DESC = new TField("hits", TType.LIST, (short)3);
+  private static final TField RESULTS_FIELD_DESC = new TField("results", TType.LIST, (short)3);
   private static final TField EXCEPTIONS_FIELD_DESC = new TField("exceptions", TType.LIST, (short)4);
   private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)5);
   private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)6);
   private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)7);
   private static final TField FACET_COUNTS_FIELD_DESC = new TField("facetCounts", TType.LIST, (short)8);
 
-  public long totalHits;
+  public long totalResults;
   public Map<String,Long> shardInfo;
-  public List<Hit> hits;
+  public List<BlurResult> results;
   public List<BlurException> exceptions;
-  public SearchQuery query;
+  public BlurQuery query;
   public long realTime;
   public long cpuTime;
   public List<Long> facetCounts;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    TOTAL_HITS((short)1, "totalHits"),
+    TOTAL_RESULTS((short)1, "totalResults"),
     SHARD_INFO((short)2, "shardInfo"),
-    HITS((short)3, "hits"),
+    RESULTS((short)3, "results"),
     EXCEPTIONS((short)4, "exceptions"),
     QUERY((short)5, "query"),
     REAL_TIME((short)6, "realTime"),
@@ -71,12 +71,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // TOTAL_HITS
-          return TOTAL_HITS;
+        case 1: // TOTAL_RESULTS
+          return TOTAL_RESULTS;
         case 2: // SHARD_INFO
           return SHARD_INFO;
-        case 3: // HITS
-          return HITS;
+        case 3: // RESULTS
+          return RESULTS;
         case 4: // EXCEPTIONS
           return EXCEPTIONS;
         case 5: // QUERY
@@ -127,7 +127,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   }
 
   // isset id assignments
-  private static final int __TOTALHITS_ISSET_ID = 0;
+  private static final int __TOTALRESULTS_ISSET_ID = 0;
   private static final int __REALTIME_ISSET_ID = 1;
   private static final int __CPUTIME_ISSET_ID = 2;
   private BitSet __isset_bit_vector = new BitSet(3);
@@ -135,20 +135,20 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   public static final Map<_Fields, FieldMetaData> metaDataMap;
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.TOTAL_HITS, new FieldMetaData("totalHits", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.TOTAL_RESULTS, new FieldMetaData("totalResults", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.SHARD_INFO, new FieldMetaData("shardInfo", TFieldRequirementType.DEFAULT, 
         new MapMetaData(TType.MAP, 
             new FieldValueMetaData(TType.STRING), 
             new FieldValueMetaData(TType.I64))));
-    tmpMap.put(_Fields.HITS, new FieldMetaData("hits", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.RESULTS, new FieldMetaData("results", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, Hit.class))));
+            new StructMetaData(TType.STRUCT, BlurResult.class))));
     tmpMap.put(_Fields.EXCEPTIONS, new FieldMetaData("exceptions", TFieldRequirementType.DEFAULT, 
         new ListMetaData(TType.LIST, 
             new FieldValueMetaData(TType.STRUCT))));
     tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, SearchQuery.class)));
+        new StructMetaData(TType.STRUCT, BlurQuery.class)));
     tmpMap.put(_Fields.REAL_TIME, new FieldMetaData("realTime", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.CPU_TIME, new FieldMetaData("cpuTime", TFieldRequirementType.DEFAULT, 
@@ -157,29 +157,29 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         new ListMetaData(TType.LIST, 
             new FieldValueMetaData(TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Hits.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(BlurResults.class, metaDataMap);
   }
 
-  public Hits() {
-    this.totalHits = 0L;
+  public BlurResults() {
+    this.totalResults = 0L;
 
   }
 
-  public Hits(
-    long totalHits,
+  public BlurResults(
+    long totalResults,
     Map<String,Long> shardInfo,
-    List<Hit> hits,
+    List<BlurResult> results,
     List<BlurException> exceptions,
-    SearchQuery query,
+    BlurQuery query,
     long realTime,
     long cpuTime,
     List<Long> facetCounts)
   {
     this();
-    this.totalHits = totalHits;
-    setTotalHitsIsSet(true);
+    this.totalResults = totalResults;
+    setTotalResultsIsSet(true);
     this.shardInfo = shardInfo;
-    this.hits = hits;
+    this.results = results;
     this.exceptions = exceptions;
     this.query = query;
     this.realTime = realTime;
@@ -192,10 +192,10 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public Hits(Hits other) {
+  public BlurResults(BlurResults other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
-    this.totalHits = other.totalHits;
+    this.totalResults = other.totalResults;
     if (other.isSetShardInfo()) {
       Map<String,Long> __this__shardInfo = new HashMap<String,Long>();
       for (Map.Entry<String, Long> other_element : other.shardInfo.entrySet()) {
@@ -211,12 +211,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       this.shardInfo = __this__shardInfo;
     }
-    if (other.isSetHits()) {
-      List<Hit> __this__hits = new ArrayList<Hit>();
-      for (Hit other_element : other.hits) {
-        __this__hits.add(new Hit(other_element));
+    if (other.isSetResults()) {
+      List<BlurResult> __this__results = new ArrayList<BlurResult>();
+      for (BlurResult other_element : other.results) {
+        __this__results.add(new BlurResult(other_element));
       }
-      this.hits = __this__hits;
+      this.results = __this__results;
     }
     if (other.isSetExceptions()) {
       List<BlurException> __this__exceptions = new ArrayList<BlurException>();
@@ -226,7 +226,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       this.exceptions = __this__exceptions;
     }
     if (other.isSetQuery()) {
-      this.query = new SearchQuery(other.query);
+      this.query = new BlurQuery(other.query);
     }
     this.realTime = other.realTime;
     this.cpuTime = other.cpuTime;
@@ -239,16 +239,16 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
   }
 
-  public Hits deepCopy() {
-    return new Hits(this);
+  public BlurResults deepCopy() {
+    return new BlurResults(this);
   }
 
   @Override
   public void clear() {
-    this.totalHits = 0L;
+    this.totalResults = 0L;
 
     this.shardInfo = null;
-    this.hits = null;
+    this.results = null;
     this.exceptions = null;
     this.query = null;
     setRealTimeIsSet(false);
@@ -258,27 +258,27 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     this.facetCounts = null;
   }
 
-  public long getTotalHits() {
-    return this.totalHits;
+  public long getTotalResults() {
+    return this.totalResults;
   }
 
-  public Hits setTotalHits(long totalHits) {
-    this.totalHits = totalHits;
-    setTotalHitsIsSet(true);
+  public BlurResults setTotalResults(long totalResults) {
+    this.totalResults = totalResults;
+    setTotalResultsIsSet(true);
     return this;
   }
 
-  public void unsetTotalHits() {
-    __isset_bit_vector.clear(__TOTALHITS_ISSET_ID);
+  public void unsetTotalResults() {
+    __isset_bit_vector.clear(__TOTALRESULTS_ISSET_ID);
   }
 
-  /** Returns true if field totalHits is set (has been asigned a value) and false otherwise */
-  public boolean isSetTotalHits() {
-    return __isset_bit_vector.get(__TOTALHITS_ISSET_ID);
+  /** Returns true if field totalResults is set (has been asigned a value) and false otherwise */
+  public boolean isSetTotalResults() {
+    return __isset_bit_vector.get(__TOTALRESULTS_ISSET_ID);
   }
 
-  public void setTotalHitsIsSet(boolean value) {
-    __isset_bit_vector.set(__TOTALHITS_ISSET_ID, value);
+  public void setTotalResultsIsSet(boolean value) {
+    __isset_bit_vector.set(__TOTALRESULTS_ISSET_ID, value);
   }
 
   public int getShardInfoSize() {
@@ -296,7 +296,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     return this.shardInfo;
   }
 
-  public Hits setShardInfo(Map<String,Long> shardInfo) {
+  public BlurResults setShardInfo(Map<String,Long> shardInfo) {
     this.shardInfo = shardInfo;
     return this;
   }
@@ -316,42 +316,42 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
   }
 
-  public int getHitsSize() {
-    return (this.hits == null) ? 0 : this.hits.size();
+  public int getResultsSize() {
+    return (this.results == null) ? 0 : this.results.size();
   }
 
-  public java.util.Iterator<Hit> getHitsIterator() {
-    return (this.hits == null) ? null : this.hits.iterator();
+  public java.util.Iterator<BlurResult> getResultsIterator() {
+    return (this.results == null) ? null : this.results.iterator();
   }
 
-  public void addToHits(Hit elem) {
-    if (this.hits == null) {
-      this.hits = new ArrayList<Hit>();
+  public void addToResults(BlurResult elem) {
+    if (this.results == null) {
+      this.results = new ArrayList<BlurResult>();
     }
-    this.hits.add(elem);
+    this.results.add(elem);
   }
 
-  public List<Hit> getHits() {
-    return this.hits;
+  public List<BlurResult> getResults() {
+    return this.results;
   }
 
-  public Hits setHits(List<Hit> hits) {
-    this.hits = hits;
+  public BlurResults setResults(List<BlurResult> results) {
+    this.results = results;
     return this;
   }
 
-  public void unsetHits() {
-    this.hits = null;
+  public void unsetResults() {
+    this.results = null;
   }
 
-  /** Returns true if field hits is set (has been asigned a value) and false otherwise */
-  public boolean isSetHits() {
-    return this.hits != null;
+  /** Returns true if field results is set (has been asigned a value) and false otherwise */
+  public boolean isSetResults() {
+    return this.results != null;
   }
 
-  public void setHitsIsSet(boolean value) {
+  public void setResultsIsSet(boolean value) {
     if (!value) {
-      this.hits = null;
+      this.results = null;
     }
   }
 
@@ -374,7 +374,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     return this.exceptions;
   }
 
-  public Hits setExceptions(List<BlurException> exceptions) {
+  public BlurResults setExceptions(List<BlurException> exceptions) {
     this.exceptions = exceptions;
     return this;
   }
@@ -394,11 +394,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
   }
 
-  public SearchQuery getQuery() {
+  public BlurQuery getQuery() {
     return this.query;
   }
 
-  public Hits setQuery(SearchQuery query) {
+  public BlurResults setQuery(BlurQuery query) {
     this.query = query;
     return this;
   }
@@ -422,7 +422,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     return this.realTime;
   }
 
-  public Hits setRealTime(long realTime) {
+  public BlurResults setRealTime(long realTime) {
     this.realTime = realTime;
     setRealTimeIsSet(true);
     return this;
@@ -445,7 +445,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     return this.cpuTime;
   }
 
-  public Hits setCpuTime(long cpuTime) {
+  public BlurResults setCpuTime(long cpuTime) {
     this.cpuTime = cpuTime;
     setCpuTimeIsSet(true);
     return this;
@@ -483,7 +483,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     return this.facetCounts;
   }
 
-  public Hits setFacetCounts(List<Long> facetCounts) {
+  public BlurResults setFacetCounts(List<Long> facetCounts) {
     this.facetCounts = facetCounts;
     return this;
   }
@@ -505,11 +505,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case TOTAL_HITS:
+    case TOTAL_RESULTS:
       if (value == null) {
-        unsetTotalHits();
+        unsetTotalResults();
       } else {
-        setTotalHits((Long)value);
+        setTotalResults((Long)value);
       }
       break;
 
@@ -521,11 +521,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       break;
 
-    case HITS:
+    case RESULTS:
       if (value == null) {
-        unsetHits();
+        unsetResults();
       } else {
-        setHits((List<Hit>)value);
+        setResults((List<BlurResult>)value);
       }
       break;
 
@@ -541,7 +541,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       if (value == null) {
         unsetQuery();
       } else {
-        setQuery((SearchQuery)value);
+        setQuery((BlurQuery)value);
       }
       break;
 
@@ -574,14 +574,14 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case TOTAL_HITS:
-      return new Long(getTotalHits());
+    case TOTAL_RESULTS:
+      return new Long(getTotalResults());
 
     case SHARD_INFO:
       return getShardInfo();
 
-    case HITS:
-      return getHits();
+    case RESULTS:
+      return getResults();
 
     case EXCEPTIONS:
       return getExceptions();
@@ -609,12 +609,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
 
     switch (field) {
-    case TOTAL_HITS:
-      return isSetTotalHits();
+    case TOTAL_RESULTS:
+      return isSetTotalResults();
     case SHARD_INFO:
       return isSetShardInfo();
-    case HITS:
-      return isSetHits();
+    case RESULTS:
+      return isSetResults();
     case EXCEPTIONS:
       return isSetExceptions();
     case QUERY:
@@ -633,21 +633,21 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof Hits)
-      return this.equals((Hits)that);
+    if (that instanceof BlurResults)
+      return this.equals((BlurResults)that);
     return false;
   }
 
-  public boolean equals(Hits that) {
+  public boolean equals(BlurResults that) {
     if (that == null)
       return false;
 
-    boolean this_present_totalHits = true;
-    boolean that_present_totalHits = true;
-    if (this_present_totalHits || that_present_totalHits) {
-      if (!(this_present_totalHits && that_present_totalHits))
+    boolean this_present_totalResults = true;
+    boolean that_present_totalResults = true;
+    if (this_present_totalResults || that_present_totalResults) {
+      if (!(this_present_totalResults && that_present_totalResults))
         return false;
-      if (this.totalHits != that.totalHits)
+      if (this.totalResults != that.totalResults)
         return false;
     }
 
@@ -660,12 +660,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         return false;
     }
 
-    boolean this_present_hits = true && this.isSetHits();
-    boolean that_present_hits = true && that.isSetHits();
-    if (this_present_hits || that_present_hits) {
-      if (!(this_present_hits && that_present_hits))
+    boolean this_present_results = true && this.isSetResults();
+    boolean that_present_results = true && that.isSetResults();
+    if (this_present_results || that_present_results) {
+      if (!(this_present_results && that_present_results))
         return false;
-      if (!this.hits.equals(that.hits))
+      if (!this.results.equals(that.results))
         return false;
     }
 
@@ -722,20 +722,20 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     return 0;
   }
 
-  public int compareTo(Hits other) {
+  public int compareTo(BlurResults other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    Hits typedOther = (Hits)other;
+    BlurResults typedOther = (BlurResults)other;
 
-    lastComparison = Boolean.valueOf(isSetTotalHits()).compareTo(typedOther.isSetTotalHits());
+    lastComparison = Boolean.valueOf(isSetTotalResults()).compareTo(typedOther.isSetTotalResults());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetTotalHits()) {
-      lastComparison = TBaseHelper.compareTo(this.totalHits, typedOther.totalHits);
+    if (isSetTotalResults()) {
+      lastComparison = TBaseHelper.compareTo(this.totalResults, typedOther.totalResults);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -750,12 +750,12 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetHits()).compareTo(typedOther.isSetHits());
+    lastComparison = Boolean.valueOf(isSetResults()).compareTo(typedOther.isSetResults());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetHits()) {
-      lastComparison = TBaseHelper.compareTo(this.hits, typedOther.hits);
+    if (isSetResults()) {
+      lastComparison = TBaseHelper.compareTo(this.results, typedOther.results);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -827,10 +827,10 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
         break;
       }
       switch (field.id) {
-        case 1: // TOTAL_HITS
+        case 1: // TOTAL_RESULTS
           if (field.type == TType.I64) {
-            this.totalHits = iprot.readI64();
-            setTotalHitsIsSet(true);
+            this.totalResults = iprot.readI64();
+            setTotalResultsIsSet(true);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -854,17 +854,17 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // HITS
+        case 3: // RESULTS
           if (field.type == TType.LIST) {
             {
               TList _list8 = iprot.readListBegin();
-              this.hits = new ArrayList<Hit>(_list8.size);
+              this.results = new ArrayList<BlurResult>(_list8.size);
               for (int _i9 = 0; _i9 < _list8.size; ++_i9)
               {
-                Hit _elem10;
-                _elem10 = new Hit();
+                BlurResult _elem10;
+                _elem10 = new BlurResult();
                 _elem10.read(iprot);
-                this.hits.add(_elem10);
+                this.results.add(_elem10);
               }
               iprot.readListEnd();
             }
@@ -892,7 +892,7 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
           break;
         case 5: // QUERY
           if (field.type == TType.STRUCT) {
-            this.query = new SearchQuery();
+            this.query = new BlurQuery();
             this.query.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
@@ -946,8 +946,8 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    oprot.writeFieldBegin(TOTAL_HITS_FIELD_DESC);
-    oprot.writeI64(this.totalHits);
+    oprot.writeFieldBegin(TOTAL_RESULTS_FIELD_DESC);
+    oprot.writeI64(this.totalResults);
     oprot.writeFieldEnd();
     if (this.shardInfo != null) {
       oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
@@ -962,11 +962,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
       }
       oprot.writeFieldEnd();
     }
-    if (this.hits != null) {
-      oprot.writeFieldBegin(HITS_FIELD_DESC);
+    if (this.results != null) {
+      oprot.writeFieldBegin(RESULTS_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.hits.size()));
-        for (Hit _iter18 : this.hits)
+        oprot.writeListBegin(new TList(TType.STRUCT, this.results.size()));
+        for (BlurResult _iter18 : this.results)
         {
           _iter18.write(oprot);
         }
@@ -1015,11 +1015,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("Hits(");
+    StringBuilder sb = new StringBuilder("BlurResults(");
     boolean first = true;
 
-    sb.append("totalHits:");
-    sb.append(this.totalHits);
+    sb.append("totalResults:");
+    sb.append(this.totalResults);
     first = false;
     if (!first) sb.append(", ");
     sb.append("shardInfo:");
@@ -1030,11 +1030,11 @@ public class Hits implements TBase<Hits, Hits._Fields>, java.io.Serializable, Cl
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("hits:");
-    if (this.hits == null) {
+    sb.append("results:");
+    if (this.results == null) {
       sb.append("null");
     } else {
-      sb.append(this.hits);
+      sb.append(this.results);
     }
     first = false;
     if (!first) sb.append(", ");

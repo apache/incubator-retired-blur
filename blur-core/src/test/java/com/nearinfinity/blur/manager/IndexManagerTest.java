@@ -35,12 +35,12 @@ import org.junit.Test;
 import com.nearinfinity.blur.manager.hits.HitsIterable;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
-import com.nearinfinity.blur.thrift.generated.Hit;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class IndexManagerTest {
@@ -112,18 +112,18 @@ public class IndexManagerTest {
     
     @Test
     public void testSearch() throws Exception {
-        SearchQuery searchQuery = new SearchQuery();
+        BlurQuery searchQuery = new BlurQuery();
         searchQuery.queryStr = "test-fam.name:value";
         searchQuery.superQueryOn = true;
         searchQuery.type = ScoreType.SUPER;
         searchQuery.fetch = 10;
-        searchQuery.minimumNumberOfHits = Long.MAX_VALUE;
+        searchQuery.minimumNumberOfResults = Long.MAX_VALUE;
         searchQuery.maxQueryTime = Long.MAX_VALUE;
         searchQuery.uuid = 1;
         
         HitsIterable iterable = indexManager.search("table", searchQuery, null);
         assertEquals(iterable.getTotalHits(),2);
-        for (Hit hit : iterable) {
+        for (BlurResult hit : iterable) {
             Selector selector = new Selector().setLocationId(hit.getLocationId());
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow("table", selector, fetchResult);
@@ -137,12 +137,12 @@ public class IndexManagerTest {
     
     @Test
     public void testSearchWithFacets() throws Exception {
-        SearchQuery searchQuery = new SearchQuery();
+        BlurQuery searchQuery = new BlurQuery();
         searchQuery.queryStr = "test-fam.name:value";
         searchQuery.superQueryOn = true;
         searchQuery.type = ScoreType.SUPER;
         searchQuery.fetch = 10;
-        searchQuery.minimumNumberOfHits = Long.MAX_VALUE;
+        searchQuery.minimumNumberOfResults = Long.MAX_VALUE;
         searchQuery.maxQueryTime = Long.MAX_VALUE;
         searchQuery.uuid = 1;
         searchQuery.facets = Arrays.asList(new Facet("test-fam.name:value", Long.MAX_VALUE),new Facet("test-fam.name:value-nohit", Long.MAX_VALUE));
@@ -150,7 +150,7 @@ public class IndexManagerTest {
         AtomicLongArray facetedCounts = new AtomicLongArray(2);
         HitsIterable iterable = indexManager.search("table", searchQuery, facetedCounts);
         assertEquals(iterable.getTotalHits(),2);
-        for (Hit hit : iterable) {
+        for (BlurResult hit : iterable) {
             Selector selector = new Selector().setLocationId(hit.getLocationId());
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow("table", selector, fetchResult);

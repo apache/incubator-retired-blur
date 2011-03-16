@@ -22,7 +22,7 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class MultipleHitsIterableTest {
     
@@ -35,15 +35,15 @@ public class MultipleHitsIterableTest {
         iterable.addHitsIterable(newHitsIterable(7,2,34,132));
         iterable.addHitsIterable(newHitsIterable());
         
-        for (Hit hit : iterable) {
+        for (BlurResult hit : iterable) {
             System.out.println(hit);
         }
     }
 
     private HitsIterable newHitsIterable(double... ds) {
-        List<Hit> hits = new ArrayList<Hit>();
+        List<BlurResult> hits = new ArrayList<BlurResult>();
         for (double d : ds) {
-            hits.add(new Hit(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
+            hits.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
         }
         return new HitsIterableSimple(UUID.randomUUID().toString(), hits);
     }

@@ -18,9 +18,9 @@ package com.nearinfinity.blur.manager.hits;
 
 import java.util.Map;
 
-import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 
-public interface HitsIterable extends Iterable<Hit> {
+public interface HitsIterable extends Iterable<BlurResult> {
 
     void skipTo(long skipTo);
 

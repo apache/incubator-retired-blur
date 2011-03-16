@@ -23,14 +23,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 
 public class SearchStatus implements Comparable<SearchStatus> {
 
     private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
     
-    private SearchQuery searchQuery;
+    private BlurQuery searchQuery;
     private String table;
     private Map<Thread,Long> threads = new ConcurrentHashMap<Thread,Long>();
     private int totalThreads = 0;
@@ -43,7 +43,7 @@ public class SearchStatus implements Comparable<SearchStatus> {
 
     private boolean interrupted;
 
-    public SearchStatus(long ttl, String table, SearchQuery searchQuery) {
+    public SearchStatus(long ttl, String table, BlurQuery searchQuery) {
         this.ttl = ttl;
         this.table = table;
         this.searchQuery = searchQuery;
@@ -79,8 +79,8 @@ public class SearchStatus implements Comparable<SearchStatus> {
         }
     }
 
-    public SearchQueryStatus getSearchQueryStatus() {
-        SearchQueryStatus searchQueryStatus = new SearchQueryStatus();
+    public BlurQueryStatus getSearchQueryStatus() {
+        BlurQueryStatus searchQueryStatus = new BlurQueryStatus();
         searchQueryStatus.query = searchQuery;
         searchQueryStatus.complete = getCompleteStatus();
         if (CPU_TIME_SUPPORTED) {

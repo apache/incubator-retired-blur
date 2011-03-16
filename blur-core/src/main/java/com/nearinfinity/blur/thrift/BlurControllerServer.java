@@ -43,12 +43,12 @@ import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
-import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
@@ -97,7 +97,7 @@ public class BlurControllerServer implements Iface {
     }
 
     @Override
-	public Hits search(final String table, final SearchQuery searchQuery) throws BlurException, TException {
+	public BlurResults query(final String table, final BlurQuery searchQuery) throws BlurException, TException {
 		try {
 		    final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
 		    HitsIterable hitsIterable = scatterGather(new BlurCommand<HitsIterable>() {
@@ -105,8 +105,8 @@ public class BlurControllerServer implements Iface {
                 public HitsIterable call(Client client) throws Exception {
                     return new HitsIterableBlurClient(client,table,searchQuery,facetCounts);
                 }
-            },new MergerHitsIterable(searchQuery.minimumNumberOfHits,searchQuery.maxQueryTime));
-			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfHits,facetCounts);
+            },new MergerHitsIterable(searchQuery.minimumNumberOfResults,searchQuery.maxQueryTime));
+			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfResults,facetCounts);
 		} catch (Exception e) {
 			throw new LoggingBlurException(LOG,e,"Unknown error during search of [" +
                     "table=" + table + "searchquery=" + searchQuery + "]");
@@ -133,12 +133,12 @@ public class BlurControllerServer implements Iface {
 	}
 	
     @Override
-    public void cancelSearch(final String table, final long uuid) throws BlurException, TException {
+    public void cancelQuery(final String table, final long uuid) throws BlurException, TException {
         try {
             scatter(new BlurCommand<Void>() {
                 @Override
                 public Void call(Client client) throws Exception {
-                    client.cancelSearch(table, uuid);
+                    client.cancelQuery(table, uuid);
                     return null;
                 }
             });
@@ -148,12 +148,12 @@ public class BlurControllerServer implements Iface {
     }
     
     @Override
-    public List<SearchQueryStatus> currentSearches(final String table) throws BlurException, TException {
+    public List<BlurQueryStatus> currentQueries(final String table) throws BlurException, TException {
         try {
-            return scatterGather(new BlurCommand<List<SearchQueryStatus>>() {
+            return scatterGather(new BlurCommand<List<BlurQueryStatus>>() {
                 @Override
-                public List<SearchQueryStatus> call(Client client) throws Exception {
-                    return client.currentSearches(table);
+                public List<BlurQueryStatus> call(Client client) throws Exception {
+                    return client.currentQueries(table);
                 }
             },new MergerSearchQueryStatus());
         } catch (Exception e) {

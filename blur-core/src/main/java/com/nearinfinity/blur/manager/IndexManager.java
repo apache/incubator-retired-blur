@@ -66,13 +66,13 @@ import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
 import com.nearinfinity.blur.manager.status.SearchStatus;
 import com.nearinfinity.blur.manager.status.SearchStatusManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -162,7 +162,7 @@ public class IndexManager {
         return split[0];
     }
 
-    public HitsIterable search(final String table, SearchQuery searchQuery, AtomicLongArray facetedCounts) throws Exception {
+    public HitsIterable search(final String table, BlurQuery searchQuery, AtomicLongArray facetedCounts) throws Exception {
         final SearchStatus status = statusManager.newSearchStatus(table, searchQuery);
         try {
             Map<String, IndexReader> indexReaders;
@@ -195,21 +195,21 @@ public class IndexManager {
                             status.deattachThread();
                         }
                     }
-                }).merge(new MergerHitsIterable(searchQuery.minimumNumberOfHits, searchQuery.maxQueryTime));
+                }).merge(new MergerHitsIterable(searchQuery.minimumNumberOfResults, searchQuery.maxQueryTime));
         } finally {
             status.deattachThread();
             statusManager.removeStatus(status);
         }
     }
 
-    private Query getFacetedQuery(SearchQuery searchQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
+    private Query getFacetedQuery(BlurQuery searchQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
         if (searchQuery.facets == null) {
             return userQuery;
         }
         return new FacetQuery(userQuery,getFacetQueries(searchQuery,analyzer),counts);
     }
 
-    private Query[] getFacetQueries(SearchQuery searchQuery, Analyzer analyzer) throws ParseException {
+    private Query[] getFacetQueries(BlurQuery searchQuery, Analyzer analyzer) throws ParseException {
         int size = searchQuery.facets.size();
         Query[] queries = new Query[size];
         for (int i = 0; i < size; i++) {
@@ -229,7 +229,7 @@ public class IndexManager {
         statusManager.cancelSearch(table, uuid);
     }
 
-    public List<SearchQueryStatus> currentSearches(String table) {
+    public List<BlurQueryStatus> currentSearches(String table) {
         return statusManager.currentSearches(table);
     }
 

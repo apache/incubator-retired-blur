@@ -468,6 +468,12 @@ public class IndexManager {
     }
     
     private static Term getTerm(String columnFamily, String columnName, String value) {
+        if (columnName == null) {
+            throw new NullPointerException("ColumnName cannot both be null.");
+        }
+        if (columnFamily == null) {
+            return new Term(columnName, value);
+        }
         return new Term(columnFamily + "." + columnName, value);
     }
 

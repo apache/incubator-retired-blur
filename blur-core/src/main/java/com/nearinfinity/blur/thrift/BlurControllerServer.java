@@ -39,7 +39,7 @@ import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
-import com.nearinfinity.blur.manager.status.MergerSearchQueryStatus;
+import com.nearinfinity.blur.manager.status.MergerQueryStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -155,7 +155,7 @@ public class BlurControllerServer implements Iface {
                 public List<BlurQueryStatus> call(Client client) throws Exception {
                     return client.currentQueries(table);
                 }
-            },new MergerSearchQueryStatus());
+            },new MergerQueryStatus());
         } catch (Exception e) {
             throw new LoggingBlurException(LOG,e,"Unknown error while trying to get current searches [" + table + "]");
         }

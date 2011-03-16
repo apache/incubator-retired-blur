@@ -29,69 +29,69 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 
-public class SearchStatusManager {
+public class QueryStatusManager {
     
-    private static final Log LOG = LogFactory.getLog(SearchStatusManager.class);
+    private static final Log LOG = LogFactory.getLog(QueryStatusManager.class);
     private static final Object CONSTANT_VALUE = new Object();
     
-    private Timer searchStatusCleanupTimer;
-    private long searchStatusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(60);
-    private ConcurrentHashMap<SearchStatus, Object> currentSearchStatusCollection = new ConcurrentHashMap<SearchStatus, Object>();
+    private Timer statusCleanupTimer;
+    private long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(60);
+    private ConcurrentHashMap<QueryStatus, Object> currentQueryStatusCollection = new ConcurrentHashMap<QueryStatus, Object>();
 
     public void init() {
-        searchStatusCleanupTimer = new Timer("Search-Status-Cleanup",true);
-        searchStatusCleanupTimer.schedule(new TimerTask() {
+        statusCleanupTimer = new Timer("Query-Status-Cleanup",true);
+        statusCleanupTimer.schedule(new TimerTask() {
             @Override
             public void run() {
                 try {
                     cleanupFinishedSearchStatuses();
                 } catch (Exception e) {
-                    LOG.error("Unknown error while trying to cleanup finished searches.",e);
+                    LOG.error("Unknown error while trying to cleanup finished queries.",e);
                 }
             }
-        }, searchStatusCleanupTimerDelay, searchStatusCleanupTimerDelay);
+        }, statusCleanupTimerDelay, statusCleanupTimerDelay);
     }
     
     public void close() {
-        searchStatusCleanupTimer.cancel();
-        searchStatusCleanupTimer.purge();
+        statusCleanupTimer.cancel();
+        statusCleanupTimer.purge();
     }
     
-    public SearchStatus newSearchStatus(String table, BlurQuery searchQuery) {
-        return addStatus(new SearchStatus(searchStatusCleanupTimerDelay,table,searchQuery).attachThread());
+    public QueryStatus newSearchStatus(String table, BlurQuery blurQuery) {
+        return addStatus(new QueryStatus(statusCleanupTimerDelay,table,blurQuery).attachThread());
     }
     
-    private SearchStatus addStatus(SearchStatus status) {
-        currentSearchStatusCollection.put(status,CONSTANT_VALUE);
+    private QueryStatus addStatus(QueryStatus status) {
+        currentQueryStatusCollection.put(status,CONSTANT_VALUE);
         return status;
     }
     
-    public void removeStatus(SearchStatus status) {
+    public void removeStatus(QueryStatus status) {
         status.setFinished(true);
     }
     
     private void cleanupFinishedSearchStatuses() {
-        LOG.debug("SearchStatus Start count [{0}].",currentSearchStatusCollection.size());
-        Iterator<SearchStatus> iterator = currentSearchStatusCollection.keySet().iterator();
+        LOG.debug("QueryStatus Start count [{0}].",currentQueryStatusCollection.size());
+        Iterator<QueryStatus> iterator = currentQueryStatusCollection.keySet().iterator();
         while (iterator.hasNext()) {
-            SearchStatus status = iterator.next();
+            QueryStatus status = iterator.next();
             if (status.isValidForCleanUp()) {
-                currentSearchStatusCollection.remove(status);
+                currentQueryStatusCollection.remove(status);
             }
         }
-        LOG.debug("SearchStatus Finish count [{0}].",currentSearchStatusCollection.size());
+        LOG.debug("QueryStatus Finish count [{0}].",currentQueryStatusCollection.size());
     }
 
     public long getSearchStatusCleanupTimerDelay() {
-        return searchStatusCleanupTimerDelay;
+        return statusCleanupTimerDelay;
     }
 
     public void setSearchStatusCleanupTimerDelay(long searchStatusCleanupTimerDelay) {
-        this.searchStatusCleanupTimerDelay = searchStatusCleanupTimerDelay;
+        this.statusCleanupTimerDelay = searchStatusCleanupTimerDelay;
     }
 
     public void cancelSearch(String table, long uuid) {
-        for (SearchStatus status : currentSearchStatusCollection.keySet()) {
+        for (QueryStatus status : currentQueryStatusCollection.keySet()) {
             if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
                 status.cancelSearch();
             }
@@ -100,9 +100,9 @@ public class SearchStatusManager {
 
     public List<BlurQueryStatus> currentSearches(String table) {
         List<BlurQueryStatus> result = new ArrayList<BlurQueryStatus>();
-        for (SearchStatus status : currentSearchStatusCollection.keySet()) {
+        for (QueryStatus status : currentQueryStatusCollection.keySet()) {
             if (status.getTable().equals(table)) {
-                result.add(status.getSearchQueryStatus());
+                result.add(status.getQueryStatus());
             }
         }
         return result;

@@ -26,7 +26,7 @@ import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
-public class MergerSearchQueryStatus implements Merger<List<BlurQueryStatus>> {
+public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
 
     @Override
     public List<BlurQueryStatus> merge(BlurExecutorCompletionService<List<BlurQueryStatus>> service) throws Exception {

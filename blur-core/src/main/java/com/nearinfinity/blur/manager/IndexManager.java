@@ -63,8 +63,8 @@ import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableSearcher;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
-import com.nearinfinity.blur.manager.status.SearchStatus;
-import com.nearinfinity.blur.manager.status.SearchStatusManager;
+import com.nearinfinity.blur.manager.status.QueryStatus;
+import com.nearinfinity.blur.manager.status.QueryStatusManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -90,7 +90,7 @@ public class IndexManager {
     private IndexServer indexServer;
     private ExecutorService executor;
     private int threadCount = 32;
-    private SearchStatusManager statusManager = new SearchStatusManager();
+    private QueryStatusManager statusManager = new QueryStatusManager();
     private boolean closed;
 
     public IndexManager() {
@@ -163,7 +163,7 @@ public class IndexManager {
     }
 
     public BlurResultIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
-        final SearchStatus status = statusManager.newSearchStatus(table, blurQuery);
+        final QueryStatus status = statusManager.newSearchStatus(table, blurQuery);
         try {
             Map<String, IndexReader> indexReaders;
             try {

@@ -110,8 +110,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public BlurResults query(String table, BlurQuery searchQuery) throws BlurException, TException {
-            return face.query(table, searchQuery);
+        public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
+            return face.query(table, blurQuery);
         }
 
         @Override

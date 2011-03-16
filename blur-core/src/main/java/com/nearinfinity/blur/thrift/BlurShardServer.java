@@ -51,16 +51,16 @@ public class BlurShardServer implements Iface {
     private boolean closed;
 	
     @Override
-	public BlurResults query(String table, BlurQuery searchQuery) throws BlurException, TException {
+	public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
         checkTableStatus(table);
         try {
-            AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
-            BlurResultIterable hitsIterable = indexManager.query(table, searchQuery, facetCounts);
-            return BlurBaseServer.convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfResults, facetCounts);
+            AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
+            BlurResultIterable hitsIterable = indexManager.query(table, blurQuery, facetCounts);
+            return BlurBaseServer.convertToHits(hitsIterable,blurQuery.start,blurQuery.fetch,blurQuery.minimumNumberOfResults, facetCounts);
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, searchQuery);
+            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
             throw new BlurException(e.getMessage());
         }
 	}

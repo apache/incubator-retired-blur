@@ -97,19 +97,19 @@ public class BlurControllerServer implements Iface {
     }
 
     @Override
-	public BlurResults query(final String table, final BlurQuery searchQuery) throws BlurException, TException {
+	public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
 		try {
-		    final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
+		    final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 		    BlurResultIterable hitsIterable = scatterGather(new BlurCommand<BlurResultIterable>() {
                 @Override
                 public BlurResultIterable call(Client client) throws Exception {
-                    return new BlurResultIterableClient(client,table,searchQuery,facetCounts);
+                    return new BlurResultIterableClient(client,table,blurQuery,facetCounts);
                 }
-            },new MergerBlurResultIterable(searchQuery.minimumNumberOfResults,searchQuery.maxQueryTime));
-			return BlurBaseServer.convertToHits(hitsIterable, searchQuery.start, searchQuery.fetch, searchQuery.minimumNumberOfResults,facetCounts);
+            },new MergerBlurResultIterable(blurQuery.minimumNumberOfResults,blurQuery.maxQueryTime));
+			return BlurBaseServer.convertToHits(hitsIterable, blurQuery.start, blurQuery.fetch, blurQuery.minimumNumberOfResults,facetCounts);
 		} catch (Exception e) {
 			throw new LoggingBlurException(LOG,e,"Unknown error during search of [" +
-                    "table=" + table + "searchquery=" + searchQuery + "]");
+                    "table=" + table + "searchquery=" + blurQuery + "]");
 		}
 	}
 	

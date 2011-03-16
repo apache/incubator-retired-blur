@@ -27,6 +27,7 @@ import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -280,6 +281,23 @@ public class BlurClientEmbedded extends BlurClient {
         @Override
         public void send_query(String table, BlurQuery blurQuery) throws TException {
             throw new RuntimeException("not impl");
+        }
+
+        public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException,
+                TException {
+            return face.querySuggestions(table, blurQuery);
+        }
+
+        @Override
+        public BlurQuerySuggestions recv_querySuggestions() throws BlurException, TException {
+            // TODO Auto-generated method stub
+            return super.recv_querySuggestions();
+        }
+
+        @Override
+        public void send_querySuggestions(String table, BlurQuery blurQuery) throws TException {
+            // TODO Auto-generated method stub
+            super.send_querySuggestions(table, blurQuery);
         }
     }
 }

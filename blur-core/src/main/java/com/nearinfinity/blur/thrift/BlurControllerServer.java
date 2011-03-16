@@ -45,6 +45,7 @@ import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -397,6 +398,11 @@ public class BlurControllerServer implements Iface {
     
     @Override
     public void mutate(List<RowMutation> mutations) throws BlurException, TException {
+        throw new RuntimeException("not impl");
+    }
+
+    @Override
+    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
         throw new RuntimeException("not impl");
     }
 }

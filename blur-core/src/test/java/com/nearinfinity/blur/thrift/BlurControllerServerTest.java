@@ -37,6 +37,7 @@ import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -187,6 +188,12 @@ public class BlurControllerServerTest {
             @Override
             public void mutate(List<RowMutation> mutations) throws BlurException, TException {
                 throw new RuntimeException("no impl");
+            }
+
+            @Override
+            public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException,
+                    TException {
+                throw new RuntimeException("not impl");
             }
         };
     }

@@ -25,6 +25,7 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -99,5 +100,10 @@ public class DoNothingServer implements Iface {
     @Override
     public void mutate(List<RowMutation> mutations) throws BlurException, TException {
         
+    }
+
+    @Override
+    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
+        return null;
     }
 }

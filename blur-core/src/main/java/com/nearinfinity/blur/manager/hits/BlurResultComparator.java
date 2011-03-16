@@ -20,7 +20,7 @@ import java.util.Comparator;
 
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
-public class HitsComparator implements Comparator<BlurResult> {
+public class BlurResultComparator implements Comparator<BlurResult> {
 
     @Override
     public int compare(BlurResult o1, BlurResult o2) {

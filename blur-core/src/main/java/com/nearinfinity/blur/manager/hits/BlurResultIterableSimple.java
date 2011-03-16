@@ -27,13 +27,13 @@ import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurResultIterableSimple implements BlurResultIterable {
     
-    private List<BlurResult> hits;
+    private List<BlurResult> results;
     private Map<String, Long> shardInfo;
     private long skipTo;
 
     public BlurResultIterableSimple(String shard, List<BlurResult> hits) {
         Collections.sort(hits,BlurConstants.HITS_COMPARATOR);
-        this.hits = hits;
+        this.results = hits;
         this.shardInfo = new TreeMap<String, Long>();
         this.shardInfo.put(shard, (long) hits.size());
     }
@@ -45,7 +45,7 @@ public class BlurResultIterableSimple implements BlurResultIterable {
 
     @Override
     public long getTotalResults() {
-        return hits.size();
+        return results.size();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class BlurResultIterableSimple implements BlurResultIterable {
     @Override
     public Iterator<BlurResult> iterator() {
         long start = 0;
-        Iterator<BlurResult> iterator = hits.iterator();
+        Iterator<BlurResult> iterator = results.iterator();
         while (iterator.hasNext() && start < skipTo) {
             iterator.next();
             start++;

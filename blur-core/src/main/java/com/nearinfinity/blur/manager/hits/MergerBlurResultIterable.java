@@ -24,11 +24,11 @@ import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
 public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
 
-    private long minimumNumberOfHits;
+    private long minimumNumberOfResults;
     private long maxQueryTime;
 
     public MergerBlurResultIterable(long minimumNumberOfHits, long maxQueryTime) {
-        this.minimumNumberOfHits = minimumNumberOfHits;
+        this.minimumNumberOfResults = minimumNumberOfHits;
         this.maxQueryTime = maxQueryTime;
     }
 
@@ -38,7 +38,7 @@ public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
         while (service.getRemainingCount() > 0) {
             Future<BlurResultIterable> future = service.poll(maxQueryTime, TimeUnit.MILLISECONDS);
             iterable.addHitsIterable(future.get());
-            if (iterable.getTotalResults() >= minimumNumberOfHits) {
+            if (iterable.getTotalResults() >= minimumNumberOfResults) {
                 return iterable;
             }
         }

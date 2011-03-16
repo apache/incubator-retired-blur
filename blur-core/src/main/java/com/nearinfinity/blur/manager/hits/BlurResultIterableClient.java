@@ -43,7 +43,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
     private ScoreType type;
     private String postSuperFilter;
     private String preSuperFilter;
-    private long minimumNumberOfHits;
+    private long minimumNumberOfResults;
     private long maxQueryTime;
     private BlurResults hits;
     private int fetchCount = 100;
@@ -63,7 +63,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
         this.type = searchQuery.type;
         this.postSuperFilter = searchQuery.postSuperFilter;
         this.preSuperFilter = searchQuery.preSuperFilter;
-        this.minimumNumberOfHits = searchQuery.minimumNumberOfResults;
+        this.minimumNumberOfResults = searchQuery.minimumNumberOfResults;
         this.maxQueryTime = searchQuery.maxQueryTime;
         this.uuid = searchQuery.uuid;
         this.facetCounts = facetCounts;
@@ -75,7 +75,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
             long cursor = fetchCount * batch;
             
             BlurQuery searchQuery = new BlurQuery(query, superQueryOn, type, 
-                    postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfHits, 
+                    postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfResults, 
                     maxQueryTime, uuid, null, false, null);
             
             hits = client.query(table, searchQuery);
@@ -135,7 +135,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
 
         @Override
         public boolean hasNext() {
-            if (position < minimumNumberOfHits && position < totalHits) {
+            if (position < minimumNumberOfResults && position < totalHits) {
                 return true;
             }
             return false;

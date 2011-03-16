@@ -91,12 +91,12 @@ public class BlurControllerServerTest {
     }
 
     @Test
-    public void testSearch() throws BlurException, TException {
-        BlurQuery searchQuery = new BlurQuery();
-        searchQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
-        searchQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        BlurResults hits = server.query(TABLE, searchQuery);
-        assertNotNull(hits);
+    public void testQuery() throws BlurException, TException {
+        BlurQuery blurQuery = new BlurQuery();
+        blurQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
+        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+        BlurResults results = server.query(TABLE, blurQuery);
+        assertNotNull(results);
     }
     
     @Test
@@ -144,9 +144,9 @@ public class BlurControllerServerTest {
             
             @Override
             public BlurResults query(String arg0, BlurQuery arg1) throws BlurException, TException {
-                BlurResults hits = new BlurResults();
-                hits.putToShardInfo(node, 0);
-                return hits;
+                BlurResults results = new BlurResults();
+                results.putToShardInfo(node, 0);
+                return results;
             }
             
             @Override

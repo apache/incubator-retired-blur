@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.hits;
+package com.nearinfinity.blur.manager.results;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,28 +27,28 @@ import com.nearinfinity.blur.manager.results.BlurResultIterableMultiple;
 import com.nearinfinity.blur.manager.results.BlurResultIterableSimple;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
-public class MultipleHitsIterableTest {
+public class MultipleBlurResultIterableTest {
     
     @Test
     public void testMultipleHitsIterable() {
         BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
-        iterable.addHitsIterable(newHitsIterable(0,0.1,3,2,9,10,2));
-        iterable.addHitsIterable(newHitsIterable(7,2,9,1,34,53,12));
-        iterable.addHitsIterable(newHitsIterable(4,3));
-        iterable.addHitsIterable(newHitsIterable(7,2,34,132));
-        iterable.addHitsIterable(newHitsIterable());
+        iterable.addBlurResultIterable(newBlurResultIterable(0,0.1,3,2,9,10,2));
+        iterable.addBlurResultIterable(newBlurResultIterable(7,2,9,1,34,53,12));
+        iterable.addBlurResultIterable(newBlurResultIterable(4,3));
+        iterable.addBlurResultIterable(newBlurResultIterable(7,2,34,132));
+        iterable.addBlurResultIterable(newBlurResultIterable());
         
         for (BlurResult hit : iterable) {
             System.out.println(hit);
         }
     }
 
-    private BlurResultIterable newHitsIterable(double... ds) {
-        List<BlurResult> hits = new ArrayList<BlurResult>();
+    private BlurResultIterable newBlurResultIterable(double... ds) {
+        List<BlurResult> results = new ArrayList<BlurResult>();
         for (double d : ds) {
-            hits.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
+            results.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
         }
-        return new BlurResultIterableSimple(UUID.randomUUID().toString(), hits);
+        return new BlurResultIterableSimple(UUID.randomUUID().toString(), results);
     }
 
 }

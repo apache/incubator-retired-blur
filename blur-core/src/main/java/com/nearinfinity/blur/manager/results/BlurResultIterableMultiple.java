@@ -31,12 +31,12 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
     private long totalResults;
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private long skipTo;
-    private List<BlurResultIterable> hits = new ArrayList<BlurResultIterable>();
+    private List<BlurResultIterable> results = new ArrayList<BlurResultIterable>();
 
-    public void addHitsIterable(BlurResultIterable iterable) {
+    public void addBlurResultIterable(BlurResultIterable iterable) {
         totalResults += iterable.getTotalResults();
         shardInfo.putAll(iterable.getShardInfo());
-        hits.add(iterable);
+        results.add(iterable);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
 
     @Override
     public Iterator<BlurResult> iterator() {
-        MultipleHitsIterator iterator = new MultipleHitsIterator(hits);
+        MultipleHitsIterator iterator = new MultipleHitsIterator(results);
         long start = 0;
         while (iterator.hasNext() && start < skipTo) {
             iterator.next();

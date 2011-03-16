@@ -111,20 +111,20 @@ public class IndexManagerTest {
     }
     
     @Test
-    public void testSearch() throws Exception {
-        BlurQuery searchQuery = new BlurQuery();
-        searchQuery.queryStr = "test-fam.name:value";
-        searchQuery.superQueryOn = true;
-        searchQuery.type = ScoreType.SUPER;
-        searchQuery.fetch = 10;
-        searchQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        searchQuery.maxQueryTime = Long.MAX_VALUE;
-        searchQuery.uuid = 1;
+    public void testQuery() throws Exception {
+        BlurQuery blurQuery = new BlurQuery();
+        blurQuery.queryStr = "test-fam.name:value";
+        blurQuery.superQueryOn = true;
+        blurQuery.type = ScoreType.SUPER;
+        blurQuery.fetch = 10;
+        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+        blurQuery.maxQueryTime = Long.MAX_VALUE;
+        blurQuery.uuid = 1;
         
-        BlurResultIterable iterable = indexManager.query("table", searchQuery, null);
+        BlurResultIterable iterable = indexManager.query("table", blurQuery, null);
         assertEquals(iterable.getTotalResults(),2);
-        for (BlurResult hit : iterable) {
-            Selector selector = new Selector().setLocationId(hit.getLocationId());
+        for (BlurResult result : iterable) {
+            Selector selector = new Selector().setLocationId(result.getLocationId());
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow("table", selector, fetchResult);
             System.out.println(fetchResult.getRow());
@@ -136,22 +136,22 @@ public class IndexManagerTest {
     }
     
     @Test
-    public void testSearchWithFacets() throws Exception {
-        BlurQuery searchQuery = new BlurQuery();
-        searchQuery.queryStr = "test-fam.name:value";
-        searchQuery.superQueryOn = true;
-        searchQuery.type = ScoreType.SUPER;
-        searchQuery.fetch = 10;
-        searchQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        searchQuery.maxQueryTime = Long.MAX_VALUE;
-        searchQuery.uuid = 1;
-        searchQuery.facets = Arrays.asList(new Facet("test-fam.name:value", Long.MAX_VALUE),new Facet("test-fam.name:value-nohit", Long.MAX_VALUE));
+    public void testQueryWithFacets() throws Exception {
+        BlurQuery blurQuery = new BlurQuery();
+        blurQuery.queryStr = "test-fam.name:value";
+        blurQuery.superQueryOn = true;
+        blurQuery.type = ScoreType.SUPER;
+        blurQuery.fetch = 10;
+        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+        blurQuery.maxQueryTime = Long.MAX_VALUE;
+        blurQuery.uuid = 1;
+        blurQuery.facets = Arrays.asList(new Facet("test-fam.name:value", Long.MAX_VALUE),new Facet("test-fam.name:value-nohit", Long.MAX_VALUE));
         
         AtomicLongArray facetedCounts = new AtomicLongArray(2);
-        BlurResultIterable iterable = indexManager.query("table", searchQuery, facetedCounts);
+        BlurResultIterable iterable = indexManager.query("table", blurQuery, facetedCounts);
         assertEquals(iterable.getTotalResults(),2);
-        for (BlurResult hit : iterable) {
-            Selector selector = new Selector().setLocationId(hit.getLocationId());
+        for (BlurResult result : iterable) {
+            Selector selector = new Selector().setLocationId(result.getLocationId());
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow("table", selector, fetchResult);
             System.out.println(fetchResult.getRow());

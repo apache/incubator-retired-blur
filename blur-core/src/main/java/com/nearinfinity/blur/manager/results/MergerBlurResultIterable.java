@@ -37,7 +37,7 @@ public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
         BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
         while (service.getRemainingCount() > 0) {
             Future<BlurResultIterable> future = service.poll(maxQueryTime, TimeUnit.MILLISECONDS);
-            iterable.addHitsIterable(future.get());
+            iterable.addBlurResultIterable(future.get());
             if (iterable.getTotalResults() >= minimumNumberOfResults) {
                 return iterable;
             }

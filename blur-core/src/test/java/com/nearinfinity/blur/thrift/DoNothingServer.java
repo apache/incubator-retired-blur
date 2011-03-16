@@ -61,7 +61,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public BlurResults query(String table, BlurQuery searchQuery) throws BlurException, TException {
+    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
         return null;
     }
 

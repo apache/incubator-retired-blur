@@ -22,6 +22,9 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+import com.nearinfinity.blur.manager.results.BlurResultIterable;
+import com.nearinfinity.blur.manager.results.BlurResultIterableMultiple;
+import com.nearinfinity.blur.manager.results.BlurResultIterableSimple;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class MultipleHitsIterableTest {

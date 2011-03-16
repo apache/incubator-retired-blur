@@ -21,6 +21,8 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import com.nearinfinity.blur.manager.results.PeekableIterator;
+
 public class PeekableIteratorTest {
     
     @Test

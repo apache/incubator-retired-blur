@@ -32,8 +32,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nearinfinity.blur.manager.hits.BlurResultIterable;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
+import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;

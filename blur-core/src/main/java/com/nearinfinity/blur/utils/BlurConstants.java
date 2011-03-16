@@ -18,9 +18,9 @@ package com.nearinfinity.blur.utils;
 
 import java.util.Comparator;
 
-import com.nearinfinity.blur.manager.hits.BlurResultComparator;
-import com.nearinfinity.blur.manager.hits.BlurResultPeekableIteratorComparator;
-import com.nearinfinity.blur.manager.hits.PeekableIterator;
+import com.nearinfinity.blur.manager.results.BlurResultComparator;
+import com.nearinfinity.blur.manager.results.BlurResultPeekableIteratorComparator;
+import com.nearinfinity.blur.manager.results.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;

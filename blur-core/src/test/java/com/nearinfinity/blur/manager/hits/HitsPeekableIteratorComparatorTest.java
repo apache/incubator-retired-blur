@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.nearinfinity.blur.manager.results.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.BlurConstants;
 

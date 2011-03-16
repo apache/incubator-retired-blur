@@ -30,7 +30,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
-import com.nearinfinity.blur.manager.hits.BlurResultIterable;
+import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;

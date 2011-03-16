@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.hits;
+package com.nearinfinity.blur.manager.results;
 
-import java.util.Map;
+import java.util.Comparator;
 
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
-public interface BlurResultIterable extends Iterable<BlurResult> {
+public class BlurResultComparator implements Comparator<BlurResult> {
 
-    void skipTo(long skipTo);
-
-    long getTotalResults();
-
-    Map<String, Long> getShardInfo();
+    @Override
+    public int compare(BlurResult o1, BlurResult o2) {
+        int compare = Double.compare(o2.score, o1.score);
+        if (compare == 0) {
+            return o2.locationId.compareTo(o1.locationId);
+        }
+        return compare;
+    }
 
 }

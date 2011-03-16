@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.manager.IndexServer;
-import com.nearinfinity.blur.manager.hits.BlurResultIterable;
+import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;

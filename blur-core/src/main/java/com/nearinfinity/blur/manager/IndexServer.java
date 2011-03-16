@@ -54,6 +54,9 @@ public interface IndexServer {
 
     /**
      * Gets a map of the index readers for current running node.
+     * <p/>
+     * Keys are shard names, values are the associated Lucene index readers.
+     *
      * @param table the table name.
      * @return the map of readers.
      * @throws IOException

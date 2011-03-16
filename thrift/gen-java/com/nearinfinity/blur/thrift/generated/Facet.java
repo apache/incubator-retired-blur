@@ -30,15 +30,15 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
   private static final TStruct STRUCT_DESC = new TStruct("Facet");
 
   private static final TField QUERY_STR_FIELD_DESC = new TField("queryStr", TType.STRING, (short)1);
-  private static final TField MINIMUM_NUMBER_OF_HITS_FIELD_DESC = new TField("minimumNumberOfHits", TType.I64, (short)2);
+  private static final TField MINIMUM_NUMBER_OF_BLUR_RESULTS_FIELD_DESC = new TField("minimumNumberOfBlurResults", TType.I64, (short)2);
 
   public String queryStr;
-  public long minimumNumberOfHits;
+  public long minimumNumberOfBlurResults;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     QUERY_STR((short)1, "queryStr"),
-    MINIMUM_NUMBER_OF_HITS((short)2, "minimumNumberOfHits");
+    MINIMUM_NUMBER_OF_BLUR_RESULTS((short)2, "minimumNumberOfBlurResults");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -55,8 +55,8 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
       switch(fieldId) {
         case 1: // QUERY_STR
           return QUERY_STR;
-        case 2: // MINIMUM_NUMBER_OF_HITS
-          return MINIMUM_NUMBER_OF_HITS;
+        case 2: // MINIMUM_NUMBER_OF_BLUR_RESULTS
+          return MINIMUM_NUMBER_OF_BLUR_RESULTS;
         default:
           return null;
       }
@@ -97,7 +97,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
   }
 
   // isset id assignments
-  private static final int __MINIMUMNUMBEROFHITS_ISSET_ID = 0;
+  private static final int __MINIMUMNUMBEROFBLURRESULTS_ISSET_ID = 0;
   private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, FieldMetaData> metaDataMap;
@@ -105,7 +105,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.QUERY_STR, new FieldMetaData("queryStr", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_HITS, new FieldMetaData("minimumNumberOfHits", TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_BLUR_RESULTS, new FieldMetaData("minimumNumberOfBlurResults", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(Facet.class, metaDataMap);
@@ -116,12 +116,12 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
 
   public Facet(
     String queryStr,
-    long minimumNumberOfHits)
+    long minimumNumberOfBlurResults)
   {
     this();
     this.queryStr = queryStr;
-    this.minimumNumberOfHits = minimumNumberOfHits;
-    setMinimumNumberOfHitsIsSet(true);
+    this.minimumNumberOfBlurResults = minimumNumberOfBlurResults;
+    setMinimumNumberOfBlurResultsIsSet(true);
   }
 
   /**
@@ -133,7 +133,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     if (other.isSetQueryStr()) {
       this.queryStr = other.queryStr;
     }
-    this.minimumNumberOfHits = other.minimumNumberOfHits;
+    this.minimumNumberOfBlurResults = other.minimumNumberOfBlurResults;
   }
 
   public Facet deepCopy() {
@@ -143,8 +143,8 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
   @Override
   public void clear() {
     this.queryStr = null;
-    setMinimumNumberOfHitsIsSet(false);
-    this.minimumNumberOfHits = 0;
+    setMinimumNumberOfBlurResultsIsSet(false);
+    this.minimumNumberOfBlurResults = 0;
   }
 
   public String getQueryStr() {
@@ -171,27 +171,27 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     }
   }
 
-  public long getMinimumNumberOfHits() {
-    return this.minimumNumberOfHits;
+  public long getMinimumNumberOfBlurResults() {
+    return this.minimumNumberOfBlurResults;
   }
 
-  public Facet setMinimumNumberOfHits(long minimumNumberOfHits) {
-    this.minimumNumberOfHits = minimumNumberOfHits;
-    setMinimumNumberOfHitsIsSet(true);
+  public Facet setMinimumNumberOfBlurResults(long minimumNumberOfBlurResults) {
+    this.minimumNumberOfBlurResults = minimumNumberOfBlurResults;
+    setMinimumNumberOfBlurResultsIsSet(true);
     return this;
   }
 
-  public void unsetMinimumNumberOfHits() {
-    __isset_bit_vector.clear(__MINIMUMNUMBEROFHITS_ISSET_ID);
+  public void unsetMinimumNumberOfBlurResults() {
+    __isset_bit_vector.clear(__MINIMUMNUMBEROFBLURRESULTS_ISSET_ID);
   }
 
-  /** Returns true if field minimumNumberOfHits is set (has been asigned a value) and false otherwise */
-  public boolean isSetMinimumNumberOfHits() {
-    return __isset_bit_vector.get(__MINIMUMNUMBEROFHITS_ISSET_ID);
+  /** Returns true if field minimumNumberOfBlurResults is set (has been asigned a value) and false otherwise */
+  public boolean isSetMinimumNumberOfBlurResults() {
+    return __isset_bit_vector.get(__MINIMUMNUMBEROFBLURRESULTS_ISSET_ID);
   }
 
-  public void setMinimumNumberOfHitsIsSet(boolean value) {
-    __isset_bit_vector.set(__MINIMUMNUMBEROFHITS_ISSET_ID, value);
+  public void setMinimumNumberOfBlurResultsIsSet(boolean value) {
+    __isset_bit_vector.set(__MINIMUMNUMBEROFBLURRESULTS_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
@@ -204,11 +204,11 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
       }
       break;
 
-    case MINIMUM_NUMBER_OF_HITS:
+    case MINIMUM_NUMBER_OF_BLUR_RESULTS:
       if (value == null) {
-        unsetMinimumNumberOfHits();
+        unsetMinimumNumberOfBlurResults();
       } else {
-        setMinimumNumberOfHits((Long)value);
+        setMinimumNumberOfBlurResults((Long)value);
       }
       break;
 
@@ -220,8 +220,8 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     case QUERY_STR:
       return getQueryStr();
 
-    case MINIMUM_NUMBER_OF_HITS:
-      return new Long(getMinimumNumberOfHits());
+    case MINIMUM_NUMBER_OF_BLUR_RESULTS:
+      return new Long(getMinimumNumberOfBlurResults());
 
     }
     throw new IllegalStateException();
@@ -236,8 +236,8 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     switch (field) {
     case QUERY_STR:
       return isSetQueryStr();
-    case MINIMUM_NUMBER_OF_HITS:
-      return isSetMinimumNumberOfHits();
+    case MINIMUM_NUMBER_OF_BLUR_RESULTS:
+      return isSetMinimumNumberOfBlurResults();
     }
     throw new IllegalStateException();
   }
@@ -264,12 +264,12 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
         return false;
     }
 
-    boolean this_present_minimumNumberOfHits = true;
-    boolean that_present_minimumNumberOfHits = true;
-    if (this_present_minimumNumberOfHits || that_present_minimumNumberOfHits) {
-      if (!(this_present_minimumNumberOfHits && that_present_minimumNumberOfHits))
+    boolean this_present_minimumNumberOfBlurResults = true;
+    boolean that_present_minimumNumberOfBlurResults = true;
+    if (this_present_minimumNumberOfBlurResults || that_present_minimumNumberOfBlurResults) {
+      if (!(this_present_minimumNumberOfBlurResults && that_present_minimumNumberOfBlurResults))
         return false;
-      if (this.minimumNumberOfHits != that.minimumNumberOfHits)
+      if (this.minimumNumberOfBlurResults != that.minimumNumberOfBlurResults)
         return false;
     }
 
@@ -299,12 +299,12 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetMinimumNumberOfHits()).compareTo(typedOther.isSetMinimumNumberOfHits());
+    lastComparison = Boolean.valueOf(isSetMinimumNumberOfBlurResults()).compareTo(typedOther.isSetMinimumNumberOfBlurResults());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetMinimumNumberOfHits()) {
-      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfHits, typedOther.minimumNumberOfHits);
+    if (isSetMinimumNumberOfBlurResults()) {
+      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfBlurResults, typedOther.minimumNumberOfBlurResults);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -333,10 +333,10 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // MINIMUM_NUMBER_OF_HITS
+        case 2: // MINIMUM_NUMBER_OF_BLUR_RESULTS
           if (field.type == TType.I64) {
-            this.minimumNumberOfHits = iprot.readI64();
-            setMinimumNumberOfHitsIsSet(true);
+            this.minimumNumberOfBlurResults = iprot.readI64();
+            setMinimumNumberOfBlurResultsIsSet(true);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -361,8 +361,8 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
       oprot.writeString(this.queryStr);
       oprot.writeFieldEnd();
     }
-    oprot.writeFieldBegin(MINIMUM_NUMBER_OF_HITS_FIELD_DESC);
-    oprot.writeI64(this.minimumNumberOfHits);
+    oprot.writeFieldBegin(MINIMUM_NUMBER_OF_BLUR_RESULTS_FIELD_DESC);
+    oprot.writeI64(this.minimumNumberOfBlurResults);
     oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -381,8 +381,8 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("minimumNumberOfHits:");
-    sb.append(this.minimumNumberOfHits);
+    sb.append("minimumNumberOfBlurResults:");
+    sb.append(this.minimumNumberOfBlurResults);
     first = false;
     sb.append(")");
     return sb.toString();

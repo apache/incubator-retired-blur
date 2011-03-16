@@ -18,12 +18,12 @@ package com.nearinfinity.blur.utils;
 
 import java.util.Comparator;
 
-import com.nearinfinity.blur.manager.hits.HitsComparator;
-import com.nearinfinity.blur.manager.hits.HitsPeekableIteratorComparator;
-import com.nearinfinity.blur.manager.hits.PeekableIterator;
+import com.nearinfinity.blur.manager.results.BlurResultComparator;
+import com.nearinfinity.blur.manager.results.BlurResultPeekableIteratorComparator;
+import com.nearinfinity.blur.manager.results.PeekableIterator;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
-import com.nearinfinity.blur.thrift.generated.Hit;
 
 
 public class BlurConstants {
@@ -33,8 +33,8 @@ public class BlurConstants {
 	public static final String SHARD_PREFIX = "shard-";
 	public static final Comparator<? super ColumnFamily> COLUMN_FAMILY_COMPARATOR = new ColumnFamilyComparator();
 	public static final Comparator<? super Column> COLUMN_COMPARATOR = new ColumnComparator();
-    public static final Comparator<? super PeekableIterator<Hit>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new HitsPeekableIteratorComparator();
-    public static final Comparator<? super Hit> HITS_COMPARATOR = new HitsComparator();
+    public static final Comparator<? super PeekableIterator<BlurResult>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
+    public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
 
     public static final String PRIME_DOC = "_prime_";
     public static final String PRIME_DOC_VALUE = "true";

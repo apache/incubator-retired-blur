@@ -35,12 +35,13 @@ import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
-import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -91,12 +92,12 @@ public class BlurControllerServerTest {
     }
 
     @Test
-    public void testSearch() throws BlurException, TException {
-        SearchQuery searchQuery = new SearchQuery();
-        searchQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
-        searchQuery.minimumNumberOfHits = Long.MAX_VALUE;
-        Hits hits = server.search(TABLE, searchQuery);
-        assertNotNull(hits);
+    public void testQuery() throws BlurException, TException {
+        BlurQuery blurQuery = new BlurQuery();
+        blurQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
+        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+        BlurResults results = server.query(TABLE, blurQuery);
+        assertNotNull(results);
     }
     
     @Test
@@ -143,10 +144,10 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public Hits search(String arg0, SearchQuery arg1) throws BlurException, TException {
-                Hits hits = new Hits();
-                hits.putToShardInfo(node, 0);
-                return hits;
+            public BlurResults query(String arg0, BlurQuery arg1) throws BlurException, TException {
+                BlurResults results = new BlurResults();
+                results.putToShardInfo(node, 0);
+                return results;
             }
             
             @Override
@@ -170,7 +171,7 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public List<SearchQueryStatus> currentSearches(String arg0) throws BlurException, TException {
+            public List<BlurQueryStatus> currentQueries(String arg0) throws BlurException, TException {
                 throw new RuntimeException("no impl");
             }
             
@@ -180,13 +181,19 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public void cancelSearch(String table, long arg0) throws BlurException, TException {
+            public void cancelQuery(String table, long arg0) throws BlurException, TException {
                 throw new RuntimeException("no impl");                
             }
 
             @Override
             public void mutate(List<RowMutation> mutations) throws BlurException, TException {
                 throw new RuntimeException("no impl");
+            }
+
+            @Override
+            public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException,
+                    TException {
+                throw new RuntimeException("not impl");
             }
         };
     }

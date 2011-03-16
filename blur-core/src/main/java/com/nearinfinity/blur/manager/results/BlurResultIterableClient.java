@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.hits;
+package com.nearinfinity.blur.manager.results;
 
 import java.util.Iterator;
 import java.util.List;
@@ -25,15 +25,15 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
-import com.nearinfinity.blur.thrift.generated.Hit;
-import com.nearinfinity.blur.thrift.generated.Hits;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
-public class HitsIterableBlurClient implements HitsIterable {
+public class BlurResultIterableClient implements BlurResultIterable {
     
-    private static final Log LOG = LogFactory.getLog(HitsIterableBlurClient.class);
+    private static final Log LOG = LogFactory.getLog(BlurResultIterableClient.class);
 
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private Client client;
@@ -43,9 +43,9 @@ public class HitsIterableBlurClient implements HitsIterable {
     private ScoreType type;
     private String postSuperFilter;
     private String preSuperFilter;
-    private long minimumNumberOfHits;
+    private long minimumNumberOfResults;
     private long maxQueryTime;
-    private Hits hits;
+    private BlurResults hits;
     private int fetchCount = 100;
     private int batch = 0;
     private long totalHits;
@@ -55,7 +55,7 @@ public class HitsIterableBlurClient implements HitsIterable {
 
     private boolean alreadyProcessed;
 
-    public HitsIterableBlurClient(Blur.Client client, String table, SearchQuery searchQuery, AtomicLongArray facetCounts) {
+    public BlurResultIterableClient(Blur.Client client, String table, BlurQuery searchQuery, AtomicLongArray facetCounts) {
         this.client = client;
         this.table = table;
         this.query = searchQuery.queryStr;
@@ -63,7 +63,7 @@ public class HitsIterableBlurClient implements HitsIterable {
         this.type = searchQuery.type;
         this.postSuperFilter = searchQuery.postSuperFilter;
         this.preSuperFilter = searchQuery.preSuperFilter;
-        this.minimumNumberOfHits = searchQuery.minimumNumberOfHits;
+        this.minimumNumberOfResults = searchQuery.minimumNumberOfResults;
         this.maxQueryTime = searchQuery.maxQueryTime;
         this.uuid = searchQuery.uuid;
         this.facetCounts = facetCounts;
@@ -74,13 +74,13 @@ public class HitsIterableBlurClient implements HitsIterable {
         try {
             long cursor = fetchCount * batch;
             
-            SearchQuery searchQuery = new SearchQuery(query, superQueryOn, type, 
-                    postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfHits, 
+            BlurQuery searchQuery = new BlurQuery(query, superQueryOn, type, 
+                    postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfResults, 
                     maxQueryTime, uuid, null, false, null);
             
-            hits = client.search(table, searchQuery);
+            hits = client.query(table, searchQuery);
             addFacets();
-            totalHits = hits.totalHits;
+            totalHits = hits.totalResults;
             shardInfo.putAll(hits.shardInfo);
             batch++;
         } catch (Exception e) {
@@ -108,7 +108,7 @@ public class HitsIterableBlurClient implements HitsIterable {
     }
 
     @Override
-    public long getTotalHits() {
+    public long getTotalResults() {
         return totalHits;
     }
 
@@ -118,7 +118,7 @@ public class HitsIterableBlurClient implements HitsIterable {
     }
 
     @Override
-    public Iterator<Hit> iterator() {
+    public Iterator<BlurResult> iterator() {
         SearchIterator iterator = new SearchIterator();
         long start = 0;
         while (iterator.hasNext() && start < skipTo) {
@@ -128,27 +128,27 @@ public class HitsIterableBlurClient implements HitsIterable {
         return iterator;
     }
     
-    public class SearchIterator implements Iterator<Hit> {
+    public class SearchIterator implements Iterator<BlurResult> {
         
         private int position = 0;
         private int relposition = 0;
 
         @Override
         public boolean hasNext() {
-            if (position < minimumNumberOfHits && position < totalHits) {
+            if (position < minimumNumberOfResults && position < totalHits) {
                 return true;
             }
             return false;
         }
 
         @Override
-        public Hit next() {
-            if (relposition >= hits.hits.size()) {
+        public BlurResult next() {
+            if (relposition >= hits.results.size()) {
                 performSearch();
                 relposition = 0;
             }
             position++;
-            return hits.hits.get(relposition++);
+            return hits.results.get(relposition++);
         }
 
         @Override

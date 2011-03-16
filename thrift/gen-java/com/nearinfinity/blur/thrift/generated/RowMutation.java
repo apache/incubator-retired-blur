@@ -445,14 +445,14 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
         case 3: // RECORD_MUTATIONS
           if (field.type == TType.LIST) {
             {
-              TList _list72 = iprot.readListBegin();
-              this.recordMutations = new ArrayList<RecordMutation>(_list72.size);
-              for (int _i73 = 0; _i73 < _list72.size; ++_i73)
+              TList _list85 = iprot.readListBegin();
+              this.recordMutations = new ArrayList<RecordMutation>(_list85.size);
+              for (int _i86 = 0; _i86 < _list85.size; ++_i86)
               {
-                RecordMutation _elem74;
-                _elem74 = new RecordMutation();
-                _elem74.read(iprot);
-                this.recordMutations.add(_elem74);
+                RecordMutation _elem87;
+                _elem87 = new RecordMutation();
+                _elem87.read(iprot);
+                this.recordMutations.add(_elem87);
               }
               iprot.readListEnd();
             }
@@ -489,9 +489,9 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
       oprot.writeFieldBegin(RECORD_MUTATIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new TList(TType.STRUCT, this.recordMutations.size()));
-        for (RecordMutation _iter75 : this.recordMutations)
+        for (RecordMutation _iter88 : this.recordMutations)
         {
-          _iter75.write(oprot);
+          _iter88.write(oprot);
         }
         oprot.writeListEnd();
       }

@@ -521,14 +521,14 @@ public class RecordMutation implements TBase<RecordMutation, RecordMutation._Fie
         case 4: // RECORD
           if (field.type == TType.SET) {
             {
-              TSet _set68 = iprot.readSetBegin();
-              this.record = new HashSet<Column>(2*_set68.size);
-              for (int _i69 = 0; _i69 < _set68.size; ++_i69)
+              TSet _set81 = iprot.readSetBegin();
+              this.record = new HashSet<Column>(2*_set81.size);
+              for (int _i82 = 0; _i82 < _set81.size; ++_i82)
               {
-                Column _elem70;
-                _elem70 = new Column();
-                _elem70.read(iprot);
-                this.record.add(_elem70);
+                Column _elem83;
+                _elem83 = new Column();
+                _elem83.read(iprot);
+                this.record.add(_elem83);
               }
               iprot.readSetEnd();
             }
@@ -570,9 +570,9 @@ public class RecordMutation implements TBase<RecordMutation, RecordMutation._Fie
       oprot.writeFieldBegin(RECORD_FIELD_DESC);
       {
         oprot.writeSetBegin(new TSet(TType.STRUCT, this.record.size()));
-        for (Column _iter71 : this.record)
+        for (Column _iter84 : this.record)
         {
-          _iter71.write(oprot);
+          _iter84.write(oprot);
         }
         oprot.writeSetEnd();
       }

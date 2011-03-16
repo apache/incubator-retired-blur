@@ -26,8 +26,8 @@ import org.apache.thrift.meta_data.*;
 import org.apache.thrift.transport.*;
 import org.apache.thrift.protocol.*;
 
-public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQueryStatus._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("SearchQueryStatus");
+public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._Fields>, java.io.Serializable, Cloneable {
+  private static final TStruct STRUCT_DESC = new TStruct("BlurQueryStatus");
 
   private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)1);
   private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)2);
@@ -37,7 +37,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   private static final TField INTERRUPTED_FIELD_DESC = new TField("interrupted", TType.BOOL, (short)6);
   private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)7);
 
-  public SearchQuery query;
+  public BlurQuery query;
   public long realTime;
   public long cpuTime;
   public double complete;
@@ -134,7 +134,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   static {
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, SearchQuery.class)));
+        new StructMetaData(TType.STRUCT, BlurQuery.class)));
     tmpMap.put(_Fields.REAL_TIME, new FieldMetaData("realTime", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     tmpMap.put(_Fields.CPU_TIME, new FieldMetaData("cpuTime", TFieldRequirementType.DEFAULT, 
@@ -148,14 +148,14 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(SearchQueryStatus.class, metaDataMap);
+    FieldMetaData.addStructMetaDataMap(BlurQueryStatus.class, metaDataMap);
   }
 
-  public SearchQueryStatus() {
+  public BlurQueryStatus() {
   }
 
-  public SearchQueryStatus(
-    SearchQuery query,
+  public BlurQueryStatus(
+    BlurQuery query,
     long realTime,
     long cpuTime,
     double complete,
@@ -182,11 +182,11 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public SearchQueryStatus(SearchQueryStatus other) {
+  public BlurQueryStatus(BlurQueryStatus other) {
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetQuery()) {
-      this.query = new SearchQuery(other.query);
+      this.query = new BlurQuery(other.query);
     }
     this.realTime = other.realTime;
     this.cpuTime = other.cpuTime;
@@ -196,8 +196,8 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     this.uuid = other.uuid;
   }
 
-  public SearchQueryStatus deepCopy() {
-    return new SearchQueryStatus(this);
+  public BlurQueryStatus deepCopy() {
+    return new BlurQueryStatus(this);
   }
 
   @Override
@@ -217,11 +217,11 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     this.uuid = 0;
   }
 
-  public SearchQuery getQuery() {
+  public BlurQuery getQuery() {
     return this.query;
   }
 
-  public SearchQueryStatus setQuery(SearchQuery query) {
+  public BlurQueryStatus setQuery(BlurQuery query) {
     this.query = query;
     return this;
   }
@@ -245,7 +245,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return this.realTime;
   }
 
-  public SearchQueryStatus setRealTime(long realTime) {
+  public BlurQueryStatus setRealTime(long realTime) {
     this.realTime = realTime;
     setRealTimeIsSet(true);
     return this;
@@ -268,7 +268,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return this.cpuTime;
   }
 
-  public SearchQueryStatus setCpuTime(long cpuTime) {
+  public BlurQueryStatus setCpuTime(long cpuTime) {
     this.cpuTime = cpuTime;
     setCpuTimeIsSet(true);
     return this;
@@ -291,7 +291,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return this.complete;
   }
 
-  public SearchQueryStatus setComplete(double complete) {
+  public BlurQueryStatus setComplete(double complete) {
     this.complete = complete;
     setCompleteIsSet(true);
     return this;
@@ -314,7 +314,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return this.running;
   }
 
-  public SearchQueryStatus setRunning(boolean running) {
+  public BlurQueryStatus setRunning(boolean running) {
     this.running = running;
     setRunningIsSet(true);
     return this;
@@ -337,7 +337,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return this.interrupted;
   }
 
-  public SearchQueryStatus setInterrupted(boolean interrupted) {
+  public BlurQueryStatus setInterrupted(boolean interrupted) {
     this.interrupted = interrupted;
     setInterruptedIsSet(true);
     return this;
@@ -360,7 +360,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return this.uuid;
   }
 
-  public SearchQueryStatus setUuid(long uuid) {
+  public BlurQueryStatus setUuid(long uuid) {
     this.uuid = uuid;
     setUuidIsSet(true);
     return this;
@@ -385,7 +385,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       if (value == null) {
         unsetQuery();
       } else {
-        setQuery((SearchQuery)value);
+        setQuery((BlurQuery)value);
       }
       break;
 
@@ -496,12 +496,12 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof SearchQueryStatus)
-      return this.equals((SearchQueryStatus)that);
+    if (that instanceof BlurQueryStatus)
+      return this.equals((BlurQueryStatus)that);
     return false;
   }
 
-  public boolean equals(SearchQueryStatus that) {
+  public boolean equals(BlurQueryStatus that) {
     if (that == null)
       return false;
 
@@ -576,13 +576,13 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
     return 0;
   }
 
-  public int compareTo(SearchQueryStatus other) {
+  public int compareTo(BlurQueryStatus other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    SearchQueryStatus typedOther = (SearchQueryStatus)other;
+    BlurQueryStatus typedOther = (BlurQueryStatus)other;
 
     lastComparison = Boolean.valueOf(isSetQuery()).compareTo(typedOther.isSetQuery());
     if (lastComparison != 0) {
@@ -673,7 +673,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
       switch (field.id) {
         case 1: // QUERY
           if (field.type == TType.STRUCT) {
-            this.query = new SearchQuery();
+            this.query = new BlurQuery();
             this.query.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
@@ -771,7 +771,7 @@ public class SearchQueryStatus implements TBase<SearchQueryStatus, SearchQuerySt
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("SearchQueryStatus(");
+    StringBuilder sb = new StringBuilder("BlurQueryStatus(");
     boolean first = true;
 
     sb.append("query:");

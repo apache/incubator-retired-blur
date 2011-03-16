@@ -30,14 +30,15 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
-import com.nearinfinity.blur.manager.hits.HitsIterable;
+import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
-import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -51,16 +52,16 @@ public class BlurShardServer implements Iface {
     private boolean closed;
 	
     @Override
-	public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
+	public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
         checkTableStatus(table);
         try {
-            AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(searchQuery.facets);
-            HitsIterable hitsIterable = indexManager.search(table, searchQuery, facetCounts);
-            return BlurBaseServer.convertToHits(hitsIterable,searchQuery.start,searchQuery.fetch,searchQuery.minimumNumberOfHits, facetCounts);
+            AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
+            BlurResultIterable hitsIterable = indexManager.query(table, blurQuery, facetCounts);
+            return BlurBaseServer.convertToHits(hitsIterable,blurQuery.start,blurQuery.fetch,blurQuery.minimumNumberOfResults, facetCounts);
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, searchQuery);
+            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
             throw new BlurException(e.getMessage());
         }
 	}
@@ -81,9 +82,9 @@ public class BlurShardServer implements Iface {
 	}
 
     @Override
-    public void cancelSearch(String table, long uuid) throws BlurException, TException {
+    public void cancelQuery(String table, long uuid) throws BlurException, TException {
         try {
-            indexManager.cancelSearch(table, uuid);
+            indexManager.cancelQuery(table, uuid);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to cancel search [uuid={0}]",e,uuid);
             throw new BlurException(e.getMessage());
@@ -91,10 +92,10 @@ public class BlurShardServer implements Iface {
     }
 
     @Override
-    public List<SearchQueryStatus> currentSearches(String table) throws BlurException, TException {
+    public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
         checkTableStatus(table);
         try {
-            return indexManager.currentSearches(table);
+            return indexManager.currentQueries(table);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get current search status [table={0}]",e,table);
             throw new BlurException(e.getMessage());
@@ -226,6 +227,11 @@ public class BlurShardServer implements Iface {
 
     @Override
     public void mutate(List<RowMutation> mutations) throws BlurException, TException {
+        throw new RuntimeException("not impl");
+    }
+
+    @Override
+    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
         throw new RuntimeException("not impl");
     }
 }

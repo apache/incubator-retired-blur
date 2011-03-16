@@ -23,14 +23,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 
-public class SearchStatus implements Comparable<SearchStatus> {
+public class QueryStatus implements Comparable<QueryStatus> {
 
     private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
     
-    private SearchQuery searchQuery;
+    private BlurQuery blurQuery;
     private String table;
     private Map<Thread,Long> threads = new ConcurrentHashMap<Thread,Long>();
     private int totalThreads = 0;
@@ -43,14 +43,14 @@ public class SearchStatus implements Comparable<SearchStatus> {
 
     private boolean interrupted;
 
-    public SearchStatus(long ttl, String table, SearchQuery searchQuery) {
+    public QueryStatus(long ttl, String table, BlurQuery blurQuery) {
         this.ttl = ttl;
         this.table = table;
-        this.searchQuery = searchQuery;
+        this.blurQuery = blurQuery;
         this.startingTime = System.currentTimeMillis();
     }
 
-    public SearchStatus attachThread() {
+    public QueryStatus attachThread() {
         if (CPU_TIME_SUPPORTED) {
             threads.put(Thread.currentThread(), ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime());
         } else {
@@ -60,7 +60,7 @@ public class SearchStatus implements Comparable<SearchStatus> {
         return this;
     }
 
-    public SearchStatus deattachThread() {
+    public QueryStatus deattachThread() {
         Thread thread = Thread.currentThread();
         long startingThreadCpuTime = threads.remove(thread);
         long currentThreadCpuTime = bean.getThreadCpuTime(thread.getId());
@@ -69,34 +69,34 @@ public class SearchStatus implements Comparable<SearchStatus> {
     }
 
     public long getUserUuid() {
-        return searchQuery.uuid;
+        return blurQuery.uuid;
     }
 
-    public void cancelSearch() {
+    public void cancelQuery() {
         interrupted = true;
         for (Thread t : threads.keySet()) {
             t.interrupt();
         }
     }
 
-    public SearchQueryStatus getSearchQueryStatus() {
-        SearchQueryStatus searchQueryStatus = new SearchQueryStatus();
-        searchQueryStatus.query = searchQuery;
-        searchQueryStatus.complete = getCompleteStatus();
+    public BlurQueryStatus getQueryStatus() {
+        BlurQueryStatus queryStatus = new BlurQueryStatus();
+        queryStatus.query = blurQuery;
+        queryStatus.complete = getCompleteStatus();
         if (CPU_TIME_SUPPORTED) {
-            searchQueryStatus.cpuTime = getCpuTime();
+            queryStatus.cpuTime = getCpuTime();
         }
-        searchQueryStatus.running = !finished;
-        searchQueryStatus.interrupted = interrupted;
-        if (searchQueryStatus.running) {
-            searchQueryStatus.realTime = System.currentTimeMillis() - startingTime;
+        queryStatus.running = !finished;
+        queryStatus.interrupted = interrupted;
+        if (queryStatus.running) {
+            queryStatus.realTime = System.currentTimeMillis() - startingTime;
         } else {
-            searchQueryStatus.realTime = finishedTime - startingTime;
+            queryStatus.realTime = finishedTime - startingTime;
         }
-        if (searchQueryStatus.query != null) {
-            searchQueryStatus.uuid = searchQueryStatus.query.uuid;
+        if (queryStatus.query != null) {
+            queryStatus.uuid = queryStatus.query.uuid;
         }
-        return searchQueryStatus;
+        return queryStatus;
     }
 
     private long getCpuTime() {
@@ -145,7 +145,7 @@ public class SearchStatus implements Comparable<SearchStatus> {
     }
 
     @Override
-    public int compareTo(SearchStatus o) {
+    public int compareTo(QueryStatus o) {
         long startingTime2 = o.startingTime;
         if (startingTime == startingTime2) {
             int hashCode2 = o.hashCode();

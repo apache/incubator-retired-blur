@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.hits;
+package com.nearinfinity.blur.manager.results;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import org.junit.Test;
+
+import com.nearinfinity.blur.manager.results.PeekableIterator;
 
 public class PeekableIteratorTest {
     

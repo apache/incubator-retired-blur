@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.hits;
+package com.nearinfinity.blur.manager.results;
 
 import java.util.Comparator;
 
-import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 
-public class HitsPeekableIteratorComparator implements Comparator<PeekableIterator<Hit>> {
+public class BlurResultPeekableIteratorComparator implements Comparator<PeekableIterator<BlurResult>> {
 
     @Override
-    public int compare(PeekableIterator<Hit> o1, PeekableIterator<Hit> o2) {
-        Hit hit1 = o1.peek();
-        Hit hit2 = o2.peek();
-        if (hit1 == null && hit2 == null) {
+    public int compare(PeekableIterator<BlurResult> o1, PeekableIterator<BlurResult> o2) {
+        BlurResult result1 = o1.peek();
+        BlurResult result2 = o2.peek();
+        if (result1 == null && result2 == null) {
             return 0;
-        } else if (hit1 == null) {
+        } else if (result1 == null) {
             return 1;
-        } else if (hit2 == null) {
+        } else if (result2 == null) {
             return -1;
         }
-        int compare = Double.compare(hit2.score, hit1.score);
+        int compare = Double.compare(result2.score, result1.score);
         if (compare == 0) {
-            return hit2.locationId.compareTo(hit1.locationId);
+            return result2.locationId.compareTo(result1.locationId);
         }
         return compare;
     }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.hits;
+package com.nearinfinity.blur.manager.results;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -22,18 +22,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class HitsIterableSimple implements HitsIterable {
+public class BlurResultIterableSimple implements BlurResultIterable {
     
-    private List<Hit> hits;
+    private List<BlurResult> results;
     private Map<String, Long> shardInfo;
     private long skipTo;
 
-    public HitsIterableSimple(String shard, List<Hit> hits) {
+    public BlurResultIterableSimple(String shard, List<BlurResult> hits) {
         Collections.sort(hits,BlurConstants.HITS_COMPARATOR);
-        this.hits = hits;
+        this.results = hits;
         this.shardInfo = new TreeMap<String, Long>();
         this.shardInfo.put(shard, (long) hits.size());
     }
@@ -44,8 +44,8 @@ public class HitsIterableSimple implements HitsIterable {
     }
 
     @Override
-    public long getTotalHits() {
-        return hits.size();
+    public long getTotalResults() {
+        return results.size();
     }
 
     @Override
@@ -54,9 +54,9 @@ public class HitsIterableSimple implements HitsIterable {
     }
 
     @Override
-    public Iterator<Hit> iterator() {
+    public Iterator<BlurResult> iterator() {
         long start = 0;
-        Iterator<Hit> iterator = hits.iterator();
+        Iterator<BlurResult> iterator = results.iterator();
         while (iterator.hasNext() && start < skipTo) {
             iterator.next();
             start++;

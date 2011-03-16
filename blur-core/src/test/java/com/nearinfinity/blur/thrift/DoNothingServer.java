@@ -23,12 +23,13 @@ import java.util.Map;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
+import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
-import com.nearinfinity.blur.thrift.generated.Hits;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -61,12 +62,12 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public Hits search(String table, SearchQuery searchQuery) throws BlurException, TException {
+    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
         return null;
     }
 
     @Override
-    public void cancelSearch(String table, long providedUuid) throws BlurException, TException {
+    public void cancelQuery(String table, long providedUuid) throws BlurException, TException {
         
     }
 
@@ -76,7 +77,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public List<SearchQueryStatus> currentSearches(String arg0) throws BlurException, TException {
+    public List<BlurQueryStatus> currentQueries(String arg0) throws BlurException, TException {
         return null;
     }
 
@@ -99,5 +100,10 @@ public class DoNothingServer implements Iface {
     @Override
     public void mutate(List<RowMutation> mutations) throws BlurException, TException {
         
+    }
+
+    @Override
+    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
+        return null;
     }
 }

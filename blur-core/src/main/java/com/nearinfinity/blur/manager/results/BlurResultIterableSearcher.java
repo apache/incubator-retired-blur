@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.hits;
+package com.nearinfinity.blur.manager.results;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -28,24 +28,24 @@ import org.apache.lucene.search.ScoreDoc;
 import com.nearinfinity.blur.lucene.search.IterablePaging;
 import com.nearinfinity.blur.lucene.search.IterablePaging.ProgressRef;
 import com.nearinfinity.blur.lucene.search.IterablePaging.TotalHitsRef;
-import com.nearinfinity.blur.thrift.generated.Hit;
+import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IteratorConverter;
 
-public class HitsIterableSearcher implements HitsIterable {
+public class BlurResultIterableSearcher implements BlurResultIterable {
     
     private Map<String, Long> shardInfo = new TreeMap<String, Long>();
     private String shard;
     private long skipTo;
     private int fetchCount = 1000;
 
-    private IteratorConverter<ScoreDoc, Hit> iterator;
+    private IteratorConverter<ScoreDoc, BlurResult> iterator;
     private Query query;
     private IndexSearcher searcher;
     private TotalHitsRef totalHitsRef = new TotalHitsRef();
     private ProgressRef progressRef = new ProgressRef();
 
-    public HitsIterableSearcher(Query query, String table, String shard, IndexSearcher searcher) throws IOException {
+    public BlurResultIterableSearcher(Query query, String table, String shard, IndexSearcher searcher) throws IOException {
         this.query = query;
         this.shard = shard;
         this.searcher = searcher;
@@ -54,10 +54,10 @@ public class HitsIterableSearcher implements HitsIterable {
 
     private void performSearch() throws IOException {
         IterablePaging iterablePaging = new IterablePaging(searcher, query, fetchCount, totalHitsRef, progressRef);
-        iterator = new IteratorConverter<ScoreDoc,Hit>(iterablePaging.iterator(), new Converter<ScoreDoc,Hit>() {
+        iterator = new IteratorConverter<ScoreDoc,BlurResult>(iterablePaging.iterator(), new Converter<ScoreDoc,BlurResult>() {
             @Override
-            public Hit convert(ScoreDoc scoreDoc) throws Exception {
-                return new Hit(resolveId(scoreDoc.doc), scoreDoc.score, "UNKNOWN");
+            public BlurResult convert(ScoreDoc scoreDoc) throws Exception {
+                return new BlurResult(resolveId(scoreDoc.doc), scoreDoc.score, "UNKNOWN");
             }
         });
         shardInfo.put(shard, (long)totalHitsRef.totalHits());
@@ -69,7 +69,7 @@ public class HitsIterableSearcher implements HitsIterable {
     }
 
     @Override
-    public long getTotalHits() {
+    public long getTotalResults() {
         return totalHitsRef.totalHits();
     }
 
@@ -79,7 +79,7 @@ public class HitsIterableSearcher implements HitsIterable {
     }
 
     @Override
-    public Iterator<Hit> iterator() {
+    public Iterator<BlurResult> iterator() {
         long start = 0;
         while (iterator.hasNext() && start < skipTo) {
             iterator.next();

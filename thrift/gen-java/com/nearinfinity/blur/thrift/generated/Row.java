@@ -353,14 +353,14 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
         case 2: // COLUMN_FAMILIES
           if (field.type == TType.SET) {
             {
-              TSet _set38 = iprot.readSetBegin();
-              this.columnFamilies = new HashSet<ColumnFamily>(2*_set38.size);
-              for (int _i39 = 0; _i39 < _set38.size; ++_i39)
+              TSet _set51 = iprot.readSetBegin();
+              this.columnFamilies = new HashSet<ColumnFamily>(2*_set51.size);
+              for (int _i52 = 0; _i52 < _set51.size; ++_i52)
               {
-                ColumnFamily _elem40;
-                _elem40 = new ColumnFamily();
-                _elem40.read(iprot);
-                this.columnFamilies.add(_elem40);
+                ColumnFamily _elem53;
+                _elem53 = new ColumnFamily();
+                _elem53.read(iprot);
+                this.columnFamilies.add(_elem53);
               }
               iprot.readSetEnd();
             }
@@ -392,9 +392,9 @@ public class Row implements TBase<Row, Row._Fields>, java.io.Serializable, Clone
       oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
       {
         oprot.writeSetBegin(new TSet(TType.STRUCT, this.columnFamilies.size()));
-        for (ColumnFamily _iter41 : this.columnFamilies)
+        for (ColumnFamily _iter54 : this.columnFamilies)
         {
-          _iter41.write(oprot);
+          _iter54.write(oprot);
         }
         oprot.writeSetEnd();
       }

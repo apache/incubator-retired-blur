@@ -587,14 +587,14 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
         case 5: // RECORD
           if (field.type == TType.SET) {
             {
-              TSet _set42 = iprot.readSetBegin();
-              this.record = new HashSet<Column>(2*_set42.size);
-              for (int _i43 = 0; _i43 < _set42.size; ++_i43)
+              TSet _set55 = iprot.readSetBegin();
+              this.record = new HashSet<Column>(2*_set55.size);
+              for (int _i56 = 0; _i56 < _set55.size; ++_i56)
               {
-                Column _elem44;
-                _elem44 = new Column();
-                _elem44.read(iprot);
-                this.record.add(_elem44);
+                Column _elem57;
+                _elem57 = new Column();
+                _elem57.read(iprot);
+                this.record.add(_elem57);
               }
               iprot.readSetEnd();
             }
@@ -637,9 +637,9 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       oprot.writeFieldBegin(RECORD_FIELD_DESC);
       {
         oprot.writeSetBegin(new TSet(TType.STRUCT, this.record.size()));
-        for (Column _iter45 : this.record)
+        for (Column _iter58 : this.record)
         {
-          _iter45.write(oprot);
+          _iter58.write(oprot);
         }
         oprot.writeSetEnd();
       }

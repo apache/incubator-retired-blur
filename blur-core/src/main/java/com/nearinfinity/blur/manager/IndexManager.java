@@ -60,19 +60,19 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.FacetQuery;
 import com.nearinfinity.blur.lucene.search.SuperParser;
-import com.nearinfinity.blur.manager.hits.HitsIterable;
-import com.nearinfinity.blur.manager.hits.HitsIterableSearcher;
-import com.nearinfinity.blur.manager.hits.MergerHitsIterable;
-import com.nearinfinity.blur.manager.status.SearchStatus;
-import com.nearinfinity.blur.manager.status.SearchStatusManager;
+import com.nearinfinity.blur.manager.results.BlurResultIterable;
+import com.nearinfinity.blur.manager.results.BlurResultIterableSearcher;
+import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
+import com.nearinfinity.blur.manager.status.QueryStatus;
+import com.nearinfinity.blur.manager.status.QueryStatusManager;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
+import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.thrift.generated.SearchQuery;
-import com.nearinfinity.blur.thrift.generated.SearchQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -90,7 +90,7 @@ public class IndexManager {
     private IndexServer indexServer;
     private ExecutorService executor;
     private int threadCount = 32;
-    private SearchStatusManager statusManager = new SearchStatusManager();
+    private QueryStatusManager statusManager = new QueryStatusManager();
     private boolean closed;
 
     public IndexManager() {
@@ -162,8 +162,8 @@ public class IndexManager {
         return split[0];
     }
 
-    public HitsIterable search(final String table, SearchQuery searchQuery, AtomicLongArray facetedCounts) throws Exception {
-        final SearchStatus status = statusManager.newSearchStatus(table, searchQuery);
+    public BlurResultIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
+        final QueryStatus status = statusManager.newQueryStatus(table, blurQuery);
         try {
             Map<String, IndexReader> indexReaders;
             try {
@@ -173,15 +173,15 @@ public class IndexManager {
                 throw new BlurException(e.getMessage());
             }
             Analyzer analyzer = indexServer.getAnalyzer(table);
-            Filter preFilter = parseFilter(table, searchQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
-            Filter postFilter = parseFilter(table, searchQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
-            Query userQuery = parseQuery(searchQuery.queryStr, searchQuery.superQueryOn, 
-                    analyzer, postFilter, preFilter, getScoreType(searchQuery.type));
-            final Query facetedQuery = getFacetedQuery(searchQuery,userQuery,facetedCounts, analyzer);
+            Filter preFilter = parseFilter(table, blurQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
+            Filter postFilter = parseFilter(table, blurQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
+            Query userQuery = parseQuery(blurQuery.queryStr, blurQuery.superQueryOn, 
+                    analyzer, postFilter, preFilter, getScoreType(blurQuery.type));
+            final Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
             return ForkJoin.execute(executor, indexReaders.entrySet(),
-                new ParallelCall<Entry<String, IndexReader>, HitsIterable>() {
+                new ParallelCall<Entry<String, IndexReader>, BlurResultIterable>() {
                     @Override
-                    public HitsIterable call(Entry<String, IndexReader> entry) throws Exception {
+                    public BlurResultIterable call(Entry<String, IndexReader> entry) throws Exception {
                         status.attachThread();
                         try {
                             IndexReader reader = entry.getValue();
@@ -190,30 +190,30 @@ public class IndexManager {
                                     PrimeDocCache.getTableCache().getShardCache(table).
                                     getIndexReaderCache(shard));
                             searcher.setSimilarity(indexServer.getSimilarity(table));
-                            return new HitsIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher);
+                            return new BlurResultIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher);
                         } finally {
                             status.deattachThread();
                         }
                     }
-                }).merge(new MergerHitsIterable(searchQuery.minimumNumberOfHits, searchQuery.maxQueryTime));
+                }).merge(new MergerBlurResultIterable(blurQuery.minimumNumberOfResults, blurQuery.maxQueryTime));
         } finally {
             status.deattachThread();
             statusManager.removeStatus(status);
         }
     }
 
-    private Query getFacetedQuery(SearchQuery searchQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
-        if (searchQuery.facets == null) {
+    private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
+        if (blurQuery.facets == null) {
             return userQuery;
         }
-        return new FacetQuery(userQuery,getFacetQueries(searchQuery,analyzer),counts);
+        return new FacetQuery(userQuery,getFacetQueries(blurQuery,analyzer),counts);
     }
 
-    private Query[] getFacetQueries(SearchQuery searchQuery, Analyzer analyzer) throws ParseException {
-        int size = searchQuery.facets.size();
+    private Query[] getFacetQueries(BlurQuery blurQuery, Analyzer analyzer) throws ParseException {
+        int size = blurQuery.facets.size();
         Query[] queries = new Query[size];
         for (int i = 0; i < size; i++) {
-            queries[i] = parseQuery(searchQuery.facets.get(i).queryStr, searchQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
+            queries[i] = parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
         }
         return queries;
     }
@@ -225,12 +225,12 @@ public class IndexManager {
         return type;
     }
 
-    public void cancelSearch(String table, long uuid) {
-        statusManager.cancelSearch(table, uuid);
+    public void cancelQuery(String table, long uuid) {
+        statusManager.cancelQuery(table, uuid);
     }
 
-    public List<SearchQueryStatus> currentSearches(String table) {
-        return statusManager.currentSearches(table);
+    public List<BlurQueryStatus> currentQueries(String table) {
+        return statusManager.currentQueries(table);
     }
 
     private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType, Analyzer analyzer)
@@ -494,7 +494,7 @@ public class IndexManager {
         return schema;
     }
 
-    public void setSearchStatusCleanupTimerDelay(long delay) {
-        statusManager.setSearchStatusCleanupTimerDelay(delay);
+    public void setStatusCleanupTimerDelay(long delay) {
+        statusManager.setStatusCleanupTimerDelay(delay);
     }
 }

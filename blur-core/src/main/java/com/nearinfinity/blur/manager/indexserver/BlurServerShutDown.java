@@ -44,7 +44,7 @@ public class BlurServerShutDown implements Watcher {
             @Override
             public void process(WatchedEvent event) {
                 KeeperState state = event.getState();
-                if (state == KeeperState.Disconnected || state == KeeperState.Expired) {
+                if (state == KeeperState.Expired) {
                     LOG.fatal("Zookeeper session has [" + state + "] server process shutting down.");
                     shutdown.shutdown();
                 }

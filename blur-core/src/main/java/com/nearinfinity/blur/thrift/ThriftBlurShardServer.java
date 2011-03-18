@@ -20,7 +20,6 @@ import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.Thread.UncaughtExceptionHandler;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -44,6 +43,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TFramedTransport.Factory;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.IndexManager;
@@ -74,12 +74,7 @@ public class ThriftBlurShardServer {
     private boolean closed;
     
     public static void main(String[] args) throws TTransportException, IOException {
-        Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread t, Throwable e) {
-                LOG.error("Unknown error in thread [{0}]", e, t);
-            }
-        });
+        Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
         String nodeName = args[0];
         String zkConnectionStr = args[1];

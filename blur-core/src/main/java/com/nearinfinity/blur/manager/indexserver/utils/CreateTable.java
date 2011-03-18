@@ -16,17 +16,16 @@
 
 package com.nearinfinity.blur.manager.indexserver.utils;
 
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
-
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.zookeeper.ZkUtils;
+
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
 
 public class CreateTable {
 
@@ -35,11 +34,7 @@ public class CreateTable {
         String table = args[1];
         BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
 
-        ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-            }
-        });
+        ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
         if (dm.exists(BLUR_TABLES, table)) {

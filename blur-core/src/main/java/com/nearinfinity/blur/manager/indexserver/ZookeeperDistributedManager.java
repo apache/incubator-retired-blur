@@ -30,7 +30,7 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.store.lock.ZkUtils;
+import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ZookeeperDistributedManager extends DistributedManager {
     

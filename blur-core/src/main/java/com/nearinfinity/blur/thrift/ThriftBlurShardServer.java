@@ -42,8 +42,6 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TFramedTransport.Factory;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
@@ -61,6 +59,7 @@ import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.Blur.Processor;
+import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurShardServer {
     
@@ -78,10 +77,10 @@ public class ThriftBlurShardServer {
         Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(Thread t, Throwable e) {
-                LOG.error("Unknown error in thread [{0}]",e,t);
+                LOG.error("Unknown error in thread [{0}]", e, t);
             }
         });
-        
+
         String nodeName = args[0];
         String zkConnectionStr = args[1];
         String hdfsPath = args[2];
@@ -93,29 +92,25 @@ public class ThriftBlurShardServer {
         if (args.length == 5 && args[4].equals(CRAZY)) {
             crazyMode = true;
         }
-        
-        final ZooKeeper zooKeeper = new ZooKeeper(zkConnectionStr, 10000, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-            }
-        });
-        
+
+        final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
+
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
-        
+
         FileSystem fileSystem = FileSystem.get(new Configuration());
         Path blurBasePath = new Path(hdfsPath);
-        
+
         final LocalFileCache localFileCache = new LocalFileCache();
-        localFileCache.setPotentialFiles(localFileCaches.toArray(new File[]{}));
+        localFileCache.setPotentialFiles(localFileCaches.toArray(new File[localFileCaches.size()]));
         localFileCache.init();
-        
+
         LockFactory lockFactory = new NoLockFactory();
-        
+
         final ReplicationDaemon replicationDaemon = new ReplicationDaemon();
         replicationDaemon.setLocalFileCache(localFileCache);
         replicationDaemon.init();
-        
+
         ReplicationStrategy replicationStrategy = new ReplicationStrategy() {
             @Override
             public boolean replicateLocally(String table, String name) {
@@ -125,7 +120,7 @@ public class ThriftBlurShardServer {
                 return false;
             }
         };
-        
+
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
@@ -137,36 +132,36 @@ public class ThriftBlurShardServer {
         indexServer.setReplicationDaemon(replicationDaemon);
         indexServer.setReplicationStrategy(replicationStrategy);
         indexServer.init();
-        
+
         localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));
-        
+
         final IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
         indexManager.init();
-        
+
         final BlurShardServer shardServer = new BlurShardServer();
         shardServer.setIndexServer(indexServer);
         shardServer.setIndexManager(indexManager);
-        
+
         final ThriftBlurShardServer server = new ThriftBlurShardServer();
         server.setNodeName(nodeName);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
-            server.setIface(crazyMode(shardServer));            
-        } else {
+            server.setIface(crazyMode(shardServer));
+        }
+        else {
             server.setIface(shardServer);
         }
-        
+
         // This will shutdown the server when the correct path is set in zk
         new BlurServerShutDown().register(new BlurShutdown() {
             @Override
-            
             public void shutdown() {
-                quietClose(replicationDaemon,server,shardServer,indexManager,indexServer,localFileCache);
+                quietClose(replicationDaemon, server, shardServer, indexManager, indexServer, localFileCache);
                 System.exit(0);
             }
         }, zooKeeper);
-        
+
         server.start();
     }
 

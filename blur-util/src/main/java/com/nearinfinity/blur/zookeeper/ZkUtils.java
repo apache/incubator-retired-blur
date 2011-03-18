@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.store.lock;
+package com.nearinfinity.blur.zookeeper;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -33,6 +36,20 @@ public class ZkUtils {
     private final static Log LOG = LogFactory.getLog(ZkUtils.class);
 
     public static final int ANY_VERSION = -1;
+
+    public static final int DEFAULT_ZK_SESSION_TIMEOUT = 10000;
+
+    public static ZooKeeper newZooKeeper(final String zkConnectionString) throws IOException {
+        final int sessionTimeout = DEFAULT_ZK_SESSION_TIMEOUT;
+        // TODO Do we need to wait for the callback to Watcher before proceeding?
+        return new ZooKeeper(zkConnectionString, sessionTimeout, new Watcher() {
+            @Override
+            public void process(WatchedEvent event) {
+                LOG.info("Connected to ZooKeeper with connection string {0}, session timeout {1}",
+                        zkConnectionString, sessionTimeout);
+            }
+        });
+    }
 
     public static void mkNodesStr(ZooKeeper zk, String path) {
         if (path == null) {

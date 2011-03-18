@@ -29,6 +29,7 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class ZookeeperLockFactory extends LockFactory {

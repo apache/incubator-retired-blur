@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.store.lock;
+package com.nearinfinity.blur.zookeeper;
 
 import java.io.IOException;
 

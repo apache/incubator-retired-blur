@@ -9,3 +9,5 @@
 **/target/**
 target/**
 blur-core/tmp/**
+tmp-test/**
+**/tmp-test/*

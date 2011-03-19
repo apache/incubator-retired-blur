@@ -7,8 +7,6 @@
 *.iml
 *.class
 **/*.iml
-**/target/**
-target/**
-blur-core/tmp/**
-tmp-test/**
-**/tmp-test/*
+src/*/target/**
+src/*/tmp/**
+src/*/tmp-test/**

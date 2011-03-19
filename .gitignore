@@ -7,6 +7,7 @@
 *.iml
 *.class
 **/*.iml
+target
 src/*/target/**
 src/*/tmp/**
 src/*/tmp-test/**

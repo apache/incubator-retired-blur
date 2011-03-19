@@ -1,6 +1,13 @@
-. $HADOOP_HOME/conf/hadoop-env.sh
+. $BLUR_HOME/conf/blur-env.sh
 
-export HADOOP_CLASSPATH
+BLUR_CLASSPATH=$BLUR_HOME/conf
+
 for f in $HADOOP_HOME/lib/*.jar; do
-  CLASSPATH=${CLASSPATH}:$f;
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
 done
+
+for f in $BLUR_HOME/lib/*.jar; do
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+done
+
+export BLUR_CLASSPATH

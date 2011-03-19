@@ -5,6 +5,7 @@
 *.ipr
 *.iws
 *.iml
+*.class
 **/*.iml
 **/target/**
 target/**

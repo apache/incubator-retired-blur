@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>com.nearinfinity.blur</groupId>
+		<artifactId>blur</artifactId>
+		<version>${blur_version}</version>
+	</parent>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.nearinfinity.blur</groupId>
+	<artifactId>blur-core</artifactId>
+	<packaging>jar</packaging>
+	<name>Blur Core</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.nearinfinity.blur</groupId>
+			<artifactId>blur-thrift</artifactId>
+			<version>${blur_version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nearinfinity.blur</groupId>
+			<artifactId>blur-store</artifactId>
+			<version>${blur_version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.nearinfinity.blur</groupId>
+			<artifactId>blur-util</artifactId>
+			<version>${blur_version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-jaxrs</artifactId>
+			<version>1.5.5</version>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>libdir</id>
+			<url>file://${basedir}/../lib</url>
+		</repository>
+	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.0.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>2.2</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/../../../lib
+							</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+							<excludeTransitive>true</excludeTransitive>
+							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop,slf4j-api</excludeArtifactIds>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

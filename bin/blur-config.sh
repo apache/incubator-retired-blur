@@ -2,6 +2,10 @@
 
 BLUR_CLASSPATH=$BLUR_HOME/conf
 
+for f in $HADOOP_HOME/*.jar; do
+  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
+done
+
 for f in $HADOOP_HOME/lib/*.jar; do
   BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
 done

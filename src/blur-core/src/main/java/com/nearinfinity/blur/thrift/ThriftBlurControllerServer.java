@@ -16,9 +16,12 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TThreadPoolServer;
@@ -28,6 +31,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TFramedTransport.Factory;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -44,22 +48,26 @@ import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurControllerServer {
     
+    private static final String BLUR_CONTROLLER_BIND_PORT = "blur.controller.bind.port";
+    private static final String BLUR_CONTROLLER_BIND_ADDRESS = "blur.controller.bind.address";
     private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
     
     private String nodeName;
     private Iface iface;
-
     private TThreadPoolServer server;
-
     private boolean closed;
+    private BlurConfiguration configuration;
     
     public static void main(String[] args) throws TTransportException, IOException {
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
-        String nodeName = args[0];
-        String zkConnectionStr = args[1];
+        BlurConfiguration configuration = new BlurConfiguration();
+
+        String nodeName = ThriftBlurShardServer.getNodeName(configuration);
+        String zkConnectionStr = ThriftBlurShardServer.isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
+        
         boolean crazyMode = false;
-        if (args.length == 3 && args[2].equals(ThriftBlurShardServer.CRAZY)) {
+        if (args.length == 1 && args[1].equals(CRAZY)) {
             crazyMode = true;
         }
 
@@ -102,13 +110,19 @@ public class ThriftBlurControllerServer {
     }
 
     public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(System.getProperty(ThriftBlurShardServer.BLUR_BIND_ADDRESS, nodeName)));
+        TServerSocket serverTransport = new TServerSocket(getBindInetSocketAddress(configuration));
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new Blur.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
         server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
         LOG.info("Starting server [{0}]",nodeName);
         server.serve();
+    }
+    
+    public static InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
+        String hostName = ThriftBlurShardServer.isEmpty(configuration.get(BLUR_CONTROLLER_BIND_ADDRESS), BLUR_CONTROLLER_BIND_ADDRESS);
+        String portStr = ThriftBlurShardServer.isEmpty(configuration.get(BLUR_CONTROLLER_BIND_PORT), BLUR_CONTROLLER_BIND_PORT);
+        return new InetSocketAddress(hostName, Integer.parseInt(portStr));
     }
     
     public synchronized void close() {
@@ -132,6 +146,10 @@ public class ThriftBlurControllerServer {
 
     public void setNodeName(String nodeName) {
         this.nodeName = nodeName;
+    }
+
+    public void setConfiguration(BlurConfiguration configuration) {
+        this.configuration = configuration;
     }
 
 }

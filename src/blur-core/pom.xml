@@ -27,11 +27,6 @@
 			<artifactId>blur-util</artifactId>
 			<version>${blur_version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.codehaus.jackson</groupId>
-			<artifactId>jackson-jaxrs</artifactId>
-			<version>1.5.5</version>
-		</dependency>
 	</dependencies>
 
 	<repositories>

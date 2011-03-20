@@ -10,6 +10,6 @@ if [ -f $PID_FILE ]; then
 fi
 
 HOSTNAME=`hostname`
-nohup "$JAVA_HOME"/bin/java $BLUR_SHARD_JVM_OPTIONS -cp $BLUR_CLASSPATH com.nearinfinity.blur.thrift.ThriftBlurShardServer $HOSTNAME:40020 $HOSTNAME $BLUR_HOME/src/blur-core/local-testing $BLUR_HOME/src/blur-core/local-testing-tmp > "$BLUR_HOME/logs/blur-shard-server.out" 2>&1 < /dev/null &
+nohup "$JAVA_HOME"/bin/java $BLUR_SHARD_JVM_OPTIONS -cp $BLUR_CLASSPATH com.nearinfinity.blur.thrift.ThriftBlurShardServer > "$BLUR_HOME/logs/blur-shard-server.out" 2>&1 < /dev/null &
 echo $! > $PID_FILE
 echo Shard starting as process `cat $PID_FILE`.

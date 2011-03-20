@@ -16,6 +16,13 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_LOCAL_CACHE_PATHES;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_TABLE_PATH;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.File;
@@ -23,7 +30,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +52,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TFramedTransport.Factory;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -63,28 +73,30 @@ import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurShardServer {
     
-    public static final String CRAZY = "CRAZY";
-    public static final String BLUR_BIND_ADDRESS = "blur.bind.address";
-
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
     
     private String nodeName;
     private Iface iface;
     private TThreadPoolServer server;
     private boolean closed;
+    private BlurConfiguration configuration;
     
     public static void main(String[] args) throws TTransportException, IOException {
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
+        
+        BlurConfiguration configuration = new BlurConfiguration();
 
-        String nodeName = args[0];
-        String zkConnectionStr = args[1];
-        String hdfsPath = args[2];
+        String nodeName = getNodeName(configuration);
+        String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
+        String tablePath = isEmpty(configuration.get(BLUR_TABLE_PATH),BLUR_TABLE_PATH);
+        String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES),BLUR_LOCAL_CACHE_PATHES);
+        
         List<File> localFileCaches = new ArrayList<File>();
-        for (String cachePath : args[3].split(",")) {
+        for (String cachePath : localCacheDirs.split(",")) {
             localFileCaches.add(new File(cachePath));
         }
         boolean crazyMode = false;
-        if (args.length == 5 && args[4].equals(CRAZY)) {
+        if (args.length == 1 && args[0].equals(CRAZY)) {
             crazyMode = true;
         }
 
@@ -94,7 +106,7 @@ public class ThriftBlurShardServer {
         dzk.setZooKeeper(zooKeeper);
 
         FileSystem fileSystem = FileSystem.get(new Configuration());
-        Path blurBasePath = new Path(hdfsPath);
+        Path blurBasePath = new Path(tablePath);
 
         final LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(localFileCaches.toArray(new File[localFileCaches.size()]));
@@ -147,6 +159,7 @@ public class ThriftBlurShardServer {
         else {
             server.setIface(shardServer);
         }
+        server.setConfiguration(configuration);
 
         // This will shutdown the server when the correct path is set in zk
         new BlurServerShutDown().register(new BlurShutdown() {
@@ -158,6 +171,25 @@ public class ThriftBlurShardServer {
         }, zooKeeper);
 
         server.start();
+    }
+
+    public static String isEmpty(String str, String name) {
+        if (str == null || str.trim().isEmpty()) {
+            throw new IllegalArgumentException("Property [" + name + "] is missing or blank.");
+        }
+        return str;
+    }
+
+    public static String getNodeName(BlurConfiguration configuration) throws UnknownHostException {
+        String hostName = configuration.get(BLUR_SHARD_HOSTNAME);
+        if (hostName == null) {
+            hostName = "";
+        }
+        hostName = hostName.trim();
+        if (hostName.isEmpty()) {
+            return InetAddress.getLocalHost().getHostName();
+        }
+        return hostName;
     }
 
     public synchronized void close() {
@@ -199,7 +231,7 @@ public class ThriftBlurShardServer {
     }
 
     public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(ThriftBlurShardServer.parse(System.getProperty(BLUR_BIND_ADDRESS, nodeName)));
+        TServerSocket serverTransport = new TServerSocket(getBindInetSocketAddress(configuration));
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new Blur.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
@@ -208,16 +240,10 @@ public class ThriftBlurShardServer {
         server.serve();
     }
 
-    public static InetSocketAddress parse(String nodeName) {
-        return new InetSocketAddress(getHost(nodeName), getPort(nodeName));
-    }
-
-    private static String getHost(String nodeName) {
-        return nodeName.substring(0,nodeName.indexOf(':'));
-    }
-
-    private static int getPort(String nodeName) {
-        return Integer.parseInt(nodeName.substring(nodeName.indexOf(':') + 1));
+    public static InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
+        String hostName = isEmpty(configuration.get(BLUR_SHARD_BIND_ADDRESS), BLUR_SHARD_BIND_ADDRESS);
+        String portStr = isEmpty(configuration.get(BLUR_SHARD_BIND_PORT), BLUR_SHARD_BIND_PORT);
+        return new InetSocketAddress(hostName, Integer.parseInt(portStr));
     }
 
     public Iface getIface() {
@@ -234,6 +260,10 @@ public class ThriftBlurShardServer {
 
     public void setNodeName(String nodeName) {
         this.nodeName = nodeName;
+    }
+
+    public void setConfiguration(BlurConfiguration configuration) {
+        this.configuration = configuration;
     }
 
 }

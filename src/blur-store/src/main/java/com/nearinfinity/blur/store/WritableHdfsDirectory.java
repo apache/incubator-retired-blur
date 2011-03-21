@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.store;
 
+import static com.nearinfinity.blur.store.Constants.BUFFER_SIZE;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

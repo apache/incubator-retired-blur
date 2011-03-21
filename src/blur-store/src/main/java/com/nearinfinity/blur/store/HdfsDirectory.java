@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.store;
 
+import static com.nearinfinity.blur.store.Constants.BUFFER_SIZE;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +33,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
-public class HdfsDirectory extends Directory implements Constants {
+public class HdfsDirectory extends Directory {
 
     protected Path hdfsDirPath;
     protected FileSystem fileSystem;

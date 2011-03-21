@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.store.replication;
 
+import static com.nearinfinity.blur.store.Constants.BUFFER_SIZE;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,7 +37,6 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
-
 
 public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
 

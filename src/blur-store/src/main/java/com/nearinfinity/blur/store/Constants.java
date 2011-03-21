@@ -16,6 +16,6 @@
 
 package com.nearinfinity.blur.store;
 
-public interface Constants {
+public class Constants {
     public static final int BUFFER_SIZE = 16384;
 }

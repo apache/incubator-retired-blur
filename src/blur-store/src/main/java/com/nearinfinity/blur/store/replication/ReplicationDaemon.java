@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.store.replication;
 
+import static com.nearinfinity.blur.store.Constants.BUFFER_SIZE;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -31,14 +33,12 @@ import org.apache.lucene.store.IndexOutput;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.store.Constants;
 import com.nearinfinity.blur.store.WritableHdfsDirectory.FileIndexOutput;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.indexinput.IndexInputFactory;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory.ReplicaIndexInput;
 
-
-public class ReplicationDaemon implements Constants, Runnable {
+public class ReplicationDaemon implements Runnable {
     
     private static final String EMPTY_STRING = "";
     private static final Log LOG = LogFactory.getLog(ReplicationDaemon.class);

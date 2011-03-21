@@ -11,3 +11,6 @@ target
 src/*/target/**
 src/*/tmp/**
 src/*/tmp-test/**
+*.out
+*.log
+*.pid

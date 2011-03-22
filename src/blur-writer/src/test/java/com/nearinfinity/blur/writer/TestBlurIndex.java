@@ -56,7 +56,7 @@ public class TestBlurIndex {
         Directory dir = FSDirectory.open(new File("./index"));
 //        Directory dir = getDir2();
         
-        final BlurIndex blurIndex = new BlurIndex();
+        final BlurIndexWriter blurIndex = new BlurIndexWriter();
         blurIndex.setAnalyzer(analyzer);
         blurIndex.setDirectory(dir);
         blurIndex.init();

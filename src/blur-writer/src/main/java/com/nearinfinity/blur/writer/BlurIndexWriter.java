@@ -40,10 +40,10 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
-public class BlurIndex implements Runnable {
+public class BlurIndexWriter implements Runnable {
     
     private static final String BLUR_UPDATE_THREAD = "Blur-Update-Thread-";
-    private static final Log LOG =  LogFactory.getLog(BlurIndex.class);
+    private static final Log LOG =  LogFactory.getLog(BlurIndexWriter.class);
     
     private class BlurIndexMutation {
         volatile Directory directory;

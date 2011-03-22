@@ -40,7 +40,7 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
-public class BlurIndexWriter implements Runnable {
+public class BlurIndexWriter extends BlurIndex implements Runnable {
     
     private static final String BLUR_UPDATE_THREAD = "Blur-Update-Thread-";
     private static final Log LOG =  LogFactory.getLog(BlurIndexWriter.class);
@@ -76,6 +76,7 @@ public class BlurIndexWriter implements Runnable {
         daemon.interrupt();
     }
     
+    @Override
     public boolean replaceRow(Collection<Row> rows) throws InterruptedException, IOException {
         BlurIndexMutation update = new BlurIndexMutation();
         update.directory = index(rows);
@@ -173,6 +174,7 @@ public class BlurIndexWriter implements Runnable {
         this.analyzer = analyzer;
     }
 
+    @Override
     public IndexReader getIndexReader() throws IOException {
         return writer.getReader();
     }

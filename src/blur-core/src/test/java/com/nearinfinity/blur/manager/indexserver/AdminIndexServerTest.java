@@ -105,7 +105,7 @@ public class AdminIndexServerTest {
             }
 
             @Override
-            public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
+            public Map<String, IndexReader> getIndexes(String table) throws IOException {
                 System.out.println("Do nothing.");
                 return new HashMap<String, IndexReader>();
             }

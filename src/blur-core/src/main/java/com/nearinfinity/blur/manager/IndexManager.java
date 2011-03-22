@@ -128,7 +128,7 @@ public class IndexManager {
         IndexReader reader;
         try {
             String shard = getShard(selector.getLocationId());
-            Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
+            Map<String, IndexReader> indexReaders = indexServer.getIndexes(table);
             if (indexReaders == null) {
                 LOG.error("Table [{0}] not found",table);
                 throw new BlurException("Table [" + table + "] not found");
@@ -172,7 +172,7 @@ public class IndexManager {
         try {
             Map<String, IndexReader> indexReaders;
             try {
-                indexReaders = indexServer.getIndexReaders(table);
+                indexReaders = indexServer.getIndexes(table);
             } catch (IOException e) {
                 LOG.error("Unknown error while trying to fetch index readers.", e);
                 throw new BlurException(e.getMessage());
@@ -392,7 +392,7 @@ public class IndexManager {
     public long recordFrequency(String table, final String columnFamily, final String columnName, final String value) throws Exception {
         Map<String, IndexReader> indexReaders;
         try {
-            indexReaders = indexServer.getIndexReaders(table);
+            indexReaders = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
             throw new BlurException(e.getMessage());
@@ -419,7 +419,7 @@ public class IndexManager {
     public List<String> terms(String table, final String columnFamily, final String columnName, final String startWith, final short size) throws Exception {
         Map<String, IndexReader> indexReaders;
         try {
-            indexReaders = indexServer.getIndexReaders(table);
+            indexReaders = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
             throw new BlurException(e.getMessage());
@@ -485,7 +485,7 @@ public class IndexManager {
     public Schema schema(String table) throws IOException {
         Schema schema = new Schema().setTable(table);
         schema.columnFamilies = new TreeMap<String, Set<String>>();
-        Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
+        Map<String, IndexReader> indexReaders = indexServer.getIndexes(table);
         for (IndexReader reader : indexReaders.values()) {
             Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
             for (String fieldName : fieldNames) {

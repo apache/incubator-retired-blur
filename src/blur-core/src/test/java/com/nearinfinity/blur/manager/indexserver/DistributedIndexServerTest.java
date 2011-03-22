@@ -64,7 +64,7 @@ public class DistributedIndexServerTest {
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
             indexServer.init();
-            Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
+            Set<String> keySet = indexServer.getIndexes(TEST).keySet();
             shardBeingServed.addAll(keySet);
             indexServer.close();
         }
@@ -88,9 +88,9 @@ public class DistributedIndexServerTest {
         indexServer.setNodeName("node2");
         indexServer.setDelay(5000);
         indexServer.init();
-        assertEquals(new TreeSet<String>(Arrays.asList("g","h")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
+        assertEquals(new TreeSet<String>(Arrays.asList("g","h")), new TreeSet<String>(indexServer.getIndexes(TEST).keySet()));
         nodes.remove(3);
-        assertEquals(new TreeSet<String>(Arrays.asList("a","b","c")), new TreeSet<String>(indexServer.getIndexReaders(TEST).keySet()));
+        assertEquals(new TreeSet<String>(Arrays.asList("a","b","c")), new TreeSet<String>(indexServer.getIndexes(TEST).keySet()));
         Thread.sleep(10000);
         assertTrue(toBeClosed.isEmpty());
         indexServer.close();
@@ -112,7 +112,7 @@ public class DistributedIndexServerTest {
             indexServer.setDistributedManager(dm);
             indexServer.init();
             servers.put(node,indexServer);
-            Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
+            Set<String> keySet = indexServer.getIndexes(TEST).keySet();
             nodesToShards1.put(node, new TreeSet<String>(keySet));
             shardBeingServed.addAll(keySet);
         }
@@ -131,7 +131,7 @@ public class DistributedIndexServerTest {
         Map<String,Set<String>> nodesToShards2 = new HashMap<String,Set<String>>();
         for (String node : bigNodeList) {
             DistributedIndexServer indexServer = servers.get(node);
-            Set<String> keySet = indexServer.getIndexReaders(TEST).keySet();
+            Set<String> keySet = indexServer.getIndexes(TEST).keySet();
             nodesToShards2.put(node, new TreeSet<String>(keySet));
             shardBeingServed.addAll(keySet);
         }

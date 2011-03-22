@@ -68,7 +68,7 @@ public class BlurShardServerTest {
             }
 
             @Override
-            public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
+            public Map<String, IndexReader> getIndexes(String table) throws IOException {
                 throw new RuntimeException("not impl");
             }
 

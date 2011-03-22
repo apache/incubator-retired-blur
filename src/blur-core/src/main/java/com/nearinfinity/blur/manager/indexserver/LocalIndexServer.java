@@ -51,7 +51,7 @@ public class LocalIndexServer implements IndexServer {
     }
 
     @Override
-    public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
+    public Map<String, IndexReader> getIndexes(String table) throws IOException {
         Map<String, IndexReader> tableMap = readersMap.get(table);
         if (tableMap == null) {
             tableMap = openFromDisk(table);

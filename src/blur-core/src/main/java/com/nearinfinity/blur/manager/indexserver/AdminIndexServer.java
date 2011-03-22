@@ -109,7 +109,7 @@ public abstract class AdminIndexServer implements IndexServer {
     protected void warmUpTable(String table) {
         try {
             LOG.debug("Warmup for table [{0}]",table);
-            Map<String, IndexReader> indexReaders = getIndexReaders(table);
+            Map<String, IndexReader> indexReaders = getIndexes(table);
             LOG.debug("Warmup complete for table [{0}] shards [{1}]",table,indexReaders.keySet());
         } catch (Exception e) {
             LOG.error("Warmup error with table [{0}]",e,table);

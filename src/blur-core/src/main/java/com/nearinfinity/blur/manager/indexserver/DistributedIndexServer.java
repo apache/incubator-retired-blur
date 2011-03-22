@@ -81,7 +81,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
 
     @Override
-    public Map<String, IndexReader> getIndexReaders(String table) throws IOException {
+    public Map<String, IndexReader> getIndexes(String table) throws IOException {
         Set<String> shardsToServe = getShardsToServe(table);
         setupReaders(table);
         Map<String, IndexReader> tableReaders = readers.get(table);

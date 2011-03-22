@@ -115,7 +115,7 @@ public class BlurShardServer implements Iface {
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
         checkTableStatus(table);
         try {
-            Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
+            Map<String, IndexReader> indexReaders = indexServer.getIndexes(table);
             Map<String, String> result = new TreeMap<String, String>();
             String nodeName = indexServer.getNodeName();
             for (String shard : indexReaders.keySet()) {

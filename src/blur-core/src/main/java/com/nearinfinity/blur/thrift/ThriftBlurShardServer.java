@@ -203,7 +203,7 @@ public class ThriftBlurShardServer {
         return new LocalFileCacheCheck() {
             @Override
             public boolean isSafeForRemoval(String table, String shard, String name) throws IOException {
-                Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
+                Map<String, IndexReader> indexReaders = indexServer.getIndexes(table);
                 if (indexReaders.containsKey(shard)) {
                     return false;
                 }

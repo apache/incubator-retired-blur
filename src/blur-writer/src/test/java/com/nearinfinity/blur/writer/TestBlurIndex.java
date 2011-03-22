@@ -36,6 +36,7 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
@@ -52,8 +53,8 @@ public class TestBlurIndex {
 
     public static void main(String[] args) throws InterruptedException, IOException {
         BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30), "");
-//        Directory dir = FSDirectory.open(new File("./index"));
-        Directory dir = getDir2();
+        Directory dir = FSDirectory.open(new File("./index"));
+//        Directory dir = getDir2();
         
         final BlurIndex blurIndex = new BlurIndex();
         blurIndex.setAnalyzer(analyzer);

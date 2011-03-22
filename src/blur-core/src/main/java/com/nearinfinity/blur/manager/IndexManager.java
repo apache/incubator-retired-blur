@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -54,6 +55,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -71,9 +73,11 @@ import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -92,6 +96,7 @@ public class IndexManager {
     private int threadCount = 32;
     private QueryStatusManager statusManager = new QueryStatusManager();
     private boolean closed;
+    private BlurPartitioner<BytesWritable, Void> blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
 
     public IndexManager() {
         BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
@@ -503,4 +508,37 @@ public class IndexManager {
     public void setStatusCleanupTimerDelay(long delay) {
         statusManager.setStatusCleanupTimerDelay(delay);
     }
+
+    public void mutate(String table, List<RowMutation> mutations) throws BlurException {
+        for (RowMutation mutation : mutations) {
+            mutate(table, mutation);
+        }
+    }
+
+    private void mutate(String table, RowMutation mutation) {
+        validateMutation(mutation);
+        String shard = getShardName(table, mutation);
+        
+    }
+
+    private String getShardName(String table, RowMutation mutation) {
+        int partition = blurPartitioner.getPartition(getKey(mutation), null, getNumberOfShards(table));
+        return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, partition);
+    }
+
+    private int getNumberOfShards(String table) {
+        return 0;
+    }
+
+    private BytesWritable getKey(RowMutation mutation) {
+        return null;
+    }
+
+    private void validateMutation(RowMutation mutation) {
+        String rowId = mutation.rowId;
+        if (rowId == null) {
+            throw new NullPointerException("Rowid can not be null in mutation.");
+        }
+    }
+
 }

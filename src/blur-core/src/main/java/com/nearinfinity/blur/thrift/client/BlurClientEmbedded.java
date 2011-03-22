@@ -137,8 +137,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void mutate(List<RowMutation> mutations) throws BlurException, TException {
-            face.mutate(mutations);
+        public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException {
+            face.mutate(table, mutations);
         }
 
         @Override
@@ -274,7 +274,7 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void send_mutate(List<RowMutation> mutations) throws TException {
+        public void send_mutate(String table, List<RowMutation> mutations) throws TException {
             throw new RuntimeException("not impl");
         }
 

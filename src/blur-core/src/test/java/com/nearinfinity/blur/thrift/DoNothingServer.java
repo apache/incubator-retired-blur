@@ -98,7 +98,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public void mutate(List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException {
         
     }
 

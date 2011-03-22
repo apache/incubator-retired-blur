@@ -59,6 +59,7 @@ public class BlurShardServer implements Iface {
             BlurResultIterable hitsIterable = indexManager.query(table, blurQuery, facetCounts);
             return BlurBaseServer.convertToHits(hitsIterable,blurQuery.start,blurQuery.fetch,blurQuery.minimumNumberOfResults, facetCounts);
         } catch (BlurException e) {
+            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
@@ -74,6 +75,7 @@ public class BlurShardServer implements Iface {
             indexManager.fetchRow(table,selector, fetchResult);
             return fetchResult;
         } catch (BlurException e) {
+            LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]",e,table,selector);
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]",e,table,selector);
@@ -121,10 +123,10 @@ public class BlurShardServer implements Iface {
             }
             return result;
         } catch (Exception e) {
+            LOG.error("Unknown error while trying to getting shardServerLayout for table [" + table + "]",e);
             if (e instanceof BlurException) {
                 throw (BlurException) e;
             }
-            LOG.error("Unknown error while trying to getting shardServerLayout for table [" + table + "]",e);
             throw new BlurException(e.getMessage());
         }
     }
@@ -226,8 +228,17 @@ public class BlurShardServer implements Iface {
     }
 
     @Override
-    public void mutate(List<RowMutation> mutations) throws BlurException, TException {
-        throw new RuntimeException("not impl");
+    public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException {
+        checkTableStatus(table);
+        try {
+            indexManager.mutate(table,mutations);
+        } catch (BlurException e) {
+            LOG.error("Unknown error during processing of [table={0},mutations={1}]", e, table, mutations);
+            throw e;
+        } catch (Exception e) {
+            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, mutations);
+            throw new BlurException(e.getMessage());
+        }
     }
 
     @Override

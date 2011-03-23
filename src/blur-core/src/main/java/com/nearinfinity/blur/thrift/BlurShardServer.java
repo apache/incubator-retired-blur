@@ -191,7 +191,10 @@ public class BlurShardServer implements Iface {
         try {
             TableDescriptor descriptor = new TableDescriptor();
             descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
-            descriptor.shardNames = new ArrayList<String>(indexServer.getShardServerList());
+            if (isTableEnabled(table)) {
+                Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
+                descriptor.shardNames = new ArrayList<String>(indexes.keySet());
+            }
             descriptor.isEnabled = isTableEnabled(table);
             return descriptor;
         } catch (Exception e) {

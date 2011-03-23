@@ -56,7 +56,7 @@ public class Blur {
 
     public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException;
 
-    public void mutate(List<RowMutation> mutations) throws BlurException, TException;
+    public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException;
 
   }
 
@@ -88,7 +88,7 @@ public class Blur {
 
     public void fetchRow(String table, Selector selector, AsyncMethodCallback<AsyncClient.fetchRow_call> resultHandler) throws TException;
 
-    public void mutate(List<RowMutation> mutations, AsyncMethodCallback<AsyncClient.mutate_call> resultHandler) throws TException;
+    public void mutate(String table, List<RowMutation> mutations, AsyncMethodCallback<AsyncClient.mutate_call> resultHandler) throws TException;
 
   }
 
@@ -641,16 +641,17 @@ public class Blur {
       throw new TApplicationException(TApplicationException.MISSING_RESULT, "fetchRow failed: unknown result");
     }
 
-    public void mutate(List<RowMutation> mutations) throws BlurException, TException
+    public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException
     {
-      send_mutate(mutations);
+      send_mutate(table, mutations);
       recv_mutate();
     }
 
-    public void send_mutate(List<RowMutation> mutations) throws TException
+    public void send_mutate(String table, List<RowMutation> mutations) throws TException
     {
       oprot_.writeMessageBegin(new TMessage("mutate", TMessageType.CALL, ++seqid_));
       mutate_args args = new mutate_args();
+      args.setTable(table);
       args.setMutations(mutations);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -1122,22 +1123,25 @@ public class Blur {
       }
     }
 
-    public void mutate(List<RowMutation> mutations, AsyncMethodCallback<mutate_call> resultHandler) throws TException {
+    public void mutate(String table, List<RowMutation> mutations, AsyncMethodCallback<mutate_call> resultHandler) throws TException {
       checkReady();
-      mutate_call method_call = new mutate_call(mutations, resultHandler, this, protocolFactory, transport);
+      mutate_call method_call = new mutate_call(table, mutations, resultHandler, this, protocolFactory, transport);
       manager.call(method_call);
     }
 
     public static class mutate_call extends TAsyncMethodCall {
+      private String table;
       private List<RowMutation> mutations;
-      public mutate_call(List<RowMutation> mutations, AsyncMethodCallback<mutate_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
+      public mutate_call(String table, List<RowMutation> mutations, AsyncMethodCallback<mutate_call> resultHandler, TAsyncClient client, TProtocolFactory protocolFactory, TNonblockingTransport transport) throws TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
         this.mutations = mutations;
       }
 
       public void write_args(TProtocol prot) throws TException {
         prot.writeMessageBegin(new TMessage("mutate", TMessageType.CALL, 0));
         mutate_args args = new mutate_args();
+        args.setTable(table);
         args.setMutations(mutations);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1714,7 +1718,7 @@ public class Blur {
         iprot.readMessageEnd();
         mutate_result result = new mutate_result();
         try {
-          iface_.mutate(args.mutations);
+          iface_.mutate(args.table, args.mutations);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -11030,13 +11034,16 @@ public class Blur {
   public static class mutate_args implements TBase<mutate_args, mutate_args._Fields>, java.io.Serializable, Cloneable   {
     private static final TStruct STRUCT_DESC = new TStruct("mutate_args");
 
-    private static final TField MUTATIONS_FIELD_DESC = new TField("mutations", TType.LIST, (short)1);
+    private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)1);
+    private static final TField MUTATIONS_FIELD_DESC = new TField("mutations", TType.LIST, (short)2);
 
+    public String table;
     public List<RowMutation> mutations;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements TFieldIdEnum {
-      MUTATIONS((short)1, "mutations");
+      TABLE((short)1, "table"),
+      MUTATIONS((short)2, "mutations");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -11051,7 +11058,9 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // MUTATIONS
+          case 1: // TABLE
+            return TABLE;
+          case 2: // MUTATIONS
             return MUTATIONS;
           default:
             return null;
@@ -11097,6 +11106,8 @@ public class Blur {
     public static final Map<_Fields, FieldMetaData> metaDataMap;
     static {
       Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
+          new FieldValueMetaData(TType.STRING)));
       tmpMap.put(_Fields.MUTATIONS, new FieldMetaData("mutations", TFieldRequirementType.DEFAULT, 
           new ListMetaData(TType.LIST, 
               new StructMetaData(TType.STRUCT, RowMutation.class))));
@@ -11108,9 +11119,11 @@ public class Blur {
     }
 
     public mutate_args(
+      String table,
       List<RowMutation> mutations)
     {
       this();
+      this.table = table;
       this.mutations = mutations;
     }
 
@@ -11118,6 +11131,9 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public mutate_args(mutate_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
       if (other.isSetMutations()) {
         List<RowMutation> __this__mutations = new ArrayList<RowMutation>();
         for (RowMutation other_element : other.mutations) {
@@ -11133,7 +11149,32 @@ public class Blur {
 
     @Override
     public void clear() {
+      this.table = null;
       this.mutations = null;
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public mutate_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been asigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
     }
 
     public int getMutationsSize() {
@@ -11177,6 +11218,14 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
       case MUTATIONS:
         if (value == null) {
           unsetMutations();
@@ -11190,6 +11239,9 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
+      case TABLE:
+        return getTable();
+
       case MUTATIONS:
         return getMutations();
 
@@ -11204,6 +11256,8 @@ public class Blur {
       }
 
       switch (field) {
+      case TABLE:
+        return isSetTable();
       case MUTATIONS:
         return isSetMutations();
       }
@@ -11222,6 +11276,15 @@ public class Blur {
     public boolean equals(mutate_args that) {
       if (that == null)
         return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
 
       boolean this_present_mutations = true && this.isSetMutations();
       boolean that_present_mutations = true && that.isSetMutations();
@@ -11248,6 +11311,16 @@ public class Blur {
       int lastComparison = 0;
       mutate_args typedOther = (mutate_args)other;
 
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
       lastComparison = Boolean.valueOf(isSetMutations()).compareTo(typedOther.isSetMutations());
       if (lastComparison != 0) {
         return lastComparison;
@@ -11275,7 +11348,14 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // MUTATIONS
+          case 1: // TABLE
+            if (field.type == TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // MUTATIONS
             if (field.type == TType.LIST) {
               {
                 TList _list114 = iprot.readListBegin();
@@ -11308,6 +11388,11 @@ public class Blur {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
       if (this.mutations != null) {
         oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
         {
@@ -11329,6 +11414,14 @@ public class Blur {
       StringBuilder sb = new StringBuilder("mutate_args(");
       boolean first = true;
 
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
       sb.append("mutations:");
       if (this.mutations == null) {
         sb.append("null");

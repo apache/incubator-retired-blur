@@ -16,8 +16,6 @@
 
 package com.nearinfinity.blur.mapreduce;
 
-import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -32,10 +30,12 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.lucene.index.IndexCommit;
 
+import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurTask {
 	
@@ -60,8 +60,7 @@ public class BlurTask {
         //need to figure out shard name
         TaskAttemptID taskAttemptID = context.getTaskAttemptID();
         int id = taskAttemptID.getTaskID().getId();
-        shardName = SHARD_PREFIX + buffer(id,8);
-        
+        shardName = BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, id);
     }
     
     public BlurTask(Configuration configuration) {
@@ -207,14 +206,6 @@ public class BlurTask {
         return files;
     }
     
-    private String buffer(int value, int length) {
-        String str = Integer.toString(value);
-        while (str.length() < length) {
-            str = "0" + str;
-        }
-        return str;
-    }
-
     public String getCounterGroupName() {
         return "Blur";
     }

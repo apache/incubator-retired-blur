@@ -38,6 +38,8 @@ import org.apache.lucene.store.LockFactory;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
@@ -69,7 +71,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     }
 
     @Override
-    protected IndexReader openShard(String table, String shard) throws IOException {
+    protected BlurIndex openShard(String table, String shard) throws IOException {
         LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
         Path tablePath = new Path(blurBasePath,table);
         if (!exists(tablePath)) {
@@ -85,16 +87,17 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
                 //do nothing for now
             }
         }, replicationDaemon,replicationStrategy);
-        return warmUp(IndexReader.open(directory));
+        return warmUp(new BlurIndexReader(IndexReader.open(directory)));
     }
 
-    private IndexReader warmUp(IndexReader reader) throws IOException {
+    private BlurIndex warmUp(BlurIndex index) throws IOException {
+        IndexReader reader = index.getIndexReader();
         int maxDoc = reader.maxDoc();
         int numDocs = reader.numDocs();
         Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
         int primeDocCount = reader.docFreq(new Term(PRIME_DOC,PRIME_DOC_VALUE));
         LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fields [" + fieldNames + "]");
-        return reader;
+        return index;
     }
 
     @Override
@@ -117,7 +120,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     }
 
     @Override
-    protected void beforeClose(String shard, IndexReader indexReader) {
+    protected void beforeClose(String shard, BlurIndex indexReader) {
 
     }
     

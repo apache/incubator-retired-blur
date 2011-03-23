@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
@@ -54,6 +55,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -65,15 +67,18 @@ import com.nearinfinity.blur.manager.results.BlurResultIterableSearcher;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.status.QueryStatus;
 import com.nearinfinity.blur.manager.status.QueryStatusManager;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -92,6 +97,7 @@ public class IndexManager {
     private int threadCount = 32;
     private QueryStatusManager statusManager = new QueryStatusManager();
     private boolean closed;
+    private BlurPartitioner<BytesWritable, Void> blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
 
     public IndexManager() {
         BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
@@ -120,17 +126,17 @@ public class IndexManager {
     }
 
     public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
-        IndexReader reader;
+        BlurIndex index;
         try {
             String shard = getShard(selector.getLocationId());
-            Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
-            if (indexReaders == null) {
+            Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
+            if (blurIndexes == null) {
                 LOG.error("Table [{0}] not found",table);
                 throw new BlurException("Table [" + table + "] not found");
             }
-            reader = indexReaders.get(shard);
-            if (reader == null) {
-                if (reader == null) {
+            index = blurIndexes.get(shard);
+            if (index == null) {
+                if (index == null) {
                     LOG.error("Shard [{0}] not found in table [{1}]",shard,table);
                     throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]");
                 }
@@ -142,7 +148,7 @@ public class IndexManager {
             throw new BlurException(e.getMessage());
         }
         try {
-            fetchRow(reader, table, selector, fetchResult);
+            fetchRow(index.getIndexReader(), table, selector, fetchResult);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to fetch row.", e);
             throw new BlurException(e.getMessage());
@@ -165,9 +171,9 @@ public class IndexManager {
     public BlurResultIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
         final QueryStatus status = statusManager.newQueryStatus(table, blurQuery);
         try {
-            Map<String, IndexReader> indexReaders;
+            Map<String, BlurIndex> blurIndexes;
             try {
-                indexReaders = indexServer.getIndexReaders(table);
+                blurIndexes = indexServer.getIndexes(table);
             } catch (IOException e) {
                 LOG.error("Unknown error while trying to fetch index readers.", e);
                 throw new BlurException(e.getMessage());
@@ -178,13 +184,14 @@ public class IndexManager {
             Query userQuery = parseQuery(blurQuery.queryStr, blurQuery.superQueryOn, 
                     analyzer, postFilter, preFilter, getScoreType(blurQuery.type));
             final Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
-            return ForkJoin.execute(executor, indexReaders.entrySet(),
-                new ParallelCall<Entry<String, IndexReader>, BlurResultIterable>() {
+            return ForkJoin.execute(executor, blurIndexes.entrySet(),
+                new ParallelCall<Entry<String, BlurIndex>, BlurResultIterable>() {
                     @Override
-                    public BlurResultIterable call(Entry<String, IndexReader> entry) throws Exception {
+                    public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
                         status.attachThread();
                         try {
-                            IndexReader reader = entry.getValue();
+                            BlurIndex index = entry.getValue();
+                            IndexReader reader = index.getIndexReader();
                             String shard = entry.getKey();
                             BlurSearcher searcher = new BlurSearcher(reader, 
                                     PrimeDocCache.getTableCache().getShardCache(table).
@@ -385,18 +392,19 @@ public class IndexManager {
     }
     
     public long recordFrequency(String table, final String columnFamily, final String columnName, final String value) throws Exception {
-        Map<String, IndexReader> indexReaders;
+        Map<String, BlurIndex> blurIndexes;
         try {
-            indexReaders = indexServer.getIndexReaders(table);
+            blurIndexes = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
             throw new BlurException(e.getMessage());
         }
-        return ForkJoin.execute(executor, indexReaders.entrySet(),
-            new ParallelCall<Entry<String, IndexReader>, Long>() {
+        return ForkJoin.execute(executor, blurIndexes.entrySet(),
+            new ParallelCall<Entry<String, BlurIndex>, Long>() {
                 @Override
-                public Long call(Entry<String, IndexReader> input) throws Exception {
-                    IndexReader reader = input.getValue();
+                public Long call(Entry<String, BlurIndex> input) throws Exception {
+                    BlurIndex index = input.getValue();
+                    IndexReader reader = index.getIndexReader();
                     return recordFrequency(reader,columnFamily,columnName,value);
                 }
         }).merge(new Merger<Long>() {
@@ -412,18 +420,19 @@ public class IndexManager {
     }
 
     public List<String> terms(String table, final String columnFamily, final String columnName, final String startWith, final short size) throws Exception {
-        Map<String, IndexReader> indexReaders;
+        Map<String, BlurIndex> blurIndexes;
         try {
-            indexReaders = indexServer.getIndexReaders(table);
+            blurIndexes = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
             throw new BlurException(e.getMessage());
         }
-        return ForkJoin.execute(executor, indexReaders.entrySet(),
-            new ParallelCall<Entry<String, IndexReader>, List<String>>() {
+        return ForkJoin.execute(executor, blurIndexes.entrySet(),
+            new ParallelCall<Entry<String, BlurIndex>, List<String>>() {
                 @Override
-                public List<String> call(Entry<String, IndexReader> input) throws Exception {
-                    IndexReader reader = input.getValue();
+                public List<String> call(Entry<String, BlurIndex> input) throws Exception {
+                    BlurIndex index = input.getValue();
+                    IndexReader reader = index.getIndexReader();
                     return terms(reader,columnFamily,columnName,startWith,size);
                 }
         }).merge(new Merger<List<String>>() {
@@ -480,8 +489,9 @@ public class IndexManager {
     public Schema schema(String table) throws IOException {
         Schema schema = new Schema().setTable(table);
         schema.columnFamilies = new TreeMap<String, Set<String>>();
-        Map<String, IndexReader> indexReaders = indexServer.getIndexReaders(table);
-        for (IndexReader reader : indexReaders.values()) {
+        Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
+        for (BlurIndex blurIndex : blurIndexes.values()) {
+            IndexReader reader = blurIndex.getIndexReader();
             Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
             for (String fieldName : fieldNames) {
                 int index = fieldName.indexOf('.');
@@ -503,4 +513,37 @@ public class IndexManager {
     public void setStatusCleanupTimerDelay(long delay) {
         statusManager.setStatusCleanupTimerDelay(delay);
     }
+
+    public void mutate(String table, List<RowMutation> mutations) throws BlurException {
+        for (RowMutation mutation : mutations) {
+            mutate(table, mutation);
+        }
+    }
+
+    private void mutate(String table, RowMutation mutation) {
+        validateMutation(mutation);
+        String shard = getShardName(table, mutation);
+        
+    }
+
+    private String getShardName(String table, RowMutation mutation) {
+        int partition = blurPartitioner.getPartition(getKey(mutation), null, getNumberOfShards(table));
+        return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, partition);
+    }
+
+    private int getNumberOfShards(String table) {
+        return 0;
+    }
+
+    private BytesWritable getKey(RowMutation mutation) {
+        return null;
+    }
+
+    private void validateMutation(RowMutation mutation) {
+        String rowId = mutation.rowId;
+        if (rowId == null) {
+            throw new NullPointerException("Rowid can not be null in mutation.");
+        }
+    }
+
 }

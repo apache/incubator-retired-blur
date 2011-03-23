@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.writer;
+package com.nearinfinity.blur.manager.writer;
 
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
@@ -40,10 +40,10 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
-public class BlurIndex implements Runnable {
+public class BlurIndexWriter extends BlurIndex implements Runnable {
     
     private static final String BLUR_UPDATE_THREAD = "Blur-Update-Thread-";
-    private static final Log LOG =  LogFactory.getLog(BlurIndex.class);
+    private static final Log LOG =  LogFactory.getLog(BlurIndexWriter.class);
     
     private class BlurIndexMutation {
         volatile Directory directory;
@@ -76,13 +76,18 @@ public class BlurIndex implements Runnable {
         daemon.interrupt();
     }
     
-    public boolean replaceRow(Collection<Row> rows) throws InterruptedException, IOException {
-        BlurIndexMutation update = new BlurIndexMutation();
-        update.directory = index(rows);
-        synchronized (update) {
-            mutationQueue.put(update);
-            update.wait();
-            return update.indexed;
+    @Override
+    public boolean replaceRow(Collection<Row> rows) {
+        try {
+            BlurIndexMutation update = new BlurIndexMutation();
+            update.directory = index(rows);
+            synchronized (update) {
+                mutationQueue.put(update);
+                update.wait();
+                return update.indexed;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     
@@ -173,8 +178,10 @@ public class BlurIndex implements Runnable {
         this.analyzer = analyzer;
     }
 
-    public IndexReader getIndexReader() throws IOException {
-        return writer.getReader();
+    @Override
+    public IndexReader getIndexReader() {
+        throw new RuntimeException("more work here");
+//        return writer.getReader();
     }
 
     public void setDirectory(Directory directory) {

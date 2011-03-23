@@ -161,7 +161,7 @@ service Blur {
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
-  void mutate(1:list<RowMutation> mutations) throws (1:BlurException ex)
+  void mutate(1:string table, 2:list<RowMutation> mutations) throws (1:BlurException ex)
 }
 
 

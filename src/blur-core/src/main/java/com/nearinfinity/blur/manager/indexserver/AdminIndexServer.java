@@ -16,6 +16,9 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,7 +33,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -40,7 +42,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
 
 public abstract class AdminIndexServer implements IndexServer {
     
@@ -109,8 +111,8 @@ public abstract class AdminIndexServer implements IndexServer {
     protected void warmUpTable(String table) {
         try {
             LOG.debug("Warmup for table [{0}]",table);
-            Map<String, IndexReader> indexReaders = getIndexReaders(table);
-            LOG.debug("Warmup complete for table [{0}] shards [{1}]",table,indexReaders.keySet());
+            Map<String, BlurIndex> blurIndexes = getIndexes(table);
+            LOG.debug("Warmup complete for table [{0}] shards [{1}]", table, blurIndexes.keySet());
         } catch (Exception e) {
             LOG.error("Warmup error with table [{0}]",e,table);
         }

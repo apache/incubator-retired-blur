@@ -21,8 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
+
+import com.nearinfinity.blur.manager.writer.BlurIndex;
 
 public interface IndexServer {
     
@@ -55,13 +56,13 @@ public interface IndexServer {
     /**
      * Gets a map of the index readers for current running node.
      * <p/>
-     * Keys are shard names, values are the associated Lucene index readers.
+     * Keys are shard names, values are the associated indexes.
      *
      * @param table the table name.
      * @return the map of readers.
      * @throws IOException
      */
-    Map<String, IndexReader> getIndexReaders(String table) throws IOException;
+    Map<String, BlurIndex> getIndexes(String table) throws IOException;
 
     /**
      * The table name list.

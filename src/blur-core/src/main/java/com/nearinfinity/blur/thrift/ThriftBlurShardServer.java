@@ -41,7 +41,6 @@ import java.util.Random;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -62,6 +61,7 @@ import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
@@ -203,8 +203,8 @@ public class ThriftBlurShardServer {
         return new LocalFileCacheCheck() {
             @Override
             public boolean isSafeForRemoval(String table, String shard, String name) throws IOException {
-                Map<String, IndexReader> indexReaders = indexServer.getIndexes(table);
-                if (indexReaders.containsKey(shard)) {
+                Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
+                if (blurIndexes.containsKey(shard)) {
                     return false;
                 }
                 return true;

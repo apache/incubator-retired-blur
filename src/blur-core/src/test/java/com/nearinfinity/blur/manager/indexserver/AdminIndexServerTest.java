@@ -30,12 +30,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.lucene.index.IndexReader;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
 
 public class AdminIndexServerTest {
 
@@ -105,9 +105,9 @@ public class AdminIndexServerTest {
             }
 
             @Override
-            public Map<String, IndexReader> getIndexes(String table) throws IOException {
+            public Map<String, BlurIndex> getIndexes(String table) throws IOException {
                 System.out.println("Do nothing.");
-                return new HashMap<String, IndexReader>();
+                return new HashMap<String, BlurIndex>();
             }
 
             @Override

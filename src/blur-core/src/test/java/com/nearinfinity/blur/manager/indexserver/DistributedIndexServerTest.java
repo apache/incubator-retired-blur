@@ -43,6 +43,8 @@ import org.junit.After;
 import org.junit.Test;
 
 import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 
 public class DistributedIndexServerTest {
     
@@ -80,7 +82,7 @@ public class DistributedIndexServerTest {
         toBeClosed.add("h");
         DistributedIndexServer indexServer = new MockDistributedIndexServer(nodes, SHARD_LIST) {
             @Override
-            protected void beforeClose(String shard, IndexReader indexReader) {
+            protected void beforeClose(String shard, BlurIndex index) {
                 assertTrue(toBeClosed.contains(shard));
                 toBeClosed.remove(shard);
             }
@@ -213,13 +215,13 @@ public class DistributedIndexServerTest {
         }
 
         @Override
-        protected IndexReader openShard(String table, String shard) {
+        protected BlurIndex openShard(String table, String shard) {
             return getEmptyIndexReader();
         }
         
-        private IndexReader getEmptyIndexReader() {
+        private BlurIndex getEmptyIndexReader() {
             try {
-                return IndexReader.open(getEmptyDir());
+                return new BlurIndexReader(IndexReader.open(getEmptyDir()));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -253,7 +255,7 @@ public class DistributedIndexServerTest {
         }
 
         @Override
-        protected void beforeClose(String shard, IndexReader indexReader) {
+        protected void beforeClose(String shard, BlurIndex index) {
             throw new RuntimeException("not implement");            
         }
 

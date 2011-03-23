@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.writer;
+package com.nearinfinity.blur.manager.writer;
 
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
@@ -77,13 +77,17 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
     }
     
     @Override
-    public boolean replaceRow(Collection<Row> rows) throws InterruptedException, IOException {
-        BlurIndexMutation update = new BlurIndexMutation();
-        update.directory = index(rows);
-        synchronized (update) {
-            mutationQueue.put(update);
-            update.wait();
-            return update.indexed;
+    public boolean replaceRow(Collection<Row> rows) {
+        try {
+            BlurIndexMutation update = new BlurIndexMutation();
+            update.directory = index(rows);
+            synchronized (update) {
+                mutationQueue.put(update);
+                update.wait();
+                return update.indexed;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
     
@@ -175,8 +179,9 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
     }
 
     @Override
-    public IndexReader getIndexReader() throws IOException {
-        return writer.getReader();
+    public IndexReader getIndexReader() {
+        throw new RuntimeException("more work here");
+//        return writer.getReader();
     }
 
     public void setDirectory(Directory directory) {

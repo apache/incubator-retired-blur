@@ -16,7 +16,6 @@
 		<module>blur-thrift</module>
 		<module>blur-store</module>
 		<module>blur-mapred</module>
-		<module>blur-writer</module>
 		<module>blur-util</module>
 	</modules>
 	

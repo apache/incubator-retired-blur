@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.lucene.index.IndexReader;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.log.Log;
@@ -31,6 +30,7 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -115,10 +115,10 @@ public class BlurShardServer implements Iface {
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
         checkTableStatus(table);
         try {
-            Map<String, IndexReader> indexReaders = indexServer.getIndexes(table);
+            Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
             Map<String, String> result = new TreeMap<String, String>();
             String nodeName = indexServer.getNodeName();
-            for (String shard : indexReaders.keySet()) {
+            for (String shard : blurIndexes.keySet()) {
                 result.put(shard, nodeName);
             }
             return result;

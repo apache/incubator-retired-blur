@@ -26,10 +26,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.KeywordAnalyzer;
@@ -40,24 +37,28 @@ import org.apache.lucene.store.RAMDirectory;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 
 public abstract class DistributedIndexServer extends AdminIndexServer {
     
     private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
 
     private static final IndexReader EMPTY_INDEXREADER;
+    private static final BlurIndex EMPTY_BLURINDEX;
     
     static {
         RAMDirectory directory = new RAMDirectory();
         try {
             new IndexWriter(directory,new KeywordAnalyzer(),MaxFieldLength.UNLIMITED).close();
             EMPTY_INDEXREADER = IndexReader.open(directory);
+            EMPTY_BLURINDEX = new BlurIndexReader(EMPTY_INDEXREADER);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
     
-    private ConcurrentHashMap<String,Map<String,IndexReader>> readers = new ConcurrentHashMap<String, Map<String,IndexReader>>();
+    private ConcurrentHashMap<String,Map<String,BlurIndex>> readers = new ConcurrentHashMap<String, Map<String,BlurIndex>>();
     private Timer readerCloserDaemon;
     private long delay = TimeUnit.SECONDS.toMillis(30);
     private Map<String,DistributedLayoutManager> layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
@@ -71,9 +72,9 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
         startIndexReaderCloserDaemon();
     }
     
-    protected abstract IndexReader openShard(String table, String shard) throws IOException;
+    protected abstract BlurIndex openShard(String table, String shard) throws IOException;
     
-    protected abstract void beforeClose(String shard, IndexReader indexReader);
+    protected abstract void beforeClose(String shard, BlurIndex index);
     
     public void shardServerStateChange() {
         layoutManagers.clear();
@@ -81,20 +82,20 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
 
     @Override
-    public Map<String, IndexReader> getIndexes(String table) throws IOException {
+    public Map<String, BlurIndex> getIndexes(String table) throws IOException {
         Set<String> shardsToServe = getShardsToServe(table);
         setupReaders(table);
-        Map<String, IndexReader> tableReaders = readers.get(table);
-        Set<String> shardsBeingServed = new HashSet<String>(tableReaders.keySet());
+        Map<String, BlurIndex> tableIndexes = readers.get(table);
+        Set<String> shardsBeingServed = new HashSet<String>(tableIndexes.keySet());
         if (shardsBeingServed.containsAll(shardsToServe)) {
-            Map<String, IndexReader> result = new HashMap<String, IndexReader>(tableReaders);
+            Map<String, BlurIndex> result = new HashMap<String, BlurIndex>(tableIndexes);
             shardsBeingServed.removeAll(shardsToServe);
             for (String shardNotToServe : shardsBeingServed) {
                 result.remove(shardNotToServe);
             }
             return result;
         } else {
-            return openMissingShards(table,shardsToServe,tableReaders);
+            return openMissingShards(table,shardsToServe,tableIndexes);
         }
     }
     
@@ -113,7 +114,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
             if (!currentTables.contains(table)) {
                 //close all readers
                 LOG.info("Table [" + table + "] no longer available, closing all indexes.");
-                Map<String, IndexReader> map = readers.get(table);
+                Map<String, BlurIndex> map = readers.get(table);
                 for (String shard : map.keySet()) {
                     closeIndex(table, shard, map.get(shard));
                 }
@@ -124,29 +125,29 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
 
     protected void closeOldReaders(String table) {
         Set<String> shardsToServe = getShardsToServe(table);
-        Map<String, IndexReader> tableReaders = readers.get(table);
-        if (tableReaders == null) {
+        Map<String, BlurIndex> tableIndex = readers.get(table);
+        if (tableIndex == null) {
             return;
         }
-        Set<String> shardsOpen = new HashSet<String>(tableReaders.keySet());
+        Set<String> shardsOpen = new HashSet<String>(tableIndex.keySet());
         shardsOpen.removeAll(shardsToServe);
         if (shardsOpen.isEmpty()) {
             return;
         }
         for (String shard : shardsOpen) {
-            IndexReader indexReader = tableReaders.remove(shard);
-            closeIndex(table, shard, indexReader);
+            BlurIndex index = tableIndex.remove(shard);
+            closeIndex(table, shard, index);
         }
     }
 
-    private void closeIndex(String table, String shard, IndexReader indexReader) {
-        beforeClose(shard,indexReader);
+    private void closeIndex(String table, String shard, BlurIndex index) {
         try {
-            indexReader.close();
-        } catch (IOException e) {
-            LOG.error("Error while closing index reader [{0}]",e,indexReader);
+            beforeClose(shard,index);
+            index.close();
+            LOG.info("Index for table [{0}] shard [{1}] closed.",table,shard);
+        } catch (Exception e) {
+            LOG.error("Error while closing index reader [{0}]",e,index);
         }
-        LOG.info("Index for table [{0}] shard [{1}] closed.",table,shard);
     }
 
     @Override
@@ -166,42 +167,26 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     
     //Getters and setters
     
-    private synchronized Map<String, IndexReader> openMissingShards(final String table, Set<String> shardsToServe, final Map<String, IndexReader> tableReaders) {
-        Map<String, IndexReader> result = new HashMap<String, IndexReader>();
-        Map<String,Future<Void>> futures = new HashMap<String, Future<Void>>();
+    private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe, final Map<String, BlurIndex> tableIndexes) {
+        Map<String, BlurIndex> result = new HashMap<String, BlurIndex>();
         for (String s : shardsToServe) {
             final String shard = s;
-            IndexReader indexReader = tableReaders.get(shard);
-            if (indexReader == null) {
-                futures.put(shard,executorService.submit(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        tableReaders.put(shard, openShard(table,shard));
-                        return null;
-                    }
-                }));
-            } else {
-                result.put(shard, indexReader);
+            BlurIndex blurIndex = tableIndexes.get(shard);
+            if (blurIndex == null) {
+                try {
+                    tableIndexes.put(shard, openShard(table,shard));
+                } catch (Exception e) {
+                    LOG.error("Unknown error while opening shard [{0}] for table [{1}].",e.getCause(),shard,table);
+                    result.put(shard, EMPTY_BLURINDEX);
+                }
             }
-        }
-        for (String shard : futures.keySet()) {
-            Future<Void> future = futures.get(shard);
-            try {
-                future.get();
-                IndexReader indexReader = tableReaders.get(shard);
-                result.put(shard, indexReader);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ExecutionException e) {
-                LOG.error("Unknown error while opening shard [{0}] for table [{1}].",e.getCause(),shard,table);
-                result.put(shard, EMPTY_INDEXREADER);
-            }
+            result.put(shard, blurIndex);
         }
         return result;
     }
 
     private void setupReaders(String table) {
-        readers.putIfAbsent(table, new ConcurrentHashMap<String, IndexReader>());
+        readers.putIfAbsent(table, new ConcurrentHashMap<String, BlurIndex>());
     }
     
     private Set<String> getShardsToServe(String table) {

@@ -21,13 +21,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Similarity;
 import org.junit.After;
 import org.junit.Before;
 
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
+import com.nearinfinity.blur.manager.writer.BlurIndex;
 
 public class BlurShardServerTest {
     
@@ -68,7 +68,7 @@ public class BlurShardServerTest {
             }
 
             @Override
-            public Map<String, IndexReader> getIndexes(String table) throws IOException {
+            public Map<String, BlurIndex> getIndexes(String table) throws IOException {
                 throw new RuntimeException("not impl");
             }
 

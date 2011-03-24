@@ -23,6 +23,7 @@ import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -73,8 +74,10 @@ import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
+import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -514,36 +517,60 @@ public class IndexManager {
         statusManager.setStatusCleanupTimerDelay(delay);
     }
 
-    public void mutate(String table, List<RowMutation> mutations) throws BlurException {
+    public void mutate(String table, List<RowMutation> mutations) throws BlurException, IOException {
         for (RowMutation mutation : mutations) {
             mutate(table, mutation);
         }
     }
 
-    private void mutate(String table, RowMutation mutation) {
+    private void mutate(String table, RowMutation mutation) throws IOException, BlurException {
         validateMutation(mutation);
         String shard = getShardName(table, mutation);
-        
+        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
+        BlurIndex blurIndex = indexes.get(shard);
+        if (blurIndex == null) {
+            throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
+        }
+        blurIndex.replaceRow(getRows(mutation));
     }
 
     private String getShardName(String table, RowMutation mutation) {
         int partition = blurPartitioner.getPartition(getKey(mutation), null, getNumberOfShards(table));
         return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, partition);
     }
-
-    private int getNumberOfShards(String table) {
-        return 0;
-    }
-
-    private BytesWritable getKey(RowMutation mutation) {
-        return null;
-    }
-
+    
     private void validateMutation(RowMutation mutation) {
         String rowId = mutation.rowId;
         if (rowId == null) {
             throw new NullPointerException("Rowid can not be null in mutation.");
         }
+    }
+    
+    private Collection<Row> getRows(RowMutation mutation) {
+        RowMutationType type = mutation.rowMutationType;
+        switch (type) {
+        case REPLACE_ROW:
+            return Arrays.asList(getRow(mutation.rowId,mutation.recordMutations));
+        default:
+            throw new RuntimeException("Not supported [" + type + "]");
+        }
+    }
+
+    private Row getRow(String id, List<RecordMutation> recordMutations) {
+        Row row = new Row().setId(id);
+        for (RecordMutation mutation : recordMutations) {
+            mutation.
+        }
+        return null;
+    }
+
+    private int getNumberOfShards(String table) {
+        List<String> list = indexServer.getShardList(table);
+        return list.size();
+    }
+
+    private BytesWritable getKey(RowMutation mutation) {
+        return new BytesWritable(mutation.rowId.getBytes());
     }
 
 }

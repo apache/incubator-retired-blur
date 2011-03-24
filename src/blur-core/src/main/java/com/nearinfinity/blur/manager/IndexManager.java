@@ -73,6 +73,7 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -550,18 +551,33 @@ public class IndexManager {
         RowMutationType type = mutation.rowMutationType;
         switch (type) {
         case REPLACE_ROW:
-            return Arrays.asList(getRow(mutation.rowId,mutation.recordMutations));
+            return Arrays.asList(getRowFromMutations(mutation.rowId,mutation.recordMutations));
         default:
             throw new RuntimeException("Not supported [" + type + "]");
         }
     }
 
-    private Row getRow(String id, List<RecordMutation> recordMutations) {
+    private Row getRowFromMutations(String id, List<RecordMutation> recordMutations) {
         Row row = new Row().setId(id);
+        Map<String,ColumnFamily> columnFamily = new HashMap<String, ColumnFamily>();
         for (RecordMutation mutation : recordMutations) {
-            mutation.
+            ColumnFamily family = columnFamily.get(mutation.family);
+            if (family == null) {
+                family = new ColumnFamily();
+                columnFamily.put(mutation.family, family);
+            }
+            switch (mutation.recordMutationType) {
+            case REPLACE_ENTIRE_RECORD:
+                family.putToRecords(mutation.recordId, mutation.record);
+                break;
+            default:
+                throw new RuntimeException("Not supported [" + mutation.recordMutationType + "]");
+            }
         }
-        return null;
+        for (ColumnFamily family : columnFamily.values()) {
+            row.addToColumnFamilies(family);
+        }
+        return row;
     }
 
     private int getNumberOfShards(String table) {

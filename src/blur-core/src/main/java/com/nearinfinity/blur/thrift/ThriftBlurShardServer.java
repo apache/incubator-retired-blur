@@ -62,6 +62,7 @@ import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
@@ -202,7 +203,9 @@ public class ThriftBlurShardServer {
     private static LocalFileCacheCheck getLocalFileCacheCheck(final HdfsIndexServer indexServer) {
         return new LocalFileCacheCheck() {
             @Override
-            public boolean isSafeForRemoval(String table, String shard, String name) throws IOException {
+            public boolean isSafeForRemoval(String dirName, String name) throws IOException {
+                String table = HdfsUtil.getTable(dirName);
+                String shard = HdfsUtil.getShard(dirName);
                 Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
                 if (blurIndexes.containsKey(shard)) {
                     return false;

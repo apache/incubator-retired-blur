@@ -34,7 +34,7 @@ public class LocalFileCache {
     private static Log LOG = LogFactory.getLog(LocalFileCache.class);
     private static final LocalFileCacheCheck DEFAULT_EXISTENCE_CHECK = new LocalFileCacheCheck() {
         @Override
-        public boolean isSafeForRemoval(String table, String shard, String name) {
+        public boolean isSafeForRemoval(String dirName, String name) {
             return false;
         }
     };
@@ -143,7 +143,7 @@ public class LocalFileCache {
         LOG.info("File gc processing dir [{0}] at [{1}].",dirName,dir.getAbsolutePath());
         for (File file : dir.listFiles()) {
             try {
-                if (localFileCacheCheck.isSafeForRemoval(HdfsUtil.getTable(dirName),HdfsUtil.getShard(dirName),file.getName())) {
+                if (localFileCacheCheck.isSafeForRemoval(dirName,file.getName())) {
                     LOG.info("Removing file [{0}] in dir [{1}] at [{2}].",file.getAbsolutePath(),dirName,dir.getAbsolutePath());
                     file.delete();
                 }

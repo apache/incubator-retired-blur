@@ -44,6 +44,8 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     private LocalIOWrapper wrapper;
     private ReplicationDaemon replicationDaemon;
     private ReplicationStrategy replicationStrategy;
+    protected String shard;
+    protected String table;
 
     public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, 
             LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, ReplicationStrategy replicationStrategy)
@@ -64,7 +66,9 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
 
     public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
             LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, ReplicationStrategy replicationStrategy, final LocalIOWrapper wrapper) throws IOException {
-        super(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable);
+        super(HdfsUtil.getDirName(table, shard),hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable);
+        this.table = table;
+        this.shard = shard;
         this.wrapper = wrapper;
         this.replicationDaemon = replicationDaemon;
         this.replicationStrategy = replicationStrategy;

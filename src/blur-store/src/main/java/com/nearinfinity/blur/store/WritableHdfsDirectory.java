@@ -36,7 +36,6 @@ import org.apache.lucene.util.Constants;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.indexinput.FileIndexInput;
 import com.nearinfinity.blur.store.indexinput.FileNIOIndexInput;
@@ -50,12 +49,10 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     protected LocalFileCache localFileCache;
     protected String dirName;
     protected Progressable progressable;
-    protected String shard;
-    protected String table;
     
-    public WritableHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem,
+    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
-        this(table,shard,hdfsDirPath,fileSystem,localFileCache,lockFactory,new Progressable() {
+        this(dirName,hdfsDirPath,fileSystem,localFileCache,lockFactory,new Progressable() {
             @Override
             public void progress() {
                 
@@ -63,12 +60,10 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         });
     }
 
-    public WritableHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem,
+    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable) throws IOException {
         super(hdfsDirPath, fileSystem);
-        this.table = table;
-        this.shard = shard;
-        this.dirName = HdfsUtil.getDirName(table, shard);
+        this.dirName = dirName;
         this.progressable = progressable;
         File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);
         if (segments.exists()) {

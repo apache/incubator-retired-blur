@@ -30,6 +30,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.6.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>zookeeper</artifactId>
             <version>3.3.1</version>
@@ -37,6 +42,10 @@
                 <exclusion>
                     <groupId>junit</groupId>
                     <artifactId>junit</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>log4j</groupId>
+                    <artifactId>log4j</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
@@ -85,7 +94,7 @@
                             <overWriteSnapshots>false</overWriteSnapshots>
                             <overWriteIfNewer>true</overWriteIfNewer>
                             <excludeTransitive>true</excludeTransitive>
-                            <excludeArtifactIds>junit,commons-cli,commons-logging,hadoop,slf4j-api</excludeArtifactIds>
+                            <excludeArtifactIds>junit,commons-cli,commons-logging,hadoop,slf4j-api,slf4j-log4j12</excludeArtifactIds>
                         </configuration>
                     </execution>
                 </executions>

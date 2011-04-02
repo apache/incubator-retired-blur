@@ -24,32 +24,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexReader;
+import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 
 public class LocalIndexServer implements IndexServer {
+    
+    private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
     
     private Map<String,Map<String, BlurIndex>> readersMap = new ConcurrentHashMap<String, Map<String,BlurIndex>>();
     private File localDir;
     
     public LocalIndexServer(File file) {
         this.localDir = file;
+        this.localDir.mkdirs();
     }
 
     @Override
-    public Analyzer getAnalyzer(String table) {
-        return new StandardAnalyzer(Version.LUCENE_30);
+    public BlurAnalyzer getAnalyzer(String table) {
+        return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30),"");
     }
 
     @Override
@@ -79,11 +87,11 @@ public class LocalIndexServer implements IndexServer {
             for (File f : tableFile.listFiles()) {
                 if (f.isDirectory()) {
                     Directory directory = FSDirectory.open(f);
-                    if (IndexReader.indexExists(directory)) {
-                        shards.put(f.getName(),openReader(directory));
-                    } else {
-                        directory.close();
+                    if (!IndexReader.indexExists(directory)) {
+                        new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED).close();
                     }
+                    String shardName = f.getName();
+                    shards.put(shardName,openIndex(table,directory));
                 }
             }
             return shards;
@@ -91,8 +99,12 @@ public class LocalIndexServer implements IndexServer {
         throw new IOException("Table [" + table + "] not found.");
     }
 
-    private BlurIndex openReader(Directory dir) throws CorruptIndexException, IOException {
-        return new BlurIndexReader(IndexReader.open(dir));
+    private BlurIndex openIndex(String table, Directory dir) throws CorruptIndexException, IOException {
+        BlurIndexWriter writer = new BlurIndexWriter();
+        writer.setDirectory(dir);
+        writer.setAnalyzer(getAnalyzer(table));
+        writer.init();
+        return writer;
     }
 
     @Override
@@ -123,11 +135,7 @@ public class LocalIndexServer implements IndexServer {
             if (tableFile.isDirectory()) {
                 for (File f : tableFile.listFiles()) {
                     if (f.isDirectory()) {
-                        Directory directory = FSDirectory.open(f);
-                        if (IndexReader.indexExists(directory)) {
-                            result.add(f.getName());
-                        }
-                        directory.close();
+                        result.add(f.getName());
                     }
                 }
             }

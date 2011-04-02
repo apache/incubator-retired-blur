@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Similarity;
 import org.junit.After;
 import org.junit.Before;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
@@ -58,7 +58,7 @@ public class BlurShardServerTest {
             }
 
             @Override
-            public Analyzer getAnalyzer(String table) {
+            public BlurAnalyzer getAnalyzer(String table) {
                 throw new RuntimeException("not impl");
             }
 

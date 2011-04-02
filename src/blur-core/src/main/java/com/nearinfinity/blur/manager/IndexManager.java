@@ -536,7 +536,9 @@ public class IndexManager {
     }
 
     private String getShardName(String table, RowMutation mutation) {
-        int partition = blurPartitioner.getPartition(getKey(mutation), null, getNumberOfShards(table));
+        BytesWritable key = getKey(mutation);
+        int numberOfShards = getNumberOfShards(table);
+        int partition = blurPartitioner.getPartition(key, null, numberOfShards);
         return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, partition);
     }
     
@@ -564,6 +566,7 @@ public class IndexManager {
             ColumnFamily family = columnFamily.get(mutation.family);
             if (family == null) {
                 family = new ColumnFamily();
+                family.setFamily(mutation.family);
                 columnFamily.put(mutation.family, family);
             }
             switch (mutation.recordMutationType) {

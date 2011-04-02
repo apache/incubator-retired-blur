@@ -20,9 +20,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.search.Similarity;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 
 public interface IndexServer {
@@ -51,7 +51,7 @@ public interface IndexServer {
      * @param table the table name.
      * @return the analyzer for lucene.
      */
-    Analyzer getAnalyzer(String table);
+    BlurAnalyzer getAnalyzer(String table);
 
     /**
      * Gets a map of the index readers for current running node.

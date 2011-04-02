@@ -31,7 +31,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.search.Similarity;
 
@@ -48,11 +47,11 @@ public abstract class AdminIndexServer implements IndexServer {
     
     private static final Log LOG = LogFactory.getLog(AdminIndexServer.class);
 
-    public static final Analyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer(), "");
+    public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer(), "");
     protected String nodeName;
     protected AtomicReference<Map<String,TABLE_STATUS>> statusMap = new AtomicReference<Map<String,TABLE_STATUS>>(new HashMap<String, TABLE_STATUS>());
     protected AtomicReference<List<String>> tableList = new AtomicReference<List<String>>(new ArrayList<String>());
-    protected AtomicReference<Map<String, Analyzer>> analyzerMap = new AtomicReference<Map<String, Analyzer>>(new HashMap<String, Analyzer>());
+    protected AtomicReference<Map<String, BlurAnalyzer>> analyzerMap = new AtomicReference<Map<String, BlurAnalyzer>>(new HashMap<String, BlurAnalyzer>());
     protected DistributedManager dm;
     protected Timer daemon;
     protected ExecutorService executorService;
@@ -151,11 +150,11 @@ public abstract class AdminIndexServer implements IndexServer {
     }
     
     protected void updateTableAnalyzers() {
-        Map<String, Analyzer> newMap = new HashMap<String, Analyzer>();
+        Map<String, BlurAnalyzer> newMap = new HashMap<String, BlurAnalyzer>();
         for (String table : tableList.get()) {
             Value value = new Value();
             dm.fetchData(value, BLUR_TABLES, table);
-            Analyzer analyzer;
+            BlurAnalyzer analyzer;
             if (value.data == null) {
                 analyzer = BLANK_ANALYZER;
             } else {
@@ -196,8 +195,8 @@ public abstract class AdminIndexServer implements IndexServer {
     }
 
     @Override
-    public final Analyzer getAnalyzer(String table) {
-        Analyzer analyzer = analyzerMap.get().get(table);
+    public final BlurAnalyzer getAnalyzer(String table) {
+        BlurAnalyzer analyzer = analyzerMap.get().get(table);
         if (analyzer == null) {
             return BLANK_ANALYZER;
         }

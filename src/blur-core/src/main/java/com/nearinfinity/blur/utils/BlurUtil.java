@@ -34,7 +34,11 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
+import com.nearinfinity.blur.thrift.generated.RecordMutation;
+import com.nearinfinity.blur.thrift.generated.RecordMutationType;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.thrift.generated.RowMutation;
+import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Selector;
 
 public class BlurUtil {
@@ -84,6 +88,31 @@ public class BlurUtil {
         Selector selector = new Selector();
         selector.locationId = locationId;
         return selector;
+    }
+    
+    public static RecordMutation newRecordMutation(String family, String recordId, Column... columns) {
+        RecordMutation mutation = new RecordMutation();
+        mutation.setFamily(family);
+        mutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+        mutation.setRecordId(recordId);
+        for (Column column : columns) {
+            mutation.addToRecord(column);
+        }
+        return mutation;
+    }
+    
+    public static RowMutation newRowMutation(String rowId, RecordMutation... mutations) {
+        RowMutation mutation = new RowMutation();
+        mutation.setRowId(rowId);
+        mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+        for (RecordMutation recordMutation : mutations) {
+            mutation.addToRecordMutations(recordMutation);
+        }
+        return mutation;
+    }
+    
+    public static List<RowMutation> newRowMutations(RowMutation... mutations) {
+        return Arrays.asList(mutations);
     }
 
     public static Row newRow(String rowId, ColumnFamily... columnFamilies) {

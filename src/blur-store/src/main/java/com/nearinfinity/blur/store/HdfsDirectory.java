@@ -18,6 +18,7 @@ package com.nearinfinity.blur.store;
 
 import static com.nearinfinity.blur.store.Constants.BUFFER_SIZE;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -172,6 +173,9 @@ public class HdfsDirectory extends Directory {
 
     @Override
     public void deleteFile(String name) throws IOException {
+        if (!fileExists(name)) {
+            throw new FileNotFoundException(name);
+        }
         fileSystem.delete(new Path(hdfsDirPath, name), false);
     }
 
@@ -186,12 +190,18 @@ public class HdfsDirectory extends Directory {
 
     @Override
     public long fileLength(String name) throws IOException {
+        if (!fileExists(name)) {
+            throw new FileNotFoundException(name);
+        }
         FileStatus fileStatus = fileSystem.getFileStatus(new Path(hdfsDirPath, name));
         return fileStatus.getLen();
     }
 
     @Override
     public long fileModified(String name) throws IOException {
+        if (!fileExists(name)) {
+            throw new FileNotFoundException(name);
+        }
         FileStatus fileStatus = fileSystem.getFileStatus(new Path(hdfsDirPath, name));
         return fileStatus.getModificationTime();
     }

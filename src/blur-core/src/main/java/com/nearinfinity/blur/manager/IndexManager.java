@@ -177,29 +177,36 @@ public class IndexManager {
     
     private void populateSelector(String table, Selector selector) throws IOException, BlurException {
         String rowId = selector.rowId;
+        String recordId = selector.recordId;
         String shardName = getShardName(table, rowId);
         Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
         BlurIndex blurIndex = indexes.get(shardName);
         if (blurIndex == null) {
             throw new BlurException("Shard [" + shardName + "] is not being servered by this shardserver.",null);
         }
+        IndexReader indexReader = blurIndex.getIndexReader();
+        IndexSearcher searcher = new IndexSearcher(indexReader);
+        BooleanQuery query = new BooleanQuery();
         if (selector.recordOnly) {
-            String recordId = selector.recordId;
+            query.add(new TermQuery(new Term(RECORD_ID,recordId)), Occur.MUST);
+            query.add(new TermQuery(new Term(ROW_ID,rowId)), Occur.MUST);
         } else {
-            IndexReader indexReader = blurIndex.getIndexReader();
-            IndexSearcher searcher = new IndexSearcher(indexReader);
-            BooleanQuery query = new BooleanQuery();
             query.add(new TermQuery(new Term(ROW_ID,rowId)), Occur.MUST);
             query.add(new TermQuery(new Term(PRIME_DOC,PRIME_DOC_VALUE)), Occur.MUST);
-            TopDocs topDocs = searcher.search(query, 1);
-            if (topDocs.totalHits > 1) {
+        }
+        TopDocs topDocs = searcher.search(query, 1);
+        if (topDocs.totalHits > 1) {
+            if (selector.recordOnly) {
+                LOG.warn("Rowid [" + rowId + "], recordId [" + recordId +
+                		"] has more than one prime doc that is not deleted.");
+            } else {
                 LOG.warn("Rowid [" + rowId + "] has more than one prime doc that is not deleted.");
             }
-            if (topDocs.totalHits == 1) {
-                selector.setLocationId(shardName + "/" + topDocs.scoreDocs[0].doc);
-            } else {
-                selector.setLocationId(NOT_FOUND);
-            }
+        }
+        if (topDocs.totalHits == 1) {
+            selector.setLocationId(shardName + "/" + topDocs.scoreDocs[0].doc);
+        } else {
+            selector.setLocationId(NOT_FOUND);
         }
     }
 
@@ -233,7 +240,7 @@ public class IndexManager {
                 }
             } else if (recordId != null) {
                 throw new BlurException("Invalid recordId [" + recordId +
-                		"] is set but rowId is not set.  If rowId is not known then a query may be required.", null);
+                		"] is set but rowId is not set.  If rowId is not known then a query will be required.", null);
             }
         }
     }

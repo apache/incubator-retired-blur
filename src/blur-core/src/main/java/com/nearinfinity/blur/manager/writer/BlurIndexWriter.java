@@ -98,7 +98,7 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
             try {
                 updateWriter();
             } catch (InterruptedException e) {
-                LOG.info("Thread stopped.");
+                LOG.debug("Thread stopped.");
                 return;
             } catch (Exception e) {
                 LOG.error("Unknown error while indexing.",e);

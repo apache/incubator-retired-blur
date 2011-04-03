@@ -30,12 +30,15 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
   private static final TStruct STRUCT_DESC = new TStruct("BlurException");
 
   private static final TField MESSAGE_FIELD_DESC = new TField("message", TType.STRING, (short)1);
+  private static final TField STACK_TRACE_STR_FIELD_DESC = new TField("stackTraceStr", TType.STRING, (short)2);
 
   public String message;
+  public String stackTraceStr;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
-    MESSAGE((short)1, "message");
+    MESSAGE((short)1, "message"),
+    STACK_TRACE_STR((short)2, "stackTraceStr");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -52,6 +55,8 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
       switch(fieldId) {
         case 1: // MESSAGE
           return MESSAGE;
+        case 2: // STACK_TRACE_STR
+          return STACK_TRACE_STR;
         default:
           return null;
       }
@@ -98,6 +103,8 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.MESSAGE, new FieldMetaData("message", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
+    tmpMap.put(_Fields.STACK_TRACE_STR, new FieldMetaData("stackTraceStr", TFieldRequirementType.DEFAULT, 
+        new FieldValueMetaData(TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(BlurException.class, metaDataMap);
   }
@@ -106,10 +113,12 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
   }
 
   public BlurException(
-    String message)
+    String message,
+    String stackTraceStr)
   {
     this();
     this.message = message;
+    this.stackTraceStr = stackTraceStr;
   }
 
   /**
@@ -118,6 +127,9 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
   public BlurException(BlurException other) {
     if (other.isSetMessage()) {
       this.message = other.message;
+    }
+    if (other.isSetStackTraceStr()) {
+      this.stackTraceStr = other.stackTraceStr;
     }
   }
 
@@ -128,6 +140,7 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
   @Override
   public void clear() {
     this.message = null;
+    this.stackTraceStr = null;
   }
 
   public String getMessage() {
@@ -154,6 +167,30 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     }
   }
 
+  public String getStackTraceStr() {
+    return this.stackTraceStr;
+  }
+
+  public BlurException setStackTraceStr(String stackTraceStr) {
+    this.stackTraceStr = stackTraceStr;
+    return this;
+  }
+
+  public void unsetStackTraceStr() {
+    this.stackTraceStr = null;
+  }
+
+  /** Returns true if field stackTraceStr is set (has been asigned a value) and false otherwise */
+  public boolean isSetStackTraceStr() {
+    return this.stackTraceStr != null;
+  }
+
+  public void setStackTraceStrIsSet(boolean value) {
+    if (!value) {
+      this.stackTraceStr = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case MESSAGE:
@@ -164,6 +201,14 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
       }
       break;
 
+    case STACK_TRACE_STR:
+      if (value == null) {
+        unsetStackTraceStr();
+      } else {
+        setStackTraceStr((String)value);
+      }
+      break;
+
     }
   }
 
@@ -171,6 +216,9 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     switch (field) {
     case MESSAGE:
       return getMessage();
+
+    case STACK_TRACE_STR:
+      return getStackTraceStr();
 
     }
     throw new IllegalStateException();
@@ -185,6 +233,8 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
     switch (field) {
     case MESSAGE:
       return isSetMessage();
+    case STACK_TRACE_STR:
+      return isSetStackTraceStr();
     }
     throw new IllegalStateException();
   }
@@ -208,6 +258,15 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
       if (!(this_present_message && that_present_message))
         return false;
       if (!this.message.equals(that.message))
+        return false;
+    }
+
+    boolean this_present_stackTraceStr = true && this.isSetStackTraceStr();
+    boolean that_present_stackTraceStr = true && that.isSetStackTraceStr();
+    if (this_present_stackTraceStr || that_present_stackTraceStr) {
+      if (!(this_present_stackTraceStr && that_present_stackTraceStr))
+        return false;
+      if (!this.stackTraceStr.equals(that.stackTraceStr))
         return false;
     }
 
@@ -237,6 +296,16 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetStackTraceStr()).compareTo(typedOther.isSetStackTraceStr());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStackTraceStr()) {
+      lastComparison = TBaseHelper.compareTo(this.stackTraceStr, typedOther.stackTraceStr);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -261,6 +330,13 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 2: // STACK_TRACE_STR
+          if (field.type == TType.STRING) {
+            this.stackTraceStr = iprot.readString();
+          } else { 
+            TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           TProtocolUtil.skip(iprot, field.type);
       }
@@ -281,6 +357,11 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
       oprot.writeString(this.message);
       oprot.writeFieldEnd();
     }
+    if (this.stackTraceStr != null) {
+      oprot.writeFieldBegin(STACK_TRACE_STR_FIELD_DESC);
+      oprot.writeString(this.stackTraceStr);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -295,6 +376,14 @@ public class BlurException extends Exception implements TBase<BlurException, Blu
       sb.append("null");
     } else {
       sb.append(this.message);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("stackTraceStr:");
+    if (this.stackTraceStr == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.stackTraceStr);
     }
     first = false;
     sb.append(")");

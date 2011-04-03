@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurUtil.asString;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +65,7 @@ public class BlurShardServer implements Iface {
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
 	}
 	
@@ -79,7 +81,7 @@ public class BlurShardServer implements Iface {
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]",e,table,selector);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
 	}
 
@@ -89,7 +91,7 @@ public class BlurShardServer implements Iface {
             indexManager.cancelQuery(table, uuid);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to cancel search [uuid={0}]",e,uuid);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
 
@@ -100,7 +102,7 @@ public class BlurShardServer implements Iface {
             return indexManager.currentQueries(table);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get current search status [table={0}]",e,table);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
     
@@ -127,13 +129,13 @@ public class BlurShardServer implements Iface {
             if (e instanceof BlurException) {
                 throw (BlurException) e;
             }
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
     
     private void checkTableStatus(String table) throws BlurException {
         if (!isTableEnabled(table)) {
-            throw new BlurException("Table [" + table + "] is disabled.");
+            throw new BlurException("Table [" + table + "] is disabled.",null);
         }
     }
 
@@ -155,7 +157,7 @@ public class BlurShardServer implements Iface {
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]",e,table,columnFamily,columnName,value);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
 
@@ -166,7 +168,7 @@ public class BlurShardServer implements Iface {
             return indexManager.schema(table);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get schema for table [{0}={1}]",e,"table",table);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
 
@@ -177,7 +179,7 @@ public class BlurShardServer implements Iface {
             return indexManager.terms(table,columnFamily,columnName,startWith,size);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get terms list for [table={0},columnFamily={1},columnName={2},startWith={3},size={4}]",e,table,columnFamily,columnName,startWith,size);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
     
@@ -199,7 +201,7 @@ public class BlurShardServer implements Iface {
             return descriptor;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to describe table [" + table + "]", e);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
 
@@ -240,7 +242,7 @@ public class BlurShardServer implements Iface {
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, mutations);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
 

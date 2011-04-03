@@ -2,7 +2,8 @@ namespace java com.nearinfinity.blur.thrift.generated
 
 
 exception BlurException {
-  1:string message
+  1:string message,
+  2:string stackTraceStr
 }
 
 enum ScoreType {
@@ -107,8 +108,10 @@ struct FetchResult {
 struct Selector {
   1:bool recordOnly,
   2:string locationId,
-  3:set<string> columnFamiliesToFetch,
-  4:map<string,set<string>> columnsToFetch
+  3:string rowId,
+  4:string recordId,
+  5:set<string> columnFamiliesToFetch,
+  6:map<string,set<string>> columnsToFetch
 }
 
 struct BlurQueryStatus {

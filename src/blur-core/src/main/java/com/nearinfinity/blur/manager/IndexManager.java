@@ -17,8 +17,10 @@
 package com.nearinfinity.blur.manager;
 
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+import static com.nearinfinity.blur.utils.BlurUtil.asString;
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getColumns;
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
@@ -51,8 +53,12 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.BlurShardName;
@@ -91,6 +97,7 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
 public class IndexManager {
 
+    private static final String NOT_FOUND = "NOT_FOUND";
     private static final Version LUCENE_VERSION = Version.LUCENE_30;
     private static final Log LOG = LogFactory.getLog(IndexManager.class);
     private static final int MAX_CLAUSE_COUNT = Integer.getInteger("blur.max.clause.count", 1024 * 128);
@@ -129,35 +136,108 @@ public class IndexManager {
     }
 
     public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
+        validSelector(selector);
         BlurIndex index;
         try {
-            String shard = getShard(selector.getLocationId());
+            if (selector.getLocationId() == null) {
+                populateSelector(table,selector);
+            }
+            String locationId = selector.getLocationId();
+            if (locationId.equals(NOT_FOUND)) {
+                fetchResult.setDeleted(false);
+                fetchResult.setExists(false);
+                return;
+            }
+            String shard = getShard(locationId);
             Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
             if (blurIndexes == null) {
                 LOG.error("Table [{0}] not found",table);
-                throw new BlurException("Table [" + table + "] not found");
+                throw new BlurException("Table [" + table + "] not found",null);
             }
             index = blurIndexes.get(shard);
             if (index == null) {
                 if (index == null) {
                     LOG.error("Shard [{0}] not found in table [{1}]",shard,table);
-                    throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]");
+                    throw new BlurException("Shard [" + shard + "] not found in table [" + table + "]",null);
                 }
             }
         } catch (BlurException e) {
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get the correct index reader for selector [{0}].",e,selector);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
         try {
             fetchRow(index.getIndexReader(), table, selector, fetchResult);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to fetch row.", e);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
     }
     
+    private void populateSelector(String table, Selector selector) throws IOException, BlurException {
+        String rowId = selector.rowId;
+        String shardName = getShardName(table, rowId);
+        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
+        BlurIndex blurIndex = indexes.get(shardName);
+        if (blurIndex == null) {
+            throw new BlurException("Shard [" + shardName + "] is not being servered by this shardserver.",null);
+        }
+        if (selector.recordOnly) {
+            String recordId = selector.recordId;
+        } else {
+            IndexReader indexReader = blurIndex.getIndexReader();
+            IndexSearcher searcher = new IndexSearcher(indexReader);
+            BooleanQuery query = new BooleanQuery();
+            query.add(new TermQuery(new Term(ROW_ID,rowId)), Occur.MUST);
+            query.add(new TermQuery(new Term(PRIME_DOC,PRIME_DOC_VALUE)), Occur.MUST);
+            TopDocs topDocs = searcher.search(query, 1);
+            if (topDocs.totalHits > 1) {
+                LOG.warn("Rowid [" + rowId + "] has more than one prime doc that is not deleted.");
+            }
+            if (topDocs.totalHits == 1) {
+                selector.setLocationId(shardName + "/" + topDocs.scoreDocs[0].doc);
+            } else {
+                selector.setLocationId(NOT_FOUND);
+            }
+        }
+    }
+
+    private void validSelector(Selector selector) throws BlurException {
+        String locationId = selector.locationId;
+        String rowId = selector.rowId;
+        String recordId = selector.recordId;
+        boolean recordOnly = selector.recordOnly;
+        if (locationId != null) {
+            if (recordId != null && rowId != null) {
+                throw new BlurException("Invalid selector locationId [" + locationId +
+                		"] and recordId [" + recordId +
+                		"] and rowId [" + rowId +
+                		"] are set, if using locationId rowId and recordId are not needed.",null);
+            } else if (recordId != null) {
+                throw new BlurException("Invalid selector locationId [" + locationId +
+                        "] and recordId [" + recordId +
+                        "] sre set, if using locationId recordId is not needed.",null);
+            } else if (rowId != null) {
+                throw new BlurException("Invalid selector locationId [" + locationId +
+                        "] and rowId [" + rowId +
+                        "] are set, if using locationId rowId is not needed.",null);
+            }
+        } else {
+            if (rowId != null && recordId != null) {
+                if (!recordOnly) {
+                    throw new BlurException("Invalid both rowid [" + rowId + 
+                            "] and recordId [" + recordId +
+                    		"] are set, and recordOnly is set to [false].  " +
+                    		"If you want entire row, then remove recordId, if you want record only set recordOnly to [true].",null);
+                }
+            } else if (recordId != null) {
+                throw new BlurException("Invalid recordId [" + recordId +
+                		"] is set but rowId is not set.  If rowId is not known then a query may be required.", null);
+            }
+        }
+    }
+
     /**
      * Location id format is <shard>/luceneid.
      * @param locationId
@@ -179,7 +259,7 @@ public class IndexManager {
                 blurIndexes = indexServer.getIndexes(table);
             } catch (IOException e) {
                 LOG.error("Unknown error while trying to fetch index readers.", e);
-                throw new BlurException(e.getMessage());
+                throw new BlurException(e.getMessage(),asString(e));
             }
             Analyzer analyzer = indexServer.getAnalyzer(table);
             Filter preFilter = parseFilter(table, blurQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
@@ -387,7 +467,7 @@ public class IndexManager {
             blurIndexes = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
         return ForkJoin.execute(executor, blurIndexes.entrySet(),
             new ParallelCall<Entry<String, BlurIndex>, Long>() {
@@ -415,7 +495,7 @@ public class IndexManager {
             blurIndexes = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
-            throw new BlurException(e.getMessage());
+            throw new BlurException(e.getMessage(),asString(e));
         }
         return ForkJoin.execute(executor, blurIndexes.entrySet(),
             new ParallelCall<Entry<String, BlurIndex>, List<String>>() {
@@ -512,17 +592,17 @@ public class IndexManager {
 
     private void mutate(String table, RowMutation mutation) throws IOException, BlurException {
         validateMutation(mutation);
-        String shard = getShardName(table, mutation);
+        String shard = getShardName(table, mutation.rowId);
         Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
         BlurIndex blurIndex = indexes.get(shard);
         if (blurIndex == null) {
-            throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.");
+            throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",null);
         }
         blurIndex.replaceRow(getRows(mutation));
     }
 
-    private String getShardName(String table, RowMutation mutation) {
-        BytesWritable key = getKey(mutation);
+    private String getShardName(String table, String rowId) {
+        BytesWritable key = getKey(rowId);
         int numberOfShards = getNumberOfShards(table);
         int partition = blurPartitioner.getPartition(key, null, numberOfShards);
         return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, partition);
@@ -574,8 +654,8 @@ public class IndexManager {
         return list.size();
     }
 
-    private BytesWritable getKey(RowMutation mutation) {
-        return new BytesWritable(mutation.rowId.getBytes());
+    private BytesWritable getKey(String rowId) {
+        return new BytesWritable(rowId.getBytes());
     }
 
 }

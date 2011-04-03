@@ -105,7 +105,7 @@ public class IndexManagerTest {
     }
 
     @Test
-    public void testFetchRow1() throws Exception {
+    public void testFetchRowByLocationId() throws Exception {
         Selector selector = new Selector().setLocationId(SHARD_NAME + "/0");
         FetchResult fetchResult = new FetchResult();
         indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -116,7 +116,7 @@ public class IndexManagerTest {
     }
     
     @Test
-    public void testFetchRow2() throws Exception {
+    public void testFetchMissingRowByLocationId() throws Exception {
         try {
             Selector selector = new Selector().setLocationId("shard4/0");
             FetchResult fetchResult = new FetchResult();
@@ -127,7 +127,7 @@ public class IndexManagerTest {
     }
     
     @Test
-    public void testFetchRecord1() throws Exception {
+    public void testFetchRecordByLocationId() throws Exception {
         Selector selector = new Selector().setLocationId(SHARD_NAME + "/0").setRecordOnly(true);
         FetchResult fetchResult = new FetchResult();
         indexManager.fetchRow(TABLE, selector, fetchResult);
@@ -141,7 +141,18 @@ public class IndexManagerTest {
         assertEquals(new TreeSet<Column>(Arrays.asList(newColumn("testcol1", "value1"),newColumn("testcol2", "value2"),newColumn("testcol3", "value3"))), 
                 fetchResult.recordResult.record);
     }
-//    
+    
+    @Test
+    public void testFetchRowByRowId() throws Exception {
+        Selector selector = new Selector().setRowId("row-1");
+        FetchResult fetchResult = new FetchResult();
+        indexManager.fetchRow(TABLE, selector, fetchResult);
+        assertNotNull(fetchResult.rowResult.row);
+        Row row = newRow("row-1", newColumnFamily("test-family", "record-1", 
+                newColumn("testcol1", "value1"),newColumn("testcol2", "value2"),newColumn("testcol3", "value3")));
+        assertEquals(row, fetchResult.rowResult.row);
+    }
+
 //    @Test
 //    public void testQuery() throws Exception {
 //        BlurQuery blurQuery = new BlurQuery();

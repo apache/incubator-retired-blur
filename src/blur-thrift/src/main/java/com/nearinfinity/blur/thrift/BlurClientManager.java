@@ -49,7 +49,7 @@ public class BlurClientManager {
         while (true) {
             Blur.Client client = getClient(connectionStr);
             if (client == null) {
-                throw new BlurException("Host [" + connectionStr + "] can not be contacted.");
+                throw new BlurException("Host [" + connectionStr + "] can not be contacted.",null);
             }
             try {
                 return command.call((CLIENT) client);

@@ -18,8 +18,9 @@ package com.nearinfinity.blur.manager;
 
 import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
 import static com.nearinfinity.blur.utils.BlurUtil.newRecordMutation;
-import static com.nearinfinity.blur.utils.BlurUtil.newRowMutation;
+import static com.nearinfinity.blur.utils.BlurUtil.*;
 import static com.nearinfinity.blur.utils.BlurUtil.newRowMutations;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,27 +33,41 @@ import org.junit.Test;
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class IndexManagerTest {
 
+    private static final String SHARD_NAME = BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, 0);
     private static final String TABLE = "table";
     private IndexServer server;
     private IndexManager indexManager;
 
     @Before
     public void setUp() throws BlurException, IOException {
-//        server = new LocalIndexServer(new File("./test-indexes/test1"));
         File file = new File("./tmp/indexer-manager-test");
-        new File(new File(file,TABLE),BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, 0)).mkdirs();
+        rm(file);
+        new File(new File(file,TABLE),SHARD_NAME).mkdirs();
         server = new LocalIndexServer(file);
         indexManager = new IndexManager();
         indexManager.setStatusCleanupTimerDelay(2000);
         indexManager.setIndexServer(server);
         indexManager.init();
+        setupData();
     }
     
+    private void rm(File file) {
+        if (file.isDirectory()) {
+            for (File f : file.listFiles()) {
+                rm(f);
+            }
+        }
+        file.delete();
+    }
+
     private void setupData() throws BlurException, IOException {
         List<RowMutation> mutations = newRowMutations(
                 newRowMutation("row-1",
@@ -80,19 +95,17 @@ public class IndexManagerTest {
     public void tearDown() throws InterruptedException {
         indexManager.close();
     }
-    
-    @Test
-    public void testSetupTestData() throws BlurException, IOException {
-        setupData();
-    }
 
-//    @Test
-//    public void testFetchRow1() throws Exception {
-//        Selector selector = new Selector().setLocationId("shard1/0");
-//        FetchResult fetchResult = new FetchResult();
-//        indexManager.fetchRow(TABLE, selector, fetchResult);
-//        assertNotNull(fetchResult.row);
-//    }
+    @Test
+    public void testFetchRow1() throws Exception {
+        Selector selector = new Selector().setLocationId(SHARD_NAME + "/0");
+        FetchResult fetchResult = new FetchResult();
+        indexManager.fetchRow(TABLE, selector, fetchResult);
+        assertNotNull(fetchResult.row);
+        Row row = newRow("row-1", newColumnFamily("test-family", "record-1", 
+                newColumn("testcol1", "value1"),newColumn("testcol2", "value2"),newColumn("testcol3", "value3")));
+        assertEquals(row, fetchResult.row);
+    }
 //    
 //    @Test
 //    public void testFetchRow2() throws Exception {

@@ -77,9 +77,21 @@ public class LocalIndexServer implements IndexServer {
     
     @Override
     public void close() {
-        
+        for (String table : readersMap.keySet()) {
+            close(readersMap.get(table));
+        }
     }
     
+    private void close(Map<String, BlurIndex> map) {
+        for (BlurIndex index : map.values()) {
+            try {
+                index.close();
+            } catch (Exception e) {
+                LOG.error("Error while trying to close index.",e);
+            }
+        }
+    }
+
     private Map<String, BlurIndex> openFromDisk(String table) throws IOException {
         File tableFile = new File(localDir,table);
         if (tableFile.isDirectory()) {

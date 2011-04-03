@@ -267,6 +267,10 @@ public class IndexManager {
         String locationId = selector.locationId;
         int lastSlash = locationId.lastIndexOf('/');
         int docId = Integer.parseInt(locationId.substring(lastSlash + 1));
+        if (docId >= reader.maxDoc()) {
+            throw new RuntimeException("Location id [" + locationId + "] with docId [" + docId +
+            		"] is not valid.");
+        }
         if (selector.isRecordOnly()) {
             // select only the row for the given data or location id.
             if (reader.isDeleted(docId)) {

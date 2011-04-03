@@ -72,12 +72,13 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
         daemon.start();
     }
 
-    public void close() {
+    public void close() throws IOException {
         daemon.interrupt();
+        writer.close();
     }
     
     @Override
-    public boolean replaceRow(Collection<Row> rows) {
+    public boolean replaceRow(Collection<Row> rows) throws IOException {
         try {
             BlurIndexMutation update = new BlurIndexMutation();
             update.directory = index(rows);
@@ -87,7 +88,7 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
                 return update.indexed;
             }
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new IOException(e);
         }
     }
     
@@ -96,6 +97,9 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
         while (true) {
             try {
                 updateWriter();
+            } catch (InterruptedException e) {
+                LOG.info("Thread stopped.");
+                return;
             } catch (Exception e) {
                 LOG.error("Unknown error while indexing.",e);
             }
@@ -179,9 +183,8 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
     }
 
     @Override
-    public IndexReader getIndexReader() {
-        throw new RuntimeException("more work here");
-//        return writer.getReader();
+    public IndexReader getIndexReader() throws IOException {
+        return writer.getReader();
     }
 
     public void setDirectory(Directory directory) {

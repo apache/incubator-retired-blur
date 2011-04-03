@@ -21,6 +21,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.SEP;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -30,9 +31,44 @@ import org.apache.lucene.document.Fieldable;
 
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
+import com.nearinfinity.blur.thrift.generated.FetchRecordResult;
 import com.nearinfinity.blur.thrift.generated.Row;
 
 public class RowSuperDocumentUtil {
+    
+    public static FetchRecordResult getColumns(Document document) {
+        FetchRecordResult result = new FetchRecordResult();
+        Map<String, Column> columns = new HashMap<String, Column>();
+        String columnFamily = null;
+        for (Fieldable field : document.getFields()) {
+            if (field.name().equals(ROW_ID)) {
+                result.setRowid(field.stringValue());
+            } else if (field.name().equals(RECORD_ID)) {
+                result.setRecordid(field.stringValue());
+            } else {
+                String name = field.name();
+                int index = name.indexOf('.');
+                if (index < 0) {
+                    continue;
+                }
+                if (columnFamily == null) {
+                    columnFamily = name.substring(0,index);
+                }
+                name = name.substring(index + 1);
+                String value = field.stringValue();
+                Column column = columns.get(name);
+                if (column == null) {
+                    column = new Column();
+                    column.setName(name);
+                    columns.put(name, column);
+                }
+                column.addToValues(value);
+            }
+        }
+        result.columnFamily = columnFamily;
+        result.record = new HashSet<Column>(columns.values());
+        return result;
+    }
 
 	public static Row getRow(Iterable<Document> docs) {
 		Row row = new Row();

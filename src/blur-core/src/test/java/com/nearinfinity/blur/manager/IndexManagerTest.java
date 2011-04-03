@@ -17,14 +17,21 @@
 package com.nearinfinity.blur.manager;
 
 import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
+import static com.nearinfinity.blur.utils.BlurUtil.newColumnFamily;
 import static com.nearinfinity.blur.utils.BlurUtil.newRecordMutation;
-import static com.nearinfinity.blur.utils.BlurUtil.*;
+import static com.nearinfinity.blur.utils.BlurUtil.newRow;
+import static com.nearinfinity.blur.utils.BlurUtil.newRowMutation;
 import static com.nearinfinity.blur.utils.BlurUtil.newRowMutations;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.junit.After;
 import org.junit.Before;
@@ -33,6 +40,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -101,32 +109,38 @@ public class IndexManagerTest {
         Selector selector = new Selector().setLocationId(SHARD_NAME + "/0");
         FetchResult fetchResult = new FetchResult();
         indexManager.fetchRow(TABLE, selector, fetchResult);
-        assertNotNull(fetchResult.row);
+        assertNotNull(fetchResult.rowResult.row);
         Row row = newRow("row-1", newColumnFamily("test-family", "record-1", 
                 newColumn("testcol1", "value1"),newColumn("testcol2", "value2"),newColumn("testcol3", "value3")));
-        assertEquals(row, fetchResult.row);
+        assertEquals(row, fetchResult.rowResult.row);
     }
-//    
-//    @Test
-//    public void testFetchRow2() throws Exception {
-//        try {
-//            Selector selector = new Selector().setLocationId("shard4/0");
-//            FetchResult fetchResult = new FetchResult();
-//            indexManager.fetchRow(TABLE, selector, fetchResult);
-//            fail("Should throw exception");
-//        } catch (BlurException e) {
-//        }
-//    }
-//    
-//    @Test
-//    public void testFetchRecord1() throws Exception {
-//        Selector selector = new Selector().setLocationId("shard1/0").setRecordOnly(true);
-//        FetchResult fetchResult = new FetchResult();
-//        indexManager.fetchRow(TABLE, selector, fetchResult);
-//        assertNull(fetchResult.row);
-//        assertNotNull(fetchResult.record);
-//        System.out.println(fetchResult.record);
-//    }
+    
+    @Test
+    public void testFetchRow2() throws Exception {
+        try {
+            Selector selector = new Selector().setLocationId("shard4/0");
+            FetchResult fetchResult = new FetchResult();
+            indexManager.fetchRow(TABLE, selector, fetchResult);
+            fail("Should throw exception");
+        } catch (BlurException e) {
+        }
+    }
+    
+    @Test
+    public void testFetchRecord1() throws Exception {
+        Selector selector = new Selector().setLocationId(SHARD_NAME + "/0").setRecordOnly(true);
+        FetchResult fetchResult = new FetchResult();
+        indexManager.fetchRow(TABLE, selector, fetchResult);
+        assertNull(fetchResult.rowResult);
+        assertNotNull(fetchResult.recordResult.record);
+        
+        assertEquals("row-1",fetchResult.recordResult.rowid);
+        assertEquals("record-1",fetchResult.recordResult.recordid);
+        assertEquals("test-family",fetchResult.recordResult.columnFamily);
+        
+        assertEquals(new TreeSet<Column>(Arrays.asList(newColumn("testcol1", "value1"),newColumn("testcol2", "value2"),newColumn("testcol3", "value3"))), 
+                fetchResult.recordResult.record);
+    }
 //    
 //    @Test
 //    public void testQuery() throws Exception {

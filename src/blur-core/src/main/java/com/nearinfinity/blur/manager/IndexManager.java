@@ -19,6 +19,7 @@ package com.nearinfinity.blur.manager;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getColumns;
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
 import java.io.IOException;
@@ -26,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +41,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -72,9 +71,9 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.FetchRowResult;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -281,7 +280,7 @@ public class IndexManager {
                 fetchResult.exists = true;
                 fetchResult.deleted = false;
                 Document document = reader.document(docId, getFieldSelector(selector));
-                fetchResult.record = getColumns(document);
+                fetchResult.recordResult = getColumns(document);
                 return;
             }
         } else {
@@ -294,7 +293,7 @@ public class IndexManager {
                 fetchResult.deleted = false;
                 String rowId = getRowId(reader, docId);
                 TermDocs termDocs = reader.termDocs(new Term(ROW_ID, rowId));
-                fetchResult.row = getRow(new TermDocIterable(termDocs, reader, getFieldSelector(selector)));
+                fetchResult.rowResult = new FetchRowResult(getRow(new TermDocIterable(termDocs, reader, getFieldSelector(selector))));
                 return;
             }
         }
@@ -313,23 +312,6 @@ public class IndexManager {
             }
         });
         return document.get(ROW_ID);
-    }
-
-    private Set<Column> getColumns(Document document) {
-        Map<String, Column> columns = new HashMap<String, Column>();
-        List<Fieldable> fields = document.getFields();
-        for (Fieldable field : fields) {
-            String name = field.name();
-            String value = field.stringValue();
-            Column column = columns.get(name);
-            if (column == null) {
-                column = new Column();
-                column.setName(name);
-                columns.put(name, column);
-            }
-            column.addToValues(value);
-        }
-        return new HashSet<Column>(columns.values());
     }
 
     private String getColumnName(String fieldName) {

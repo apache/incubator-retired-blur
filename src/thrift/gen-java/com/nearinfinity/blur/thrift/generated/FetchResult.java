@@ -32,22 +32,22 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
   private static final TField EXISTS_FIELD_DESC = new TField("exists", TType.BOOL, (short)1);
   private static final TField DELETED_FIELD_DESC = new TField("deleted", TType.BOOL, (short)2);
   private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)3);
-  private static final TField ROW_FIELD_DESC = new TField("row", TType.STRUCT, (short)4);
-  private static final TField RECORD_FIELD_DESC = new TField("record", TType.SET, (short)5);
+  private static final TField ROW_RESULT_FIELD_DESC = new TField("rowResult", TType.STRUCT, (short)4);
+  private static final TField RECORD_RESULT_FIELD_DESC = new TField("recordResult", TType.STRUCT, (short)5);
 
   public boolean exists;
   public boolean deleted;
   public String table;
-  public Row row;
-  public Set<Column> record;
+  public FetchRowResult rowResult;
+  public FetchRecordResult recordResult;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements TFieldIdEnum {
     EXISTS((short)1, "exists"),
     DELETED((short)2, "deleted"),
     TABLE((short)3, "table"),
-    ROW((short)4, "row"),
-    RECORD((short)5, "record");
+    ROW_RESULT((short)4, "rowResult"),
+    RECORD_RESULT((short)5, "recordResult");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -68,10 +68,10 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
           return DELETED;
         case 3: // TABLE
           return TABLE;
-        case 4: // ROW
-          return ROW;
-        case 5: // RECORD
-          return RECORD;
+        case 4: // ROW_RESULT
+          return ROW_RESULT;
+        case 5: // RECORD_RESULT
+          return RECORD_RESULT;
         default:
           return null;
       }
@@ -125,11 +125,10 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
         new FieldValueMetaData(TType.BOOL)));
     tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
         new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.ROW, new FieldMetaData("row", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, Row.class)));
-    tmpMap.put(_Fields.RECORD, new FieldMetaData("record", TFieldRequirementType.DEFAULT, 
-        new SetMetaData(TType.SET, 
-            new StructMetaData(TType.STRUCT, Column.class))));
+    tmpMap.put(_Fields.ROW_RESULT, new FieldMetaData("rowResult", TFieldRequirementType.DEFAULT, 
+        new StructMetaData(TType.STRUCT, FetchRowResult.class)));
+    tmpMap.put(_Fields.RECORD_RESULT, new FieldMetaData("recordResult", TFieldRequirementType.DEFAULT, 
+        new StructMetaData(TType.STRUCT, FetchRecordResult.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     FieldMetaData.addStructMetaDataMap(FetchResult.class, metaDataMap);
   }
@@ -141,8 +140,8 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     boolean exists,
     boolean deleted,
     String table,
-    Row row,
-    Set<Column> record)
+    FetchRowResult rowResult,
+    FetchRecordResult recordResult)
   {
     this();
     this.exists = exists;
@@ -150,8 +149,8 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     this.deleted = deleted;
     setDeletedIsSet(true);
     this.table = table;
-    this.row = row;
-    this.record = record;
+    this.rowResult = rowResult;
+    this.recordResult = recordResult;
   }
 
   /**
@@ -165,15 +164,11 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     if (other.isSetTable()) {
       this.table = other.table;
     }
-    if (other.isSetRow()) {
-      this.row = new Row(other.row);
+    if (other.isSetRowResult()) {
+      this.rowResult = new FetchRowResult(other.rowResult);
     }
-    if (other.isSetRecord()) {
-      Set<Column> __this__record = new HashSet<Column>();
-      for (Column other_element : other.record) {
-        __this__record.add(new Column(other_element));
-      }
-      this.record = __this__record;
+    if (other.isSetRecordResult()) {
+      this.recordResult = new FetchRecordResult(other.recordResult);
     }
   }
 
@@ -188,8 +183,8 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     setDeletedIsSet(false);
     this.deleted = false;
     this.table = null;
-    this.row = null;
-    this.record = null;
+    this.rowResult = null;
+    this.recordResult = null;
   }
 
   public boolean isExists() {
@@ -262,66 +257,51 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     }
   }
 
-  public Row getRow() {
-    return this.row;
+  public FetchRowResult getRowResult() {
+    return this.rowResult;
   }
 
-  public FetchResult setRow(Row row) {
-    this.row = row;
+  public FetchResult setRowResult(FetchRowResult rowResult) {
+    this.rowResult = rowResult;
     return this;
   }
 
-  public void unsetRow() {
-    this.row = null;
+  public void unsetRowResult() {
+    this.rowResult = null;
   }
 
-  /** Returns true if field row is set (has been asigned a value) and false otherwise */
-  public boolean isSetRow() {
-    return this.row != null;
+  /** Returns true if field rowResult is set (has been asigned a value) and false otherwise */
+  public boolean isSetRowResult() {
+    return this.rowResult != null;
   }
 
-  public void setRowIsSet(boolean value) {
+  public void setRowResultIsSet(boolean value) {
     if (!value) {
-      this.row = null;
+      this.rowResult = null;
     }
   }
 
-  public int getRecordSize() {
-    return (this.record == null) ? 0 : this.record.size();
+  public FetchRecordResult getRecordResult() {
+    return this.recordResult;
   }
 
-  public java.util.Iterator<Column> getRecordIterator() {
-    return (this.record == null) ? null : this.record.iterator();
-  }
-
-  public void addToRecord(Column elem) {
-    if (this.record == null) {
-      this.record = new HashSet<Column>();
-    }
-    this.record.add(elem);
-  }
-
-  public Set<Column> getRecord() {
-    return this.record;
-  }
-
-  public FetchResult setRecord(Set<Column> record) {
-    this.record = record;
+  public FetchResult setRecordResult(FetchRecordResult recordResult) {
+    this.recordResult = recordResult;
     return this;
   }
 
-  public void unsetRecord() {
-    this.record = null;
+  public void unsetRecordResult() {
+    this.recordResult = null;
   }
 
-  /** Returns true if field record is set (has been asigned a value) and false otherwise */
-  public boolean isSetRecord() {
-    return this.record != null;
+  /** Returns true if field recordResult is set (has been asigned a value) and false otherwise */
+  public boolean isSetRecordResult() {
+    return this.recordResult != null;
   }
 
-  public void setRecordIsSet(boolean value) {
+  public void setRecordResultIsSet(boolean value) {
     if (!value) {
-      this.record = null;
+      this.recordResult = null;
     }
   }
 
@@ -351,19 +331,19 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       }
       break;
 
-    case ROW:
+    case ROW_RESULT:
       if (value == null) {
-        unsetRow();
+        unsetRowResult();
       } else {
-        setRow((Row)value);
+        setRowResult((FetchRowResult)value);
       }
       break;
 
-    case RECORD:
+    case RECORD_RESULT:
       if (value == null) {
-        unsetRecord();
+        unsetRecordResult();
       } else {
-        setRecord((Set<Column>)value);
+        setRecordResult((FetchRecordResult)value);
       }
       break;
 
@@ -381,11 +361,11 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     case TABLE:
       return getTable();
 
-    case ROW:
-      return getRow();
+    case ROW_RESULT:
+      return getRowResult();
 
-    case RECORD:
-      return getRecord();
+    case RECORD_RESULT:
+      return getRecordResult();
 
     }
     throw new IllegalStateException();
@@ -404,10 +384,10 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       return isSetDeleted();
     case TABLE:
       return isSetTable();
-    case ROW:
-      return isSetRow();
-    case RECORD:
-      return isSetRecord();
+    case ROW_RESULT:
+      return isSetRowResult();
+    case RECORD_RESULT:
+      return isSetRecordResult();
     }
     throw new IllegalStateException();
   }
@@ -452,21 +432,21 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
         return false;
     }
 
-    boolean this_present_row = true && this.isSetRow();
-    boolean that_present_row = true && that.isSetRow();
-    if (this_present_row || that_present_row) {
-      if (!(this_present_row && that_present_row))
+    boolean this_present_rowResult = true && this.isSetRowResult();
+    boolean that_present_rowResult = true && that.isSetRowResult();
+    if (this_present_rowResult || that_present_rowResult) {
+      if (!(this_present_rowResult && that_present_rowResult))
         return false;
-      if (!this.row.equals(that.row))
+      if (!this.rowResult.equals(that.rowResult))
         return false;
     }
 
-    boolean this_present_record = true && this.isSetRecord();
-    boolean that_present_record = true && that.isSetRecord();
-    if (this_present_record || that_present_record) {
-      if (!(this_present_record && that_present_record))
+    boolean this_present_recordResult = true && this.isSetRecordResult();
+    boolean that_present_recordResult = true && that.isSetRecordResult();
+    if (this_present_recordResult || that_present_recordResult) {
+      if (!(this_present_recordResult && that_present_recordResult))
         return false;
-      if (!this.record.equals(that.record))
+      if (!this.recordResult.equals(that.recordResult))
         return false;
     }
 
@@ -516,22 +496,22 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetRow()).compareTo(typedOther.isSetRow());
+    lastComparison = Boolean.valueOf(isSetRowResult()).compareTo(typedOther.isSetRowResult());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRow()) {
-      lastComparison = TBaseHelper.compareTo(this.row, typedOther.row);
+    if (isSetRowResult()) {
+      lastComparison = TBaseHelper.compareTo(this.rowResult, typedOther.rowResult);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetRecord()).compareTo(typedOther.isSetRecord());
+    lastComparison = Boolean.valueOf(isSetRecordResult()).compareTo(typedOther.isSetRecordResult());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRecord()) {
-      lastComparison = TBaseHelper.compareTo(this.record, typedOther.record);
+    if (isSetRecordResult()) {
+      lastComparison = TBaseHelper.compareTo(this.recordResult, typedOther.recordResult);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -576,28 +556,18 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // ROW
+        case 4: // ROW_RESULT
           if (field.type == TType.STRUCT) {
-            this.row = new Row();
-            this.row.read(iprot);
+            this.rowResult = new FetchRowResult();
+            this.rowResult.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5: // RECORD
-          if (field.type == TType.SET) {
-            {
-              TSet _set55 = iprot.readSetBegin();
-              this.record = new HashSet<Column>(2*_set55.size);
-              for (int _i56 = 0; _i56 < _set55.size; ++_i56)
-              {
-                Column _elem57;
-                _elem57 = new Column();
-                _elem57.read(iprot);
-                this.record.add(_elem57);
-              }
-              iprot.readSetEnd();
-            }
+        case 5: // RECORD_RESULT
+          if (field.type == TType.STRUCT) {
+            this.recordResult = new FetchRecordResult();
+            this.recordResult.read(iprot);
           } else { 
             TProtocolUtil.skip(iprot, field.type);
           }
@@ -628,21 +598,14 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       oprot.writeString(this.table);
       oprot.writeFieldEnd();
     }
-    if (this.row != null) {
-      oprot.writeFieldBegin(ROW_FIELD_DESC);
-      this.row.write(oprot);
+    if (this.rowResult != null) {
+      oprot.writeFieldBegin(ROW_RESULT_FIELD_DESC);
+      this.rowResult.write(oprot);
       oprot.writeFieldEnd();
     }
-    if (this.record != null) {
-      oprot.writeFieldBegin(RECORD_FIELD_DESC);
-      {
-        oprot.writeSetBegin(new TSet(TType.STRUCT, this.record.size()));
-        for (Column _iter58 : this.record)
-        {
-          _iter58.write(oprot);
-        }
-        oprot.writeSetEnd();
-      }
+    if (this.recordResult != null) {
+      oprot.writeFieldBegin(RECORD_RESULT_FIELD_DESC);
+      this.recordResult.write(oprot);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -670,19 +633,19 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("row:");
-    if (this.row == null) {
+    sb.append("rowResult:");
+    if (this.rowResult == null) {
       sb.append("null");
     } else {
-      sb.append(this.row);
+      sb.append(this.rowResult);
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("record:");
-    if (this.record == null) {
+    sb.append("recordResult:");
+    if (this.recordResult == null) {
       sb.append("null");
     } else {
-      sb.append(this.record);
+      sb.append(this.recordResult);
     }
     first = false;
     sb.append(")");

@@ -85,12 +85,23 @@ struct Row {
   2:set<ColumnFamily> columnFamilies
 }
 
+struct FetchRowResult {
+  1:Row row
+}
+
+struct FetchRecordResult {
+  1:string rowid,
+  2:string recordid,
+  3:string columnFamily,
+  4:set<Column> record
+}
+
 struct FetchResult {
   1:bool exists,
   2:bool deleted,
   3:string table,
-  4:Row row,
-  5:set<Column> record
+  4:FetchRowResult rowResult,
+  5:FetchRecordResult recordResult
 }
 
 struct Selector {

@@ -34,7 +34,7 @@ import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.FetchRecordResult;
 import com.nearinfinity.blur.thrift.generated.Row;
 
-public class RowSuperDocumentUtil {
+public class RowDocumentUtil {
     
     public static FetchRecordResult getColumns(Document document) {
         FetchRecordResult result = new FetchRecordResult();

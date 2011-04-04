@@ -20,8 +20,8 @@ import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
-import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getColumns;
-import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
+import static com.nearinfinity.blur.utils.RowDocumentUtil.getColumns;
+import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 
 import java.io.IOException;
 import java.util.ArrayList;

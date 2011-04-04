@@ -39,7 +39,7 @@ import org.apache.lucene.store.LockFactory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexReader;
+import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
@@ -87,7 +87,12 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
                 //do nothing for now
             }
         }, replicationDaemon,replicationStrategy);
-        return warmUp(new BlurIndexReader(IndexReader.open(directory)));
+        BlurIndexWriter writer = new BlurIndexWriter();
+        writer.setAnalyzer(getAnalyzer(table));
+        writer.setDirectory(directory);
+        writer.init();
+        return warmUp(writer);
+//        return warmUp(new BlurIndexReader(IndexReader.open(directory)));
     }
 
     private BlurIndex warmUp(BlurIndex index) throws IOException {

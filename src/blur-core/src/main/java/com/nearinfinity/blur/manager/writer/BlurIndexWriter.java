@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.index.ConcurrentMergeScheduler;
 import org.apache.lucene.index.IndexReader;
@@ -58,6 +59,7 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
     private int maxNumberOfDirsMergedAtOnce = 16;
     private int maxThreadCountForMerger = 5;
     private int maxBlockingTimePerUpdate = 10;
+    private AtomicReference<IndexReader> indexReaderRef = new AtomicReference<IndexReader>();
     
     public void init() throws IOException {
         mutationQueue = new ArrayBlockingQueue<BlurIndexMutation>(maxNumberOfDirsMergedAtOnce);
@@ -113,6 +115,7 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
         ConcurrentMergeScheduler mergeScheduler = new ConcurrentMergeScheduler();
         mergeScheduler.setMaxThreadCount(maxThreadCountForMerger);
         writer.setMergeScheduler(mergeScheduler);
+        indexReaderRef.set(writer.getReader());
     }
 
     private Directory index(Collection<Row> rows) throws IOException {
@@ -158,6 +161,7 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
             for (BlurIndexMutation mutation : mutations) {
                 mutation.indexed = true;
             }
+            indexReaderRef.set(writer.getReader());
         } finally {
             if (mutations != null) {
                 for (BlurIndexMutation mutation : mutations) {
@@ -184,7 +188,7 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
 
     @Override
     public IndexReader getIndexReader() throws IOException {
-        return writer.getReader();
+        return indexReaderRef.get();
     }
 
     public void setDirectory(Directory directory) {

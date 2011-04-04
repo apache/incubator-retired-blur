@@ -20,7 +20,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
-import static com.nearinfinity.blur.utils.BlurUtil.asString;
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getColumns;
 import static com.nearinfinity.blur.utils.RowSuperDocumentUtil.getRow;
 
@@ -74,6 +73,7 @@ import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.status.QueryStatus;
 import com.nearinfinity.blur.manager.status.QueryStatusManager;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -165,13 +165,13 @@ public class IndexManager {
             throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get the correct index reader for selector [{0}].",e,selector);
-            throw new BlurException(e.getMessage(),asString(e));
+            throw new BException(e.getMessage(),e);
         }
         try {
             fetchRow(index.getIndexReader(), table, selector, fetchResult);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to fetch row.", e);
-            throw new BlurException(e.getMessage(),asString(e));
+            throw new BException(e.getMessage(),e);
         }
     }
     
@@ -266,7 +266,7 @@ public class IndexManager {
                 blurIndexes = indexServer.getIndexes(table);
             } catch (IOException e) {
                 LOG.error("Unknown error while trying to fetch index readers.", e);
-                throw new BlurException(e.getMessage(),asString(e));
+                throw new BException(e.getMessage(),e);
             }
             Analyzer analyzer = indexServer.getAnalyzer(table);
             Filter preFilter = parseFilter(table, blurQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
@@ -474,7 +474,7 @@ public class IndexManager {
             blurIndexes = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
-            throw new BlurException(e.getMessage(),asString(e));
+            throw new BException(e.getMessage(),e);
         }
         return ForkJoin.execute(executor, blurIndexes.entrySet(),
             new ParallelCall<Entry<String, BlurIndex>, Long>() {
@@ -502,7 +502,7 @@ public class IndexManager {
             blurIndexes = indexServer.getIndexes(table);
         } catch (IOException e) {
             LOG.error("Unknown error while trying to fetch index readers.", e);
-            throw new BlurException(e.getMessage(),asString(e));
+            throw new BException(e.getMessage(),e);
         }
         return ForkJoin.execute(executor, blurIndexes.entrySet(),
             new ParallelCall<Entry<String, BlurIndex>, List<String>>() {

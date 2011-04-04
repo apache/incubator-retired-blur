@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.PrintWriter;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,14 +44,6 @@ import com.nearinfinity.blur.thrift.generated.Selector;
 public class BlurUtil {
     
     private static final Log LOG = LogFactory.getLog(BlurUtil.class);
-    
-    public static String asString(Throwable t) {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintWriter writer = new PrintWriter(outputStream);
-        t.printStackTrace(writer);
-        quietClose(writer);
-        return new String(outputStream.toByteArray());
-    }
     
     public static List<Long> getList(AtomicLongArray atomicLongArray) {
         if (atomicLongArray == null) {

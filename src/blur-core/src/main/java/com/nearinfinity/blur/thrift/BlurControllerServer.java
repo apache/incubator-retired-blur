@@ -57,7 +57,6 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
-import com.nearinfinity.blur.utils.LoggingBlurException;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
@@ -109,8 +108,8 @@ public class BlurControllerServer implements Iface {
             },new MergerBlurResultIterable(blurQuery.minimumNumberOfResults,blurQuery.maxQueryTime));
 			return BlurBaseServer.convertToHits(hitsIterable, blurQuery.start, blurQuery.fetch, blurQuery.minimumNumberOfResults,facetCounts);
 		} catch (Exception e) {
-			throw new LoggingBlurException(LOG,e,"Unknown error during search of [" +
-                    "table=" + table + "searchquery=" + blurQuery + "]");
+		    LOG.error("Unknown error during search of [table={0},blurQuery={1}]",e,table,blurQuery);
+			throw new BException("Unknown error during search of [table={0},blurQuery={1}]",e,table,blurQuery);
 		}
 	}
 	
@@ -128,8 +127,8 @@ public class BlurControllerServer implements Iface {
                     }
                 });
 		} catch (Exception e) {
-		    throw new LoggingBlurException(LOG,e,"Unknown error during fetch of row from table [" + table +
-                    "] selector [" + selector + "] node [" + clientHostnamePort + "]");
+		    LOG.error("Unknown error during fetch of row from table [{0}] selector [{1}] node [{2}]",e,table,selector,clientHostnamePort);
+            throw new BException("Unknown error during fetch of row from table [{0}] selector [{1}] node [{2}]",e,table,selector,clientHostnamePort);
         }
 	}
 	
@@ -144,7 +143,8 @@ public class BlurControllerServer implements Iface {
                 }
             });
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to cancel search [" + uuid + "]");
+            LOG.error("Unknown error while trying to cancel search table [{0}] uuid [{1}]",e,table,uuid);
+            throw new BException("Unknown error while trying to cancel search table [{0}] uuid [{1}]",e,table,uuid);
         }
     }
     
@@ -158,13 +158,19 @@ public class BlurControllerServer implements Iface {
                 }
             },new MergerQueryStatus());
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get current searches [" + table + "]");
+            LOG.error("Unknown error while trying to get current searches [{0}]",e,table);
+            throw new BException("Unknown error while trying to get current searches [{0}]",e,table);
         }
     }
 	   
     @Override
     public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-        return shardServerLayout.get().get(table);
+        Map<String, Map<String, String>> layout = shardServerLayout.get();
+        Map<String, String> tableLayout = layout.get(table);
+        if (tableLayout == null) {
+            return new HashMap<String, String>();
+        }
+        return tableLayout;
     }
     
     @Override
@@ -187,7 +193,8 @@ public class BlurControllerServer implements Iface {
                     }
                 });
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get record frequency [" + table + "/" + columnFamily + "/" + columnName + "/" + value + "]");
+            LOG.error("Unknown error while trying to get record frequency [{0}/{1}/{2}/{3}]",e,table,columnFamily,columnName,value);
+            throw new BException("Unknown error while trying to get record frequency [{0}/{1}/{2}/{3}]",e,table,columnFamily,columnName,value);
         }
     }
 
@@ -216,7 +223,8 @@ public class BlurControllerServer implements Iface {
                     }
                 });
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to schema table [" + table + "]");
+            LOG.error("Unknown error while trying to schema table [{0}]",e,table);
+            throw new BException("Unknown error while trying to schema table [{0}]",e,table);
         }
     }
 
@@ -240,12 +248,8 @@ public class BlurControllerServer implements Iface {
                     }
                 });
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to terms table [" + table +
-            		"] columnFamily [" + columnFamily + 
-            		"] columnName [" + columnName + 
-            		"] startWith [" + startWith + 
-            		"] size [" + size + 
-            		"]");
+            LOG.error("Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",e,table,columnFamily,columnName,startWith,size);
+            throw new BException("Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",e,table,columnFamily,columnName,startWith,size);
         }
     }
 
@@ -330,7 +334,8 @@ public class BlurControllerServer implements Iface {
                 }
             });
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to describe table [" + table + "]");
+            LOG.error("Unknown error while trying to describe table [{0}]",e,table);
+            throw new BException("Unknown error while trying to describe table [{0}]",e,table);
         }
     }
     
@@ -345,8 +350,9 @@ public class BlurControllerServer implements Iface {
                 }
             });
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get table list.  Current online shard servers [" +
-            		clusterStatus.getOnlineShardServers() + "]");
+            List<String> onlineShardServers = clusterStatus.getOnlineShardServers();
+            LOG.error("Unknown error while trying to get table list.  Current online shard servers [{0}]",e,onlineShardServers);
+            throw new BException("Unknown error while trying to get table list.  Current online shard servers [{0}]",e,onlineShardServers);
         }
     }
     
@@ -375,7 +381,8 @@ public class BlurControllerServer implements Iface {
         try {
             return clusterStatus.controllerServerList();
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get a controller list.");
+            LOG.error("Unknown error while trying to get a controller list.",e);
+            throw new BException("Unknown error while trying to get a controller list.",e);
         }
     }
 
@@ -384,7 +391,8 @@ public class BlurControllerServer implements Iface {
         try {
             return clusterStatus.shardServerList();
         } catch (Exception e) {
-            throw new LoggingBlurException(LOG,e,"Unknown error while trying to get a shard list.");
+            LOG.error("Unknown error while trying to get a shard list.",e);
+            throw new BException("Unknown error while trying to get a shard list.",e);
         }
     }
 

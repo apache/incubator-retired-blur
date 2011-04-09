@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum RowMutationType implements TEnum {
+public enum RowMutationType implements org.apache.thrift.TEnum {
   DELETE_ROW(0),
   REPLACE_ROW(1),
   UPDATE_ROW(2);

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum ScoreType implements TEnum {
+public enum ScoreType implements org.apache.thrift.TEnum {
   SUPER(0),
   AGGREGATE(1),
   BEST(2),

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
-public enum RecordMutationType implements TEnum {
+public enum RecordMutationType implements org.apache.thrift.TEnum {
   DELETE_ENTIRE_RECORD(0),
   REPLACE_ENTIRE_RECORD(1),
   REPLACE_COLUMNS(2),

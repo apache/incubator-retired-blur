@@ -20,18 +20,12 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMutation._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RowMutation");
 
-public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("RowMutation");
-
-  private static final TField ROW_MUTATION_TYPE_FIELD_DESC = new TField("rowMutationType", TType.I32, (short)1);
-  private static final TField ROW_ID_FIELD_DESC = new TField("rowId", TType.STRING, (short)2);
-  private static final TField RECORD_MUTATIONS_FIELD_DESC = new TField("recordMutations", TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField ROW_MUTATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("rowMutationType", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField ROW_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("rowId", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutations", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   /**
    * 
@@ -42,7 +36,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
   public List<RecordMutation> recordMutations;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
      * 
      * @see RowMutationType
@@ -111,18 +105,18 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
 
   // isset id assignments
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ROW_MUTATION_TYPE, new FieldMetaData("rowMutationType", TFieldRequirementType.DEFAULT, 
-        new EnumMetaData(TType.ENUM, RowMutationType.class)));
-    tmpMap.put(_Fields.ROW_ID, new FieldMetaData("rowId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.RECORD_MUTATIONS, new FieldMetaData("recordMutations", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, RecordMutation.class))));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.ROW_MUTATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("rowMutationType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, RowMutationType.class)));
+    tmpMap.put(_Fields.ROW_ID, new org.apache.thrift.meta_data.FieldMetaData("rowId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RECORD_MUTATIONS, new org.apache.thrift.meta_data.FieldMetaData("recordMutations", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RecordMutation.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(RowMutation.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RowMutation.class, metaDataMap);
   }
 
   public RowMutation() {
@@ -190,7 +184,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     this.rowMutationType = null;
   }
 
-  /** Returns true if field rowMutationType is set (has been asigned a value) and false otherwise */
+  /** Returns true if field rowMutationType is set (has been assigned a value) and false otherwise */
   public boolean isSetRowMutationType() {
     return this.rowMutationType != null;
   }
@@ -214,7 +208,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     this.rowId = null;
   }
 
-  /** Returns true if field rowId is set (has been asigned a value) and false otherwise */
+  /** Returns true if field rowId is set (has been assigned a value) and false otherwise */
   public boolean isSetRowId() {
     return this.rowId != null;
   }
@@ -253,7 +247,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     this.recordMutations = null;
   }
 
-  /** Returns true if field recordMutations is set (has been asigned a value) and false otherwise */
+  /** Returns true if field recordMutations is set (has been assigned a value) and false otherwise */
   public boolean isSetRecordMutations() {
     return this.recordMutations != null;
   }
@@ -308,7 +302,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -386,7 +380,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
       return lastComparison;
     }
     if (isSetRowMutationType()) {
-      lastComparison = TBaseHelper.compareTo(this.rowMutationType, typedOther.rowMutationType);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rowMutationType, typedOther.rowMutationType);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -396,7 +390,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
       return lastComparison;
     }
     if (isSetRowId()) {
-      lastComparison = TBaseHelper.compareTo(this.rowId, typedOther.rowId);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rowId, typedOther.rowId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -406,7 +400,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
       return lastComparison;
     }
     if (isSetRecordMutations()) {
-      lastComparison = TBaseHelper.compareTo(this.recordMutations, typedOther.recordMutations);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordMutations, typedOther.recordMutations);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -418,34 +412,34 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // ROW_MUTATION_TYPE
-          if (field.type == TType.I32) {
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.rowMutationType = RowMutationType.findByValue(iprot.readI32());
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // ROW_ID
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.rowId = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // RECORD_MUTATIONS
-          if (field.type == TType.LIST) {
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              TList _list85 = iprot.readListBegin();
+              org.apache.thrift.protocol.TList _list85 = iprot.readListBegin();
               this.recordMutations = new ArrayList<RecordMutation>(_list85.size);
               for (int _i86 = 0; _i86 < _list85.size; ++_i86)
               {
@@ -457,11 +451,11 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
               iprot.readListEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -471,7 +465,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -488,7 +482,7 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     if (this.recordMutations != null) {
       oprot.writeFieldBegin(RECORD_MUTATIONS_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.recordMutations.size()));
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.recordMutations.size()));
         for (RecordMutation _iter88 : this.recordMutations)
         {
           _iter88.write(oprot);
@@ -533,8 +527,24 @@ public class RowMutation implements TBase<RowMutation, RowMutation._Fields>, jav
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

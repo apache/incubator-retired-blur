@@ -6,6 +6,7 @@ import java.net.UnknownHostException;
 
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TThreadPoolServer;
+import org.apache.thrift.server.TThreadPoolServer.Args;
 import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
@@ -42,7 +43,15 @@ public class ThriftServer {
         Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new Blur.Processor(iface);
         TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
-        server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
+        
+        Args args = new Args(serverTransport);
+        args.processor(processor);
+        args.protocolFactory(protFactory);
+        args.transportFactory(transportFactory);
+        args.minWorkerThreads = 10;
+        args.maxWorkerThreads = 10;
+        
+        server = new TThreadPoolServer(args);
         LOG.info("Starting server [{0}]",nodeName);
         server.serve();
     }

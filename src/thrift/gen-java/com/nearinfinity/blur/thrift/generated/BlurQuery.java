@@ -20,28 +20,22 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQuery");
 
-public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("BlurQuery");
-
-  private static final TField QUERY_STR_FIELD_DESC = new TField("queryStr", TType.STRING, (short)1);
-  private static final TField SUPER_QUERY_ON_FIELD_DESC = new TField("superQueryOn", TType.BOOL, (short)2);
-  private static final TField TYPE_FIELD_DESC = new TField("type", TType.I32, (short)3);
-  private static final TField POST_SUPER_FILTER_FIELD_DESC = new TField("postSuperFilter", TType.STRING, (short)4);
-  private static final TField PRE_SUPER_FILTER_FIELD_DESC = new TField("preSuperFilter", TType.STRING, (short)5);
-  private static final TField START_FIELD_DESC = new TField("start", TType.I64, (short)6);
-  private static final TField FETCH_FIELD_DESC = new TField("fetch", TType.I32, (short)7);
-  private static final TField MINIMUM_NUMBER_OF_RESULTS_FIELD_DESC = new TField("minimumNumberOfResults", TType.I64, (short)8);
-  private static final TField MAX_QUERY_TIME_FIELD_DESC = new TField("maxQueryTime", TType.I64, (short)9);
-  private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)10);
-  private static final TField USER_ID_FIELD_DESC = new TField("userId", TType.STRING, (short)11);
-  private static final TField RESOLVE_IDS_FIELD_DESC = new TField("resolveIds", TType.BOOL, (short)12);
-  private static final TField FACETS_FIELD_DESC = new TField("facets", TType.LIST, (short)13);
+  private static final org.apache.thrift.protocol.TField QUERY_STR_FIELD_DESC = new org.apache.thrift.protocol.TField("queryStr", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField SUPER_QUERY_ON_FIELD_DESC = new org.apache.thrift.protocol.TField("superQueryOn", org.apache.thrift.protocol.TType.BOOL, (short)2);
+  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)3);
+  private static final org.apache.thrift.protocol.TField POST_SUPER_FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("postSuperFilter", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField PRE_SUPER_FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("preSuperFilter", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField START_FIELD_DESC = new org.apache.thrift.protocol.TField("start", org.apache.thrift.protocol.TType.I64, (short)6);
+  private static final org.apache.thrift.protocol.TField FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("fetch", org.apache.thrift.protocol.TType.I32, (short)7);
+  private static final org.apache.thrift.protocol.TField MINIMUM_NUMBER_OF_RESULTS_FIELD_DESC = new org.apache.thrift.protocol.TField("minimumNumberOfResults", org.apache.thrift.protocol.TType.I64, (short)8);
+  private static final org.apache.thrift.protocol.TField MAX_QUERY_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("maxQueryTime", org.apache.thrift.protocol.TType.I64, (short)9);
+  private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)10);
+  private static final org.apache.thrift.protocol.TField USER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("userId", org.apache.thrift.protocol.TType.STRING, (short)11);
+  private static final org.apache.thrift.protocol.TField RESOLVE_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("resolveIds", org.apache.thrift.protocol.TType.BOOL, (short)12);
+  private static final org.apache.thrift.protocol.TField FACETS_FIELD_DESC = new org.apache.thrift.protocol.TField("facets", org.apache.thrift.protocol.TType.LIST, (short)13);
 
   public String queryStr;
   public boolean superQueryOn;
@@ -62,7 +56,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
   public List<Facet> facets;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     QUERY_STR((short)1, "queryStr"),
     SUPER_QUERY_ON((short)2, "superQueryOn"),
     /**
@@ -169,44 +163,44 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
   private static final int __RESOLVEIDS_ISSET_ID = 6;
   private BitSet __isset_bit_vector = new BitSet(7);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_STR, new FieldMetaData("queryStr", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.SUPER_QUERY_ON, new FieldMetaData("superQueryOn", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.TYPE, new FieldMetaData("type", TFieldRequirementType.DEFAULT, 
-        new EnumMetaData(TType.ENUM, ScoreType.class)));
-    tmpMap.put(_Fields.POST_SUPER_FILTER, new FieldMetaData("postSuperFilter", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.PRE_SUPER_FILTER, new FieldMetaData("preSuperFilter", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.START, new FieldMetaData("start", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
-    tmpMap.put(_Fields.FETCH, new FieldMetaData("fetch", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I32)));
-    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_RESULTS, new FieldMetaData("minimumNumberOfResults", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
-    tmpMap.put(_Fields.MAX_QUERY_TIME, new FieldMetaData("maxQueryTime", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
-    tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
-    tmpMap.put(_Fields.USER_ID, new FieldMetaData("userId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.RESOLVE_IDS, new FieldMetaData("resolveIds", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.FACETS, new FieldMetaData("facets", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, Facet.class))));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.QUERY_STR, new org.apache.thrift.meta_data.FieldMetaData("queryStr", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SUPER_QUERY_ON, new org.apache.thrift.meta_data.FieldMetaData("superQueryOn", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, ScoreType.class)));
+    tmpMap.put(_Fields.POST_SUPER_FILTER, new org.apache.thrift.meta_data.FieldMetaData("postSuperFilter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.PRE_SUPER_FILTER, new org.apache.thrift.meta_data.FieldMetaData("preSuperFilter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.START, new org.apache.thrift.meta_data.FieldMetaData("start", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.FETCH, new org.apache.thrift.meta_data.FieldMetaData("fetch", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_RESULTS, new org.apache.thrift.meta_data.FieldMetaData("minimumNumberOfResults", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.MAX_QUERY_TIME, new org.apache.thrift.meta_data.FieldMetaData("maxQueryTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.USER_ID, new org.apache.thrift.meta_data.FieldMetaData("userId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RESOLVE_IDS, new org.apache.thrift.meta_data.FieldMetaData("resolveIds", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.FACETS, new org.apache.thrift.meta_data.FieldMetaData("facets", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Facet.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
 
   public BlurQuery() {
     this.superQueryOn = true;
 
-    this.type = ScoreType.SUPER;
+    this.type = com.nearinfinity.blur.thrift.generated.ScoreType.SUPER;
 
     this.start = 0L;
 
@@ -302,7 +296,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     this.queryStr = null;
     this.superQueryOn = true;
 
-    this.type = ScoreType.SUPER;
+    this.type = com.nearinfinity.blur.thrift.generated.ScoreType.SUPER;
 
     this.postSuperFilter = null;
     this.preSuperFilter = null;
@@ -335,7 +329,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     this.queryStr = null;
   }
 
-  /** Returns true if field queryStr is set (has been asigned a value) and false otherwise */
+  /** Returns true if field queryStr is set (has been assigned a value) and false otherwise */
   public boolean isSetQueryStr() {
     return this.queryStr != null;
   }
@@ -360,7 +354,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     __isset_bit_vector.clear(__SUPERQUERYON_ISSET_ID);
   }
 
-  /** Returns true if field superQueryOn is set (has been asigned a value) and false otherwise */
+  /** Returns true if field superQueryOn is set (has been assigned a value) and false otherwise */
   public boolean isSetSuperQueryOn() {
     return __isset_bit_vector.get(__SUPERQUERYON_ISSET_ID);
   }
@@ -390,7 +384,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     this.type = null;
   }
 
-  /** Returns true if field type is set (has been asigned a value) and false otherwise */
+  /** Returns true if field type is set (has been assigned a value) and false otherwise */
   public boolean isSetType() {
     return this.type != null;
   }
@@ -414,7 +408,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     this.postSuperFilter = null;
   }
 
-  /** Returns true if field postSuperFilter is set (has been asigned a value) and false otherwise */
+  /** Returns true if field postSuperFilter is set (has been assigned a value) and false otherwise */
   public boolean isSetPostSuperFilter() {
     return this.postSuperFilter != null;
   }
@@ -438,7 +432,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     this.preSuperFilter = null;
   }
 
-  /** Returns true if field preSuperFilter is set (has been asigned a value) and false otherwise */
+  /** Returns true if field preSuperFilter is set (has been assigned a value) and false otherwise */
   public boolean isSetPreSuperFilter() {
     return this.preSuperFilter != null;
   }
@@ -463,7 +457,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     __isset_bit_vector.clear(__START_ISSET_ID);
   }
 
-  /** Returns true if field start is set (has been asigned a value) and false otherwise */
+  /** Returns true if field start is set (has been assigned a value) and false otherwise */
   public boolean isSetStart() {
     return __isset_bit_vector.get(__START_ISSET_ID);
   }
@@ -486,7 +480,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     __isset_bit_vector.clear(__FETCH_ISSET_ID);
   }
 
-  /** Returns true if field fetch is set (has been asigned a value) and false otherwise */
+  /** Returns true if field fetch is set (has been assigned a value) and false otherwise */
   public boolean isSetFetch() {
     return __isset_bit_vector.get(__FETCH_ISSET_ID);
   }
@@ -509,7 +503,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     __isset_bit_vector.clear(__MINIMUMNUMBEROFRESULTS_ISSET_ID);
   }
 
-  /** Returns true if field minimumNumberOfResults is set (has been asigned a value) and false otherwise */
+  /** Returns true if field minimumNumberOfResults is set (has been assigned a value) and false otherwise */
   public boolean isSetMinimumNumberOfResults() {
     return __isset_bit_vector.get(__MINIMUMNUMBEROFRESULTS_ISSET_ID);
   }
@@ -532,7 +526,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     __isset_bit_vector.clear(__MAXQUERYTIME_ISSET_ID);
   }
 
-  /** Returns true if field maxQueryTime is set (has been asigned a value) and false otherwise */
+  /** Returns true if field maxQueryTime is set (has been assigned a value) and false otherwise */
   public boolean isSetMaxQueryTime() {
     return __isset_bit_vector.get(__MAXQUERYTIME_ISSET_ID);
   }
@@ -555,7 +549,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     __isset_bit_vector.clear(__UUID_ISSET_ID);
   }
 
-  /** Returns true if field uuid is set (has been asigned a value) and false otherwise */
+  /** Returns true if field uuid is set (has been assigned a value) and false otherwise */
   public boolean isSetUuid() {
     return __isset_bit_vector.get(__UUID_ISSET_ID);
   }
@@ -577,7 +571,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     this.userId = null;
   }
 
-  /** Returns true if field userId is set (has been asigned a value) and false otherwise */
+  /** Returns true if field userId is set (has been assigned a value) and false otherwise */
   public boolean isSetUserId() {
     return this.userId != null;
   }
@@ -602,7 +596,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     __isset_bit_vector.clear(__RESOLVEIDS_ISSET_ID);
   }
 
-  /** Returns true if field resolveIds is set (has been asigned a value) and false otherwise */
+  /** Returns true if field resolveIds is set (has been assigned a value) and false otherwise */
   public boolean isSetResolveIds() {
     return __isset_bit_vector.get(__RESOLVEIDS_ISSET_ID);
   }
@@ -639,7 +633,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     this.facets = null;
   }
 
-  /** Returns true if field facets is set (has been asigned a value) and false otherwise */
+  /** Returns true if field facets is set (has been assigned a value) and false otherwise */
   public boolean isSetFacets() {
     return this.facets != null;
   }
@@ -804,7 +798,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -992,7 +986,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetQueryStr()) {
-      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1002,7 +996,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetSuperQueryOn()) {
-      lastComparison = TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.superQueryOn, typedOther.superQueryOn);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1012,7 +1006,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetType()) {
-      lastComparison = TBaseHelper.compareTo(this.type, typedOther.type);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, typedOther.type);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1022,7 +1016,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetPostSuperFilter()) {
-      lastComparison = TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.postSuperFilter, typedOther.postSuperFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1032,7 +1026,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetPreSuperFilter()) {
-      lastComparison = TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.preSuperFilter, typedOther.preSuperFilter);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1042,7 +1036,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetStart()) {
-      lastComparison = TBaseHelper.compareTo(this.start, typedOther.start);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.start, typedOther.start);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1052,7 +1046,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetFetch()) {
-      lastComparison = TBaseHelper.compareTo(this.fetch, typedOther.fetch);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fetch, typedOther.fetch);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1062,7 +1056,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetMinimumNumberOfResults()) {
-      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfResults, typedOther.minimumNumberOfResults);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.minimumNumberOfResults, typedOther.minimumNumberOfResults);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1072,7 +1066,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetMaxQueryTime()) {
-      lastComparison = TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.maxQueryTime, typedOther.maxQueryTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1082,7 +1076,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetUuid()) {
-      lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.uuid, typedOther.uuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1092,7 +1086,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetUserId()) {
-      lastComparison = TBaseHelper.compareTo(this.userId, typedOther.userId);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.userId, typedOther.userId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1102,7 +1096,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetResolveIds()) {
-      lastComparison = TBaseHelper.compareTo(this.resolveIds, typedOther.resolveIds);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.resolveIds, typedOther.resolveIds);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1112,7 +1106,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
       return lastComparison;
     }
     if (isSetFacets()) {
-      lastComparison = TBaseHelper.compareTo(this.facets, typedOther.facets);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.facets, typedOther.facets);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1124,111 +1118,111 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // QUERY_STR
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.queryStr = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // SUPER_QUERY_ON
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.superQueryOn = iprot.readBool();
             setSuperQueryOnIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // TYPE
-          if (field.type == TType.I32) {
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.type = ScoreType.findByValue(iprot.readI32());
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 4: // POST_SUPER_FILTER
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.postSuperFilter = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 5: // PRE_SUPER_FILTER
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.preSuperFilter = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 6: // START
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.start = iprot.readI64();
             setStartIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 7: // FETCH
-          if (field.type == TType.I32) {
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.fetch = iprot.readI32();
             setFetchIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 8: // MINIMUM_NUMBER_OF_RESULTS
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.minimumNumberOfResults = iprot.readI64();
             setMinimumNumberOfResultsIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 9: // MAX_QUERY_TIME
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.maxQueryTime = iprot.readI64();
             setMaxQueryTimeIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 10: // UUID
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.uuid = iprot.readI64();
             setUuidIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 11: // USER_ID
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.userId = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 12: // RESOLVE_IDS
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.resolveIds = iprot.readBool();
             setResolveIdsIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 13: // FACETS
-          if (field.type == TType.LIST) {
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              TList _list0 = iprot.readListBegin();
+              org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
               this.facets = new ArrayList<Facet>(_list0.size);
               for (int _i1 = 0; _i1 < _list0.size; ++_i1)
               {
@@ -1240,11 +1234,11 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
               iprot.readListEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -1254,7 +1248,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -1307,7 +1301,7 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     if (this.facets != null) {
       oprot.writeFieldBegin(FACETS_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.facets.size()));
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.facets.size()));
         for (Facet _iter3 : this.facets)
         {
           _iter3.write(oprot);
@@ -1404,8 +1398,26 @@ public class BlurQuery implements TBase<BlurQuery, BlurQuery._Fields>, java.io.S
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

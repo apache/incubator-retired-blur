@@ -18,9 +18,9 @@
 			<version>${blur_version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.incubator</groupId>
+			<groupId>org.apache.thrift</groupId>
 			<artifactId>thrift</artifactId>
-			<version>0.5.0</version>
+			<version>0.6.0</version>
 		</dependency>
 	</dependencies>
 

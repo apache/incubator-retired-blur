@@ -20,22 +20,16 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus, BlurQueryStatus._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQueryStatus");
 
-public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("BlurQueryStatus");
-
-  private static final TField QUERY_FIELD_DESC = new TField("query", TType.STRUCT, (short)1);
-  private static final TField REAL_TIME_FIELD_DESC = new TField("realTime", TType.I64, (short)2);
-  private static final TField CPU_TIME_FIELD_DESC = new TField("cpuTime", TType.I64, (short)3);
-  private static final TField COMPLETE_FIELD_DESC = new TField("complete", TType.DOUBLE, (short)4);
-  private static final TField RUNNING_FIELD_DESC = new TField("running", TType.BOOL, (short)5);
-  private static final TField INTERRUPTED_FIELD_DESC = new TField("interrupted", TType.BOOL, (short)6);
-  private static final TField UUID_FIELD_DESC = new TField("uuid", TType.I64, (short)7);
+  private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+  private static final org.apache.thrift.protocol.TField REAL_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("realTime", org.apache.thrift.protocol.TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField CPU_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("cpuTime", org.apache.thrift.protocol.TType.I64, (short)3);
+  private static final org.apache.thrift.protocol.TField COMPLETE_FIELD_DESC = new org.apache.thrift.protocol.TField("complete", org.apache.thrift.protocol.TType.DOUBLE, (short)4);
+  private static final org.apache.thrift.protocol.TField RUNNING_FIELD_DESC = new org.apache.thrift.protocol.TField("running", org.apache.thrift.protocol.TType.BOOL, (short)5);
+  private static final org.apache.thrift.protocol.TField INTERRUPTED_FIELD_DESC = new org.apache.thrift.protocol.TField("interrupted", org.apache.thrift.protocol.TType.BOOL, (short)6);
+  private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)7);
 
   public BlurQuery query;
   public long realTime;
@@ -46,7 +40,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
   public long uuid;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     QUERY((short)1, "query"),
     REAL_TIME((short)2, "realTime"),
     CPU_TIME((short)3, "cpuTime"),
@@ -130,25 +124,25 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
   private static final int __UUID_ISSET_ID = 5;
   private BitSet __isset_bit_vector = new BitSet(6);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY, new FieldMetaData("query", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, BlurQuery.class)));
-    tmpMap.put(_Fields.REAL_TIME, new FieldMetaData("realTime", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
-    tmpMap.put(_Fields.CPU_TIME, new FieldMetaData("cpuTime", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
-    tmpMap.put(_Fields.COMPLETE, new FieldMetaData("complete", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.DOUBLE)));
-    tmpMap.put(_Fields.RUNNING, new FieldMetaData("running", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.INTERRUPTED, new FieldMetaData("interrupted", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.UUID, new FieldMetaData("uuid", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurQuery.class)));
+    tmpMap.put(_Fields.REAL_TIME, new org.apache.thrift.meta_data.FieldMetaData("realTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.CPU_TIME, new org.apache.thrift.meta_data.FieldMetaData("cpuTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.COMPLETE, new org.apache.thrift.meta_data.FieldMetaData("complete", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.RUNNING, new org.apache.thrift.meta_data.FieldMetaData("running", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.INTERRUPTED, new org.apache.thrift.meta_data.FieldMetaData("interrupted", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(BlurQueryStatus.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQueryStatus.class, metaDataMap);
   }
 
   public BlurQueryStatus() {
@@ -230,7 +224,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     this.query = null;
   }
 
-  /** Returns true if field query is set (has been asigned a value) and false otherwise */
+  /** Returns true if field query is set (has been assigned a value) and false otherwise */
   public boolean isSetQuery() {
     return this.query != null;
   }
@@ -255,7 +249,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     __isset_bit_vector.clear(__REALTIME_ISSET_ID);
   }
 
-  /** Returns true if field realTime is set (has been asigned a value) and false otherwise */
+  /** Returns true if field realTime is set (has been assigned a value) and false otherwise */
   public boolean isSetRealTime() {
     return __isset_bit_vector.get(__REALTIME_ISSET_ID);
   }
@@ -278,7 +272,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     __isset_bit_vector.clear(__CPUTIME_ISSET_ID);
   }
 
-  /** Returns true if field cpuTime is set (has been asigned a value) and false otherwise */
+  /** Returns true if field cpuTime is set (has been assigned a value) and false otherwise */
   public boolean isSetCpuTime() {
     return __isset_bit_vector.get(__CPUTIME_ISSET_ID);
   }
@@ -301,7 +295,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     __isset_bit_vector.clear(__COMPLETE_ISSET_ID);
   }
 
-  /** Returns true if field complete is set (has been asigned a value) and false otherwise */
+  /** Returns true if field complete is set (has been assigned a value) and false otherwise */
   public boolean isSetComplete() {
     return __isset_bit_vector.get(__COMPLETE_ISSET_ID);
   }
@@ -324,7 +318,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     __isset_bit_vector.clear(__RUNNING_ISSET_ID);
   }
 
-  /** Returns true if field running is set (has been asigned a value) and false otherwise */
+  /** Returns true if field running is set (has been assigned a value) and false otherwise */
   public boolean isSetRunning() {
     return __isset_bit_vector.get(__RUNNING_ISSET_ID);
   }
@@ -347,7 +341,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     __isset_bit_vector.clear(__INTERRUPTED_ISSET_ID);
   }
 
-  /** Returns true if field interrupted is set (has been asigned a value) and false otherwise */
+  /** Returns true if field interrupted is set (has been assigned a value) and false otherwise */
   public boolean isSetInterrupted() {
     return __isset_bit_vector.get(__INTERRUPTED_ISSET_ID);
   }
@@ -370,7 +364,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     __isset_bit_vector.clear(__UUID_ISSET_ID);
   }
 
-  /** Returns true if field uuid is set (has been asigned a value) and false otherwise */
+  /** Returns true if field uuid is set (has been assigned a value) and false otherwise */
   public boolean isSetUuid() {
     return __isset_bit_vector.get(__UUID_ISSET_ID);
   }
@@ -467,7 +461,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -589,7 +583,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
       return lastComparison;
     }
     if (isSetQuery()) {
-      lastComparison = TBaseHelper.compareTo(this.query, typedOther.query);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.query, typedOther.query);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -599,7 +593,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
       return lastComparison;
     }
     if (isSetRealTime()) {
-      lastComparison = TBaseHelper.compareTo(this.realTime, typedOther.realTime);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.realTime, typedOther.realTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -609,7 +603,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
       return lastComparison;
     }
     if (isSetCpuTime()) {
-      lastComparison = TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -619,7 +613,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
       return lastComparison;
     }
     if (isSetComplete()) {
-      lastComparison = TBaseHelper.compareTo(this.complete, typedOther.complete);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.complete, typedOther.complete);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -629,7 +623,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
       return lastComparison;
     }
     if (isSetRunning()) {
-      lastComparison = TBaseHelper.compareTo(this.running, typedOther.running);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.running, typedOther.running);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -639,7 +633,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
       return lastComparison;
     }
     if (isSetInterrupted()) {
-      lastComparison = TBaseHelper.compareTo(this.interrupted, typedOther.interrupted);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.interrupted, typedOther.interrupted);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -649,7 +643,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
       return lastComparison;
     }
     if (isSetUuid()) {
-      lastComparison = TBaseHelper.compareTo(this.uuid, typedOther.uuid);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.uuid, typedOther.uuid);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -661,74 +655,74 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // QUERY
-          if (field.type == TType.STRUCT) {
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.query = new BlurQuery();
             this.query.read(iprot);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // REAL_TIME
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.realTime = iprot.readI64();
             setRealTimeIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // CPU_TIME
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.cpuTime = iprot.readI64();
             setCpuTimeIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 4: // COMPLETE
-          if (field.type == TType.DOUBLE) {
+          if (field.type == org.apache.thrift.protocol.TType.DOUBLE) {
             this.complete = iprot.readDouble();
             setCompleteIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 5: // RUNNING
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.running = iprot.readBool();
             setRunningIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 6: // INTERRUPTED
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.interrupted = iprot.readBool();
             setInterruptedIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 7: // UUID
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.uuid = iprot.readI64();
             setUuidIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -738,7 +732,7 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -809,8 +803,26 @@ public class BlurQueryStatus implements TBase<BlurQueryStatus, BlurQueryStatus._
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

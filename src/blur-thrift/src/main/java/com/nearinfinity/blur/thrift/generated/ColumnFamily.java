@@ -20,23 +20,17 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class ColumnFamily implements org.apache.thrift.TBase<ColumnFamily, ColumnFamily._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ColumnFamily");
 
-public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("ColumnFamily");
-
-  private static final TField FAMILY_FIELD_DESC = new TField("family", TType.STRING, (short)1);
-  private static final TField RECORDS_FIELD_DESC = new TField("records", TType.MAP, (short)2);
+  private static final org.apache.thrift.protocol.TField FAMILY_FIELD_DESC = new org.apache.thrift.protocol.TField("family", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField RECORDS_FIELD_DESC = new org.apache.thrift.protocol.TField("records", org.apache.thrift.protocol.TType.MAP, (short)2);
 
   public String family;
   public Map<String,Set<Column>> records;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     FAMILY((short)1, "family"),
     RECORDS((short)2, "records");
 
@@ -98,18 +92,18 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
 
   // isset id assignments
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.FAMILY, new FieldMetaData("family", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.RECORDS, new FieldMetaData("records", TFieldRequirementType.DEFAULT, 
-        new MapMetaData(TType.MAP, 
-            new FieldValueMetaData(TType.STRING), 
-            new SetMetaData(TType.SET, 
-                new StructMetaData(TType.STRUCT, Column.class)))));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.FAMILY, new org.apache.thrift.meta_data.FieldMetaData("family", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RECORDS, new org.apache.thrift.meta_data.FieldMetaData("records", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+                new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Column.class)))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(ColumnFamily.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ColumnFamily.class, metaDataMap);
   }
 
   public ColumnFamily() {
@@ -174,7 +168,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     this.family = null;
   }
 
-  /** Returns true if field family is set (has been asigned a value) and false otherwise */
+  /** Returns true if field family is set (has been assigned a value) and false otherwise */
   public boolean isSetFamily() {
     return this.family != null;
   }
@@ -209,7 +203,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     this.records = null;
   }
 
-  /** Returns true if field records is set (has been asigned a value) and false otherwise */
+  /** Returns true if field records is set (has been assigned a value) and false otherwise */
   public boolean isSetRecords() {
     return this.records != null;
   }
@@ -253,7 +247,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -320,7 +314,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
       return lastComparison;
     }
     if (isSetFamily()) {
-      lastComparison = TBaseHelper.compareTo(this.family, typedOther.family);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.family, typedOther.family);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -330,7 +324,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
       return lastComparison;
     }
     if (isSetRecords()) {
-      lastComparison = TBaseHelper.compareTo(this.records, typedOther.records);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.records, typedOther.records);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -342,27 +336,27 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // FAMILY
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.family = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // RECORDS
-          if (field.type == TType.MAP) {
+          if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              TMap _map42 = iprot.readMapBegin();
+              org.apache.thrift.protocol.TMap _map42 = iprot.readMapBegin();
               this.records = new HashMap<String,Set<Column>>(2*_map42.size);
               for (int _i43 = 0; _i43 < _map42.size; ++_i43)
               {
@@ -370,7 +364,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
                 Set<Column> _val45;
                 _key44 = iprot.readString();
                 {
-                  TSet _set46 = iprot.readSetBegin();
+                  org.apache.thrift.protocol.TSet _set46 = iprot.readSetBegin();
                   _val45 = new HashSet<Column>(2*_set46.size);
                   for (int _i47 = 0; _i47 < _set46.size; ++_i47)
                   {
@@ -386,11 +380,11 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
               iprot.readMapEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -400,7 +394,7 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -412,12 +406,12 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     if (this.records != null) {
       oprot.writeFieldBegin(RECORDS_FIELD_DESC);
       {
-        oprot.writeMapBegin(new TMap(TType.STRING, TType.SET, this.records.size()));
+        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, this.records.size()));
         for (Map.Entry<String, Set<Column>> _iter49 : this.records.entrySet())
         {
           oprot.writeString(_iter49.getKey());
           {
-            oprot.writeSetBegin(new TSet(TType.STRUCT, _iter49.getValue().size()));
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, _iter49.getValue().size()));
             for (Column _iter50 : _iter49.getValue())
             {
               _iter50.write(oprot);
@@ -457,8 +451,24 @@ public class ColumnFamily implements TBase<ColumnFamily, ColumnFamily._Fields>, 
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

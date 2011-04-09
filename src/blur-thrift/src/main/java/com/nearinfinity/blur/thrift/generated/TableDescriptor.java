@@ -20,25 +20,19 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor, TableDescriptor._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TableDescriptor");
 
-public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("TableDescriptor");
-
-  private static final TField IS_ENABLED_FIELD_DESC = new TField("isEnabled", TType.BOOL, (short)1);
-  private static final TField ANALYZER_DEF_FIELD_DESC = new TField("analyzerDef", TType.STRING, (short)2);
-  private static final TField SHARD_NAMES_FIELD_DESC = new TField("shardNames", TType.LIST, (short)3);
+  private static final org.apache.thrift.protocol.TField IS_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("isEnabled", org.apache.thrift.protocol.TType.BOOL, (short)1);
+  private static final org.apache.thrift.protocol.TField ANALYZER_DEF_FIELD_DESC = new org.apache.thrift.protocol.TField("analyzerDef", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField SHARD_NAMES_FIELD_DESC = new org.apache.thrift.protocol.TField("shardNames", org.apache.thrift.protocol.TType.LIST, (short)3);
 
   public boolean isEnabled;
   public String analyzerDef;
   public List<String> shardNames;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     IS_ENABLED((short)1, "isEnabled"),
     ANALYZER_DEF((short)2, "analyzerDef"),
     SHARD_NAMES((short)3, "shardNames");
@@ -105,18 +99,18 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
   private static final int __ISENABLED_ISSET_ID = 0;
   private BitSet __isset_bit_vector = new BitSet(1);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.IS_ENABLED, new FieldMetaData("isEnabled", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.ANALYZER_DEF, new FieldMetaData("analyzerDef", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.SHARD_NAMES, new FieldMetaData("shardNames", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new FieldValueMetaData(TType.STRING))));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.IS_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("isEnabled", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ANALYZER_DEF, new org.apache.thrift.meta_data.FieldMetaData("analyzerDef", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SHARD_NAMES, new org.apache.thrift.meta_data.FieldMetaData("shardNames", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
   }
 
   public TableDescriptor() {
@@ -179,7 +173,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     __isset_bit_vector.clear(__ISENABLED_ISSET_ID);
   }
 
-  /** Returns true if field isEnabled is set (has been asigned a value) and false otherwise */
+  /** Returns true if field isEnabled is set (has been assigned a value) and false otherwise */
   public boolean isSetIsEnabled() {
     return __isset_bit_vector.get(__ISENABLED_ISSET_ID);
   }
@@ -201,7 +195,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     this.analyzerDef = null;
   }
 
-  /** Returns true if field analyzerDef is set (has been asigned a value) and false otherwise */
+  /** Returns true if field analyzerDef is set (has been assigned a value) and false otherwise */
   public boolean isSetAnalyzerDef() {
     return this.analyzerDef != null;
   }
@@ -240,7 +234,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     this.shardNames = null;
   }
 
-  /** Returns true if field shardNames is set (has been asigned a value) and false otherwise */
+  /** Returns true if field shardNames is set (has been assigned a value) and false otherwise */
   public boolean isSetShardNames() {
     return this.shardNames != null;
   }
@@ -295,7 +289,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -373,7 +367,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       return lastComparison;
     }
     if (isSetIsEnabled()) {
-      lastComparison = TBaseHelper.compareTo(this.isEnabled, typedOther.isEnabled);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.isEnabled, typedOther.isEnabled);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -383,7 +377,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       return lastComparison;
     }
     if (isSetAnalyzerDef()) {
-      lastComparison = TBaseHelper.compareTo(this.analyzerDef, typedOther.analyzerDef);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.analyzerDef, typedOther.analyzerDef);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -393,7 +387,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
       return lastComparison;
     }
     if (isSetShardNames()) {
-      lastComparison = TBaseHelper.compareTo(this.shardNames, typedOther.shardNames);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.shardNames, typedOther.shardNames);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -405,35 +399,35 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // IS_ENABLED
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.isEnabled = iprot.readBool();
             setIsEnabledIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // ANALYZER_DEF
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.analyzerDef = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // SHARD_NAMES
-          if (field.type == TType.LIST) {
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              TList _list34 = iprot.readListBegin();
+              org.apache.thrift.protocol.TList _list34 = iprot.readListBegin();
               this.shardNames = new ArrayList<String>(_list34.size);
               for (int _i35 = 0; _i35 < _list34.size; ++_i35)
               {
@@ -444,11 +438,11 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
               iprot.readListEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -458,7 +452,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -473,7 +467,7 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     if (this.shardNames != null) {
       oprot.writeFieldBegin(SHARD_NAMES_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRING, this.shardNames.size()));
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.shardNames.size()));
         for (String _iter37 : this.shardNames)
         {
           oprot.writeString(_iter37);
@@ -514,8 +508,26 @@ public class TableDescriptor implements TBase<TableDescriptor, TableDescriptor._
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

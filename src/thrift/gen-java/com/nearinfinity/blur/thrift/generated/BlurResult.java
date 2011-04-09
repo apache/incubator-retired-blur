@@ -20,25 +20,19 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResult._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurResult");
 
-public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("BlurResult");
-
-  private static final TField LOCATION_ID_FIELD_DESC = new TField("locationId", TType.STRING, (short)1);
-  private static final TField SCORE_FIELD_DESC = new TField("score", TType.DOUBLE, (short)2);
-  private static final TField REASON_FIELD_DESC = new TField("reason", TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField LOCATION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("locationId", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("score", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
+  private static final org.apache.thrift.protocol.TField REASON_FIELD_DESC = new org.apache.thrift.protocol.TField("reason", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   public String locationId;
   public double score;
   public String reason;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     LOCATION_ID((short)1, "locationId"),
     SCORE((short)2, "score"),
     REASON((short)3, "reason");
@@ -105,17 +99,17 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
   private static final int __SCORE_ISSET_ID = 0;
   private BitSet __isset_bit_vector = new BitSet(1);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.LOCATION_ID, new FieldMetaData("locationId", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.SCORE, new FieldMetaData("score", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.DOUBLE)));
-    tmpMap.put(_Fields.REASON, new FieldMetaData("reason", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.LOCATION_ID, new org.apache.thrift.meta_data.FieldMetaData("locationId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SCORE, new org.apache.thrift.meta_data.FieldMetaData("score", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
+    tmpMap.put(_Fields.REASON, new org.apache.thrift.meta_data.FieldMetaData("reason", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(BlurResult.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurResult.class, metaDataMap);
   }
 
   public BlurResult() {
@@ -176,7 +170,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
     this.locationId = null;
   }
 
-  /** Returns true if field locationId is set (has been asigned a value) and false otherwise */
+  /** Returns true if field locationId is set (has been assigned a value) and false otherwise */
   public boolean isSetLocationId() {
     return this.locationId != null;
   }
@@ -201,7 +195,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
     __isset_bit_vector.clear(__SCORE_ISSET_ID);
   }
 
-  /** Returns true if field score is set (has been asigned a value) and false otherwise */
+  /** Returns true if field score is set (has been assigned a value) and false otherwise */
   public boolean isSetScore() {
     return __isset_bit_vector.get(__SCORE_ISSET_ID);
   }
@@ -223,7 +217,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
     this.reason = null;
   }
 
-  /** Returns true if field reason is set (has been asigned a value) and false otherwise */
+  /** Returns true if field reason is set (has been assigned a value) and false otherwise */
   public boolean isSetReason() {
     return this.reason != null;
   }
@@ -278,7 +272,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -356,7 +350,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
       return lastComparison;
     }
     if (isSetLocationId()) {
-      lastComparison = TBaseHelper.compareTo(this.locationId, typedOther.locationId);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.locationId, typedOther.locationId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -366,7 +360,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
       return lastComparison;
     }
     if (isSetScore()) {
-      lastComparison = TBaseHelper.compareTo(this.score, typedOther.score);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.score, typedOther.score);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -376,7 +370,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
       return lastComparison;
     }
     if (isSetReason()) {
-      lastComparison = TBaseHelper.compareTo(this.reason, typedOther.reason);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.reason, typedOther.reason);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -388,40 +382,40 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // LOCATION_ID
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.locationId = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // SCORE
-          if (field.type == TType.DOUBLE) {
+          if (field.type == org.apache.thrift.protocol.TType.DOUBLE) {
             this.score = iprot.readDouble();
             setScoreIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // REASON
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.reason = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -431,7 +425,7 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -480,8 +474,26 @@ public class BlurResult implements TBase<BlurResult, BlurResult._Fields>, java.i
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

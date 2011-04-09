@@ -20,23 +20,17 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class Facet implements org.apache.thrift.TBase<Facet, Facet._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Facet");
 
-public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("Facet");
-
-  private static final TField QUERY_STR_FIELD_DESC = new TField("queryStr", TType.STRING, (short)1);
-  private static final TField MINIMUM_NUMBER_OF_BLUR_RESULTS_FIELD_DESC = new TField("minimumNumberOfBlurResults", TType.I64, (short)2);
+  private static final org.apache.thrift.protocol.TField QUERY_STR_FIELD_DESC = new org.apache.thrift.protocol.TField("queryStr", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField MINIMUM_NUMBER_OF_BLUR_RESULTS_FIELD_DESC = new org.apache.thrift.protocol.TField("minimumNumberOfBlurResults", org.apache.thrift.protocol.TType.I64, (short)2);
 
   public String queryStr;
   public long minimumNumberOfBlurResults;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     QUERY_STR((short)1, "queryStr"),
     MINIMUM_NUMBER_OF_BLUR_RESULTS((short)2, "minimumNumberOfBlurResults");
 
@@ -100,15 +94,15 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
   private static final int __MINIMUMNUMBEROFBLURRESULTS_ISSET_ID = 0;
   private BitSet __isset_bit_vector = new BitSet(1);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_STR, new FieldMetaData("queryStr", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_BLUR_RESULTS, new FieldMetaData("minimumNumberOfBlurResults", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.I64)));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.QUERY_STR, new org.apache.thrift.meta_data.FieldMetaData("queryStr", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.MINIMUM_NUMBER_OF_BLUR_RESULTS, new org.apache.thrift.meta_data.FieldMetaData("minimumNumberOfBlurResults", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(Facet.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Facet.class, metaDataMap);
   }
 
   public Facet() {
@@ -160,7 +154,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     this.queryStr = null;
   }
 
-  /** Returns true if field queryStr is set (has been asigned a value) and false otherwise */
+  /** Returns true if field queryStr is set (has been assigned a value) and false otherwise */
   public boolean isSetQueryStr() {
     return this.queryStr != null;
   }
@@ -185,7 +179,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     __isset_bit_vector.clear(__MINIMUMNUMBEROFBLURRESULTS_ISSET_ID);
   }
 
-  /** Returns true if field minimumNumberOfBlurResults is set (has been asigned a value) and false otherwise */
+  /** Returns true if field minimumNumberOfBlurResults is set (has been assigned a value) and false otherwise */
   public boolean isSetMinimumNumberOfBlurResults() {
     return __isset_bit_vector.get(__MINIMUMNUMBEROFBLURRESULTS_ISSET_ID);
   }
@@ -227,7 +221,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -294,7 +288,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetQueryStr()) {
-      lastComparison = TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.queryStr, typedOther.queryStr);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -304,7 +298,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
       return lastComparison;
     }
     if (isSetMinimumNumberOfBlurResults()) {
-      lastComparison = TBaseHelper.compareTo(this.minimumNumberOfBlurResults, typedOther.minimumNumberOfBlurResults);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.minimumNumberOfBlurResults, typedOther.minimumNumberOfBlurResults);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -316,33 +310,33 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // QUERY_STR
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.queryStr = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // MINIMUM_NUMBER_OF_BLUR_RESULTS
-          if (field.type == TType.I64) {
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.minimumNumberOfBlurResults = iprot.readI64();
             setMinimumNumberOfBlurResultsIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -352,7 +346,7 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -388,8 +382,26 @@ public class Facet implements TBase<Facet, Facet._Fields>, java.io.Serializable,
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

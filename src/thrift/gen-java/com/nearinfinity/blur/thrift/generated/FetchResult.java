@@ -20,20 +20,14 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchResult._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FetchResult");
 
-public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("FetchResult");
-
-  private static final TField EXISTS_FIELD_DESC = new TField("exists", TType.BOOL, (short)1);
-  private static final TField DELETED_FIELD_DESC = new TField("deleted", TType.BOOL, (short)2);
-  private static final TField TABLE_FIELD_DESC = new TField("table", TType.STRING, (short)3);
-  private static final TField ROW_RESULT_FIELD_DESC = new TField("rowResult", TType.STRUCT, (short)4);
-  private static final TField RECORD_RESULT_FIELD_DESC = new TField("recordResult", TType.STRUCT, (short)5);
+  private static final org.apache.thrift.protocol.TField EXISTS_FIELD_DESC = new org.apache.thrift.protocol.TField("exists", org.apache.thrift.protocol.TType.BOOL, (short)1);
+  private static final org.apache.thrift.protocol.TField DELETED_FIELD_DESC = new org.apache.thrift.protocol.TField("deleted", org.apache.thrift.protocol.TType.BOOL, (short)2);
+  private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField ROW_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("rowResult", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.thrift.protocol.TField RECORD_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("recordResult", org.apache.thrift.protocol.TType.STRUCT, (short)5);
 
   public boolean exists;
   public boolean deleted;
@@ -42,7 +36,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
   public FetchRecordResult recordResult;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     EXISTS((short)1, "exists"),
     DELETED((short)2, "deleted"),
     TABLE((short)3, "table"),
@@ -116,21 +110,21 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
   private static final int __DELETED_ISSET_ID = 1;
   private BitSet __isset_bit_vector = new BitSet(2);
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.EXISTS, new FieldMetaData("exists", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.DELETED, new FieldMetaData("deleted", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.BOOL)));
-    tmpMap.put(_Fields.TABLE, new FieldMetaData("table", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.ROW_RESULT, new FieldMetaData("rowResult", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, FetchRowResult.class)));
-    tmpMap.put(_Fields.RECORD_RESULT, new FieldMetaData("recordResult", TFieldRequirementType.DEFAULT, 
-        new StructMetaData(TType.STRUCT, FetchRecordResult.class)));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.EXISTS, new org.apache.thrift.meta_data.FieldMetaData("exists", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.DELETED, new org.apache.thrift.meta_data.FieldMetaData("deleted", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ROW_RESULT, new org.apache.thrift.meta_data.FieldMetaData("rowResult", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FetchRowResult.class)));
+    tmpMap.put(_Fields.RECORD_RESULT, new org.apache.thrift.meta_data.FieldMetaData("recordResult", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FetchRecordResult.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(FetchResult.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FetchResult.class, metaDataMap);
   }
 
   public FetchResult() {
@@ -201,7 +195,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     __isset_bit_vector.clear(__EXISTS_ISSET_ID);
   }
 
-  /** Returns true if field exists is set (has been asigned a value) and false otherwise */
+  /** Returns true if field exists is set (has been assigned a value) and false otherwise */
   public boolean isSetExists() {
     return __isset_bit_vector.get(__EXISTS_ISSET_ID);
   }
@@ -224,7 +218,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     __isset_bit_vector.clear(__DELETED_ISSET_ID);
   }
 
-  /** Returns true if field deleted is set (has been asigned a value) and false otherwise */
+  /** Returns true if field deleted is set (has been assigned a value) and false otherwise */
   public boolean isSetDeleted() {
     return __isset_bit_vector.get(__DELETED_ISSET_ID);
   }
@@ -246,7 +240,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     this.table = null;
   }
 
-  /** Returns true if field table is set (has been asigned a value) and false otherwise */
+  /** Returns true if field table is set (has been assigned a value) and false otherwise */
   public boolean isSetTable() {
     return this.table != null;
   }
@@ -270,7 +264,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     this.rowResult = null;
   }
 
-  /** Returns true if field rowResult is set (has been asigned a value) and false otherwise */
+  /** Returns true if field rowResult is set (has been assigned a value) and false otherwise */
   public boolean isSetRowResult() {
     return this.rowResult != null;
   }
@@ -294,7 +288,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     this.recordResult = null;
   }
 
-  /** Returns true if field recordResult is set (has been asigned a value) and false otherwise */
+  /** Returns true if field recordResult is set (has been assigned a value) and false otherwise */
   public boolean isSetRecordResult() {
     return this.recordResult != null;
   }
@@ -371,7 +365,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -471,7 +465,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       return lastComparison;
     }
     if (isSetExists()) {
-      lastComparison = TBaseHelper.compareTo(this.exists, typedOther.exists);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.exists, typedOther.exists);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -481,7 +475,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       return lastComparison;
     }
     if (isSetDeleted()) {
-      lastComparison = TBaseHelper.compareTo(this.deleted, typedOther.deleted);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.deleted, typedOther.deleted);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -491,7 +485,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       return lastComparison;
     }
     if (isSetTable()) {
-      lastComparison = TBaseHelper.compareTo(this.table, typedOther.table);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -501,7 +495,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       return lastComparison;
     }
     if (isSetRowResult()) {
-      lastComparison = TBaseHelper.compareTo(this.rowResult, typedOther.rowResult);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rowResult, typedOther.rowResult);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -511,7 +505,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
       return lastComparison;
     }
     if (isSetRecordResult()) {
-      lastComparison = TBaseHelper.compareTo(this.recordResult, typedOther.recordResult);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordResult, typedOther.recordResult);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -523,57 +517,57 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // EXISTS
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.exists = iprot.readBool();
             setExistsIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // DELETED
-          if (field.type == TType.BOOL) {
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.deleted = iprot.readBool();
             setDeletedIsSet(true);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // TABLE
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.table = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 4: // ROW_RESULT
-          if (field.type == TType.STRUCT) {
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.rowResult = new FetchRowResult();
             this.rowResult.read(iprot);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 5: // RECORD_RESULT
-          if (field.type == TType.STRUCT) {
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
             this.recordResult = new FetchRecordResult();
             this.recordResult.read(iprot);
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -583,7 +577,7 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -652,8 +646,26 @@ public class FetchResult implements TBase<FetchResult, FetchResult._Fields>, jav
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

@@ -20,21 +20,15 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySuggestions, BlurQuerySuggestions._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQuerySuggestions");
 
-public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQuerySuggestions._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("BlurQuerySuggestions");
-
-  private static final TField QUERY_SUGGESTIONS_FIELD_DESC = new TField("querySuggestions", TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField QUERY_SUGGESTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("querySuggestions", org.apache.thrift.protocol.TType.LIST, (short)1);
 
   public List<BlurQuerySuggestion> querySuggestions;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     QUERY_SUGGESTIONS((short)1, "querySuggestions");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -93,14 +87,14 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
 
   // isset id assignments
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_SUGGESTIONS, new FieldMetaData("querySuggestions", TFieldRequirementType.DEFAULT, 
-        new ListMetaData(TType.LIST, 
-            new StructMetaData(TType.STRUCT, BlurQuerySuggestion.class))));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.QUERY_SUGGESTIONS, new org.apache.thrift.meta_data.FieldMetaData("querySuggestions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurQuerySuggestion.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(BlurQuerySuggestions.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuerySuggestions.class, metaDataMap);
   }
 
   public BlurQuerySuggestions() {
@@ -163,7 +157,7 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
     this.querySuggestions = null;
   }
 
-  /** Returns true if field querySuggestions is set (has been asigned a value) and false otherwise */
+  /** Returns true if field querySuggestions is set (has been assigned a value) and false otherwise */
   public boolean isSetQuerySuggestions() {
     return this.querySuggestions != null;
   }
@@ -196,7 +190,7 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -252,7 +246,7 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
       return lastComparison;
     }
     if (isSetQuerySuggestions()) {
-      lastComparison = TBaseHelper.compareTo(this.querySuggestions, typedOther.querySuggestions);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.querySuggestions, typedOther.querySuggestions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -264,20 +258,20 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // QUERY_SUGGESTIONS
-          if (field.type == TType.LIST) {
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              TList _list13 = iprot.readListBegin();
+              org.apache.thrift.protocol.TList _list13 = iprot.readListBegin();
               this.querySuggestions = new ArrayList<BlurQuerySuggestion>(_list13.size);
               for (int _i14 = 0; _i14 < _list13.size; ++_i14)
               {
@@ -289,11 +283,11 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
               iprot.readListEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -303,14 +297,14 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
     if (this.querySuggestions != null) {
       oprot.writeFieldBegin(QUERY_SUGGESTIONS_FIELD_DESC);
       {
-        oprot.writeListBegin(new TList(TType.STRUCT, this.querySuggestions.size()));
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.querySuggestions.size()));
         for (BlurQuerySuggestion _iter16 : this.querySuggestions)
         {
           _iter16.write(oprot);
@@ -339,8 +333,24 @@ public class BlurQuerySuggestions implements TBase<BlurQuerySuggestions, BlurQue
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

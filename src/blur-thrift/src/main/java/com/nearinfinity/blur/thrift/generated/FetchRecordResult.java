@@ -20,19 +20,13 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.thrift.*;
-import org.apache.thrift.async.*;
-import org.apache.thrift.meta_data.*;
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
+public class FetchRecordResult implements org.apache.thrift.TBase<FetchRecordResult, FetchRecordResult._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FetchRecordResult");
 
-public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordResult._Fields>, java.io.Serializable, Cloneable {
-  private static final TStruct STRUCT_DESC = new TStruct("FetchRecordResult");
-
-  private static final TField ROWID_FIELD_DESC = new TField("rowid", TType.STRING, (short)1);
-  private static final TField RECORDID_FIELD_DESC = new TField("recordid", TType.STRING, (short)2);
-  private static final TField COLUMN_FAMILY_FIELD_DESC = new TField("columnFamily", TType.STRING, (short)3);
-  private static final TField RECORD_FIELD_DESC = new TField("record", TType.SET, (short)4);
+  private static final org.apache.thrift.protocol.TField ROWID_FIELD_DESC = new org.apache.thrift.protocol.TField("rowid", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField RECORDID_FIELD_DESC = new org.apache.thrift.protocol.TField("recordid", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField COLUMN_FAMILY_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamily", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("record", org.apache.thrift.protocol.TType.SET, (short)4);
 
   public String rowid;
   public String recordid;
@@ -40,7 +34,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
   public Set<Column> record;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-  public enum _Fields implements TFieldIdEnum {
+  public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ROWID((short)1, "rowid"),
     RECORDID((short)2, "recordid"),
     COLUMN_FAMILY((short)3, "columnFamily"),
@@ -108,20 +102,20 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
 
   // isset id assignments
 
-  public static final Map<_Fields, FieldMetaData> metaDataMap;
+  public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
-    Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.ROWID, new FieldMetaData("rowid", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.RECORDID, new FieldMetaData("recordid", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.COLUMN_FAMILY, new FieldMetaData("columnFamily", TFieldRequirementType.DEFAULT, 
-        new FieldValueMetaData(TType.STRING)));
-    tmpMap.put(_Fields.RECORD, new FieldMetaData("record", TFieldRequirementType.DEFAULT, 
-        new SetMetaData(TType.SET, 
-            new StructMetaData(TType.STRUCT, Column.class))));
+    Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+    tmpMap.put(_Fields.ROWID, new org.apache.thrift.meta_data.FieldMetaData("rowid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RECORDID, new org.apache.thrift.meta_data.FieldMetaData("recordid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.COLUMN_FAMILY, new org.apache.thrift.meta_data.FieldMetaData("columnFamily", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RECORD, new org.apache.thrift.meta_data.FieldMetaData("record", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Column.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    FieldMetaData.addStructMetaDataMap(FetchRecordResult.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(FetchRecordResult.class, metaDataMap);
   }
 
   public FetchRecordResult() {
@@ -187,7 +181,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     this.rowid = null;
   }
 
-  /** Returns true if field rowid is set (has been asigned a value) and false otherwise */
+  /** Returns true if field rowid is set (has been assigned a value) and false otherwise */
   public boolean isSetRowid() {
     return this.rowid != null;
   }
@@ -211,7 +205,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     this.recordid = null;
   }
 
-  /** Returns true if field recordid is set (has been asigned a value) and false otherwise */
+  /** Returns true if field recordid is set (has been assigned a value) and false otherwise */
   public boolean isSetRecordid() {
     return this.recordid != null;
   }
@@ -235,7 +229,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     this.columnFamily = null;
   }
 
-  /** Returns true if field columnFamily is set (has been asigned a value) and false otherwise */
+  /** Returns true if field columnFamily is set (has been assigned a value) and false otherwise */
   public boolean isSetColumnFamily() {
     return this.columnFamily != null;
   }
@@ -274,7 +268,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     this.record = null;
   }
 
-  /** Returns true if field record is set (has been asigned a value) and false otherwise */
+  /** Returns true if field record is set (has been assigned a value) and false otherwise */
   public boolean isSetRecord() {
     return this.record != null;
   }
@@ -340,7 +334,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     throw new IllegalStateException();
   }
 
-  /** Returns true if field corresponding to fieldID is set (has been asigned a value) and false otherwise */
+  /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
   public boolean isSet(_Fields field) {
     if (field == null) {
       throw new IllegalArgumentException();
@@ -429,7 +423,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
       return lastComparison;
     }
     if (isSetRowid()) {
-      lastComparison = TBaseHelper.compareTo(this.rowid, typedOther.rowid);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.rowid, typedOther.rowid);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -439,7 +433,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
       return lastComparison;
     }
     if (isSetRecordid()) {
-      lastComparison = TBaseHelper.compareTo(this.recordid, typedOther.recordid);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordid, typedOther.recordid);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -449,7 +443,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
       return lastComparison;
     }
     if (isSetColumnFamily()) {
-      lastComparison = TBaseHelper.compareTo(this.columnFamily, typedOther.columnFamily);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnFamily, typedOther.columnFamily);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -459,7 +453,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
       return lastComparison;
     }
     if (isSetRecord()) {
-      lastComparison = TBaseHelper.compareTo(this.record, typedOther.record);
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.record, typedOther.record);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -471,41 +465,41 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     return _Fields.findByThriftId(fieldId);
   }
 
-  public void read(TProtocol iprot) throws TException {
-    TField field;
+  public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+    org.apache.thrift.protocol.TField field;
     iprot.readStructBegin();
     while (true)
     {
       field = iprot.readFieldBegin();
-      if (field.type == TType.STOP) { 
+      if (field.type == org.apache.thrift.protocol.TType.STOP) { 
         break;
       }
       switch (field.id) {
         case 1: // ROWID
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.rowid = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 2: // RECORDID
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.recordid = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 3: // COLUMN_FAMILY
-          if (field.type == TType.STRING) {
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
             this.columnFamily = iprot.readString();
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         case 4: // RECORD
-          if (field.type == TType.SET) {
+          if (field.type == org.apache.thrift.protocol.TType.SET) {
             {
-              TSet _set55 = iprot.readSetBegin();
+              org.apache.thrift.protocol.TSet _set55 = iprot.readSetBegin();
               this.record = new HashSet<Column>(2*_set55.size);
               for (int _i56 = 0; _i56 < _set55.size; ++_i56)
               {
@@ -517,11 +511,11 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
               iprot.readSetEnd();
             }
           } else { 
-            TProtocolUtil.skip(iprot, field.type);
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
         default:
-          TProtocolUtil.skip(iprot, field.type);
+          org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
       iprot.readFieldEnd();
     }
@@ -531,7 +525,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     validate();
   }
 
-  public void write(TProtocol oprot) throws TException {
+  public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
@@ -553,7 +547,7 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     if (this.record != null) {
       oprot.writeFieldBegin(RECORD_FIELD_DESC);
       {
-        oprot.writeSetBegin(new TSet(TType.STRUCT, this.record.size()));
+        oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, this.record.size()));
         for (Column _iter58 : this.record)
         {
           _iter58.write(oprot);
@@ -606,8 +600,24 @@ public class FetchRecordResult implements TBase<FetchRecordResult, FetchRecordRe
     return sb.toString();
   }
 
-  public void validate() throws TException {
+  public void validate() throws org.apache.thrift.TException {
     // check for required fields
+  }
+
+  private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+    try {
+      write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
+  }
+
+  private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+    try {
+      read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+    } catch (org.apache.thrift.TException te) {
+      throw new java.io.IOException(te);
+    }
   }
 
 }

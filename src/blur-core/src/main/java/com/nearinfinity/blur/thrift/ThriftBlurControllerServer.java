@@ -46,7 +46,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
-public class ThriftBlurControllerServer {
+public class ThriftBlurControllerServer extends ThriftServer {
     
     private static final String BLUR_CONTROLLER_BIND_PORT = "blur.controller.bind.port";
     private static final String BLUR_CONTROLLER_BIND_ADDRESS = "blur.controller.bind.address";

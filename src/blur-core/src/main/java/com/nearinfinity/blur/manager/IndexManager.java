@@ -25,7 +25,6 @@ import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -592,20 +591,25 @@ public class IndexManager {
     }
 
     public void mutate(String table, List<RowMutation> mutations) throws BlurException, IOException {
+        Map<String,List<Row>> rowMap = new HashMap<String, List<Row>>();
         for (RowMutation mutation : mutations) {
-            mutate(table, mutation);
+            validateMutation(mutation);
+            String shard = getShardName(table, mutation.rowId);
+            List<Row> list = rowMap.get(shard);
+            if (list == null) {
+                list = new ArrayList<Row>();
+                rowMap.put(shard, list);
+            }
+            list.add(toRow(mutation));
         }
-    }
-
-    private void mutate(String table, RowMutation mutation) throws IOException, BlurException {
-        validateMutation(mutation);
-        String shard = getShardName(table, mutation.rowId);
         Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-        BlurIndex blurIndex = indexes.get(shard);
-        if (blurIndex == null) {
-            throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",null);
+        for (String shard : rowMap.keySet()) {
+            BlurIndex blurIndex = indexes.get(shard);
+            if (blurIndex == null) {
+                throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",null);
+            }
+            blurIndex.replaceRow(rowMap.get(shard));
         }
-        blurIndex.replaceRow(getRows(mutation));
     }
 
     private String getShardName(String table, String rowId) {
@@ -622,11 +626,11 @@ public class IndexManager {
         }
     }
     
-    private Collection<Row> getRows(RowMutation mutation) {
+    private Row toRow(RowMutation mutation) {
         RowMutationType type = mutation.rowMutationType;
         switch (type) {
         case REPLACE_ROW:
-            return Arrays.asList(getRowFromMutations(mutation.rowId,mutation.recordMutations));
+            return getRowFromMutations(mutation.rowId,mutation.recordMutations);
         default:
             throw new RuntimeException("Not supported [" + type + "]");
         }

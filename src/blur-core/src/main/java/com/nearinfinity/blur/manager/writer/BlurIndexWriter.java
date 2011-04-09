@@ -58,7 +58,7 @@ public class BlurIndexWriter extends BlurIndex implements Runnable {
     private BlurAnalyzer analyzer;
     private int maxNumberOfDirsMergedAtOnce = 16;
     private int maxThreadCountForMerger = 5;
-    private int maxBlockingTimePerUpdate = 10;
+    private int maxBlockingTimePerUpdate = 100;
     private AtomicReference<IndexReader> indexReaderRef = new AtomicReference<IndexReader>();
     
     public void init() throws IOException {

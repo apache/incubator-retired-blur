@@ -39,7 +39,7 @@ import org.apache.lucene.store.LockFactory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.manager.writer.BlurIndexWriterSimple;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
@@ -87,7 +87,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
                 //do nothing for now
             }
         }, replicationDaemon,replicationStrategy);
-        BlurIndexWriter writer = new BlurIndexWriter();
+//        BlurIndexWriter writer = new BlurIndexWriter();
+        BlurIndexWriterSimple writer = new BlurIndexWriterSimple();
         writer.setAnalyzer(getAnalyzer(table));
         writer.setDirectory(directory);
         writer.init();

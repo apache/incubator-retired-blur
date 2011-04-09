@@ -72,7 +72,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
-public class ThriftBlurShardServer {
+public class ThriftBlurShardServer extends ThriftServer {
     
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
     

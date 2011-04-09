@@ -30,9 +30,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,12 +40,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.thrift.transport.TFramedTransport.Factory;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
@@ -67,27 +59,20 @@ import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.store.replication.ReplicationStrategy;
-import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurShardServer extends ThriftServer {
     
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
     
-    private String nodeName;
-    private Iface iface;
-    private TThreadPoolServer server;
-    private boolean closed;
-    private BlurConfiguration configuration;
-    
     public static void main(String[] args) throws TTransportException, IOException {
+        LOG.info("Setting up Shard Server");
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
         
         BlurConfiguration configuration = new BlurConfiguration();
 
-        String nodeName = getNodeName(configuration);
+        String nodeName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
         String tablePath = isEmpty(configuration.get(BLUR_TABLE_PATH),BLUR_TABLE_PATH);
         String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES),BLUR_LOCAL_CACHE_PATHES);
@@ -106,8 +91,8 @@ public class ThriftBlurShardServer extends ThriftServer {
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
 
-        FileSystem fileSystem = FileSystem.get(new Configuration());
         Path blurBasePath = new Path(tablePath);
+        FileSystem fileSystem = FileSystem.get(blurBasePath.toUri(), new Configuration());
 
         final LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(localFileCaches.toArray(new File[localFileCaches.size()]));
@@ -153,6 +138,8 @@ public class ThriftBlurShardServer extends ThriftServer {
 
         final ThriftBlurShardServer server = new ThriftBlurShardServer();
         server.setNodeName(nodeName);
+        server.setAddressPropertyName(BLUR_SHARD_BIND_ADDRESS);
+        server.setPortPropertyName(BLUR_SHARD_BIND_PORT);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
             server.setIface(crazyMode(shardServer));
@@ -170,34 +157,8 @@ public class ThriftBlurShardServer extends ThriftServer {
                 System.exit(0);
             }
         }, zooKeeper);
-
+        
         server.start();
-    }
-
-    public static String isEmpty(String str, String name) {
-        if (str == null || str.trim().isEmpty()) {
-            throw new IllegalArgumentException("Property [" + name + "] is missing or blank.");
-        }
-        return str;
-    }
-
-    public static String getNodeName(BlurConfiguration configuration) throws UnknownHostException {
-        String hostName = configuration.get(BLUR_SHARD_HOSTNAME);
-        if (hostName == null) {
-            hostName = "";
-        }
-        hostName = hostName.trim();
-        if (hostName.isEmpty()) {
-            return InetAddress.getLocalHost().getHostName();
-        }
-        return hostName;
-    }
-
-    public synchronized void close() {
-        if (!closed) {
-            closed = true;
-            server.stop();
-        }
     }
 
     private static LocalFileCacheCheck getLocalFileCacheCheck(final HdfsIndexServer indexServer) {
@@ -217,56 +178,20 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     public static Iface crazyMode(final Iface iface) {
         return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
-                new InvocationHandler() {
-                    private Random random = new Random();
-                    private long strikeTime = System.currentTimeMillis() + 100;
-                    @Override
-                    public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                        long now = System.currentTimeMillis();
-                        if (strikeTime < now) {
-                            strikeTime = now + random.nextInt(2000);
-                            System.err.println("Crazy Monkey Strikes!!! Next strike [" + strikeTime + "]");
-                            throw new RuntimeException("Crazy Monkey Strikes!!!");
-                        }
-                        return method.invoke(iface, args);
+            new InvocationHandler() {
+                private Random random = new Random();
+                private long strikeTime = System.currentTimeMillis() + 100;
+                @Override
+                public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    long now = System.currentTimeMillis();
+                    if (strikeTime < now) {
+                        strikeTime = now + random.nextInt(2000);
+                        System.err.println("Crazy Monkey Strikes!!! Next strike [" + strikeTime + "]");
+                        throw new RuntimeException("Crazy Monkey Strikes!!!");
                     }
-                });
-    }
-
-    public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(getBindInetSocketAddress(configuration));
-        Factory transportFactory = new TFramedTransport.Factory();
-        Processor processor = new Blur.Processor(iface);
-        TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
-        server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
-        LOG.info("Starting server [{0}]",nodeName);
-        server.serve();
-    }
-
-    public static InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
-        String hostName = isEmpty(configuration.get(BLUR_SHARD_BIND_ADDRESS), BLUR_SHARD_BIND_ADDRESS);
-        String portStr = isEmpty(configuration.get(BLUR_SHARD_BIND_PORT), BLUR_SHARD_BIND_PORT);
-        return new InetSocketAddress(hostName, Integer.parseInt(portStr));
-    }
-
-    public Iface getIface() {
-        return iface;
-    }
-
-    public void setIface(Iface iface) {
-        this.iface = iface;
-    }
-
-    public String getNodeName() {
-        return nodeName;
-    }
-
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
-    }
-
-    public void setConfiguration(BlurConfiguration configuration) {
-        this.configuration = configuration;
+                    return method.invoke(iface, args);
+                }
+            });
     }
 
 }

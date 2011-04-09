@@ -16,19 +16,16 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_ADDRESS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_HOSTNAME;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.thrift.transport.TFramedTransport.Factory;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
@@ -41,30 +38,20 @@ import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientRemote;
-import com.nearinfinity.blur.thrift.generated.Blur;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurControllerServer extends ThriftServer {
     
-    private static final String BLUR_CONTROLLER_BIND_PORT = "blur.controller.bind.port";
-    private static final String BLUR_CONTROLLER_BIND_ADDRESS = "blur.controller.bind.address";
     private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
     
-    private String nodeName;
-    private Iface iface;
-    private TThreadPoolServer server;
-    private boolean closed;
-    private BlurConfiguration configuration;
-    
     public static void main(String[] args) throws TTransportException, IOException {
+        LOG.info("Setting up Controller Server");
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
         BlurConfiguration configuration = new BlurConfiguration();
 
-        String nodeName = ThriftBlurShardServer.getNodeName(configuration);
-        String zkConnectionStr = ThriftBlurShardServer.isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
+        String nodeName = ThriftBlurShardServer.getNodeName(configuration,BLUR_CONTROLLER_HOSTNAME);
+        String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
         
         boolean crazyMode = false;
         if (args.length == 1 && args[1].equals(CRAZY)) {
@@ -89,6 +76,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
         final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
         server.setNodeName(nodeName);
+        server.setAddressPropertyName(BLUR_CONTROLLER_BIND_ADDRESS);
+        server.setPortPropertyName(BLUR_CONTROLLER_BIND_PORT);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
             server.setIface(ThriftBlurShardServer.crazyMode(controllerServer));
@@ -108,48 +97,4 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
         server.start();
     }
-
-    public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(getBindInetSocketAddress(configuration));
-        Factory transportFactory = new TFramedTransport.Factory();
-        Processor processor = new Blur.Processor(iface);
-        TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
-        server = new TThreadPoolServer(processor, serverTransport, transportFactory, protFactory);
-        LOG.info("Starting server [{0}]",nodeName);
-        server.serve();
-    }
-    
-    public static InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
-        String hostName = ThriftBlurShardServer.isEmpty(configuration.get(BLUR_CONTROLLER_BIND_ADDRESS), BLUR_CONTROLLER_BIND_ADDRESS);
-        String portStr = ThriftBlurShardServer.isEmpty(configuration.get(BLUR_CONTROLLER_BIND_PORT), BLUR_CONTROLLER_BIND_PORT);
-        return new InetSocketAddress(hostName, Integer.parseInt(portStr));
-    }
-    
-    public synchronized void close() {
-        if (!closed) {
-            closed = true;
-            server.stop();
-        }
-    }
-
-    public Iface getIface() {
-        return iface;
-    }
-
-    public void setIface(Iface iface) {
-        this.iface = iface;
-    }
-    
-    public String getNodeName() {
-        return nodeName;
-    }
-
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
-    }
-
-    public void setConfiguration(BlurConfiguration configuration) {
-        this.configuration = configuration;
-    }
-
 }

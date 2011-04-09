@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -127,7 +128,8 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
     }
 
     protected void setupFileSystem(Context context) throws IOException {
-        fileSystem = FileSystem.get(context.getConfiguration());
+        Path path = nullCheck(blurTask.getDirectoryPath());
+        fileSystem = FileSystem.get(path.toUri(),context.getConfiguration());
     }
 
     protected void setupLockFactory(Context context) throws IOException {

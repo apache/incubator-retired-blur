@@ -61,6 +61,7 @@ import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
@@ -107,13 +108,14 @@ public class IndexManager {
     private QueryStatusManager statusManager = new QueryStatusManager();
     private boolean closed;
     private BlurPartitioner<BytesWritable, Void> blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
+    private ExecutorsDynamicConfig dynamicConfig;
 
     public IndexManager() {
         BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
     }
 
     public void init() {
-        executor = Executors.newThreadPool("index-manager",threadCount);
+        executor = Executors.newThreadPool("index-manager",threadCount,dynamicConfig);
         statusManager.init();
     }
 
@@ -667,6 +669,10 @@ public class IndexManager {
 
     private BytesWritable getKey(String rowId) {
         return new BytesWritable(rowId.getBytes());
+    }
+
+    public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
+        this.dynamicConfig = dynamicConfig;
     }
 
 }

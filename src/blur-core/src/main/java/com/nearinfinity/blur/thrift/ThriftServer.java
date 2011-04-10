@@ -11,6 +11,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
@@ -28,6 +29,7 @@ public class ThriftServer {
     private THsHaServer server;
     private boolean closed;
     private BlurConfiguration configuration;
+    private ExecutorsDynamicConfig dynamicConfig;
     
     public synchronized void close() {
         if (!closed) {
@@ -42,7 +44,7 @@ public class ThriftServer {
         
         Args args = new Args(serverTransport);
         args.processor(processor);
-        args.executorService(Executors.newThreadPool("Thrift-Processors-", 32));
+        args.executorService(Executors.newThreadPool("thrift-processors", 32, dynamicConfig));
         
         server = new THsHaServer(args);
         LOG.info("Starting server [{0}]",nodeName);
@@ -100,6 +102,10 @@ public class ThriftServer {
             return InetAddress.getLocalHost().getHostName();
         }
         return hostName;
+    }
+
+    public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
+        this.dynamicConfig = dynamicConfig;
     }
 
 }

@@ -36,6 +36,7 @@ import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -55,6 +56,7 @@ public abstract class AdminIndexServer implements IndexServer {
     protected DistributedManager dm;
     protected Timer daemon;
     protected ExecutorService executorService;
+    private ExecutorsDynamicConfig dynamicConfig;
     private int threadCount = 32;
     
     /**
@@ -62,7 +64,7 @@ public abstract class AdminIndexServer implements IndexServer {
      * @return 
      */
     public void init() {
-        executorService = Executors.newThreadPool("admin-index-server",threadCount);
+        executorService = Executors.newThreadPool("admin-index-server",threadCount,dynamicConfig);
         dm.createPath(BLUR_TABLES); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();
@@ -233,6 +235,10 @@ public abstract class AdminIndexServer implements IndexServer {
 
     public void setDistributedManager(DistributedManager distributedManager) {
         this.dm = distributedManager;
+    }
+
+    public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
+        this.dynamicConfig = dynamicConfig;
     }
 
 }

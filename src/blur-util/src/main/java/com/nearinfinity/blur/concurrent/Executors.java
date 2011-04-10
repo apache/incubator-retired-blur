@@ -25,9 +25,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Executors {
 
-    public static ExecutorService newThreadPool(String prefix, int threadCount) {
-        return new ThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, 
-                new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix));
+    public static ExecutorService newThreadPool(String prefix, int threadCount, ExecutorsDynamicConfig config) {
+        return config.configure(prefix,new ThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, 
+                new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix)));
     }
 
     public static class BlurThreadFactory implements ThreadFactory {

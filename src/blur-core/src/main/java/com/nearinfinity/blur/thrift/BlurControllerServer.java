@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
@@ -75,9 +76,10 @@ public class BlurControllerServer implements Iface {
     private ClusterStatus clusterStatus;
     private int threadCount = 64;
     private boolean closed;
+    private ExecutorsDynamicConfig dynamicConfig;
     
     public void open() {
-        executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL,threadCount);
+        executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL,threadCount,dynamicConfig);
         updateShardLayout();
         shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
         shardLayoutTimer.scheduleAtFixedRate(new TimerTask(){
@@ -412,5 +414,9 @@ public class BlurControllerServer implements Iface {
     @Override
     public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
         throw new RuntimeException("not impl");
+    }
+
+    public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
+        this.dynamicConfig = dynamicConfig;
     }
 }

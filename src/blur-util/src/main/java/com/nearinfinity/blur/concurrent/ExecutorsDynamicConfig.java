@@ -1,33 +1,32 @@
 package com.nearinfinity.blur.concurrent;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public abstract class ExecutorsDynamicConfig {
 
-    private ThreadPoolExecutor threadPoolExecutor;
-    private String name;
+    private Map<String,ThreadPoolExecutor> executors = new ConcurrentHashMap<String, ThreadPoolExecutor>();
 
     public ThreadPoolExecutor configure(String name, ThreadPoolExecutor threadPoolExecutor) {
-        this.name = name;
-        this.threadPoolExecutor = threadPoolExecutor;
+        executors.put(name, threadPoolExecutor);
         return threadPoolExecutor;
     }
     
     public void updateSettings() {
-        threadPoolExecutor.setCorePoolSize(getCorePoolSize());
-        threadPoolExecutor.setKeepAliveTime(getKeepAliveTimeSeconds(), TimeUnit.SECONDS);
-        threadPoolExecutor.setMaximumPoolSize(getMaximumPoolSize());
+        for (String name : executors.keySet()) {
+            ThreadPoolExecutor threadPoolExecutor = executors.get(name);
+            threadPoolExecutor.setCorePoolSize(getCorePoolSize(name));
+            threadPoolExecutor.setKeepAliveTime(getKeepAliveTimeSeconds(name), TimeUnit.SECONDS);
+            threadPoolExecutor.setMaximumPoolSize(getMaximumPoolSize(name));
+        }
     }
 
-    public abstract int getMaximumPoolSize();
+    public abstract int getMaximumPoolSize(String name);
 
-    public abstract long getKeepAliveTimeSeconds();
+    public abstract long getKeepAliveTimeSeconds(String name);
 
-    public abstract int getCorePoolSize();
-
-    public String getName() {
-        return name;
-    }
+    public abstract int getCorePoolSize(String name);
 
 }

@@ -4,15 +4,13 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-import org.apache.thrift.protocol.TBinaryProtocol;
-import org.apache.thrift.server.TThreadPoolServer;
-import org.apache.thrift.server.TThreadPoolServer.Args;
-import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.server.THsHaServer;
+import org.apache.thrift.server.THsHaServer.Args;
+import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
-import org.apache.thrift.transport.TFramedTransport.Factory;
 
 import com.nearinfinity.blur.BlurConfiguration;
+import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
@@ -27,7 +25,7 @@ public class ThriftServer {
     private String portPropertyName;
     private String nodeName;
     private Iface iface;
-    private TThreadPoolServer server;
+    private THsHaServer server;
     private boolean closed;
     private BlurConfiguration configuration;
     
@@ -39,26 +37,21 @@ public class ThriftServer {
     }
     
     public void start() throws TTransportException {
-        TServerSocket serverTransport = new TServerSocket(getBindInetSocketAddress(configuration));
-        Factory transportFactory = new TFramedTransport.Factory();
         Processor processor = new Blur.Processor(iface);
-        TBinaryProtocol.Factory protFactory = new TBinaryProtocol.Factory(true, true);
+        TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(configuration));
         
         Args args = new Args(serverTransport);
         args.processor(processor);
-        args.protocolFactory(protFactory);
-        args.transportFactory(transportFactory);
-        args.minWorkerThreads = 10;
-        args.maxWorkerThreads = 10;
+        args.executorService(Executors.newThreadPool("Thrift-Processors-", 32));
         
-        server = new TThreadPoolServer(args);
+        server = new THsHaServer(args);
         LOG.info("Starting server [{0}]",nodeName);
         server.serve();
     }
     
     public InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
-        String hostName = ThriftBlurShardServer.isEmpty(configuration.get(addressPropertyName), addressPropertyName);
-        String portStr = ThriftBlurShardServer.isEmpty(configuration.get(portPropertyName), portPropertyName);
+        String hostName = isEmpty(configuration.get(addressPropertyName), addressPropertyName);
+        String portStr = isEmpty(configuration.get(portPropertyName), portPropertyName);
         return new InetSocketAddress(hostName, Integer.parseInt(portStr));
     }
     

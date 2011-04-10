@@ -58,9 +58,6 @@ public class BlurShardServer implements Iface {
             AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
             BlurResultIterable hitsIterable = indexManager.query(table, blurQuery, facetCounts);
             return BlurBaseServer.convertToHits(hitsIterable,blurQuery.start,blurQuery.fetch,blurQuery.minimumNumberOfResults, facetCounts);
-        } catch (BlurException e) {
-            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
-            throw e;
         } catch (Exception e) {
             LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
             throw new BException(e.getMessage(),e);
@@ -74,9 +71,6 @@ public class BlurShardServer implements Iface {
             FetchResult fetchResult = new FetchResult();
             indexManager.fetchRow(table,selector, fetchResult);
             return fetchResult;
-        } catch (BlurException e) {
-            LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]",e,table,selector);
-            throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]",e,table,selector);
             throw new BException(e.getMessage(),e);
@@ -151,8 +145,6 @@ public class BlurShardServer implements Iface {
         checkTableStatus(table);
         try {
             return indexManager.recordFrequency(table,columnFamily,columnName,value);
-        } catch (BlurException e) {
-            throw e;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]",e,table,columnFamily,columnName,value);
             throw new BException(e.getMessage(),e);
@@ -235,11 +227,8 @@ public class BlurShardServer implements Iface {
         checkTableStatus(table);
         try {
             indexManager.mutate(table,mutations);
-        } catch (BlurException e) {
-            LOG.error("Unknown error during processing of [table={0},mutations={1}]", e, table, mutations);
-            throw e;
         } catch (Exception e) {
-            LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, mutations);
+            LOG.error("Unknown error during processing of [table={0},mutations={1}]", e, table, mutations);
             throw new BException(e.getMessage(),e);
         }
     }

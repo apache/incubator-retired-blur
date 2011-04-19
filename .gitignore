@@ -8,6 +8,7 @@
 *.class
 **/*.iml
 target
+demo-tables
 src/*/target/**
 src/*/tmp/**
 src/*/tmp-test/**

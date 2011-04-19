@@ -32,7 +32,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
+import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -98,7 +98,8 @@ public class LocalIndexServer implements IndexServer {
             Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
             for (File f : tableFile.listFiles()) {
                 if (f.isDirectory()) {
-                    Directory directory = FSDirectory.open(f);
+//                    Directory directory = FSDirectory.open(f);
+                    MMapDirectory directory = new MMapDirectory(f);
                     if (!IndexReader.indexExists(directory)) {
                         new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED).close();
                     }

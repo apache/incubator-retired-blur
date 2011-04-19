@@ -13,6 +13,7 @@
 	
 	<modules>
 		<module>blur-core</module>
+		<module>blur-demo</module>
 		<module>blur-thrift</module>
 		<module>blur-store</module>
 		<module>blur-mapred</module>

@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
+import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
 import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
@@ -42,13 +44,16 @@ public class AdminIndexServerTest {
     private static final String TESTTABLE = "testtable";
     private AdminIndexServer adminIndexServer;
     private ZkInMemory dm;
+    private ExecutorsDynamicConfig dynamicConfig;
 
     @Before
     public void setup() {
+        dynamicConfig = new SimpleExecutorsDynamicConfig(10);
         dm = new ZkInMemory();
         adminIndexServer = newAdminIndexServer();
         adminIndexServer.setNodeName("me");
         adminIndexServer.setDistributedManager(dm);
+        adminIndexServer.setDynamicConfig(dynamicConfig);
         adminIndexServer.init();
     }
 

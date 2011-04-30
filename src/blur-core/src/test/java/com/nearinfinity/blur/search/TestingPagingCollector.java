@@ -44,6 +44,7 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.RAMDirectory;
+import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.search.IterablePaging;
 import com.nearinfinity.blur.lucene.search.IterablePaging.ProgressRef;
@@ -54,6 +55,11 @@ import com.nearinfinity.blur.lucene.search.IterablePaging.TotalHitsRef;
  * @author Aaron McCurry
  */
 public class TestingPagingCollector {
+    
+    @Test
+    public void testNothingYet() {
+        
+    }
 
 	public static void main(String[] args) throws Exception {
 		IndexReader reader = getReaderFlatScore(13245);

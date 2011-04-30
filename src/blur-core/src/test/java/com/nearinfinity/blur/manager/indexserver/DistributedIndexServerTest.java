@@ -42,6 +42,7 @@ import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Test;
 
+import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
@@ -65,6 +66,7 @@ public class DistributedIndexServerTest {
             DistributedIndexServer indexServer = new MockDistributedIndexServer(NODE_LIST,SHARD_LIST);
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
+            indexServer.setDynamicConfig(new SimpleExecutorsDynamicConfig(10));
             indexServer.init();
             Set<String> keySet = indexServer.getIndexes(TEST).keySet();
             shardBeingServed.addAll(keySet);
@@ -112,6 +114,7 @@ public class DistributedIndexServerTest {
             DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes);
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
+            indexServer.setDynamicConfig(new SimpleExecutorsDynamicConfig(10));
             indexServer.init();
             servers.put(node,indexServer);
             Set<String> keySet = indexServer.getIndexes(TEST).keySet();

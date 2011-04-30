@@ -1,5 +1,4 @@
 {
 	"blur.zookeeper.connection":"127.0.0.1",
-	"blur.table.path":"./local-testing",
 	"blur.local.cache.pathes":"./local-testing-tmp"
 }

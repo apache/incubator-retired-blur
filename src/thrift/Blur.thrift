@@ -69,7 +69,8 @@ struct BlurResults {
 struct TableDescriptor {
   1:bool isEnabled,
   2:string analyzerDef,
-  3:list<string> shardNames
+  3:list<string> shardNames,
+  4:string tableUri
 }
 
 struct Column {

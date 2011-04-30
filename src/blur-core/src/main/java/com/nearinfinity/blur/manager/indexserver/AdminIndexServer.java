@@ -17,7 +17,7 @@
 package com.nearinfinity.blur.manager.indexserver;
 
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -49,6 +49,7 @@ public abstract class AdminIndexServer implements IndexServer {
     private static final Log LOG = LogFactory.getLog(AdminIndexServer.class);
 
     public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer(), "");
+
     protected String nodeName;
     protected AtomicReference<Map<String,TABLE_STATUS>> statusMap = new AtomicReference<Map<String,TABLE_STATUS>>(new HashMap<String, TABLE_STATUS>());
     protected AtomicReference<List<String>> tableList = new AtomicReference<List<String>>(new ArrayList<String>());
@@ -227,6 +228,13 @@ public abstract class AdminIndexServer implements IndexServer {
             return TABLE_STATUS.DISABLED;
         }
         return tableStatus;
+    }
+    
+    @Override
+    public String getTableUri(String table) {
+        Value value = new Value();
+        dm.fetchData(value, BLUR_TABLES,table,BLUR_TABLES_URI);
+        return new String(value.data);
     }
 
     public void setNodeName(String nodeName) {

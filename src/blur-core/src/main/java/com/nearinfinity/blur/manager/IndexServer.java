@@ -114,4 +114,11 @@ public interface IndexServer {
      */
     String getNodeName();
 
+    /**
+     * Gets the table uri.  (hdfs://cluster1:9000/blur/tables/tablename1234)
+     * @param table the table name
+     * @return the uri to the table directory that contains all the shards..
+     */
+    String getTableUri(String table);
+
 }

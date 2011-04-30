@@ -23,10 +23,13 @@ import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -48,9 +51,7 @@ import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
     private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
-    
-    private FileSystem fileSystem;
-    private Path blurBasePath;
+
     private LocalFileCache localFileCache;
     private LockFactory lockFactory;
     private ReplicationDaemon replicationDaemon;
@@ -62,23 +63,20 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         if (!closed) {
             closed = true;
             super.close();
-            try {
-                fileSystem.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
     @Override
     protected BlurIndex openShard(String table, String shard) throws IOException {
         LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
-        Path tablePath = new Path(blurBasePath,table);
-        if (!exists(tablePath)) {
+        URI tableUri = getTableURI(table);
+        Path tablePath = new Path(tableUri);
+        FileSystem fileSystem = FileSystem.get(tableUri, new Configuration());
+        if (!fileSystem.exists(tablePath)) {
             throw new FileNotFoundException(tablePath.toString());
         }
         Path hdfsDirPath = new Path(tablePath,shard);
-        if (!exists(hdfsDirPath)) {
+        if (!fileSystem.exists(hdfsDirPath)) {
             throw new FileNotFoundException(hdfsDirPath.toString());
         }
         ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, new Progressable() {
@@ -93,7 +91,14 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         writer.setDirectory(directory);
         writer.init();
         return warmUp(writer);
-//        return warmUp(new BlurIndexReader(IndexReader.open(directory)));
+    }
+
+    private URI getTableURI(String table) {
+        try {
+            return new URI(getTableUri(table));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private BlurIndex warmUp(BlurIndex index) throws IOException {
@@ -110,7 +115,10 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     public List<String> getShardList(String table) {
         List<String> result = new ArrayList<String>();
         try {
-            FileStatus[] listStatus = fileSystem.listStatus(new Path(blurBasePath,table));
+            URI tableUri = getTableURI(table);
+            Path tablePath = new Path(tableUri);
+            FileSystem fileSystem = FileSystem.get(tableUri, new Configuration());
+            FileStatus[] listStatus = fileSystem.listStatus(tablePath);
             for (FileStatus status : listStatus) {
                 if (status.isDir()) {
                     String name = status.getPath().getName();
@@ -140,13 +148,13 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         file.delete();
     }
     
-    private boolean exists(Path path) throws IOException {
-        return fileSystem.exists(path);
-    }
+//    private boolean exists(Path path) throws IOException {
+//        return fileSystem.exists(path);
+//    }
 
-    public void setFileSystem(FileSystem fileSystem) {
-        this.fileSystem = fileSystem;
-    }
+//    public void setFileSystem(FileSystem fileSystem) {
+//        this.fileSystem = fileSystem;
+//    }
 
     public void setLocalFileCache(LocalFileCache localFileCache) {
         this.localFileCache = localFileCache;
@@ -160,9 +168,9 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         this.replicationDaemon = replicationDaemon;
     }
 
-    public void setBlurBasePath(Path blurBasePath) {
-        this.blurBasePath = blurBasePath;
-    }
+//    public void setBlurBasePath(Path blurBasePath) {
+//        this.blurBasePath = blurBasePath;
+//    }
 
     public void setReplicationStrategy(ReplicationStrategy replicationStrategy) {
         this.replicationStrategy = replicationStrategy;

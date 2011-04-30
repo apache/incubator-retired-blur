@@ -214,11 +214,13 @@ module Com
                       ISENABLED = 1
                       ANALYZERDEF = 2
                       SHARDNAMES = 3
+                      TABLEURI = 4
 
                       FIELDS = {
                         ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled'},
                         ANALYZERDEF => {:type => ::Thrift::Types::STRING, :name => 'analyzerDef'},
-                        SHARDNAMES => {:type => ::Thrift::Types::LIST, :name => 'shardNames', :element => {:type => ::Thrift::Types::STRING}}
+                        SHARDNAMES => {:type => ::Thrift::Types::LIST, :name => 'shardNames', :element => {:type => ::Thrift::Types::STRING}},
+                        TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'}
                       }
 
                       def struct_fields; FIELDS; end

@@ -172,4 +172,9 @@ public class LocalIndexServer implements IndexServer {
     public String getNodeName() {
         return "localhost";
     }
+
+    @Override
+    public String getTableUri(String table) {
+        return new File(localDir,table).toURI().toString();
+    }
 }

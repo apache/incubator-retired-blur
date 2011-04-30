@@ -245,6 +245,7 @@ public class BlurShardServer extends ExecutionContextIface {
                 descriptor.shardNames = new ArrayList<String>(indexes.keySet());
             }
             descriptor.isEnabled = tableEnabled;
+            descriptor.tableUri = indexServer.getTableUri(table);
             return descriptor;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to describe table [" + table + "]", e);

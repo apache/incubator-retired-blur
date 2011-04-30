@@ -25,6 +25,7 @@ public class ZookeeperPathConstants {
     public static final String BLUR_TABLES                     = "/blur/tables";
     public static final String BLUR_TABLES_ENABLED             = "enabled";
     // /blur/tables/<name>/enabled will indicate that the table is enabled
+    public static final String BLUR_TABLES_URI                 = "uri";
     
     public static final String BLUR_SAFEMODE                   = "/blur/safemode";
     public static final String BLUR_SAFEMODE_LOCK              = "/blur/safemode/lock";

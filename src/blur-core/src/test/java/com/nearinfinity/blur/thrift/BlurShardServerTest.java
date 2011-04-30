@@ -119,6 +119,11 @@ public class BlurShardServerTest {
             public String getNodeName() {
                 throw new RuntimeException("no impl");
             }
+
+            @Override
+            public String getTableUri(String table) {
+                throw new RuntimeException("no impl");
+            }
             
         };
     }

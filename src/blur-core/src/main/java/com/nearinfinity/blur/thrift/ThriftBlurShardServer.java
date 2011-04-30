@@ -20,7 +20,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_LOCAL_CACHE_PATHES;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_TABLE_PATH;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
@@ -35,9 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.thrift.transport.TTransportException;
@@ -76,7 +72,6 @@ public class ThriftBlurShardServer extends ThriftServer {
 
         String nodeName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
-        String tablePath = isEmpty(configuration.get(BLUR_TABLE_PATH),BLUR_TABLE_PATH);
         String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES),BLUR_LOCAL_CACHE_PATHES);
         
         List<File> localFileCaches = new ArrayList<File>();
@@ -92,9 +87,6 @@ public class ThriftBlurShardServer extends ThriftServer {
 
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
-
-        Path blurBasePath = new Path(tablePath);
-        FileSystem fileSystem = FileSystem.get(blurBasePath.toUri(), new Configuration());
 
         final LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(localFileCaches.toArray(new File[localFileCaches.size()]));
@@ -120,8 +112,6 @@ public class ThriftBlurShardServer extends ThriftServer {
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
         indexServer.setLockFactory(lockFactory);
-        indexServer.setFileSystem(fileSystem);
-        indexServer.setBlurBasePath(blurBasePath);
         indexServer.setNodeName(nodeName);
         indexServer.setDistributedManager(dzk);
         indexServer.setReplicationDaemon(replicationDaemon);

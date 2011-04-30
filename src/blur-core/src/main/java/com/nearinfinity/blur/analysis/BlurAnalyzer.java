@@ -37,8 +37,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
-import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
@@ -112,9 +112,10 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 	public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
 		super(defaultAnalyzer);
 		this.originalJsonStr = jsonStr;
-		addAnalyzer(ROW_ID, new WhitespaceAnalyzer());
-		addAnalyzer(RECORD_ID, new WhitespaceAnalyzer());
-		addAnalyzer(PRIME_DOC, new WhitespaceAnalyzer());
+		KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
+        addAnalyzer(ROW_ID, keywordAnalyzer);
+		addAnalyzer(RECORD_ID, keywordAnalyzer);
+		addAnalyzer(PRIME_DOC, keywordAnalyzer);
 	}
 	
 	private static BlurAnalyzer create(JsonNode jsonNode, String jsonStr) {

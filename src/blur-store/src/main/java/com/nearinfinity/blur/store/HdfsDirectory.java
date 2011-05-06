@@ -153,14 +153,11 @@ public class HdfsDirectory extends Directory {
 
         @Override
         protected void readInternal(byte[] b, int offset, int len) throws IOException {
-            synchronized (inputStream) {
-                long position = getFilePointer();
-                if (position >= length) {
-                    throw new IOException("EOF [" + name + "]");
-                }
-                inputStream.seek(position);
-                inputStream.read(b, offset, len);
+            long position = getFilePointer();
+            if (position >= length) {
+                throw new IOException("EOF [" + name + "]");
             }
+            inputStream.readFully(position, b, offset, len);
         }
 
         @Override

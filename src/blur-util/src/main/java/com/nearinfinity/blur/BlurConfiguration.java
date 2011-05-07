@@ -1,14 +1,16 @@
 package com.nearinfinity.blur;
 
+import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class BlurConfiguration {
     
@@ -26,27 +28,40 @@ public class BlurConfiguration {
     }
     
     private void init() throws IOException {
-        putValues(load("/blur-default.json"));
-        putValues(load("/blur-site.json"));
+        try {
+            putValues(load("/blur-default.json"));
+            putValues(load("/blur-site.json"));
+        } catch (JSONException e) {
+            throw new IOException(e);
+        }
     }
 
-    private void putValues(JsonNode jsonNode) {
-        Iterator<String> fieldNames = jsonNode.getFieldNames();
+    @SuppressWarnings("unchecked")
+    private void putValues(JSONObject jsonNode) throws JSONException {
+        Iterator<String> fieldNames = jsonNode.keys();
         while (fieldNames.hasNext()) {
             String name = fieldNames.next();
-            JsonNode node = jsonNode.get(name);
-            String value = node.getValueAsText();
+            String value = jsonNode.getString(name);
             properties.put(name, value);
         }
     }
 
-    private JsonNode load(String path) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+    private JSONObject load(String path) throws IOException, JSONException {
         InputStream inputStream = getClass().getResourceAsStream(path);
         if (inputStream == null) {
             throw new FileNotFoundException(path);
         }
-        return mapper.readTree(inputStream);
+        return new JSONObject(getString(inputStream));
+    }
+
+    private String getString(InputStream inputStream) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            builder.append(line).append(' ');
+        }
+        return builder.toString();
     }
 
     public String get(String name) {

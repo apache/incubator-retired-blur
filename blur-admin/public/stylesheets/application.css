@@ -1,0 +1,34 @@
+
+#menu-bar{
+	height: 25px;
+}
+
+.widget{
+	margin: 15px;
+	width: 25%;
+	display: block;
+}
+
+.hidden{
+	display: none;
+}
+
+.inline{
+	display: inline;
+}
+
+
+#hd img{
+	background-color: white;
+	padding:5px;
+}
+#menu-bar a
+{
+	text-decoration: none;
+}
+#menu-bar ul
+{
+	margin: 0 0 5px;
+	list-style-type: none;
+}
+

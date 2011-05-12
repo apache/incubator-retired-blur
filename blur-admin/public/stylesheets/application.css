@@ -1,0 +1,47 @@
+
+#menu-bar{
+	height: 25px;
+}
+
+.widget{
+	margin: 10px 5px 5px;
+	width: 24%;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.widget-double{
+	width:48%;
+}
+
+.widget-triple{
+	width:72%;
+}
+
+.widget-full{
+	width:96%;
+}
+
+.hidden{
+	display: none;
+}
+
+.inline{
+	display: inline;
+}
+
+
+#hd img{
+	background-color: white;
+	padding:5px;
+}
+#menu-bar a
+{
+	text-decoration: none;
+}
+#menu-bar ul
+{
+	margin: 0 0 5px;
+	list-style-type: none;
+}
+

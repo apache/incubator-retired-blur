@@ -3,6 +3,7 @@ Rails.application.routes.draw do |map|
     scope :afs do
       controller "file_systems" do
         match '/',    :to => :index,   :as => :index,   :via => :get
+        match '/dir/expand/:fs/:level', :to => :dir_expand, :as => :dir_expand, :via => :get
       end
       
       match 'public/*file' => 'public#serve', :as => :public

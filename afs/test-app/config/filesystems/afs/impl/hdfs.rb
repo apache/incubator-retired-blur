@@ -11,6 +11,26 @@ module Afs
       def display
         "HDFS"
       end
+      
+      def internal_name
+        "hdfs"
+      end
+      
+      def dir_expand(level_to_expand)
+        
+      end
+      
+      def dir_list
+        
+      end
+      
+      def dir_info
+        
+      end
+      
+      def file_info
+        
+      end
     end
   end
 end

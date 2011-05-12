@@ -4,9 +4,22 @@
 }
 
 .widget{
-	margin: 15px;
-	width: 25%;
-	display: block;
+	margin: 10px 5px 5px;
+	width: 24%;
+	display: inline-block;
+	vertical-align: top;
+}
+
+.widget-double{
+	width:48%;
+}
+
+.widget-triple{
+	width:72%;
+}
+
+.widget-full{
+	width:96%;
 }
 
 .hidden{

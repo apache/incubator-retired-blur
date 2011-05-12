@@ -9,11 +9,11 @@
 <body>
 
 	<div id="hd"><%= image_tag "blur_logo.png" %>
-	  <div id="menu-bar" class="ui-widget-header ui-corner-top">   
+	  <div id="menu-bar" class="ui-widget-header ui-state-select ui-corner-top">   
 			<ul>
 				
 	      <li>
-	        <a href="#" class="ui-menu ui-state-default ui-corner-all">Menu1</a>
+	        <a href="#" class="ui-menu ui-state-default">Menu1</a>
 	        <div class ="hidden">
 	          <ul>
 	           	<li><a href="#">Menu option</a></li>
@@ -24,7 +24,7 @@
 	 			</li>
 	
 	      <li>
-	        <a href="#" class="ui-menu ui-state-default ui-corner-all">Menu2</a>
+	        <a href="#" class="ui-menu ui-state-default">Menu2</a>
 	        <div class ="hidden">
 	          <ul>
 	           	<li><a href="#">Parent option</a>
@@ -46,13 +46,33 @@
 		<div id="widgets" class="ui-widget-content">
 
 			<div class="widget">
-				<div class="ui-widget-header">Query Status</div>
-				<div class="ui-widget-content ui-widget">Here's some info about the queries</div>
+				<div class="ui-widget-header ui-corner-top">Query Status</div>
+				<div class="ui-widget-content ui-widget ui-corner-bottom">Here's some info about the queries </div>
 			</div>
 			
 			<div class="widget">
-				<div class="ui-widget-header">Some other widget</div>
-				<div class="ui-widget-content ui-widget">Here's some other widget</div>
+				<div class="ui-widget-header ui-corner-top">Some other widget</div>
+				<div class="ui-widget-content ui-widget ui-corner-bottom">Through Blur configuration, you define where in the search cluster the Blur shard servers and controller servers live. Once configured, Blur figures out which shards are online and automatically distributes all of the index shards across the active shard servers. If a shard server dies, the other shard servers automatically compensate and identify where the additional load must be shifted.  Having multiple controller servers both increases search throughput and provides redundancy at the controller layer.</div>
+			</div>
+			<div class="widget">
+				<div class="ui-widget-header ui-corner-top">Some other widget</div>
+				<div class="ui-widget-content ui-widget ui-corner-bottom">Here's some other widget</div>
+			</div>
+			<div class="widget widget-double">
+				<div class="ui-widget-header ui-corner-top">Some other widget</div>
+				<div class="ui-widget-content ui-widget ui-corner-bottom">Here's some other widget</div>
+			</div>
+			<div class="widget">
+				<div class="ui-widget-header ui-corner-top">Some other widget</div>
+				<div class="ui-widget-content ui-widget ui-corner-bottom">Here's some other widget</div>
+			</div>
+			<div class="widget widget-triple">
+				<div class="ui-widget-header ui-corner-top">Some other widget</div>
+				<div class="ui-widget-content ui-widget ui-corner-bottom">Here's some other widget</div>
+			</div>
+			<div class="widget widget-full">
+				<div class="ui-widget-header ui-corner-top">Some other widget</div>
+				<div class="ui-widget-content ui-widget ui-corner-bottom">Here's some other widget</div>
 			</div>
 			<%= yield %>
 		</div>

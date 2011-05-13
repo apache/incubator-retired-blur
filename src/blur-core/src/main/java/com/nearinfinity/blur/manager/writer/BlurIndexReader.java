@@ -21,6 +21,7 @@ public class BlurIndexReader extends BlurIndex {
 
     @Override
     public IndexReader getIndexReader() {
+        reader.incRef();
         return reader;
     }
 

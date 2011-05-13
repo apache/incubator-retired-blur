@@ -1,15 +1,11 @@
 package com.nearinfinity.blur.thrift;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.ExecutionContext;
-import com.nearinfinity.blur.concurrent.ExecutionContext.RecordTime;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -23,14 +19,14 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public abstract class ExecutionContextIface implements IfaceExtended {
     
-    private PrintWriter _recorder;
+//    private PrintWriter _recorder;
 
     public ExecutionContextIface() {
-        try {
-            _recorder = new PrintWriter(new File("metrics.txt"));
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            _recorder = new PrintWriter(new File("metrics.txt"));
+//        } catch (FileNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     private ExecutionContext getContext() {
@@ -38,23 +34,23 @@ public abstract class ExecutionContextIface implements IfaceExtended {
     }
     
     private void record(ExecutionContext context) {
-        long now = System.nanoTime();
-        List<RecordTime> times = context.getTimes();
-        int size = times.size();
-        for (int i = 0; i < size; i++) {
-            RecordTime recordTime = times.get(i);
-            _recorder.print(now);
-            _recorder.print('\t');
-            _recorder.print(recordTime._e.getClass().getName());
-            _recorder.print('.');
-            _recorder.print(recordTime._e.name());
-            _recorder.print('\t');
-            _recorder.print(recordTime._call);
-            _recorder.print('\t');
-            _recorder.print(recordTime._now);
-            _recorder.print('\t');
-            _recorder.println(recordTime._timeNs);
-        }
+//        long now = System.nanoTime();
+//        List<RecordTime> times = context.getTimes();
+//        int size = times.size();
+//        for (int i = 0; i < size; i++) {
+//            RecordTime recordTime = times.get(i);
+//            _recorder.print(now);
+//            _recorder.print('\t');
+//            _recorder.print(recordTime._e.getClass().getName());
+//            _recorder.print('.');
+//            _recorder.print(recordTime._e.name());
+//            _recorder.print('\t');
+//            _recorder.print(recordTime._call);
+//            _recorder.print('\t');
+//            _recorder.print(recordTime._now);
+//            _recorder.print('\t');
+//            _recorder.println(recordTime._timeNs);
+//        }
     }
     
     @Override

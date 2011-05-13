@@ -168,11 +168,22 @@ public class IndexManager {
             LOG.error("Unknown error while trying to get the correct index reader for selector [{0}].",e,selector);
             throw new BException(e.getMessage(),e);
         }
+        IndexReader reader = null;
         try {
-            fetchRow(index.getIndexReader(), table, selector, fetchResult);
+            reader = index.getIndexReader();
+            fetchRow(reader, table, selector, fetchResult);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to fetch row.", e);
             throw new BException(e.getMessage(),e);
+        } finally {
+            if (reader != null) {
+                //this will allow for closing of index
+                try {
+                    reader.decRef();
+                } catch (IOException e) {
+                    LOG.error("Unknown error trying to call decRef on reader [{0}]",e,reader);
+                }
+            }
         }
     }
     
@@ -185,29 +196,34 @@ public class IndexManager {
         if (blurIndex == null) {
             throw new BlurException("Shard [" + shardName + "] is not being servered by this shardserver.",null);
         }
-        IndexReader indexReader = blurIndex.getIndexReader();
-        IndexSearcher searcher = new IndexSearcher(indexReader);
-        BooleanQuery query = new BooleanQuery();
-        if (selector.recordOnly) {
-            query.add(new TermQuery(new Term(RECORD_ID,recordId)), Occur.MUST);
-            query.add(new TermQuery(new Term(ROW_ID,rowId)), Occur.MUST);
-        } else {
-            query.add(new TermQuery(new Term(ROW_ID,rowId)), Occur.MUST);
-            query.add(new TermQuery(new Term(PRIME_DOC,PRIME_DOC_VALUE)), Occur.MUST);
-        }
-        TopDocs topDocs = searcher.search(query, 1);
-        if (topDocs.totalHits > 1) {
+        IndexReader reader = blurIndex.getIndexReader();
+        try {
+            IndexSearcher searcher = new IndexSearcher(reader);
+            BooleanQuery query = new BooleanQuery();
             if (selector.recordOnly) {
-                LOG.warn("Rowid [" + rowId + "], recordId [" + recordId +
-                		"] has more than one prime doc that is not deleted.");
+                query.add(new TermQuery(new Term(RECORD_ID,recordId)), Occur.MUST);
+                query.add(new TermQuery(new Term(ROW_ID,rowId)), Occur.MUST);
             } else {
-                LOG.warn("Rowid [" + rowId + "] has more than one prime doc that is not deleted.");
+                query.add(new TermQuery(new Term(ROW_ID,rowId)), Occur.MUST);
+                query.add(new TermQuery(new Term(PRIME_DOC,PRIME_DOC_VALUE)), Occur.MUST);
             }
-        }
-        if (topDocs.totalHits == 1) {
-            selector.setLocationId(shardName + "/" + topDocs.scoreDocs[0].doc);
-        } else {
-            selector.setLocationId(NOT_FOUND);
+            TopDocs topDocs = searcher.search(query, 1);
+            if (topDocs.totalHits > 1) {
+                if (selector.recordOnly) {
+                    LOG.warn("Rowid [" + rowId + "], recordId [" + recordId +
+                    		"] has more than one prime doc that is not deleted.");
+                } else {
+                    LOG.warn("Rowid [" + rowId + "] has more than one prime doc that is not deleted.");
+                }
+            }
+            if (topDocs.totalHits == 1) {
+                selector.setLocationId(shardName + "/" + topDocs.scoreDocs[0].doc);
+            } else {
+                selector.setLocationId(NOT_FOUND);
+            }
+        } finally {
+            //this will allow for closing of index
+            reader.decRef();
         }
     }
 
@@ -280,9 +296,9 @@ public class IndexManager {
                     @Override
                     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
                         status.attachThread();
+                        BlurIndex index = entry.getValue();
+                        IndexReader reader = index.getIndexReader();
                         try {
-                            BlurIndex index = entry.getValue();
-                            IndexReader reader = index.getIndexReader();
                             String shard = entry.getKey();
                             BlurSearcher searcher = new BlurSearcher(reader, 
                                     PrimeDocCache.getTableCache().getShardCache(table).
@@ -290,6 +306,8 @@ public class IndexManager {
                             searcher.setSimilarity(indexServer.getSimilarity(table));
                             return new BlurResultIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher);
                         } finally {
+                            //this will allow for closing of index
+                            reader.decRef();
                             status.deattachThread();
                         }
                     }
@@ -483,7 +501,12 @@ public class IndexManager {
                 public Long call(Entry<String, BlurIndex> input) throws Exception {
                     BlurIndex index = input.getValue();
                     IndexReader reader = index.getIndexReader();
-                    return recordFrequency(reader,columnFamily,columnName,value);
+                    try {
+                        return recordFrequency(reader,columnFamily,columnName,value);
+                    } finally {
+                        //this will allow for closing of index
+                        reader.decRef();
+                    }
                 }
         }).merge(new Merger<Long>() {
             @Override
@@ -511,7 +534,12 @@ public class IndexManager {
                 public List<String> call(Entry<String, BlurIndex> input) throws Exception {
                     BlurIndex index = input.getValue();
                     IndexReader reader = index.getIndexReader();
-                    return terms(reader,columnFamily,columnName,startWith,size);
+                    try {
+                        return terms(reader,columnFamily,columnName,startWith,size);
+                    } finally {
+                        //this will allow for closing of index
+                        reader.decRef();
+                    }
                 }
         }).merge(new Merger<List<String>>() {
             @Override
@@ -570,19 +598,24 @@ public class IndexManager {
         Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
         for (BlurIndex blurIndex : blurIndexes.values()) {
             IndexReader reader = blurIndex.getIndexReader();
-            Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-            for (String fieldName : fieldNames) {
-                int index = fieldName.indexOf('.');
-                if (index > 0) {
-                    String columnFamily = fieldName.substring(0, index);
-                    String column = fieldName.substring(index + 1);
-                    Set<String> set = schema.columnFamilies.get(columnFamily);
-                    if (set == null) {
-                        set = new TreeSet<String>();
-                        schema.columnFamilies.put(columnFamily, set);
+            try {
+                Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+                for (String fieldName : fieldNames) {
+                    int index = fieldName.indexOf('.');
+                    if (index > 0) {
+                        String columnFamily = fieldName.substring(0, index);
+                        String column = fieldName.substring(index + 1);
+                        Set<String> set = schema.columnFamilies.get(columnFamily);
+                        if (set == null) {
+                            set = new TreeSet<String>();
+                            schema.columnFamilies.put(columnFamily, set);
+                        }
+                        set.add(column);
                     }
-                    set.add(column);
                 }
+            } finally {
+              //this will allow for closing of index
+                reader.decRef();
             }
         }
         return schema;

@@ -85,7 +85,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
                 //do nothing for now
             }
         }, replicationDaemon,replicationStrategy);
-//        BlurIndexWriter writer = new BlurIndexWriter();
         BlurIndexWriterSimple writer = new BlurIndexWriterSimple();
         writer.setAnalyzer(getAnalyzer(table));
         writer.setDirectory(directory);
@@ -103,11 +102,16 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     private BlurIndex warmUp(BlurIndex index) throws IOException {
         IndexReader reader = index.getIndexReader();
-        int maxDoc = reader.maxDoc();
-        int numDocs = reader.numDocs();
-        Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-        int primeDocCount = reader.docFreq(new Term(PRIME_DOC,PRIME_DOC_VALUE));
-        LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fields [" + fieldNames + "]");
+        try {
+            int maxDoc = reader.maxDoc();
+            int numDocs = reader.numDocs();
+            Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+            int primeDocCount = reader.docFreq(new Term(PRIME_DOC,PRIME_DOC_VALUE));
+            LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fields [" + fieldNames + "]");
+        } finally {
+            //this will allow for closing of index
+            reader.decRef();
+        }
         return index;
     }
 

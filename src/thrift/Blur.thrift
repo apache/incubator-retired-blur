@@ -1,5 +1,5 @@
 namespace java com.nearinfinity.blur.thrift.generated
-namespace rb com.nearinfinity.blur.thrift.generated
+namespace rb blur
 
 
 exception BlurException {

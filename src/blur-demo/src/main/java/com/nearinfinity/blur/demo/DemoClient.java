@@ -27,11 +27,17 @@ public class DemoClient {
                 BlurQuery blurQuery = new BlurQuery();
                 
                 
+                blurQuery.queryStr = "employee.name:john";
+                blurQuery.queryStr = "manager.salary:000000001*";
+//                blurQuery.queryStr = "department.moreThanOneDepartment:T";
+//                blurQuery.queryStr = "salary.makesMoreThanManager:T";
+//                blurQuery.queryStr = "employee.birthDate:[1960-02-08 TO 1964-02-08]";
+                blurQuery.queryStr = "+title.title:\"Technique Leader\" +department.name:\"Overpowering Department\"";
+//                blurQuery.queryStr = "+title.title:\"Senior Staff\" +salary.salary:[00000000100000 TO 00000000101000] +department.name:(\"Retreating Department\" \"Overpowering Department\")";
                 
-                blurQuery.queryStr = "employee.name:zine";
                 
                 
-                
+                blurQuery.fetch = 25;
                 blurQuery.superQueryOn = true;
                 blurQuery.uuid = random.nextLong();
                 String table = "employee_super_mart";
@@ -60,7 +66,13 @@ public class DemoClient {
                 return null;
             }
         };
-        BlurClientManager.execute("localhost:40020", command);
+        
+        for (int i = 0; i < 1000000; i++) {
+            long s = System.nanoTime();
+            BlurClientManager.execute("blur04.nearinfinity.com:40020", command);
+            long e = System.nanoTime();
+            System.out.println((e-s) / 1000000.0);
+        }
 
     }
 

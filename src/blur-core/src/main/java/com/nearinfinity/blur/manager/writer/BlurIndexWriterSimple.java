@@ -18,11 +18,14 @@ package com.nearinfinity.blur.manager.writer;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.BlockingQueue;
+import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.ConcurrentMergeScheduler;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -43,61 +46,39 @@ public class BlurIndexWriterSimple extends BlurIndex {
     private AtomicReference<IndexReader> indexReaderRef = new AtomicReference<IndexReader>();
     private RowIndexWriter rowIndexWriter;
     private Thread commitDaemon;
-    private Thread readerClosingDaemon;
-    private BlockingQueue<IndexReader> readersToBeClosed = new LinkedBlockingQueue<IndexReader>();
+    private IndexReaderCloser closer = new IndexReaderCloser();
     
     public void init() throws IOException {
         setupWriter();
         commitDaemon();
+        closer.init();
     }
     
     private void commitDaemon() {
-        readerClosingDaemon = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        IndexReader indexReader = readersToBeClosed.take();
-                        try {
-                            System.out.println("Closing [" + indexReader + "]");
-                            indexReader.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                }
-            }
-        });
-        readerClosingDaemon.setDaemon(true);
-        readerClosingDaemon.setName("Reader Closer Thread for Directory [" + directory + "]");
-        readerClosingDaemon.start();
-        
-        commitDaemon = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    try {
-                        Thread.sleep(TimeUnit.MINUTES.toMillis(1));
-                    } catch (InterruptedException e) {
-                        return;
-                    }
-                    synchronized (writer) {
+//        commitDaemon = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true) {
+//                    try {
+//                        Thread.sleep(TimeUnit.MINUTES.toMillis(1));
+//                    } catch (InterruptedException e) {
+//                        return;
+//                    }
+//                    synchronized (writer) {
 //                        System.out.println("Commiting");
-                        try {
-                            writer.commit();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            return;
-                        }
-                    }
-                }
-            }
-        });
-        commitDaemon.setDaemon(true);
-        commitDaemon.setName("Commit Thread for Directory [" + directory + "]");
-        commitDaemon.start();
+//                        try {
+//                            writer.commit();
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                            return;
+//                        }
+//                    }
+//                }
+//            }
+//        });
+//        commitDaemon.setDaemon(true);
+//        commitDaemon.setName("Commit Thread for Directory [" + directory + "]");
+//        commitDaemon.start();
     }
 
     private void setupWriter() throws IOException {
@@ -107,12 +88,15 @@ public class BlurIndexWriterSimple extends BlurIndex {
         ConcurrentMergeScheduler mergeScheduler = new ConcurrentMergeScheduler();
         mergeScheduler.setMaxThreadCount(maxThreadCountForMerger);
         writer.setMergeScheduler(mergeScheduler);
-        indexReaderRef.set(writer.getReader());
         rowIndexWriter = new RowIndexWriter(writer, analyzer);
+        
+        
+        indexReaderRef.set(writer.getReader());
     }
     
     public void close() throws IOException {
         writer.close();
+        closer.stop();
     }
     
     @Override
@@ -127,12 +111,9 @@ public class BlurIndexWriterSimple extends BlurIndex {
     }
 
     private void rollOutNewReader(IndexReader reader) throws IOException {
-        try {
-            readersToBeClosed.put(indexReaderRef.get());
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        IndexReader oldReader = indexReaderRef.get();
         indexReaderRef.set(reader);
+        closer.close(oldReader);
     }
 
     public void setAnalyzer(BlurAnalyzer analyzer) {
@@ -141,10 +122,68 @@ public class BlurIndexWriterSimple extends BlurIndex {
 
     @Override
     public IndexReader getIndexReader() throws IOException {
-        return indexReaderRef.get();
+        IndexReader indexReader = indexReaderRef.get();
+        indexReader.incRef();
+        return indexReader;
     }
 
     public void setDirectory(Directory directory) {
         this.directory = directory;
+    }
+    
+    public static class IndexReaderCloser implements Runnable {
+        
+        private static final Log LOG = LogFactory.getLog(IndexReaderCloser.class);
+        private static final long PAUSE_TIME = TimeUnit.SECONDS.toMillis(2);
+        private Thread daemon;
+        private Collection<IndexReader> readers = new LinkedBlockingQueue<IndexReader>();
+        private AtomicBoolean running = new AtomicBoolean();
+
+        public void init() {
+            running.set(true);
+            daemon = new Thread(this);
+            daemon.setDaemon(true);
+            daemon.setName(getClass().getName() + "-Daemon");
+            daemon.start();
+        }
+
+        public void stop() {
+            running.set(false);
+            daemon.interrupt();
+        }
+
+        public void close(IndexReader reader) {
+            //@TODO need to a pause to the check for closed because of a race condition.
+            readers.add(reader);
+        }
+
+        @Override
+        public void run() {
+            while (running.get()) {
+                tryToCloseReaders();
+                try {
+                    Thread.sleep(PAUSE_TIME);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+        }
+
+        private void tryToCloseReaders() {
+            Iterator<IndexReader> it = readers.iterator();
+            while (it.hasNext()) {
+                IndexReader reader = it.next();
+                if (reader.getRefCount() == 1) {
+                    try {
+                        LOG.debug("Closing indexreader [" + reader + "].");
+                        reader.close();
+                    } catch (IOException e) {
+                        LOG.error("Error while trying to close indexreader [" + reader + "].",e);
+                    }
+                    it.remove();
+                }
+            }
+        }
+
     }
 }

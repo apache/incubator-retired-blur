@@ -32,6 +32,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
@@ -41,7 +42,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.manager.writer.BlurIndexWriterSimple;
 
 public class LocalIndexServer implements IndexServer {
     
@@ -103,6 +104,7 @@ public class LocalIndexServer implements IndexServer {
                     if (!IndexReader.indexExists(directory)) {
                         new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED).close();
                     }
+                    warmUp(directory);
                     String shardName = f.getName();
                     shards.put(shardName,openIndex(table,directory));
                 }
@@ -112,8 +114,32 @@ public class LocalIndexServer implements IndexServer {
         throw new IOException("Table [" + table + "] not found.");
     }
 
+    private void warmUp(final MMapDirectory directory) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    for (String name : directory.listAll()) {
+                        if (name.endsWith(".fdx")) {
+                            continue;
+                        }
+                        IndexInput input = directory.openInput(name);
+                        long length = input.length();
+                        long hash = 0;
+                        for (long i = 0; i < length; i++) {
+                            hash += input.readByte();
+                        }
+                        input.close();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
+    }
+
     private BlurIndex openIndex(String table, Directory dir) throws CorruptIndexException, IOException {
-        BlurIndexWriter writer = new BlurIndexWriter();
+        BlurIndexWriterSimple writer = new BlurIndexWriterSimple();
         writer.setDirectory(dir);
         writer.setAnalyzer(getAnalyzer(table));
         writer.init();

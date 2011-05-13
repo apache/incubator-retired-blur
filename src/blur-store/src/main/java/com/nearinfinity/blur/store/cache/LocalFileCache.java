@@ -17,13 +17,11 @@
 package com.nearinfinity.blur.store.cache;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.nearinfinity.blur.log.Log;
@@ -179,19 +177,21 @@ public class LocalFileCache {
     }
 
     private boolean isValid(File f) {
-        if (f.exists() && f.isDirectory()) {
-            File file = new File(f,".blur.touchfile" + UUID.randomUUID().toString());
-            try {
-                if (file.createNewFile()) {
-                    return true;
-                }
-            } catch (IOException e) {
-                return false;
-            } finally {
-                file.delete();
-            }
-        }
-        return false;
+//        if (f.exists() && f.isDirectory()) {
+//            File file = new File(f,".blur.touchfile" + UUID.randomUUID().toString());
+//            try {
+//                if (file.createNewFile()) {
+//                    return true;
+//                }
+//            } catch (IOException e) {
+//                return false;
+//            } finally {
+//                file.delete();
+//            }
+//        }
+        //@todo fix this!!!!
+        //LOG.debug("need a way to check if path is good or not");
+        return true;
     }
 
     private File newFile(String dirName, String name) {

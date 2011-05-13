@@ -57,6 +57,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private ReplicationDaemon replicationDaemon;
     private boolean closed;
     private ReplicationStrategy replicationStrategy;
+    private Configuration configuration = new Configuration();
     
     @Override
     public synchronized void close() {
@@ -71,7 +72,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
         URI tableUri = getTableURI(table);
         Path tablePath = new Path(tableUri);
-        FileSystem fileSystem = FileSystem.get(tableUri, new Configuration());
+        FileSystem fileSystem = FileSystem.get(tableUri, configuration);
         if (!fileSystem.exists(tablePath)) {
             throw new FileNotFoundException(tablePath.toString());
         }
@@ -121,7 +122,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         try {
             URI tableUri = getTableURI(table);
             Path tablePath = new Path(tableUri);
-            FileSystem fileSystem = FileSystem.get(tableUri, new Configuration());
+            FileSystem fileSystem = FileSystem.get(tableUri, configuration);
             FileStatus[] listStatus = fileSystem.listStatus(tablePath);
             for (FileStatus status : listStatus) {
                 if (status.isDir()) {

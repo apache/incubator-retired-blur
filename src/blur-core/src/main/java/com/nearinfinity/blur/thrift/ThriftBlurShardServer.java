@@ -57,6 +57,7 @@ import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.testing.LoadData;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurShardServer extends ThriftServer {
@@ -104,10 +105,10 @@ public class ThriftBlurShardServer extends ThriftServer {
                 if (name.endsWith(".fdt")) {
                     return false;
                 }
-                return false;
+                return true;
             }
         };
-
+        
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
@@ -152,6 +153,24 @@ public class ThriftBlurShardServer extends ThriftServer {
                 System.exit(0);
             }
         }, zooKeeper);
+        
+        new Thread(new Runnable() {
+            
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(30000);
+                    System.out.println("Load Testing.");
+                } catch (InterruptedException e) {
+                    return;
+                }
+                try {
+                    LoadData.loadTest(shardServer, 100000, 200);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
         
         server.start();
     }

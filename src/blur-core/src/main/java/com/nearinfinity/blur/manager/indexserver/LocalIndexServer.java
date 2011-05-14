@@ -42,7 +42,9 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexWriterSimple;
+import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
+import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 
 public class LocalIndexServer implements IndexServer {
     
@@ -50,10 +52,16 @@ public class LocalIndexServer implements IndexServer {
     
     private Map<String,Map<String, BlurIndex>> readersMap = new ConcurrentHashMap<String, Map<String,BlurIndex>>();
     private File localDir;
+    private BlurIndexCommiter commiter;
+    private BlurIndexReaderCloser closer;
     
     public LocalIndexServer(File file) {
         this.localDir = file;
         this.localDir.mkdirs();
+        this.commiter = new BlurIndexCommiter();
+        this.commiter.init();
+        this.closer = new BlurIndexReaderCloser();
+        this.closer.init();
     }
 
     @Override
@@ -78,6 +86,8 @@ public class LocalIndexServer implements IndexServer {
     
     @Override
     public void close() {
+        commiter.close();
+        closer.stop();
         for (String table : readersMap.keySet()) {
             close(readersMap.get(table));
         }
@@ -139,9 +149,11 @@ public class LocalIndexServer implements IndexServer {
     }
 
     private BlurIndex openIndex(String table, Directory dir) throws CorruptIndexException, IOException {
-        BlurIndexWriterSimple writer = new BlurIndexWriterSimple();
+        BlurIndexWriter writer = new BlurIndexWriter();
         writer.setDirectory(dir);
         writer.setAnalyzer(getAnalyzer(table));
+        writer.setCommiter(commiter);
+        writer.setCloser(closer);
         writer.init();
         return writer;
     }

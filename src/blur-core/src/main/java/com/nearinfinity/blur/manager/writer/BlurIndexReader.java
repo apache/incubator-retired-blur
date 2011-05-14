@@ -1,7 +1,5 @@
 package com.nearinfinity.blur.manager.writer;
 
-import java.util.Collection;
-
 import org.apache.lucene.index.IndexReader;
 
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -26,7 +24,7 @@ public class BlurIndexReader extends BlurIndex {
     }
 
     @Override
-    public boolean replaceRow(Collection<Row> rows) {
+    public boolean replaceRow(Iterable<Row> rows) {
         return false;
     }
 

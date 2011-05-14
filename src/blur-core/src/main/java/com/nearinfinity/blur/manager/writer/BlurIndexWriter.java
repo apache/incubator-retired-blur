@@ -16,182 +16,195 @@
 
 package com.nearinfinity.blur.manager.writer;
 
-import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
-
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.ConcurrentMergeScheduler;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.store.Lock;
+import org.apache.lucene.store.LockFactory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.log.Log;
-import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
-public class BlurIndexWriter extends BlurIndex implements Runnable {
+public class BlurIndexWriter extends BlurIndex {
     
-    private static final String BLUR_UPDATE_THREAD = "Blur-Update-Thread-";
-    private static final Log LOG =  LogFactory.getLog(BlurIndexWriter.class);
+    private static final Log LOG = LogFactory.getLog(BlurIndexWriter.class);
     
-    private class BlurIndexMutation {
-        volatile Directory directory;
-        volatile boolean indexed;
-    }
-    
-    private Directory directory;
-    private IndexWriter writer;
-    private Thread daemon;
-    private BlockingQueue<BlurIndexMutation> mutationQueue;
-    private BlurAnalyzer analyzer;
-    private int maxNumberOfDirsMergedAtOnce = 16;
-    private int maxThreadCountForMerger = 5;
-    private int maxBlockingTimePerUpdate = 100;
-    private AtomicReference<IndexReader> indexReaderRef = new AtomicReference<IndexReader>();
+    private Directory _directory;
+    private IndexWriter _writer;
+    private BlurAnalyzer _analyzer;
+    private int _maxThreadCountForMerger = 5;
+    private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
+    private RowIndexWriter _rowIndexWriter;
+    private Directory _sync;
+    private String _name;
+    private BlurIndexReaderCloser _closer;
+    private BlurIndexCommiter _commiter;
     
     public void init() throws IOException {
-        mutationQueue = new ArrayBlockingQueue<BlurIndexMutation>(maxNumberOfDirsMergedAtOnce);
         setupWriter();
-        startDaemon();
-    }
-    
-    private void startDaemon() {
-        daemon = new Thread(this);
-        daemon.setDaemon(true);
-        daemon.setName(BLUR_UPDATE_THREAD + directory.toString());
-        daemon.start();
-    }
-
-    public void close() throws IOException {
-        daemon.interrupt();
-        writer.close();
-    }
-    
-    @Override
-    public boolean replaceRow(Collection<Row> rows) throws IOException {
-        try {
-            BlurIndexMutation update = new BlurIndexMutation();
-            update.directory = index(rows);
-            synchronized (update) {
-                mutationQueue.put(update);
-                update.wait();
-                return update.indexed;
-            }
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
-    }
-    
-    @Override
-    public void run() {
-        while (true) {
-            try {
-                updateWriter();
-            } catch (InterruptedException e) {
-                LOG.debug("Thread stopped.");
-                return;
-            } catch (Exception e) {
-                LOG.error("Unknown error while indexing.",e);
-            }
-        }
     }
     
     private void setupWriter() throws IOException {
-        writer = new IndexWriter(directory, analyzer, MaxFieldLength.UNLIMITED);
-        writer.setSimilarity(new FairSimilarity());
-        writer.setUseCompoundFile(false);
+        _sync = watchSync(_directory);
+        _name = _sync.toString();
+        _writer = new IndexWriter(_sync, _analyzer, MaxFieldLength.UNLIMITED);
+        _writer.setSimilarity(new FairSimilarity());
+        _writer.setUseCompoundFile(false);
         ConcurrentMergeScheduler mergeScheduler = new ConcurrentMergeScheduler();
-        mergeScheduler.setMaxThreadCount(maxThreadCountForMerger);
-        writer.setMergeScheduler(mergeScheduler);
-        indexReaderRef.set(writer.getReader());
-    }
+        mergeScheduler.setMaxThreadCount(_maxThreadCountForMerger);
+        _writer.setMergeScheduler(mergeScheduler);
+        _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
 
-    private Directory index(Collection<Row> rows) throws IOException {
-        RAMDirectory dir = new RAMDirectory();
-        IndexWriter indexWriter = new IndexWriter(dir, analyzer, MaxFieldLength.UNLIMITED);
-        indexWriter.setSimilarity(new FairSimilarity());
-        indexWriter.setUseCompoundFile(false);
-        RowIndexWriter rowIndexWriter = new RowIndexWriter(indexWriter, analyzer);
+        _indexReaderRef.set(_writer.getReader());
+        _commiter.addWriter(_name,_writer);
+    }
+    
+    public void close() throws IOException {
+        _commiter.remove(_name);
+        _writer.close();
+    }
+    
+    @Override
+    public synchronized boolean replaceRow(Iterable<Row> rows) throws IOException {
         for (Row row : rows) {
-            rowIndexWriter.replace(row);
+            synchronized (_writer) {
+                _rowIndexWriter.replace(row);
+            }
         }
-        indexWriter.optimize();
-        indexWriter.close();
-        return dir;
+        rollOutNewReader(_writer.getReader());
+        return true;
     }
 
-    private void updateWriter() throws IOException, InterruptedException {
-        Collection<BlurIndexMutation> mutations = null;
-        BlurIndexMutation update = mutationQueue.take();
-        try {
-            mutations = new HashSet<BlurIndexMutation>();
-            mutations.add(update);
-            Thread.sleep(maxBlockingTimePerUpdate);
-            mutationQueue.drainTo(mutations);
-            for (BlurIndexMutation u : mutations) {
-                IndexReader reader = IndexReader.open(u.directory);
-                TermEnum termEnum = reader.terms(new Term(ROW_ID));
-                INNER:
-                do {
-                    Term term = termEnum.term();
-                    if (term != null) {
-                        if (!term.field().equals(ROW_ID)) {
-                            break INNER;
-                        }
-                        writer.deleteDocuments(term);
-                    }
-                } while (termEnum.next());
-                termEnum.close();
-                reader.close();
-            }
-            writer.addIndexesNoOptimize(getDirectories(mutations));
-            writer.commit();
-            for (BlurIndexMutation mutation : mutations) {
-                mutation.indexed = true;
-            }
-            indexReaderRef.set(writer.getReader());
-        } finally {
-            if (mutations != null) {
-                for (BlurIndexMutation mutation : mutations) {
-                    synchronized (mutation) {
-                        mutation.notifyAll();
-                    }
-                }
-            }
-        }
-    }
-
-    private Directory[] getDirectories(Collection<BlurIndexMutation> mutations) {
-        Directory[] dirs = new Directory[mutations.size()];
-        int i = 0;
-        for (BlurIndexMutation update : mutations) {
-            dirs[i++] = update.directory;
-        }
-        return dirs;
+    private synchronized void rollOutNewReader(IndexReader reader) throws IOException {
+        IndexReader oldReader = _indexReaderRef.get();
+        _indexReaderRef.set(reader);
+        _closer.close(oldReader);
     }
 
     public void setAnalyzer(BlurAnalyzer analyzer) {
-        this.analyzer = analyzer;
+        _analyzer = analyzer;
     }
 
     @Override
     public IndexReader getIndexReader() throws IOException {
-        return indexReaderRef.get();
+        IndexReader indexReader = _indexReaderRef.get();
+        indexReader.incRef();
+        return indexReader;
     }
 
     public void setDirectory(Directory directory) {
-        this.directory = directory;
+        this._directory = directory;
+    }
+    
+    private Directory watchSync(Directory dir) {
+        return new SyncWatcher(dir);
+    }
+    
+    private static class SyncWatcher extends Directory {
+        
+        private Directory _dir;
+
+        public SyncWatcher(Directory dir) {
+            _dir = dir;
+        }
+
+        public void clearLock(String name) throws IOException {
+            _dir.clearLock(name);
+        }
+
+        public void close() throws IOException {
+            _dir.close();
+        }
+
+        public IndexOutput createOutput(String arg0) throws IOException {
+            return _dir.createOutput(arg0);
+        }
+
+        public void deleteFile(String arg0) throws IOException {
+            _dir.deleteFile(arg0);
+        }
+
+        public boolean equals(Object obj) {
+            return _dir.equals(obj);
+        }
+
+        public boolean fileExists(String arg0) throws IOException {
+            return _dir.fileExists(arg0);
+        }
+
+        public long fileLength(String arg0) throws IOException {
+            return _dir.fileLength(arg0);
+        }
+
+        public long fileModified(String arg0) throws IOException {
+            return _dir.fileModified(arg0);
+        }
+
+        public LockFactory getLockFactory() {
+            return _dir.getLockFactory();
+        }
+
+        public String getLockID() {
+            return _dir.getLockID();
+        }
+
+        public int hashCode() {
+            return _dir.hashCode();
+        }
+
+        public String[] listAll() throws IOException {
+            return _dir.listAll();
+        }
+
+        public Lock makeLock(String name) {
+            return _dir.makeLock(name);
+        }
+
+        public IndexInput openInput(String name, int bufferSize) throws IOException {
+            return _dir.openInput(name, bufferSize);
+        }
+
+        public IndexInput openInput(String arg0) throws IOException {
+            return _dir.openInput(arg0);
+        }
+
+        public void setLockFactory(LockFactory lockFactory) {
+            _dir.setLockFactory(lockFactory);
+        }
+
+        public void sync(String name) throws IOException {
+            long start = System.nanoTime();
+            _dir.sync(name);
+            long end = System.nanoTime();
+            LOG.info("Sync of [" + name +"] took [" + (end-start) / 1000000.0 + " ms]");
+        }
+
+        public String toString() {
+            return _dir.toString();
+        }
+
+        public void touchFile(String arg0) throws IOException {
+            _dir.touchFile(arg0);
+        }
+        
+    }
+
+    public void setCommiter(BlurIndexCommiter commiter) {
+        _commiter = commiter;
+    }
+
+    public void setCloser(BlurIndexReaderCloser closer) {
+        _closer = closer;
     }
 }

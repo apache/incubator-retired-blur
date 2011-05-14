@@ -16,15 +16,11 @@
 
 package com.nearinfinity.blur.store;
 
-import static com.nearinfinity.blur.store.Constants.BUFFER_SIZE;
-
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
@@ -39,6 +35,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.indexinput.FileIndexInput;
 import com.nearinfinity.blur.store.indexinput.FileNIOIndexInput;
+import com.nearinfinity.blur.store.indexinput.MMapIndexInput;
 
 public class WritableHdfsDirectory extends HdfsDirectory {
 
@@ -86,17 +83,22 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     @Override
     public void sync(String name) throws IOException {
         File file = localFileCache.getLocalFile(dirName, name);
-        FSDataOutputStream outputStream = super.getOutputStream(name + ".sync");
-        FileInputStream inputStream = new FileInputStream(file);
         LOG.debug("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
-        byte[] buffer = new byte[BUFFER_SIZE];
-        int num;
-        while ((num = inputStream.read(buffer)) != -1) {
-            progressable.progress();
-            outputStream.write(buffer, 0, num);
-        }
-        outputStream.close();
-        inputStream.close();
+        
+//        FSDataOutputStream outputStream = super.getOutputStream(name + ".sync");
+//        FileInputStream inputStream = new FileInputStream(file);
+//        
+//        byte[] buffer = new byte[BUFFER_SIZE];
+//        int num;
+//        while ((num = inputStream.read(buffer)) != -1) {
+//            progressable.progress();
+//            outputStream.write(buffer, 0, num);
+//        }
+//        outputStream.close();
+//        inputStream.close();
+        
+        fileSystem.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(hdfsDirPath,name + ".sync"));
+        
         rename(name + ".sync",name);
     }
 
@@ -164,8 +166,10 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     public IndexInput openFromLocal(String name, int bufferSize) throws IOException {
         if (Constants.WINDOWS) {
             return new FileIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
-        } else {
+        } else if (name.endsWith(".fdt")) {
             return new FileNIOIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
+        } else {
+            return new MMapIndexInput(localFileCache.getLocalFile(dirName, name));
         }
     }
 

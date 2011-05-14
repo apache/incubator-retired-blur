@@ -42,7 +42,9 @@ import org.apache.lucene.store.LockFactory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexWriterSimple;
+import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
+import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
@@ -58,9 +60,22 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private boolean closed;
     private ReplicationStrategy replicationStrategy;
     private Configuration configuration = new Configuration();
+    private BlurIndexReaderCloser _closer;
+    private BlurIndexCommiter _commiter;
+    
+    @Override
+    public void init() {
+        super.init();
+        _commiter = new BlurIndexCommiter();
+        _commiter.init();
+        _closer = new BlurIndexReaderCloser();
+        _closer.init();
+    }
     
     @Override
     public synchronized void close() {
+        _commiter.close();
+        _closer.stop();
         if (!closed) {
             closed = true;
             super.close();
@@ -85,8 +100,10 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
             public void progress() {
                 //do nothing for now
             }
-        }, replicationDaemon,replicationStrategy);
-        BlurIndexWriterSimple writer = new BlurIndexWriterSimple();
+        }, replicationDaemon, replicationStrategy);
+        BlurIndexWriter writer = new BlurIndexWriter();
+        writer.setCloser(_closer);
+        writer.setCommiter(_commiter);
         writer.setAnalyzer(getAnalyzer(table));
         writer.setDirectory(directory);
         writer.init();
@@ -153,14 +170,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         file.delete();
     }
     
-//    private boolean exists(Path path) throws IOException {
-//        return fileSystem.exists(path);
-//    }
-
-//    public void setFileSystem(FileSystem fileSystem) {
-//        this.fileSystem = fileSystem;
-//    }
-
     public void setLocalFileCache(LocalFileCache localFileCache) {
         this.localFileCache = localFileCache;
     }
@@ -173,11 +182,9 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         this.replicationDaemon = replicationDaemon;
     }
 
-//    public void setBlurBasePath(Path blurBasePath) {
-//        this.blurBasePath = blurBasePath;
-//    }
-
     public void setReplicationStrategy(ReplicationStrategy replicationStrategy) {
         this.replicationStrategy = replicationStrategy;
     }
+
+
 }

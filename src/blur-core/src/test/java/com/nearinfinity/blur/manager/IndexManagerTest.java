@@ -264,6 +264,30 @@ public class IndexManagerTest {
     }
     
     @Test
+    public void testQuerySuperQueryTrueWithSelector() throws Exception {
+        BlurQuery blurQuery = new BlurQuery();
+        blurQuery.queryStr = "test-family.testcol1:value1";
+        blurQuery.superQueryOn = true;
+        blurQuery.type = ScoreType.SUPER;
+        blurQuery.fetch = 10;
+        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+        blurQuery.maxQueryTime = Long.MAX_VALUE;
+        blurQuery.uuid = 1;
+        blurQuery.selector = new Selector();
+
+        BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+        assertEquals(iterable.getTotalResults(), 2);
+        for (BlurResult result : iterable) {
+            assertNotNull(result.result.rowResult);
+            assertNull(result.result.recordResult);
+        }
+
+        assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+        Thread.sleep(2000);// wait for cleanup to fire
+        assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+    }
+    
+    @Test
     public void testQuerySuperQueryFalse() throws Exception {
         BlurQuery blurQuery = new BlurQuery();
         blurQuery.queryStr = "test-family.testcol1:value1";
@@ -281,6 +305,30 @@ public class IndexManagerTest {
             indexManager.fetchRow(TABLE, selector, fetchResult);
             assertNull(fetchResult.rowResult);
             assertNotNull(fetchResult.recordResult);
+        }
+
+        assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+        Thread.sleep(2000);// wait for cleanup to fire
+        assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+    }
+    
+    @Test
+    public void testQuerySuperQueryFalseWithSelector() throws Exception {
+        BlurQuery blurQuery = new BlurQuery();
+        blurQuery.queryStr = "test-family.testcol1:value1";
+        blurQuery.superQueryOn = false;
+        blurQuery.fetch = 10;
+        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+        blurQuery.maxQueryTime = Long.MAX_VALUE;
+        blurQuery.uuid = 1;
+        blurQuery.selector = new Selector();
+        blurQuery.selector.setRecordOnly(true);
+
+        BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+        assertEquals(iterable.getTotalResults(), 2);
+        for (BlurResult result : iterable) {
+            assertNull(result.result.rowResult);
+            assertNotNull(result.result.recordResult);
         }
 
         assertFalse(indexManager.currentQueries(TABLE).isEmpty());

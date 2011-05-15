@@ -28,7 +28,11 @@ import org.apache.lucene.search.ScoreDoc;
 import com.nearinfinity.blur.lucene.search.IterablePaging;
 import com.nearinfinity.blur.lucene.search.IterablePaging.ProgressRef;
 import com.nearinfinity.blur.lucene.search.IterablePaging.TotalHitsRef;
+import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IteratorConverter;
 
@@ -37,18 +41,22 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
     private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
     private String _shard;
     private long _skipTo;
+    private String _table;
     private int _fetchCount = 1000;
 
     private IteratorConverter<ScoreDoc, BlurResult> _iterator;
+    private Selector _selector;
     private Query _query;
     private IndexSearcher _searcher;
     private TotalHitsRef _totalHitsRef = new TotalHitsRef();
     private ProgressRef _progressRef = new ProgressRef();
 
-    public BlurResultIterableSearcher(Query query, String table, String shard, IndexSearcher searcher) throws IOException {
+    public BlurResultIterableSearcher(Query query, String table, String shard, IndexSearcher searcher, Selector selector) throws IOException {
+        _table = table;
         _query = query;
         _shard = shard;
         _searcher = searcher;
+        _selector = selector;
         performSearch();
     }
 
@@ -57,10 +65,22 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
         _iterator = new IteratorConverter<ScoreDoc,BlurResult>(iterablePaging.iterator(), new Converter<ScoreDoc,BlurResult>() {
             @Override
             public BlurResult convert(ScoreDoc scoreDoc) throws Exception {
-                return new BlurResult(resolveId(scoreDoc.doc), scoreDoc.score, "UNKNOWN", null);
+                String resolveId = resolveId(scoreDoc.doc);
+                return new BlurResult(resolveId, scoreDoc.score, "UNKNOWN", getFetchResult(resolveId));
             }
         });
         _shardInfo.put(_shard, (long) _totalHitsRef.totalHits());
+    }
+
+    private FetchResult getFetchResult(String resolveId) throws IOException, BlurException {
+        if (_selector == null) {
+            return null;
+        }
+        FetchResult fetchResult = new FetchResult();
+        _selector.setLocationId(resolveId);
+        IndexManager.validSelector(_selector);
+        IndexManager.fetchRow(_searcher.getIndexReader(), _table, _selector, fetchResult);
+        return fetchResult;
     }
 
     @Override

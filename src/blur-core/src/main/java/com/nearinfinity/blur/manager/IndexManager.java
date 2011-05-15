@@ -227,7 +227,7 @@ public class IndexManager {
         }
     }
 
-    private void validSelector(Selector selector) throws BlurException {
+    public static void validSelector(Selector selector) throws BlurException {
         String locationId = selector.locationId;
         String rowId = selector.rowId;
         String recordId = selector.recordId;
@@ -275,7 +275,7 @@ public class IndexManager {
         return split[0];
     }
 
-    public BlurResultIterable query(final String table, BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
+    public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
         final QueryStatus status = statusManager.newQueryStatus(table, blurQuery);
         try {
             Map<String, BlurIndex> blurIndexes;
@@ -304,7 +304,7 @@ public class IndexManager {
                                     PrimeDocCache.getTableCache().getShardCache(table).
                                     getIndexReaderCache(shard));
                             searcher.setSimilarity(indexServer.getSimilarity(table));
-                            return new BlurResultIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher);
+                            return new BlurResultIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher, blurQuery.selector);
                         } finally {
                             //this will allow for closing of index
                             reader.decRef();
@@ -366,7 +366,7 @@ public class IndexManager {
         return new FilteredQuery(result, postFilter);
     }
 
-    private void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult)
+    public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult)
             throws CorruptIndexException, IOException {
         fetchResult.table = table;
         String locationId = selector.locationId;
@@ -405,7 +405,7 @@ public class IndexManager {
         }
     }
 
-    private String getRowId(IndexReader reader, int docId) throws CorruptIndexException, IOException {
+    private static String getRowId(IndexReader reader, int docId) throws CorruptIndexException, IOException {
         Document document = reader.document(docId, new FieldSelector() {
             private static final long serialVersionUID = 4912420100148752051L;
 
@@ -420,15 +420,15 @@ public class IndexManager {
         return document.get(ROW_ID);
     }
 
-    private String getColumnName(String fieldName) {
+    private static String getColumnName(String fieldName) {
         return fieldName.substring(fieldName.lastIndexOf('.') + 1);
     }
 
-    private String getColumnFamily(String fieldName) {
+    private static String getColumnFamily(String fieldName) {
         return fieldName.substring(0, fieldName.lastIndexOf('.'));
     }
 
-    private FieldSelector getFieldSelector(final Selector selector) {
+    private static FieldSelector getFieldSelector(final Selector selector) {
         return new FieldSelector() {
             private static final long serialVersionUID = 4089164344758433000L;
 

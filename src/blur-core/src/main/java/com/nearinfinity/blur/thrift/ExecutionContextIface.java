@@ -2,10 +2,16 @@ package com.nearinfinity.blur.thrift;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.ExecutionContext;
+import com.nearinfinity.blur.concurrent.ExecutionContext.RecordTime;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -19,14 +25,39 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public abstract class ExecutionContextIface implements IfaceExtended {
     
-//    private PrintWriter _recorder;
+    private static final Log LOG = LogFactory.getLog(ExecutionContextIface.class);
+    
+    private BlockingQueue<ExecutionContext> _contexts = new LinkedBlockingQueue<ExecutionContext>();
+    private AtomicBoolean _running = new AtomicBoolean();
+    private Thread _daemon;
 
-    public ExecutionContextIface() {
-//        try {
-//            _recorder = new PrintWriter(new File("metrics.txt"));
-//        } catch (FileNotFoundException e) {
-//            throw new RuntimeException(e);
-//        }
+    public void init() {
+        _running.set(true);
+        _daemon = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (_running.get()) {
+                    try {
+                        log(_contexts.take());
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            }
+        });
+        _daemon.setName("Execution Context Logger");
+        _daemon.setDaemon(true);
+        _daemon.start();
+    }
+
+    private void log(ExecutionContext context) {
+      long now = System.nanoTime();
+      List<RecordTime> times = context.getTimes();
+      int size = times.size();
+      for (int i = 0; i < size; i++) {
+          RecordTime recordTime = times.get(i);
+          LOG.info("{0},{1},{2},{3},{4},{5}",now,recordTime._e.getClass().getName(),recordTime._e.name(),recordTime._call,recordTime._now,recordTime._timeNs);
+      }
     }
 
     private ExecutionContext getContext() {
@@ -34,23 +65,11 @@ public abstract class ExecutionContextIface implements IfaceExtended {
     }
     
     private void record(ExecutionContext context) {
-//        long now = System.nanoTime();
-//        List<RecordTime> times = context.getTimes();
-//        int size = times.size();
-//        for (int i = 0; i < size; i++) {
-//            RecordTime recordTime = times.get(i);
-//            _recorder.print(now);
-//            _recorder.print('\t');
-//            _recorder.print(recordTime._e.getClass().getName());
-//            _recorder.print('.');
-//            _recorder.print(recordTime._e.name());
-//            _recorder.print('\t');
-//            _recorder.print(recordTime._call);
-//            _recorder.print('\t');
-//            _recorder.print(recordTime._now);
-//            _recorder.print('\t');
-//            _recorder.println(recordTime._timeNs);
-//        }
+        try {
+            _contexts.put(context);
+        } catch (InterruptedException e) {
+            return;
+        }
     }
     
     @Override

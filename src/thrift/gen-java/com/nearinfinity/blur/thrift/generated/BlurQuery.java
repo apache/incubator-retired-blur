@@ -36,6 +36,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final org.apache.thrift.protocol.TField USER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("userId", org.apache.thrift.protocol.TType.STRING, (short)11);
   private static final org.apache.thrift.protocol.TField RESOLVE_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("resolveIds", org.apache.thrift.protocol.TType.BOOL, (short)12);
   private static final org.apache.thrift.protocol.TField FACETS_FIELD_DESC = new org.apache.thrift.protocol.TField("facets", org.apache.thrift.protocol.TType.LIST, (short)13);
+  private static final org.apache.thrift.protocol.TField SELECTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("selector", org.apache.thrift.protocol.TType.STRUCT, (short)14);
 
   public String queryStr;
   public boolean superQueryOn;
@@ -54,6 +55,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   public String userId;
   public boolean resolveIds;
   public List<Facet> facets;
+  public Selector selector;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -73,7 +75,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     UUID((short)10, "uuid"),
     USER_ID((short)11, "userId"),
     RESOLVE_IDS((short)12, "resolveIds"),
-    FACETS((short)13, "facets");
+    FACETS((short)13, "facets"),
+    SELECTOR((short)14, "selector");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -114,6 +117,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
           return RESOLVE_IDS;
         case 13: // FACETS
           return FACETS;
+        case 14: // SELECTOR
+          return SELECTOR;
         default:
           return null;
       }
@@ -193,6 +198,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     tmpMap.put(_Fields.FACETS, new org.apache.thrift.meta_data.FieldMetaData("facets", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Facet.class))));
+    tmpMap.put(_Fields.SELECTOR, new org.apache.thrift.meta_data.FieldMetaData("selector", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Selector.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
@@ -225,7 +232,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     long uuid,
     String userId,
     boolean resolveIds,
-    List<Facet> facets)
+    List<Facet> facets,
+    Selector selector)
   {
     this();
     this.queryStr = queryStr;
@@ -248,6 +256,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.resolveIds = resolveIds;
     setResolveIdsIsSet(true);
     this.facets = facets;
+    this.selector = selector;
   }
 
   /**
@@ -285,6 +294,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       }
       this.facets = __this__facets;
     }
+    if (other.isSetSelector()) {
+      this.selector = new Selector(other.selector);
+    }
   }
 
   public BlurQuery deepCopy() {
@@ -314,6 +326,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     setResolveIdsIsSet(false);
     this.resolveIds = false;
     this.facets = null;
+    this.selector = null;
   }
 
   public String getQueryStr() {
@@ -644,6 +657,30 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
   }
 
+  public Selector getSelector() {
+    return this.selector;
+  }
+
+  public BlurQuery setSelector(Selector selector) {
+    this.selector = selector;
+    return this;
+  }
+
+  public void unsetSelector() {
+    this.selector = null;
+  }
+
+  /** Returns true if field selector is set (has been assigned a value) and false otherwise */
+  public boolean isSetSelector() {
+    return this.selector != null;
+  }
+
+  public void setSelectorIsSet(boolean value) {
+    if (!value) {
+      this.selector = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY_STR:
@@ -750,6 +787,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       }
       break;
 
+    case SELECTOR:
+      if (value == null) {
+        unsetSelector();
+      } else {
+        setSelector((Selector)value);
+      }
+      break;
+
     }
   }
 
@@ -794,6 +839,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     case FACETS:
       return getFacets();
 
+    case SELECTOR:
+      return getSelector();
+
     }
     throw new IllegalStateException();
   }
@@ -831,6 +879,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return isSetResolveIds();
     case FACETS:
       return isSetFacets();
+    case SELECTOR:
+      return isSetSelector();
     }
     throw new IllegalStateException();
   }
@@ -962,6 +1012,15 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       if (!(this_present_facets && that_present_facets))
         return false;
       if (!this.facets.equals(that.facets))
+        return false;
+    }
+
+    boolean this_present_selector = true && this.isSetSelector();
+    boolean that_present_selector = true && that.isSetSelector();
+    if (this_present_selector || that_present_selector) {
+      if (!(this_present_selector && that_present_selector))
+        return false;
+      if (!this.selector.equals(that.selector))
         return false;
     }
 
@@ -1111,6 +1170,16 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetSelector()).compareTo(typedOther.isSetSelector());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSelector()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.selector, typedOther.selector);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1222,17 +1291,25 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         case 13: // FACETS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list0 = iprot.readListBegin();
-              this.facets = new ArrayList<Facet>(_list0.size);
-              for (int _i1 = 0; _i1 < _list0.size; ++_i1)
+              org.apache.thrift.protocol.TList _list34 = iprot.readListBegin();
+              this.facets = new ArrayList<Facet>(_list34.size);
+              for (int _i35 = 0; _i35 < _list34.size; ++_i35)
               {
-                Facet _elem2;
-                _elem2 = new Facet();
-                _elem2.read(iprot);
-                this.facets.add(_elem2);
+                Facet _elem36;
+                _elem36 = new Facet();
+                _elem36.read(iprot);
+                this.facets.add(_elem36);
               }
               iprot.readListEnd();
             }
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 14: // SELECTOR
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.selector = new Selector();
+            this.selector.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -1302,12 +1379,17 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       oprot.writeFieldBegin(FACETS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.facets.size()));
-        for (Facet _iter3 : this.facets)
+        for (Facet _iter37 : this.facets)
         {
-          _iter3.write(oprot);
+          _iter37.write(oprot);
         }
         oprot.writeListEnd();
       }
+      oprot.writeFieldEnd();
+    }
+    if (this.selector != null) {
+      oprot.writeFieldBegin(SELECTOR_FIELD_DESC);
+      this.selector.write(oprot);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -1392,6 +1474,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       sb.append("null");
     } else {
       sb.append(this.facets);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("selector:");
+    if (this.selector == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.selector);
     }
     first = false;
     sb.append(")");

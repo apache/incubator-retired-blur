@@ -677,13 +677,13 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
         case 5: // COLUMN_FAMILIES_TO_FETCH
           if (field.type == org.apache.thrift.protocol.TType.SET) {
             {
-              org.apache.thrift.protocol.TSet _set59 = iprot.readSetBegin();
-              this.columnFamiliesToFetch = new HashSet<String>(2*_set59.size);
-              for (int _i60 = 0; _i60 < _set59.size; ++_i60)
+              org.apache.thrift.protocol.TSet _set0 = iprot.readSetBegin();
+              this.columnFamiliesToFetch = new HashSet<String>(2*_set0.size);
+              for (int _i1 = 0; _i1 < _set0.size; ++_i1)
               {
-                String _elem61;
-                _elem61 = iprot.readString();
-                this.columnFamiliesToFetch.add(_elem61);
+                String _elem2;
+                _elem2 = iprot.readString();
+                this.columnFamiliesToFetch.add(_elem2);
               }
               iprot.readSetEnd();
             }
@@ -694,25 +694,25 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
         case 6: // COLUMNS_TO_FETCH
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map62 = iprot.readMapBegin();
-              this.columnsToFetch = new HashMap<String,Set<String>>(2*_map62.size);
-              for (int _i63 = 0; _i63 < _map62.size; ++_i63)
+              org.apache.thrift.protocol.TMap _map3 = iprot.readMapBegin();
+              this.columnsToFetch = new HashMap<String,Set<String>>(2*_map3.size);
+              for (int _i4 = 0; _i4 < _map3.size; ++_i4)
               {
-                String _key64;
-                Set<String> _val65;
-                _key64 = iprot.readString();
+                String _key5;
+                Set<String> _val6;
+                _key5 = iprot.readString();
                 {
-                  org.apache.thrift.protocol.TSet _set66 = iprot.readSetBegin();
-                  _val65 = new HashSet<String>(2*_set66.size);
-                  for (int _i67 = 0; _i67 < _set66.size; ++_i67)
+                  org.apache.thrift.protocol.TSet _set7 = iprot.readSetBegin();
+                  _val6 = new HashSet<String>(2*_set7.size);
+                  for (int _i8 = 0; _i8 < _set7.size; ++_i8)
                   {
-                    String _elem68;
-                    _elem68 = iprot.readString();
-                    _val65.add(_elem68);
+                    String _elem9;
+                    _elem9 = iprot.readString();
+                    _val6.add(_elem9);
                   }
                   iprot.readSetEnd();
                 }
-                this.columnsToFetch.put(_key64, _val65);
+                this.columnsToFetch.put(_key5, _val6);
               }
               iprot.readMapEnd();
             }
@@ -757,9 +757,9 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       oprot.writeFieldBegin(COLUMN_FAMILIES_TO_FETCH_FIELD_DESC);
       {
         oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, this.columnFamiliesToFetch.size()));
-        for (String _iter69 : this.columnFamiliesToFetch)
+        for (String _iter10 : this.columnFamiliesToFetch)
         {
-          oprot.writeString(_iter69);
+          oprot.writeString(_iter10);
         }
         oprot.writeSetEnd();
       }
@@ -769,14 +769,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       oprot.writeFieldBegin(COLUMNS_TO_FETCH_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, this.columnsToFetch.size()));
-        for (Map.Entry<String, Set<String>> _iter70 : this.columnsToFetch.entrySet())
+        for (Map.Entry<String, Set<String>> _iter11 : this.columnsToFetch.entrySet())
         {
-          oprot.writeString(_iter70.getKey());
+          oprot.writeString(_iter11.getKey());
           {
-            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, _iter70.getValue().size()));
-            for (String _iter71 : _iter70.getValue())
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, _iter11.getValue().size()));
+            for (String _iter12 : _iter11.getValue())
             {
-              oprot.writeString(_iter71);
+              oprot.writeString(_iter12);
             }
             oprot.writeSetEnd();
           }

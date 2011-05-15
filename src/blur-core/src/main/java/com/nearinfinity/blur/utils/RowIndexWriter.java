@@ -16,7 +16,7 @@
 
 package com.nearinfinity.blur.utils;
 
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.*;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
@@ -52,6 +52,7 @@ public class RowIndexWriter {
     private BlurAnalyzer analyzer;
     private IndexWriter indexWriter;
     private boolean primeDocSet;
+    private StringBuilder builder = new StringBuilder();
     
     public RowIndexWriter(IndexWriter indexWriter, BlurAnalyzer analyzer) {
         this.indexWriter = indexWriter;
@@ -111,7 +112,7 @@ public class RowIndexWriter {
                 }
                 long newRamSize = indexWriter.ramSizeInBytes();
                 if (newRamSize < oldRamSize) {
-                    LOG.info("Flush occur during writing of super document, start over.");
+                    LOG.info("Flush occur during writing of row, start over.");
                     return false;
                 }
                 oldRamSize = newRamSize;
@@ -125,6 +126,7 @@ public class RowIndexWriter {
         if (set == null) {
             return false;
         }
+        builder.setLength(0);
         OUTER:
         for (Column column : set) {
             String name = column.getName();
@@ -133,18 +135,21 @@ public class RowIndexWriter {
                 continue OUTER;
             }
             int size = values.size();
+            String fieldName = getFieldName(columnFamily,name);
+            Store store = analyzer.getStore(fieldName);
+            Index index = analyzer.getIndex(fieldName);
             INNER:
             for (int i = 0; i < size; i++) {
                 String value = values.get(i);
                 if (value == null) {
                     continue INNER;
                 }
-                String fieldName = getFieldName(columnFamily,name);
-                Store store = analyzer.getStore(fieldName);
-                Index index = analyzer.getIndex(fieldName);
                 document.add(new Field(fieldName,value,store,index));
+                builder.append(value).append(' ');
             }
         }
+        String superValue = builder.toString();
+        document.add(new Field(SUPER, superValue, Store.NO, Index.ANALYZED_NO_NORMS));
         return true;
     }
     

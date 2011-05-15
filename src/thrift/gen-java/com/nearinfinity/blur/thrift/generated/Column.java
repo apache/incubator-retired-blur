@@ -347,13 +347,13 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
         case 2: // VALUES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list38 = iprot.readListBegin();
-              this.values = new ArrayList<String>(_list38.size);
-              for (int _i39 = 0; _i39 < _list38.size; ++_i39)
+              org.apache.thrift.protocol.TList _list13 = iprot.readListBegin();
+              this.values = new ArrayList<String>(_list13.size);
+              for (int _i14 = 0; _i14 < _list13.size; ++_i14)
               {
-                String _elem40;
-                _elem40 = iprot.readString();
-                this.values.add(_elem40);
+                String _elem15;
+                _elem15 = iprot.readString();
+                this.values.add(_elem15);
               }
               iprot.readListEnd();
             }
@@ -385,9 +385,9 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
       oprot.writeFieldBegin(VALUES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.values.size()));
-        for (String _iter41 : this.values)
+        for (String _iter16 : this.values)
         {
-          oprot.writeString(_iter41);
+          oprot.writeString(_iter16);
         }
         oprot.writeListEnd();
       }

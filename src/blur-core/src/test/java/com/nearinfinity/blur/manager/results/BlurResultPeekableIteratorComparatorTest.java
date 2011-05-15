@@ -48,7 +48,7 @@ public class BlurResultPeekableIteratorComparatorTest {
     }
 
     private BlurResult newResult(String id, double score) {
-        return new BlurResult(id, score, null);
+        return new BlurResult(id, score, null, null);
     }
 
 }

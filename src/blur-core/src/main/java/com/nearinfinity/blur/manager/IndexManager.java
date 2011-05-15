@@ -311,7 +311,7 @@ public class IndexManager {
                             status.deattachThread();
                         }
                     }
-                }).merge(new MergerBlurResultIterable(blurQuery.minimumNumberOfResults, blurQuery.maxQueryTime));
+                }).merge(new MergerBlurResultIterable(blurQuery));
         } finally {
             status.deattachThread();
             statusManager.removeStatus(status);
@@ -464,20 +464,6 @@ public class IndexManager {
             }
         };
     }
-
-//    private static boolean replaceInternal(IndexWriter indexWriter, SuperDocument document) throws IOException {
-//        long oldRamSize = indexWriter.ramSizeInBytes();
-//        for (Document doc : document.getAllDocumentsForIndexing()) {
-//            long newRamSize = indexWriter.ramSizeInBytes();
-//            if (newRamSize < oldRamSize) {
-//                LOG.info("Flush occur during writing of super document, start over.");
-//                return false;
-//            }
-//            oldRamSize = newRamSize;
-//            indexWriter.addDocument(doc);
-//        }
-//        return true;
-//    }
 
     public IndexServer getIndexServer() {
         return indexServer;

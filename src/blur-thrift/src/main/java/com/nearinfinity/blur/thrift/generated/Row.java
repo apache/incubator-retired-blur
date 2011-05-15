@@ -347,14 +347,14 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
         case 2: // COLUMN_FAMILIES
           if (field.type == org.apache.thrift.protocol.TType.SET) {
             {
-              org.apache.thrift.protocol.TSet _set51 = iprot.readSetBegin();
-              this.columnFamilies = new HashSet<ColumnFamily>(2*_set51.size);
-              for (int _i52 = 0; _i52 < _set51.size; ++_i52)
+              org.apache.thrift.protocol.TSet _set26 = iprot.readSetBegin();
+              this.columnFamilies = new HashSet<ColumnFamily>(2*_set26.size);
+              for (int _i27 = 0; _i27 < _set26.size; ++_i27)
               {
-                ColumnFamily _elem53;
-                _elem53 = new ColumnFamily();
-                _elem53.read(iprot);
-                this.columnFamilies.add(_elem53);
+                ColumnFamily _elem28;
+                _elem28 = new ColumnFamily();
+                _elem28.read(iprot);
+                this.columnFamilies.add(_elem28);
               }
               iprot.readSetEnd();
             }
@@ -386,9 +386,9 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
       {
         oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, this.columnFamilies.size()));
-        for (ColumnFamily _iter54 : this.columnFamilies)
+        for (ColumnFamily _iter29 : this.columnFamilies)
         {
-          _iter54.write(oprot);
+          _iter29.write(oprot);
         }
         oprot.writeSetEnd();
       }

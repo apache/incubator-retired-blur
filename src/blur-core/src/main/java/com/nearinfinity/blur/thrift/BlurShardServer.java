@@ -52,7 +52,18 @@ public class BlurShardServer extends ExecutionContextIface {
     private boolean closed;
 
     public enum Metrics {
-        GET_TABLE_STATUS, QUERY, FETCH_ROW, SHARD_SERVER_LAYOUT, CANCEL_QUERY, CURRENT_QUERIES, RECORD_FREQUENCY, SCHEMA, TERMS, DESCRIBE, MUTATE, QUERY_SUGGESTIONS
+        GET_TABLE_STATUS, 
+        QUERY, 
+        FETCH_ROW, 
+        SHARD_SERVER_LAYOUT, 
+        CANCEL_QUERY, 
+        CURRENT_QUERIES, 
+        RECORD_FREQUENCY, 
+        SCHEMA, 
+        TERMS, 
+        DESCRIBE, 
+        MUTATE, 
+        QUERY_SUGGESTIONS
     }
 
     @Override

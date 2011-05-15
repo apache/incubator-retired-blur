@@ -832,15 +832,15 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
         case 2: // SHARD_INFO
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map17 = iprot.readMapBegin();
-              this.shardInfo = new HashMap<String,Long>(2*_map17.size);
-              for (int _i18 = 0; _i18 < _map17.size; ++_i18)
+              org.apache.thrift.protocol.TMap _map51 = iprot.readMapBegin();
+              this.shardInfo = new HashMap<String,Long>(2*_map51.size);
+              for (int _i52 = 0; _i52 < _map51.size; ++_i52)
               {
-                String _key19;
-                long _val20;
-                _key19 = iprot.readString();
-                _val20 = iprot.readI64();
-                this.shardInfo.put(_key19, _val20);
+                String _key53;
+                long _val54;
+                _key53 = iprot.readString();
+                _val54 = iprot.readI64();
+                this.shardInfo.put(_key53, _val54);
               }
               iprot.readMapEnd();
             }
@@ -851,14 +851,14 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
         case 3: // RESULTS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list21 = iprot.readListBegin();
-              this.results = new ArrayList<BlurResult>(_list21.size);
-              for (int _i22 = 0; _i22 < _list21.size; ++_i22)
+              org.apache.thrift.protocol.TList _list55 = iprot.readListBegin();
+              this.results = new ArrayList<BlurResult>(_list55.size);
+              for (int _i56 = 0; _i56 < _list55.size; ++_i56)
               {
-                BlurResult _elem23;
-                _elem23 = new BlurResult();
-                _elem23.read(iprot);
-                this.results.add(_elem23);
+                BlurResult _elem57;
+                _elem57 = new BlurResult();
+                _elem57.read(iprot);
+                this.results.add(_elem57);
               }
               iprot.readListEnd();
             }
@@ -869,14 +869,14 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
         case 4: // EXCEPTIONS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list24 = iprot.readListBegin();
-              this.exceptions = new ArrayList<BlurException>(_list24.size);
-              for (int _i25 = 0; _i25 < _list24.size; ++_i25)
+              org.apache.thrift.protocol.TList _list58 = iprot.readListBegin();
+              this.exceptions = new ArrayList<BlurException>(_list58.size);
+              for (int _i59 = 0; _i59 < _list58.size; ++_i59)
               {
-                BlurException _elem26;
-                _elem26 = new BlurException();
-                _elem26.read(iprot);
-                this.exceptions.add(_elem26);
+                BlurException _elem60;
+                _elem60 = new BlurException();
+                _elem60.read(iprot);
+                this.exceptions.add(_elem60);
               }
               iprot.readListEnd();
             }
@@ -911,13 +911,13 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
         case 8: // FACET_COUNTS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list27 = iprot.readListBegin();
-              this.facetCounts = new ArrayList<Long>(_list27.size);
-              for (int _i28 = 0; _i28 < _list27.size; ++_i28)
+              org.apache.thrift.protocol.TList _list61 = iprot.readListBegin();
+              this.facetCounts = new ArrayList<Long>(_list61.size);
+              for (int _i62 = 0; _i62 < _list61.size; ++_i62)
               {
-                long _elem29;
-                _elem29 = iprot.readI64();
-                this.facetCounts.add(_elem29);
+                long _elem63;
+                _elem63 = iprot.readI64();
+                this.facetCounts.add(_elem63);
               }
               iprot.readListEnd();
             }
@@ -947,10 +947,10 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, this.shardInfo.size()));
-        for (Map.Entry<String, Long> _iter30 : this.shardInfo.entrySet())
+        for (Map.Entry<String, Long> _iter64 : this.shardInfo.entrySet())
         {
-          oprot.writeString(_iter30.getKey());
-          oprot.writeI64(_iter30.getValue());
+          oprot.writeString(_iter64.getKey());
+          oprot.writeI64(_iter64.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -960,9 +960,9 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       oprot.writeFieldBegin(RESULTS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.results.size()));
-        for (BlurResult _iter31 : this.results)
+        for (BlurResult _iter65 : this.results)
         {
-          _iter31.write(oprot);
+          _iter65.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -972,9 +972,9 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.exceptions.size()));
-        for (BlurException _iter32 : this.exceptions)
+        for (BlurException _iter66 : this.exceptions)
         {
-          _iter32.write(oprot);
+          _iter66.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -995,9 +995,9 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       oprot.writeFieldBegin(FACET_COUNTS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, this.facetCounts.size()));
-        for (long _iter33 : this.facetCounts)
+        for (long _iter67 : this.facetCounts)
         {
-          oprot.writeI64(_iter33);
+          oprot.writeI64(_iter67);
         }
         oprot.writeListEnd();
       }

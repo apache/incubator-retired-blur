@@ -14,63 +14,18 @@ enum ScoreType {
   CONSTANT
 }
 
+struct Selector {
+  1:bool recordOnly,
+  2:string locationId,
+  3:string rowId,
+  4:string recordId,
+  5:set<string> columnFamiliesToFetch,
+  6:map<string,set<string>> columnsToFetch
+}
+
 struct Facet {
   1:string queryStr,
   2:i64 minimumNumberOfBlurResults
-}
-
-struct BlurQuery {
-  1:string queryStr,
-  2:bool superQueryOn = 1,
-  3:ScoreType type = ScoreType.SUPER, 
-  4:string postSuperFilter,
-  5:string preSuperFilter,
-  6:i64 start = 0,
-  7:i32 fetch = 10, 
-  8:i64 minimumNumberOfResults = 9223372036854775807,
-  9:i64 maxQueryTime = 9223372036854775807,
-  10:i64 uuid,
-  11:string userId,
-  12:bool resolveIds,
-  13:list<Facet> facets
-}
-
-struct BlurQuerySuggestion {
-  1:string queryStr,
-  2:i64 totalResults = 0,
-  3:map<string,i64> shardInfo,
-  4:list<BlurException> exceptions,
-  5:BlurQuery query,
-  6:i64 realTime,
-  7:i64 cpuTime
-}
-
-struct BlurQuerySuggestions {
-  1:list<BlurQuerySuggestion> querySuggestions
-}
-
-struct BlurResult {
-  1:string locationId,
-  2:double score,
-  3:string reason = "UNKNOWN"
-}
-
-struct BlurResults {
-  1:i64 totalResults = 0,
-  2:map<string,i64> shardInfo,
-  3:list<BlurResult> results,
-  4:list<BlurException> exceptions,
-  5:BlurQuery query,
-  6:i64 realTime,
-  7:i64 cpuTime,
-  8:list<i64> facetCounts
-}
-
-struct TableDescriptor {
-  1:bool isEnabled,
-  2:string analyzerDef,
-  3:list<string> shardNames,
-  4:string tableUri
 }
 
 struct Column {
@@ -107,13 +62,60 @@ struct FetchResult {
   5:FetchRecordResult recordResult
 }
 
-struct Selector {
-  1:bool recordOnly,
-  2:string locationId,
-  3:string rowId,
-  4:string recordId,
-  5:set<string> columnFamiliesToFetch,
-  6:map<string,set<string>> columnsToFetch
+struct BlurQuery {
+  1:string queryStr,
+  2:bool superQueryOn = 1,
+  3:ScoreType type = ScoreType.SUPER, 
+  4:string postSuperFilter,
+  5:string preSuperFilter,
+  6:i64 start = 0,
+  7:i32 fetch = 10, 
+  8:i64 minimumNumberOfResults = 9223372036854775807,
+  9:i64 maxQueryTime = 9223372036854775807,
+  10:i64 uuid,
+  11:string userId,
+  12:bool resolveIds,
+  13:list<Facet> facets,
+  14:Selector selector
+}
+
+struct BlurQuerySuggestion {
+  1:string queryStr,
+  2:i64 totalResults = 0,
+  3:map<string,i64> shardInfo,
+  4:list<BlurException> exceptions,
+  5:BlurQuery query,
+  6:i64 realTime,
+  7:i64 cpuTime
+}
+
+struct BlurQuerySuggestions {
+  1:list<BlurQuerySuggestion> querySuggestions
+}
+
+struct BlurResult {
+  1:string locationId,
+  2:double score,
+  3:string reason = "UNKNOWN",
+  4:FetchResult result
+}
+
+struct BlurResults {
+  1:i64 totalResults = 0,
+  2:map<string,i64> shardInfo,
+  3:list<BlurResult> results,
+  4:list<BlurException> exceptions,
+  5:BlurQuery query,
+  6:i64 realTime,
+  7:i64 cpuTime,
+  8:list<i64> facetCounts
+}
+
+struct TableDescriptor {
+  1:bool isEnabled,
+  2:string analyzerDef,
+  3:list<string> shardNames,
+  4:string tableUri
 }
 
 struct BlurQueryStatus {

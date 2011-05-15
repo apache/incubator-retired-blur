@@ -46,7 +46,7 @@ public class MultipleBlurResultIterableTest {
     private BlurResultIterable newBlurResultIterable(double... ds) {
         List<BlurResult> results = new ArrayList<BlurResult>();
         for (double d : ds) {
-            results.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
+            results.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null,null));
         }
         return new BlurResultIterableSimple(UUID.randomUUID().toString(), results);
     }

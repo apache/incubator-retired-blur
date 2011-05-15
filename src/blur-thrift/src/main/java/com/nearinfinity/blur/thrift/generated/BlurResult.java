@@ -26,16 +26,19 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
   private static final org.apache.thrift.protocol.TField LOCATION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("locationId", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("score", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
   private static final org.apache.thrift.protocol.TField REASON_FIELD_DESC = new org.apache.thrift.protocol.TField("reason", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("result", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
   public String locationId;
   public double score;
   public String reason;
+  public FetchResult result;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     LOCATION_ID((short)1, "locationId"),
     SCORE((short)2, "score"),
-    REASON((short)3, "reason");
+    REASON((short)3, "reason"),
+    RESULT((short)4, "result");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -56,6 +59,8 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
           return SCORE;
         case 3: // REASON
           return REASON;
+        case 4: // RESULT
+          return RESULT;
         default:
           return null;
       }
@@ -108,6 +113,8 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     tmpMap.put(_Fields.REASON, new org.apache.thrift.meta_data.FieldMetaData("reason", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.RESULT, new org.apache.thrift.meta_data.FieldMetaData("result", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FetchResult.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurResult.class, metaDataMap);
   }
@@ -120,13 +127,15 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
   public BlurResult(
     String locationId,
     double score,
-    String reason)
+    String reason,
+    FetchResult result)
   {
     this();
     this.locationId = locationId;
     this.score = score;
     setScoreIsSet(true);
     this.reason = reason;
+    this.result = result;
   }
 
   /**
@@ -142,6 +151,9 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     if (other.isSetReason()) {
       this.reason = other.reason;
     }
+    if (other.isSetResult()) {
+      this.result = new FetchResult(other.result);
+    }
   }
 
   public BlurResult deepCopy() {
@@ -155,6 +167,7 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     this.score = 0.0;
     this.reason = "UNKNOWN";
 
+    this.result = null;
   }
 
   public String getLocationId() {
@@ -228,6 +241,30 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     }
   }
 
+  public FetchResult getResult() {
+    return this.result;
+  }
+
+  public BlurResult setResult(FetchResult result) {
+    this.result = result;
+    return this;
+  }
+
+  public void unsetResult() {
+    this.result = null;
+  }
+
+  /** Returns true if field result is set (has been assigned a value) and false otherwise */
+  public boolean isSetResult() {
+    return this.result != null;
+  }
+
+  public void setResultIsSet(boolean value) {
+    if (!value) {
+      this.result = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case LOCATION_ID:
@@ -254,6 +291,14 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       }
       break;
 
+    case RESULT:
+      if (value == null) {
+        unsetResult();
+      } else {
+        setResult((FetchResult)value);
+      }
+      break;
+
     }
   }
 
@@ -267,6 +312,9 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
 
     case REASON:
       return getReason();
+
+    case RESULT:
+      return getResult();
 
     }
     throw new IllegalStateException();
@@ -285,6 +333,8 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       return isSetScore();
     case REASON:
       return isSetReason();
+    case RESULT:
+      return isSetResult();
     }
     throw new IllegalStateException();
   }
@@ -326,6 +376,15 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       if (!(this_present_reason && that_present_reason))
         return false;
       if (!this.reason.equals(that.reason))
+        return false;
+    }
+
+    boolean this_present_result = true && this.isSetResult();
+    boolean that_present_result = true && that.isSetResult();
+    if (this_present_result || that_present_result) {
+      if (!(this_present_result && that_present_result))
+        return false;
+      if (!this.result.equals(that.result))
         return false;
     }
 
@@ -375,6 +434,16 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetResult()).compareTo(typedOther.isSetResult());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetResult()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.result, typedOther.result);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -414,6 +483,14 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 4: // RESULT
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.result = new FetchResult();
+            this.result.read(iprot);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -442,6 +519,11 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       oprot.writeString(this.reason);
       oprot.writeFieldEnd();
     }
+    if (this.result != null) {
+      oprot.writeFieldBegin(RESULT_FIELD_DESC);
+      this.result.write(oprot);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -468,6 +550,14 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       sb.append("null");
     } else {
       sb.append(this.reason);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("result:");
+    if (this.result == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.result);
     }
     first = false;
     sb.append(")");

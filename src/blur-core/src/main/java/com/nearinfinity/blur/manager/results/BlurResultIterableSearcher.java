@@ -34,61 +34,61 @@ import com.nearinfinity.blur.utils.IteratorConverter;
 
 public class BlurResultIterableSearcher implements BlurResultIterable {
     
-    private Map<String, Long> shardInfo = new TreeMap<String, Long>();
-    private String shard;
-    private long skipTo;
-    private int fetchCount = 1000;
+    private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
+    private String _shard;
+    private long _skipTo;
+    private int _fetchCount = 1000;
 
-    private IteratorConverter<ScoreDoc, BlurResult> iterator;
-    private Query query;
-    private IndexSearcher searcher;
-    private TotalHitsRef totalHitsRef = new TotalHitsRef();
-    private ProgressRef progressRef = new ProgressRef();
+    private IteratorConverter<ScoreDoc, BlurResult> _iterator;
+    private Query _query;
+    private IndexSearcher _searcher;
+    private TotalHitsRef _totalHitsRef = new TotalHitsRef();
+    private ProgressRef _progressRef = new ProgressRef();
 
     public BlurResultIterableSearcher(Query query, String table, String shard, IndexSearcher searcher) throws IOException {
-        this.query = query;
-        this.shard = shard;
-        this.searcher = searcher;
+        _query = query;
+        _shard = shard;
+        _searcher = searcher;
         performSearch();
     }
 
     private void performSearch() throws IOException {
-        IterablePaging iterablePaging = new IterablePaging(searcher, query, fetchCount, totalHitsRef, progressRef);
-        iterator = new IteratorConverter<ScoreDoc,BlurResult>(iterablePaging.iterator(), new Converter<ScoreDoc,BlurResult>() {
+        IterablePaging iterablePaging = new IterablePaging(_searcher, _query, _fetchCount, _totalHitsRef, _progressRef);
+        _iterator = new IteratorConverter<ScoreDoc,BlurResult>(iterablePaging.iterator(), new Converter<ScoreDoc,BlurResult>() {
             @Override
             public BlurResult convert(ScoreDoc scoreDoc) throws Exception {
-                return new BlurResult(resolveId(scoreDoc.doc), scoreDoc.score, "UNKNOWN");
+                return new BlurResult(resolveId(scoreDoc.doc), scoreDoc.score, "UNKNOWN", null);
             }
         });
-        shardInfo.put(shard, (long)totalHitsRef.totalHits());
+        _shardInfo.put(_shard, (long) _totalHitsRef.totalHits());
     }
 
     @Override
     public Map<String, Long> getShardInfo() {
-        return shardInfo;
+        return _shardInfo;
     }
 
     @Override
     public long getTotalResults() {
-        return totalHitsRef.totalHits();
+        return _totalHitsRef.totalHits();
     }
 
     @Override
     public void skipTo(long skipTo) {
-        this.skipTo = skipTo;
+        _skipTo = skipTo;
     }
 
     @Override
     public Iterator<BlurResult> iterator() {
         long start = 0;
-        while (iterator.hasNext() && start < skipTo) {
-            iterator.next();
+        while (_iterator.hasNext() && start < _skipTo) {
+            _iterator.next();
             start++;
         }
-        return iterator;
+        return _iterator;
     }
     
     private String resolveId(int docId) {
-        return shard + "/" + docId;
+        return _shard + "/" + docId;
     }  
 }

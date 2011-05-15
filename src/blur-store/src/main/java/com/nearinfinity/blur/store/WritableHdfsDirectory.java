@@ -46,6 +46,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     protected LocalFileCache localFileCache;
     protected String dirName;
     protected Progressable progressable;
+    protected int _retryCount = 10;
     
     public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
@@ -83,23 +84,24 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     @Override
     public void sync(String name) throws IOException {
         File file = localFileCache.getLocalFile(dirName, name);
-        LOG.debug("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
-        
-//        FSDataOutputStream outputStream = super.getOutputStream(name + ".sync");
-//        FileInputStream inputStream = new FileInputStream(file);
-//        
-//        byte[] buffer = new byte[BUFFER_SIZE];
-//        int num;
-//        while ((num = inputStream.read(buffer)) != -1) {
-//            progressable.progress();
-//            outputStream.write(buffer, 0, num);
-//        }
-//        outputStream.close();
-//        inputStream.close();
-        
-        fileSystem.copyFromLocalFile(new Path(file.getAbsolutePath()), new Path(hdfsDirPath,name + ".sync"));
-        
-        rename(name + ".sync",name);
+        Path dest = new Path(hdfsDirPath,name + ".sync");
+        Path source = new Path(file.getAbsolutePath());
+        int count = 0;
+        while (true) {
+            try {
+                LOG.debug("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
+                fileSystem.copyFromLocalFile(source, dest);
+                rename(name + ".sync",name);
+                return;
+            } catch (IOException e) {
+                if (count < _retryCount) {
+                    count++;
+                    LOG.error("Error sync retry count [{0}] local file [{1}] to [{2}]",e,count,source,dest);
+                } else {
+                    throw e;
+                }
+            }
+        }
     }
 
     @Override

@@ -271,14 +271,14 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
         case 1: // QUERY_SUGGESTIONS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list13 = iprot.readListBegin();
-              this.querySuggestions = new ArrayList<BlurQuerySuggestion>(_list13.size);
-              for (int _i14 = 0; _i14 < _list13.size; ++_i14)
+              org.apache.thrift.protocol.TList _list47 = iprot.readListBegin();
+              this.querySuggestions = new ArrayList<BlurQuerySuggestion>(_list47.size);
+              for (int _i48 = 0; _i48 < _list47.size; ++_i48)
               {
-                BlurQuerySuggestion _elem15;
-                _elem15 = new BlurQuerySuggestion();
-                _elem15.read(iprot);
-                this.querySuggestions.add(_elem15);
+                BlurQuerySuggestion _elem49;
+                _elem49 = new BlurQuerySuggestion();
+                _elem49.read(iprot);
+                this.querySuggestions.add(_elem49);
               }
               iprot.readListEnd();
             }
@@ -305,9 +305,9 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
       oprot.writeFieldBegin(QUERY_SUGGESTIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.querySuggestions.size()));
-        for (BlurQuerySuggestion _iter16 : this.querySuggestions)
+        for (BlurQuerySuggestion _iter50 : this.querySuggestions)
         {
-          _iter16.write(oprot);
+          _iter50.write(oprot);
         }
         oprot.writeListEnd();
       }

@@ -19,26 +19,27 @@ package com.nearinfinity.blur.manager.results;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
 public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
 
-    private long minimumNumberOfResults;
-    private long maxQueryTime;
+    private long _minimumNumberOfResults;
+    private long _maxQueryTime;
 
-    public MergerBlurResultIterable(long minimumNumberOfHits, long maxQueryTime) {
-        this.minimumNumberOfResults = minimumNumberOfHits;
-        this.maxQueryTime = maxQueryTime;
+    public MergerBlurResultIterable(BlurQuery blurQuery) {
+        _minimumNumberOfResults = blurQuery.minimumNumberOfResults;
+        _maxQueryTime = blurQuery.maxQueryTime;
     }
 
     @Override
     public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws Exception {
         BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
         while (service.getRemainingCount() > 0) {
-            Future<BlurResultIterable> future = service.poll(maxQueryTime, TimeUnit.MILLISECONDS);
+            Future<BlurResultIterable> future = service.poll(_maxQueryTime, TimeUnit.MILLISECONDS);
             iterable.addBlurResultIterable(future.get());
-            if (iterable.getTotalResults() >= minimumNumberOfResults) {
+            if (iterable.getTotalResults() >= _minimumNumberOfResults) {
                 return iterable;
             }
         }

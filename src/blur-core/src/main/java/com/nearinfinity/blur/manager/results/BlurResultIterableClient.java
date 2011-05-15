@@ -76,7 +76,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
             
             BlurQuery searchQuery = new BlurQuery(query, superQueryOn, type, 
                     postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfResults, 
-                    maxQueryTime, uuid, null, false, null);
+                    maxQueryTime, uuid, null, false, null, null);
             
             hits = client.query(table, searchQuery);
             addFacets();

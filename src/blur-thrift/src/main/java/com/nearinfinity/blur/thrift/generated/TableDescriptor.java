@@ -496,13 +496,13 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         case 3: // SHARD_NAMES
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list34 = iprot.readListBegin();
-              this.shardNames = new ArrayList<String>(_list34.size);
-              for (int _i35 = 0; _i35 < _list34.size; ++_i35)
+              org.apache.thrift.protocol.TList _list68 = iprot.readListBegin();
+              this.shardNames = new ArrayList<String>(_list68.size);
+              for (int _i69 = 0; _i69 < _list68.size; ++_i69)
               {
-                String _elem36;
-                _elem36 = iprot.readString();
-                this.shardNames.add(_elem36);
+                String _elem70;
+                _elem70 = iprot.readString();
+                this.shardNames.add(_elem70);
               }
               iprot.readListEnd();
             }
@@ -544,9 +544,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       oprot.writeFieldBegin(SHARD_NAMES_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.shardNames.size()));
-        for (String _iter37 : this.shardNames)
+        for (String _iter71 : this.shardNames)
         {
-          oprot.writeString(_iter37);
+          oprot.writeString(_iter71);
         }
         oprot.writeListEnd();
       }

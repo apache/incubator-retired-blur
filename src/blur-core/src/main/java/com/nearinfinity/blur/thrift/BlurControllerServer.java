@@ -107,7 +107,7 @@ public class BlurControllerServer implements Iface {
                 public BlurResultIterable call(Client client) throws Exception {
                     return new BlurResultIterableClient(client,table,blurQuery,facetCounts);
                 }
-            },new MergerBlurResultIterable(blurQuery.minimumNumberOfResults,blurQuery.maxQueryTime));
+            },new MergerBlurResultIterable(blurQuery));
 			return BlurBaseServer.convertToHits(hitsIterable, blurQuery.start, blurQuery.fetch, blurQuery.minimumNumberOfResults,facetCounts);
 		} catch (Exception e) {
 		    LOG.error("Unknown error during search of [table={0},blurQuery={1}]",e,table,blurQuery);

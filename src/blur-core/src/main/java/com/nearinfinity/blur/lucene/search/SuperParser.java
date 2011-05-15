@@ -17,6 +17,7 @@
 package com.nearinfinity.blur.lucene.search;
 
 import static com.nearinfinity.blur.utils.BlurConstants.SEP;
+import static com.nearinfinity.blur.utils.BlurConstants.SUPER;
 
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +42,6 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 
 public class SuperParser extends QueryParser {
 	
-	public static final String SUPER = "super";
 	private Map<Query,String> fieldNames = new HashMap<Query, String>();
 	private boolean superSearch = true;
 	private Filter queryFilter;

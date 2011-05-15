@@ -278,8 +278,8 @@ public class IndexManagerTest {
         BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
         assertEquals(iterable.getTotalResults(), 2);
         for (BlurResult result : iterable) {
-            assertNotNull(result.result.rowResult);
-            assertNull(result.result.recordResult);
+            assertNotNull(result.fetchResult.rowResult);
+            assertNull(result.fetchResult.recordResult);
         }
 
         assertFalse(indexManager.currentQueries(TABLE).isEmpty());
@@ -327,8 +327,8 @@ public class IndexManagerTest {
         BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
         assertEquals(iterable.getTotalResults(), 2);
         for (BlurResult result : iterable) {
-            assertNull(result.result.rowResult);
-            assertNotNull(result.result.recordResult);
+            assertNull(result.fetchResult.rowResult);
+            assertNotNull(result.fetchResult.recordResult);
         }
 
         assertFalse(indexManager.currentQueries(TABLE).isEmpty());

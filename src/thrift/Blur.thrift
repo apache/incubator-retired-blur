@@ -97,7 +97,7 @@ struct BlurResult {
   1:string locationId,
   2:double score,
   3:string reason = "UNKNOWN",
-  4:FetchResult result
+  4:FetchResult fetchResult
 }
 
 struct BlurResults {

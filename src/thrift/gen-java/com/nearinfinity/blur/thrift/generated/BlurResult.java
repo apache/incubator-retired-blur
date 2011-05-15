@@ -26,19 +26,19 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
   private static final org.apache.thrift.protocol.TField LOCATION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("locationId", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("score", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
   private static final org.apache.thrift.protocol.TField REASON_FIELD_DESC = new org.apache.thrift.protocol.TField("reason", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("result", org.apache.thrift.protocol.TType.STRUCT, (short)4);
+  private static final org.apache.thrift.protocol.TField FETCH_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("fetchResult", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
   public String locationId;
   public double score;
   public String reason;
-  public FetchResult result;
+  public FetchResult fetchResult;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     LOCATION_ID((short)1, "locationId"),
     SCORE((short)2, "score"),
     REASON((short)3, "reason"),
-    RESULT((short)4, "result");
+    FETCH_RESULT((short)4, "fetchResult");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -59,8 +59,8 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
           return SCORE;
         case 3: // REASON
           return REASON;
-        case 4: // RESULT
-          return RESULT;
+        case 4: // FETCH_RESULT
+          return FETCH_RESULT;
         default:
           return null;
       }
@@ -113,7 +113,7 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
     tmpMap.put(_Fields.REASON, new org.apache.thrift.meta_data.FieldMetaData("reason", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.RESULT, new org.apache.thrift.meta_data.FieldMetaData("result", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.FETCH_RESULT, new org.apache.thrift.meta_data.FieldMetaData("fetchResult", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FetchResult.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurResult.class, metaDataMap);
@@ -128,14 +128,14 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     String locationId,
     double score,
     String reason,
-    FetchResult result)
+    FetchResult fetchResult)
   {
     this();
     this.locationId = locationId;
     this.score = score;
     setScoreIsSet(true);
     this.reason = reason;
-    this.result = result;
+    this.fetchResult = fetchResult;
   }
 
   /**
@@ -151,8 +151,8 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     if (other.isSetReason()) {
       this.reason = other.reason;
     }
-    if (other.isSetResult()) {
-      this.result = new FetchResult(other.result);
+    if (other.isSetFetchResult()) {
+      this.fetchResult = new FetchResult(other.fetchResult);
     }
   }
 
@@ -167,7 +167,7 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     this.score = 0.0;
     this.reason = "UNKNOWN";
 
-    this.result = null;
+    this.fetchResult = null;
   }
 
   public String getLocationId() {
@@ -241,27 +241,27 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     }
   }
 
-  public FetchResult getResult() {
-    return this.result;
+  public FetchResult getFetchResult() {
+    return this.fetchResult;
   }
 
-  public BlurResult setResult(FetchResult result) {
-    this.result = result;
+  public BlurResult setFetchResult(FetchResult fetchResult) {
+    this.fetchResult = fetchResult;
     return this;
   }
 
-  public void unsetResult() {
-    this.result = null;
+  public void unsetFetchResult() {
+    this.fetchResult = null;
   }
 
-  /** Returns true if field result is set (has been assigned a value) and false otherwise */
-  public boolean isSetResult() {
-    return this.result != null;
+  /** Returns true if field fetchResult is set (has been assigned a value) and false otherwise */
+  public boolean isSetFetchResult() {
+    return this.fetchResult != null;
   }
 
-  public void setResultIsSet(boolean value) {
+  public void setFetchResultIsSet(boolean value) {
     if (!value) {
-      this.result = null;
+      this.fetchResult = null;
     }
   }
 
@@ -291,11 +291,11 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       }
       break;
 
-    case RESULT:
+    case FETCH_RESULT:
       if (value == null) {
-        unsetResult();
+        unsetFetchResult();
       } else {
-        setResult((FetchResult)value);
+        setFetchResult((FetchResult)value);
       }
       break;
 
@@ -313,8 +313,8 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     case REASON:
       return getReason();
 
-    case RESULT:
-      return getResult();
+    case FETCH_RESULT:
+      return getFetchResult();
 
     }
     throw new IllegalStateException();
@@ -333,8 +333,8 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       return isSetScore();
     case REASON:
       return isSetReason();
-    case RESULT:
-      return isSetResult();
+    case FETCH_RESULT:
+      return isSetFetchResult();
     }
     throw new IllegalStateException();
   }
@@ -379,12 +379,12 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
         return false;
     }
 
-    boolean this_present_result = true && this.isSetResult();
-    boolean that_present_result = true && that.isSetResult();
-    if (this_present_result || that_present_result) {
-      if (!(this_present_result && that_present_result))
+    boolean this_present_fetchResult = true && this.isSetFetchResult();
+    boolean that_present_fetchResult = true && that.isSetFetchResult();
+    if (this_present_fetchResult || that_present_fetchResult) {
+      if (!(this_present_fetchResult && that_present_fetchResult))
         return false;
-      if (!this.result.equals(that.result))
+      if (!this.fetchResult.equals(that.fetchResult))
         return false;
     }
 
@@ -434,12 +434,12 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetResult()).compareTo(typedOther.isSetResult());
+    lastComparison = Boolean.valueOf(isSetFetchResult()).compareTo(typedOther.isSetFetchResult());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetResult()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.result, typedOther.result);
+    if (isSetFetchResult()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.fetchResult, typedOther.fetchResult);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -483,10 +483,10 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // RESULT
+        case 4: // FETCH_RESULT
           if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-            this.result = new FetchResult();
-            this.result.read(iprot);
+            this.fetchResult = new FetchResult();
+            this.fetchResult.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -519,9 +519,9 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
       oprot.writeString(this.reason);
       oprot.writeFieldEnd();
     }
-    if (this.result != null) {
-      oprot.writeFieldBegin(RESULT_FIELD_DESC);
-      this.result.write(oprot);
+    if (this.fetchResult != null) {
+      oprot.writeFieldBegin(FETCH_RESULT_FIELD_DESC);
+      this.fetchResult.write(oprot);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -553,11 +553,11 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("result:");
-    if (this.result == null) {
+    sb.append("fetchResult:");
+    if (this.fetchResult == null) {
       sb.append("null");
     } else {
-      sb.append(this.result);
+      sb.append(this.fetchResult);
     }
     first = false;
     sb.append(")");

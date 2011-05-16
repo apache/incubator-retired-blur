@@ -6,5 +6,5 @@ require 'afs'
 # Initialize the rails application
 AfsTestApp::Application.initialize!
 
-Afs::Impl.autoload(:Local, File.expand_path('../filesystems/afs/impl/local', __FILE__))
-Afs::Impl.autoload(:HDFS, File.expand_path('../filesystems/afs/impl/hdfs', __FILE__))
+load File.dirname(__FILE__) + '/filesystems/afs/impl/local.rb'
+load File.dirname(__FILE__) + '/filesystems/afs/impl/hdfs.rb'

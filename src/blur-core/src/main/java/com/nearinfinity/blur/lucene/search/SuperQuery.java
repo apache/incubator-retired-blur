@@ -201,8 +201,6 @@ public class SuperQuery extends AbstractWrapperQuery {
                 return primeDoc == -1 ? primeDoc = doc : primeDoc;
             }
             int gatherAllHitsSuperDoc = gatherAllHitsSuperDoc(doc);
-            // System.out.println("adv [" + target + "] [" + originalQueryStr + "] > " + odoc + " = " +
-            // gatherAllHitsSuperDoc);
             return gatherAllHitsSuperDoc;
         }
 
@@ -223,7 +221,6 @@ public class SuperQuery extends AbstractWrapperQuery {
             }
             
             int gatherAllHitsSuperDoc = gatherAllHitsSuperDoc(doc);
-            // System.out.println("nextDoc [" + originalQueryStr + "] > " + odoc + " = " + gatherAllHitsSuperDoc);
             return gatherAllHitsSuperDoc;
         }
 
@@ -258,19 +255,19 @@ public class SuperQuery extends AbstractWrapperQuery {
         }
 
         private int getPrimeDoc(int doc) {
-            return bitSet.prevSetBit(doc);
+//            return bitSet.prevSetBit(doc); //somewhere around the 62 63 64 border when calling prev doesn't work
             // // System.out.println("================================");
             // // System.out.println("doc=" + doc);
             // // System.out.println("prevSetBit [" + bitSet.prevSetBit(doc) + "]");
-            // while (!bitSet.get(doc)) {
-            // doc--;
-            // if (doc <= 0) {
-            // // System.out.println("prime [" + 0 + "] but really [" + doc + "]");
-            // return 0;
-            // }
-            // }
-            // // System.out.println("prime [" + doc + "]");
-            // return doc;
+            while (!bitSet.get(doc)) {
+                doc--;
+                if (doc <= 0) {
+                    // System.out.println("prime [" + 0 + "] but really [" + doc + "]");
+                    return 0;
+                }
+            }
+            // System.out.println("prime [" + doc + "]");
+            return doc;
         }
 
         private boolean isScorerExhausted(int doc) {

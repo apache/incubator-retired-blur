@@ -1,0 +1,4 @@
+%h1= @file_system.display + ":"
+%ul
+  -@current_dir.each do |dir|
+    %li= dir[0]

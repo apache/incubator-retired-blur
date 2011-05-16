@@ -20,7 +20,7 @@ module Afs
         level = level_to_expand == 'root' ? File.expand_path('~') : level_to_expand
         
         sub_dirs = {}
-        Dir["#{level}/*/"].each {|x| sub_dirs[File.basename(x)] = x}
+        Dir["#{level}/*"].each {|x| sub_dirs[File.basename(x)] = x}
         
         sub_dirs
       end

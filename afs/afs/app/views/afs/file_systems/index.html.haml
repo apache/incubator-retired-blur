@@ -1,11 +1,13 @@
 #afs_container
   #afs_fs_chooser_pane
-    Available File Systems:
-    -if @file_systems
+    -if @file_systems && @file_systems.length > 0
+      %h2="Available File Systems: " + @file_systems.length.to_s
       %ul
         -@file_systems.each do |fs|
-          %li= fs.display
+          %li= link_to fs.display, afs_view_path(fs.internal_name)
+          
+          
     -else
-      There are no file systems loaded.
+      %h2 There are no file systems loaded.
   #afs_fs_tree_pane
   #afs_fs_display_pane

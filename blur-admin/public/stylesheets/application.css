@@ -10,18 +10,6 @@
 	vertical-align: top;
 }
 
-.widget-double{
-	width:48%;
-}
-
-.widget-triple{
-	width:72%;
-}
-
-.widget-full{
-	width:96%;
-}
-
 .hidden{
 	display: none;
 }

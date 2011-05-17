@@ -10,6 +10,7 @@ gem 'jquery-rails', '>= 0.2.6'
 gem 'compass'
 gem 'haml'
 gem 'barista'
+gem 'thrift'
 
 # Use unicorn as the web server
 # gem 'unicorn'

@@ -1,0 +1,49 @@
+#hd
+{
+  font-size: 200%;
+  margin-top:20px;
+}
+
+#bd
+{
+  font-size: 100%;
+  color: black;
+  height: 200px;
+  width: 100%;
+}
+
+
+#tree-pane
+{
+  width:25%;
+  height: 100%;
+  overflow: auto;
+  margin-left:5px;
+  background-color: blue;
+  float: left;
+}
+
+#files-pane
+{
+  width:74%;
+  height: 100%;
+  overflow: auto;
+  margin-right: 5px;
+  background-color: #F0F0F0;
+  float: right;
+}
+.icon-fix
+{
+  display: inline-block;
+}
+.list-item
+{
+  background-color: #FEFEFE;
+  margin: 0px;
+  padding: 0px;
+  padding-left: 2px;
+}
+.list-item:nth-child(even)
+{
+  background-color: #F9F9F9;
+}

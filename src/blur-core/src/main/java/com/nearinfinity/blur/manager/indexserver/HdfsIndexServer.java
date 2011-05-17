@@ -49,6 +49,9 @@ import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.store.replication.ReplicationStrategy;
+import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
+import com.nearinfinity.lucene.compressed.CompressionCodec;
+import com.nearinfinity.lucene.compressed.DeflaterCompressionCodec;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
@@ -95,12 +98,16 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         if (!fileSystem.exists(hdfsDirPath)) {
             throw new FileNotFoundException(hdfsDirPath.toString());
         }
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, new Progressable() {
+        ReplicaHdfsDirectory rdirectory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, new Progressable() {
             @Override
             public void progress() {
                 //do nothing for now
             }
         }, replicationDaemon, replicationStrategy);
+        
+        CompressionCodec compression = new DeflaterCompressionCodec();
+        CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(rdirectory, compression, 65536);
+        
         BlurIndexWriter writer = new BlurIndexWriter();
         writer.setCloser(_closer);
         writer.setCommiter(_commiter);

@@ -17,7 +17,8 @@
 {
   width:25%;
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  word-wrap: break-word;
   margin-left:5px;
   background-color: blue;
   float: left;
@@ -27,7 +28,8 @@
 {
   width:74%;
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  word-wrap: break-word;
   margin-right: 5px;
   background-color: #F0F0F0;
   float: right;

@@ -1,6 +1,11 @@
 BlurAdmin::Application.routes.draw do
   get "main/index"
 
+
+  controller "main" do
+     match '/queries/running/:table', :to => :view_running, :as => :view_running, :via => :get
+  end
+
   # The priority is based upon order of creation:
   # first created -> highest priority.
 

@@ -20,7 +20,7 @@ module Afs
         
       end
       
-      def dir_list
+      def dir_list(dir_to_list)
         
       end
       

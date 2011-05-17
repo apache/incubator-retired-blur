@@ -4,6 +4,7 @@ Rails.application.routes.draw do |map|
       controller "file_systems" do
         match '/',    :to => :index,   :as => :index,   :via => :get
         match '/dir/expand/:fs/:level', :to => :dir_expand, :as => :dir_expand, :via => :get
+        match '/dir/list/:fs/:level', :to => :dir_list, :as => :dir_list, :via => :get
         match '/view/:fs', :to => :view, :as => :view
       end
       

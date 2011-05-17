@@ -24,7 +24,7 @@ import org.apache.hadoop.io.Text;
 
 import com.nearinfinity.blur.mapreduce.BlurMapper;
 
-public class BlurExampleMapper extends BlurMapper {
+public class BlurExampleMapper extends BlurMapper<LongWritable,Text> {
 
     @Override
     protected void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException {

@@ -54,7 +54,7 @@ public class BlurRecord implements Writable {
         }
     }
     
-    private Operation operation = Operation.REPLACE_ROW;
+    private Operation operation = Operation.CREATE_ROW;
     private String rowId;
     private String recordId;
     private String columnFamily;

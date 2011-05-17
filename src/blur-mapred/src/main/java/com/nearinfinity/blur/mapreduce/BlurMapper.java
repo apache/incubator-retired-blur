@@ -19,12 +19,10 @@ package com.nearinfinity.blur.mapreduce;
 import java.io.IOException;
 
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public abstract class BlurMapper extends Mapper<LongWritable, Text, BytesWritable, BlurRecord> {
+public abstract class BlurMapper<KEY,VALUE> extends Mapper<KEY, VALUE, BytesWritable, BlurRecord> {
 
     protected BlurRecord record;
     protected BytesWritable key;
@@ -55,6 +53,6 @@ public abstract class BlurMapper extends Mapper<LongWritable, Text, BytesWritabl
     }
 
     @Override
-    protected abstract void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException;
+    protected abstract void map(KEY key, VALUE value, Context context) throws IOException, InterruptedException;
 
 }

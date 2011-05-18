@@ -2,7 +2,7 @@
   #current-queries.widget
     .ui-widget-header.ui-corner-top 
       Current Queries
-      %select#current-queries-table-select{:name => 'tables'}
+      %selectc#current-queries-table-select{:name => 'tables'}
         %option{:value => ' '}
         -@tables.each do |table|
           %option{:value => table} 

@@ -30,6 +30,14 @@
 	width: 24%;
 	display: inline-block;
 	vertical-align: top;
+	.ui-widget-header{
+	  .ui-widget-content{
+	    p, li{
+	      font-size: 80%; 
+	      font-weight: normal;
+	    }
+    }
+  }
 }
 
 .hidden{

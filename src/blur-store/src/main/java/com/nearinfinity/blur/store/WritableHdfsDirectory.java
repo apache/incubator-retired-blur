@@ -43,9 +43,9 @@ public class WritableHdfsDirectory extends HdfsDirectory {
 
     private static final Log LOG = LogFactory.getLog(WritableHdfsDirectory.class);
 
-    protected LocalFileCache localFileCache;
-    protected String dirName;
-    protected Progressable progressable;
+    protected LocalFileCache _localFileCache;
+    protected String _dirName;
+    protected Progressable _progressable;
     protected int _retryCount = 10;
     
     public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
@@ -61,29 +61,29 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
             LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable) throws IOException {
         super(hdfsDirPath, fileSystem);
-        this.dirName = dirName;
-        this.progressable = progressable;
+        this._dirName = dirName;
+        this._progressable = progressable;
         File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);
         if (segments.exists()) {
             segments.delete();
         }
-        this.localFileCache = localFileCache;
+        this._localFileCache = localFileCache;
         setLockFactory(lockFactory);
     }
 
     @Override
     public IndexOutput createOutput(String name) throws IOException {
-        File file = localFileCache.getLocalFile(dirName, name);
+        File file = _localFileCache.getLocalFile(_dirName, name);
         if (file.exists()) {
             file.delete();
         }
         LOG.debug("Opening local file for writing [{0}]",file.getAbsolutePath());
-        return new FileIndexOutput(progressable,file);
+        return new FileIndexOutput(_progressable,file);
     }
 
     @Override
     public void sync(String name) throws IOException {
-        File file = localFileCache.getLocalFile(dirName, name);
+        File file = _localFileCache.getLocalFile(_dirName, name);
         Path dest = new Path(hdfsDirPath,name + ".sync");
         Path source = new Path(file.getAbsolutePath());
         int count = 0;
@@ -109,7 +109,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (super.fileExists(name)) {
             super.deleteFile(name);
         }
-        File localFile = localFileCache.getLocalFile(dirName, name);
+        File localFile = _localFileCache.getLocalFile(_dirName, name);
         if (localFile.exists()) {
             localFile.delete();
         }
@@ -131,7 +131,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (super.fileExists(name)) {
             return super.fileLength(name);
         } else {
-            return localFileCache.getLocalFile(dirName, name).length();
+            return _localFileCache.getLocalFile(_dirName, name).length();
         }
     }
 
@@ -140,7 +140,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         if (super.fileExists(name)) {
             return super.fileModified(name);
         } else {
-            return localFileCache.getLocalFile(dirName, name).lastModified();
+            return _localFileCache.getLocalFile(_dirName, name).lastModified();
         }
     }
 
@@ -162,16 +162,16 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     }
 
     public boolean fileExistsLocally(String name) throws IOException {
-        return localFileCache.getLocalFile(dirName, name).exists();
+        return _localFileCache.getLocalFile(_dirName, name).exists();
     }
 
     public IndexInput openFromLocal(String name, int bufferSize) throws IOException {
         if (Constants.WINDOWS) {
-            return new FileIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
+            return new FileIndexInput(_localFileCache.getLocalFile(_dirName, name), bufferSize);
         } else if (name.endsWith(".fdt")) {
-            return new FileNIOIndexInput(localFileCache.getLocalFile(dirName, name), bufferSize);
+            return new FileNIOIndexInput(_localFileCache.getLocalFile(_dirName, name), bufferSize);
         } else {
-            return new MMapIndexInput(localFileCache.getLocalFile(dirName, name));
+            return new MMapIndexInput(_localFileCache.getLocalFile(_dirName, name));
         }
     }
 

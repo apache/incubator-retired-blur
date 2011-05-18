@@ -48,8 +48,8 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     
     @Override
     public void init() {
-        super.init();
         setupZookeeper();
+        super.init();
         lockNodeState();
         try {
             registerMyself();
@@ -142,7 +142,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private synchronized void pollForState() {
         shardServerStatePoller.pollForStateChanges(this);
     }
-
+    
     @Override
     public void register(String path) {
         dm.registerCallableOnChange(new Runnable() {

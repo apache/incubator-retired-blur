@@ -17,6 +17,7 @@
 package com.nearinfinity.blur.manager.indexserver;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -202,7 +203,9 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
         DistributedLayoutManager layoutManager = new DistributedLayoutManager();
         
         List<String> shardServerList = getShardServerList();
-        List<String> offlineShardServers = getOfflineShardServers();
+        List<String> offlineShardServers = new ArrayList<String>(getOfflineShardServers());
+        //add exclusions to offline list
+        offlineShardServers.addAll(getShardServerExclusion(table));
         List<String> shardList = getShardList(table);
         
         layoutManager.setNodes(shardServerList);

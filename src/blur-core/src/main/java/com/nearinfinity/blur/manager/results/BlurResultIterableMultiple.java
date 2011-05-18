@@ -90,7 +90,11 @@ public class BlurResultIterableMultiple implements BlurResultIterable {
         @Override
         public BlurResult next() {
             Collections.sort(iterators, BlurConstants.HITS_PEEKABLE_ITERATOR_COMPARATOR);
-            return iterators.get(0).next();
+            return fetchResult(iterators.get(0).next());
+        }
+        
+        public BlurResult fetchResult(BlurResult next) {
+            return next;
         }
 
         @Override

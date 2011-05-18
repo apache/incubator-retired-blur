@@ -102,6 +102,12 @@ public class BlurControllerServer implements Iface {
 	public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
 		try {
 		    final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
+		    
+		    System.out.println("stuff here");
+		    
+		    Selector selector = blurQuery.getSelector();
+		    blurQuery.setSelector(null);
+		    
 		    BlurResultIterable hitsIterable = scatterGather(new BlurCommand<BlurResultIterable>() {
                 @Override
                 public BlurResultIterable call(Client client) throws Exception {

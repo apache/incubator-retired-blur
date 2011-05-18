@@ -26,7 +26,7 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-public class LayoutManagerTest {
+public class DistributedLayoutManagerTest {
     
     @Test
     public void testLayoutManager() {

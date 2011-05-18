@@ -273,6 +273,11 @@ public class DistributedIndexServerTest {
             list.removeAll(getOfflineShardServers());
             return list;
         }
+        
+        @Override
+        public List<String> getShardServerExclusion(String table) {
+            throw new RuntimeException();
+        }
 
     }
 

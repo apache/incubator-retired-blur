@@ -120,5 +120,12 @@ public interface IndexServer {
      * @return the uri to the table directory that contains all the shards..
      */
     String getTableUri(String table);
+    
+    /**
+     * A list of shard servers that should never server shard indexes from the given table.
+     * @param table
+     * @return
+     */
+    List<String> getShardServerExclusion(String table);
 
 }

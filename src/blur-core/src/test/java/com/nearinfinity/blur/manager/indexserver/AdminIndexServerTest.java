@@ -134,6 +134,11 @@ public class AdminIndexServerTest {
             public List<String> getShardServerList() {
                 throw new RuntimeException();
             }
+            
+            @Override
+            public List<String> getShardServerExclusion(String table) {
+                throw new RuntimeException();
+            }
 
         };
     }

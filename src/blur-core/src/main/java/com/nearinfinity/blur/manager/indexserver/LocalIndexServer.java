@@ -215,4 +215,9 @@ public class LocalIndexServer implements IndexServer {
     public String getTableUri(String table) {
         return new File(localDir,table).toURI().toString();
     }
+
+    @Override
+    public List<String> getShardServerExclusion(String table) {
+        return new ArrayList<String>();
+    }
 }

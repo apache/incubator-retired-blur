@@ -124,6 +124,11 @@ public class BlurShardServerTest {
             public String getTableUri(String table) {
                 throw new RuntimeException("no impl");
             }
+
+            @Override
+            public List<String> getShardServerExclusion(String table) {
+                throw new RuntimeException("no impl");
+            }
             
         };
     }

@@ -94,7 +94,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
             if (isLocalFileValid(name)) {
                 input.localInput = new AtomicReference<IndexInput>(wrapper.wrapInput(openFromLocal(name, BUFFER_SIZE)));
             } else {
-                LOG.error("Local file [{0}/{1}] is not valid, opening remote file.",dirName,name);
+                LOG.error("Local file [{0}/{1}] is not valid, opening remote file.",_dirName,name);
                 input.localInput = new AtomicReference<IndexInput>();
             }
         } else {
@@ -104,10 +104,10 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
 
     private synchronized boolean isLocalFileValid(String name) throws IOException {
-        if (replicationDaemon.isBeingReplicated(dirName, name)) {
+        if (replicationDaemon.isBeingReplicated(_dirName, name)) {
             return false;
         }
-        File localFile = localFileCache.getLocalFile(dirName, name);
+        File localFile = _localFileCache.getLocalFile(_dirName, name);
         if (fileLength(name) != localFile.length()) {
             localFile.delete();
             return false;
@@ -230,7 +230,7 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
             this.length = length;
             this.directory = directory;
             this.fileName = name;
-            this.dirName = directory.dirName;
+            this.dirName = directory._dirName;
             this.tableName = HdfsUtil.getTable(dirName);
         }
 
@@ -270,20 +270,20 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
 
         @Override
         public String toString() {
-            return "IndexInput {" + directory.dirName + "/" + fileName + "}";
+            return "IndexInput {" + directory._dirName + "/" + fileName + "}";
         }
     }
 
     @Override
     public String toString() {
-        return "ReplicaHdfsDirectory [dirName=" + dirName + "]";
+        return "ReplicaHdfsDirectory [dirName=" + _dirName + "]";
     }
 
     @Override
     public void sync(String name) throws IOException {
         super.sync(name);
         if (!replicationStrategy.replicateLocally(table, name)) {
-            File file = localFileCache.getLocalFile(dirName, name);
+            File file = _localFileCache.getLocalFile(_dirName, name);
             file.delete();
         }
     }

@@ -38,7 +38,7 @@ public class DistributedLayoutManager {
     private Map<String, String> cache = new TreeMap<String, String>();
 
     public DistributedLayoutManager init() {
-        if (nodesOffline.equals(nodes)) {
+        if (nodesOffline.equals(nodes) || nodes.isEmpty()) {
             cache = getLockedMap(new TreeMap<String, String>());
             return this;
         }

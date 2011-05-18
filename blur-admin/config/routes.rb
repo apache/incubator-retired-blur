@@ -1,4 +1,6 @@
 BlurAdmin::Application.routes.draw do
+  get "runtime/index"
+
   get "main/index"
 
 

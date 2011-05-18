@@ -10,13 +10,13 @@
     #nav
       %ul
         %li.active
-          = link_to 'Environment Status', '#'
-        %li.active
-          = link_to 'Data', '#'
+          = link_to 'Environment Status', '/'
         %li
-          = link_to 'Runtime', '#'
+          = link_to 'Data', data_path
         %li
-          = link_to 'Configuration', '#'
+          = link_to 'Runtime', runtime_index_path
+        %li
+          = link_to 'Configuration', config_index_path
     #bd
       = yield
     #ft 

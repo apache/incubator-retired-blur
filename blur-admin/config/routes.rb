@@ -1,9 +1,8 @@
 BlurAdmin::Application.routes.draw do
-<<<<<<< HEAD
-  get "runtime/index"
-=======
+
+  resources :runtime, :only => [:index]
   resources :data, :only => [:index]
->>>>>>> 01ece8a61df32c56049038110dfa012d6ca2a563
+
 
   get "main/index"
 

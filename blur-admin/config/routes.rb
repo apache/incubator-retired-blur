@@ -1,4 +1,6 @@
 BlurAdmin::Application.routes.draw do
+  resources :data, :only => [:index]
+
   get "main/index"
 
 

@@ -1,55 +1,23 @@
-#hd
-  =image_tag "blur_logo.png"
-  #menu-bar.ui-widget-header.ui-state-select.ui-corner-top
-    %ul
-      %li
-        %a.ui-menu.ui-state-default{:href => '#'}Menu1
-        .hidden
-          %ul
-            %li
-              %a{:href =>'#'}Menu Option
-            %li
-              %a{:href =>'#'}Menu Option
-            %li
-              %a{:href =>'#'}Menu Option
-            %li
-              %a{:href =>'#'}Menu Option
-      %li
-        %a.ui-menu.ui-state-default{:href => '#'}Menu2
-        .hidden
-          %ul
-            %li
-              %a{:href =>'#'}Menu Option
-            %li
-              %a{:href =>'#'}Menu Option
-            %li
-              %a{:href =>'#'}Menu Option
-            %li
-              %a{:href =>'#'}Menu Option
-
-#bd
-  #widgets.ui-widget-content
-    #current-queries.widget
-      .ui-widget-header.ui-corner-top 
-        Current Queries
-        %select#current-queries-table-select{:name => 'tables'}
-          %option{:value => ' '}
-          -@tables.each do |table|
-            %option{:value => table} 
-              =table
-        #current-queries-content.ui-widget-content.ui-widget.ui-corner-button 
-          %br
-          %br
-      
-    .widget
-      .ui-widget-header.ui-corner-top Tables
-      .ui-widget-content.ui-widget.ui-corner-button 
-        %ul
-          -@tables.each do |table|
-            %li= table
-
-    .widget
-      .ui-widget-header.ui-corner-top Query Status
-      .ui-widget-content.ui-widget.ui-corner-button Here's some info about queries    
+#widgets
+  #current-queries.widget
+    .ui-widget-header.ui-corner-top 
+      Current Queries
+      %select#current-queries-table-select{:name => 'tables'}
+        %option{:value => ' '}
+        -@tables.each do |table|
+          %option{:value => table} 
+            =table
+      #current-queries-content.ui-widget-content.ui-widget.ui-corner-button 
+        %br
+        %br
+  .widget
+    .ui-widget-header.ui-corner-top Tables
+    .ui-widget-content.ui-widget.ui-corner-button 
+      %ul
+        -@tables.each do |table|
+          %li= table
+  .widget
+    .ui-widget-header.ui-corner-top Query Status
+    .ui-widget-content.ui-widget.ui-corner-button Here's some info about queries    
 
 

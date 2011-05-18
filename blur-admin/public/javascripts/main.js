@@ -1,5 +1,5 @@
-/* DO NOT MODIFY. This file was compiled Wed, 18 May 2011 16:07:00 GMT from
- * /home/localadmin/blur/blur-tools/blur-admin/app/coffeescripts/index.coffee
+/* DO NOT MODIFY. This file was compiled Wed, 18 May 2011 16:13:18 GMT from
+ * /home/localadmin/blur/blur-tools/blur-admin/app/coffeescripts/main.coffee
  */
 
 (function() {

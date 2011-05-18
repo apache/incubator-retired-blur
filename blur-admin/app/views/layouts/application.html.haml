@@ -3,7 +3,7 @@
   %head
     =csrf_meta_tag
     %title Blur Admin
-    = stylesheet_link_tag 'jquery-ui', 'application'
+    = stylesheet_link_tag 'jquery-ui', 'compiled/application'
   %body
     #hd
       = image_tag 'blur_logo.png'
@@ -21,5 +21,5 @@
       = yield
     #ft 
       Blur Footer
-    =javascript_include_tag 'jquery', 'jquery-ui', 'rails', 'application', 'main'
+    =javascript_include_tag 'jquery', 'jquery-ui', 'rails', 'application', 'compiled/main'
     =include_safe_javascript

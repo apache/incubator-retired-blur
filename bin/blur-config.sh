@@ -15,3 +15,5 @@ for f in $BLUR_HOME/lib/*.jar; do
 done
 
 export BLUR_CLASSPATH
+
+HOSTNAME=`hostname`

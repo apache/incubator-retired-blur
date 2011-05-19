@@ -29,6 +29,7 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
+import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -47,10 +48,13 @@ public class ThriftBlurControllerServer extends ThriftServer {
     public static void main(String[] args) throws TTransportException, IOException {
         LOG.info("Setting up Controller Server");
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
+        
+        SimpleExecutorsDynamicConfig dynamicConfig = new SimpleExecutorsDynamicConfig(10);
 
         BlurConfiguration configuration = new BlurConfiguration();
 
         String nodeName = ThriftBlurShardServer.getNodeName(configuration,BLUR_CONTROLLER_HOSTNAME);
+        nodeName = nodeName + ":" + configuration.get(BLUR_CONTROLLER_BIND_PORT);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
         
         boolean crazyMode = false;
@@ -71,11 +75,14 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
         final BlurControllerServer controllerServer = new BlurControllerServer();
         controllerServer.setClient(client);
+        controllerServer.setDynamicConfig(dynamicConfig);
         controllerServer.setClusterStatus(clusterStatus);
         controllerServer.open();
 
         final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
         server.setNodeName(nodeName);
+        server.setConfiguration(configuration);
+        server.setDynamicConfig(dynamicConfig);
         server.setAddressPropertyName(BLUR_CONTROLLER_BIND_ADDRESS);
         server.setPortPropertyName(BLUR_CONTROLLER_BIND_PORT);
         if (crazyMode) {

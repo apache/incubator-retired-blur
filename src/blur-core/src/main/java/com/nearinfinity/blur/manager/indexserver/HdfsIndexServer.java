@@ -89,7 +89,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     protected BlurIndex openShard(String table, String shard) throws IOException {
         LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
         URI tableUri = getTableURI(table);
-        Path tablePath = new Path(tableUri);
+        Path tablePath = new Path(tableUri.toString());
         FileSystem fileSystem = FileSystem.get(tableUri, configuration);
         if (!fileSystem.exists(tablePath)) {
             throw new FileNotFoundException(tablePath.toString());
@@ -145,8 +145,12 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         List<String> result = new ArrayList<String>();
         try {
             URI tableUri = getTableURI(table);
-            Path tablePath = new Path(tableUri);
+            Path tablePath = new Path(tableUri.toString());
             FileSystem fileSystem = FileSystem.get(tableUri, configuration);
+            if (!fileSystem.exists(tablePath)) {
+                LOG.warn("Table [{0}] is missing, defined location [{1}]",table,tableUri.toString());
+                return new ArrayList<String>();
+            }
             FileStatus[] listStatus = fileSystem.listStatus(tablePath);
             for (FileStatus status : listStatus) {
                 if (status.isDir()) {

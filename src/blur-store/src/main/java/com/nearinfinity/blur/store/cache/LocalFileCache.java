@@ -17,11 +17,13 @@
 package com.nearinfinity.blur.store.cache;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import com.nearinfinity.blur.log.Log;
@@ -107,11 +109,7 @@ public class LocalFileCache {
         LOG.info("Starting file gc.");
         for (File baseDir : files) {
             try {
-                if (isValid(baseDir)) {
-                    fileGc(baseDir);
-                } else {
-                    LOG.info("Dir [{0}] is not valid.",baseDir);
-                }
+                fileGc(baseDir);
             } catch (Exception e) {
                 LOG.error("Error while trying gc files [{0}].",e,baseDir.getAbsolutePath());
             }
@@ -177,21 +175,21 @@ public class LocalFileCache {
     }
 
     private boolean isValid(File f) {
-//        if (f.exists() && f.isDirectory()) {
-//            File file = new File(f,".blur.touchfile" + UUID.randomUUID().toString());
-//            try {
-//                if (file.createNewFile()) {
-//                    return true;
-//                }
-//            } catch (IOException e) {
-//                return false;
-//            } finally {
-//                file.delete();
-//            }
-//        }
+        if (f.exists() && f.isDirectory()) {
+            File file = new File(f,".blur.touchfile" + UUID.randomUUID().toString());
+            try {
+                if (file.createNewFile()) {
+                    return true;
+                }
+            } catch (IOException e) {
+                return false;
+            } finally {
+                file.delete();
+            }
+        }
         //@todo fix this!!!!
         //LOG.debug("need a way to check if path is good or not");
-        return true;
+        return false;
     }
 
     private File newFile(String dirName, String name) {
@@ -201,8 +199,12 @@ public class LocalFileCache {
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            if (isValid(dir)) {
-                return new File(dir,name);
+            try {
+                File file = new File(dir,name);
+                file.createNewFile();
+                return file;
+            } catch (IOException e) {
+                LOG.error("Could not create file in directory [{0}]",dir);
             }
             index++;
             if (index >= files.length) {

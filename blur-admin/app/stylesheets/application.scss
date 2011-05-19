@@ -1,4 +1,7 @@
 @import 'partials/base';
+@import "compass/layout.scss";
+
+@include sticky-footer(54px, "#root", "#root-footer", "#ft");
 
 #hd {
   height: 50px;

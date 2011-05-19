@@ -10,40 +10,21 @@
         = image_tag 'blur_logo.png'
       #nav
         %ul
-          -if params[:controller] == 'main'
-            %li.active
-              = link_to 'Environment Status', '/'
-          -else
-            %li
-              = link_to 'Environment Status', '/'
+          - controller = params[:controller]
+          %li{:class => controller == 'main' && 'active'}
+            = link_to 'Environment Status', '/'
 
-          -if params[:controller] == 'data'
-            %li.active
-              = link_to 'Data', data_path
-          -else
-            %li
-              = link_to 'Data', data_path
+          %li{:class => controller == 'data' && 'active'}
+            = link_to 'Data', data_path
           
-          -if params[:controller] == 'runtime'
-            %li.active
-              = link_to 'Runtime', runtime_index_path
-          -else
-            %li
-              = link_to 'Runtime', runtime_index_path
+          %li{:class => controller == 'runtime' && 'active'}
+            = link_to 'Runtime', runtime_index_path
 
-          -if params[:controller] == 'config'
-            %li.active
-              = link_to 'Configuration', config_index_path
-          -else
-            %li
-              = link_to 'Configuration', config_index_path
+          %li{:class => controller == 'config' && 'active'}
+            = link_to 'Configuration', config_index_path
 
-          -if params[:controller] == 'queries'
-            %li.active
-              = link_to 'Query', query_path
-          -else
-            %li
-              = link_to 'Query', query_path
+          %li{:class => controller == 'queries' && 'active'}
+            = link_to 'Query', query_path
       #bd
         = yield
       #root-footer

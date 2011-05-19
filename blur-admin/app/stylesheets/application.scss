@@ -3,12 +3,22 @@
 
 @include sticky-footer(54px, "#root", "#root-footer", "#ft");
 
+body {
+  font-family: helvetica, arial, sans-serif;
+  font-size: 90%;
+}
+
 #hd {
   height: 50px;
   line-height: 50px;
 }
 #bd{
   margin: 0 auto 0;
+}
+
+#ft {
+  background-color: #eee;
+  text-align: center;
 }
 
 #nav {

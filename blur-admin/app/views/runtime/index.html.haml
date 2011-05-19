@@ -1,14 +1,18 @@
+Tables:
+%select#table-select{:name => 'tables'}
+  -@tables.each do |table|
+    %option{:value => table}
+      =table
 #runtime-graphs
-  #performance-graph.runtime-graph
-  #usage-graph.runtime-graph
+  .runtime-graph-container
+    %h4 Query Performance Graph
+    #performance-graph.runtime-graph-placeholder
+  .runtime-graph-container
+    %h4 Table Usage Graph
+    #usage-graph.runtime-graph-placeholder
 #runtime-queries
   #queries-title
     %h2 Queries
-    %select#current-queries-table-select{:name => 'tables'}
-      %option{:value => ' '}
-      -@tables.each do |table|
-        %option{:value => table}
-          =table
   %table#queries-table
     %tr#queries-table-header
       %th Query

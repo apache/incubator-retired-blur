@@ -3,6 +3,10 @@
 
 @include sticky-footer(54px, "#root", "#root-footer", "#ft");
 
+h1,h2,h3,h4,h5,h6{
+  color: #999;
+  font-weight: bold;
+}
 #hd {
   height: 50px;
   line-height: 50px;
@@ -31,20 +35,24 @@
   }
 }
 
-.runtime-graph
+.runtime-graph-placeholder
 {
-  width: 40%;
-  height: 400px;
+  width: 100%;
+  height: 200px;
   border: 1px solid black;
-  display: inline-block;
-  margin: 0 auto 0 auto;
   padding: 0;
 }
 
+.runtime-graph-container
+{
+  width:40%;
+  display: inline-block;
+}
 #runtime-graphs
 {
 text-align: center;
-margin: 20px 0 20px 0;
+margin: 20px auto 20px auto;
+width: 100%;
 }
 
 #runtime-queries
@@ -55,8 +63,7 @@ margin: 20px 0 20px 0;
   display: inline-block;
   h2{
     display: inline-block;
-    color: #AAA;
-    font-weight: bold;
+
     font-size: 200%;
   }
 }
@@ -92,4 +99,9 @@ margin: 20px 0 20px 0;
 
 .inline{
 	display: inline;
+}
+
+.error{
+  color: #C66;
+  font-weight: bold;
 }

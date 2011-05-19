@@ -1,4 +1,4 @@
-class QueriesController < ApplicationController
+class QueryController < ApplicationController
 
 	def show
 	end

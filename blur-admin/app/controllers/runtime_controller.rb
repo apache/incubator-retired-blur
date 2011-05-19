@@ -1,6 +1,6 @@
 class RuntimeController < ApplicationController
     require 'thrift/blur'
-    def index
+    def show
       client = setup_thrift
       @tables = client.tableList()
       close_thrift

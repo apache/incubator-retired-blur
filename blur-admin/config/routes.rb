@@ -1,10 +1,10 @@
 BlurAdmin::Application.routes.draw do
 
 
-  resources :data, :only => [:index]
-  resources :runtime, :only => [:index]
-  resources :config, :only => [:index]
-	resource :query
+  resource :data
+  resource :runtime, :controller => 'runtime'
+  resource :config, :controller => 'config'
+	resource :query, :controller => 'query'
   
   controller "runtime" do
      match '/queries/current/:table', :to => :current_queries, :as => :current_queries, :via => :get

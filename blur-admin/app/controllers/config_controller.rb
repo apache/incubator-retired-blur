@@ -1,5 +1,5 @@
 class ConfigController < ApplicationController
-  def index
+  def show
   end
 
 end

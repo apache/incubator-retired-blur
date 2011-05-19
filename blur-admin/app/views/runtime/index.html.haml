@@ -1,1 +1,22 @@
-#hello-world Hello runtime
+#runtime-graphs
+  #performance-graph.runtime-graph
+  #usage-graph.runtime-graph
+#runtime-queries
+  #queries-title
+    %h2 Queries
+    %select#current-queries-table-select{:name => 'tables'}
+      %option{:value => ' '}
+      -@tables.each do |table|
+        %option{:value => table}
+          =table
+  %table#queries-table
+    %tr#queries-table-header
+      %th Query
+      %th
+        Time
+        %br
+        (cpu/real)
+      %th Status
+      %th uuid
+      %th Actions
+

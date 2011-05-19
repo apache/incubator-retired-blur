@@ -5,13 +5,9 @@ BlurAdmin::Application.routes.draw do
   resources :runtime, :only => [:index]
   resources :config, :only => [:index]
 	resource :query
-
-
-  get "main/index"
-
-
-  controller "main" do
-     match '/queries/running/:table', :to => :view_running, :as => :view_running, :via => :get
+  
+  controller "runtime" do
+     match '/queries/current/:table', :to => :current_queries, :as => :current_queries, :via => :get
   end
 
   # The priority is based upon order of creation:
@@ -70,4 +66,4 @@ BlurAdmin::Application.routes.draw do
   # This is a legacy wild controller route that's not recommended for RESTful applications.
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id(.:format)))'
-end
+  end

@@ -1,23 +1,4 @@
-#widgets
-  #current-queries.widget
-    .ui-widget-header.ui-corner-top 
-      Current Queries
-      %select#current-queries-table-select{:name => 'tables'}
-        %option{:value => ' '}
-        -@tables.each do |table|
-          %option{:value => table} 
-            =table
-      #current-queries-content.ui-widget-content.ui-widget.ui-corner-button 
-        %br
-        %br
-  .widget
-    .ui-widget-header.ui-corner-top Tables
-    .ui-widget-content.ui-widget.ui-corner-button 
-      %ul
-        -@tables.each do |table|
-          %li= table
-  .widget
-    .ui-widget-header.ui-corner-top Query Status
-    .ui-widget-content.ui-widget.ui-corner-button Here's some info about queries    
+#hello-world Hello main
+
 
 

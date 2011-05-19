@@ -4,6 +4,7 @@ BlurAdmin::Application.routes.draw do
   resources :data, :only => [:index]
   resources :runtime, :only => [:index]
   resources :config, :only => [:index]
+	resource :query
   
   controller "runtime" do
      match '/queries/current/:table', :to => :current_queries, :as => :current_queries, :via => :get

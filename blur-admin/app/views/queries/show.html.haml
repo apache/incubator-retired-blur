@@ -1,0 +1,15 @@
+- content_for :title, 'Query'
+
+
+= form_tag new_query_path, :method => 'get' do
+  = label_tag :q, "Search Query:"
+  = text_area_tag :q, params[:q]
+  = submit_tag "Search"
+
+
+- if @results
+  %br
+  %h1 Showing first result as json
+  - @results.each do |r|
+    %pre{:style => 'font-family:Menlo, monospaced;font-size:8pt;'}
+      = r

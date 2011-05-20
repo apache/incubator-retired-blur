@@ -59,26 +59,43 @@ public class RowIndexWriter {
         this.analyzer = analyzer;
     }
     
-    public synchronized void replace(Row row) throws IOException {
+    public synchronized boolean add(Row row) throws IOException {
         if (row == null || row.id == null) {
             throw new NullPointerException();
         }
-        setupReplace(row);
-        if (!replaceInternal(row)) {
-            setupReplace(row);
-            if (!replaceInternal(row)) {
-                throw new IOException("SuperDocument too large, try increasing ram buffer size.");
+        setupAdd(row,false);  //append only operation, only used during bulk adds
+        if (!addInternal(row)) {
+            setupAdd(row,true);  //need to remove the previous incomplete row
+            if (!addInternal(row)) {
+                return false;
             }
+        }
+        return true;
+    }
+    
+    public synchronized boolean replace(Row row) throws IOException {
+        if (row == null || row.id == null) {
+            throw new NullPointerException();
+        }
+        setupAdd(row,true);
+        if (!addInternal(row)) {
+            setupAdd(row,true);
+            if (!addInternal(row)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void setupAdd(Row row, boolean replace) throws IOException {
+        rowIdField.setValue(row.id);
+        primeDocSet = false;
+        if (replace) {
+            indexWriter.deleteDocuments(new Term(ROW_ID,row.id));
         }
     }
 
-    private void setupReplace(Row row) throws IOException {
-        rowIdField.setValue(row.id);
-        indexWriter.deleteDocuments(new Term(ROW_ID,row.id));
-        primeDocSet = false;
-    }
-
-    private boolean replaceInternal(Row row) throws IOException {
+    private boolean addInternal(Row row) throws IOException {
         for (ColumnFamily columnFamily : row.getColumnFamilies()) {
             if (!replace(columnFamily)) {
                 return false;
@@ -138,6 +155,7 @@ public class RowIndexWriter {
             String fieldName = getFieldName(columnFamily,name);
             Store store = analyzer.getStore(fieldName);
             Index index = analyzer.getIndex(fieldName);
+            boolean flag = analyzer.isFullTextField(fieldName);
             INNER:
             for (int i = 0; i < size; i++) {
                 String value = values.get(i);
@@ -145,11 +163,15 @@ public class RowIndexWriter {
                     continue INNER;
                 }
                 document.add(new Field(fieldName,value,store,index));
-                builder.append(value).append(' ');
+                if (flag) {
+                    builder.append(value).append(' ');
+                }
             }
         }
-        String superValue = builder.toString();
-        document.add(new Field(SUPER, superValue, Store.NO, Index.ANALYZED_NO_NORMS));
+        if (builder.length() != 0) {
+            String superValue = builder.toString();
+            document.add(new Field(SUPER, superValue, Store.NO, Index.ANALYZED_NO_NORMS));
+        }
         return true;
     }
     

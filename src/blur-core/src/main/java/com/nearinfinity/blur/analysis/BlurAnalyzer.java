@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +50,8 @@ import org.json.JSONObject;
 
 public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 
-	private static final String ALIASES2 = "aliases";
+	private static final String FULLTEXT = "fulltext";
+    private static final String ALIASES = "aliases";
     private static final String SEP = ".";
 	private static final String FIELDS = "fields";
 	private static final String DEFAULT = "default";
@@ -85,7 +87,7 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
 
     public static BlurAnalyzer create(String s) throws IOException {
 		if (s == null || s.trim().isEmpty()) {
-			return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30),"");
+			return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30),"", new HashSet<String>());
 		}
 		try {
             return create(new JSONObject(s),s);
@@ -97,6 +99,7 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
     private String _originalJsonStr;
     private Map<String,Store> _storeMap = new HashMap<String, Store>();
     private Map<String,Set<String>> _subIndexNameLookups = new HashMap<String, Set<String>>();
+    private Set<String> _fullTextFields;
     
     public void addSubField(String name) {
         int lastIndexOf = name.lastIndexOf('.');
@@ -112,25 +115,36 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
     public Set<String> getSubIndexNames(String indexName) {
         return _subIndexNameLookups.get(indexName);
     }
+    
+    public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
+        this(defaultAnalyzer,jsonStr,new HashSet<String>());
+    }
 
-	public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr) {
+	public BlurAnalyzer(Analyzer defaultAnalyzer, String jsonStr, Set<String> fullTextFields) {
 		super(defaultAnalyzer);
 		this._originalJsonStr = jsonStr;
 		KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
         addAnalyzer(ROW_ID, keywordAnalyzer);
 		addAnalyzer(RECORD_ID, keywordAnalyzer);
 		addAnalyzer(PRIME_DOC, keywordAnalyzer);
+		_fullTextFields = fullTextFields;
 	}
 	
 	private static BlurAnalyzer create(JSONObject jsonObject, String jsonStr) {
 	    try {
 	        Object object = null;
-	        if (!jsonObject.isNull(ALIASES2)) {
-	            object = jsonObject.get(ALIASES2);
+	        if (!jsonObject.isNull(ALIASES)) {
+	            object = jsonObject.get(ALIASES);
 	        }
             Map<String,Class<? extends Analyzer>> aliases = getAliases(object);
     		Analyzer defaultAnalyzer = getAnalyzer(jsonObject.get(DEFAULT),aliases);
-    		BlurAnalyzer analyzer = new BlurAnalyzer(defaultAnalyzer, jsonStr);
+    		Set<String> fullText;
+    		if (jsonObject.isNull(FULLTEXT)) {
+    		    fullText = new HashSet<String>();
+    		} else {
+    		    fullText = getFullText(jsonObject.getJSONObject(FULLTEXT));
+    		}
+    		BlurAnalyzer analyzer = new BlurAnalyzer(defaultAnalyzer, jsonStr, fullText);
     		JSONObject o = null;
     		if (!jsonObject.isNull(FIELDS)) {
     		    o = jsonObject.getJSONObject(FIELDS);
@@ -142,7 +156,21 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
         }
 	}
 
-	private static Map<String, Class<? extends Analyzer>> getAliases(Object o) throws ClassNotFoundException, JSONException {
+	private static Set<String> getFullText(JSONObject jsonObject) throws JSONException {
+	    Set<String> set = new HashSet<String>();
+	    Iterator<?> keys = jsonObject.keys();
+	    while (keys.hasNext()) {
+	        Object key = keys.next();
+	        String keyStr = key.toString();
+            JSONArray jsonArray = jsonObject.getJSONArray(keyStr);
+	        for (int i = 0; i < jsonArray.length(); i++) {
+	            set.add(keyStr + "." + jsonArray.getString(i));
+	        }
+	    }
+        return set;
+    }
+
+    private static Map<String, Class<? extends Analyzer>> getAliases(Object o) throws ClassNotFoundException, JSONException {
 	    Map<String, Class<? extends Analyzer>> map = new HashMap<String, Class<? extends Analyzer>>();
 	    if (o == null) {
             return map;
@@ -289,5 +317,9 @@ public class BlurAnalyzer extends PerFieldAnalyzerWrapper {
         } else if (!_originalJsonStr.equals(other._originalJsonStr))
             return false;
         return true;
+    }
+
+    public boolean isFullTextField(String fieldName) {
+        return _fullTextFields.contains(fieldName);
     }
 }

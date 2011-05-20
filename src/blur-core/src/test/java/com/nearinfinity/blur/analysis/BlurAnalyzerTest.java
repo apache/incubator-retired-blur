@@ -33,6 +33,7 @@ public class BlurAnalyzerTest {
     
     private String s = "{" +
     "\"aliases\":[{\"standard\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}]," +
+    "\"fulltext\":{\"a\":[\"b\"],\"b\":[\"c\"]}," +
     "\"default\":\"standard\"," +
     "\"fields\":{" +
         "\"a\":{" +
@@ -88,6 +89,13 @@ public class BlurAnalyzerTest {
         set.add("b.c.sub1");
         set.add("b.c.sub2");
         assertEquals(set, subIndexNames);
+    }
+    
+    @Test
+    public void testFullTextFields() throws IOException {
+        BlurAnalyzer analyzer = BlurAnalyzer.create(s);
+        assertTrue(analyzer.isFullTextField("a.b"));
+        assertFalse(analyzer.isFullTextField("a.d"));
     }
 
     private File newFile(String s) throws IOException {

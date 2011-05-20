@@ -1,21 +1,18 @@
-.runtime-graph-placeholder
+
+.runtime-graph
 {
-  width: 100%;
-  height: 200px;
+  width: 40%;
+  height: 400px;
   border: 1px solid black;
+  display: inline-block;
+  margin: 0 auto 0 auto;
   padding: 0;
 }
 
-.runtime-graph-container
-{
-  width:40%;
-  display: inline-block;
-}
 #runtime-graphs
 {
 text-align: center;
-margin: 20px auto 20px auto;
-width: 100%;
+margin: 20px 0 20px 0;
 }
 
 #runtime-queries

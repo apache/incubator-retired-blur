@@ -13,6 +13,9 @@
       %tr
         %th
           =table
-        %th placeholder
-        %th placeholder
-        %th placeholder
+        %th
+          =get_shards(table)
+        %th
+          =get_count(table)
+        %th
+          =get_size(table)

@@ -16,19 +16,19 @@ class DataController < ApplicationController
     render :json => curr_tables
   end
 
-  def get_shards(table)
+  #def get_shards(table)
     #TODO: get the shards
-    'placeholder'
-  end
+    #return 'placeholder'
+  #end
 
-  def get_size(table)
+  #def get_size(table)
     #TODO: get the size
-    'placeholder'
-  end
+    #return 'placeholder'
+  #end
 
-  def get_count(table)
+  #def get_count(table)
     #TODO: get the count
-    'placeholder'
-  end
+    #return 'placeholder'
+  #end
 
 end

@@ -1,4 +1,18 @@
 - content_for :title, 'Data'
+#data-dtables
+  #dtables-title
+    %h2 Tables
+  %table#dtables-table
+    %tr#dtables-table-header
+      %th Table
+      %th Shards
+      %th Count
+      %th Size
 
-
-#hello-world Hello Data
+    -@tables.each do |table|
+      %tr
+        %th
+          =table
+        %th placeholder
+        %th placeholder
+        %th placeholder

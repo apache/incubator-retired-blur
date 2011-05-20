@@ -16,7 +16,7 @@ $(document).ready ->
       )
     else setupQueryList()
 
-    setTimeout(makeAJAXRequest,100)
+    setTimeout(makeAJAXRequest, 5000)
 
   #FUNCTION getQueryStatus
   #takes in a query object and returns its status

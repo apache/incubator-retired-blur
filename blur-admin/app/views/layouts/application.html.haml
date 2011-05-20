@@ -2,8 +2,13 @@
 %html
   %head
     =csrf_meta_tag
-    %title Blur Admin
-    = stylesheet_link_tag 'jquery-ui', 'compiled/application'
+    %title 
+      = yield(:title)
+      | Blur Admin
+    = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
+    = stylesheet_link_tag 'jquery-ui', 'compiled/print', :media => "print"
+    /[if IE]
+      = stylesheet_link_tag 'ie'
   %body
     #root
       #hd
@@ -11,7 +16,7 @@
       #nav
         %ul
           - controller = params[:controller]
-          %li{:class => controller == 'main' && 'active'}
+          %li{:class => controller == 'env' && 'active'}
             = link_to 'Environment Status', '/'
 
           %li{:class => controller == 'data' && 'active'}
@@ -30,5 +35,10 @@
       #root-footer
     #ft 
       Blur Footer
-    =javascript_include_tag 'jquery', 'jquery-ui', 'rails', 'application', 'compiled/runtime'
-    =include_safe_javascript
+    = javascript_include_tag 'jquery', 'jquery-ui', 'rails', 'application'
+
+    -# Use this syntax in haml templates to add page specific javascript
+    -# - content_for :javascript do
+    -#   = javascript_include_tag 'compiled/runtime'
+    = yield :javascript
+

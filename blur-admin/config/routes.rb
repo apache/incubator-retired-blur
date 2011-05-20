@@ -4,17 +4,15 @@ BlurAdmin::Application.routes.draw do
   resource :config, :controller => 'config'
 	resource :query, :controller => 'query'
 	resource :env, :controller => 'env'
-  
-  controller "runtime" do
-     match '/queries/current/:table', :to => :current_queries, :as => :current_queries, :via => :get
-  end
-
 
   root :to => "env#show"
 
-
+  controller "query" do
+    match 'query/cancel/:table/:uuid', :to => :cancel, :as => :cancel, :via => :get
+    match 'query/current/:table', :to => :current_queries, :as => :current_queries, :via => :get
+  end
   controller "data" do
-     match '/tables/curr', :to => :curr_tables, :as => :curr_tables, :via => :get
+    match '/tables/curr/', :to => :curr_tables, :as => :curr_tables, :via => :get
   end
 
   # The priority is based upon order of creation:

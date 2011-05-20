@@ -7,7 +7,7 @@
       | Blur Admin
     = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
     = stylesheet_link_tag 'jquery-ui', 'compiled/print', :media => "print"
-    /[if IE]
+    /[if lt IE 8]
       = stylesheet_link_tag 'ie'
   %body
     #root

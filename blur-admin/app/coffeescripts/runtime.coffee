@@ -1,9 +1,10 @@
 $(document).ready ->
   #FUNCTION makeAJAXRequest:
   #Runs the AJAX request for current query information
+  firstRun = true
   makeAJAXRequest =() ->
     table = $('#table-select').val()
-    if table != ' ' or table != undefined or table != 'undefined'
+    if table != ' ' and table != undefined and table != 'undefined'
       url = '/query/current/' + table
       $.ajax(
         url: url
@@ -13,11 +14,49 @@ $(document).ready ->
           showTableError('Problem Contacting Server')
         success: (data) ->
           setupQueryList(data)
+          if data.length > 0
+
+            setupGraphs(data)
+            firstRun = false
       )
     else setupQueryList()
 
     setTimeout(makeAJAXRequest, 5000)
+  #FUNCTION setupGraphs
+  #takes in the queries and sets up the graphs
+  setupGraphs = (queries) ->
+    font ="8px 'Fontin Sans', Fontin-Sans, sans-serif"
+    graphData = prepGraphData(queries)
+    $('#performance-graph').empty()
+    cpuGraph = Raphael('performance-graph')
+    cpuGraph.g.txtattr.font = font
+    cpuGraph.g.linechart(10,0,190,190,graphData.xValues,graphData.cpuTime,{axis:"0 0 1 1"})
 
+    $('#average-time-graph').empty()
+    realGraph = Raphael('average-time-graph')
+    realGraph.g.txtattr.font = font
+    realGraph.g.linechart(10,0,190,190,graphData.xValues,graphData.realTime,{axis:"0 0 1 1"})
+
+    $('#usage-graph').empty()
+    usageGraph = Raphael('usage-graph')
+    usageGraph.g.txtattr.font = font
+    #TODO actually graph something for usage
+  #FUNCTION prepGraphData
+  #takes in the queries and returns an array of objects containing the coords for the graphs
+  prepGraphData = (queries) ->
+    realTime = new Array
+    cpuTime = new Array
+    xValues = new Array
+    $.each(queries, (index, query) ->
+      realTime[index] = query.realTime
+      cpuTime[index] = query.cpuTime
+      xValues[index] = index
+    )
+    graphData =
+      realTime: realTime
+      cpuTime: cpuTime
+      xValues: xValues
+    return graphData
   #FUNCTION getQueryStatus
   #takes in a query object and returns its status
   getQueryStatus = (query) ->

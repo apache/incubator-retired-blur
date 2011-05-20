@@ -122,7 +122,7 @@ public class RowIndexWriter {
             document.getFields().clear();
             document.add(rowIdField);
             document.add(recordIdField);
-            if (addColumns(columns.get(recordId),family)) {
+            if (addColumns(document, analyzer, builder, family, columns.get(recordId))) {
                 if (!primeDocSet) {
                     document.add(PRIME_DOC_FIELD);
                     primeDocSet = true;
@@ -139,7 +139,7 @@ public class RowIndexWriter {
         return true;
     }
 
-    private boolean addColumns(Set<Column> set, String columnFamily) {
+    public static boolean addColumns(Document document, BlurAnalyzer analyzer, StringBuilder builder, String columnFamily, Iterable<Column> set) {
         if (set == null) {
             return false;
         }
@@ -155,7 +155,8 @@ public class RowIndexWriter {
             String fieldName = getFieldName(columnFamily,name);
             Store store = analyzer.getStore(fieldName);
             Index index = analyzer.getIndex(fieldName);
-            boolean flag = analyzer.isFullTextField(fieldName);
+            boolean fullText = analyzer.isFullTextField(fieldName);
+            Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
             INNER:
             for (int i = 0; i < size; i++) {
                 String value = values.get(i);
@@ -163,8 +164,13 @@ public class RowIndexWriter {
                     continue INNER;
                 }
                 document.add(new Field(fieldName,value,store,index));
-                if (flag) {
+                if (fullText) {
                     builder.append(value).append(' ');
+                }
+                if (subFieldNames != null) {
+                    for (String subFieldName : subFieldNames) {
+                        document.add(new Field(subFieldName,value,Store.NO,index));
+                    }
                 }
             }
         }
@@ -175,7 +181,7 @@ public class RowIndexWriter {
         return true;
     }
     
-    private String getFieldName(String columnFamily, String name) {
+    public static String getFieldName(String columnFamily, String name) {
         return columnFamily + SEP + name;
     }
     

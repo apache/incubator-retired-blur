@@ -18,9 +18,6 @@ package com.nearinfinity.blur.mapreduce;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -28,7 +25,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
-import org.apache.lucene.index.IndexCommit;
 
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -42,10 +38,7 @@ public class BlurTask {
 	private static final Log log = LogFactory.getLog(BlurTask.class);
 
     public static final String EMPTY = "EMPTY";
-    public static final String BLUR_COMMIT = "blur.commit";
     public static final String BLUR_TABLE_NAME = "blur.table.name";
-    public static final String BLUR_COMMIT_POINT_NEW = "blur.commit.point.new";
-    public static final String BLUR_COMMIT_POINT_TO_OPEN = "blur.commit.point.to.open";
     public static final String BLUR_BASE_PATH = "blur.base.path";
     public static final String BLUR_ANALYZER_JSON = "blur.analyzer.json";
     public static final String BLUR_RAM_BUFFER_SIZE = "blur.ram.buffer.size";
@@ -108,31 +101,6 @@ public class BlurTask {
         return localFileCache;
     }
 
-    public Map<String, String> getCommitUserData() {
-        String commitPoint = getNewCommitPoint();
-        Map<String, String> userData = new HashMap<String,String>();
-        userData.put(BLUR_COMMIT, commitPoint);
-        return userData;
-    }
-
-    public Map<String, String> getEmptyCommitUserData() {
-        Map<String, String> userData = new HashMap<String,String>();
-        userData.put(BLUR_COMMIT, EMPTY);
-        return userData;
-    }
-    
-    public IndexCommit getIndexCommitPointNameToOpen(Collection<IndexCommit> listCommits) throws IOException {
-        String commitPointToOpen = getCommitPointToOpen();
-        for (IndexCommit commit : listCommits) {
-            Map<String, String> userData = commit.getUserData();
-            String commitStr = userData.get(BLUR_COMMIT);
-            if (commitPointToOpen.equals(commitStr)) {
-                return commit;
-            }
-        }
-        throw new IOException("Commit point [" + commitPointToOpen + "] not found.");
-    }
-
     public BlurAnalyzer getAnalyzer() {
         try {
             return BlurAnalyzer.create(configuration.get(BLUR_ANALYZER_JSON));
@@ -155,22 +123,6 @@ public class BlurTask {
 
     public void setBlurAnalyzerStr(String blurAnalyzerStr) {
         configuration.set(BLUR_ANALYZER_JSON, blurAnalyzerStr);
-    }
-    
-    public String getCommitPointToOpen() {
-        return configuration.get(BLUR_COMMIT_POINT_TO_OPEN);
-    }
-
-    public void setCommitPointToOpen(String commitPointToOpen) {
-        configuration.set(BLUR_COMMIT_POINT_TO_OPEN, commitPointToOpen);
-    }
-
-    public String getNewCommitPoint() {
-        return configuration.get(BLUR_COMMIT_POINT_NEW);
-    }
-
-    public void setNewCommitPoint(String newCommitPoint) {
-        configuration.set(BLUR_COMMIT_POINT_NEW, newCommitPoint);
     }
     
     public String getTableName() {
@@ -220,6 +172,14 @@ public class BlurTask {
 
     public String getRecordCounterName() {
         return "Records";
+    }
+
+    public String getRowBreakCounterName() {
+        return "Row Retries";
+    }
+
+    public String getRowFailureCounterName() {
+        return "Row Failures";
     }
 
 }

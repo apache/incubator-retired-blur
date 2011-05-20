@@ -276,7 +276,7 @@ public class DistributedIndexServerTest {
         
         @Override
         public List<String> getShardServerExclusion(String table) {
-            throw new RuntimeException();
+            return new ArrayList<String>();
         }
 
     }

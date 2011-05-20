@@ -22,4 +22,8 @@ public class LogFactory {
         return new LogImpl(org.apache.commons.logging.LogFactory.getLog(c));
     }
 
+    public static Log getLog(String name) {
+        return new LogImpl(org.apache.commons.logging.LogFactory.getLog(name));
+    }
+
 }

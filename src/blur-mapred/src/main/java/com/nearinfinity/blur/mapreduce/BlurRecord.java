@@ -20,6 +20,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.io.Writable;
@@ -126,11 +127,18 @@ public class BlurRecord implements Writable {
     public void addColumn(BlurColumn column) {
         columns.add(column);
     }
-
+    
     public void addColumn(String name, String value) {
         BlurColumn blurColumn = new BlurColumn();
         blurColumn.setName(name);
-        blurColumn.setValue(value);
+        blurColumn.setValues(Arrays.asList(value));
+        addColumn(blurColumn);
+    }
+
+    public void addColumn(String name, List<String> values) {
+        BlurColumn blurColumn = new BlurColumn();
+        blurColumn.setName(name);
+        blurColumn.setValues(values);
         addColumn(blurColumn);
     }
 

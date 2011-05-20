@@ -42,8 +42,6 @@ public class BlurExampleIndexer {
         
         BlurTask blurTask = new BlurTask(configuration);
         blurTask.setBlurAnalyzerStr("");
-        blurTask.setCommitPointToOpen("EMPTY");
-        blurTask.setNewCommitPoint("new-test");
         blurTask.setTableName("test");
         blurTask.setBasePath("./blur-testing");
         

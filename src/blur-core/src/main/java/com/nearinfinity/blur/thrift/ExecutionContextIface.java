@@ -24,9 +24,10 @@ import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public abstract class ExecutionContextIface implements IfaceExtended {
-    
+
+    private static final Log METRICS = LogFactory.getLog("METRICS-FILE");
     private static final Log LOG = LogFactory.getLog(ExecutionContextIface.class);
-    
+
     private BlockingQueue<ExecutionContext> _contexts = new LinkedBlockingQueue<ExecutionContext>();
     private AtomicBoolean _running = new AtomicBoolean();
     private Thread _daemon;
@@ -51,27 +52,36 @@ public abstract class ExecutionContextIface implements IfaceExtended {
     }
 
     private void log(ExecutionContext context) {
-      long now = System.nanoTime();
-      List<RecordTime> times = context.getTimes();
-      int size = times.size();
-      for (int i = 0; i < size; i++) {
-          RecordTime recordTime = times.get(i);
-          LOG.info("{0},{1},{2},{3},{4},{5}",now,recordTime._e.getClass().getName(),recordTime._e.name(),recordTime._call,recordTime._now,recordTime._timeNs);
-      }
+        long now = System.nanoTime();
+        List<RecordTime> times = context.getTimes();
+        int size = times.size();
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < size; i++) {
+            RecordTime recordTime = times.get(i);
+            builder.setLength(0);
+            builder.append(now).append(',');
+            builder.append(recordTime._e.getClass().getName()).append(',');
+            builder.append(recordTime._e.name()).append(',');
+            builder.append(recordTime._call).append(',');
+            builder.append(recordTime._now).append(',');
+            builder.append(recordTime._timeNs);
+            METRICS.info(builder.toString());
+        }
     }
 
     private ExecutionContext getContext() {
         return new ExecutionContext();
     }
-    
+
     private void record(ExecutionContext context) {
         try {
             _contexts.put(context);
         } catch (InterruptedException e) {
+            LOG.error("InterruptedException",e);
             return;
         }
     }
-    
+
     @Override
     public void cancelQuery(String table, long uuid) throws BlurException, TException {
         ExecutionContext context = getContext();

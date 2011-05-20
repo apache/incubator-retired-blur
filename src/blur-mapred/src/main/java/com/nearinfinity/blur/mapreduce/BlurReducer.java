@@ -23,7 +23,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -34,9 +33,6 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.index.IndexCommit;
-import org.apache.lucene.index.IndexDeletionPolicy;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
@@ -49,26 +45,31 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.store.WritableHdfsDirectory;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.utils.Converter;
+import com.nearinfinity.blur.utils.IterableConverter;
+import com.nearinfinity.blur.utils.RowIndexWriter;
 
-public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,BlurRecord> {
-    
-    protected static final Field PRIME_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.ANALYZED_NO_NORMS);
-    protected IndexWriter writer;
-    protected Directory directory;
-    protected BlurAnalyzer analyzer;
-    protected IndexDeletionPolicy deletionPolicy;
-    protected LockFactory lockFactory;
-    protected IndexCommit commitPoint;
-    protected BlurTask blurTask;
-    protected FileSystem fileSystem;
-    protected LocalFileCache localFileCache;
-    protected Counter recordCounter;
-    protected Counter rowCounter;
-    protected Counter fieldCounter;
-    
+public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritable, BlurRecord> {
+
+    protected static final Field PRIME_FIELD = new Field(PRIME_DOC, PRIME_DOC_VALUE, Store.NO, Index.ANALYZED_NO_NORMS);
+    protected IndexWriter _writer;
+    protected Directory _directory;
+    protected BlurAnalyzer _analyzer;
+    protected LockFactory _lockFactory;
+    protected BlurTask _blurTask;
+    protected FileSystem _fileSystem;
+    protected LocalFileCache _localFileCache;
+    protected Counter _recordCounter;
+    protected Counter _rowCounter;
+    protected Counter _fieldCounter;
+    protected Counter _rowBreak;
+    protected Counter _rowFailures;
+    protected StringBuilder _builder = new StringBuilder();
+
     @Override
     protected void setup(Context context) throws IOException, InterruptedException {
-        blurTask = new BlurTask(context);
+        _blurTask = new BlurTask(context);
 
         setupCounters(context);
         setupAnalyzer(context);
@@ -76,71 +77,97 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         setupLockFactory(context);
         setupLocalFileCache(context);
         setupDirectory(context);
-        
-        setupIndexDeletionPolicy(context);
-        setupEmptyIndex(context);
-        setupCommitPoint(context);
+
         setupWriter(context);
     }
-    
+
     protected void setupCounters(Context context) {
-        rowCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getRowCounterName());
-        recordCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getRecordCounterName());
-        fieldCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getFieldCounterName());
+        _rowCounter = context.getCounter(_blurTask.getCounterGroupName(), _blurTask.getRowCounterName());
+        _recordCounter = context.getCounter(_blurTask.getCounterGroupName(), _blurTask.getRecordCounterName());
+        _fieldCounter = context.getCounter(_blurTask.getCounterGroupName(), _blurTask.getFieldCounterName());
+        _rowBreak = context.getCounter(_blurTask.getCounterGroupName(), _blurTask.getRowBreakCounterName());
+        _rowFailures = context.getCounter(_blurTask.getCounterGroupName(), _blurTask.getRowFailureCounterName());
     }
 
     @Override
-    protected void reduce(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException, InterruptedException {
+    protected void reduce(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException,
+            InterruptedException {
+        if (!index(key, values, context, false)) {
+            if (!index(key, values, context, true)) {
+                _rowFailures.increment(1);
+            }
+        }
+    }
+
+    private boolean index(BytesWritable key, Iterable<BlurRecord> values, Context context, boolean forceDelete)
+            throws IOException {
         boolean primeDoc = true;
+        int recordCount = 0;
+        long oldRamSize = _writer.ramSizeInBytes();
         for (BlurRecord record : values) {
-            Document document = toDocument(record);
+            Document document = toDocument(record, _builder);
             PRIMEDOC:
             if (primeDoc) {
                 addPrimeDocumentField(document);
                 primeDoc = false;
-                switch (record.getOperation()) {
-                case DELETE_ROW:
-                    writer.deleteDocuments(new Term(ROW_ID,record.getRowId()));
-                    return;
-                case REPLACE_ROW:
-                    writer.deleteDocuments(new Term(ROW_ID,record.getRowId()));
-                    break PRIMEDOC;
+                if (forceDelete) {
+                    delete(record.getRowId());
+                } else {
+                    switch (record.getOperation()) {
+                    case DELETE_ROW:
+                        delete(record.getRowId());
+                        return true;
+                    case REPLACE_ROW:
+                        delete(record.getRowId());
+                        break PRIMEDOC;
+                    }
                 }
             }
-            writer.addDocument(document);
+            _writer.addDocument(document);
+            long newRamSize = _writer.ramSizeInBytes();
+            if (newRamSize < oldRamSize) {
+                _rowBreak.increment(1);
+                return false;
+            }
+            oldRamSize = newRamSize;
             context.progress();
-            recordCounter.increment(1);
+            recordCount++;
         }
-        rowCounter.increment(1);
+        _recordCounter.increment(recordCount);
+        _rowCounter.increment(1);
+        return true;
     }
-    
+
+    private void delete(String rowId) throws IOException {
+        _writer.deleteDocuments(new Term(ROW_ID, rowId));
+    }
+
     @Override
     protected void cleanup(Context context) throws IOException, InterruptedException {
-        writer.optimize();
-        writer.commit(blurTask.getCommitUserData());
-        writer.close();
-        localFileCache.delete(HdfsUtil.getDirName(blurTask.getTableName(), blurTask.getShardName()));
-        localFileCache.close();
+        _writer.commit();
+        _writer.close();
+        _localFileCache.delete(HdfsUtil.getDirName(_blurTask.getTableName(), _blurTask.getShardName()));
+        _localFileCache.close();
     }
-    
+
     protected void setupLocalFileCache(Context context) throws IOException {
-        localFileCache = blurTask.getLocalFileCache();
+        _localFileCache = _blurTask.getLocalFileCache();
     }
 
     protected void setupFileSystem(Context context) throws IOException {
-        Path path = nullCheck(blurTask.getDirectoryPath());
-        fileSystem = FileSystem.get(path.toUri(),context.getConfiguration());
+        Path path = nullCheck(_blurTask.getDirectoryPath());
+        _fileSystem = FileSystem.get(path.toUri(), context.getConfiguration());
     }
 
     protected void setupLockFactory(Context context) throws IOException {
-        //need to use zookeeper lock factory
-        lockFactory = new NoLockFactory();
+        // need to use zookeeper lock factory
+        _lockFactory = new NoLockFactory();
     }
-    
+
     protected void setupDirectory(Context context) throws IOException {
-        String dirName = HdfsUtil.getDirName(nullCheck(blurTask.getTableName()), nullCheck(blurTask.getShardName()));
-        directory = new WritableHdfsDirectory(dirName, nullCheck(blurTask.getDirectoryPath()), 
-                nullCheck(fileSystem), nullCheck(localFileCache), nullCheck(lockFactory),context);
+        String dirName = HdfsUtil.getDirName(nullCheck(_blurTask.getTableName()), nullCheck(_blurTask.getShardName()));
+        _directory = new WritableHdfsDirectory(dirName, nullCheck(_blurTask.getDirectoryPath()), nullCheck(_fileSystem),
+                nullCheck(_localFileCache), nullCheck(_lockFactory), context);
     }
 
     protected <T> T nullCheck(T o) {
@@ -149,73 +176,37 @@ public class BlurReducer extends Reducer<BytesWritable,BlurRecord,BytesWritable,
         }
         return o;
     }
-    
-    protected void setupEmptyIndex(Context context) throws IOException {
-        nullCheck(directory);
-        if (!IndexReader.indexExists(directory)) {
-            IndexWriter indexWriter = new IndexWriter(nullCheck(directory), nullCheck(analyzer), 
-                    nullCheck(deletionPolicy), MaxFieldLength.UNLIMITED);
-            indexWriter.setUseCompoundFile(false);
-            indexWriter.addDocument(new Document());//hack to make empty commit point stick
-            indexWriter.commit(blurTask.getEmptyCommitUserData());
-            indexWriter.close();
-        }        
-    }
 
     protected void setupWriter(Context context) throws IOException {
-        writer = new IndexWriter(nullCheck(directory), nullCheck(analyzer), 
-                nullCheck(deletionPolicy), MaxFieldLength.UNLIMITED, nullCheck(commitPoint));
-        writer.setRAMBufferSizeMB(blurTask.getRamBufferSizeMB());
-        writer.setUseCompoundFile(false);
-        writer.setSimilarity(new FairSimilarity());
+        _writer = new IndexWriter(nullCheck(_directory), nullCheck(_analyzer), MaxFieldLength.UNLIMITED);
+        _writer.setRAMBufferSizeMB(_blurTask.getRamBufferSizeMB());
+        _writer.setUseCompoundFile(false);
+        _writer.setSimilarity(new FairSimilarity());
     }
-    
+
     protected void setupAnalyzer(Context context) {
-        analyzer = blurTask.getAnalyzer();
+        _analyzer = _blurTask.getAnalyzer();
     }
-    
-    protected void setupCommitPoint(Context context) throws IOException {
-        commitPoint = blurTask.getIndexCommitPointNameToOpen(IndexReader.listCommits(directory));
-    }
-    
-    protected void setupIndexDeletionPolicy(Context context) {
-        deletionPolicy = new IndexDeletionPolicy() {
-            @Override
-            public void onInit(List<? extends IndexCommit> commits) throws IOException {
-                //keep everything
-            }
-            @Override
-            public void onCommit(List<? extends IndexCommit> commits) throws IOException {
-                //keep everything
-            }
-        };
-    }
-    
+
     protected void addPrimeDocumentField(Document document) {
         document.add(PRIME_FIELD);
     }
 
-    protected Document toDocument(BlurRecord record) {
+    protected Document toDocument(BlurRecord record, StringBuilder builder) {
         Document document = new Document();
         document.add(new Field(ROW_ID, record.getRowId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
         document.add(new Field(RECORD_ID, record.getRecordId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
         String columnFamily = record.getColumnFamily();
-        for (BlurColumn column : record.getColumns()) {
-            addField(columnFamily,document,column);
-            fieldCounter.increment(1);
-        }
+        RowIndexWriter.addColumns(document, _analyzer, builder, columnFamily, 
+            new IterableConverter<BlurColumn, Column>(
+                record.getColumns(), new Converter<BlurColumn, Column>() {
+                    @Override
+                    public Column convert(BlurColumn from) throws Exception {
+                        List<String> values = from.getValues();
+                        _fieldCounter.increment(values.size());
+                        return new Column(from.getName(),values);
+                    }
+                }));
         return document;
-    }
-
-    protected void addField(String columnFamily, Document document, BlurColumn column) {
-        String indexName = columnFamily + "." + column.getName();
-        document.add(new Field(indexName,column.getValue(),Store.YES,Index.ANALYZED_NO_NORMS));
-        Set<String> subIndexNames = analyzer.getSubIndexNames(indexName);
-        if (subIndexNames == null) {
-            return;
-        }
-        for (String subIndexName : subIndexNames) {
-            document.add(new Field(subIndexName,column.getValue(),Store.NO,Index.ANALYZED_NO_NORMS));
-        }
     }
 }

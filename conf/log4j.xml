@@ -22,9 +22,27 @@
 			<param name="ConversionPattern" value="[%d{dd/MM/yy hh:mm:ss:sss z}] %5p %c{2}: %m%n" />
 		</layout>
 	</appender>
+	
+	<appender name="ASYNC-METRICS" class="org.apache.log4j.AsyncAppender">
+		<appender-ref ref="METRICS-FILE" />
+	</appender>
+	
+	<appender name="METRICS-FILE" class="org.apache.log4j.DailyRollingFileAppender">
+		<param name="File" value="${blur.logs.dir}/${blur.log.file}.metrics" />
+		<param name="DatePattern" value="'.'yyyyMMdd" />
+		<param name="Append" value="true" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{dd/MM/yy hh:mm:ss:sss z}] %5p %c{2}: %m%n" />
+		</layout>
+	</appender>
+	
+	<logger name="METRICS-FILE" additivity="false">
+		<level value="INFO"/>
+		<appender-ref ref="ASYNC-METRICS" />
+	</logger>
 
 	<root>
-		<priority value="info" />
+		<priority value="INFO" />
 		<appender-ref ref="ASYNC" />
 	</root>
 </log4j:configuration>

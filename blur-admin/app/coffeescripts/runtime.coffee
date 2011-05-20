@@ -3,8 +3,8 @@ $(document).ready ->
   #Runs the AJAX request for current query information
   makeAJAXRequest =() ->
     table = $('#table-select').val()
-    if table != ' '
-      url = '/queries/current/' + table
+    if table != ' ' or table != undefined or table != 'undefined'
+      url = '/query/current/' + table
       $.ajax(
         url: url
         type: 'GET'
@@ -43,7 +43,12 @@ $(document).ready ->
   setupCancelListeners = () ->
     $('.runtime-cancel-query').unbind('click').click(() ->
       uuid = $(this).attr('blur:query-uuid')
-      #TODO setup ajax call to cancel query
+      table = $('#table-select').val()
+      url = '/query/cancel/' + table + '/' + uuid
+      $.ajax(
+        url: url
+        type: 'GET'
+        )
     )
 
   #FUNCTION buildQueryRowHTML

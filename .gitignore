@@ -16,3 +16,5 @@ src/*/tmp-test/**
 *.log
 *.pid
 src/blur-store/src/main/java/com/quicklz/
+lib
+src/blur-core/local-testing-tmp*

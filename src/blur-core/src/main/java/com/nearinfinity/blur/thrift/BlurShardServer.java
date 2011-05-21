@@ -75,10 +75,7 @@ public class BlurShardServer extends ExecutionContextIface {
             try {
                 AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
                 BlurResultIterable hitsIterable = indexManager.query(table, blurQuery, facetCounts);
-                return BlurBaseServer.convertToHits(hitsIterable, 
-                        blurQuery.start, blurQuery.fetch,
-                        blurQuery.minimumNumberOfResults, 
-                        facetCounts);
+                return BlurBaseServer.convertToHits(hitsIterable, blurQuery, facetCounts);
             } catch (Exception e) {
                 LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
                 throw new BException(e.getMessage(), e);
@@ -194,9 +191,7 @@ public class BlurShardServer extends ExecutionContextIface {
             try {
                 return indexManager.recordFrequency(table, columnFamily, columnName, value);
             } catch (Exception e) {
-                LOG
-                        .error(
-                                "Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]",
+                LOG.error("Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]",
                                 e, table, columnFamily, columnName, value);
                 throw new BException(e.getMessage(), e);
             }
@@ -254,8 +249,7 @@ public class BlurShardServer extends ExecutionContextIface {
             descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
             boolean tableEnabled = isTableEnabled(context, table);
             if (tableEnabled) {
-                Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-                descriptor.shardNames = new ArrayList<String>(indexes.keySet());
+                descriptor.shardNames = indexServer.getShardList(table);
             }
             descriptor.isEnabled = tableEnabled;
             descriptor.tableUri = indexServer.getTableUri(table);

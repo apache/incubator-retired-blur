@@ -26,6 +26,7 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -33,26 +34,26 @@ import com.nearinfinity.blur.utils.BlurUtil;
 
 public abstract class BlurBaseServer implements Iface {
 	
-    public static BlurResults convertToHits(BlurResultIterable hitsIterable, long start, int fetch, long minimumNumberOfResults, AtomicLongArray facetCounts) {
-        BlurResults hits = new BlurResults();
-        hits.setTotalResults(hitsIterable.getTotalResults());
-        hits.setShardInfo(hitsIterable.getShardInfo());
-        if (minimumNumberOfResults > 0) {
-            hitsIterable.skipTo(start);
+    public static BlurResults convertToHits(BlurResultIterable hitsIterable, BlurQuery query, AtomicLongArray facetCounts) {
+        BlurResults results = new BlurResults();
+        results.setTotalResults(hitsIterable.getTotalResults());
+        results.setShardInfo(hitsIterable.getShardInfo());
+        if (query.minimumNumberOfResults > 0) {
+            hitsIterable.skipTo(query.start);
             int count = 0;
             Iterator<BlurResult> iterator = hitsIterable.iterator();
-            while (iterator.hasNext() && count < fetch) {
-                hits.addToResults(iterator.next());
+            while (iterator.hasNext() && count < query.fetch) {
+                results.addToResults(iterator.next());
                 count++;
             }
         }
-        if (hits.results == null) {
-            hits.results = new ArrayList<BlurResult>();
+        if (results.results == null) {
+            results.results = new ArrayList<BlurResult>();
         }
         if (facetCounts != null) {
-            hits.facetCounts = BlurUtil.toList(facetCounts);
+            results.facetCounts = BlurUtil.toList(facetCounts);
         }
-        return hits;
+        return results;
     }
     
 

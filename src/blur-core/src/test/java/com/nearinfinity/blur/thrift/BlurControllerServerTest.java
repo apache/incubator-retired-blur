@@ -20,10 +20,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
@@ -41,8 +44,13 @@ import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
+import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.FetchRowResult;
+import com.nearinfinity.blur.thrift.generated.RecordMutation;
+import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -59,9 +67,9 @@ public class BlurControllerServerTest {
     @Before
     public void setup() {
         dynamicConfig = new SimpleExecutorsDynamicConfig(10);
-        addShardServer("node1");
-        addShardServer("node2");
-        addShardServer("node3");
+        addShardServer("shard-00000000");
+        addShardServer("shard-00000001");
+        addShardServer("shard-00000002");
         server = new BlurControllerServer();
         server.setClient(getClient());
         server.setClusterStatus(getClusterStatus());
@@ -128,6 +136,24 @@ public class BlurControllerServerTest {
         long recordFrequency = server.recordFrequency(TABLE, "cf", "cn", "value");
         assertEquals(shardServers.size(),recordFrequency);
     }
+    
+    @Test
+    public void testMutate() throws BlurException, TException {
+        RowMutation mutation = new RowMutation();
+        mutation.setRowId("1234");
+        RecordMutation recMut = new RecordMutation();
+        recMut.setFamily("test");
+        recMut.setRecordId("5678");
+        recMut.addToRecord(new Column("name",Arrays.asList("value")));
+        mutation.addToRecordMutations(recMut);
+        server.mutate(TABLE, Arrays.asList(mutation));
+        
+        Selector selector = new Selector();
+        selector.rowId = "1234";
+        
+        FetchResult fetchRow = server.fetchRow(TABLE, selector);
+        assertNotNull(fetchRow.rowResult);
+    }
 
     private BlurClient getClient() {
         BlurClientEmbedded blurClientEmbedded = new BlurClientEmbedded();
@@ -140,6 +166,8 @@ public class BlurControllerServerTest {
     
     private Iface getShardServer(final String node) {
         return new Iface() {
+            
+            private Map<String,Map<String,Row>> rows = new HashMap<String, Map<String,Row>>();
             
             @Override
             public List<String> terms(String arg0, String arg1, String arg2, String arg3, short arg4) throws BlurException,
@@ -197,13 +225,23 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public FetchResult fetchRow(String arg0, Selector arg1) throws BlurException, TException {
-                throw new RuntimeException("no impl");
+            public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
+                Map<String, Row> map = rows.get(table);
+                Row row = map.get(selector.rowId);
+                FetchResult fetchResult = new FetchResult();
+                fetchResult.setRowResult(new FetchRowResult(row));
+                return fetchResult;
             }
             
             @Override
             public TableDescriptor describe(String arg0) throws BlurException, TException {
-                throw new RuntimeException("no impl");
+                TableDescriptor descriptor = new TableDescriptor();
+                descriptor.isEnabled = true;
+                descriptor.shardNames = new ArrayList<String>();
+                descriptor.shardNames.add("shard-00000000");
+                descriptor.shardNames.add("shard-00000001");
+                descriptor.shardNames.add("shard-00000002");
+                return descriptor;
             }
             
             @Override
@@ -223,7 +261,36 @@ public class BlurControllerServerTest {
 
             @Override
             public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException {
-                throw new RuntimeException("no impl");
+                Map<String, Row> map = rows.get(table);
+                if (map == null) {
+                    map = new HashMap<String, Row>();
+                    rows.put(table, map);
+                }
+                for (RowMutation mutation : mutations) {
+                    Row row = toRow(mutation);
+                    map.put(row.id, row);
+                }
+            }
+
+            private Row toRow(RowMutation mutation) {
+                Row row = new Row();
+                row.id = mutation.rowId;
+                row.columnFamilies = toColumnFamilies(mutation.recordMutations);
+                return row;
+            }
+
+            private Set<ColumnFamily> toColumnFamilies(List<RecordMutation> recordMutations) {
+                Map<String,ColumnFamily> cfs = new HashMap<String, ColumnFamily>();
+                for (RecordMutation mutation : recordMutations) {
+                    String family = mutation.family;
+                    ColumnFamily columnFamily = cfs.get(family);
+                    if (columnFamily == null) {
+                        columnFamily = new ColumnFamily();
+                        cfs.put(family, columnFamily);
+                    }
+                    columnFamily.putToRecords(mutation.recordId, mutation.record);
+                }
+                return new HashSet<ColumnFamily>(cfs.values());
             }
 
             @Override

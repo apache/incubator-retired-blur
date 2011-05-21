@@ -115,7 +115,9 @@ struct TableDescriptor {
   1:bool isEnabled,
   2:string analyzerDef,
   3:list<string> shardNames,
-  4:string tableUri
+  4:string tableUri,
+  5:bool isVirtual,
+  6:list<string> tables
 }
 
 struct BlurQueryStatus {
@@ -180,6 +182,15 @@ service Blur {
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
   void mutate(1:string table, 2:list<RowMutation> mutations) throws (1:BlurException ex)
+
+  void createTable(1:string table, 2:string tableUri, 3:string analyzerDef, 4:i32 numberOfShards, 5:list<string> shardServers) throws (1:BlurException ex)
+  void enableTable(1:string table) throws (1:BlurException ex)
+  void disableTable(1:string table) throws (1:BlurException ex)
+  void removeTable(1:string table) throws (1:BlurException ex)
+
+  void createVirtualTable(1:string table, 2:list<string> tables) throws (1:BlurException ex)
+  void removeVirtualTable(1:string table) throws (1:BlurException ex)
+  
 }
 
 

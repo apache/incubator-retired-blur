@@ -35,93 +35,91 @@ public class BlurResultIterableClient implements BlurResultIterable {
     
     private static final Log LOG = LogFactory.getLog(BlurResultIterableClient.class);
 
-    private Map<String, Long> shardInfo = new TreeMap<String, Long>();
-    private Client client;
-    private String table;
-    private String query;
-    private boolean superQueryOn;
-    private ScoreType type;
-    private String postSuperFilter;
-    private String preSuperFilter;
-    private long minimumNumberOfResults;
-    private long maxQueryTime;
-    private BlurResults hits;
-    private int fetchCount = 100;
-    private int batch = 0;
-    private long totalHits;
-    private long skipTo;
-    private long uuid;
-    private AtomicLongArray facetCounts;
-
-    private boolean alreadyProcessed;
+    private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
+    private Client _client;
+    private String _table;
+    private String _query;
+    private boolean _superQueryOn;
+    private ScoreType _type;
+    private String _postSuperFilter;
+    private String _preSuperFilter;
+    private long _minimumNumberOfResults;
+    private long _maxQueryTime;
+    private BlurResults _results;
+    private int _fetchCount = 100;
+    private int _batch = 0;
+    private long _totalResults;
+    private long _skipTo;
+    private long _uuid;
+    private AtomicLongArray _facetCounts;
+    private boolean _alreadyProcessed;
 
     public BlurResultIterableClient(Blur.Client client, String table, BlurQuery searchQuery, AtomicLongArray facetCounts) {
-        this.client = client;
-        this.table = table;
-        this.query = searchQuery.queryStr;
-        this.superQueryOn = searchQuery.superQueryOn;
-        this.type = searchQuery.type;
-        this.postSuperFilter = searchQuery.postSuperFilter;
-        this.preSuperFilter = searchQuery.preSuperFilter;
-        this.minimumNumberOfResults = searchQuery.minimumNumberOfResults;
-        this.maxQueryTime = searchQuery.maxQueryTime;
-        this.uuid = searchQuery.uuid;
-        this.facetCounts = facetCounts;
+        this._client = client;
+        this._table = table;
+        this._query = searchQuery.queryStr;
+        this._superQueryOn = searchQuery.superQueryOn;
+        this._type = searchQuery.type;
+        this._postSuperFilter = searchQuery.postSuperFilter;
+        this._preSuperFilter = searchQuery.preSuperFilter;
+        this._minimumNumberOfResults = searchQuery.minimumNumberOfResults;
+        this._maxQueryTime = searchQuery.maxQueryTime;
+        this._uuid = searchQuery.uuid;
+        this._facetCounts = facetCounts;
         performSearch();
     }
 
     private void performSearch() {
         try {
-            long cursor = fetchCount * batch;
+            long cursor = _fetchCount * _batch;
+            BlurQuery searchQuery = new BlurQuery(_query, _superQueryOn, _type, 
+                    _postSuperFilter, _preSuperFilter, cursor, _fetchCount, _minimumNumberOfResults, 
+                    _maxQueryTime, _uuid, null, false, null, null);
             
-            BlurQuery searchQuery = new BlurQuery(query, superQueryOn, type, 
-                    postSuperFilter, preSuperFilter, cursor, fetchCount, minimumNumberOfResults, 
-                    maxQueryTime, uuid, null, false, null, null);
-            
-            hits = client.query(table, searchQuery);
+            _results = _client.query(_table, searchQuery);
             addFacets();
-            totalHits = hits.totalResults;
-            shardInfo.putAll(hits.shardInfo);
-            batch++;
+            _totalResults = _results.totalResults;
+            _shardInfo.putAll(_results.shardInfo);
+            _batch++;
         } catch (Exception e) {
-            LOG.error("Error during for [{0}]",e,query);
+            LOG.error("Error during for [{0}]",e,_query);
             throw new RuntimeException(e);
         }
     }
 
     private void addFacets() {
-        if (!alreadyProcessed) {
-            List<Long> counts = hits.facetCounts;
+        if (!_alreadyProcessed) {
+            List<Long> counts = _results.facetCounts;
             if (counts != null) {
                 int size = counts.size();
                 for (int i = 0; i < size; i++) {
-                    facetCounts.addAndGet(i, counts.get(i));
+                    _facetCounts.addAndGet(i, counts.get(i));
                 }
             }
-            alreadyProcessed = true;
+            _alreadyProcessed = true;
         }
     }
 
     @Override
     public Map<String, Long> getShardInfo() {
-        return shardInfo;
+        return _shardInfo;
     }
 
     @Override
     public long getTotalResults() {
-        return totalHits;
+        return _totalResults;
     }
 
     @Override
     public void skipTo(long skipTo) {
-        this.skipTo = skipTo;
+        this._skipTo = skipTo;
     }
 
     @Override
     public Iterator<BlurResult> iterator() {
         SearchIterator iterator = new SearchIterator();
         long start = 0;
-        while (iterator.hasNext() && start < skipTo) {
+        while (iterator.hasNext() && start < _skipTo) {
             iterator.next();
             start++;
         }
@@ -135,7 +133,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
 
         @Override
         public boolean hasNext() {
-            if (position < minimumNumberOfResults && position < totalHits) {
+            if (position < _minimumNumberOfResults && position < _totalResults) {
                 return true;
             }
             return false;
@@ -143,12 +141,12 @@ public class BlurResultIterableClient implements BlurResultIterable {
 
         @Override
         public BlurResult next() {
-            if (relposition >= hits.results.size()) {
+            if (relposition >= _results.results.size()) {
                 performSearch();
                 relposition = 0;
             }
             position++;
-            return hits.results.get(relposition++);
+            return _results.results.get(relposition++);
         }
 
         @Override

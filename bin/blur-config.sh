@@ -1,3 +1,4 @@
+. ~/.bash_profile
 . $BLUR_HOME/conf/blur-env.sh
 
 BLUR_CLASSPATH=$BLUR_HOME/conf

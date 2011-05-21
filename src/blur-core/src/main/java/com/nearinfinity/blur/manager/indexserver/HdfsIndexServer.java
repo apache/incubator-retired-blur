@@ -57,14 +57,16 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
     private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
 
-    private LocalFileCache localFileCache;
-    private LockFactory lockFactory;
-    private ReplicationDaemon replicationDaemon;
-    private boolean closed;
-    private ReplicationStrategy replicationStrategy;
-    private Configuration configuration = new Configuration();
+    private LocalFileCache _localFileCache;
+    private LockFactory _lockFactory;
+    private ReplicationDaemon _replicationDaemon;
+    private boolean _closed;
+    private ReplicationStrategy _replicationStrategy;
+    private Configuration _configuration = new Configuration();
     private BlurIndexReaderCloser _closer;
     private BlurIndexCommiter _commiter;
+    private int _blockSize = 65536;
+    private CompressionCodec _compression = new DeflaterCompressionCodec();
     
     @Override
     public void init() {
@@ -79,8 +81,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     public synchronized void close() {
         _commiter.close();
         _closer.stop();
-        if (!closed) {
-            closed = true;
+        if (!_closed) {
+            _closed = true;
             super.close();
         }
     }
@@ -90,7 +92,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
         URI tableUri = getTableURI(table);
         Path tablePath = new Path(tableUri.toString());
-        FileSystem fileSystem = FileSystem.get(tableUri, configuration);
+        FileSystem fileSystem = FileSystem.get(tableUri, _configuration);
         if (!fileSystem.exists(tablePath)) {
             throw new FileNotFoundException(tablePath.toString());
         }
@@ -98,21 +100,20 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         if (!fileSystem.exists(hdfsDirPath)) {
             throw new FileNotFoundException(hdfsDirPath.toString());
         }
-        ReplicaHdfsDirectory rdirectory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, new Progressable() {
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, _localFileCache, _lockFactory, new Progressable() {
             @Override
             public void progress() {
                 //do nothing for now
             }
-        }, replicationDaemon, replicationStrategy);
+        }, _replicationDaemon, _replicationStrategy);
         
-        CompressionCodec compression = new DeflaterCompressionCodec();
-        CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(rdirectory, compression, 65536);
+        CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, _compression, _blockSize);
         
         BlurIndexWriter writer = new BlurIndexWriter();
         writer.setCloser(_closer);
         writer.setCommiter(_commiter);
         writer.setAnalyzer(getAnalyzer(table));
-        writer.setDirectory(directory);
+        writer.setDirectory(compressedDirectory);
         writer.init();
         return warmUp(writer);
     }
@@ -146,7 +147,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         try {
             URI tableUri = getTableURI(table);
             Path tablePath = new Path(tableUri.toString());
-            FileSystem fileSystem = FileSystem.get(tableUri, configuration);
+            FileSystem fileSystem = FileSystem.get(tableUri, _configuration);
             if (!fileSystem.exists(tablePath)) {
                 LOG.warn("Table [{0}] is missing, defined location [{1}]",table,tableUri.toString());
                 return new ArrayList<String>();
@@ -182,19 +183,19 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     }
     
     public void setLocalFileCache(LocalFileCache localFileCache) {
-        this.localFileCache = localFileCache;
+        this._localFileCache = localFileCache;
     }
 
     public void setLockFactory(LockFactory lockFactory) {
-        this.lockFactory = lockFactory;
+        this._lockFactory = lockFactory;
     }
 
     public void setReplicationDaemon(ReplicationDaemon replicationDaemon) {
-        this.replicationDaemon = replicationDaemon;
+        this._replicationDaemon = replicationDaemon;
     }
 
     public void setReplicationStrategy(ReplicationStrategy replicationStrategy) {
-        this.replicationStrategy = replicationStrategy;
+        this._replicationStrategy = replicationStrategy;
     }
 
 

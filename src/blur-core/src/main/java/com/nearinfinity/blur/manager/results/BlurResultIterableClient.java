@@ -28,6 +28,7 @@ import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
+import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
@@ -53,30 +54,34 @@ public class BlurResultIterableClient implements BlurResultIterable {
     private long _uuid;
     private AtomicLongArray _facetCounts;
     private boolean _alreadyProcessed;
+    private String _userId;
+    private List<Facet> _facets;
 
-    public BlurResultIterableClient(Blur.Client client, String table, BlurQuery searchQuery, AtomicLongArray facetCounts) {
-        this._client = client;
-        this._table = table;
-        this._query = searchQuery.queryStr;
-        this._superQueryOn = searchQuery.superQueryOn;
-        this._type = searchQuery.type;
-        this._postSuperFilter = searchQuery.postSuperFilter;
-        this._preSuperFilter = searchQuery.preSuperFilter;
-        this._minimumNumberOfResults = searchQuery.minimumNumberOfResults;
-        this._maxQueryTime = searchQuery.maxQueryTime;
-        this._uuid = searchQuery.uuid;
-        this._facetCounts = facetCounts;
+    public BlurResultIterableClient(Blur.Client client, String table, BlurQuery query, AtomicLongArray facetCounts) {
+        _client = client;
+        _table = table;
+        _query = query.queryStr;
+        _superQueryOn = query.superQueryOn;
+        _type = query.type;
+        _postSuperFilter = query.postSuperFilter;
+        _preSuperFilter = query.preSuperFilter;
+        _minimumNumberOfResults = query.minimumNumberOfResults;
+        _maxQueryTime = query.maxQueryTime;
+        _uuid = query.uuid;
+        _facetCounts = facetCounts;
+        _facets = query.facets;
+        _userId = query.userId;
         performSearch();
     }
 
     private void performSearch() {
         try {
             long cursor = _fetchCount * _batch;
-            BlurQuery searchQuery = new BlurQuery(_query, _superQueryOn, _type, 
+            BlurQuery blurQuery = new BlurQuery(_query, _superQueryOn, _type, 
                     _postSuperFilter, _preSuperFilter, cursor, _fetchCount, _minimumNumberOfResults, 
-                    _maxQueryTime, _uuid, null, false, null, null);
+                    _maxQueryTime, _uuid, _userId, false, _facets, null);
             
-            _results = _client.query(_table, searchQuery);
+            _results = _client.query(_table, blurQuery);
             addFacets();
             _totalResults = _results.totalResults;
             _shardInfo.putAll(_results.shardInfo);

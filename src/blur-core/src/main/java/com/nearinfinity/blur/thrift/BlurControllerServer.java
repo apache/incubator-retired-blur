@@ -103,8 +103,6 @@ public class BlurControllerServer implements Iface {
 		try {
 		    final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 		    
-		    System.out.println("stuff here");
-		    
 		    Selector selector = blurQuery.getSelector();
 		    blurQuery.setSelector(null);
 		    

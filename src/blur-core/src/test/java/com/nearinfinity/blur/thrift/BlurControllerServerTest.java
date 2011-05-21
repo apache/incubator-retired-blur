@@ -41,6 +41,7 @@ import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
+import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -106,9 +107,26 @@ public class BlurControllerServerTest {
     }
     
     @Test
+    public void testQueryWithFacets() throws BlurException, TException {
+        BlurQuery blurQuery = new BlurQuery();
+        blurQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
+        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+        blurQuery.facets = new ArrayList<Facet>();
+        blurQuery.facets.add(new Facet());
+        blurQuery.facets.add(new Facet());
+        BlurResults results = server.query(TABLE, blurQuery);
+        assertNotNull(results);
+        assertNotNull(results.facetCounts);
+        for (int i = 0; i < results.facetCounts.size(); i++) {
+            long count = results.facetCounts.get(i);
+            assertEquals(shardServers.size() * (i+1), count);
+        }
+    }
+    
+    @Test
     public void testRecordFrequency() throws BlurException, TException {
         long recordFrequency = server.recordFrequency(TABLE, "cf", "cn", "value");
-        assertEquals(3,recordFrequency);
+        assertEquals(shardServers.size(),recordFrequency);
     }
 
     private BlurClient getClient() {
@@ -149,12 +167,25 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public BlurResults query(String arg0, BlurQuery arg1) throws BlurException, TException {
+            public BlurResults query(String table, BlurQuery query) throws BlurException, TException {
                 BlurResults results = new BlurResults();
                 results.putToShardInfo(node, 0);
+                results.setFacetCounts(getFacetCounts(query));
                 return results;
             }
             
+            private List<Long> getFacetCounts(BlurQuery query) {
+                if (query.facets != null) {
+                    int size = query.facets.size();
+                    List<Long> results = new ArrayList<Long>();
+                    for (int i = 0; i < size; i++) {
+                        results.add(i + 1L);
+                    }
+                    return results;
+                }
+                return null;
+            }
+
             @Override
             public Schema schema(String arg0) throws BlurException, TException {
                 throw new RuntimeException("no impl");

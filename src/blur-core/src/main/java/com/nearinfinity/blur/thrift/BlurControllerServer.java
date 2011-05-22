@@ -39,6 +39,7 @@ import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
+import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
@@ -127,6 +128,7 @@ public class BlurControllerServer implements Iface {
 
     @Override
     public FetchResult fetchRow(final String table, final Selector selector) throws BlurException, TException {
+        IndexManager.validSelector(selector);
         String clientHostnamePort = null;
         try {
             clientHostnamePort = getNode(table, selector);

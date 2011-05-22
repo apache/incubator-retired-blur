@@ -4,3 +4,4 @@ log/*.log
 tmp/
 public/javascripts/compiled
 public/stylesheets/compiled
+.*~

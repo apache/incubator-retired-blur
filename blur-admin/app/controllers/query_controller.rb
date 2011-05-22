@@ -26,4 +26,18 @@ class QueryController < ApplicationController
 
 		render :show
 	end
+
+  def cancel
+    client = setup_thrift
+    client.cancelQuery(param[:table], param[:uuid])
+  end
+
+
+  def current_queries
+    client = setup_thrift
+    running_queries = client.currentQueries(params[:table])
+    close_thrift
+
+    render :json => running_queries
+  end
 end

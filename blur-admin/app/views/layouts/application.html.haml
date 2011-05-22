@@ -2,33 +2,45 @@
 %html
   %head
     =csrf_meta_tag
-    %title Blur Admin
-    = stylesheet_link_tag 'jquery-ui', 'compiled/application'
+    %title 
+      = yield(:title)
+      | Blur Admin
+    = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
+    = stylesheet_link_tag 'jquery-ui', 'compiled/print', :media => "print"
+    /[if lt IE 8]
+      = stylesheet_link_tag 'ie'
   %body
     #root
-      #hd
-        = image_tag 'blur_logo.png'
-      #nav
-        %ul
-          - controller = params[:controller]
-          %li{:class => controller == 'main' && 'active'}
-            = link_to 'Environment Status', '/'
+      .container
+        #hd
+          = image_tag 'blur_logo.png'
+        #nav
+          %ul
+            - controller = params[:controller]
+            %li{:class => controller == 'env' && 'active'}
+              = link_to 'Environment Status', '/'
 
-          %li{:class => controller == 'data' && 'active'}
-            = link_to 'Data', data_path
-          
-          %li{:class => controller == 'runtime' && 'active'}
-            = link_to 'Runtime', runtime_path
+            %li{:class => controller == 'data' && 'active'}
+              = link_to 'Data', data_path
+            
+            %li{:class => controller == 'runtime' && 'active'}
+              = link_to 'Runtime', runtime_path
 
-          %li{:class => controller == 'config' && 'active'}
-            = link_to 'Configuration', config_path
+            %li{:class => controller == 'config' && 'active'}
+              = link_to 'Configuration', config_path
 
-          %li{:class => controller == 'queries' && 'active'}
-            = link_to 'Query', query_path
-      #bd
-        = yield
+            %li{:class => controller == 'query' && 'active'}
+              = link_to 'Query', query_path
+        #bd
+          = yield
       #root-footer
-    #ft 
-      Blur Footer
-    =javascript_include_tag 'jquery', 'jquery-ui', 'rails', 'application', 'compiled/runtime'
-    =include_safe_javascript
+    #ft
+      .container
+        Blur Footer
+    = javascript_include_tag 'raphael-min','g.raphael-min','g.pie-min','g.bar-min','g.line-min','jquery', 'jquery-ui', 'rails', 'application'
+
+    -# Use this syntax in haml templates to add page specific javascript
+    -# - content_for :javascript do
+    -#   = javascript_include_tag 'compiled/runtime'
+    = yield :javascript
+

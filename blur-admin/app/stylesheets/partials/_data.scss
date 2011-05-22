@@ -1,0 +1,37 @@
+#data-dtables
+{
+  margin: 0 20px 0 20px;
+}
+#dtables-title{
+  display: inline-block;
+  h2{
+    display: inline-block;
+    color: #AAA;
+    font-weight: bold;
+    font-size: 200%;
+  }
+}
+#dtables-table {
+  width: 100%;
+  margin:0 0 20px 0;
+  tr
+  {
+    height: 50px;
+    th, td{
+      text-align: center;
+      font-size: 90%;
+    }
+  }
+
+  tr:nth-child(odd) {background-color: #F0F0F0;}
+
+  #dtables-table-header
+  {
+    background-color: #DDD;
+    color: #555;
+    th{
+      font-weight: bold;
+      font-size: 120%;
+    }
+  }
+}

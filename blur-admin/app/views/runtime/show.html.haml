@@ -1,3 +1,8 @@
+- content_for :title, 'Runtime'
+- content_for :javascript do
+  = javascript_include_tag 'compiled/runtime'
+
+
 Tables:
 %select#table-select{:name => 'tables'}
   -@tables.each do |table|
@@ -6,10 +11,13 @@ Tables:
 #runtime-graphs
   .runtime-graph-container
     %h4 Query Performance Graph
-    #performance-graph.runtime-graph-placeholder
+    #performance-graph.runtime-graph
+  .runtime-graph-container
+    %h4 Average Time Graph
+    #average-time-graph.runtime-graph
   .runtime-graph-container
     %h4 Table Usage Graph
-    #usage-graph.runtime-graph-placeholder
+    #usage-graph.runtime-graph
 #runtime-queries
   #queries-title
     %h2 Queries

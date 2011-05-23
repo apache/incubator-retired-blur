@@ -1,4 +1,40 @@
 - content_for :title, 'Environment Status'
+.status-container
+  #hdfs-status.inner-container
+    %h3 HDFS Status
+    #hdfs-placeholder
+      %h3 TODO:
+      %ul
+        %li get HDFS capacity data
+        %li generate pie chart of capacity data
+        %li something else?
+        %li and that other thing
+        %li with the stuff
 
-<h1>Env#show</h1>
-<p>Find me in app/views/env/show.html.erb</p>
+  #zookeeper-status.inner-container
+    %h3 Zookeeper Status
+    #zookeeper-placeholder
+      %h3 TODO:
+      %ul
+        %li determine how to make zookeeper calls
+        %li populate this space with a dump of the contains in the blur folder stored in zookeeper
+#bottom-container
+  %h3 Blur status
+  .status-container
+    .inner-container.bottom-status
+      %h3="Controllers(" + @controllers.length.to_s + ")"
+      #controllers-placeholder
+        %ul
+          -@controllers.each do |theController|
+            %li
+              =theController
+              .sparkline
+    .inner-container.bottom-status
+      %h3="Shards(" + @shards.length.to_s + ")"
+      #shards-placeholder
+        %ul
+          -@shards.each do |shard|
+            %li
+              =shard
+              .sparkline
+

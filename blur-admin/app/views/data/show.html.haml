@@ -29,12 +29,13 @@
           %b definition:
           =get_defin(table)
           %ul
-            Column Families:
-            -@tschema[table].each do |family, sets|
-              %li
-                =family
-                %ul
-                  -sets.each do |word|
-                    %li
-                      =word
+            %li Column Families:
+            %ul#def-families
+              -@tschema[table].each do |family, sets|
+                %li
+                  =family
+                  %ul#def-elements
+                    -sets.each do |word|
+                      %li
+                        =word
       %tr

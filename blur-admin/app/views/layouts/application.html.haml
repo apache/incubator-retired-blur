@@ -14,29 +14,30 @@
       .container
         #hd
           = image_tag 'blur_logo.png'
-        #nav
-          %ul
-            - controller = params[:controller]
-            %li{:class => controller == 'env' && 'active'}
-              = link_to 'Environment Status', '/'
+      #nav
+        %ul
+          - controller = params[:controller]
+          %li{:class => controller == 'env' && 'active'}
+            = link_to 'Environment Status', '/'
 
-            %li{:class => controller == 'data' && 'active'}
-              = link_to 'Data', data_path
-            
-            %li{:class => controller == 'runtime' && 'active'}
-              = link_to 'Runtime', runtime_path
+          %li{:class => controller == 'data' && 'active'}
+            = link_to 'Data', data_path
+          
+          %li{:class => controller == 'runtime' && 'active'}
+            = link_to 'Runtime', runtime_path
 
-            %li{:class => controller == 'config' && 'active'}
-              = link_to 'Configuration', config_path
+          %li{:class => controller == 'config' && 'active'}
+            = link_to 'Configuration', config_path
 
-            %li{:class => controller == 'query' && 'active'}
-              = link_to 'Query', query_path
+          %li{:class => controller == 'query' && 'active'}
+            = link_to 'Query', query_path
+      .container
         #bd
           = yield
       #root-footer
     #ft
       .container
-        Blur Footer
+        Connected to blur04
     = javascript_include_tag 'raphael-min','g.raphael-min','g.pie-min','g.bar-min','g.line-min','jquery', 'jquery-ui', 'rails', 'application'
 
     -# Use this syntax in haml templates to add page specific javascript

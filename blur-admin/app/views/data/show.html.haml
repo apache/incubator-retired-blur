@@ -8,6 +8,10 @@
       %th Shards
       %th Count
       %th Size
+      %th
+        Enable/
+        %br
+        Disable
 
     -@tables.each do |table|
       %tr
@@ -20,14 +24,15 @@
           =get_count(table)
         %td
           =get_size(table)
+        %td
+          =get_enable(table)
       %tr
-        %td{:colspan => 4}
+        %td{:colspan => 5}
           %b location:
           =get_loc(table)
       %tr
-        %td{:colspan => 4}
+        %td{:colspan => 5}
           %b definition:
-          =get_defin(table)
           %ul
             %li Column Families:
             %ul#def-families

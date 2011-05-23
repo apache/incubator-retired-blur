@@ -14,19 +14,16 @@
 #dtables-table {
   width: 100%;
   margin:0 0 20px 0;
-  tr
-  {
-    height: 50px;
+  tr{
     th, td{
-      text-align: center;
+      text-align: left;
       font-size: 90%;
     }
   }
 
-  tr:nth-child(odd) {background-color: #F0F0F0;}
-
   #dtables-table-header
   {
+    height: 50px;
     background-color: #DDD;
     color: #555;
     th{

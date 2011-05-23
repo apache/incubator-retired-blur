@@ -11,9 +11,10 @@ BlurAdmin::Application.routes.draw do
     match 'query/cancel/:table/:uuid', :to => :cancel, :as => :cancel, :via => :get
     match 'query/current/:table', :to => :current_queries, :as => :current_queries, :via => :get
   end
-  controller "data" do
-    match '/tables/curr/', :to => :curr_tables, :as => :curr_tables, :via => :get
-  end
+  #controller "data" do
+    #match '/tables/curr/', :to => :curr_tables, :as => :curr_tables, :via => :get
+  #end
+
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

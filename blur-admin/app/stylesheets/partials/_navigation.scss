@@ -33,7 +33,6 @@ body #nav {
     li {
 	  margin: 6px 0.5em 0 0.5em;
 	  padding: 0;
-	  line-height: 28px;
 	  color: #ddd;
 	  &:hover {
 		color: #eee;
@@ -47,8 +46,9 @@ body #nav {
         background-color: #323c46;
       }
       a {
+		padding: 0.5em 1em;
+	    line-height: 28px;
         @include unstyled-link;
-		padding: 0 1em;
       }
     }
   }

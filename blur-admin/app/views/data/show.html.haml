@@ -11,8 +11,30 @@
 
     -@tables.each do |table|
       %tr
-        %th
-          =table
-        %th placeholder
-        %th placeholder
-        %th placeholder
+        %td
+          %b
+            =table
+        %td
+          =get_shards(table)
+        %td
+          =get_count(table)
+        %td
+          =get_size(table)
+      %tr
+        %td{:colspan => 4}
+          %b location:
+          =get_loc(table)
+      %tr
+        %td{:colspan => 4}
+          %b definition:
+          =get_defin(table)
+          %ul
+            Column Families:
+            -@tschema[table].each do |family, sets|
+              %li
+                =family
+                %ul
+                  -sets.each do |word|
+                    %li
+                      =word
+      %tr

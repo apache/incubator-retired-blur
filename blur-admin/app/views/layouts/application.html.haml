@@ -31,9 +31,11 @@
 
           %li{:class => controller == 'query' && 'active'}
             = link_to 'Query', query_path
-      .container
-        #bd
-          = yield
+      #bd_background
+        #bd_wrap.container
+          #bd
+            #bd-pad
+              = yield
       #root-footer
     #ft
       .container

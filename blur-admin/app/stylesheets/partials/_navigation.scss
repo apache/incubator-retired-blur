@@ -6,8 +6,23 @@
     margin-top: 5px;
   }
 }
+
+#bd_background {
+	background: white image-url('background-gradient.png') repeat-x top left;
+}
+#bd_wrap {
+	margin-top: -5px;
+}
 #bd{
   margin: 0 auto 0;
+  background-image: image-url('left-shadow.png'), image-url('right-shadow.png');
+  background-repeat: no-repeat;
+  background-position: 1px left, 1px right;
+  #bd-pad {
+    margin: 0 27px;
+		padding: 1em;
+		background: white;
+  }
 }
 
 #ft {
@@ -21,6 +36,8 @@
   @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
   @include text-shadow(0 -1px 0 lighten($footer-color, 5%));
 }
+
+
 
 body #nav {
   $header-height: 45px;

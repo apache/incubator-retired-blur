@@ -58,6 +58,7 @@ GEM
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
     mime-types (1.16)
+    mysql (2.8.1)
     polyglot (0.3.1)
     rack (1.2.3)
     rack-mount (0.6.14)
@@ -108,6 +109,7 @@ DEPENDENCIES
   compass
   haml
   jquery-rails (>= 0.2.6)
+  mysql
   rails (= 3.0.7)
   rspec-rails
   sqlite3

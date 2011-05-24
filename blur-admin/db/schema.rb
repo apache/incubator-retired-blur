@@ -10,6 +10,14 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 0) do
+ActiveRecord::Schema.define(:version => 20110524204140) do
+
+  create_table "blur_tables", :force => true do |t|
+    t.string   "table_name"
+    t.integer  "current_size"
+    t.integer  "query_usage"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
 end

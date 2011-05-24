@@ -22,6 +22,7 @@
     margin: 0 27px;
 		padding: 1em;
 		background: white;
+		@include min-height(image-height('left-shadow.png') + 10px);
   }
 }
 

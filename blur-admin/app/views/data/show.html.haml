@@ -26,7 +26,9 @@
         %td
           =get_size(table)
         %td
-          =get_enable(table)
+          =@tdesc[table].isEnabled
+          %button
+            toggle
       %tr
         %td{:colspan => 5}
           %b location:

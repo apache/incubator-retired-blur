@@ -1,28 +1,19 @@
 module DataHelper
   def get_shards(table)
-    shards = @tdesc[table].shardNames
-    shards_str = ''
-    shards.each do |b|
-      shards_str += b + ', '
-    return shards_str
+    shards_str = ""
+    @tserver[table].each do |shard,host|
+      shards_str += shard + "->" + host + "  "
     end
+    return shards_str
   end
 
   def get_count(table)
-    #get the count
-    return 'count ###'
+		return number_with_delimiter(@tcount[table], :delimiter => ',')
   end
 
   def get_size(table)
     #get the size
     return 'size ###'
-  end
-
-  def get_enable(table)
-    if @tdesc[table].isEnabled
-      return 'enabled'
-    end
-    return 'disabled'
   end
 
   def get_loc(table)

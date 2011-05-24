@@ -33,14 +33,17 @@
       %tr
         %td{:colspan => 5}
           %b definition:
-          %ul
-            %li Column Families:
-            %ul#def-families
-              -@tschema[table].each do |family, sets|
-                %li
-                  =family
-                  %ul#def-elements
-                    -sets.each do |word|
-                      %li
-                        =word
+          %ul.table-def
+            %li
+              Column Families:
+              %ul.table-def-families
+                -@tschema[table].each do |family, sets|
+                  %li
+                    =family
+                    %ul#def-elements
+                      -sets.each do |word|
+                        %li
+                          =word
       %tr
+-content_for :javascript do
+  =javascript_include_tag 'compiled/data'

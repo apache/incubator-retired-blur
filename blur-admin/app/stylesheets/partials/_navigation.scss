@@ -7,6 +7,10 @@
   }
 }
 
+#root {
+	overflow: hidden;
+}
+
 #bd_background {
 	background: white image-url('background-gradient.png') repeat-x top left;
 }
@@ -17,7 +21,7 @@
   margin: 0 auto 0;
   background-image: image-url('left-shadow.png'), image-url('right-shadow.png');
   background-repeat: no-repeat;
-  background-position: 1px left, 1px right;
+  background-position: 0px 1px, right 1px;
   #bd-pad {
     margin: 0 27px;
 		padding: 1em;
@@ -41,34 +45,37 @@
 
 
 body #nav {
-  $header-height: 45px;
-  background: transparent image-url('gradient.png') repeat-x 0 -58px;
-  @include box-shadow(0 -2px 1px $base-theme-color);
-  text-align: center;
-  height: $header-height;
-  ul {
-    @include inline-block-list(10px);
-    li {
-	  margin: 6px 0.5em 0 0.5em;
-	  padding: 0;
-	  color: #ddd;
-	  &:hover {
-		color: #eee;
-	  }
-	  @include text-shadow(0 1px 0 black);
+	$header-height: 45px;
+	background: transparent image-url('gradient.png') repeat-x 0 -58px;
+	@include box-shadow(0 -2px 1px $base-theme-color);
+	text-align: center;
+	height: $header-height;
+	ul {
+		@include inline-block-list(10px);
+		@include text-shadow(0 1px 0 black);
 
-      &.active {
-	    color: $base-theme-color;
-        @include border-radius(3px);
-		@include box-shadow(0 1px 3px rgba(0, 0, 0, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, 0.2) inset);
-        background-color: #323c46;
-      }
-      a {
-		padding: 0.5em 1em;
-	    line-height: 28px;
-        @include unstyled-link;
-      }
-    }
-  }
+		li {
+			margin: 6px 0.5em 0 0.5em;
+			padding: 0;
+			color: #ddd;
+			cursor: pointer;
+			&:hover {
+				color: #eee;
+			}
+
+			&.active {
+				color: $base-theme-color;
+				@include border-radius(3px);
+				@include box-shadow(0 1px 3px rgba(0, 0, 0, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, 0.2) inset);
+				background-color: #323c46;
+				}
+				a {
+					cursor: pointer;
+					padding: 0.5em 1em;
+					line-height: 28px;
+					@include unstyled-link;
+				}
+		}
+	}
 }
 

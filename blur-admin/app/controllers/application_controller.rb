@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   BG = Com::Nearinfinity::Blur::Thrift::Generated
 
   def setup_thrift
-    @transport = Thrift::FramedTransport.new(Thrift::BufferedTransport.new(Thrift::Socket.new('blur04.nearinfinity.com', 40020)))
+    @transport = Thrift::FramedTransport.new(Thrift::BufferedTransport.new(Thrift::Socket.new(BLUR_THRIFT[:host], BLUR_THRIFT[:port])))
     protocol = Thrift::BinaryProtocol.new(@transport)
     client = BG::Blur::Client.new(protocol)
     @transport.open()

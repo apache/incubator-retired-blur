@@ -273,12 +273,5 @@ public class DistributedIndexServerTest {
             list.removeAll(getOfflineShardServers());
             return list;
         }
-        
-        @Override
-        public List<String> getShardServerExclusion(String table) {
-            return new ArrayList<String>();
-        }
-
     }
-
 }

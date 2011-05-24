@@ -16,9 +16,9 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_EXCLUSIONS;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_SHARD_COUNT;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_URI;
 
 import java.io.ByteArrayInputStream;
@@ -94,7 +94,6 @@ public abstract class AdminIndexServer implements IndexServer {
         updateTableList();
         updateTableAnalyzers();
         updateTableStatus();
-        updateTableShardExclusions();
         registerCallbackForChanges();
         warmUpIndexes();
     }
@@ -129,7 +128,6 @@ public abstract class AdminIndexServer implements IndexServer {
         dm.registerCallableOnChange(updateStatus, BLUR_TABLES);
         for (String table : tableList.get()) {
             dm.registerCallableOnChange(updateStatus, BLUR_TABLES, table);
-            dm.registerCallableOnChange(updateStatus, BLUR_TABLES, table, BLUR_EXCLUSIONS);
         }        
     }
 
@@ -156,20 +154,6 @@ public abstract class AdminIndexServer implements IndexServer {
                 LOG.info("Table [{0}] removed.",table);
             }
         }
-    }
-    
-    private void updateTableShardExclusions() {
-        Map<String, List<String>> newMap = new HashMap<String, List<String>>();
-        for (String table : tableList.get()) {
-            dm.createPath(BLUR_TABLES, table, BLUR_EXCLUSIONS);
-            List<String> list = dm.list(BLUR_TABLES, table, BLUR_EXCLUSIONS);
-            if (list == null) {
-                newMap.put(table, new ArrayList<String>());
-            } else {
-                newMap.put(table, new ArrayList<String>(list));
-            }
-        }
-        shardServerExclusionMap.set(newMap);
     }
     
     protected void updateTableAnalyzers() {
@@ -242,16 +226,6 @@ public abstract class AdminIndexServer implements IndexServer {
     }
     
     @Override
-    public List<String> getShardServerExclusion(String table) {
-        Map<String, List<String>> map = shardServerExclusionMap.get();
-        List<String> list = map.get(table);
-        if (list == null) {
-            return new ArrayList<String>();
-        }
-        return list;
-    }
-
-    @Override
     public final TABLE_STATUS getTableStatus(String table) {
         TABLE_STATUS tableStatus = statusMap.get().get(table);
         if (tableStatus == null) {
@@ -265,6 +239,13 @@ public abstract class AdminIndexServer implements IndexServer {
         Value value = new Value();
         dm.fetchData(value, BLUR_TABLES,table,BLUR_TABLES_URI);
         return new String(value.data);
+    }
+    
+    @Override
+    public int getShardCount(String table) {
+        Value value = new Value();
+        dm.fetchData(value, BLUR_TABLES,table,BLUR_TABLES_SHARD_COUNT);
+        return Integer.parseInt(new String(value.data));
     }
 
     public void setNodeName(String nodeName) {

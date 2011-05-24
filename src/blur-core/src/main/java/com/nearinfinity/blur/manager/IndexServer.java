@@ -121,11 +121,6 @@ public interface IndexServer {
      */
     String getTableUri(String table);
     
-    /**
-     * A list of shard servers that should never server shard indexes from the given table.
-     * @param table
-     * @return
-     */
-    List<String> getShardServerExclusion(String table);
+    int getShardCount(String table);
 
 }

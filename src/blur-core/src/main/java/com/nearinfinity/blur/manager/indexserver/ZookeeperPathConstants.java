@@ -24,9 +24,10 @@ public class ZookeeperPathConstants {
     public static final String BLUR_ONLINE_CONTROLLERS_PATH    = "/blur/online/controller-nodes";
     public static final String BLUR_TABLES                     = "/blur/tables";
     public static final String BLUR_TABLES_ENABLED             = "enabled";
-    public static final String BLUR_EXCLUSIONS = "exclusions";
     // /blur/tables/<name>/enabled will indicate that the table is enabled
     public static final String BLUR_TABLES_URI                 = "uri";
+    public static final String BLUR_TABLES_SHARD_COUNT         = "shard-count";
+    
     
     public static final String BLUR_SAFEMODE                   = "/blur/safemode";
     public static final String BLUR_SAFEMODE_LOCK              = "/blur/safemode/lock";

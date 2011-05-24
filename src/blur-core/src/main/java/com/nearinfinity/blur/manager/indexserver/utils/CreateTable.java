@@ -25,7 +25,7 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
 
 public class CreateTable {
 
@@ -33,6 +33,8 @@ public class CreateTable {
         String zkConnectionStr = args[0];
         String table = args[1];
         BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
+        String uri = args[3];
+        String shardCount = args[4];
 
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
@@ -41,8 +43,13 @@ public class CreateTable {
             System.err.println("Table [" + table + "] already exists.");
             System.exit(1);
         }
+        
         dm.createPath(BLUR_TABLES, table);
+        dm.createPath(BLUR_TABLES, table, BLUR_TABLES_URI);
+        dm.createPath(BLUR_TABLES, table, BLUR_TABLES_SHARD_COUNT);
         dm.saveData(analyzer.toString().getBytes(), BLUR_TABLES, table);
+        dm.saveData(uri.getBytes(), BLUR_TABLES, BLUR_TABLES_URI);
+        dm.saveData(shardCount.getBytes(), BLUR_TABLES, BLUR_TABLES_SHARD_COUNT);
     }
 
 }

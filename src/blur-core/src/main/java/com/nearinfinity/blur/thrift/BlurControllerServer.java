@@ -483,7 +483,7 @@ public class BlurControllerServer implements Iface {
         Integer numberOfShards = _tableShardCountMap.get(table);
         if (numberOfShards == null) {
             TableDescriptor descriptor = describe(table);
-            numberOfShards = descriptor.shardNames.size();
+            numberOfShards = descriptor.shardCount;
             _tableShardCountMap.put(table, numberOfShards);
         }
         return numberOfShards;

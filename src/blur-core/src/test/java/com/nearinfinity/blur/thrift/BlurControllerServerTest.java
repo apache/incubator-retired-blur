@@ -237,10 +237,7 @@ public class BlurControllerServerTest {
             public TableDescriptor describe(String arg0) throws BlurException, TException {
                 TableDescriptor descriptor = new TableDescriptor();
                 descriptor.isEnabled = true;
-                descriptor.shardNames = new ArrayList<String>();
-                descriptor.shardNames.add("shard-00000000");
-                descriptor.shardNames.add("shard-00000001");
-                descriptor.shardNames.add("shard-00000002");
+                descriptor.shardCount = 3;
                 return descriptor;
             }
             

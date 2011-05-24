@@ -16,7 +16,6 @@
 
 package com.nearinfinity.blur.thrift;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -248,9 +247,7 @@ public class BlurShardServer extends ExecutionContextIface {
             TableDescriptor descriptor = new TableDescriptor();
             descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
             boolean tableEnabled = isTableEnabled(context, table);
-            if (tableEnabled) {
-                descriptor.shardNames = indexServer.getShardList(table);
-            }
+            descriptor.shardCount = indexServer.getShardCount(table);
             descriptor.isEnabled = tableEnabled;
             descriptor.tableUri = indexServer.getTableUri(table);
             return descriptor;

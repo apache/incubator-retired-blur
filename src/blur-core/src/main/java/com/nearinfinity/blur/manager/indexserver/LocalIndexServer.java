@@ -217,7 +217,7 @@ public class LocalIndexServer implements IndexServer {
     }
 
     @Override
-    public List<String> getShardServerExclusion(String table) {
-        return new ArrayList<String>();
+    public int getShardCount(String table) {
+        return getShardList(table).size();
     }
 }

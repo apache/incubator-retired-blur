@@ -126,10 +126,10 @@ public class BlurShardServerTest {
             }
 
             @Override
-            public List<String> getShardServerExclusion(String table) {
+            public int getShardCount(String table) {
                 throw new RuntimeException("no impl");
             }
-            
+
         };
     }
 

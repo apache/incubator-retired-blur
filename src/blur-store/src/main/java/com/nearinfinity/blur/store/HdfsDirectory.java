@@ -220,4 +220,12 @@ public class HdfsDirectory extends Directory {
         // do nothing
     }
 
+    public Path getHdfsDirPath() {
+        return hdfsDirPath;
+    }
+
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
+
 }

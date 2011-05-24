@@ -6,13 +6,5 @@
 
 require 'blur_types'
 
-          module Com
-            module Nearinfinity
-              module Blur
-                module Thrift
-                  module Generated
-        end
-      end
-    end
-  end
+  module Blur
 end

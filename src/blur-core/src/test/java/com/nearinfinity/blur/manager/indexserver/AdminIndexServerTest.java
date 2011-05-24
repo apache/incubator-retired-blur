@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
-import org.junit.Test;
 
 import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
@@ -134,12 +133,6 @@ public class AdminIndexServerTest {
             public List<String> getShardServerList() {
                 throw new RuntimeException();
             }
-            
-            @Override
-            public List<String> getShardServerExclusion(String table) {
-                throw new RuntimeException();
-            }
-
         };
     }
 }

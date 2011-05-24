@@ -204,8 +204,6 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
         
         List<String> shardServerList = getShardServerList();
         List<String> offlineShardServers = new ArrayList<String>(getOfflineShardServers());
-        //add exclusions to offline list
-        offlineShardServers.addAll(getShardServerExclusion(table));
         List<String> shardList = getShardList(table);
         
         layoutManager.setNodes(shardServerList);

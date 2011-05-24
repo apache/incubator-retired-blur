@@ -8,3 +8,9 @@ gem 'compass'
 gem 'haml'
 gem 'barista'
 gem 'thrift'
+
+group :development, :test do
+	gem 'autotest'
+	gem 'rspec-rails'
+end
+

@@ -8,3 +8,9 @@ $blueprint-grid-margin: 10px;
 // Use this to calculate the width based on the total width.
 // Or you can set $blueprint-grid-width to a fixed value and unset $blueprint-container-size -- it will be calculated for you.
 $blueprint-grid-width: ($blueprint-container-size + $blueprint-grid-margin) / $blueprint-grid-columns - $blueprint-grid-margin;
+
+$footer-height: 40px;
+
+// UI lightness theme settings
+$base-theme-color: #f6a828;
+$base-theme-background-color: #eeeeee;

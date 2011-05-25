@@ -27,7 +27,7 @@ public class Agent {
 	public Agent(CommandLine cmd) {
 		if (cmd.hasOption('H')) {
 //			HDFSCollector.startCollecting(cmd.getOptionValue('H'));
-			HDFSCollector.startCollecting();
+			HDFSCollector.startCollecting("hdfs://192.168.64.130:8020/");
 		}
 		
 		if (cmd.hasOption('l')) {
@@ -36,19 +36,3 @@ public class Agent {
 	}
 
 }
-
-
-/*
-public class SampleHdfsCode {
-
-    public static void main(String[] args) throws URISyntaxException, IOException {
-//        URI uri = new URI("hdfs://namenode:9000/");
-        URI uri = new URI("file:///");//local file system for testing without hdfs running
-        FileSystem fileSystem = FileSystem.get(uri,new Configuration());
-        FileStatus[] listStatus = fileSystem.listStatus(new Path("file:///Users"));
-        for (FileStatus fileStatus : listStatus) {
-            System.out.println(fileStatus.getPath().toString());
-        }
-    }
-}
-*/

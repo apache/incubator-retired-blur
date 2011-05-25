@@ -23,4 +23,9 @@ $(document).ready ->
   #Hide all lists except the outermost.
   $('ul ul').hide()
 
-
+  #FUNCTION toggleEnable:
+  #Creates an AJAX request to enable or disable a table
+  $(".enable").click( ->
+    #Determine whether table is to be enabled or disabled
+    alert "Checked"
+  )

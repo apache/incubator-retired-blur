@@ -21,12 +21,12 @@
   %table
     %thead
       %tr
-        %th Record
+        %th
         - @visible_columns.each do |family, set|
           %th{:colspan => set.count}
             = family
-      %tr
-        %th  
+      %tr.columnsets
+        %th id 
         - @visible_columns.each do |family, set|
           - set.each do |s|
             %th
@@ -35,11 +35,19 @@
     %tfoot
       %tbody
         - @results.each do |result|
+          - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
           - result[:table_rows].each_with_index do |table_row, i|
-            %tr
+            %tr{:class => stripe_class}
               - if i == 0
                 %td{:rowspan => result[:max_record_count]}
                   = result[:id]
-              - table_row.each do |column|
-                %td
-                  = column
+
+              - reset_cycle('column-cycle')
+              - table_row.each do |cfs|
+                - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
+                - cfs.each do |column|
+                  %td{:class => cf_stripe}
+                    = column
+
+
+

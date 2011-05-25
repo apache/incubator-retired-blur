@@ -14,9 +14,10 @@
         %br
         Usage
       %th
-        Enable/
+        Enabled/
         %br
-        Disable
+        Disabled
+      %th Actions
 
     -@tables.each do |table|
       %tr
@@ -39,13 +40,15 @@
           -else
             not available
         %td
-          %input{:type => "checkbox", :checked => @tdesc[table].isEnabled, :class => "enable"} 
+          %input{:type => "checkbox", :checked => @tdesc[table].isEnabled, :class => "enable"}
+        %td
+          %input{:type => "button", :class => "delete-table", :value => "delete"}
       %tr
-        %td{:colspan => 6}
+        %td{:colspan => 7}
           %b location:
           =get_loc(table)
       %tr
-        %td{:colspan => 6}
+        %td{:colspan => 7}
           %b definition:
           %ul.table-def
             %li

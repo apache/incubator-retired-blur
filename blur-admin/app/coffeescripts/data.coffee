@@ -43,16 +43,12 @@ $(document).ready ->
   #FUNCTION delete a table
   #TODO: need this to actually delete a table (thrift call needed)
   $(".delete-table").click( ->
-    answer = confirm("Are you sure you want to delete this table?")
-    if answer
-      alert("Table deleted")
-      #TODO: delete the table
+    confirmation = confirm("Are you sure you want to delete this table?")
+    if confirm
+      url = "/data/delete/" + $(this).attr('id') 
+      $.ajax(
+        url: url
+        type: 'POST'
+      )
   )
 
-  #FUNCTION confirm_delete
-  #sends confirmation before deleting a table
-  confirm_delete = () ->
-    answer = confirm("Are you sure you want to delete this table?")
-    if answer
-      alert("Table deleted")
-      #TODO: delete the table

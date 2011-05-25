@@ -29,8 +29,10 @@ class DataController < ApplicationController
       #TODO: Enable the table in params[:table]
     elsif params[:action_type] == "disable"
       #TODO: Disable the table in params[:table]
+    elsif params[:action_type] == "delete"
+      #TODO: Delete the table in params[:table]
     end
-
+    
     result = true
     render :json => result
   end

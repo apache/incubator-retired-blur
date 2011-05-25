@@ -48,6 +48,7 @@ $(document).ready ->
     cpuTime = new Array
     xValues = new Array
     $.each(queries, (index, query) ->
+      #if query.query.queryStr != '*'
       realTime[index] = query.realTime
       cpuTime[index] = query.cpuTime
       xValues[index] = index
@@ -107,6 +108,7 @@ $(document).ready ->
     $('#queries-table-header ~ tr').remove()
     if queries and queries.length > 0
       $.each(queries, (index, query) ->
+        #if query.query.queryStr != '*'
         $('#queries-table').append(buildQueryRowHTML(query))
       )
       setupCancelListeners()

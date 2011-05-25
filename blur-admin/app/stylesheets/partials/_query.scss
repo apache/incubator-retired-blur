@@ -32,4 +32,37 @@
   }
 }
 
+table {
+	table-layout: strict;
+	width: 100%;
+	empty-cells: show;
+	border-spacing: 1px;
+	thead {
+		th {
+			text-align: center;
+		}
+		
+		tr.columnsets th {
+			font-weight: normal;
+		}
+	}
 
+	tbody {
+		tr.odd {
+			td {
+				background-color: #fff;
+				&.odd {
+        background-color: mix(#fff, #C4d9ff, 80%); 
+				}  
+			}
+		}
+		tr.even {
+			td {
+				background-color: #eee;
+				&.odd {
+        background-color: mix(#eee, #C4d9ff, 80%);
+				}  
+			}
+	  }
+	}
+}

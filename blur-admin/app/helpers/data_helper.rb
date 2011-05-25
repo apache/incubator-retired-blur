@@ -11,9 +11,9 @@ module DataHelper
 		return number_with_delimiter(@tcount[table], :delimiter => ',')
   end
 
-  def get_size(table)
-    #get the size
-    return 'size ###'
+  def get_a_blur_table(table)
+    info = BlurTables.where(:table_name => table)
+    return info.first
   end
 
   def get_loc(table)

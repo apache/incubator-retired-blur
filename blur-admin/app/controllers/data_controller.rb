@@ -23,4 +23,17 @@ class DataController < ApplicationController
     close_thrift
   end
 
+  def enable 
+    client = setup_thrift
+    logger.info "Enabling Table #{params[:table]}"
+    #TODO: Enable the table in params[:table]
+  end
+
+  def disable
+    client = setup_thrift
+    logger.info "Disabling Table #{params[:table]}"
+    #TODO: Disable the table in params[:table]
+  end
+
 end
+

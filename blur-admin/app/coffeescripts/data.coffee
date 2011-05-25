@@ -23,9 +23,19 @@ $(document).ready ->
   #Hide all lists except the outermost.
   $('ul ul').hide()
 
-  #FUNCTION toggleEnable:
-  #Creates an AJAX request to enable or disable a table
+  #Creates an AJAX request to enable or disable a table upon
+  #Check or uncheck of 'Enable / Disable' checkbox
   $(".enable").click( ->
     #Determine whether table is to be enabled or disabled
-    alert "Checked"
+    if $(this).is ':checked'
+      action = "enable"
+    else if $(this).not ':checked'
+      action = "disable"
+
+    url = "/data/" + action + "/" + $(this).attr('id')
+    
+    $.ajax(
+      url: url
+      type: 'POST'
+    )  
   )

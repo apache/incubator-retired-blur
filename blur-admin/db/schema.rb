@@ -10,7 +10,19 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110524213803) do
+ActiveRecord::Schema.define(:version => 20110525015557) do
+
+  create_table "blur_queries", :force => true do |t|
+    t.string   "query_string"
+    t.integer  "cpu_time"
+    t.integer  "real_time"
+    t.integer  "complete"
+    t.boolean  "interrupted"
+    t.boolean  "running"
+    t.string   "uuid"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "blur_tables", :force => true do |t|
     t.string   "table_name"

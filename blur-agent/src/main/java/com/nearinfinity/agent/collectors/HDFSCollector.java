@@ -1,103 +1,71 @@
 package com.nearinfinity.agent.collectors;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.net.URI;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hdfs.protocol.DatanodeInfo;
+import org.apache.hadoop.hdfs.protocol.FSConstants;
+import org.apache.hadoop.hdfs.protocol.FSConstants.UpgradeAction;
+import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
+import org.apache.hadoop.hdfs.DistributedFileSystem.DiskStatus;
+import org.apache.hadoop.hdfs.server.common.UpgradeStatusReport;
+
+/**
+ *
+ * 
+ * +------------------+---------------+------+-----+---------+----------------+
+ * | Field            | Type          | Null | Key | Default | Extra          |
+ * +------------------+---------------+------+-----+---------+----------------+
+ * | id               | int(11)       | NO   | PRI | NULL    | auto_increment |
+ * | hdfs_name        | varchar(255)  | YES  |     | NULL    |                |
+ * | config_capacity  | int(11)       | YES  |     | NULL    |                |
+ * | present_capacity | int(11)       | YES  |     | NULL    |                |
+ * | dfs_remaining    | int(11)       | YES  |     | NULL    |                |
+ * | dfs_used         | int(11)       | YES  |     | NULL    |                |
+ * | dfs_used_percent | decimal(10,0) | YES  |     | NULL    |                |
+ * | under_replicated | int(11)       | YES  |     | NULL    |                |
+ * | corrupt_blocks   | int(11)       | YES  |     | NULL    |                |
+ * | missing_blocks   | int(11)       | YES  |     | NULL    |                |
+ * | total_nodes      | int(11)       | YES  |     | NULL    |                |
+ * | dead_nodes       | int(11)       | YES  |     | NULL    |                |
+ * | created_at       | datetime      | YES  |     | NULL    |                |
+ * | updated_at       | datetime      | YES  |     | NULL    |                |
+ * +------------------+---------------+------+-----+---------+----------------+
+ */
 public class HDFSCollector {
-	public static void startCollecting() {
-//		public static void startCollecting(String uriString) {
-		try {
-//			URI uri = new URI(uriString);
-//	        final FileSystem fileSystem = FileSystem.get(uri,new Configuration());
-	        
-	        new Thread(new Runnable(){
-	        	
-				@Override
-				public void run() {
-					boolean loop = true;
-					Pattern pattern = Pattern.compile(".*: (\\d*.?\\d*) *.*");
-					Pattern dnPattern = Pattern.compile(".*\\((\\d*) total, (\\d*).*");
-					
-					while (loop) {
-						try {
-							Process p = Runtime.getRuntime().exec("hadoop dfsadmin -report");
-							p.waitFor();
-							BufferedReader reader=new BufferedReader(new InputStreamReader(p.getInputStream()));
-							
-							String configuredCapacity = reader.readLine();
-							
-							if (configuredCapacity == null) {
-								System.out.println("Unable to generate statistics because admin report didn't return anything");
-							} else {
-								configuredCapacity = doMatches(configuredCapacity, pattern).group(1);
-								
-								String presentCapacity = doMatches(reader.readLine(), pattern).group(1);
-								String dfsRemaining = doMatches(reader.readLine(), pattern).group(1);
-								String dfsUsed = doMatches(reader.readLine(), pattern).group(1);
-								String dfsUsedPercent = doMatches(reader.readLine(), pattern).group(1);
-								String underReplicatedBlocks = doMatches(reader.readLine(), pattern).group(1);
-								String blocksWithCorruptReplicas = doMatches(reader.readLine(), pattern).group(1);
-								String missingBlocks = doMatches(reader.readLine(), pattern).group(1);
-								
-								reader.readLine();
-								reader.readLine();
-								
-								String datanodeLine = reader.readLine();
-								Matcher dnMatcher = doMatches(datanodeLine, dnPattern);
-								String totalDatanodes = dnMatcher.group(1);
-								String deadDatanodes = dnMatcher.group(2);
-								
-								System.out.println("Configured Capacity: " + configuredCapacity);
-								System.out.println("Present Capacity: " + presentCapacity);
-								System.out.println("DFS Remaining: " + dfsRemaining);
-								System.out.println("DFS Used: " + dfsUsed);
-								System.out.println("DFS Used %: " + dfsUsedPercent);
-								System.out.println("Under replicated: " + underReplicatedBlocks);
-								System.out.println("Corrupt Blocks: " + blocksWithCorruptReplicas);
-								System.out.println("Missing Blocks: " + missingBlocks);
-								System.out.println("Total nodes: " + totalDatanodes);
-								System.out.println("Dead nodes: " + deadDatanodes);
-							}						
-						
-						
-//							System.out.println(fileSystem.getUsed());
-//							
-//							List<Statistics> allStatistics = FileSystem.getAllStatistics();
-//							for (Statistics stats : allStatistics) {
-//								System.out.println(stats.getScheme());
-//								System.out.println(stats.getBytesRead());
-//								System.out.println(stats.getBytesWritten());
-//							}
-							
-//							FileSystem.printStatistics();
-							
-//							FileStatus[] listStatus = fileSystem.listStatus(new Path("file:///Users"));
-//							for (FileStatus fileStatus : listStatus) {
-//								System.out.println(fileStatus.getPath().toString());
-//							}
-						} catch (Exception e) {
-							System.out.println("Unable to retrieve HDFS statistics. " + e.getMessage());
-							e.printStackTrace();
-						}
-						
-						try {
-							Thread.sleep(5000);
-						} catch (InterruptedException e) {
-							loop = false;
-						}
-					}
-				}
-				
-				private Matcher doMatches(String input, Pattern pattern) {
-					Matcher m = pattern.matcher(input);
-					m.matches();
-					return m;
-				}
-	        }).start();
-		} catch (Exception e) {
-			System.out.println("Unable to connect to HDFS. " + e.getMessage());
-		}
+  public static void startCollecting(String uriString) {
+    try {
+			URI uri = new URI(uriString);
+      FileSystem fileSystem = FileSystem.get(uri,new Configuration());
+
+      if (fileSystem instanceof DistributedFileSystem) {
+        DistributedFileSystem dfs = (DistributedFileSystem)fileSystem;
+        
+        DiskStatus ds = dfs.getDiskStatus();
+        long capacity = ds.getCapacity();
+        long used = ds.getDfsUsed();
+        long remaining = ds.getRemaining();
+        long presentCapacity = used + remaining;
+
+        System.out.println("Configured Capacity: " + capacity);
+        System.out.println("Present Capacity: " + presentCapacity);
+        System.out.println("DFS Remaining: " + remaining);
+        System.out.println("DFS Used: " + used);
+        System.out.println("DFS Used%: " + (((1.0 * used) / presentCapacity) * 100) + "%");
+        System.out.println("Under replicated blocks: " + dfs.getUnderReplicatedBlocksCount());
+        System.out.println("Blocks with corrupt replicas: " + dfs.getCorruptBlocksCount());
+        System.out.println("Missing blocks: " +  dfs.getMissingBlocksCount());
+        System.out.println();
+        System.out.println("-------------------------------------------------");
+        
+        DatanodeInfo[] live = dfs.getClient().datanodeReport(DatanodeReportType.LIVE);
+        DatanodeInfo[] dead = dfs.getClient().datanodeReport(DatanodeReportType.DEAD);
+        System.out.println("Datanodes available: " + live.length + " (" + (live.length + dead.length) + " total, " + dead.length + " dead)\n");
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
 	}
 }

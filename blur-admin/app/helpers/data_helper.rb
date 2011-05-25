@@ -11,17 +11,12 @@ module DataHelper
 		return number_with_delimiter(@tcount[table], :delimiter => ',')
   end
 
-  def get_size(table)
-    #get the size
-    return 'size ###'
+  def get_a_blur_table(table)
+    return BlurTables.where(:table_name => table).first
   end
 
   def get_loc(table)
     return @tdesc[table].tableUri
-  end
-
-  def get_defin(table)
-    return "a definition"
   end
 
 end

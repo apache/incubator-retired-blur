@@ -10,9 +10,14 @@
       %th Count
       %th Size
       %th
-        Enable/
+        Query
         %br
-        Disable
+        Usage
+      %th
+        Enabled/
+        %br
+        Disabled
+      %th Actions
 
     -@tables.each do |table|
       %tr
@@ -24,17 +29,26 @@
         %td
           =get_count(table)
         %td
-          =get_size(table)
+          -a_blur_table = get_a_blur_table(table)
+          -if (a_blur_table != nil)
+            =a_blur_table.current_size
+          -else
+            not available
         %td
-          =@tdesc[table].isEnabled
-          %button
-            toggle
+          -if (a_blur_table != nil)
+            =a_blur_table.query_usage
+          -else
+            not available
+        %td
+          %input{:type => "checkbox", :checked => @tdesc[table].isEnabled, :class => "enable", :id => table}
+        %td
+          %input{:type => "button", :class => "delete-table", :value => "delete", :id => table}
       %tr
-        %td{:colspan => 5}
+        %td{:colspan => 7}
           %b location:
           =get_loc(table)
       %tr
-        %td{:colspan => 5}
+        %td{:colspan => 7}
           %b definition:
           %ul.table-def
             %li
@@ -48,6 +62,7 @@
                         %li
                           =word
       %tr
+  %input{:type => "button", :class => "create-table", :value => "click here to make a new table"}
 -content_for :javascript do
   =javascript_include_tag 'compiled/data'
 

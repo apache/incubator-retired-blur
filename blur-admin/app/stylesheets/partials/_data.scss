@@ -2,7 +2,7 @@
   display: inline-block;
   h2{
     display: inline-block;
-    color: #AAA;
+    color: #555;
     font-weight: bold;
     font-size: 200%;
   }
@@ -15,7 +15,6 @@
   padding-left:20px;
   position: relative;
   left: -20px;
-
 }
 
 li
@@ -52,4 +51,14 @@ li
       font-size: 120%;
     }
   }
+}
+
+.delete-table{
+  font-size: 85%;
+  text-align: center;
+}
+
+.create-table{
+  font-size: 85%;
+  text-align: center;
 }

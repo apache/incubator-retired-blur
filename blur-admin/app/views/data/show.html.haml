@@ -40,7 +40,7 @@
           -else
             not available
         %td
-          %input{:type => "checkbox", :checked => @tdesc[table].isEnabled, :class => "enable"}
+          %input{:type => "checkbox", :checked => @tdesc[table].isEnabled, :class => "enable", :id => table}
         %td
           %input{:type => "button", :class => "delete-table", :value => "delete"}
       %tr

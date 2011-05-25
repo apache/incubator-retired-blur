@@ -21,17 +21,18 @@ class DataController < ApplicationController
     close_thrift
   end
 
-  def enable 
+  def action
     client = setup_thrift
-    logger.info "Enabling Table #{params[:table]}"
-    #TODO: Enable the table in params[:table]
-  end
+    logger.info "#{params[:action_type]} table #{params[:table]}"
 
-  def disable
-    client = setup_thrift
-    logger.info "Disabling Table #{params[:table]}"
-    #TODO: Disable the table in params[:table]
-  end
+    if params[:action_type] == "enable"
+      #TODO: Enable the table in params[:table]
+    elsif params[:action_type] == "disable"
+      #TODO: Disable the table in params[:table]
+    end
 
+    result = true
+    render :json => result
+  end
 end
 

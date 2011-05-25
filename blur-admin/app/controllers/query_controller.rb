@@ -34,12 +34,22 @@ class QueryController < ApplicationController
 		  # organize into multidimensional array of rows and columns
 			table_rows = Array.new(max_record_count) { [] }
 			(0...max_record_count).each do |i|
-				visible.each do |columnFamily|
-					count = columnFamily.records.values.count
-					if i < count
-						columnFamily.records.values[i].each { |set| table_rows[i] << set.values.join(', ') }
-					else						
-						columnFamily.records.values.first.count.times { |t| table_rows[i] << ' ' }
+
+				@visible_columns.each do |columnFamilyName, set|
+					columnFamily = row.columnFamilies.find { |cf| cf.family == columnFamilyName }
+
+          if columnFamily
+						count = columnFamily.records.values.count
+						if i < count
+							set.each do |s|
+								found_set = columnFamily.records.values[i].find { |col| s == col.name }
+								table_rows[i] << (found_set.nil? ? ' ' : found_set.values.join(', '))
+							end
+						else						
+							set.count.times { |t| table_rows[i] << ' ' }
+						end
+					else
+						set.count.times { |t| table_rows[i] << ' ' }
 					end
 				end
 			end

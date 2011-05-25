@@ -3,13 +3,43 @@
 
 = form_tag new_query_path, :method => 'get' do
   = label_tag :q, "Search Query:"
+  %p
   = text_area_tag :q, params[:q]
+  %p
+  - if @results
+    - @column_families.each do |family, set|
+      = label_tag do
+        = check_box_tag 'column_data[]', family, params[:column_data].include?(family)
+        = family
+  %p
   = submit_tag "Search"
 
 
-- if @results
-  %br
-  %h1 Showing first result as json
-  - @results.each do |r|
-    %pre{:style => 'font-family:Menlo, monospaced;font-size:8pt;'}
-      = r
+- if @results and not @results.empty?
+  Results:
+  = @result_count
+  %table
+    %thead
+      %tr
+        %th Record
+        - @visible_columns.each do |family, set|
+          %th{:colspan => set.count}
+            = family
+      %tr
+        %th  
+        - @visible_columns.each do |family, set|
+          - set.each do |s|
+            %th
+              = s.gsub(/([A-Z])/, '&shy;\1').html_safe
+
+    %tfoot
+      %tbody
+        - @results.each do |result|
+          - result[:table_rows].each_with_index do |table_row, i|
+            %tr
+              - if i == 0
+                %td{:rowspan => result[:max_record_count]}
+                  = result[:id]
+              - table_row.each do |column|
+                %td
+                  = column

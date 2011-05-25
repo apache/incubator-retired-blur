@@ -9,20 +9,48 @@ class QueryController < ApplicationController
 	
 		bq = BG::BlurQuery.new
     bq.queryStr = params[:q]
-		bq.fetch = 1
+		bq.fetch = 25
 		table = 'employee_super_mart'
 		blur_results = client.query(table, bq)
-      
+
+		cfs = client.schema(table).columnFamilies
+    @column_families = client.schema(table).columnFamilies.keys
+		params[:column_data] ||= [@column_families.first]
+		@visible_columns = cfs.reject { |k,v| !params[:column_data].include? k }
 		@results = []
+		@result_count = blur_results.totalResults
+
 		blur_results.results.each do |result|
 			location_id = result.locationId
-			
 			sel = BG::Selector.new
 			sel.locationId = location_id
-			fetched_row = client.fetchRow(table, sel)
+			row = client.fetchRow(table, sel).rowResult.row	
+			
+			# remove families not displayed
+			visible = row.columnFamilies.find_all { |cf| @visible_columns.keys.include? cf.family }
+			# find column family with most records to pad the rest for the table
+      max_record_count = visible.collect {|cf| cf.records.keys.count }.max
+     
+		  # organize into multidimensional array of rows and columns
+			table_rows = Array.new(max_record_count) { [] }
+			(0...max_record_count).each do |i|
+				visible.each do |columnFamily|
+					count = columnFamily.records.values.count
+					if i < count
+						columnFamily.records.values[i].each { |set| table_rows[i] << set.values.join(', ') }
+					else						
+						columnFamily.records.values.first.count.times { |t| table_rows[i] << ' ' }
+					end
+				end
+			end
 
-			@results << JSON.pretty_generate(JSON.parse(fetched_row.as_json.to_json))
+			record = {:id => row.id, :max_record_count => max_record_count, :row => row, :table_rows => table_rows}
+			
+			@results << record
 		end
+
+
+		close_thrift
 
 		render :show
 	end

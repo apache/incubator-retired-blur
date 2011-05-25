@@ -10,6 +10,10 @@
       %th Count
       %th Size
       %th
+        Query
+        %br
+        Usage
+      %th
         Enable/
         %br
         Disable
@@ -24,17 +28,26 @@
         %td
           =get_count(table)
         %td
-          =get_size(table)
+          -a_blur_table = get_a_blur_table(table)
+          -if (a_blur_table != nil)
+            =a_blur_table.current_size
+          -else
+            0
+        %td
+          -if (a_blur_table != nil)
+            =a_blur_table.query_usage
+          -else
+            0
         %td
           =@tdesc[table].isEnabled
           %button
             toggle
       %tr
-        %td{:colspan => 5}
+        %td{:colspan => 6}
           %b location:
           =get_loc(table)
       %tr
-        %td{:colspan => 5}
+        %td{:colspan => 6}
           %b definition:
           %ul.table-def
             %li

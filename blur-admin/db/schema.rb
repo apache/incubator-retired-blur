@@ -10,6 +10,30 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 0) do
+ActiveRecord::Schema.define(:version => 20110524213803) do
+
+  create_table "blur_tables", :force => true do |t|
+    t.string   "table_name"
+    t.integer  "current_size"
+    t.integer  "query_usage"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "hdfs_stats", :force => true do |t|
+    t.string   "hdfs_name"
+    t.integer  "config_capacity"
+    t.integer  "present_capacity"
+    t.integer  "dfs_remaining"
+    t.integer  "dfs_used"
+    t.decimal  "dfs_used_percent", :precision => 10, :scale => 0
+    t.integer  "under_replicated"
+    t.integer  "corrupt_blocks"
+    t.integer  "missing_blocks"
+    t.integer  "total_nodes"
+    t.integer  "dead_nodes"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
 end

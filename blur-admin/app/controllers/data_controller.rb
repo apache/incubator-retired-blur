@@ -12,13 +12,11 @@ class DataController < ApplicationController
     @tschema = Hash.new
     @tserver = Hash.new
     @tcount = Hash.new
-    #@tisEnabled = Hash.new
     @tables.each do |table|
       @tdesc[table] = client.describe(table)
       @tschema[table] = client.schema(table).columnFamilies
       @tserver[table] = client.shardServerLayout(table)
       @tcount[table] = client.query(table, bq).totalResults
-      #@tisEnabled[table] = @tables.
     end
     close_thrift
   end

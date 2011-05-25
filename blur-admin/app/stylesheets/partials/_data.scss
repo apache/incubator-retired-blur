@@ -2,7 +2,7 @@
   display: inline-block;
   h2{
     display: inline-block;
-    color: #AAA;
+    color: #555;
     font-weight: bold;
     font-size: 200%;
   }
@@ -54,6 +54,11 @@ li
 }
 
 .delete-table{
-  font-size: 90%;
+  font-size: 85%;
+  text-align: center;
+}
+
+.create-table{
+  font-size: 85%;
   text-align: center;
 }

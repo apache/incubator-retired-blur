@@ -37,19 +37,20 @@ class QueryController < ApplicationController
 
 				@visible_columns.each do |columnFamilyName, set|
 					columnFamily = row.columnFamilies.find { |cf| cf.family == columnFamilyName }
+					table_rows[i] << cfspan = []
 
           if columnFamily
 						count = columnFamily.records.values.count
 						if i < count
 							set.each do |s|
 								found_set = columnFamily.records.values[i].find { |col| s == col.name }
-								table_rows[i] << (found_set.nil? ? ' ' : found_set.values.join(', '))
+								cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
 							end
 						else						
-							set.count.times { |t| table_rows[i] << ' ' }
+							set.count.times { |t| cfspan << ' ' }
 						end
 					else
-						set.count.times { |t| table_rows[i] << ' ' }
+						set.count.times { |t| cfspan << ' ' }
 					end
 				end
 			end

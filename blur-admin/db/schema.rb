@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110526193123) do
+ActiveRecord::Schema.define(:version => 20110526201313) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -27,7 +27,7 @@ ActiveRecord::Schema.define(:version => 20110526193123) do
     t.string   "facets"
     t.string   "selectors"
     t.integer  "start"
-    t.integer  "fetch"
+    t.integer  "fetch_num"
     t.text     "pre_filters",    :limit => 16777215
     t.text     "post_filters",   :limit => 16777215
   end

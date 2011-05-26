@@ -28,11 +28,11 @@ $(document).ready ->
   $(".enable").click( ->
     #Determine whether table is to be enabled or disabled
     if $(this).is ':checked'
-      action = "enable"
+      action = "enable_table"
     else if $(this).not ':checked'
-      action = "disable"
+      action = "disable_table"
 
-    url = "/data/table/" + $(this).attr('id') + "/" + action
+    url = "/data/" + action + "/" + $(this).attr('id')
     
     result = $.ajax(
       url: url
@@ -43,8 +43,13 @@ $(document).ready ->
   $(".delete-table").click( ->
     confirmation = confirm("Are you sure you want to delete this table?")
     if confirmation
-      url = "/data/table/" + $(this).attr('id')
+<<<<<<< HEAD
+      url = "/data/delete_table/" + $(this).attr('id')
       result = $.ajax(
+=======
+      url = "/data/delete/" + $(this).attr('id') 
+      $.ajax(
+>>>>>>> d675f493fc97d5899be721744a52f51275444b27
         url: url
         type: 'DELETE')
   )

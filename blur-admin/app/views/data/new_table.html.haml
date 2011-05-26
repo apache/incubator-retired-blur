@@ -3,9 +3,9 @@
 %form{:action => create_table_path, :method => "post"}
   
   %h3 Aliases
-  %input{:type => "button", :id => "add_alias", :value => "Add Another Alias"}
   %ul
-    %li{:class => "alias"}
+    %input{:type => "button", :id => "add_alias", :value => "Add Another Alias"}
+    %li{:class => "alias", :id => "1"}
       Alias Name:
       %input{:type => "text", :class => "aliasname"}
       Class Name:
@@ -16,21 +16,18 @@
   %input{:type => "text", :name => "default_alias_name"}
 
   %h3 Fields
-  %input{:type => "button", :id => "add_column_family", :value => "Add Another Column Family"}
   %ul
-    %li{:class => "column_family"}
+    %input{:type => "button", :id => "add_column_family", :value => "Add Another Column Family"}
+    %li{:class => "column_family", :id => '1'}
       Column Family Name:
       %input{:type => "text"}
-      %br
       %input{:type => "button", :id => "add_column", :value => "Add Another Column"}
       %ul
-        %li{:class => "column"}
+        %li{:class => "column", :id => '1'}
           Column:
           %input{:type => "text"}
           Alias Name:
           %input{:type => "text"}
-
-
 
 -content_for :javascript do
   =javascript_include_tag 'compiled/new_table'

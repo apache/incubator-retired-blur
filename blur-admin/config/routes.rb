@@ -17,7 +17,7 @@ BlurAdmin::Application.routes.draw do
     match 'data/table/:name/enable', :to => :enable_table, :via => :put
     match 'data/table/:name/disable', :to => :disable_table, :via => :put
     match 'data/table/new', :to => :new_table, :as => :new_table
-    match 'data/table', :to => :create_table, :via => :post
+    match 'data/table', :to => :create_table, :as => :create_table, :via => :post
   end
   #controller "data" do
     #match '/tables/curr/', :to => :curr_tables, :as => :curr_tables, :via => :get

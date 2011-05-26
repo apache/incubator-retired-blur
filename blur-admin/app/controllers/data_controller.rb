@@ -1,6 +1,6 @@
 class DataController < ApplicationController
-
   require 'thrift/blur'
+
   def show
     client = setup_thrift
     bq = BG::BlurQuery.new
@@ -22,32 +22,33 @@ class DataController < ApplicationController
   end
 
   def enable_table
-    logger.info "*** enabling table #{params[:table]} ***"
+    logger.info "*** enabling table #{params[:name]} ***"
     #TODO: Enable the table in params[:table]
     result = true
+    client = setup_thrift
     render :json => result
   end
 
   def disable_table
-    logger.info "*** disabling table #{params[:table]} ***"
+    logger.info "*** disabling table #{params[:name]} ***"
     #TODO: Disable the table in params[:table]
     result = true
     render :json => result
   end
 
-  def delete_table
-    logger.info "*** deleting table #{params[:table]} ***"
+  def destroy_table 
+    logger.info "*** deleting table #{params[:name]} ***"
     #TODO: Delete the table specified in params[:table]
     result = true
     render :json => result
   end
 
+  def new_table
+  end
+
   def create_table
     logger.info "*** creating table with params: #{params} ***"
     #TODO: Create a table with parameters stored in params[]
-    result = true
-    render :json => result
   end
 
 end
-

@@ -11,6 +11,7 @@ import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hdfs.DistributedFileSystem.DiskStatus;
 import org.apache.hadoop.hdfs.server.common.UpgradeStatusReport;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  *
@@ -35,7 +36,7 @@ import org.apache.hadoop.hdfs.server.common.UpgradeStatusReport;
  * +------------------+---------------+------+-----+---------+----------------+
  */
 public class HDFSCollector {
-  public static void startCollecting(String uriString) {
+  public static void startCollecting(String uriString, JdbcTemplate jdbc) {
     try {
 			URI uri = new URI(uriString);
       FileSystem fileSystem = FileSystem.get(uri,new Configuration());

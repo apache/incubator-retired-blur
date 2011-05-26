@@ -10,6 +10,7 @@ class QueryController < ApplicationController
 		bq = BG::BlurQuery.new
     bq.queryStr = params[:q]
 		bq.fetch = 25
+		bq.uuid = Time.now.to_i*1000+rand(1000)
 		table = 'employee_super_mart'
 		blur_results = client.query(table, bq)
 

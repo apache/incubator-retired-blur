@@ -1,0 +1,27 @@
+%H2 Create Blur Table
+
+%form{:action => create_table_path, :method => "post"}
+  
+  %h3 Aliases
+  %ul
+    %li{:class => "alias"}
+      Alias Name:
+      %input{:type => "text", :class => "aliasname"}
+      Class Name:
+      %input{:type => "text", :class => "classname"}
+
+  %h3 Default
+  Default Alias Name:
+  %input{:type => "text", :name => "default_alias_name"}
+
+  %h3 Fields
+  %ul
+    %li{:class => "column_family"}
+      Column Family Name:
+      %input{:type => "text"}
+      %ul
+        %li{:class => "column"}
+          Column:
+          %input{:type => "text"}
+          Alias Name:
+          %input{:type => "text"}

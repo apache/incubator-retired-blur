@@ -44,7 +44,7 @@ $(document).ready ->
   #TODO: need this to actually delete a table (thrift call needed)
   $(".delete-table").click( ->
     confirmation = confirm("Are you sure you want to delete this table?")
-    if confirm
+    if confirmation
       url = "/data/delete/" + $(this).attr('id') 
       $.ajax(
         url: url

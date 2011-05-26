@@ -13,9 +13,8 @@ BlurAdmin::Application.routes.draw do
   end
 
   controller "data" do
-    match 'data/:action_type/:table', :to => :action, :as => :action, :via => :post
+    match 'data/:action/:table'
   end
-
   #controller "data" do
     #match '/tables/curr/', :to => :curr_tables, :as => :curr_tables, :via => :get
   #end

@@ -28,27 +28,24 @@ $(document).ready ->
   $(".enable").click( ->
     #Determine whether table is to be enabled or disabled
     if $(this).is ':checked'
-      action = "enable"
+      action = "enable_table"
     else if $(this).not ':checked'
-      action = "disable"
+      action = "disable_table"
 
     url = "/data/" + action + "/" + $(this).attr('id')
     
-    $.ajax(
+    result = $.ajax(
       url: url
-      type: 'POST'
-    )  
+      type: 'PUT' )
   )
 
   #FUNCTION delete a table
-  #TODO: need this to actually delete a table (thrift call needed)
   $(".delete-table").click( ->
     confirmation = confirm("Are you sure you want to delete this table?")
-    if confirm
-      url = "/data/delete/" + $(this).attr('id') 
-      $.ajax(
+    if confirmation
+      url = "/data/delete_table/" + $(this).attr('id')
+      result = $.ajax(
         url: url
-        type: 'POST'
-      )
+        type: 'DELETE')
   )
 

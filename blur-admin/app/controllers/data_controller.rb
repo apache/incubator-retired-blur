@@ -35,6 +35,7 @@ class DataController < ApplicationController
     
     result = true
     render :json => result
+    close_thrift
   end
 end
 

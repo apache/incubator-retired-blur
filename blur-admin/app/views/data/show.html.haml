@@ -18,7 +18,7 @@
         %br
         Disabled
       %th Actions
-
+    
     -@tables.each do |table|
       %tr
         %td
@@ -31,12 +31,12 @@
         %td
           -a_blur_table = get_a_blur_table(table)
           -if (a_blur_table != nil)
-            =a_blur_table.current_size
+            =number_to_human_size(a_blur_table.current_size)
           -else
             not available
         %td
           -if (a_blur_table != nil)
-            =a_blur_table.query_usage
+            =a_blur_table.query_usage.to_s + " queries/sec"
           -else
             not available
         %td

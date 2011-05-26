@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110525015557) do
+ActiveRecord::Schema.define(:version => 20110526003150) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -22,6 +22,12 @@ ActiveRecord::Schema.define(:version => 20110525015557) do
     t.string   "uuid"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "table_name"
+    t.boolean  "super_query_on"
+    t.string   "facets"
+    t.string   "selectors"
+    t.integer  "start"
+    t.integer  "fetch"
   end
 
   create_table "blur_tables", :force => true do |t|

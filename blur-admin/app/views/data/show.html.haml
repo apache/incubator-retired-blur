@@ -18,7 +18,7 @@
         %br
         Disabled
       %th Actions
-    
+
     -@tables.each do |table|
       %tr
         %td
@@ -62,6 +62,10 @@
                         %li
                           =word
       %tr
+    -if @tables.empty?
+      %tr
+        %td{:colspan => 7, :class => 'error'}
+          %b No Available Tables
   %input{:type => "button", :class => "create-table", :value => "click here to make a new table"}
 -content_for :javascript do
   =javascript_include_tag 'compiled/data'

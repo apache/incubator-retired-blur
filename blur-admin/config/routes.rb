@@ -14,6 +14,7 @@ BlurAdmin::Application.routes.draw do
 
   controller "data" do
     match 'data/:action/:table'
+    match 'data/create_table', :to => :create_table, :as => :create_table
   end
   #controller "data" do
     #match '/tables/curr/', :to => :curr_tables, :as => :curr_tables, :via => :get

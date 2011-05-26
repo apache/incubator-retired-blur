@@ -3,7 +3,8 @@
 #data-dtables
   #dtables-title
     %h2 Tables
-    %input{:type => "button", :class => "create_table"}
+    %br
+    = link_to 'Create a Table', create_table_path 
   %table#dtables-table
     %tr#dtables-table-header
       %th Table

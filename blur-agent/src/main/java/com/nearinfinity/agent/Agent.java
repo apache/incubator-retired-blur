@@ -8,6 +8,7 @@ import org.apache.commons.cli.PosixParser;
 
 import com.nearinfinity.agent.collectors.HDFSCollector;
 import com.nearinfinity.agent.collectors.LoggerCollector;
+import com.nearinfinity.agent.collectors.QueryCollector;
 
 public class Agent {
 
@@ -33,6 +34,8 @@ public class Agent {
 		if (cmd.hasOption('l')) {
 			LoggerCollector.startCollecting(cmd.getOptionValue('l'));
 		}
+		
+		QueryCollector.startCollecting("blur04.nearinfinity.com:40020");
 	}
 
 }

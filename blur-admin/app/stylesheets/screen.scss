@@ -28,6 +28,8 @@ body {
     @include container; }
   #hd, #bd {
     @include column($blueprint-grid-columns); }
+  width:960px;
+  margin:0 auto;
 }
 
 @import "application";

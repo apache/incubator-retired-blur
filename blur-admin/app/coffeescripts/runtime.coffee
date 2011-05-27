@@ -126,3 +126,18 @@ $(document).ready ->
 
   #initial ajax request on page load
   #makeAJAXRequest()
+
+
+
+
+
+  #sets up the listners for the cancel buttons (mysql)
+  $('.runtime-cancel-query').click(() ->
+    uuid = $(this).attr('id')
+    table = $('#table-select').val()
+    url = '/query/cancel/' + table + '/' + uuid
+    $.ajax(
+      url: url
+      type: 'GET'
+      )
+    )

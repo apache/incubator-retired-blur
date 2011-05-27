@@ -5,30 +5,42 @@
   %h3 Aliases
   %ul
     %input{:type => "button", :id => "add_alias", :value => "Add Alias"}
-    %li{:class => "alias"}
+    %li.alias
       Alias Name:
-      %input{:type => "text", :class => "aliasname"}
+      %input{:class => 'aliasname', :placeholder => 'Alias Name'}
       Class Name:
-      %input{:type => "text", :class => "classname"}
+      %input{:class => 'classname', :placeholder => 'Class Name'}
 
   %h3 Default
   Default Alias Name:
-  %input{:type => "text", :name => "default_alias_name"}
+  %input{:placeholder => "Default Alias Name"}
 
   %h3 Fields
   %ul
     %input{:type => "button", :id => "add_column_family", :value => "Add Column Family"}
-    %li{:class => "column_family"}
+    %li.column_family
       Column Family Name:
-      %input{:type => "text"}
+      %input{:placeholder => "Column Family Name"}
       %ul
-        %input{:type => "button", :id => "add_column", :value => "Add Column"}
-        %li{:class => "column"}
+        %input{:type => "button", :class => "add_column", :value => "Add Column"}
+        %li.column
           Column:
-          %input{:type => "text"}
+          %input{:placeholder => "Column Name"}
           Alias Name:
-          %input{:type => "text"}
+          %input{:placeholder => "Alias Name"}
+          %input{:type => "button", :class => "make_column_array", :value => "Array"}
 
-
+%li.column_array
+  %ul
+    Default Analyzer:
+    %input{:placeholder => "Default Analyzer"}
+    %input{:type => "button", :class => "add_key_value", :value => "add key:value"}
+    %input{:type => "button", :class => "make_column", :value => "String"}
+    %li.key_value
+      Key:
+      %input{:placeholder => "Key"}
+      Value:
+      %input{:placeholder => "Value"}
+      
 -content_for :javascript do
   =javascript_include_tag 'compiled/new_table'

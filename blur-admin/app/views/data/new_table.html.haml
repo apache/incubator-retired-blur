@@ -10,6 +10,7 @@
       %input{:class => 'aliasname', :placeholder => "Alias Name"}
       Class Name:
       %input{:class => 'classname', :placeholder => "Class Name"}
+      %input{:type => 'button', :class => 'delete_parent', :value => "Remove Alias"}
 
   %h3 Default
   Default Alias Name:
@@ -21,6 +22,7 @@
     %li.column_family
       Column Family Name:
       %input{:placeholder => "Column Family Name"}
+      %input{:type => "button", :class => "delete_parent", :value => "Remove Column Family"}
       %ul
         %input{:type => "button", :class => "add_column", :value => "Add Column"}
         %li.column
@@ -29,6 +31,7 @@
           Alias Name:
           %input{:placeholder => "Alias Name"}
           %input{:type => "button", :class => "make_column_array", :value => "Array"}
+          %input{:type => "button", :class => "delete_parent", :value => "Remove Column"}
 
 %li.column_array
   %ul
@@ -36,11 +39,13 @@
     %input{:placeholder => "Default Analyzer"}
     %input{:type => "button", :class => "add_key_value", :value => "add key:value"}
     %input{:type => "button", :class => "make_column", :value => "String"}
+    %input{:type => "button", :class => "delete_grandparent", :value => "Remove Column"}
     %li.key_value
       Key:
       %input{:placeholder => "Key"}
       Value:
       %input{:placeholder => "Value"}
+      %input{:type => "button", :class => "delete_parent", :value => "Remove Key Value Pair"}
       
 -content_for :javascript do
   =javascript_include_tag 'compiled/new_table'

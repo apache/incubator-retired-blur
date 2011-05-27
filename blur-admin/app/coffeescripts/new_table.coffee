@@ -12,21 +12,17 @@ $(document).ready ->
   column_array_clone = $('li.column_array').clone().show()
   key_value_clone = $('li.key_value').clone()
 
-  #FUNCTION append_to_list - Appends an item to an html list.
-  append_to_list = (item, list) ->
-    list.children().filter('li').last().after(item)
-
   #Add Alias Button Functionality
   $('#add_alias').click( ->
-    append_to_list(alias_clone.clone(), $(this).parent())
+    $(this).parent().append(alias_clone.clone())
   )
   #Add Column Family Button Functionality
   $('#add_column_family').click( ->
-    append_to_list(column_family_clone.clone(), $(this).parent())
+    $(this).parent().append(column_family_clone.clone())
   )
   #Add Column Button Functionality
   $('.add_column').live('click', ->
-    append_to_list(column_clone.clone(), $(this).parent())
+    $(this).parent().append(column_clone.clone())
   )
   #Add Make Column Array Functionality
   $('.make_column_array').live('click', ->
@@ -38,5 +34,12 @@ $(document).ready ->
   )
   #Add Key:Value Button Functionality
   $('.add_key_value').live('click', ->
-    append_to_list(key_value_clone.clone(), $(this).parent())
+    $(this).parent().append(key_value_clone.clone())
+  )
+  #Add delete item functionality
+  $('.delete_parent').live('click', ->
+    $(this).parent().remove()
+  )
+  $('.delete_grandparent').live('click', ->
+    $(this).parent().parent().remove()
   )

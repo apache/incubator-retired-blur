@@ -106,4 +106,25 @@ public class DoNothingServer implements Iface {
     public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
         return null;
     }
+
+    @Override
+    public void createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri)
+            throws BlurException, TException {
+        
+    }
+
+    @Override
+    public void disableTable(String table) throws BlurException, TException {
+        
+    }
+
+    @Override
+    public void enableTable(String table) throws BlurException, TException {
+        
+    }
+
+    @Override
+    public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
+        
+    }
 }

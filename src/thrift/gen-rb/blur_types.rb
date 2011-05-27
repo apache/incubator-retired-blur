@@ -226,6 +226,7 @@ module Blur
       RESOLVEIDS = 12
       FACETS = 13
       SELECTOR = 14
+      STARTTIME = 15
 
       FIELDS = {
         QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
@@ -241,7 +242,8 @@ module Blur
         USERID => {:type => ::Thrift::Types::STRING, :name => 'userId'},
         RESOLVEIDS => {:type => ::Thrift::Types::BOOL, :name => 'resolveIds'},
         FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Facet}},
-        SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => Blur::Selector}
+        SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => Blur::Selector},
+        STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'}
       }
 
       def struct_fields; FIELDS; end

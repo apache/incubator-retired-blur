@@ -28,8 +28,6 @@ import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
-import com.nearinfinity.blur.thrift.generated.Facet;
-import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
 public class BlurResultIterableClient implements BlurResultIterable {
@@ -39,47 +37,29 @@ public class BlurResultIterableClient implements BlurResultIterable {
     private Map<String, Long> _shardInfo = new TreeMap<String, Long>();
     private Client _client;
     private String _table;
-    private String _query;
-    private boolean _superQueryOn;
-    private ScoreType _type;
-    private String _postSuperFilter;
-    private String _preSuperFilter;
-    private long _minimumNumberOfResults;
-    private long _maxQueryTime;
     private BlurResults _results;
     private int _fetchCount = 100;
     private int _batch = 0;
     private long _totalResults;
     private long _skipTo;
-    private long _uuid;
     private AtomicLongArray _facetCounts;
     private boolean _alreadyProcessed;
-    private String _userId;
-    private List<Facet> _facets;
+    private BlurQuery _originalQuery;
 
     public BlurResultIterableClient(Blur.Client client, String table, BlurQuery query, AtomicLongArray facetCounts) {
         _client = client;
         _table = table;
-        _query = query.queryStr;
-        _superQueryOn = query.superQueryOn;
-        _type = query.type;
-        _postSuperFilter = query.postSuperFilter;
-        _preSuperFilter = query.preSuperFilter;
-        _minimumNumberOfResults = query.minimumNumberOfResults;
-        _maxQueryTime = query.maxQueryTime;
-        _uuid = query.uuid;
         _facetCounts = facetCounts;
-        _facets = query.facets;
-        _userId = query.userId;
+        _originalQuery = query;
         performSearch();
     }
 
     private void performSearch() {
         try {
             long cursor = _fetchCount * _batch;
-            BlurQuery blurQuery = new BlurQuery(_query, _superQueryOn, _type, 
-                    _postSuperFilter, _preSuperFilter, cursor, _fetchCount, _minimumNumberOfResults, 
-                    _maxQueryTime, _uuid, _userId, false, _facets, null);
+            BlurQuery blurQuery = new BlurQuery(_originalQuery.queryStr, _originalQuery.superQueryOn, _originalQuery.type, 
+                    _originalQuery.postSuperFilter, _originalQuery.preSuperFilter, cursor, _fetchCount, _originalQuery.minimumNumberOfResults, 
+                    _originalQuery.maxQueryTime, _originalQuery.uuid, _originalQuery.userId, false, _originalQuery.facets, null, _originalQuery.startTime);
             
             _results = _client.query(_table, blurQuery);
             addFacets();
@@ -87,7 +67,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
             _shardInfo.putAll(_results.shardInfo);
             _batch++;
         } catch (Exception e) {
-            LOG.error("Error during for [{0}]",e,_query);
+            LOG.error("Error during for [{0}]",e,_originalQuery);
             throw new RuntimeException(e);
         }
     }
@@ -138,7 +118,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
 
         @Override
         public boolean hasNext() {
-            if (position < _minimumNumberOfResults && position < _totalResults) {
+            if (position < _originalQuery.minimumNumberOfResults && position < _totalResults) {
                 return true;
             }
             return false;

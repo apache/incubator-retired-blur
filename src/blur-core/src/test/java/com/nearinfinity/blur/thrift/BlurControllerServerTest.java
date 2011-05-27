@@ -295,6 +295,27 @@ public class BlurControllerServerTest {
                     TException {
                 throw new RuntimeException("not impl");
             }
+
+            @Override
+            public void createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri)
+                    throws BlurException, TException {
+                throw new RuntimeException("not impl");
+            }
+
+            @Override
+            public void disableTable(String table) throws BlurException, TException {
+                throw new RuntimeException("not impl");
+            }
+
+            @Override
+            public void enableTable(String table) throws BlurException, TException {
+                throw new RuntimeException("not impl");
+            }
+
+            @Override
+            public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
+                throw new RuntimeException("not impl");
+            }
         };
     }
     

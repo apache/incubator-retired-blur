@@ -234,6 +234,66 @@ require 'blur_types'
             return
           end
 
+          def createTable(table, enabled, analyzerDef, shardCount, tableUri)
+            send_createTable(table, enabled, analyzerDef, shardCount, tableUri)
+            recv_createTable()
+          end
+
+          def send_createTable(table, enabled, analyzerDef, shardCount, tableUri)
+            send_message('createTable', CreateTable_args, :table => table, :enabled => enabled, :analyzerDef => analyzerDef, :shardCount => shardCount, :tableUri => tableUri)
+          end
+
+          def recv_createTable()
+            result = receive_message(CreateTable_result)
+            raise result.ex unless result.ex.nil?
+            return
+          end
+
+          def enableTable(table)
+            send_enableTable(table)
+            recv_enableTable()
+          end
+
+          def send_enableTable(table)
+            send_message('enableTable', EnableTable_args, :table => table)
+          end
+
+          def recv_enableTable()
+            result = receive_message(EnableTable_result)
+            raise result.ex unless result.ex.nil?
+            return
+          end
+
+          def disableTable(table)
+            send_disableTable(table)
+            recv_disableTable()
+          end
+
+          def send_disableTable(table)
+            send_message('disableTable', DisableTable_args, :table => table)
+          end
+
+          def recv_disableTable()
+            result = receive_message(DisableTable_result)
+            raise result.ex unless result.ex.nil?
+            return
+          end
+
+          def removeTable(table, deleteIndexFiles)
+            send_removeTable(table, deleteIndexFiles)
+            recv_removeTable()
+          end
+
+          def send_removeTable(table, deleteIndexFiles)
+            send_message('removeTable', RemoveTable_args, :table => table, :deleteIndexFiles => deleteIndexFiles)
+          end
+
+          def recv_removeTable()
+            result = receive_message(RemoveTable_result)
+            raise result.ex unless result.ex.nil?
+            return
+          end
+
         end
 
         class Processor
@@ -391,6 +451,50 @@ require 'blur_types'
               result.ex = ex
             end
             write_result(result, oprot, 'mutate', seqid)
+          end
+
+          def process_createTable(seqid, iprot, oprot)
+            args = read_args(iprot, CreateTable_args)
+            result = CreateTable_result.new()
+            begin
+              @handler.createTable(args.table, args.enabled, args.analyzerDef, args.shardCount, args.tableUri)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'createTable', seqid)
+          end
+
+          def process_enableTable(seqid, iprot, oprot)
+            args = read_args(iprot, EnableTable_args)
+            result = EnableTable_result.new()
+            begin
+              @handler.enableTable(args.table)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'enableTable', seqid)
+          end
+
+          def process_disableTable(seqid, iprot, oprot)
+            args = read_args(iprot, DisableTable_args)
+            result = DisableTable_result.new()
+            begin
+              @handler.disableTable(args.table)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'disableTable', seqid)
+          end
+
+          def process_removeTable(seqid, iprot, oprot)
+            args = read_args(iprot, RemoveTable_args)
+            result = RemoveTable_result.new()
+            begin
+              @handler.removeTable(args.table, args.deleteIndexFiles)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'removeTable', seqid)
           end
 
         end
@@ -875,6 +979,144 @@ require 'blur_types'
         end
 
         class Mutate_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          EX = 1
+
+          FIELDS = {
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class CreateTable_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TABLE = 1
+          ENABLED = 2
+          ANALYZERDEF = 3
+          SHARDCOUNT = 4
+          TABLEURI = 5
+
+          FIELDS = {
+            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+            ENABLED => {:type => ::Thrift::Types::BOOL, :name => 'enabled'},
+            ANALYZERDEF => {:type => ::Thrift::Types::STRING, :name => 'analyzerDef'},
+            SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount'},
+            TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class CreateTable_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          EX = 1
+
+          FIELDS = {
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class EnableTable_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TABLE = 1
+
+          FIELDS = {
+            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class EnableTable_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          EX = 1
+
+          FIELDS = {
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class DisableTable_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TABLE = 1
+
+          FIELDS = {
+            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class DisableTable_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          EX = 1
+
+          FIELDS = {
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class RemoveTable_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TABLE = 1
+          DELETEINDEXFILES = 2
+
+          FIELDS = {
+            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+            DELETEINDEXFILES => {:type => ::Thrift::Types::BOOL, :name => 'deleteIndexFiles'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class RemoveTable_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           EX = 1
 

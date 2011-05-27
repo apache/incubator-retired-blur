@@ -65,7 +65,7 @@ import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
-public class BlurControllerServer implements Iface {
+public class BlurControllerServer extends TableAdmin implements Iface {
 
     private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
 
@@ -497,4 +497,5 @@ public class BlurControllerServer implements Iface {
     public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
         this._dynamicConfig = dynamicConfig;
     }
+
 }

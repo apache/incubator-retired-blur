@@ -16,18 +16,28 @@
 
 package com.nearinfinity.blur.manager.indexserver.utils;
 
+import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
+
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
-
 public class CreateTable {
+    
+    private static Log LOG = LogFactory.getLog(CreateTable.class);
 
     public static void main(String[] args) throws IOException {
         String zkConnectionStr = args[0];
@@ -39,17 +49,39 @@ public class CreateTable {
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        if (dm.exists(BLUR_TABLES, table)) {
+        if (dm.exists(ZookeeperPathConstants.getBlurTables(), table)) {
             System.err.println("Table [" + table + "] already exists.");
             System.exit(1);
         }
-        
-        dm.createPath(BLUR_TABLES, table);
-        dm.createPath(BLUR_TABLES, table, BLUR_TABLES_URI);
-        dm.createPath(BLUR_TABLES, table, BLUR_TABLES_SHARD_COUNT);
-        dm.saveData(analyzer.toString().getBytes(), BLUR_TABLES, table);
-        dm.saveData(uri.getBytes(), BLUR_TABLES, BLUR_TABLES_URI);
-        dm.saveData(shardCount.getBytes(), BLUR_TABLES, BLUR_TABLES_SHARD_COUNT);
+        createTable(dm,table,analyzer,uri,shardCount);
+    }
+    
+    public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, String shardCount) throws IOException {
+        setupFileSystem(uri,Integer.parseInt(shardCount));
+        dm.createPath(ZookeeperPathConstants.getBlurTables(), table);
+        dm.createPath(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesUri());
+        dm.createPath(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesShardCount());
+        dm.saveData(analyzer.toString().getBytes(), ZookeeperPathConstants.getBlurTables(), table);
+        dm.saveData(uri.getBytes(), ZookeeperPathConstants.getBlurTables(), ZookeeperPathConstants.getBlurTablesUri());
+        dm.saveData(shardCount.getBytes(), ZookeeperPathConstants.getBlurTables(), ZookeeperPathConstants.getBlurTablesShardCount());
+    }
+
+    private static void setupFileSystem(String uri, int shardCount) throws IOException {
+        Path tablePath = new Path(uri);
+        FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+        createPath(fileSystem,tablePath);
+        for (int i = 0; i < shardCount; i++) {
+            String shardName = BlurShardName.getShardName(SHARD_PREFIX, i);
+            Path shardPath = new Path(tablePath, shardName);
+            createPath(fileSystem, shardPath);
+        }
+    }
+
+    private static void createPath(FileSystem fileSystem, Path path) throws IOException {
+        if (!fileSystem.exists(path)) {
+            LOG.info("Path [{0}] does not exist, creating.",path);
+            fileSystem.mkdirs(path);
+        }
     }
 
 }

@@ -76,7 +76,8 @@ struct BlurQuery {
   11:string userId,
   12:bool resolveIds,
   13:list<Facet> facets,
-  14:Selector selector
+  14:Selector selector,
+  15:i64 startTime
 }
 
 struct BlurQuerySuggestion {
@@ -180,6 +181,11 @@ service Blur {
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
   void mutate(1:string table, 2:list<RowMutation> mutations) throws (1:BlurException ex)
+
+  void createTable(1:string table, 2:bool enabled, 3:string analyzerDef, 4:i32 shardCount, 5:string tableUri) throws (1:BlurException ex)
+  void enableTable(1:string table) throws (1:BlurException ex)
+  void disableTable(1:string table) throws (1:BlurException ex)
+  void removeTable(1:string table, 2:bool deleteIndexFiles) throws (1:BlurException ex)
   
 }
 

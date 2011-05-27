@@ -22,10 +22,8 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
-
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
 
 public class DisableTable {
 
@@ -36,15 +34,15 @@ public class DisableTable {
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        if (!dm.exists(BLUR_TABLES, table)) {
+        if (!dm.exists(ZookeeperPathConstants.getBlurTables(), table)) {
             System.err.println("Table [" + table + "] does not exist.");
             System.exit(1);
         }
-        if (!dm.exists(BLUR_TABLES, table, BLUR_TABLES_ENABLED)) {
+        if (!dm.exists(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
             System.err.println("Table [" + table + "] already disabled.");
             System.exit(1);
         }
-        zooKeeper.delete(BLUR_TABLES + "/" + table + "/" + BLUR_TABLES_ENABLED, -1);
+        zooKeeper.delete(ZookeeperPathConstants.getBlurTables() + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled(), -1);
     }
 
 }

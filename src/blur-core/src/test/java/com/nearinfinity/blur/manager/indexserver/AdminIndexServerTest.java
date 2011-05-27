@@ -16,8 +16,6 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -59,14 +57,14 @@ public class AdminIndexServerTest {
 //    @Test
     public void testAdminIndexServerTableList() {
         assertTrue(adminIndexServer.getTableList().isEmpty());
-        dm.createPath(BLUR_TABLES,TESTTABLE);
+        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE);
         assertEquals(newList(TESTTABLE),adminIndexServer.getTableList());
     }
     
 //    @Test
     public void testAdminIndexServerTableListTimer() throws InterruptedException {
         assertTrue(adminIndexServer.getTableList().isEmpty());
-        dm.pathes.add(BLUR_TABLES + "/" + TESTTABLE);
+        dm.pathes.add(ZookeeperPathConstants.getBlurTables() + "/" + TESTTABLE);
         assertTrue(adminIndexServer.getTableList().isEmpty());
         Thread.sleep(TimeUnit.SECONDS.toMillis(12));// wait for the 10 second timer to pick up the change
         assertEquals(newList(TESTTABLE), adminIndexServer.getTableList());
@@ -75,18 +73,18 @@ public class AdminIndexServerTest {
 //    @Test
     public void testAdminIndexServerTableStatus() {
         assertEquals(TABLE_STATUS.DISABLED,adminIndexServer.getTableStatus(TESTTABLE));
-        dm.createPath(BLUR_TABLES,TESTTABLE);
+        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE);
         assertEquals(TABLE_STATUS.DISABLED,adminIndexServer.getTableStatus(TESTTABLE));
-        dm.createPath(BLUR_TABLES,TESTTABLE,BLUR_TABLES_ENABLED);
+        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE,ZookeeperPathConstants.getBlurTablesEnabled());
         assertEquals(TABLE_STATUS.ENABLED,adminIndexServer.getTableStatus(TESTTABLE));
     }
     
 //    @Test
     public void testAdminIndexServerTableAnalyzer() throws InterruptedException {
         assertEquals(AdminIndexServer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
-        dm.createPath(BLUR_TABLES,TESTTABLE);
+        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE);
         assertEquals(AdminIndexServer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
-        dm.data.put(BLUR_TABLES + "/" + TESTTABLE, "{\"default\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}".getBytes());
+        dm.data.put(ZookeeperPathConstants.getBlurTables() + "/" + TESTTABLE, "{\"default\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}".getBytes());
         Thread.sleep(TimeUnit.SECONDS.toMillis(12));// wait for the 10 second timer to pick up the change
         assertFalse(AdminIndexServer.BLANK_ANALYZER.equals(adminIndexServer.getAnalyzer(TESTTABLE)));
     }

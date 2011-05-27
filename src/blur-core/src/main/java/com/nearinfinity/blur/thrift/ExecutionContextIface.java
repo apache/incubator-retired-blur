@@ -23,7 +23,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
-public abstract class ExecutionContextIface implements IfaceExtended {
+public abstract class ExecutionContextIface extends TableAdmin implements IfaceExtended {
 
     private static final Log METRICS = LogFactory.getLog("METRICS-FILE");
     private static final Log LOG = LogFactory.getLog(ExecutionContextIface.class);

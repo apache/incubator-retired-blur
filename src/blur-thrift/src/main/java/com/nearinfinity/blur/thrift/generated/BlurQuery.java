@@ -37,6 +37,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final org.apache.thrift.protocol.TField RESOLVE_IDS_FIELD_DESC = new org.apache.thrift.protocol.TField("resolveIds", org.apache.thrift.protocol.TType.BOOL, (short)12);
   private static final org.apache.thrift.protocol.TField FACETS_FIELD_DESC = new org.apache.thrift.protocol.TField("facets", org.apache.thrift.protocol.TType.LIST, (short)13);
   private static final org.apache.thrift.protocol.TField SELECTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("selector", org.apache.thrift.protocol.TType.STRUCT, (short)14);
+  private static final org.apache.thrift.protocol.TField START_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startTime", org.apache.thrift.protocol.TType.I64, (short)15);
 
   public String queryStr;
   public boolean superQueryOn;
@@ -56,6 +57,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   public boolean resolveIds;
   public List<Facet> facets;
   public Selector selector;
+  public long startTime;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -76,7 +78,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     USER_ID((short)11, "userId"),
     RESOLVE_IDS((short)12, "resolveIds"),
     FACETS((short)13, "facets"),
-    SELECTOR((short)14, "selector");
+    SELECTOR((short)14, "selector"),
+    START_TIME((short)15, "startTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -119,6 +122,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
           return FACETS;
         case 14: // SELECTOR
           return SELECTOR;
+        case 15: // START_TIME
+          return START_TIME;
         default:
           return null;
       }
@@ -166,7 +171,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final int __MAXQUERYTIME_ISSET_ID = 4;
   private static final int __UUID_ISSET_ID = 5;
   private static final int __RESOLVEIDS_ISSET_ID = 6;
-  private BitSet __isset_bit_vector = new BitSet(7);
+  private static final int __STARTTIME_ISSET_ID = 7;
+  private BitSet __isset_bit_vector = new BitSet(8);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -200,6 +206,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Facet.class))));
     tmpMap.put(_Fields.SELECTOR, new org.apache.thrift.meta_data.FieldMetaData("selector", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Selector.class)));
+    tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
@@ -233,7 +241,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     String userId,
     boolean resolveIds,
     List<Facet> facets,
-    Selector selector)
+    Selector selector,
+    long startTime)
   {
     this();
     this.queryStr = queryStr;
@@ -257,6 +266,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     setResolveIdsIsSet(true);
     this.facets = facets;
     this.selector = selector;
+    this.startTime = startTime;
+    setStartTimeIsSet(true);
   }
 
   /**
@@ -297,6 +308,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     if (other.isSetSelector()) {
       this.selector = new Selector(other.selector);
     }
+    this.startTime = other.startTime;
   }
 
   public BlurQuery deepCopy() {
@@ -327,6 +339,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.resolveIds = false;
     this.facets = null;
     this.selector = null;
+    setStartTimeIsSet(false);
+    this.startTime = 0;
   }
 
   public String getQueryStr() {
@@ -681,6 +695,29 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
   }
 
+  public long getStartTime() {
+    return this.startTime;
+  }
+
+  public BlurQuery setStartTime(long startTime) {
+    this.startTime = startTime;
+    setStartTimeIsSet(true);
+    return this;
+  }
+
+  public void unsetStartTime() {
+    __isset_bit_vector.clear(__STARTTIME_ISSET_ID);
+  }
+
+  /** Returns true if field startTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetStartTime() {
+    return __isset_bit_vector.get(__STARTTIME_ISSET_ID);
+  }
+
+  public void setStartTimeIsSet(boolean value) {
+    __isset_bit_vector.set(__STARTTIME_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY_STR:
@@ -795,6 +832,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       }
       break;
 
+    case START_TIME:
+      if (value == null) {
+        unsetStartTime();
+      } else {
+        setStartTime((Long)value);
+      }
+      break;
+
     }
   }
 
@@ -842,6 +887,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     case SELECTOR:
       return getSelector();
 
+    case START_TIME:
+      return new Long(getStartTime());
+
     }
     throw new IllegalStateException();
   }
@@ -881,6 +929,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return isSetFacets();
     case SELECTOR:
       return isSetSelector();
+    case START_TIME:
+      return isSetStartTime();
     }
     throw new IllegalStateException();
   }
@@ -1021,6 +1071,15 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       if (!(this_present_selector && that_present_selector))
         return false;
       if (!this.selector.equals(that.selector))
+        return false;
+    }
+
+    boolean this_present_startTime = true;
+    boolean that_present_startTime = true;
+    if (this_present_startTime || that_present_startTime) {
+      if (!(this_present_startTime && that_present_startTime))
+        return false;
+      if (this.startTime != that.startTime)
         return false;
     }
 
@@ -1180,6 +1239,16 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetStartTime()).compareTo(typedOther.isSetStartTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStartTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startTime, typedOther.startTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1314,6 +1383,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 15: // START_TIME
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
+            this.startTime = iprot.readI64();
+            setStartTimeIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1392,6 +1469,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       this.selector.write(oprot);
       oprot.writeFieldEnd();
     }
+    oprot.writeFieldBegin(START_TIME_FIELD_DESC);
+    oprot.writeI64(this.startTime);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -1483,6 +1563,10 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     } else {
       sb.append(this.selector);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("startTime:");
+    sb.append(this.startTime);
     first = false;
     sb.append(")");
     return sb.toString();

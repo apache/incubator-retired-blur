@@ -24,7 +24,6 @@ import org.apache.zookeeper.Watcher.Event.KeeperState;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.*;
 
 public class BlurServerShutDown implements Watcher {
     
@@ -55,7 +54,7 @@ public class BlurServerShutDown implements Watcher {
     
     private void registerShutdownEvent(BlurShutdown shutdown, ZooKeeper zooKeeper) {
         try {
-            if (zooKeeper.exists(BLUR_SAFEMODE_SHUTDOWN, this) != null) {
+            if (zooKeeper.exists(ZookeeperPathConstants.getBlurSafemodeShutdown(), this) != null) {
                 LOG.info("Shutdown flag detected, server process shutting down.");
                 shutdown.shutdown();
             }

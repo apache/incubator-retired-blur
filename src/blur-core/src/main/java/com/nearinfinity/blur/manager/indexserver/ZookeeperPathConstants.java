@@ -18,20 +18,60 @@ package com.nearinfinity.blur.manager.indexserver;
 
 public class ZookeeperPathConstants {
     
-    public static final String BLUR_BASE_PATH                  = "/blur";
-    public static final String BLUR_ONLINE_PATH                = "/blur/online";
-    public static final String BLUR_ONLINE_SHARDS_PATH         = "/blur/online/shard-nodes";
-    public static final String BLUR_ONLINE_CONTROLLERS_PATH    = "/blur/online/controller-nodes";
-    public static final String BLUR_TABLES                     = "/blur/tables";
-    public static final String BLUR_TABLES_ENABLED             = "enabled";
+    private static final String BLUR_BASE_PATH                  = "/blur";
+    
+    private static final String BLUR_TABLES_ENABLED             = "enabled";
     // /blur/tables/<name>/enabled will indicate that the table is enabled
-    public static final String BLUR_TABLES_URI                 = "uri";
-    public static final String BLUR_TABLES_SHARD_COUNT         = "shard-count";
+    private static final String BLUR_TABLES_URI                 = "uri";
+    private static final String BLUR_TABLES_SHARD_COUNT         = "shard-count";
+    
+    private static final String BLUR_ONLINE_PATH                = BLUR_BASE_PATH + "/online";
+    private static final String BLUR_ONLINE_SHARDS_PATH         = BLUR_BASE_PATH + "/online/shard-nodes";
+    private static final String BLUR_ONLINE_CONTROLLERS_PATH    = BLUR_BASE_PATH + "/online/controller-nodes";
+    private static final String BLUR_TABLES                     = BLUR_BASE_PATH + "/tables";
+    
+    private static final String BLUR_SAFEMODE                   = BLUR_BASE_PATH + "/safemode";
+    private static final String BLUR_SAFEMODE_LOCK              = BLUR_BASE_PATH + "/safemode/lock";
+    private static final String BLUR_SAFEMODE_SHUTDOWN          = BLUR_BASE_PATH + "/safemode/shutdown";
+    private static final String BLUR_REGISTERED_SHARDS_PATH     = BLUR_BASE_PATH + "/shard-nodes";
+    
+    public static String getBlurBasePath() {
+        return BLUR_BASE_PATH;
+    }
+    public static String getBlurTablesEnabled() {
+        return BLUR_TABLES_ENABLED;
+    }
+    public static String getBlurTablesUri() {
+        return BLUR_TABLES_URI;
+    }
+    public static String getBlurTablesShardCount() {
+        return BLUR_TABLES_SHARD_COUNT;
+    }
+    public static String getBlurOnlinePath() {
+        return BLUR_ONLINE_PATH;
+    }
+    public static String getBlurOnlineShardsPath() {
+        return BLUR_ONLINE_SHARDS_PATH;
+    }
+    public static String getBlurOnlineControllersPath() {
+        return BLUR_ONLINE_CONTROLLERS_PATH;
+    }
+    public static String getBlurTables() {
+        return BLUR_TABLES;
+    }
+    public static String getBlurSafemode() {
+        return BLUR_SAFEMODE;
+    }
+    public static String getBlurSafemodeLock() {
+        return BLUR_SAFEMODE_LOCK;
+    }
+    public static String getBlurSafemodeShutdown() {
+        return BLUR_SAFEMODE_SHUTDOWN;
+    }
+    public static String getBlurRegisteredShardsPath() {
+        return BLUR_REGISTERED_SHARDS_PATH;
+    }
     
     
-    public static final String BLUR_SAFEMODE                   = "/blur/safemode";
-    public static final String BLUR_SAFEMODE_LOCK              = "/blur/safemode/lock";
-    public static final String BLUR_SAFEMODE_SHUTDOWN          = "/blur/safemode/shutdown";
-    public static final String BLUR_REGISTERED_SHARDS_PATH     = "/blur/shard-nodes";
 
 }

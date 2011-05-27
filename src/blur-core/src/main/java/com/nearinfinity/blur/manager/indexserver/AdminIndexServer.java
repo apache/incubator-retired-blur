@@ -16,11 +16,6 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_ENABLED;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_SHARD_COUNT;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.BLUR_TABLES_URI;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -69,7 +64,7 @@ public abstract class AdminIndexServer implements IndexServer {
      */
     public void init() {
         executorService = Executors.newThreadPool("admin-index-server",threadCount,dynamicConfig);
-        dm.createPath(BLUR_TABLES); //ensures the path exists
+        dm.createPath(ZookeeperPathConstants.getBlurTables()); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();
     }
@@ -125,9 +120,9 @@ public abstract class AdminIndexServer implements IndexServer {
 
     protected void registerCallbackForChanges() {
         Runnable updateStatus = newRunnableUpdateStatus();
-        dm.registerCallableOnChange(updateStatus, BLUR_TABLES);
+        dm.registerCallableOnChange(updateStatus, ZookeeperPathConstants.getBlurTables());
         for (String table : tableList.get()) {
-            dm.registerCallableOnChange(updateStatus, BLUR_TABLES, table);
+            dm.registerCallableOnChange(updateStatus, ZookeeperPathConstants.getBlurTables(), table);
         }        
     }
 
@@ -141,7 +136,7 @@ public abstract class AdminIndexServer implements IndexServer {
     }
 
     protected void updateTableList() {
-        List<String> newTables = dm.list(BLUR_TABLES);
+        List<String> newTables = dm.list(ZookeeperPathConstants.getBlurTables());
         List<String> oldTables = tableList.get();
         tableList.set(newTables);
         for (String table : newTables) {
@@ -160,7 +155,7 @@ public abstract class AdminIndexServer implements IndexServer {
         Map<String, BlurAnalyzer> newMap = new HashMap<String, BlurAnalyzer>();
         for (String table : tableList.get()) {
             Value value = new Value();
-            dm.fetchData(value, BLUR_TABLES, table);
+            dm.fetchData(value, ZookeeperPathConstants.getBlurTables(), table);
             BlurAnalyzer analyzer;
             if (value.data == null) {
                 analyzer = BLANK_ANALYZER;
@@ -182,7 +177,7 @@ public abstract class AdminIndexServer implements IndexServer {
         Map<String, TABLE_STATUS> oldMap = statusMap.get();
         for (String table : tableList.get()) {
             TABLE_STATUS status;
-            if (dm.exists(BLUR_TABLES,table,BLUR_TABLES_ENABLED)) {
+            if (dm.exists(ZookeeperPathConstants.getBlurTables(),table,ZookeeperPathConstants.getBlurTablesEnabled())) {
                 status = TABLE_STATUS.ENABLED;
             } else {
                 status = TABLE_STATUS.DISABLED;
@@ -237,14 +232,14 @@ public abstract class AdminIndexServer implements IndexServer {
     @Override
     public String getTableUri(String table) {
         Value value = new Value();
-        dm.fetchData(value, BLUR_TABLES,table,BLUR_TABLES_URI);
+        dm.fetchData(value, ZookeeperPathConstants.getBlurTables(),table,ZookeeperPathConstants.getBlurTablesUri());
         return new String(value.data);
     }
     
     @Override
     public int getShardCount(String table) {
         Value value = new Value();
-        dm.fetchData(value, BLUR_TABLES,table,BLUR_TABLES_SHARD_COUNT);
+        dm.fetchData(value, ZookeeperPathConstants.getBlurTables(),table,ZookeeperPathConstants.getBlurTablesShardCount());
         return Integer.parseInt(new String(value.data));
     }
 

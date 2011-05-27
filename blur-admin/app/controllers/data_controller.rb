@@ -42,13 +42,4 @@ class DataController < ApplicationController
     result = true
     render :json => result
   end
-
-  def new_table
-  end
-
-  def create_table
-    logger.info "*** creating table with params: #{params} ***"
-    #TODO: Create a table with parameters stored in params[]
-  end
-
 end

@@ -7,40 +7,40 @@
     %input{:type => "button", :id => "add_alias", :value => "Add Alias"}
     %li.alias
       Alias Name:
-      %input.aliasname
+      %input{:class => 'aliasname', :placeholder => "Alias Name"}
       Class Name:
-      %input.classname
+      %input{:class => 'classname', :placeholder => "Class Name"}
 
   %h3 Default
   Default Alias Name:
-  %input
+  %input{:placeholder => "Default Alias Name"}
 
   %h3 Fields
   %ul
     %input{:type => "button", :id => "add_column_family", :value => "Add Column Family"}
     %li.column_family
       Column Family Name:
-      %input
+      %input{:placeholder => "Column Family Name"}
       %ul
         %input{:type => "button", :class => "add_column", :value => "Add Column"}
         %li.column
           Column:
-          %input
+          %input{:placeholder => "Column Name"}
           Alias Name:
-          %input
+          %input{:placeholder => "Alias Name"}
           %input{:type => "button", :class => "make_column_array", :value => "Array"}
 
 %li.column_array
   %ul
     Default Analyzer:
-    %input
+    %input{:placeholder => "Default Analyzer"}
     %input{:type => "button", :class => "add_key_value", :value => "add key:value"}
     %input{:type => "button", :class => "make_column", :value => "String"}
     %li.key_value
       Key:
-      %input
+      %input{:placeholder => "Key"}
       Value:
-      %input
+      %input{:placeholder => "Value"}
       
 -content_for :javascript do
   =javascript_include_tag 'compiled/new_table'

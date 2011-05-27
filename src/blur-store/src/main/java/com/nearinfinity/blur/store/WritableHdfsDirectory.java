@@ -16,11 +16,15 @@
 
 package com.nearinfinity.blur.store;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.RandomAccessFile;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
@@ -84,19 +88,30 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     @Override
     public void sync(String name) throws IOException {
         File file = _localFileCache.getLocalFile(_dirName, name);
-        Path dest = new Path(hdfsDirPath,name + ".sync");
-        Path source = new Path(file.getAbsolutePath());
         int count = 0;
         while (true) {
+            Path dest = new Path(hdfsDirPath,name + ".sync." + count);
             try {
                 LOG.debug("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
-                fileSystem.copyFromLocalFile(source, dest);
-                rename(name + ".sync",name);
+                FSDataOutputStream outputStream = fileSystem.create(dest);
+                InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
+                byte[] buffer = new byte[4096];
+                int num;
+                while ((num = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, num);
+                    _progressable.progress();
+                }
+                rename(name + ".sync." + count,name);
                 return;
             } catch (IOException e) {
                 if (count < _retryCount) {
+                    LOG.error("Error sync retry count [{0}] local file [{1}] to [{2}]",e,count,file.getAbsolutePath(),dest);
                     count++;
-                    LOG.error("Error sync retry count [{0}] local file [{1}] to [{2}]",e,count,source,dest);
+                    try {
+                        fileSystem.delete(dest, false);
+                    } catch (IOException ex) {
+                        LOG.error("Error trying to delete back file [{0}]",ex,dest);
+                    }
                 } else {
                     throw e;
                 }
@@ -168,7 +183,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
     public IndexInput openFromLocal(String name, int bufferSize) throws IOException {
         if (Constants.WINDOWS) {
             return new FileIndexInput(_localFileCache.getLocalFile(_dirName, name), bufferSize);
-        } else if (name.endsWith(".fdt")) {
+        } else if (name.endsWith(".fdt") || !Constants.JRE_IS_64BIT) {
             return new FileNIOIndexInput(_localFileCache.getLocalFile(_dirName, name), bufferSize);
         } else {
             return new MMapIndexInput(_localFileCache.getLocalFile(_dirName, name));

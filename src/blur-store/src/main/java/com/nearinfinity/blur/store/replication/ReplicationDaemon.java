@@ -41,6 +41,7 @@ import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory.ReplicaIndex
 public class ReplicationDaemon implements Runnable {
     
     private static final Log LOG = LogFactory.getLog(ReplicationDaemon.class);
+    private static final float MB = 1024 * 1024;
     
     public static class RepliaWorkUnit {
         ReplicaIndexInput replicaIndexInput;
@@ -121,6 +122,7 @@ public class ReplicationDaemon implements Runnable {
     private void replicate() throws InterruptedException, IOException {
         RepliaWorkUnit workUnit = null;
         while (!replicaQueue.isEmpty() && !closed) {
+            LOG.info("Total files left to be replicated [{0}], totaling [{1} MB]",getNumberOfFilesToReplicate(),getSizeOfFilesToReplicate());
             RepliaWorkUnit unit = replicaQueue.take();
             ReplicaIndexInput replicaIndexInput = unit.replicaIndexInput;
             String dirName = replicaIndexInput.dirName;
@@ -134,6 +136,7 @@ public class ReplicationDaemon implements Runnable {
                 LOG.info("Local file of [{0}/{1}] was found, deleting and recopying.",dirName,fileName);
                 if (!localFile.delete()) {
                     LOG.fatal("Error trying to delete existing file during replication [{0}]", localFile.getAbsolutePath());
+                    //not sure what to do now.
                 } else {
                     localFile = localFileCache.getLocalFile(dirName, fileName);
                 }
@@ -148,6 +151,18 @@ public class ReplicationDaemon implements Runnable {
             indexInputFactory.replicationComplete(workUnit, wrapper, BUFFER_SIZE);
             replicaNames.remove(getLookupName(dirName,fileName));
         }
+    }
+
+    private int getNumberOfFilesToReplicate() {
+        return replicaQueue.size();
+    }
+
+    private float getSizeOfFilesToReplicate() {
+        float total = 0;
+        for (RepliaWorkUnit unit : replicaQueue) {
+            total += (unit.replicaIndexInput.length / MB);
+        }
+        return total;
     }
 
     public void replicate(ReplicaHdfsDirectory directory, ReplicaIndexInput replicaIndexInput) {

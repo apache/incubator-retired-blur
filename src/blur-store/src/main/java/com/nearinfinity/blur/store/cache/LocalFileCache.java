@@ -200,8 +200,8 @@ public class LocalFileCache {
                 dir.mkdirs();
             }
             try {
+                createDir(dir);
                 File file = new File(dir,name);
-                file.createNewFile();
                 return file;
             } catch (IOException e) {
                 LOG.error("Could not create file in directory [{0}]",dir);
@@ -213,6 +213,12 @@ public class LocalFileCache {
         }
         fatalNoLocalDirs();
         return null;
+    }
+
+    private void createDir(File dir) throws IOException {
+        File file = new File(dir,UUID.randomUUID().toString());
+        file.createNewFile();
+        file.delete();
     }
 
     private File locateFileExistingFile(String dirName, String name) {

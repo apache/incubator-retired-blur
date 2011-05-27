@@ -40,6 +40,10 @@ li
       font-size: 90%;
     }
   }
+  tr:nth-child(8n) {background-color:#EEE;}
+  tr:nth-child(8n-1) {background-color:#EEE;}
+  tr:nth-child(8n-2) {background-color:#EEE;}
+  tr:nth-child(8n-3) {background-color:#EEE;}
 
   #dtables-table-header
   {

@@ -23,18 +23,35 @@ Tables:
   %table#queries-table
     %tr#queries-table-header
       %th Query
+      %th Super Query
+      %th Start
+      %th Fetch
       %th
-        Time
+        Time - ms
         %br
         (cpu/real)
       %th Status
       %th uuid
       %th Actions
-    -mysql_queries()
     -@running_queries.each do |query|
       %tr
         %th
           =query.query_string
+        %th
+          -if (query.super_query_on)
+            On
+          -else
+            Off
+        %th
+          -if (query.start)
+            = query.start
+          -else
+            ???
+        %th
+          -if (query.fetch_num)
+            = query.fetch_num
+          -else
+            ???
         %th
           -if (query.cpu_time and query.real_time)
             =query.cpu_time.to_s + '/' + query.real_time.to_s
@@ -51,8 +68,9 @@ Tables:
             ???
         %th
           -if (query.uuid)
-            = query.uuid
+            = number_with_delimiter(query.uuid, :delimiter => ',')
           -else
             ???
         %th
-
+          -if (query.running)
+            %input{:type => "button", :class => "runtime-cancel-query", :value => "Cancel", :id => query.uuid}

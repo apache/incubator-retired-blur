@@ -12,13 +12,8 @@
       %th Count
       %th Size
       %th
-        Query
-        %br
-        Usage
-      %th
-        Enabled/
-        %br
-        Disabled
+        Queries/Second
+      %th Enabled
       %th Actions
 
     -@tables.each do |table|
@@ -38,7 +33,7 @@
             not available
         %td
           -if (a_blur_table != nil)
-            =a_blur_table.query_usage.to_s + " queries/sec"
+            =number_with_delimiter(a_blur_table.query_usage, :delimiter => ',')
           -else
             not available
         %td

@@ -34,15 +34,15 @@ public class EnableTable {
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        if (!dm.exists(ZookeeperPathConstants.getBlurTables(), table)) {
+        if (!dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
             System.err.println("Table [" + table + "] does not exist.");
             System.exit(1);
         }
-        if (dm.exists(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
+        if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
             System.err.println("Table [" + table + "] already enabled.");
             System.exit(1);
         }
-        dm.createPath(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesEnabled());
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesEnabled());
     }
 
 }

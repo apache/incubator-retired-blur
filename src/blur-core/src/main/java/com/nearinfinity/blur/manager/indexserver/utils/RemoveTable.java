@@ -34,15 +34,15 @@ public class RemoveTable {
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        if (!dm.exists(ZookeeperPathConstants.getBlurTables(), table)) {
+        if (!dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
             System.err.println("Table [" + table + "] does not exist.");
             System.exit(1);
         }
-        if (dm.exists(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
+        if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
             System.err.println("Table [" + table + "] must be disabled before it can be removed.");
             System.exit(1);
         }
-        zooKeeper.delete(ZookeeperPathConstants.getBlurTables() + "/" + table, -1);
+        zooKeeper.delete(ZookeeperPathConstants.getBlurTablesPath() + "/" + table, -1);
     }
 
 }

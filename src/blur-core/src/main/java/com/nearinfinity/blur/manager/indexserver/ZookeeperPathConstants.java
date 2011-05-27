@@ -56,16 +56,16 @@ public class ZookeeperPathConstants {
     public static String getBlurOnlineControllersPath() {
         return BLUR_ONLINE_CONTROLLERS_PATH;
     }
-    public static String getBlurTables() {
+    public static String getBlurTablesPath() {
         return BLUR_TABLES;
     }
-    public static String getBlurSafemode() {
+    public static String getBlurSafemodePath() {
         return BLUR_SAFEMODE;
     }
-    public static String getBlurSafemodeLock() {
+    public static String getBlurSafemodeLockPath() {
         return BLUR_SAFEMODE_LOCK;
     }
-    public static String getBlurSafemodeShutdown() {
+    public static String getBlurSafemodeShutdownPath() {
         return BLUR_SAFEMODE_SHUTDOWN;
     }
     public static String getBlurRegisteredShardsPath() {

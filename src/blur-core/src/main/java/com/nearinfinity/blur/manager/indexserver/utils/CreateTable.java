@@ -49,7 +49,7 @@ public class CreateTable {
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        if (dm.exists(ZookeeperPathConstants.getBlurTables(), table)) {
+        if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
             System.err.println("Table [" + table + "] already exists.");
             System.exit(1);
         }
@@ -58,12 +58,12 @@ public class CreateTable {
     
     public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, String shardCount) throws IOException {
         setupFileSystem(uri,Integer.parseInt(shardCount));
-        dm.createPath(ZookeeperPathConstants.getBlurTables(), table);
-        dm.createPath(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesUri());
-        dm.createPath(ZookeeperPathConstants.getBlurTables(), table, ZookeeperPathConstants.getBlurTablesShardCount());
-        dm.saveData(analyzer.toString().getBytes(), ZookeeperPathConstants.getBlurTables(), table);
-        dm.saveData(uri.getBytes(), ZookeeperPathConstants.getBlurTables(), ZookeeperPathConstants.getBlurTablesUri());
-        dm.saveData(shardCount.getBytes(), ZookeeperPathConstants.getBlurTables(), ZookeeperPathConstants.getBlurTablesShardCount());
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table);
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
+        dm.saveData(analyzer.toString().getBytes(), ZookeeperPathConstants.getBlurTablesPath(), table);
+        dm.saveData(uri.getBytes(), ZookeeperPathConstants.getBlurTablesPath(), ZookeeperPathConstants.getBlurTablesUri());
+        dm.saveData(shardCount.getBytes(), ZookeeperPathConstants.getBlurTablesPath(), ZookeeperPathConstants.getBlurTablesShardCount());
     }
 
     private static void setupFileSystem(String uri, int shardCount) throws IOException {

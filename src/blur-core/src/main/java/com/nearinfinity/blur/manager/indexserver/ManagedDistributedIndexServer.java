@@ -16,6 +16,15 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurBasePath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurOnlineControllersPath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurOnlinePath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurOnlineShardsPath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurRegisteredShardsPath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodePath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodeLockPath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodeShutdownPath;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -62,16 +71,16 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     }
 
     private void lockNodeState() {
-        dm.createPath(ZookeeperPathConstants.getBlurSafemode());
-        dm.lock(ZookeeperPathConstants.getBlurSafemodeLock());
+        dm.createPath(getBlurSafemodePath());
+        dm.lock(getBlurSafemodeLockPath());
     }
 
     private void unlockNodeState() {
-        dm.unlock(ZookeeperPathConstants.getBlurSafemodeLock());
+        dm.unlock(getBlurSafemodeLockPath());
     }
 
     private void setSafeModeStartupIfNeeded() {
-        List<String> list = dm.list(ZookeeperPathConstants.getBlurOnlineShardsPath());
+        List<String> list = dm.list(getBlurOnlineShardsPath());
         if (list.size() == 0) {
             throw new RuntimeException("This node [" + getNodeName() + "] should have been registered.");
         }
@@ -81,19 +90,19 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
                 		" registered, and should have been online.");
             }
             LOG.info("Setuping safe mode, first node online.");
-            dm.createPath(ZookeeperPathConstants.getBlurSafemode());
-            dm.saveData(getSafeModeEndTime(),ZookeeperPathConstants.getBlurSafemode());
+            dm.createPath(getBlurSafemodePath());
+            dm.saveData(getSafeModeEndTime(),getBlurSafemodePath());
             removeShutdownFlag();
         }
     }
 
     private void removeShutdownFlag() {
-        dm.removePath(ZookeeperPathConstants.getBlurSafemodeShutdown());
+        dm.removePath(getBlurSafemodeShutdownPath());
     }
 
     private void waitIfInSafeMode() {
         Value value = new Value();
-        dm.fetchData(value, ZookeeperPathConstants.getBlurSafemode());
+        dm.fetchData(value, getBlurSafemodePath());
         long waitUntil = getLong(value.data, 0);
         try {
             long waitTime =  waitUntil - System.currentTimeMillis();
@@ -118,12 +127,12 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private void registerMyself() {
         String path;
         if (type == NODE_TYPE.SHARD) {
-            if (!dm.exists(ZookeeperPathConstants.getBlurRegisteredShardsPath(),getNodeName())) {
-                dm.createPath(ZookeeperPathConstants.getBlurRegisteredShardsPath(),getNodeName());
+            if (!dm.exists(getBlurRegisteredShardsPath(),getNodeName())) {
+                dm.createPath(getBlurRegisteredShardsPath(),getNodeName());
             }
-            path = ZookeeperPathConstants.getBlurOnlineShardsPath();
+            path = getBlurOnlineShardsPath();
         } else {
-            path = ZookeeperPathConstants.getBlurOnlineControllersPath();
+            path = getBlurOnlineControllersPath();
         }
         while (dm.exists(path,getNodeName())) {
             LOG.info("Waiting to register myself [{0}].",getNodeName());
@@ -249,20 +258,20 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     }
     
     private void setupZookeeper() {
-        if (!dm.exists(ZookeeperPathConstants.getBlurBasePath())) {
-            dm.createPath(ZookeeperPathConstants.getBlurBasePath());
+        if (!dm.exists(getBlurBasePath())) {
+            dm.createPath(getBlurBasePath());
         }
-        if (!dm.exists(ZookeeperPathConstants.getBlurRegisteredShardsPath())) {
-            dm.createPath(ZookeeperPathConstants.getBlurRegisteredShardsPath());
+        if (!dm.exists(getBlurRegisteredShardsPath())) {
+            dm.createPath(getBlurRegisteredShardsPath());
         }
-        if (!dm.exists(ZookeeperPathConstants.getBlurOnlinePath())) {
-            dm.createPath(ZookeeperPathConstants.getBlurOnlinePath());
+        if (!dm.exists(getBlurOnlinePath())) {
+            dm.createPath(getBlurOnlinePath());
         }
-        if (!dm.exists(ZookeeperPathConstants.getBlurOnlineShardsPath())) {
-            dm.createPath(ZookeeperPathConstants.getBlurOnlineShardsPath());
+        if (!dm.exists(getBlurOnlineShardsPath())) {
+            dm.createPath(getBlurOnlineShardsPath());
         }
-        if (!dm.exists(ZookeeperPathConstants.getBlurOnlineControllersPath())) {
-            dm.createPath(ZookeeperPathConstants.getBlurOnlineControllersPath());
+        if (!dm.exists(getBlurOnlineControllersPath())) {
+            dm.createPath(getBlurOnlineControllersPath());
         }
     }
 

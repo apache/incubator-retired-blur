@@ -57,14 +57,14 @@ public class AdminIndexServerTest {
 //    @Test
     public void testAdminIndexServerTableList() {
         assertTrue(adminIndexServer.getTableList().isEmpty());
-        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE);
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(),TESTTABLE);
         assertEquals(newList(TESTTABLE),adminIndexServer.getTableList());
     }
     
 //    @Test
     public void testAdminIndexServerTableListTimer() throws InterruptedException {
         assertTrue(adminIndexServer.getTableList().isEmpty());
-        dm.pathes.add(ZookeeperPathConstants.getBlurTables() + "/" + TESTTABLE);
+        dm.pathes.add(ZookeeperPathConstants.getBlurTablesPath() + "/" + TESTTABLE);
         assertTrue(adminIndexServer.getTableList().isEmpty());
         Thread.sleep(TimeUnit.SECONDS.toMillis(12));// wait for the 10 second timer to pick up the change
         assertEquals(newList(TESTTABLE), adminIndexServer.getTableList());
@@ -73,18 +73,18 @@ public class AdminIndexServerTest {
 //    @Test
     public void testAdminIndexServerTableStatus() {
         assertEquals(TABLE_STATUS.DISABLED,adminIndexServer.getTableStatus(TESTTABLE));
-        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE);
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(),TESTTABLE);
         assertEquals(TABLE_STATUS.DISABLED,adminIndexServer.getTableStatus(TESTTABLE));
-        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE,ZookeeperPathConstants.getBlurTablesEnabled());
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(),TESTTABLE,ZookeeperPathConstants.getBlurTablesEnabled());
         assertEquals(TABLE_STATUS.ENABLED,adminIndexServer.getTableStatus(TESTTABLE));
     }
     
 //    @Test
     public void testAdminIndexServerTableAnalyzer() throws InterruptedException {
         assertEquals(AdminIndexServer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
-        dm.createPath(ZookeeperPathConstants.getBlurTables(),TESTTABLE);
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(),TESTTABLE);
         assertEquals(AdminIndexServer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
-        dm.data.put(ZookeeperPathConstants.getBlurTables() + "/" + TESTTABLE, "{\"default\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}".getBytes());
+        dm.data.put(ZookeeperPathConstants.getBlurTablesPath() + "/" + TESTTABLE, "{\"default\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}".getBytes());
         Thread.sleep(TimeUnit.SECONDS.toMillis(12));// wait for the 10 second timer to pick up the change
         assertFalse(AdminIndexServer.BLANK_ANALYZER.equals(adminIndexServer.getAnalyzer(TESTTABLE)));
     }

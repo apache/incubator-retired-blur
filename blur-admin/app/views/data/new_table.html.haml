@@ -4,8 +4,8 @@
   
   %h3 Aliases
   %ul
-    %input{:type => "button", :id => "add_alias", :value => "Add Another Alias"}
-    %li{:class => "alias", :id => "1"}
+    %input{:type => "button", :id => "add_alias", :value => "Add Alias"}
+    %li{:class => "alias"}
       Alias Name:
       %input{:type => "text", :class => "aliasname"}
       Class Name:
@@ -17,17 +17,18 @@
 
   %h3 Fields
   %ul
-    %input{:type => "button", :id => "add_column_family", :value => "Add Another Column Family"}
-    %li{:class => "column_family", :id => '1'}
+    %input{:type => "button", :id => "add_column_family", :value => "Add Column Family"}
+    %li{:class => "column_family"}
       Column Family Name:
       %input{:type => "text"}
-      %input{:type => "button", :id => "add_column", :value => "Add Another Column"}
       %ul
-        %li{:class => "column", :id => '1'}
+        %input{:type => "button", :id => "add_column", :value => "Add Column"}
+        %li{:class => "column"}
           Column:
           %input{:type => "text"}
           Alias Name:
           %input{:type => "text"}
+
 
 -content_for :javascript do
   =javascript_include_tag 'compiled/new_table'

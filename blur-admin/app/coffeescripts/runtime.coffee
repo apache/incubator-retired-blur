@@ -21,6 +21,7 @@ $(document).ready ->
     else setupQueryList()
 
     setTimeout(makeAJAXRequest, 5000)
+
   #FUNCTION setupGraphs
   #takes in the queries and sets up the graphs
   setupGraphs = (queries) ->
@@ -40,6 +41,7 @@ $(document).ready ->
     usageGraph = Raphael('usage-graph')
     usageGraph.g.txtattr.font = font
     #TODO actually graph something for usage
+
   #FUNCTION prepGraphData
   #takes in the queries and returns an array of objects containing the coords for the graphs
   prepGraphData = (queries) ->
@@ -47,8 +49,8 @@ $(document).ready ->
     cpuTime = new Array
     xValues = new Array
     $.each(queries, (index, query) ->
-      realTime[index] = query.realTime
-      cpuTime[index] = query.cpuTime
+      realTime[index] = query.realTime #query.real_time
+      cpuTime[index] =  query.cpuTime #query.cpu_time
       xValues[index] = index
     )
     graphData =
@@ -56,14 +58,15 @@ $(document).ready ->
       cpuTime: cpuTime
       xValues: xValues
     return graphData
+
   #FUNCTION getQueryStatus
   #takes in a query object and returns its status
   getQueryStatus = (query) ->
-    if query.complete is 1
+    if query.complete is 1 #no change
       return 'complete'
-    else if query.inturrupted
+    else if query.inturrupted #no change
       return 'interrupted'
-    else if query.running
+    else if query.running #no change
       return 'running'
     else return '???'
 
@@ -71,9 +74,9 @@ $(document).ready ->
   #takes in a query and returns a string of HTML buttons for its actions
   buildQueryActions = (query) ->
     actionString = ''
-    if query.running
+    if query.running #no change
       actionString += '<button class="runtime-cancel-query" blur:query-uuid="'
-      actionString += query.uuid + '">Cancel</button>'
+      actionString += query.uuid + '">Cancel</button>' #no change
     actionString
 
   #FUNCTION setupCancelListeners
@@ -93,10 +96,10 @@ $(document).ready ->
   #takes in a query and returns a string of HTML for its query table row
   buildQueryRowHTML = (query) ->
     queryString = '<tr>'
-    queryString +='<td>' + query.query.queryStr + '</td>'
-    queryString +='<td>' + query.cpuTime + '/' + query.realTime + '</td>'
+    queryString +='<td>' + query.query.queryStr + '</td>'#query.query.Strquery.query_string
+    queryString +='<td>' + query.cpuime + '/' + query.realTime + '</td>'#query.cpu_time & query.real_time
     queryString +='<td>' + getQueryStatus(query) + '</td>'
-    queryString +='<td>' + query.uuid + '</td>'
+    queryString +='<td>' + query.uuid + '</td>'#no change
     queryString +='<td>' + buildQueryActions(query)+ '</td>'
     queryString += '</tr>'
 
@@ -117,10 +120,9 @@ $(document).ready ->
     $('#queries-table-header ~ tr').remove()
     $('#queries-table').append('<tr><td colspan=5 class="error">' + errorMsg + '</td></tr>')
 
-
   #change listener for the table selector
   $('#table-select').change ->
-    makeAJAXRequest()
+    #makeAJAXRequest()
 
   #initial ajax request on page load
-  makeAJAXRequest()
+  #makeAJAXRequest()

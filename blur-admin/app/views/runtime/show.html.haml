@@ -30,4 +30,29 @@ Tables:
       %th Status
       %th uuid
       %th Actions
+    -mysql_queries()
+    -@running_queries.each do |query|
+      %tr
+        %th
+          =query.query_string
+        %th
+          -if (query.cpu_time and query.real_time)
+            =query.cpu_time.to_s + '/' + query.real_time.to_s
+          -else
+            ???
+        %th
+          -if (query.complete == 1)
+            complete
+          -elsif (query.interrupted)
+            interrupted
+          -elsif (query.running)
+            running
+          -else
+            ???
+        %th
+          -if (query.uuid)
+            = query.uuid
+          -else
+            ???
+        %th
 

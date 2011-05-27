@@ -19,9 +19,10 @@ BlurAdmin::Application.routes.draw do
     match 'data/table/new', :to => :new_table, :as => :new_table
     match 'data/table', :to => :create_table, :as => :create_table, :via => :post
   end
-  #controller "data" do
-    #match '/tables/curr/', :to => :curr_tables, :as => :curr_tables, :via => :get
-  #end
+
+  controller "runtime" do
+    match 'runtime/current/:table', :to => :current_queries, :as => :current_queries, :via => :get
+  end
 
 
   # The priority is based upon order of creation:

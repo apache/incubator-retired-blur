@@ -1,7 +1,6 @@
-@import "blueprint/reset";
+@import "compass/reset";
 @import "partials/base";
 @import "blueprint";
-@import "blueprint/scaffolding";
 @import "compass";
 @import "compass/layout";
 
@@ -14,21 +13,9 @@
 
 body {
   @include blueprint-typography(true);
-  @include blueprint-utilities;
-  @include blueprint-debug;
-  @include blueprint-interaction;
 }
 
-form {
-  @include blueprint-form;
-  @include blueprint-scaffolding; }
-
 body {
-  .container {
-    @include container; }
-  #hd, #bd {
-    @include column($blueprint-grid-columns); }
-  width:960px;
   margin:0 auto;
 }
 

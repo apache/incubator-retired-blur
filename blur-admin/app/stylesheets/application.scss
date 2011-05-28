@@ -2,7 +2,7 @@
 // We should use more semantic class names
 .hidden{ display: none; }
 .inline{ display: inline; }
-.error{ @include error; }
+//.error{ @include error; }
 
 @import "partials/navigation";
 

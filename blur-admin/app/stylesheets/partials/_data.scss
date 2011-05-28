@@ -8,8 +8,7 @@
   }
 }
 
-.expandable a, .collapsible a, .expandable a:hover, .collapsible a:hover
-{
+.expandable a, .collapsible a, .expandable a:hover, .collapsible a:hover {
   text-decoration: none;
   color: #000;
   padding-left:20px;
@@ -17,24 +16,21 @@
   left: -20px;
 }
 
-li
-{
+li {
   list-style-image: none;
 }
-.expandable
-{
+.expandable {
   list-style-image: image-url("plus.png");
 }
 
-.collapsible
-{
+.collapsible {
   list-style-image: image-url("minus.png");
 }
 
 #dtables-table {
   width: 100%;
   margin:0 0 20px 0;
-  tr{
+  tr {
     th, td{
       text-align: left;
       font-size: 90%;
@@ -45,8 +41,7 @@ li
   tr:nth-child(8n-2) {background-color:#EEE;}
   tr:nth-child(8n-3) {background-color:#EEE;}
 
-  #dtables-table-header
-  {
+  #dtables-table-header {
     height: 50px;
     background-color: #DDD;
     color: #555;
@@ -57,12 +52,12 @@ li
   }
 }
 
-.delete-table{
+.delete-table {
   font-size: 85%;
   text-align: center;
 }
 
-.create-table{
+.create-table {
   font-size: 85%;
   text-align: center;
 }

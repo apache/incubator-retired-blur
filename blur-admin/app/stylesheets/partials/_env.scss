@@ -1,5 +1,4 @@
-.status-container
-{
+.status-container {
    text-align: center;
   letter-spacing: 25px;
   white-space: nowrap;
@@ -7,8 +6,7 @@
   margin: 0 0 30px;
 }
 
-.inner-container
-{
+.inner-container {
   width: 45%;
   vertical-align: top;
   display: inline-block;
@@ -20,14 +18,12 @@
   margin: 10px;
 
 }
-.bottom-status
-{
+.bottom-status {
   border: solid 2px #AAA;
   @include border-radius;
 }
-#bottom-container{
-
-  h3{
+#bottom-container {
+  h3 {
     margin-bottom: 10px;
   }
 }

@@ -13,17 +13,8 @@ development:
 test:
   adapter: mysql
   encoding: utf8
-  database: blurtools-test
-  host: localhost
+  database: <%= ENV['BAMBOO'] != 'true' ? 'blurtools-test' : 'blurtools_bamboo' %>
+  host: <%= ENV['BAMBOO'] != 'true' ? 'localhost' : 'nic-mysqldev01' %>
   pool: 5
-  username: root
-  password: 
-
-bamboo:
-  adapter: mysql
-  encoding: utf8
-  database: blurtools_bamboo
-  host: nic-mysqldev01
-  pool: 5
-  username: blurtools_bamboo
-  password: blurtools_bamboo
+  username: <%= ENV['BAMBOO'] != 'true' ? 'root' : 'blurtools_bamboo' %>
+  password: <%= ENV['BAMBOO'] != 'true' ? '' : 'blurtools_bamboo' %>

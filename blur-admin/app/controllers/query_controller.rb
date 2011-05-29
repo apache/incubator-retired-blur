@@ -1,23 +1,58 @@
 class QueryController < ApplicationController
 
 	def show
+	  client = setup_thrift
+	  
+	  @tables = client.tableList
+	  @columns = client.schema(@tables.first) unless @tables.blank?
+	  close_thrift
 	end
-
-
-	def new
-		client = setup_thrift
 	
+	def filters
+	  client = setup_thrift
+	  table = params[:table]
+	  @columns = client.schema(table)
+	  close_thrift
+  end
+
+	def create
+		client = setup_thrift
+		
+		# TODO: Change this when the new Blur is deployed to use the selectors on search
+		# TODO: Add in fetch filter, paging, superQueryOn/Off
+		
+	  table = params[:t]
 		bq = BG::BlurQuery.new
     bq.queryStr = params[:q]
 		bq.fetch = 25
 		bq.uuid = Time.now.to_i*1000+rand(1000)
-		table = 'employee_super_mart'
+
 		blur_results = client.query(table, bq)
 
-		cfs = client.schema(table).columnFamilies
-    @column_families = client.schema(table).columnFamilies.keys
-		params[:column_data] ||= [@column_families.first]
-		@visible_columns = cfs.reject { |k,v| !params[:column_data].include? k }
+    families = params[:column_data].collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact
+    columns = {}
+    params[:column_data].each do |value|
+      parts = value.split('_')
+      if parts[0] == 'column' and !families.include?(parts[1])
+        parts = value.split('_')
+        if (!columns.has_key?(parts[1]))
+          columns[parts[1]] = []
+        end
+        columns[parts[1]] << parts[2]
+      end
+    end
+    
+    families_with_columns = {}
+    families.each do |family|
+      families_with_columns[family] = client.schema(table).columnFamilies[family]
+    end
+    
+    visible_families = (families + columns.keys).uniq
+
+		#cfs = client.schema(table).columnFamilies
+    #@column_families = client.schema(table).columnFamilies.keys
+		#params[:column_data] ||= [@column_families.first]
+		#@visible_columns = cfs.reject { |k,v| !params[:column_data].include? k }
 		@results = []
 		@result_count = blur_results.totalResults
 
@@ -25,33 +60,49 @@ class QueryController < ApplicationController
 			location_id = result.locationId
 			sel = BG::Selector.new
 			sel.locationId = location_id
+			sel.columnFamiliesToFetch = families unless families.blank?
+			sel.columnsToFetch = columns unless columns.blank?
 			row = client.fetchRow(table, sel).rowResult.row	
 			
 			# remove families not displayed
-			visible = row.columnFamilies.find_all { |cf| @visible_columns.keys.include? cf.family }
+      # visible = row.columnFamilies.find_all { |cf| @visible_columns.keys.include? cf.family }
 			# find column family with most records to pad the rest for the table
-      max_record_count = visible.collect {|cf| cf.records.keys.count }.max
+      max_record_count = row.columnFamilies.collect {|cf| cf.records.keys.count }.max
      
 		  # organize into multidimensional array of rows and columns
 			table_rows = Array.new(max_record_count) { [] }
 			(0...max_record_count).each do |i|
-
-				@visible_columns.each do |columnFamilyName, set|
+				visible_families.each do |columnFamilyName|
 					columnFamily = row.columnFamilies.find { |cf| cf.family == columnFamilyName }
 					table_rows[i] << cfspan = []
 
           if columnFamily
 						count = columnFamily.records.values.count
 						if i < count
-							set.each do |s|
-								found_set = columnFamily.records.values[i].find { |col| s == col.name }
-								cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
-							end
-						else						
-							set.count.times { |t| cfspan << ' ' }
+						  if families.include? columnFamilyName
+						    families_with_columns[columnFamilyName].each do |s|
+						      found_set = columnFamily.records.values[i].find { |col| s == col.name }
+  								cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
+					      end
+					    else
+					      columns[columnFamilyName].each do |s|
+					        found_set = columnFamily.records.values[i].find { |col| s == col.name }
+  								cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
+				        end
+				      end
+						else		
+						  if families.include? columnFamilyName				
+							  families_with_columns[columnFamilyName].count.times { |t| cfspan << ' ' }
+						  else
+						    columns[columnFamilyName].count.times { |t| cfspan << ' ' }
+					    end
 						end
 					else
-						set.count.times { |t| cfspan << ' ' }
+						if families.include? columnFamilyName				
+						  families_with_columns[columnFamilyName].count.times { |t| cfspan << ' ' }
+					  else
+					    columns[columnFamilyName].count.times { |t| cfspan << ' ' }
+				    end
 					end
 				end
 			end
@@ -60,18 +111,18 @@ class QueryController < ApplicationController
 			
 			@results << record
 		end
-
-
 		close_thrift
-
-		render :show
+		
+		@all_columns = families_with_columns.merge columns
+		
+		render :template=>'query/create.html.haml', :layout => false
 	end
 
   def cancel
     client = setup_thrift
     client.cancelQuery(param[:table], param[:uuid])
+    close_thrift
   end
-
 
   def current_queries
     client = setup_thrift

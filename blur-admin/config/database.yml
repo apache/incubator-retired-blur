@@ -1,3 +1,25 @@
+<% if ENV['BAMBOO'] == 'true' %>
+
+development:
+  adapter: mysql
+  encoding: utf8
+  database: blurtools_development
+  host: nic-mysqldev01
+  pool: 5
+  username: blurtools_bamboo
+  password: blurtools_bamboo
+
+test:
+  adapter: mysql
+  encoding: utf8
+  database: blurtools_test
+  host: nic-mysqldev01
+  pool: 5
+  username: blurtools_bamboo
+  password: blurtools_bamboo
+
+<% else %>
+
 development:
   adapter: mysql
   encoding: utf8
@@ -17,4 +39,6 @@ test:
   host: localhost
   pool: 5
   username: root
-  password: 
+  password:
+
+<% end %>

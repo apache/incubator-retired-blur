@@ -1,0 +1,10 @@
+- if @columns
+  - @columns.columnFamilies.each do |family, cols|
+    .column_family_filter
+      %ul
+        %li#family{:id=>family}
+          %a{:href=>'#'}= family
+          %ul
+            - cols.each do |col|
+              %li#column{:id=>"#{family}_#{col}"}
+                %a{:href=>'#'}= col

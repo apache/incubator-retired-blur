@@ -10,6 +10,7 @@ BlurAdmin::Application.routes.draw do
   controller "query" do
     match 'query/cancel/:table/:uuid', :to => :cancel, :as => :cancel, :via => :get
     match 'query/current/:table', :to => :current_queries, :as => :current_queries, :via => :get
+    match 'query/:table/filters', :to => :filters, :as => :query_filters, :via => :get
   end
 
   controller "data" do

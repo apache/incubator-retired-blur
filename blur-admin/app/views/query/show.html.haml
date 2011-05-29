@@ -1,53 +1,20 @@
 - content_for :title, 'Query'
 
-
-= form_tag new_query_path, :method => 'get' do
-  = label_tag :q, "Search Query:"
-  %p
-  = text_area_tag :q, params[:q]
-  %p
-  - if @results
-    - @column_families.each do |family, set|
-      = label_tag do
-        = check_box_tag 'column_data[]', family, params[:column_data].include?(family)
-        = family
+= form_tag query_path, :method => 'post', :id=>'query_form', :remote => true do
+  #search_section
+    = label_tag :q, "Search Query:"
+    %p
+    = text_area_tag :q, params[:q]
+  #filter_section
+    = label_tag :t, "Table:"
+    = select_tag :t, options_for_select(@tables)
+    %br
+    #filter_columns
+      = render 'filters'
   %p
   = submit_tag "Search"
 
+#results_section
 
-- if @results and not @results.empty?
-  Results:
-  = @result_count
-  %table
-    %thead
-      %tr
-        %th
-        - @visible_columns.each do |family, set|
-          %th{:colspan => set.count}
-            = family
-      %tr.columnsets
-        %th id 
-        - @visible_columns.each do |family, set|
-          - set.each do |s|
-            %th
-              = s.gsub(/([A-Z])/, '&shy;\1').html_safe
-
-    %tfoot
-      %tbody
-        - @results.each do |result|
-          - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
-          - result[:table_rows].each_with_index do |table_row, i|
-            %tr{:class => stripe_class}
-              - if i == 0
-                %td{:rowspan => result[:max_record_count]}
-                  = result[:id]
-
-              - reset_cycle('column-cycle')
-              - table_row.each do |cfs|
-                - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-                - cfs.each do |column|
-                  %td{:class => cf_stripe}
-                    = column
-
-
-
+-content_for :javascript do
+  =javascript_include_tag 'jquery.jstree', 'compiled/query'

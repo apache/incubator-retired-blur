@@ -3,6 +3,11 @@ textarea#q {
   height: 50px;
 }
 
+.column_family_filter {
+  @include inline-block;
+  vertical-align: top;
+}
+
 #queries-title {
   display: inline-block;
   h2 {

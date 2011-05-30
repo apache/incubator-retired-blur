@@ -21,6 +21,7 @@ import java.io.IOException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
+import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
@@ -34,15 +35,16 @@ public class DisableTable {
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        if (!dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
-            System.err.println("Table [" + table + "] does not exist.");
-            System.exit(1);
-        }
-        if (!dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
-            System.err.println("Table [" + table + "] already disabled.");
-            System.exit(1);
-        }
-        zooKeeper.delete(ZookeeperPathConstants.getBlurTablesPath() + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled(), -1);
+        disableTable(dm,table);
     }
 
+    public static void disableTable(DistributedManager dm, String table) throws IOException {
+        if (!dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
+            throw new IOException("Table [" + table + "] does not exist.");
+        }
+        if (!dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
+            throw new IOException("Table [" + table + "] already disabled.");
+        }
+        dm.removePath(ZookeeperPathConstants.getBlurTablesPath(),table,ZookeeperPathConstants.getBlurTablesEnabled());
+    }
 }

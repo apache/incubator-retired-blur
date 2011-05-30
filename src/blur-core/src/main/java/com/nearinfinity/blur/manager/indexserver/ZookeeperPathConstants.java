@@ -16,9 +16,15 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
+import java.io.IOException;
+
+import com.nearinfinity.blur.BlurConfiguration;
+
 public class ZookeeperPathConstants {
     
-    private static final String BLUR_BASE_PATH                  = "/blur";
+    private static final String DEFAULT = "default";
+    private static final String BLUR_CLUSTER_NAME = "blur.cluster.name";
+    private static final String BLUR_BASE_PATH                  = "/blur/" + getClusterName();
     
     private static final String BLUR_TABLES_ENABLED             = "enabled";
     // /blur/tables/<name>/enabled will indicate that the table is enabled
@@ -35,9 +41,19 @@ public class ZookeeperPathConstants {
     private static final String BLUR_SAFEMODE_SHUTDOWN          = BLUR_BASE_PATH + "/safemode/shutdown";
     private static final String BLUR_REGISTERED_SHARDS_PATH     = BLUR_BASE_PATH + "/shard-nodes";
     
+    public static String getClusterName() {
+        try {
+            BlurConfiguration configuration = new BlurConfiguration();
+            return configuration.get(BLUR_CLUSTER_NAME, DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException("Unknown error parsing configuration.",e);
+        }
+    }
+    
     public static String getBlurBasePath() {
         return BLUR_BASE_PATH;
     }
+
     public static String getBlurTablesEnabled() {
         return BLUR_TABLES_ENABLED;
     }

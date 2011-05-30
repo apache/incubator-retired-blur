@@ -101,6 +101,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
     
     protected void closeOldReaders() {
+        LOG.info("Closing old readers");
         List<String> tableList = getTableList();
         for (String table : tableList) {
             closeOldReaders(table);
@@ -191,12 +192,21 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
     
     private Set<String> getShardsToServe(String table) {
+        TABLE_STATUS tableStatus = getTableStatus(table);
+        if (tableStatus == TABLE_STATUS.DISABLED) {
+            return new HashSet<String>();
+        }
         DistributedLayoutManager layoutManager = layoutManagers.get(table);
         if (layoutManager == null) {
             return setupLayoutManager(table);
         } else {
             return layoutCache.get(table);
         }
+    }
+    
+    @Override
+    protected void tableStatusChanged(String table) {
+        closeOldReaders(table);
     }
     
     private synchronized Set<String> setupLayoutManager(String table) {
@@ -235,4 +245,5 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
             }
         }, delay, delay);
     }
+
 }

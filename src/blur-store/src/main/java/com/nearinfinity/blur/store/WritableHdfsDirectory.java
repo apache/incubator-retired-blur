@@ -17,6 +17,7 @@
 package com.nearinfinity.blur.store;
 
 import java.io.BufferedInputStream;
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -101,6 +102,8 @@ public class WritableHdfsDirectory extends HdfsDirectory {
                     outputStream.write(buffer, 0, num);
                     _progressable.progress();
                 }
+                close(outputStream);
+                close(inputStream);
                 rename(name + ".sync." + count,name);
                 return;
             } catch (IOException e) {
@@ -117,6 +120,10 @@ public class WritableHdfsDirectory extends HdfsDirectory {
                 }
             }
         }
+    }
+
+    private void close(Closeable closeable) throws IOException {
+        closeable.close();
     }
 
     @Override

@@ -127,6 +127,7 @@ public abstract class AdminIndexServer implements IndexServer {
         Runnable updateStatus = newRunnableUpdateStatus();
         dm.registerCallableOnChange(updateStatus, getBlurTablesPath());
         for (String table : tableList.get()) {
+            System.out.println("Registering table " + table);
             dm.registerCallableOnChange(updateStatus, getBlurTablesPath(), table);
         }        
     }
@@ -180,6 +181,7 @@ public abstract class AdminIndexServer implements IndexServer {
     protected void updateTableStatus() {
         Map<String, TABLE_STATUS> newMap = new HashMap<String, TABLE_STATUS>();
         Map<String, TABLE_STATUS> oldMap = statusMap.get();
+        List<String> tableStatusChanges = new ArrayList<String>();
         for (String table : tableList.get()) {
             TABLE_STATUS status;
             if (dm.exists(getBlurTablesPath(),table,getBlurTablesEnabled())) {
@@ -191,6 +193,7 @@ public abstract class AdminIndexServer implements IndexServer {
             TABLE_STATUS oldStatus = oldMap.get(table);
             if (oldStatus == null || oldStatus != status) {
                 LOG.info("Table [{0}] change status to [{1}]",table,status);
+                tableStatusChanges.add(table);
             }
         }
         statusMap.set(newMap);
@@ -199,7 +202,12 @@ public abstract class AdminIndexServer implements IndexServer {
                 LOG.info("Status could not be found for table [{0}], possibly removed.",table);
             }
         }
+        for (String table : tableStatusChanges) {
+            tableStatusChanged(table);
+        }
     }
+
+    protected abstract void tableStatusChanged(String table);
 
     @Override
     public final BlurAnalyzer getAnalyzer(String table) {

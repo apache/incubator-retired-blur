@@ -130,6 +130,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         final BlurShardServer shardServer = new BlurShardServer();
         shardServer.setIndexServer(indexServer);
         shardServer.setIndexManager(indexManager);
+        shardServer.setDistributedManager(dzk);
         shardServer.init();
 
         final ThriftBlurShardServer server = new ThriftBlurShardServer();

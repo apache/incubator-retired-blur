@@ -77,6 +77,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
         controllerServer.setClient(client);
         controllerServer.setDynamicConfig(dynamicConfig);
         controllerServer.setClusterStatus(clusterStatus);
+        controllerServer.setDistributedManager(dzk);
         controllerServer.open();
 
         final ThriftBlurControllerServer server = new ThriftBlurControllerServer();

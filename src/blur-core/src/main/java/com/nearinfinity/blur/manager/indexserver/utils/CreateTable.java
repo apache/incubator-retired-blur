@@ -49,21 +49,20 @@ public class CreateTable {
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
-            System.err.println("Table [" + table + "] already exists.");
-            System.exit(1);
-        }
-        createTable(dm,table,analyzer,uri,shardCount);
+        createTable(dm,table,analyzer,uri,Integer.parseInt(shardCount));
     }
     
-    public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, String shardCount) throws IOException {
-        setupFileSystem(uri,Integer.parseInt(shardCount));
+    public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, int shardCount) throws IOException {
+        if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
+            throw new IOException("Table [" + table + "] already exists.");
+        }
+        setupFileSystem(uri,shardCount);
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table);
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
-        dm.saveData(analyzer.toString().getBytes(), ZookeeperPathConstants.getBlurTablesPath(), table);
-        dm.saveData(uri.getBytes(), ZookeeperPathConstants.getBlurTablesPath(), ZookeeperPathConstants.getBlurTablesUri());
-        dm.saveData(shardCount.getBytes(), ZookeeperPathConstants.getBlurTablesPath(), ZookeeperPathConstants.getBlurTablesShardCount());
+        dm.saveData(analyzer.toString().getBytes(),           ZookeeperPathConstants.getBlurTablesPath(), table);
+        dm.saveData(uri.getBytes(),                           ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
+        dm.saveData(Integer.toString(shardCount).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
     }
 
     private static void setupFileSystem(String uri, int shardCount) throws IOException {

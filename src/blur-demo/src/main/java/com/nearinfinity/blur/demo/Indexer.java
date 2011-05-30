@@ -35,7 +35,7 @@ public class Indexer {
     public static void main(String[] args) throws CorruptIndexException, LockObtainFailedException, IOException, URISyntaxException {
         //"hdfs://localhost:9000/user/hive/warehouse/employee_super_mart/000000_0"
         URI uri = new URI(args[0]);
-        BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30), "");
+        BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
         Directory dir = FSDirectory.open(new File("./index"));
         IndexWriter indexWriter = new IndexWriter(dir, analyzer, MaxFieldLength.UNLIMITED);
         indexWriter.setUseCompoundFile(false);

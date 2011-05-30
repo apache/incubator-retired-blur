@@ -24,19 +24,19 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TableDescriptor");
 
   private static final org.apache.thrift.protocol.TField IS_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("isEnabled", org.apache.thrift.protocol.TType.BOOL, (short)1);
-  private static final org.apache.thrift.protocol.TField ANALYZER_DEF_FIELD_DESC = new org.apache.thrift.protocol.TField("analyzerDef", org.apache.thrift.protocol.TType.STRING, (short)2);
+  private static final org.apache.thrift.protocol.TField ANALYZER_DEFINITION_FIELD_DESC = new org.apache.thrift.protocol.TField("analyzerDefinition", org.apache.thrift.protocol.TType.STRUCT, (short)2);
   private static final org.apache.thrift.protocol.TField SHARD_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("shardCount", org.apache.thrift.protocol.TType.I32, (short)3);
   private static final org.apache.thrift.protocol.TField TABLE_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("tableUri", org.apache.thrift.protocol.TType.STRING, (short)4);
 
   public boolean isEnabled;
-  public String analyzerDef;
+  public AnalyzerDefinition analyzerDefinition;
   public int shardCount;
   public String tableUri;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     IS_ENABLED((short)1, "isEnabled"),
-    ANALYZER_DEF((short)2, "analyzerDef"),
+    ANALYZER_DEFINITION((short)2, "analyzerDefinition"),
     SHARD_COUNT((short)3, "shardCount"),
     TABLE_URI((short)4, "tableUri");
 
@@ -55,8 +55,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       switch(fieldId) {
         case 1: // IS_ENABLED
           return IS_ENABLED;
-        case 2: // ANALYZER_DEF
-          return ANALYZER_DEF;
+        case 2: // ANALYZER_DEFINITION
+          return ANALYZER_DEFINITION;
         case 3: // SHARD_COUNT
           return SHARD_COUNT;
         case 4: // TABLE_URI
@@ -110,8 +110,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.IS_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("isEnabled", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.ANALYZER_DEF, new org.apache.thrift.meta_data.FieldMetaData("analyzerDef", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.ANALYZER_DEFINITION, new org.apache.thrift.meta_data.FieldMetaData("analyzerDefinition", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, AnalyzerDefinition.class)));
     tmpMap.put(_Fields.SHARD_COUNT, new org.apache.thrift.meta_data.FieldMetaData("shardCount", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.TABLE_URI, new org.apache.thrift.meta_data.FieldMetaData("tableUri", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -125,14 +125,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
   public TableDescriptor(
     boolean isEnabled,
-    String analyzerDef,
+    AnalyzerDefinition analyzerDefinition,
     int shardCount,
     String tableUri)
   {
     this();
     this.isEnabled = isEnabled;
     setIsEnabledIsSet(true);
-    this.analyzerDef = analyzerDef;
+    this.analyzerDefinition = analyzerDefinition;
     this.shardCount = shardCount;
     setShardCountIsSet(true);
     this.tableUri = tableUri;
@@ -145,8 +145,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     this.isEnabled = other.isEnabled;
-    if (other.isSetAnalyzerDef()) {
-      this.analyzerDef = other.analyzerDef;
+    if (other.isSetAnalyzerDefinition()) {
+      this.analyzerDefinition = new AnalyzerDefinition(other.analyzerDefinition);
     }
     this.shardCount = other.shardCount;
     if (other.isSetTableUri()) {
@@ -162,7 +162,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   public void clear() {
     setIsEnabledIsSet(false);
     this.isEnabled = false;
-    this.analyzerDef = null;
+    this.analyzerDefinition = null;
     setShardCountIsSet(false);
     this.shardCount = 0;
     this.tableUri = null;
@@ -191,27 +191,27 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     __isset_bit_vector.set(__ISENABLED_ISSET_ID, value);
   }
 
-  public String getAnalyzerDef() {
-    return this.analyzerDef;
+  public AnalyzerDefinition getAnalyzerDefinition() {
+    return this.analyzerDefinition;
   }
 
-  public TableDescriptor setAnalyzerDef(String analyzerDef) {
-    this.analyzerDef = analyzerDef;
+  public TableDescriptor setAnalyzerDefinition(AnalyzerDefinition analyzerDefinition) {
+    this.analyzerDefinition = analyzerDefinition;
     return this;
   }
 
-  public void unsetAnalyzerDef() {
-    this.analyzerDef = null;
+  public void unsetAnalyzerDefinition() {
+    this.analyzerDefinition = null;
   }
 
-  /** Returns true if field analyzerDef is set (has been assigned a value) and false otherwise */
-  public boolean isSetAnalyzerDef() {
-    return this.analyzerDef != null;
+  /** Returns true if field analyzerDefinition is set (has been assigned a value) and false otherwise */
+  public boolean isSetAnalyzerDefinition() {
+    return this.analyzerDefinition != null;
   }
 
-  public void setAnalyzerDefIsSet(boolean value) {
+  public void setAnalyzerDefinitionIsSet(boolean value) {
     if (!value) {
-      this.analyzerDef = null;
+      this.analyzerDefinition = null;
     }
   }
 
@@ -272,11 +272,11 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       break;
 
-    case ANALYZER_DEF:
+    case ANALYZER_DEFINITION:
       if (value == null) {
-        unsetAnalyzerDef();
+        unsetAnalyzerDefinition();
       } else {
-        setAnalyzerDef((String)value);
+        setAnalyzerDefinition((AnalyzerDefinition)value);
       }
       break;
 
@@ -304,8 +304,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     case IS_ENABLED:
       return new Boolean(isIsEnabled());
 
-    case ANALYZER_DEF:
-      return getAnalyzerDef();
+    case ANALYZER_DEFINITION:
+      return getAnalyzerDefinition();
 
     case SHARD_COUNT:
       return new Integer(getShardCount());
@@ -326,8 +326,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     switch (field) {
     case IS_ENABLED:
       return isSetIsEnabled();
-    case ANALYZER_DEF:
-      return isSetAnalyzerDef();
+    case ANALYZER_DEFINITION:
+      return isSetAnalyzerDefinition();
     case SHARD_COUNT:
       return isSetShardCount();
     case TABLE_URI:
@@ -358,12 +358,12 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         return false;
     }
 
-    boolean this_present_analyzerDef = true && this.isSetAnalyzerDef();
-    boolean that_present_analyzerDef = true && that.isSetAnalyzerDef();
-    if (this_present_analyzerDef || that_present_analyzerDef) {
-      if (!(this_present_analyzerDef && that_present_analyzerDef))
+    boolean this_present_analyzerDefinition = true && this.isSetAnalyzerDefinition();
+    boolean that_present_analyzerDefinition = true && that.isSetAnalyzerDefinition();
+    if (this_present_analyzerDefinition || that_present_analyzerDefinition) {
+      if (!(this_present_analyzerDefinition && that_present_analyzerDefinition))
         return false;
-      if (!this.analyzerDef.equals(that.analyzerDef))
+      if (!this.analyzerDefinition.equals(that.analyzerDefinition))
         return false;
     }
 
@@ -411,12 +411,12 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetAnalyzerDef()).compareTo(typedOther.isSetAnalyzerDef());
+    lastComparison = Boolean.valueOf(isSetAnalyzerDefinition()).compareTo(typedOther.isSetAnalyzerDefinition());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetAnalyzerDef()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.analyzerDef, typedOther.analyzerDef);
+    if (isSetAnalyzerDefinition()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.analyzerDefinition, typedOther.analyzerDefinition);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -466,9 +466,10 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // ANALYZER_DEF
-          if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.analyzerDef = iprot.readString();
+        case 2: // ANALYZER_DEFINITION
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.analyzerDefinition = new AnalyzerDefinition();
+            this.analyzerDefinition.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -506,9 +507,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     oprot.writeFieldBegin(IS_ENABLED_FIELD_DESC);
     oprot.writeBool(this.isEnabled);
     oprot.writeFieldEnd();
-    if (this.analyzerDef != null) {
-      oprot.writeFieldBegin(ANALYZER_DEF_FIELD_DESC);
-      oprot.writeString(this.analyzerDef);
+    if (this.analyzerDefinition != null) {
+      oprot.writeFieldBegin(ANALYZER_DEFINITION_FIELD_DESC);
+      this.analyzerDefinition.write(oprot);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldBegin(SHARD_COUNT_FIELD_DESC);
@@ -532,11 +533,11 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     sb.append(this.isEnabled);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("analyzerDef:");
-    if (this.analyzerDef == null) {
+    sb.append("analyzerDefinition:");
+    if (this.analyzerDefinition == null) {
       sb.append("null");
     } else {
-      sb.append(this.analyzerDef);
+      sb.append(this.analyzerDefinition);
     }
     first = false;
     if (!first) sb.append(", ");

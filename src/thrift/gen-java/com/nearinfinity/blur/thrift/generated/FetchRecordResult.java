@@ -499,14 +499,14 @@ public class FetchRecordResult implements org.apache.thrift.TBase<FetchRecordRes
         case 4: // RECORD
           if (field.type == org.apache.thrift.protocol.TType.SET) {
             {
-              org.apache.thrift.protocol.TSet _set30 = iprot.readSetBegin();
-              this.record = new HashSet<Column>(2*_set30.size);
-              for (int _i31 = 0; _i31 < _set30.size; ++_i31)
+              org.apache.thrift.protocol.TSet _set45 = iprot.readSetBegin();
+              this.record = new HashSet<Column>(2*_set45.size);
+              for (int _i46 = 0; _i46 < _set45.size; ++_i46)
               {
-                Column _elem32;
-                _elem32 = new Column();
-                _elem32.read(iprot);
-                this.record.add(_elem32);
+                Column _elem47;
+                _elem47 = new Column();
+                _elem47.read(iprot);
+                this.record.add(_elem47);
               }
               iprot.readSetEnd();
             }
@@ -548,9 +548,9 @@ public class FetchRecordResult implements org.apache.thrift.TBase<FetchRecordRes
       oprot.writeFieldBegin(RECORD_FIELD_DESC);
       {
         oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, this.record.size()));
-        for (Column _iter33 : this.record)
+        for (Column _iter48 : this.record)
         {
-          _iter33.write(oprot);
+          _iter48.write(oprot);
         }
         oprot.writeSetEnd();
       }

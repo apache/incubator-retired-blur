@@ -60,7 +60,7 @@ public class CreateTable {
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table);
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
-        dm.saveData(analyzer.toString().getBytes(),           ZookeeperPathConstants.getBlurTablesPath(), table);
+        dm.saveData(analyzer.toJSON().getBytes(),             ZookeeperPathConstants.getBlurTablesPath(), table);
         dm.saveData(uri.getBytes(),                           ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
         dm.saveData(Integer.toString(shardCount).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
     }

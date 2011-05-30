@@ -7,6 +7,27 @@ exception BlurException {
   2:string stackTraceStr
 }
 
+struct AlternateColumnDefinition {
+  1:string analyzerClassName
+}
+
+struct ColumnDefinition {
+  1:string analyzerClassName,
+  2:bool fullTextIndex,
+  3:map<string,AlternateColumnDefinition> alternateColumnDefinitions
+}
+
+struct ColumnFamilyDefinition {
+  1:ColumnDefinition defaultDefinition,
+  2:map<string,ColumnDefinition> columnDefinitions
+}
+
+struct AnalyzerDefinition {
+  1:ColumnDefinition defaultDefinition,
+  2:string fullTextAnalyzerClassName,
+  3:map<string,ColumnFamilyDefinition> columnFamilyDefinitions
+}
+
 enum ScoreType {
   SUPER,
   AGGREGATE,
@@ -114,7 +135,7 @@ struct BlurResults {
 
 struct TableDescriptor {
   1:bool isEnabled,
-  2:string analyzerDef,
+  2:AnalyzerDefinition analyzerDefinition,
   3:i32 shardCount,
   4:string tableUri
 }

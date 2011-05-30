@@ -50,6 +50,80 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    class AlternateColumnDefinition
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      ANALYZERCLASSNAME = 1
+
+      FIELDS = {
+        ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ColumnDefinition
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      ANALYZERCLASSNAME = 1
+      FULLTEXTINDEX = 2
+      ALTERNATECOLUMNDEFINITIONS = 3
+
+      FIELDS = {
+        ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName'},
+        FULLTEXTINDEX => {:type => ::Thrift::Types::BOOL, :name => 'fullTextIndex'},
+        ALTERNATECOLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'alternateColumnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::AlternateColumnDefinition}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ColumnFamilyDefinition
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      DEFAULTDEFINITION = 1
+      COLUMNDEFINITIONS = 2
+
+      FIELDS = {
+        DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => Blur::ColumnDefinition},
+        COLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::ColumnDefinition}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class AnalyzerDefinition
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      DEFAULTDEFINITION = 1
+      FULLTEXTANALYZERCLASSNAME = 2
+      COLUMNFAMILYDEFINITIONS = 3
+
+      FIELDS = {
+        DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => Blur::ColumnDefinition},
+        FULLTEXTANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'fullTextAnalyzerClassName'},
+        COLUMNFAMILYDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnFamilyDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::ColumnFamilyDefinition}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
     class Selector
       include ::Thrift::Struct, ::Thrift::Struct_Union
       RECORDONLY = 1
@@ -356,13 +430,13 @@ module Blur
     class TableDescriptor
       include ::Thrift::Struct, ::Thrift::Struct_Union
       ISENABLED = 1
-      ANALYZERDEF = 2
+      ANALYZERDEFINITION = 2
       SHARDCOUNT = 3
       TABLEURI = 4
 
       FIELDS = {
         ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled'},
-        ANALYZERDEF => {:type => ::Thrift::Types::STRING, :name => 'analyzerDef'},
+        ANALYZERDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'analyzerDefinition', :class => Blur::AnalyzerDefinition},
         SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount'},
         TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'}
       }

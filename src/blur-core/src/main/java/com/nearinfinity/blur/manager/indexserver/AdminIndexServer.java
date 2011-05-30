@@ -33,7 +33,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -51,8 +50,6 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 public abstract class AdminIndexServer implements IndexServer {
     
     private static final Log LOG = LogFactory.getLog(AdminIndexServer.class);
-
-    public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer(), "");
 
     protected String nodeName;
     protected AtomicReference<Map<String,TABLE_STATUS>> statusMap = new AtomicReference<Map<String,TABLE_STATUS>>(new HashMap<String, TABLE_STATUS>());
@@ -165,13 +162,13 @@ public abstract class AdminIndexServer implements IndexServer {
             dm.fetchData(value, getBlurTablesPath(), table);
             BlurAnalyzer analyzer;
             if (value.data == null) {
-                analyzer = BLANK_ANALYZER;
+                analyzer = BlurAnalyzer.BLANK_ANALYZER;
             } else {
                 try {
                     analyzer = BlurAnalyzer.create(new ByteArrayInputStream(value.data));
                 } catch (IOException e) {
                     LOG.error("Error trying to load analyzer for table [{0}], using blank analyzer.",table);
-                    analyzer = BLANK_ANALYZER;
+                    analyzer = BlurAnalyzer.BLANK_ANALYZER;
                 }
             }
             newMap.put(table, analyzer);
@@ -214,7 +211,7 @@ public abstract class AdminIndexServer implements IndexServer {
     public final BlurAnalyzer getAnalyzer(String table) {
         BlurAnalyzer analyzer = analyzerMap.get().get(table);
         if (analyzer == null) {
-            return BLANK_ANALYZER;
+            return BlurAnalyzer.BLANK_ANALYZER;
         }
         return analyzer;
     }

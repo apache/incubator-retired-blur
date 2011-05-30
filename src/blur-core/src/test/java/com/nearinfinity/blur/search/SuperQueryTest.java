@@ -151,7 +151,7 @@ public class SuperQueryTest {
 	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
 		Directory directory = new RAMDirectory();
 		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
-		BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30), "");
+		BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
 		RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
 		indexWriter.replace(newRow("1", 
 		        newColumnFamily("person", UUID.randomUUID().toString(), newColumn("name","aaron")),

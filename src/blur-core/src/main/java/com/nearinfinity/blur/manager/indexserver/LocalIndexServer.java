@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,7 +67,7 @@ public class LocalIndexServer implements IndexServer {
 
     @Override
     public BlurAnalyzer getAnalyzer(String table) {
-        return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30),"");
+        return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30,new HashSet<String>()));
     }
 
     @Override

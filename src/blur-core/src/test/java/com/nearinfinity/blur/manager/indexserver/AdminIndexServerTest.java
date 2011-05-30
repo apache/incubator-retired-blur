@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
@@ -81,12 +82,12 @@ public class AdminIndexServerTest {
     
 //    @Test
     public void testAdminIndexServerTableAnalyzer() throws InterruptedException {
-        assertEquals(AdminIndexServer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
+        assertEquals(BlurAnalyzer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(),TESTTABLE);
-        assertEquals(AdminIndexServer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
+        assertEquals(BlurAnalyzer.BLANK_ANALYZER,adminIndexServer.getAnalyzer(TESTTABLE));
         dm.data.put(ZookeeperPathConstants.getBlurTablesPath() + "/" + TESTTABLE, "{\"default\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}".getBytes());
         Thread.sleep(TimeUnit.SECONDS.toMillis(12));// wait for the 10 second timer to pick up the change
-        assertFalse(AdminIndexServer.BLANK_ANALYZER.equals(adminIndexServer.getAnalyzer(TESTTABLE)));
+        assertFalse(BlurAnalyzer.BLANK_ANALYZER.equals(adminIndexServer.getAnalyzer(TESTTABLE)));
     }
 
     private List<String> newList(String... strs) {

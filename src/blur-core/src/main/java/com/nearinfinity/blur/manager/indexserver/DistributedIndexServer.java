@@ -101,7 +101,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
     
     protected void closeOldReaders() {
-        LOG.info("Closing old readers");
+        LOG.debug("Closing old readers");
         List<String> tableList = getTableList();
         for (String table : tableList) {
             closeOldReaders(table);

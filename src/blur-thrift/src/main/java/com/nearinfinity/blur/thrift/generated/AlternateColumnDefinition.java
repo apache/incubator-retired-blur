@@ -20,16 +20,16 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySuggestions, BlurQuerySuggestions._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQuerySuggestions");
+public class AlternateColumnDefinition implements org.apache.thrift.TBase<AlternateColumnDefinition, AlternateColumnDefinition._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AlternateColumnDefinition");
 
-  private static final org.apache.thrift.protocol.TField QUERY_SUGGESTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("querySuggestions", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField ANALYZER_CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("analyzerClassName", org.apache.thrift.protocol.TType.STRING, (short)1);
 
-  public List<BlurQuerySuggestion> querySuggestions;
+  public String analyzerClassName;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    QUERY_SUGGESTIONS((short)1, "querySuggestions");
+    ANALYZER_CLASS_NAME((short)1, "analyzerClassName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -44,8 +44,8 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // QUERY_SUGGESTIONS
-          return QUERY_SUGGESTIONS;
+        case 1: // ANALYZER_CLASS_NAME
+          return ANALYZER_CLASS_NAME;
         default:
           return null;
       }
@@ -90,91 +90,71 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_SUGGESTIONS, new org.apache.thrift.meta_data.FieldMetaData("querySuggestions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurQuerySuggestion.class))));
+    tmpMap.put(_Fields.ANALYZER_CLASS_NAME, new org.apache.thrift.meta_data.FieldMetaData("analyzerClassName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuerySuggestions.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(AlternateColumnDefinition.class, metaDataMap);
   }
 
-  public BlurQuerySuggestions() {
+  public AlternateColumnDefinition() {
   }
 
-  public BlurQuerySuggestions(
-    List<BlurQuerySuggestion> querySuggestions)
+  public AlternateColumnDefinition(
+    String analyzerClassName)
   {
     this();
-    this.querySuggestions = querySuggestions;
+    this.analyzerClassName = analyzerClassName;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public BlurQuerySuggestions(BlurQuerySuggestions other) {
-    if (other.isSetQuerySuggestions()) {
-      List<BlurQuerySuggestion> __this__querySuggestions = new ArrayList<BlurQuerySuggestion>();
-      for (BlurQuerySuggestion other_element : other.querySuggestions) {
-        __this__querySuggestions.add(new BlurQuerySuggestion(other_element));
-      }
-      this.querySuggestions = __this__querySuggestions;
+  public AlternateColumnDefinition(AlternateColumnDefinition other) {
+    if (other.isSetAnalyzerClassName()) {
+      this.analyzerClassName = other.analyzerClassName;
     }
   }
 
-  public BlurQuerySuggestions deepCopy() {
-    return new BlurQuerySuggestions(this);
+  public AlternateColumnDefinition deepCopy() {
+    return new AlternateColumnDefinition(this);
   }
 
   @Override
   public void clear() {
-    this.querySuggestions = null;
+    this.analyzerClassName = null;
   }
 
-  public int getQuerySuggestionsSize() {
-    return (this.querySuggestions == null) ? 0 : this.querySuggestions.size();
+  public String getAnalyzerClassName() {
+    return this.analyzerClassName;
   }
 
-  public java.util.Iterator<BlurQuerySuggestion> getQuerySuggestionsIterator() {
-    return (this.querySuggestions == null) ? null : this.querySuggestions.iterator();
-  }
-
-  public void addToQuerySuggestions(BlurQuerySuggestion elem) {
-    if (this.querySuggestions == null) {
-      this.querySuggestions = new ArrayList<BlurQuerySuggestion>();
-    }
-    this.querySuggestions.add(elem);
-  }
-
-  public List<BlurQuerySuggestion> getQuerySuggestions() {
-    return this.querySuggestions;
-  }
-
-  public BlurQuerySuggestions setQuerySuggestions(List<BlurQuerySuggestion> querySuggestions) {
-    this.querySuggestions = querySuggestions;
+  public AlternateColumnDefinition setAnalyzerClassName(String analyzerClassName) {
+    this.analyzerClassName = analyzerClassName;
     return this;
   }
 
-  public void unsetQuerySuggestions() {
-    this.querySuggestions = null;
+  public void unsetAnalyzerClassName() {
+    this.analyzerClassName = null;
   }
 
-  /** Returns true if field querySuggestions is set (has been assigned a value) and false otherwise */
-  public boolean isSetQuerySuggestions() {
-    return this.querySuggestions != null;
+  /** Returns true if field analyzerClassName is set (has been assigned a value) and false otherwise */
+  public boolean isSetAnalyzerClassName() {
+    return this.analyzerClassName != null;
   }
 
-  public void setQuerySuggestionsIsSet(boolean value) {
+  public void setAnalyzerClassNameIsSet(boolean value) {
     if (!value) {
-      this.querySuggestions = null;
+      this.analyzerClassName = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case QUERY_SUGGESTIONS:
+    case ANALYZER_CLASS_NAME:
       if (value == null) {
-        unsetQuerySuggestions();
+        unsetAnalyzerClassName();
       } else {
-        setQuerySuggestions((List<BlurQuerySuggestion>)value);
+        setAnalyzerClassName((String)value);
       }
       break;
 
@@ -183,8 +163,8 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case QUERY_SUGGESTIONS:
-      return getQuerySuggestions();
+    case ANALYZER_CLASS_NAME:
+      return getAnalyzerClassName();
 
     }
     throw new IllegalStateException();
@@ -197,8 +177,8 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
     }
 
     switch (field) {
-    case QUERY_SUGGESTIONS:
-      return isSetQuerySuggestions();
+    case ANALYZER_CLASS_NAME:
+      return isSetAnalyzerClassName();
     }
     throw new IllegalStateException();
   }
@@ -207,21 +187,21 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof BlurQuerySuggestions)
-      return this.equals((BlurQuerySuggestions)that);
+    if (that instanceof AlternateColumnDefinition)
+      return this.equals((AlternateColumnDefinition)that);
     return false;
   }
 
-  public boolean equals(BlurQuerySuggestions that) {
+  public boolean equals(AlternateColumnDefinition that) {
     if (that == null)
       return false;
 
-    boolean this_present_querySuggestions = true && this.isSetQuerySuggestions();
-    boolean that_present_querySuggestions = true && that.isSetQuerySuggestions();
-    if (this_present_querySuggestions || that_present_querySuggestions) {
-      if (!(this_present_querySuggestions && that_present_querySuggestions))
+    boolean this_present_analyzerClassName = true && this.isSetAnalyzerClassName();
+    boolean that_present_analyzerClassName = true && that.isSetAnalyzerClassName();
+    if (this_present_analyzerClassName || that_present_analyzerClassName) {
+      if (!(this_present_analyzerClassName && that_present_analyzerClassName))
         return false;
-      if (!this.querySuggestions.equals(that.querySuggestions))
+      if (!this.analyzerClassName.equals(that.analyzerClassName))
         return false;
     }
 
@@ -233,20 +213,20 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
     return 0;
   }
 
-  public int compareTo(BlurQuerySuggestions other) {
+  public int compareTo(AlternateColumnDefinition other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    BlurQuerySuggestions typedOther = (BlurQuerySuggestions)other;
+    AlternateColumnDefinition typedOther = (AlternateColumnDefinition)other;
 
-    lastComparison = Boolean.valueOf(isSetQuerySuggestions()).compareTo(typedOther.isSetQuerySuggestions());
+    lastComparison = Boolean.valueOf(isSetAnalyzerClassName()).compareTo(typedOther.isSetAnalyzerClassName());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQuerySuggestions()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.querySuggestions, typedOther.querySuggestions);
+    if (isSetAnalyzerClassName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.analyzerClassName, typedOther.analyzerClassName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -268,20 +248,9 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
         break;
       }
       switch (field.id) {
-        case 1: // QUERY_SUGGESTIONS
-          if (field.type == org.apache.thrift.protocol.TType.LIST) {
-            {
-              org.apache.thrift.protocol.TList _list62 = iprot.readListBegin();
-              this.querySuggestions = new ArrayList<BlurQuerySuggestion>(_list62.size);
-              for (int _i63 = 0; _i63 < _list62.size; ++_i63)
-              {
-                BlurQuerySuggestion _elem64;
-                _elem64 = new BlurQuerySuggestion();
-                _elem64.read(iprot);
-                this.querySuggestions.add(_elem64);
-              }
-              iprot.readListEnd();
-            }
+        case 1: // ANALYZER_CLASS_NAME
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.analyzerClassName = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -301,16 +270,9 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.querySuggestions != null) {
-      oprot.writeFieldBegin(QUERY_SUGGESTIONS_FIELD_DESC);
-      {
-        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.querySuggestions.size()));
-        for (BlurQuerySuggestion _iter65 : this.querySuggestions)
-        {
-          _iter65.write(oprot);
-        }
-        oprot.writeListEnd();
-      }
+    if (this.analyzerClassName != null) {
+      oprot.writeFieldBegin(ANALYZER_CLASS_NAME_FIELD_DESC);
+      oprot.writeString(this.analyzerClassName);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -319,14 +281,14 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("BlurQuerySuggestions(");
+    StringBuilder sb = new StringBuilder("AlternateColumnDefinition(");
     boolean first = true;
 
-    sb.append("querySuggestions:");
-    if (this.querySuggestions == null) {
+    sb.append("analyzerClassName:");
+    if (this.analyzerClassName == null) {
       sb.append("null");
     } else {
-      sb.append(this.querySuggestions);
+      sb.append(this.analyzerClassName);
     }
     first = false;
     sb.append(")");

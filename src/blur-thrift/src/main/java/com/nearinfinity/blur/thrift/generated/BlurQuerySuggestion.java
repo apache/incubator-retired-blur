@@ -730,15 +730,15 @@ public class BlurQuerySuggestion implements org.apache.thrift.TBase<BlurQuerySug
         case 3: // SHARD_INFO
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map38 = iprot.readMapBegin();
-              this.shardInfo = new HashMap<String,Long>(2*_map38.size);
-              for (int _i39 = 0; _i39 < _map38.size; ++_i39)
+              org.apache.thrift.protocol.TMap _map53 = iprot.readMapBegin();
+              this.shardInfo = new HashMap<String,Long>(2*_map53.size);
+              for (int _i54 = 0; _i54 < _map53.size; ++_i54)
               {
-                String _key40;
-                long _val41;
-                _key40 = iprot.readString();
-                _val41 = iprot.readI64();
-                this.shardInfo.put(_key40, _val41);
+                String _key55;
+                long _val56;
+                _key55 = iprot.readString();
+                _val56 = iprot.readI64();
+                this.shardInfo.put(_key55, _val56);
               }
               iprot.readMapEnd();
             }
@@ -749,14 +749,14 @@ public class BlurQuerySuggestion implements org.apache.thrift.TBase<BlurQuerySug
         case 4: // EXCEPTIONS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list42 = iprot.readListBegin();
-              this.exceptions = new ArrayList<BlurException>(_list42.size);
-              for (int _i43 = 0; _i43 < _list42.size; ++_i43)
+              org.apache.thrift.protocol.TList _list57 = iprot.readListBegin();
+              this.exceptions = new ArrayList<BlurException>(_list57.size);
+              for (int _i58 = 0; _i58 < _list57.size; ++_i58)
               {
-                BlurException _elem44;
-                _elem44 = new BlurException();
-                _elem44.read(iprot);
-                this.exceptions.add(_elem44);
+                BlurException _elem59;
+                _elem59 = new BlurException();
+                _elem59.read(iprot);
+                this.exceptions.add(_elem59);
               }
               iprot.readListEnd();
             }
@@ -815,10 +815,10 @@ public class BlurQuerySuggestion implements org.apache.thrift.TBase<BlurQuerySug
       oprot.writeFieldBegin(SHARD_INFO_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I64, this.shardInfo.size()));
-        for (Map.Entry<String, Long> _iter45 : this.shardInfo.entrySet())
+        for (Map.Entry<String, Long> _iter60 : this.shardInfo.entrySet())
         {
-          oprot.writeString(_iter45.getKey());
-          oprot.writeI64(_iter45.getValue());
+          oprot.writeString(_iter60.getKey());
+          oprot.writeI64(_iter60.getValue());
         }
         oprot.writeMapEnd();
       }
@@ -828,9 +828,9 @@ public class BlurQuerySuggestion implements org.apache.thrift.TBase<BlurQuerySug
       oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.exceptions.size()));
-        for (BlurException _iter46 : this.exceptions)
+        for (BlurException _iter61 : this.exceptions)
         {
-          _iter46.write(oprot);
+          _iter61.write(oprot);
         }
         oprot.writeListEnd();
       }

@@ -245,7 +245,7 @@ public class BlurShardServer extends ExecutionContextIface {
         long start = context.startTime();
         try {
             TableDescriptor descriptor = new TableDescriptor();
-            descriptor.analyzerDef = indexServer.getAnalyzer(table).toString();
+            descriptor.analyzerDefinition = indexServer.getAnalyzer(table).getAnalyzerDefinition();
             boolean tableEnabled = isTableEnabled(context, table);
             descriptor.shardCount = indexServer.getShardCount(table);
             descriptor.isEnabled = tableEnabled;

@@ -134,8 +134,11 @@ public abstract class AdminIndexServer implements IndexServer {
     protected void registerCallbackForChanges() {
         dm.registerCallableOnChange(watcher, getBlurTablesPath());
         for (String table : tableList.get()) {
-            System.out.println("Registering table " + table);
-            dm.registerCallableOnChange(watcher, getBlurTablesPath(), table);
+            if (dm.exists(getBlurTablesPath(), table)) {
+                dm.registerCallableOnChange(watcher, getBlurTablesPath(), table);
+            } else {
+                LOG.debug("Trying to register wather for path [" + getBlurTablesPath() + "/" + table + "] and it doesn't exist.");
+            }
         }        
     }
 

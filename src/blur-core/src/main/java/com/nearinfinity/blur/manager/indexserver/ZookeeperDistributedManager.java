@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.KeeperException.Code;
@@ -123,14 +122,9 @@ public class ZookeeperDistributedManager extends DistributedManager {
     }
 
     @Override
-    protected void registerCallableOnChangeInternal(final Runnable runnable, String path) {
+    protected void registerCallableOnChangeInternal(Watcher watcher, String path) {
         try {
-            zooKeeper.getChildren(path, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                    runnable.run();
-                }
-            });
+            zooKeeper.getChildren(path, watcher);
         } catch (Exception e) {
             LOG.error("Error while adding a watcher for path [{0}]",e,path);
             throw new RuntimeException(e);

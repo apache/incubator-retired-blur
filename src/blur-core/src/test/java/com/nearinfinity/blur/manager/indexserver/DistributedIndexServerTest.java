@@ -63,6 +63,7 @@ public class DistributedIndexServerTest {
         List<String> shardBeingServed = new ArrayList<String>();
         for (String node : NODE_LIST) {
             DistributedManager dm = new ZkInMemory();
+            dm.createPath("blur","default","tables",TEST,"enabled");
             DistributedIndexServer indexServer = new MockDistributedIndexServer(NODE_LIST,SHARD_LIST);
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
@@ -111,6 +112,7 @@ public class DistributedIndexServerTest {
         Map<String,DistributedIndexServer> servers = new TreeMap<String,DistributedIndexServer>();
         for (String node : bigNodeList) {
             DistributedManager dm = new ZkInMemory();
+            dm.createPath("blur","default","tables",TEST,"enabled");
             DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes);
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
@@ -209,6 +211,7 @@ public class DistributedIndexServerTest {
         
         public MockDistributedIndexServer(List<String> nodes, List<String> shards) {
             this(nodes,shards,new ArrayList<String>());
+            this.statusMap.get().put(TEST, TABLE_STATUS.ENABLED);
         }
 
         public MockDistributedIndexServer(List<String> nodes, List<String> shards, List<String> offlineNodes) {
@@ -273,5 +276,7 @@ public class DistributedIndexServerTest {
             list.removeAll(getOfflineShardServers());
             return list;
         }
+        
+        
     }
 }

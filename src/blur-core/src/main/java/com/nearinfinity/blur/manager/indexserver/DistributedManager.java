@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.zookeeper.Watcher;
+
 public abstract class DistributedManager {
     
     public static class Value {
@@ -38,7 +40,7 @@ public abstract class DistributedManager {
     protected abstract void removeEphemeralPathOnShutdownInternal(String path);
     protected abstract void removePath(String path);
     protected abstract List<String> listInternal(String path);
-    protected abstract void registerCallableOnChangeInternal(Runnable runnable, String path);
+    protected abstract void registerCallableOnChangeInternal(Watcher watcher, String path);
     
     public void lock(String... pathes) {
         lockInternal(resolvePath(pathes));
@@ -72,8 +74,8 @@ public abstract class DistributedManager {
         return listInternal(resolvePath(pathes));
     }
 
-    public void registerCallableOnChange(Runnable runnable, String... pathes) {
-        registerCallableOnChangeInternal(runnable,resolvePath(pathes));
+    public void registerCallableOnChange(Watcher watcher, String... pathes) {
+        registerCallableOnChangeInternal(watcher,resolvePath(pathes));
     }
     
     public void removeEphemeralPathOnShutdown(String... pathes) {

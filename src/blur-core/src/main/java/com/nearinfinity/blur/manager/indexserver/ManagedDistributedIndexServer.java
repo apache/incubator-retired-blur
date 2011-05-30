@@ -32,6 +32,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
@@ -53,6 +56,12 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     private long zkPollDelay = TimeUnit.MINUTES.toMillis(1);
     private NODE_TYPE type;
     private ShardServerStatePoller shardServerStatePoller = new ShardServerStatePoller();
+    private Watcher watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+            pollForState();
+        }
+    };
     
     @Override
     public void init() {
@@ -153,12 +162,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     
     @Override
     public void register(String path) {
-        dm.registerCallableOnChange(new Runnable() {
-            @Override
-            public void run() {
-                pollForState();
-            }
-        },path);
+        dm.registerCallableOnChange(watcher,path);
     }
 
     @Override

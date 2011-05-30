@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,9 +59,9 @@ public class ZkTest {
     
     @Test
     public void testCallable() {
-        zkInMemory.registerCallableOnChange(new Runnable() {
+        zkInMemory.registerCallableOnChange(new Watcher() {
             @Override
-            public void run() {
+            public void process(WatchedEvent event) {
                 
             }
         }, "test","test");
@@ -70,7 +72,7 @@ public class ZkTest {
         public List<String> pathes = new ArrayList<String>();
         public Map<String,byte[]> data = new HashMap<String, byte[]>();
         public List<String> callbacks = new ArrayList<String>();
-        public List<Runnable> callbacksRunnable = new ArrayList<Runnable>();
+        public List<Watcher> callbacksRunnable = new ArrayList<Watcher>();
 
         @Override
         public void close() {
@@ -96,9 +98,9 @@ public class ZkTest {
                 String callPath = callbacks.get(i);
                 if (callPath != null && path.startsWith(callPath)) {
                     if (countSlashes(path) == countSlashes(callPath) + 1) {
-                        Runnable runnable = callbacksRunnable.get(i);
+                        Watcher runnable = callbacksRunnable.get(i);
                         if (runnable != null) {
-                            runnable.run();
+                            runnable.process(null);
                             callbacks.set(i, null);
                             callbacksRunnable.set(i, null);
                         }
@@ -129,16 +131,24 @@ public class ZkTest {
             for (String p : pathes) {
                 if (p.startsWith(path) && !p.equals(path)) {
                     String str = p.substring(path.length() + 1);
-                    results.add(str);
+                    results.add(removeEverythingAfterSlash(str));
                 }
             }
             return results;
         }
 
+        private String removeEverythingAfterSlash(String str) {
+            int indexOf = str.indexOf('/');
+            if (indexOf < 0) {
+                return str;
+            }
+            return str.substring(0,indexOf);
+        }
+
         @Override
-        protected void registerCallableOnChangeInternal(Runnable runnable, String path) {
+        protected void registerCallableOnChangeInternal(Watcher watcher, String path) {
             callbacks.add(path);
-            callbacksRunnable.add(runnable);
+            callbacksRunnable.add(watcher);
         }
 
         @Override

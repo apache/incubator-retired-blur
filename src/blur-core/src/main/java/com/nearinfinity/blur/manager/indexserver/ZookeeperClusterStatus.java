@@ -22,6 +22,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
@@ -38,6 +41,13 @@ public class ZookeeperClusterStatus extends ClusterStatus implements ShardServer
     private Timer daemon;
     private boolean closed;
     private ShardServerStatePoller shardServerStatePoller = new ShardServerStatePoller();
+    private Watcher watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+            LOG.info("Zookeeper event signaled state change.");
+            pollForState();
+        }
+    };
 
     public void init() {
         startPollingDaemon();
@@ -84,13 +94,7 @@ public class ZookeeperClusterStatus extends ClusterStatus implements ShardServer
 
     @Override
     public void register(String path) {
-        dm.registerCallableOnChange(new Runnable() {
-            @Override
-            public void run() {
-                LOG.info("Zookeeper event signaled state change.");
-                pollForState();
-            }
-        },path);
+        dm.registerCallableOnChange(watcher, path);
     }
 
     public void setDistributedManager(DistributedManager dm) {

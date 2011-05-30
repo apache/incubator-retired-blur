@@ -35,6 +35,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.search.Similarity;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
@@ -62,6 +64,12 @@ public abstract class AdminIndexServer implements IndexServer {
     protected ExecutorService executorService;
     private ExecutorsDynamicConfig dynamicConfig;
     private int threadCount = 32;
+    private Watcher watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+            updateStatus();
+        }
+    };
     
     /**
      * All sub classes need to call super.init().
@@ -124,21 +132,11 @@ public abstract class AdminIndexServer implements IndexServer {
     }
 
     protected void registerCallbackForChanges() {
-        Runnable updateStatus = newRunnableUpdateStatus();
-        dm.registerCallableOnChange(updateStatus, getBlurTablesPath());
+        dm.registerCallableOnChange(watcher, getBlurTablesPath());
         for (String table : tableList.get()) {
             System.out.println("Registering table " + table);
-            dm.registerCallableOnChange(updateStatus, getBlurTablesPath(), table);
+            dm.registerCallableOnChange(watcher, getBlurTablesPath(), table);
         }        
-    }
-
-    protected Runnable newRunnableUpdateStatus() {
-        return new Runnable() {
-            @Override
-            public void run() {
-                updateStatus();
-            }
-        };
     }
 
     protected void updateTableList() {

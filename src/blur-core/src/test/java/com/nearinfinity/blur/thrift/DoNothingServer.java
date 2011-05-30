@@ -108,7 +108,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public void createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri)
+    public void createTable(String table, TableDescriptor tableDescriptor)
             throws BlurException, TException {
         
     }

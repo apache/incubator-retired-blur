@@ -234,13 +234,13 @@ require 'blur_types'
             return
           end
 
-          def createTable(table, enabled, analyzerDef, shardCount, tableUri)
-            send_createTable(table, enabled, analyzerDef, shardCount, tableUri)
+          def createTable(table, tableDescriptor)
+            send_createTable(table, tableDescriptor)
             recv_createTable()
           end
 
-          def send_createTable(table, enabled, analyzerDef, shardCount, tableUri)
-            send_message('createTable', CreateTable_args, :table => table, :enabled => enabled, :analyzerDef => analyzerDef, :shardCount => shardCount, :tableUri => tableUri)
+          def send_createTable(table, tableDescriptor)
+            send_message('createTable', CreateTable_args, :table => table, :tableDescriptor => tableDescriptor)
           end
 
           def recv_createTable()
@@ -457,7 +457,7 @@ require 'blur_types'
             args = read_args(iprot, CreateTable_args)
             result = CreateTable_result.new()
             begin
-              @handler.createTable(args.table, args.enabled, args.analyzerDef, args.shardCount, args.tableUri)
+              @handler.createTable(args.table, args.tableDescriptor)
             rescue Blur::BlurException => ex
               result.ex = ex
             end
@@ -997,17 +997,11 @@ require 'blur_types'
         class CreateTable_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           TABLE = 1
-          ENABLED = 2
-          ANALYZERDEF = 3
-          SHARDCOUNT = 4
-          TABLEURI = 5
+          TABLEDESCRIPTOR = 2
 
           FIELDS = {
             TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
-            ENABLED => {:type => ::Thrift::Types::BOOL, :name => 'enabled'},
-            ANALYZERDEF => {:type => ::Thrift::Types::STRING, :name => 'analyzerDef'},
-            SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount'},
-            TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'}
+            TABLEDESCRIPTOR => {:type => ::Thrift::Types::STRUCT, :name => 'tableDescriptor', :class => Blur::TableDescriptor}
           }
 
           def struct_fields; FIELDS; end

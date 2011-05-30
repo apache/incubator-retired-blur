@@ -50,7 +50,7 @@ public class ThriftServer {
         LOG.info("Starting server [{0}]",nodeName);
         server.serve();
     }
-    
+
     public InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
         String hostName = isEmpty(configuration.get(addressPropertyName), addressPropertyName);
         String portStr = isEmpty(configuration.get(portPropertyName), portPropertyName);

@@ -19,6 +19,10 @@ package com.nearinfinity.blur.thrift;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.thrift.TException;
@@ -29,12 +33,14 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
+import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public abstract class BlurBaseServer implements Iface {
 	
-    public static BlurResults convertToHits(BlurResultIterable hitsIterable, BlurQuery query, AtomicLongArray facetCounts) {
+    public static BlurResults convertToHits(BlurResultIterable hitsIterable, BlurQuery query, AtomicLongArray facetCounts, ExecutorService executor, Selector selector, final Iface iface, final String table) throws InterruptedException, ExecutionException {
         BlurResults results = new BlurResults();
         results.setTotalResults(hitsIterable.getTotalResults());
         results.setShardInfo(hitsIterable.getShardInfo());
@@ -53,9 +59,27 @@ public abstract class BlurBaseServer implements Iface {
         if (facetCounts != null) {
             results.facetCounts = BlurUtil.toList(facetCounts);
         }
+        if (selector != null) {
+            List<Future<FetchResult>> futures = new ArrayList<Future<FetchResult>>();
+            for (int i = 0; i < results.results.size(); i++) {
+                BlurResult result = results.results.get(i);
+                final Selector s = new Selector(selector);
+                s.setLocationId(result.locationId);
+                futures.add(executor.submit(new Callable<FetchResult>() {
+                    @Override
+                    public FetchResult call() throws Exception {
+                        return iface.fetchRow(table, s);
+                    }
+                }));
+            }
+            for (int i = 0; i < results.results.size(); i++) {
+                Future<FetchResult> future = futures.get(i);
+                BlurResult result = results.results.get(i);
+                result.setFetchResult(future.get());
+            }
+        }
         return results;
     }
-    
 
     @Override
     public List<String> controllerServerList() throws BlurException, TException {

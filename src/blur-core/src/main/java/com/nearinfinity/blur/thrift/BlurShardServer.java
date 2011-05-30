@@ -74,7 +74,7 @@ public class BlurShardServer extends ExecutionContextIface {
             try {
                 AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
                 BlurResultIterable hitsIterable = indexManager.query(table, blurQuery, facetCounts);
-                return BlurBaseServer.convertToHits(hitsIterable, blurQuery, facetCounts);
+                return BlurBaseServer.convertToHits(hitsIterable, blurQuery, facetCounts, null, null, null, null);
             } catch (Exception e) {
                 LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
                 throw new BException(e.getMessage(), e);

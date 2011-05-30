@@ -52,7 +52,7 @@ public class Blur {
 
     public void mutate(String table, List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException;
 
-    public void createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri) throws BlurException, org.apache.thrift.TException;
+    public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException;
 
     public void enableTable(String table) throws BlurException, org.apache.thrift.TException;
 
@@ -92,7 +92,7 @@ public class Blur {
 
     public void mutate(String table, List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutate_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createTable_call> resultHandler) throws org.apache.thrift.TException;
+    public void createTable(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createTable_call> resultHandler) throws org.apache.thrift.TException;
 
     public void enableTable(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.enableTable_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -688,21 +688,18 @@ public class Blur {
       return;
     }
 
-    public void createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri) throws BlurException, org.apache.thrift.TException
+    public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException
     {
-      send_createTable(table, enabled, analyzerDef, shardCount, tableUri);
+      send_createTable(table, tableDescriptor);
       recv_createTable();
     }
 
-    public void send_createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri) throws org.apache.thrift.TException
+    public void send_createTable(String table, TableDescriptor tableDescriptor) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("createTable", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       createTable_args args = new createTable_args();
       args.setTable(table);
-      args.setEnabled(enabled);
-      args.setAnalyzerDef(analyzerDef);
-      args.setShardCount(shardCount);
-      args.setTableUri(tableUri);
+      args.setTableDescriptor(tableDescriptor);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -1330,36 +1327,27 @@ public class Blur {
       }
     }
 
-    public void createTable(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler) throws org.apache.thrift.TException {
+    public void createTable(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      createTable_call method_call = new createTable_call(table, enabled, analyzerDef, shardCount, tableUri, resultHandler, this, protocolFactory, transport);
+      createTable_call method_call = new createTable_call(table, tableDescriptor, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class createTable_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String table;
-      private boolean enabled;
-      private String analyzerDef;
-      private int shardCount;
-      private String tableUri;
-      public createTable_call(String table, boolean enabled, String analyzerDef, int shardCount, String tableUri, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private TableDescriptor tableDescriptor;
+      public createTable_call(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
-        this.enabled = enabled;
-        this.analyzerDef = analyzerDef;
-        this.shardCount = shardCount;
-        this.tableUri = tableUri;
+        this.tableDescriptor = tableDescriptor;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("createTable", org.apache.thrift.protocol.TMessageType.CALL, 0));
         createTable_args args = new createTable_args();
         args.setTable(table);
-        args.setEnabled(enabled);
-        args.setAnalyzerDef(analyzerDef);
-        args.setShardCount(shardCount);
-        args.setTableUri(tableUri);
+        args.setTableDescriptor(tableDescriptor);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -2076,7 +2064,7 @@ public class Blur {
         iprot.readMessageEnd();
         createTable_result result = new createTable_result();
         try {
-          iface_.createTable(args.table, args.enabled, args.analyzerDef, args.shardCount, args.tableUri);
+          iface_.createTable(args.table, args.tableDescriptor);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -12648,24 +12636,15 @@ public class Blur {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createTable_args");
 
     private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("enabled", org.apache.thrift.protocol.TType.BOOL, (short)2);
-    private static final org.apache.thrift.protocol.TField ANALYZER_DEF_FIELD_DESC = new org.apache.thrift.protocol.TField("analyzerDef", org.apache.thrift.protocol.TType.STRING, (short)3);
-    private static final org.apache.thrift.protocol.TField SHARD_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("shardCount", org.apache.thrift.protocol.TType.I32, (short)4);
-    private static final org.apache.thrift.protocol.TField TABLE_URI_FIELD_DESC = new org.apache.thrift.protocol.TField("tableUri", org.apache.thrift.protocol.TType.STRING, (short)5);
+    private static final org.apache.thrift.protocol.TField TABLE_DESCRIPTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("tableDescriptor", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
     public String table;
-    public boolean enabled;
-    public String analyzerDef;
-    public int shardCount;
-    public String tableUri;
+    public TableDescriptor tableDescriptor;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
       TABLE((short)1, "table"),
-      ENABLED((short)2, "enabled"),
-      ANALYZER_DEF((short)3, "analyzerDef"),
-      SHARD_COUNT((short)4, "shardCount"),
-      TABLE_URI((short)5, "tableUri");
+      TABLE_DESCRIPTOR((short)2, "tableDescriptor");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -12682,14 +12661,8 @@ public class Blur {
         switch(fieldId) {
           case 1: // TABLE
             return TABLE;
-          case 2: // ENABLED
-            return ENABLED;
-          case 3: // ANALYZER_DEF
-            return ANALYZER_DEF;
-          case 4: // SHARD_COUNT
-            return SHARD_COUNT;
-          case 5: // TABLE_URI
-            return TABLE_URI;
+          case 2: // TABLE_DESCRIPTOR
+            return TABLE_DESCRIPTOR;
           default:
             return null;
         }
@@ -12730,23 +12703,14 @@ public class Blur {
     }
 
     // isset id assignments
-    private static final int __ENABLED_ISSET_ID = 0;
-    private static final int __SHARDCOUNT_ISSET_ID = 1;
-    private BitSet __isset_bit_vector = new BitSet(2);
 
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.ENABLED, new org.apache.thrift.meta_data.FieldMetaData("enabled", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-      tmpMap.put(_Fields.ANALYZER_DEF, new org.apache.thrift.meta_data.FieldMetaData("analyzerDef", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-      tmpMap.put(_Fields.SHARD_COUNT, new org.apache.thrift.meta_data.FieldMetaData("shardCount", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
-      tmpMap.put(_Fields.TABLE_URI, new org.apache.thrift.meta_data.FieldMetaData("tableUri", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TABLE_DESCRIPTOR, new org.apache.thrift.meta_data.FieldMetaData("tableDescriptor", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TableDescriptor.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
       org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(createTable_args.class, metaDataMap);
     }
@@ -12756,37 +12720,22 @@ public class Blur {
 
     public createTable_args(
       String table,
-      boolean enabled,
-      String analyzerDef,
-      int shardCount,
-      String tableUri)
+      TableDescriptor tableDescriptor)
     {
       this();
       this.table = table;
-      this.enabled = enabled;
-      setEnabledIsSet(true);
-      this.analyzerDef = analyzerDef;
-      this.shardCount = shardCount;
-      setShardCountIsSet(true);
-      this.tableUri = tableUri;
+      this.tableDescriptor = tableDescriptor;
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
     public createTable_args(createTable_args other) {
-      __isset_bit_vector.clear();
-      __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetTable()) {
         this.table = other.table;
       }
-      this.enabled = other.enabled;
-      if (other.isSetAnalyzerDef()) {
-        this.analyzerDef = other.analyzerDef;
-      }
-      this.shardCount = other.shardCount;
-      if (other.isSetTableUri()) {
-        this.tableUri = other.tableUri;
+      if (other.isSetTableDescriptor()) {
+        this.tableDescriptor = new TableDescriptor(other.tableDescriptor);
       }
     }
 
@@ -12797,12 +12746,7 @@ public class Blur {
     @Override
     public void clear() {
       this.table = null;
-      setEnabledIsSet(false);
-      this.enabled = false;
-      this.analyzerDef = null;
-      setShardCountIsSet(false);
-      this.shardCount = 0;
-      this.tableUri = null;
+      this.tableDescriptor = null;
     }
 
     public String getTable() {
@@ -12829,97 +12773,27 @@ public class Blur {
       }
     }
 
-    public boolean isEnabled() {
-      return this.enabled;
+    public TableDescriptor getTableDescriptor() {
+      return this.tableDescriptor;
     }
 
-    public createTable_args setEnabled(boolean enabled) {
-      this.enabled = enabled;
-      setEnabledIsSet(true);
+    public createTable_args setTableDescriptor(TableDescriptor tableDescriptor) {
+      this.tableDescriptor = tableDescriptor;
       return this;
     }
 
-    public void unsetEnabled() {
-      __isset_bit_vector.clear(__ENABLED_ISSET_ID);
+    public void unsetTableDescriptor() {
+      this.tableDescriptor = null;
     }
 
-    /** Returns true if field enabled is set (has been assigned a value) and false otherwise */
-    public boolean isSetEnabled() {
-      return __isset_bit_vector.get(__ENABLED_ISSET_ID);
+    /** Returns true if field tableDescriptor is set (has been assigned a value) and false otherwise */
+    public boolean isSetTableDescriptor() {
+      return this.tableDescriptor != null;
     }
 
-    public void setEnabledIsSet(boolean value) {
-      __isset_bit_vector.set(__ENABLED_ISSET_ID, value);
-    }
-
-    public String getAnalyzerDef() {
-      return this.analyzerDef;
-    }
-
-    public createTable_args setAnalyzerDef(String analyzerDef) {
-      this.analyzerDef = analyzerDef;
-      return this;
-    }
-
-    public void unsetAnalyzerDef() {
-      this.analyzerDef = null;
-    }
-
-    /** Returns true if field analyzerDef is set (has been assigned a value) and false otherwise */
-    public boolean isSetAnalyzerDef() {
-      return this.analyzerDef != null;
-    }
-
-    public void setAnalyzerDefIsSet(boolean value) {
+    public void setTableDescriptorIsSet(boolean value) {
       if (!value) {
-        this.analyzerDef = null;
-      }
-    }
-
-    public int getShardCount() {
-      return this.shardCount;
-    }
-
-    public createTable_args setShardCount(int shardCount) {
-      this.shardCount = shardCount;
-      setShardCountIsSet(true);
-      return this;
-    }
-
-    public void unsetShardCount() {
-      __isset_bit_vector.clear(__SHARDCOUNT_ISSET_ID);
-    }
-
-    /** Returns true if field shardCount is set (has been assigned a value) and false otherwise */
-    public boolean isSetShardCount() {
-      return __isset_bit_vector.get(__SHARDCOUNT_ISSET_ID);
-    }
-
-    public void setShardCountIsSet(boolean value) {
-      __isset_bit_vector.set(__SHARDCOUNT_ISSET_ID, value);
-    }
-
-    public String getTableUri() {
-      return this.tableUri;
-    }
-
-    public createTable_args setTableUri(String tableUri) {
-      this.tableUri = tableUri;
-      return this;
-    }
-
-    public void unsetTableUri() {
-      this.tableUri = null;
-    }
-
-    /** Returns true if field tableUri is set (has been assigned a value) and false otherwise */
-    public boolean isSetTableUri() {
-      return this.tableUri != null;
-    }
-
-    public void setTableUriIsSet(boolean value) {
-      if (!value) {
-        this.tableUri = null;
+        this.tableDescriptor = null;
       }
     }
 
@@ -12933,35 +12807,11 @@ public class Blur {
         }
         break;
 
-      case ENABLED:
+      case TABLE_DESCRIPTOR:
         if (value == null) {
-          unsetEnabled();
+          unsetTableDescriptor();
         } else {
-          setEnabled((Boolean)value);
-        }
-        break;
-
-      case ANALYZER_DEF:
-        if (value == null) {
-          unsetAnalyzerDef();
-        } else {
-          setAnalyzerDef((String)value);
-        }
-        break;
-
-      case SHARD_COUNT:
-        if (value == null) {
-          unsetShardCount();
-        } else {
-          setShardCount((Integer)value);
-        }
-        break;
-
-      case TABLE_URI:
-        if (value == null) {
-          unsetTableUri();
-        } else {
-          setTableUri((String)value);
+          setTableDescriptor((TableDescriptor)value);
         }
         break;
 
@@ -12973,17 +12823,8 @@ public class Blur {
       case TABLE:
         return getTable();
 
-      case ENABLED:
-        return new Boolean(isEnabled());
-
-      case ANALYZER_DEF:
-        return getAnalyzerDef();
-
-      case SHARD_COUNT:
-        return new Integer(getShardCount());
-
-      case TABLE_URI:
-        return getTableUri();
+      case TABLE_DESCRIPTOR:
+        return getTableDescriptor();
 
       }
       throw new IllegalStateException();
@@ -12998,14 +12839,8 @@ public class Blur {
       switch (field) {
       case TABLE:
         return isSetTable();
-      case ENABLED:
-        return isSetEnabled();
-      case ANALYZER_DEF:
-        return isSetAnalyzerDef();
-      case SHARD_COUNT:
-        return isSetShardCount();
-      case TABLE_URI:
-        return isSetTableUri();
+      case TABLE_DESCRIPTOR:
+        return isSetTableDescriptor();
       }
       throw new IllegalStateException();
     }
@@ -13032,39 +12867,12 @@ public class Blur {
           return false;
       }
 
-      boolean this_present_enabled = true;
-      boolean that_present_enabled = true;
-      if (this_present_enabled || that_present_enabled) {
-        if (!(this_present_enabled && that_present_enabled))
+      boolean this_present_tableDescriptor = true && this.isSetTableDescriptor();
+      boolean that_present_tableDescriptor = true && that.isSetTableDescriptor();
+      if (this_present_tableDescriptor || that_present_tableDescriptor) {
+        if (!(this_present_tableDescriptor && that_present_tableDescriptor))
           return false;
-        if (this.enabled != that.enabled)
-          return false;
-      }
-
-      boolean this_present_analyzerDef = true && this.isSetAnalyzerDef();
-      boolean that_present_analyzerDef = true && that.isSetAnalyzerDef();
-      if (this_present_analyzerDef || that_present_analyzerDef) {
-        if (!(this_present_analyzerDef && that_present_analyzerDef))
-          return false;
-        if (!this.analyzerDef.equals(that.analyzerDef))
-          return false;
-      }
-
-      boolean this_present_shardCount = true;
-      boolean that_present_shardCount = true;
-      if (this_present_shardCount || that_present_shardCount) {
-        if (!(this_present_shardCount && that_present_shardCount))
-          return false;
-        if (this.shardCount != that.shardCount)
-          return false;
-      }
-
-      boolean this_present_tableUri = true && this.isSetTableUri();
-      boolean that_present_tableUri = true && that.isSetTableUri();
-      if (this_present_tableUri || that_present_tableUri) {
-        if (!(this_present_tableUri && that_present_tableUri))
-          return false;
-        if (!this.tableUri.equals(that.tableUri))
+        if (!this.tableDescriptor.equals(that.tableDescriptor))
           return false;
       }
 
@@ -13094,42 +12902,12 @@ public class Blur {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetEnabled()).compareTo(typedOther.isSetEnabled());
+      lastComparison = Boolean.valueOf(isSetTableDescriptor()).compareTo(typedOther.isSetTableDescriptor());
       if (lastComparison != 0) {
         return lastComparison;
       }
-      if (isSetEnabled()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.enabled, typedOther.enabled);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetAnalyzerDef()).compareTo(typedOther.isSetAnalyzerDef());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetAnalyzerDef()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.analyzerDef, typedOther.analyzerDef);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetShardCount()).compareTo(typedOther.isSetShardCount());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetShardCount()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.shardCount, typedOther.shardCount);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
-      lastComparison = Boolean.valueOf(isSetTableUri()).compareTo(typedOther.isSetTableUri());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTableUri()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableUri, typedOther.tableUri);
+      if (isSetTableDescriptor()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.tableDescriptor, typedOther.tableDescriptor);
         if (lastComparison != 0) {
           return lastComparison;
         }
@@ -13158,32 +12936,10 @@ public class Blur {
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
             break;
-          case 2: // ENABLED
-            if (field.type == org.apache.thrift.protocol.TType.BOOL) {
-              this.enabled = iprot.readBool();
-              setEnabledIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 3: // ANALYZER_DEF
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.analyzerDef = iprot.readString();
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 4: // SHARD_COUNT
-            if (field.type == org.apache.thrift.protocol.TType.I32) {
-              this.shardCount = iprot.readI32();
-              setShardCountIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 5: // TABLE_URI
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.tableUri = iprot.readString();
+          case 2: // TABLE_DESCRIPTOR
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.tableDescriptor = new TableDescriptor();
+              this.tableDescriptor.read(iprot);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
             }
@@ -13208,20 +12964,9 @@ public class Blur {
         oprot.writeString(this.table);
         oprot.writeFieldEnd();
       }
-      oprot.writeFieldBegin(ENABLED_FIELD_DESC);
-      oprot.writeBool(this.enabled);
-      oprot.writeFieldEnd();
-      if (this.analyzerDef != null) {
-        oprot.writeFieldBegin(ANALYZER_DEF_FIELD_DESC);
-        oprot.writeString(this.analyzerDef);
-        oprot.writeFieldEnd();
-      }
-      oprot.writeFieldBegin(SHARD_COUNT_FIELD_DESC);
-      oprot.writeI32(this.shardCount);
-      oprot.writeFieldEnd();
-      if (this.tableUri != null) {
-        oprot.writeFieldBegin(TABLE_URI_FIELD_DESC);
-        oprot.writeString(this.tableUri);
+      if (this.tableDescriptor != null) {
+        oprot.writeFieldBegin(TABLE_DESCRIPTOR_FIELD_DESC);
+        this.tableDescriptor.write(oprot);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldStop();
@@ -13241,27 +12986,11 @@ public class Blur {
       }
       first = false;
       if (!first) sb.append(", ");
-      sb.append("enabled:");
-      sb.append(this.enabled);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("analyzerDef:");
-      if (this.analyzerDef == null) {
+      sb.append("tableDescriptor:");
+      if (this.tableDescriptor == null) {
         sb.append("null");
       } else {
-        sb.append(this.analyzerDef);
-      }
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("shardCount:");
-      sb.append(this.shardCount);
-      first = false;
-      if (!first) sb.append(", ");
-      sb.append("tableUri:");
-      if (this.tableUri == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.tableUri);
+        sb.append(this.tableDescriptor);
       }
       first = false;
       sb.append(")");
@@ -13282,8 +13011,6 @@ public class Blur {
 
     private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
       try {
-        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
-        __isset_bit_vector = new BitSet(1);
         read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
       } catch (org.apache.thrift.TException te) {
         throw new java.io.IOException(te);

@@ -134,7 +134,11 @@ class QueryController < ApplicationController
 
   def query_time_cpu
     curr_queries = []
-    q = BlurQueries.where(:table_name => 'test-table').all
+    if (params[:table] == "all")
+      q = BlurQueries.all
+    else
+      q = BlurQueries.where(:table_name => params[:table]).all
+    end
     q.each do |a|
       curr_queries.push(a.cpu_time)
     end
@@ -144,7 +148,11 @@ class QueryController < ApplicationController
 
    def query_time_real
     curr_queries = []
-    q = BlurQueries.where(:table_name => 'test-table').all
+    if (params[:table] == "all")
+      q = BlurQueries.all
+    else
+      q = BlurQueries.where(:table_name => params[:table]).all
+    end
     q.each do |a|
       curr_queries.push(a.real_time)
     end

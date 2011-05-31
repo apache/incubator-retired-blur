@@ -111,6 +111,7 @@ $(document).ready ->
   #initial ajax request on page load
   makeAJAXRequest1()
   makeAJAXRequest2()
+  filter_table($('#table-select').val())
 
   #sets up the listners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->

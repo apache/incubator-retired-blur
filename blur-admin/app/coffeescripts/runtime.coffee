@@ -92,6 +92,7 @@ $(document).ready ->
       realTime: realTime
       xValues: xValues
     return graphData
+
   #FUNCTION Filter the query table
   filter_table = (table_name) ->
     if table_name == 'all'
@@ -136,6 +137,17 @@ $(document).ready ->
     )
 
   #Set up filter table
-  $('#queries-table').dataTable()
+  $('#queries-table').dataTable().columnFilter({
+    aoColumns: [
+      {type: "number"}
+      {type: "select", values: [ 'On', 'Off']}
+      {type: "number"}
+      {type: "number"}
+      {type: "number"}
+      {type: "select", values: [ 'complete', 'incomplete', 'interrupted']}
+      {type: "number"}
+      null
+    ]
+   })
   
 

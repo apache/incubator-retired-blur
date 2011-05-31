@@ -1,7 +1,7 @@
 - content_for :title, 'Runtime'
 
 - content_for :javascript do
-  = javascript_include_tag 'compiled/runtime', 'jquery.dataTables.js'
+  = javascript_include_tag 'compiled/runtime', 'jquery.dataTables.js', 'jquery.dataTables.columnFilter.js'
 
 = stylesheet_link_tag 'demo_table.css'
 Tables:
@@ -26,7 +26,20 @@ Tables:
     %h2 Queries
   %table#queries-table
     %thead
-      %tr#queries-table-header
+      %tr
+        %th Query
+        %th Super Query
+        %th Start
+        %th Fetch
+        %th
+          Time - ms
+          %br
+          (cpu/real)
+        %th Status
+        %th uuid
+        %th Actions
+    %tfoot
+      %tr
         %th Query
         %th Super Query
         %th Start
@@ -74,13 +87,13 @@ Tables:
               ???
           %td
             -if (query.uuid)
-              = number_with_delimiter(query.uuid, :delimiter => ',')
+              = query.uuid
             -else
               ???
           %td
             -if (query.running)
               %input{:type => "button", :class => "runtime-cancel-query", :value => "Cancel", :id => query.uuid, :title => query.table_name}
-
+           
       -if @running_queries.empty?
         %tr
           %td{:colspan => 8, :class => 'error'}

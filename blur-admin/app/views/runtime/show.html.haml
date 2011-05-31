@@ -1,9 +1,12 @@
 - content_for :title, 'Runtime'
+
 - content_for :javascript do
   = javascript_include_tag 'compiled/runtime'
 
 Tables:
 %select#table-select{:name => 'tables'}
+  %option{:value => 'all'}
+    All
   -@tables.each do |table|
     %option{:value => table}
       =table
@@ -34,7 +37,7 @@ Tables:
       %th uuid
       %th Actions
     -@running_queries.each do |query|
-      %tr
+      %tr{:class => "#{query.table_name}"}
         %th
           =query.query_string
         %th

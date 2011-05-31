@@ -93,10 +93,20 @@ $(document).ready ->
       xValues: xValues
     return graphData
 
+
+  #FUNCTION Filter the query table
+  filter_table = (table_name) ->
+    if table_name == 'all'
+      $('#queries-table tr').show()
+    else
+      $('#queries-table tr').filter(".#{table_name}").show()
+      $('#queries-table tr').not(".#{table_name}").hide()
+
   #change listener for the table selector
   $('#table-select').change ->
     makeAJAXRequest1()
     makeAJAXRequest2()
+    filter_table($('#table-select').val())
 
   #initial ajax request on page load
   makeAJAXRequest1()

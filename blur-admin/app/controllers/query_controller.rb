@@ -129,8 +129,26 @@ class QueryController < ApplicationController
     running_queries = client.currentQueries(params[:table])
     close_thrift
 
-    #running_queries = BlurQueries.where(:table_name => 'test-table').all
-
     render :json => running_queries
+  end
+
+  def query_time_cpu
+    curr_queries = []
+    q = BlurQueries.where(:table_name => 'test-table').all
+    q.each do |a|
+      curr_queries.push(a.cpu_time)
+    end
+
+    render :json => curr_queries
+  end
+
+   def query_time_real
+    curr_queries = []
+    q = BlurQueries.where(:table_name => 'test-table').all
+    q.each do |a|
+      curr_queries.push(a.real_time)
+    end
+
+    render :json => curr_queries
   end
 end

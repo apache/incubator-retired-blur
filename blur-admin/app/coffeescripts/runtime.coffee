@@ -5,7 +5,7 @@ $(document).ready ->
   makeAJAXRequest1 =() ->
     table = $('#table-select').val()
     if table != ' ' and table != undefined and table != 'undefined'
-      url = '/query/cpu/' + table
+      url = '/runtime/cpu/' + table
       $.ajax(
         url: url
         type: 'GET'
@@ -22,7 +22,7 @@ $(document).ready ->
   makeAJAXRequest2 =() ->
     table = $('#table-select').val()
     if table != ' ' and table != undefined and table != 'undefined'
-      url = '/query/real/' + table
+      url = '/runtime/real/' + table
       $.ajax(
         url: url
         type: 'GET'
@@ -115,7 +115,7 @@ $(document).ready ->
   $('.runtime-cancel-query').click(() ->
     uuid = $(this).attr('id')
     table = $(this).attr('title')
-    url = '/query/cancel/' + table + '/' + uuid
+    url = '/runtime/cancel/' + table + '/' + uuid
     $.ajax(
       url: url
       type: 'GET'

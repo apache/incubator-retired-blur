@@ -32,7 +32,7 @@ $(document).ready ->
     cpuGraph.g.txtattr.font = font
     cpuGraph.g.linechart(10,0,190,190,graphData.xValues,graphData.cpuTime,{axis:"0 0 1 1"})
 
-    $('#average-time-graph').empty()
+    $('#average-time-graph').empty()#
     realGraph = Raphael('average-time-graph')
     realGraph.g.txtattr.font = font
     realGraph.g.linechart(10,0,190,190,graphData.xValues,graphData.realTime,{axis:"0 0 1 1"})
@@ -60,7 +60,7 @@ $(document).ready ->
       cpuTime: cpuTime
       xValues: xValues
     return graphData
-
+#
   #FUNCTION Filter the query table
   filter_table = (table_name) ->
     if table_name == 'all'
@@ -78,7 +78,7 @@ $(document).ready ->
   #initial ajax request on page load
   makeAJAXRequest()
 
-  #sets up the listners for the cancel buttons (mysql)
+  #sets up the listeners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->
     uuid = $(this).attr('id')
     table = $('#table-select').val()
@@ -88,3 +88,8 @@ $(document).ready ->
       type: 'GET'
       )
     )
+
+  #Set up filter table
+  $('#queries-table').dataTable()
+  
+

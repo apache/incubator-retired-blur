@@ -61,18 +61,22 @@ $(document).ready ->
       xValues: xValues
     return graphData
 
-
+  #FUNCTION Filter the query table
+  filter_table = (table_name) ->
+    if table_name == 'all'
+      $('#queries-table tr').show()
+    else
+      $('#queries-table tr').filter(".#{table_name}").show()
+      $('#queries-table tr').not(".#{table_name}").hide()
 
   #change listener for the table selector
   $('#table-select').change ->
     #makeAJAXRequest()
+    filter_table($('#table-select').val())
+
 
   #initial ajax request on page load
   makeAJAXRequest()
-
-
-
-
 
   #sets up the listners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->

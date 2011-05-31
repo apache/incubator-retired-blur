@@ -3,7 +3,7 @@ class RuntimeController < ApplicationController
   def show
     client = setup_thrift
     @tables = client.tableList()
-    @running_queries = BlurQueries.where(:table_name => 'employee_super_mart').all
+    @running_queries = BlurQueries.where(:table_name => 'test-table').all
     close_thrift
   end
 

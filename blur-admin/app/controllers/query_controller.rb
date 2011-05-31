@@ -120,7 +120,7 @@ class QueryController < ApplicationController
 
   def cancel
     client = setup_thrift
-    client.cancelQuery(param[:table], param[:uuid])
+    client.cancelQuery(params[:table], params[:uuid])
     close_thrift
   end
 
@@ -128,6 +128,8 @@ class QueryController < ApplicationController
     client = setup_thrift
     running_queries = client.currentQueries(params[:table])
     close_thrift
+
+    #running_queries = BlurQueries.where(:table_name => 'test-table').all
 
     render :json => running_queries
   end

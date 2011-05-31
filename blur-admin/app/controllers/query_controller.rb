@@ -22,7 +22,7 @@ class QueryController < ApplicationController
 		# TODO: Add in fetch filter, paging, superQueryOn/Off
 		
 	  table = params[:t]
-		bq = BG::BlurQuery.new
+		bq = Blur::BlurQuery.new
     bq.queryStr = params[:q]
 		bq.fetch = 25
 		bq.uuid = Time.now.to_i*1000+rand(1000)
@@ -58,7 +58,7 @@ class QueryController < ApplicationController
 
 		blur_results.results.each do |result|
 			location_id = result.locationId
-			sel = BG::Selector.new
+			sel = Blur::Selector.new
 			sel.locationId = location_id
 			sel.columnFamiliesToFetch = families unless families.blank?
 			sel.columnsToFetch = columns unless columns.blank?

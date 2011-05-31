@@ -133,30 +133,30 @@ class QueryController < ApplicationController
   end
 
   def query_time_cpu
-    curr_queries = []
+    curr_cpu_times = []
     if (params[:table] == "all")
-      q = BlurQueries.all
+      curr_queries = BlurQueries.all
     else
-      q = BlurQueries.where(:table_name => params[:table]).all
+      curr_queries = BlurQueries.where(:table_name => params[:table]).all
     end
-    q.each do |a|
-      curr_queries.push(a.cpu_time)
+    curr_queries.each do |a|
+      curr_cpu_times.push(a.cpu_time)
     end
 
-    render :json => curr_queries
+    render :json => curr_cpu_times
   end
 
    def query_time_real
-    curr_queries = []
+    curr_real_times = []
     if (params[:table] == "all")
-      q = BlurQueries.all
+      curr_queries = BlurQueries.all
     else
-      q = BlurQueries.where(:table_name => params[:table]).all
+      curr_queries = BlurQueries.where(:table_name => params[:table]).all
     end
-    q.each do |a|
-      curr_queries.push(a.real_time)
+    curr_queries.each do |a|
+      curr_real_times.push(a.real_time)
     end
 
-    render :json => curr_queries
+    render :json => curr_real_times
   end
 end

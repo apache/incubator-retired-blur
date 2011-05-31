@@ -49,12 +49,12 @@ $(document).ready ->
   prepGraphData1 = (queries) ->
     cpuTime = new Array
     xValues = new Array
+    i = 0
     $.each(queries, (index, query) ->
-      if (isNaN(query))
-        cpuTime[index] = 0
-      else
-        cpuTime[index] = query
-      xValues[index] = index
+      if (!isNaN(query) and query != null)
+        cpuTime[i] = query
+        xValues[i] = i
+        i++
     )
     graphData =
       cpuTime: cpuTime
@@ -81,12 +81,12 @@ $(document).ready ->
   prepGraphData2 = (queries) ->
     realTime = new Array
     xValues = new Array
+    i = 0
     $.each(queries, (index, query) ->
-      if(isNaN(query))
-        realTime[index] = 0
-      else
-        realTime[index] = query
-      xValues[index] = index
+      if(!isNaN(query) and query != null)
+        realTime[i] = query
+        xValues[i] = i
+        i++
     )
     graphData =
       realTime: realTime

@@ -111,19 +111,6 @@ $(document).ready ->
   makeAJAXRequest2()
   filter_table($('#table-select').val())
 
-  #FUNCTION get_canceled_table:
-  #returns the table for a canceled query
-  get_canceled_table = (table_uuid) ->
-    url = '/query/table/' + table_uuid
-    $.ajax(
-      url: url
-      type: 'GET'
-      dataType: 'json'
-      success: (data) ->
-        return data
-    )
-  setTimeout(get_canceled_table, 5000)
-
   #sets up the listeners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->
     uuid = $(this).attr('id')

@@ -11,7 +11,6 @@ BlurAdmin::Application.routes.draw do
     match 'query/cancel/:table/:uuid', :to => :cancel, :as => :cancel, :via => :get
     match 'query/cpu/:table', :to => :query_time_cpu, :as => :query_time_cpu, :via => :get
     match 'query/real/:table', :to => :query_time_real, :as => :query_time_real, :via => :get
-    match 'query/table/:uuid', :to => :query_table, :as => :query_table, :via => :get
     match 'query/:table/filters', :to => :filters, :as => :query_filters, :via => :get
   end
 

@@ -152,9 +152,4 @@ class QueryController < ApplicationController
     render :json => curr_real_times
   end
 
-  def query_table
-    this_table_name = BlurQueries.where(:uuid => params[:uuid]).first.table_name
-
-    render :json => this_table_name
-  end
 end

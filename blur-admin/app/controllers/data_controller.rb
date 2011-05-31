@@ -3,7 +3,7 @@ class DataController < ApplicationController
 
   def show
     client = setup_thrift
-    bq = BG::BlurQuery.new
+    bq = Blur::BlurQuery.new
     bq.queryStr = '*'
 		bq.fetch = 1
     bq.superQueryOn = false

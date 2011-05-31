@@ -124,13 +124,37 @@ class QueryController < ApplicationController
     close_thrift
   end
 
-  def current_queries
-    client = setup_thrift
-    running_queries = client.currentQueries(params[:table])
-    close_thrift
+  def query_time_cpu
+    curr_cpu_times = []
+    if (params[:table] == "all")
+      curr_queries = BlurQueries.all
+    else
+      curr_queries = BlurQueries.where(:table_name => params[:table]).all
+    end
+    curr_queries.each do |a|
+      curr_cpu_times.push(a.cpu_time)
+    end
 
-    #running_queries = BlurQueries.where(:table_name => 'test-table').all
+    render :json => curr_cpu_times
+  end
 
-    render :json => running_queries
+   def query_time_real
+    curr_real_times = []
+    if (params[:table] == "all")
+      curr_queries = BlurQueries.all
+    else
+      curr_queries = BlurQueries.where(:table_name => params[:table]).all
+    end
+    curr_queries.each do |a|
+      curr_real_times.push(a.real_time)
+    end
+
+    render :json => curr_real_times
+  end
+
+  def query_table
+    this_table_name = BlurQueries.where(:uuid => params[:uuid]).first.table_name
+
+    render :json => this_table_name
   end
 end

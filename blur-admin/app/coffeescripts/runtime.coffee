@@ -125,6 +125,7 @@ $(document).ready ->
 
   #Set up filter table
   $('#queries-table').dataTable().columnFilter({
+    sPlaceHolder: 'head:after'
     aoColumns: [
       {type: "number"}
       {type: "select", values: [ 'On', 'Off']}

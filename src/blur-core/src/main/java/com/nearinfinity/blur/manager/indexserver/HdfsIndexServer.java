@@ -37,7 +37,7 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.IndexReader.FieldOption;
-import org.apache.lucene.store.LockFactory;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -45,7 +45,9 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
+import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.store.replication.ReplicationStrategy;
@@ -58,7 +60,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
 
     private LocalFileCache _localFileCache;
-    private LockFactory _lockFactory;
     private ReplicationDaemon _replicationDaemon;
     private boolean _closed;
     private ReplicationStrategy _replicationStrategy;
@@ -67,6 +68,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private BlurIndexCommiter _commiter;
     private int _blockSize = 65536;
     private CompressionCodec _compression = new DeflaterCompressionCodec();
+
+    private ZooKeeper _zookeeper;
     
     @Override
     public void init() {
@@ -100,7 +103,9 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         if (!fileSystem.exists(hdfsDirPath)) {
             throw new FileNotFoundException(hdfsDirPath.toString());
         }
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, _localFileCache, _lockFactory, new Progressable() {
+        
+        ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getBlurTablesLocksPath(), HdfsUtil.getDirName(table, shard));
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, _localFileCache, lockFactory, new Progressable() {
             @Override
             public void progress() {
                 //do nothing for now
@@ -186,10 +191,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         this._localFileCache = localFileCache;
     }
 
-    public void setLockFactory(LockFactory lockFactory) {
-        this._lockFactory = lockFactory;
-    }
-
     public void setReplicationDaemon(ReplicationDaemon replicationDaemon) {
         this._replicationDaemon = replicationDaemon;
     }
@@ -198,5 +199,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         this._replicationStrategy = replicationStrategy;
     }
 
+    public void setZookeeper(ZooKeeper zookeeper) {
+        _zookeeper = zookeeper;
+    }
 
 }

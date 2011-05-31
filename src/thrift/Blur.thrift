@@ -137,7 +137,9 @@ struct TableDescriptor {
   1:bool isEnabled,
   2:AnalyzerDefinition analyzerDefinition,
   3:i32 shardCount,
-  4:string tableUri
+  4:string tableUri,
+  5:string compressionClass,
+  6:int compressionBlockSize
 }
 
 struct BlurQueryStatus {

@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.lucene.store.LockFactory;
-import org.apache.lucene.store.NoLockFactory;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -93,8 +91,6 @@ public class ThriftBlurShardServer extends ThriftServer {
         localFileCache.setPotentialFiles(localFileCaches.toArray(new File[localFileCaches.size()]));
         localFileCache.init();
 
-        LockFactory lockFactory = new NoLockFactory();
-
         final ReplicationDaemon replicationDaemon = new ReplicationDaemon();
         replicationDaemon.setLocalFileCache(localFileCache);
         replicationDaemon.init();
@@ -112,7 +108,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
-        indexServer.setLockFactory(lockFactory);
+        indexServer.setZookeeper(zooKeeper);
         indexServer.setNodeName(nodeName);
         indexServer.setDistributedManager(dzk);
         indexServer.setReplicationDaemon(replicationDaemon);

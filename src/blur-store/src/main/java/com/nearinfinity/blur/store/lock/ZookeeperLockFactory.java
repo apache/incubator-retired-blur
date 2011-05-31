@@ -22,6 +22,8 @@ import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -35,15 +37,38 @@ import com.nearinfinity.blur.zookeeper.ZkUtils;
 public class ZookeeperLockFactory extends LockFactory {
 
     private final static Log LOG = LogFactory.getLog(ZookeeperLockFactory.class);
-    private ZooKeeper zk;
-    private String indexLockPath;
-    private String holderName;
+    private ZooKeeper _zk;
+    private String _lockPath;
+    
+    public static void main(String[] args) throws IOException, InterruptedException {
+        ZooKeeper zk = new ZooKeeper("localhost", 10000, new Watcher() {
+            @Override
+            public void process(WatchedEvent event) {
+                
+            }
+            
+        });
+        ZookeeperLock zookeeperLock1 = new ZookeeperLock(zk, "/test/locks", "myname1");
+        ZookeeperLock zookeeperLock2 = new ZookeeperLock(zk, "/test/locks", "myname2");
+        System.out.println(zookeeperLock1.isLocked());
+        System.out.println(zookeeperLock1.obtain());
+        System.out.println(zookeeperLock1.isLocked());
+        
+        System.out.println(zookeeperLock2.isLocked());
+        System.out.println(zookeeperLock2.obtain());
+        System.out.println(zookeeperLock2.isLocked());
+        
+        ZookeeperLock zookeeperLock3 = new ZookeeperLock(zk, "/test/locks", "myname2");
+        while (!zookeeperLock3.obtain()) {
+            Thread.sleep(5000);
+            System.out.println("try again");
+        }
+    }
 
-    public ZookeeperLockFactory(ZooKeeper zk, String indexLockPath, String holderName) {
-        this.indexLockPath = indexLockPath;
-        this.zk = zk;
-        this.holderName = holderName;
-        ZkUtils.mkNodesStr(zk, indexLockPath);
+    public ZookeeperLockFactory(ZooKeeper zk, String sharedLockPath, String name) {
+        _lockPath = sharedLockPath + "/" + name;
+        _zk = zk;
+        ZkUtils.mkNodesStr(_zk, _lockPath);
     }
 
     @Override
@@ -54,7 +79,7 @@ public class ZookeeperLockFactory extends LockFactory {
     @Override
     public Lock makeLock(String lockName) {
         try {
-            return new ZookeeperLock(zk, indexLockPath, lockName, holderName);
+            return new ZookeeperLock(_zk, _lockPath, lockName);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -62,21 +87,20 @@ public class ZookeeperLockFactory extends LockFactory {
 
     public static class ZookeeperLock extends Lock {
 
-        private ZooKeeper zk;
-        private String instanceIndexLockPath;
-        private byte[] holderName;
+        private ZooKeeper _zk;
+        private String _instanceIndexLockPath;
+        private Stat _stat;
 
-        public ZookeeperLock(ZooKeeper zk, String indexLockPath, String name, String holderName) throws IOException {
-            ZkUtils.mkNodesStr(zk, indexLockPath);
-            this.zk = zk;
-            this.holderName = holderName.getBytes();
-            this.instanceIndexLockPath = ZkUtils.getPath(indexLockPath, name);
+        public ZookeeperLock(ZooKeeper zk, String lockPath, String lockName) throws IOException {
+            ZkUtils.mkNodesStr(zk, lockPath);
+            _zk = zk;
+            _instanceIndexLockPath = ZkUtils.getPath(lockPath, lockName);
         }
 
         @Override
         public boolean isLocked() throws IOException {
             try {
-                Stat stat = zk.exists(instanceIndexLockPath, false);
+                Stat stat = _zk.exists(_instanceIndexLockPath, false);
                 if (stat == null) {
                     return false;
                 }
@@ -91,7 +115,8 @@ public class ZookeeperLockFactory extends LockFactory {
         @Override
         public boolean obtain() throws IOException {
             try {
-                zk.create(instanceIndexLockPath, holderName, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+                _zk.create(_instanceIndexLockPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+                _stat = _zk.exists(_instanceIndexLockPath, false);
                 return true;
             } catch (KeeperException e) {
                 if (e.code() == Code.NODEEXISTS) {
@@ -106,7 +131,7 @@ public class ZookeeperLockFactory extends LockFactory {
         @Override
         public void release() throws IOException {
             try {
-                zk.delete(instanceIndexLockPath, -1);
+                _zk.delete(_instanceIndexLockPath, _stat.getVersion());
             } catch (InterruptedException e) {
                 throw new IOException(e);
             } catch (KeeperException e) {

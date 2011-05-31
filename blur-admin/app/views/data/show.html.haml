@@ -21,7 +21,14 @@
           %b
             =table
         %td
-          =get_shards(table)
+          %ul.table-def
+            -get_shards(table).each do |host, shards|
+              %li
+                =host
+                %ul.table-def-families
+                  -shards.each do |shard|
+                    %li
+                      =shard
         %td
           =get_count(table)
         %td

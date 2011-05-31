@@ -1,10 +1,14 @@
 module DataHelper
   def get_shards(table)
-    shards_str = ""
+    hosts = Hash.new
     @tserver[table].each do |shard,host|
-      shards_str += shard + "->" + host + "  "
+      if hosts.has_key?(host)
+        hosts[host].push(shard)
+      else
+        hosts[host] = [shard]
+      end
     end
-    return shards_str
+    return hosts
   end
 
   def get_count(table)

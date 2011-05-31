@@ -24,6 +24,7 @@ import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public interface IndexServer {
     
@@ -122,5 +123,9 @@ public interface IndexServer {
     String getTableUri(String table);
     
     int getShardCount(String table);
+    
+    CompressionCodec getCompressionCodec(String table);
+    
+    int getCompressionBlockSize(String table);
 
 }

@@ -22,14 +22,17 @@ import com.nearinfinity.blur.BlurConfiguration;
 
 public class ZookeeperPathConstants {
     
-    private static final String DEFAULT = "default";
-    private static final String BLUR_CLUSTER_NAME = "blur.cluster.name";
-    private static final String BLUR_BASE_PATH                  = "/blur/" + getClusterName();
+    private static final String DEFAULT                            = "default";
+    private static final String BLUR_CLUSTER_NAME                  = "blur.cluster.name";
+    private static final String BLUR_BASE_PATH                     = "/blur/" + getClusterName();
     
-    private static final String BLUR_TABLES_ENABLED             = "enabled";
+    private static final String BLUR_TABLES_ENABLED                = "enabled";
     // /blur/tables/<name>/enabled will indicate that the table is enabled
-    private static final String BLUR_TABLES_URI                 = "uri";
-    private static final String BLUR_TABLES_SHARD_COUNT         = "shard-count";
+    private static final String BLUR_TABLES_URI                    = "uri";
+    private static final String BLUR_TABLES_SHARD_COUNT            = "shard-count";
+    private static final String BLUR_TABLES_COMPRESSION_CODEC      = "compression-codec";
+    private static final String BLUR_TABLES_COMPRESSION_BLOCK_SIZE = "compression-blocksize";
+    
     
     private static final String BLUR_ONLINE_PATH                = BLUR_BASE_PATH + "/online";
     private static final String BLUR_ONLINE_SHARDS_PATH         = BLUR_BASE_PATH + "/online/shard-nodes";
@@ -90,5 +93,11 @@ public class ZookeeperPathConstants {
     }
     public static String getBlurTablesLocksPath() {
         return BLUR_TABLES_LOCKS;
+    }
+    public static String getBlurTablesCompressionCodec() {
+        return BLUR_TABLES_COMPRESSION_CODEC;
+    }
+    public static String getBlurTablesCompressionBlockSize() {
+        return BLUR_TABLES_COMPRESSION_BLOCK_SIZE;
     }
 }

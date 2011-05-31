@@ -34,25 +34,33 @@ import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
+import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public class CreateTable {
     
     private static Log LOG = LogFactory.getLog(CreateTable.class);
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
         String zkConnectionStr = args[0];
         String table = args[1];
         BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
         String uri = args[3];
         String shardCount = args[4];
+        CompressionCodec codec = getInstance(args[5]);
+        String blockSize = args[6];
 
         ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
         ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
         dm.setZooKeeper(zooKeeper);
-        createTable(dm,table,analyzer,uri,Integer.parseInt(shardCount));
+        createTable(dm,table,analyzer,uri,Integer.parseInt(shardCount),codec,Integer.parseInt(blockSize));
     }
     
-    public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, int shardCount) throws IOException {
+    public static CompressionCodec getInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+        Class<?> clazz = Class.forName(className);
+        return (CompressionCodec) clazz.newInstance();
+    }
+
+    public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, int shardCount, CompressionCodec compressionCodec, int compressionBlockSize) throws IOException {
         if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
             throw new IOException("Table [" + table + "] already exists.");
         }
@@ -60,9 +68,13 @@ public class CreateTable {
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table);
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
         dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
+        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
         dm.saveData(analyzer.toJSON().getBytes(),             ZookeeperPathConstants.getBlurTablesPath(), table);
         dm.saveData(uri.getBytes(),                           ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
         dm.saveData(Integer.toString(shardCount).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
+        dm.saveData(compressionCodec.getClass().getName().getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
+        dm.saveData(Integer.toString(compressionBlockSize).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
     }
 
     private static void setupFileSystem(String uri, int shardCount) throws IOException {

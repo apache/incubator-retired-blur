@@ -46,36 +46,40 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.lucene.compressed.CompressionCodec;
+import com.nearinfinity.lucene.compressed.DeflaterCompressionCodec;
 
 public class LocalIndexServer implements IndexServer {
-    
+
     private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
-    
-    private Map<String,Map<String, BlurIndex>> readersMap = new ConcurrentHashMap<String, Map<String,BlurIndex>>();
-    private File localDir;
-    private BlurIndexCommiter commiter;
-    private BlurIndexReaderCloser closer;
-    
+
+    private Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
+    private File _localDir;
+    private BlurIndexCommiter _commiter;
+    private BlurIndexReaderCloser _closer;
+    private int _blockSize = 65536;
+    private CompressionCodec _compression = new DeflaterCompressionCodec();
+
     public LocalIndexServer(File file) {
-        this.localDir = file;
-        this.localDir.mkdirs();
-        this.commiter = new BlurIndexCommiter();
-        this.commiter.init();
-        this.closer = new BlurIndexReaderCloser();
-        this.closer.init();
+        this._localDir = file;
+        this._localDir.mkdirs();
+        this._commiter = new BlurIndexCommiter();
+        this._commiter.init();
+        this._closer = new BlurIndexReaderCloser();
+        this._closer.init();
     }
 
     @Override
     public BlurAnalyzer getAnalyzer(String table) {
-        return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30,new HashSet<String>()));
+        return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30, new HashSet<String>()));
     }
 
     @Override
     public Map<String, BlurIndex> getIndexes(String table) throws IOException {
-        Map<String, BlurIndex> tableMap = readersMap.get(table);
+        Map<String, BlurIndex> tableMap = _readersMap.get(table);
         if (tableMap == null) {
             tableMap = openFromDisk(table);
-            readersMap.put(table, tableMap);
+            _readersMap.put(table, tableMap);
         }
         return tableMap;
     }
@@ -84,40 +88,40 @@ public class LocalIndexServer implements IndexServer {
     public Similarity getSimilarity(String table) {
         return new FairSimilarity();
     }
-    
+
     @Override
     public void close() {
-        commiter.close();
-        closer.stop();
-        for (String table : readersMap.keySet()) {
-            close(readersMap.get(table));
+        _commiter.close();
+        _closer.stop();
+        for (String table : _readersMap.keySet()) {
+            close(_readersMap.get(table));
         }
     }
-    
+
     private void close(Map<String, BlurIndex> map) {
         for (BlurIndex index : map.values()) {
             try {
                 index.close();
             } catch (Exception e) {
-                LOG.error("Error while trying to close index.",e);
+                LOG.error("Error while trying to close index.", e);
             }
         }
     }
 
     private Map<String, BlurIndex> openFromDisk(String table) throws IOException {
-        File tableFile = new File(localDir,table);
+        File tableFile = new File(_localDir, table);
         if (tableFile.isDirectory()) {
             Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
             for (File f : tableFile.listFiles()) {
                 if (f.isDirectory()) {
-//                    Directory directory = FSDirectory.open(f);
+                    // Directory directory = FSDirectory.open(f);
                     MMapDirectory directory = new MMapDirectory(f);
                     if (!IndexReader.indexExists(directory)) {
                         new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED).close();
                     }
                     warmUp(directory);
                     String shardName = f.getName();
-                    shards.put(shardName,openIndex(table,directory));
+                    shards.put(shardName, openIndex(table, directory));
                 }
             }
             return shards;
@@ -153,8 +157,8 @@ public class LocalIndexServer implements IndexServer {
         BlurIndexWriter writer = new BlurIndexWriter();
         writer.setDirectory(dir);
         writer.setAnalyzer(getAnalyzer(table));
-        writer.setCommiter(commiter);
-        writer.setCloser(closer);
+        writer.setCommiter(_commiter);
+        writer.setCloser(_closer);
         writer.init();
         return writer;
     }
@@ -176,14 +180,14 @@ public class LocalIndexServer implements IndexServer {
 
     @Override
     public List<String> getTableList() {
-        return new ArrayList<String>(readersMap.keySet());
+        return new ArrayList<String>(_readersMap.keySet());
     }
 
     @Override
     public List<String> getShardList(String table) {
         try {
             List<String> result = new ArrayList<String>();
-            File tableFile = new File(localDir,table);
+            File tableFile = new File(_localDir, table);
             if (tableFile.isDirectory()) {
                 for (File f : tableFile.listFiles()) {
                     if (f.isDirectory()) {
@@ -201,7 +205,7 @@ public class LocalIndexServer implements IndexServer {
     public List<String> getOfflineShardServers() {
         return new ArrayList<String>();
     }
-    
+
     @Override
     public List<String> getOnlineShardServers() {
         return getShardServerList();
@@ -214,11 +218,21 @@ public class LocalIndexServer implements IndexServer {
 
     @Override
     public String getTableUri(String table) {
-        return new File(localDir,table).toURI().toString();
+        return new File(_localDir, table).toURI().toString();
     }
 
     @Override
     public int getShardCount(String table) {
         return getShardList(table).size();
+    }
+
+    @Override
+    public int getCompressionBlockSize(String table) {
+        return _blockSize;
+    }
+
+    @Override
+    public CompressionCodec getCompressionCodec(String table) {
+        return _compression;
     }
 }

@@ -30,6 +30,7 @@ import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public class BlurShardServerTest {
     
@@ -127,6 +128,16 @@ public class BlurShardServerTest {
 
             @Override
             public int getShardCount(String table) {
+                throw new RuntimeException("no impl");
+            }
+
+            @Override
+            public int getCompressionBlockSize(String table) {
+                throw new RuntimeException("no impl");
+            }
+
+            @Override
+            public CompressionCodec getCompressionCodec(String table) {
                 throw new RuntimeException("no impl");
             }
 

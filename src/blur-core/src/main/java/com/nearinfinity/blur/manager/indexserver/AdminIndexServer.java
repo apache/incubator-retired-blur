@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurTablesCompressionBlockSize;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurTablesCompressionCodec;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurTablesEnabled;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurTablesPath;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurTablesShardCount;
@@ -46,6 +48,7 @@ import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public abstract class AdminIndexServer implements IndexServer {
     
@@ -250,8 +253,32 @@ public abstract class AdminIndexServer implements IndexServer {
     @Override
     public int getShardCount(String table) {
         Value value = new Value();
-        dm.fetchData(value, getBlurTablesPath(),table,getBlurTablesShardCount());
+        dm.fetchData(value, getBlurTablesPath(), table, getBlurTablesShardCount());
         return Integer.parseInt(new String(value.data));
+    }
+    
+    @Override
+    public int getCompressionBlockSize(String table) {
+        Value value = new Value();
+        dm.fetchData(value, getBlurTablesPath(), table, getBlurTablesCompressionBlockSize());
+        return Integer.parseInt(new String(value.data));
+    }
+
+    @Override
+    public CompressionCodec getCompressionCodec(String table) {
+        Value value = new Value();
+        dm.fetchData(value, getBlurTablesPath(), table, getBlurTablesCompressionCodec());
+        return getInstance(new String(value.data));
+    }
+
+    private CompressionCodec getInstance(String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return (CompressionCodec) clazz.newInstance();
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get instance of [" + className + "]", e);
+            throw new RuntimeException(e);
+        }
     }
 
     public void setNodeName(String nodeName) {

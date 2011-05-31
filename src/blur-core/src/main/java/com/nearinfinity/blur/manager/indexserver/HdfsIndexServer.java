@@ -52,8 +52,6 @@ import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
-import com.nearinfinity.lucene.compressed.CompressionCodec;
-import com.nearinfinity.lucene.compressed.DeflaterCompressionCodec;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
@@ -66,8 +64,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private Configuration _configuration = new Configuration();
     private BlurIndexReaderCloser _closer;
     private BlurIndexCommiter _commiter;
-    private int _blockSize = 65536;
-    private CompressionCodec _compression = new DeflaterCompressionCodec();
+//    private int _blockSize = 65536;
+//    private CompressionCodec _compression = new DeflaterCompressionCodec();
 
     private ZooKeeper _zookeeper;
     
@@ -112,7 +110,11 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
             }
         }, _replicationDaemon, _replicationStrategy);
         
-        CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, _compression, _blockSize);
+        
+        
+        CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, 
+                getCompressionCodec(table), 
+                getCompressionBlockSize(table));
         
         BlurIndexWriter writer = new BlurIndexWriter();
         writer.setCloser(_closer);

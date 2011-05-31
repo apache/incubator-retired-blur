@@ -24,7 +24,9 @@ public abstract class TableAdmin implements Iface {
     public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, TException {
         try {
             BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
-            CreateTable.createTable(_dm,table,analyzer,tableDescriptor.tableUri,tableDescriptor.shardCount);
+            CreateTable.createTable(_dm,table,analyzer,tableDescriptor.tableUri,
+                    tableDescriptor.shardCount,CreateTable.getInstance(tableDescriptor.compressionClass),
+                    tableDescriptor.compressionBlockSize);
         } catch (Exception e) {
             LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, table, tableDescriptor);
             throw new BException(e.getMessage(), e);

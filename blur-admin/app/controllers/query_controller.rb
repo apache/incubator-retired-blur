@@ -124,14 +124,6 @@ class QueryController < ApplicationController
     close_thrift
   end
 
-  def current_queries
-    client = setup_thrift
-    running_queries = client.currentQueries(params[:table])
-    close_thrift
-
-    render :json => running_queries
-  end
-
   def query_time_cpu
     curr_cpu_times = []
     if (params[:table] == "all")
@@ -158,5 +150,11 @@ class QueryController < ApplicationController
     end
 
     render :json => curr_real_times
+  end
+
+  def query_table
+    this_table_name = BlurQueries.where(:uuid => params[:uuid]).first.table_name
+
+    render :json => this_table_name
   end
 end

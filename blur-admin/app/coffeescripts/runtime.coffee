@@ -93,7 +93,6 @@ $(document).ready ->
       xValues: xValues
     return graphData
 
-
   #FUNCTION Filter the query table
   filter_table = (table_name) ->
     if table_name == 'all'
@@ -113,10 +112,23 @@ $(document).ready ->
   makeAJAXRequest2()
   filter_table($('#table-select').val())
 
+  #FUNCTION get_canceled_table:
+  #returns the table for a canceled query
+  get_canceled_table = (table_uuid) ->
+    url = '/query/table/' + table_uuid
+    $.ajax(
+      url: url
+      type: 'GET'
+      dataType: 'json'
+      success: (data) ->
+        return data
+    )
+  setTimeout(get_canceled_table, 5000)
+
   #sets up the listners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->
     uuid = $(this).attr('id')
-    table = $('#table-select').val()
+    table = $(this).attr('title')
     url = '/query/cancel/' + table + '/' + uuid
     $.ajax(
       url: url

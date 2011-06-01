@@ -24,10 +24,11 @@ class RuntimeController < ApplicationController
       row = []
       columns.each do |column|
         if column == :complete
-          row.push "Complete" if query[column] == 1
-          row.push "Incomplete" if query[:incomplete] 
-          row.push "Interrupted" if query[:interrupted] 
-          row.push "Running" if query[:running]
+          if query[:complete] then row.push "Complete"
+          elsif query[:running] then row.push "Running"
+          elsif query[:interrupted] then row.push "Interrupted"
+          else row.push "???"
+          end
         else
           row.push query[column]
         end

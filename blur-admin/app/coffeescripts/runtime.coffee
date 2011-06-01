@@ -112,7 +112,6 @@ $(document).ready ->
   #initial ajax request on page load
   makeAJAXRequest1()
   makeAJAXRequest2()
-  filter_table($('#table-select').val())
 
   #sets up the listeners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->
@@ -127,22 +126,32 @@ $(document).ready ->
 
   #Table Updating Logic
   #TODO: Add table refreshing based on last updated field
-  oTable = ''
-  table_data = []
   
-  get_query_table = (table_name) ->
+  create_table = (table_id) ->
+    $(table_id).dataTable()
+
+  get_new_table_data = (table_name) ->
     $.ajax(
       url: '/runtime/queries/' + table_name
       dataType: 'json'
-      success: (data, textStatus, jqXHR) ->
-        console.log(data)
-        #Insert button if query is still running
-        (if a[8] then a[8] = "<input type='button', class='runtime-cancel-query', value='Cancel', id='#{a[7]}', table='#{a[9]}'>" else a[8] = '') for a in data
-        oTable = $('#queries-table').dataTable({
-          "aaData": data
-
-        })
-
-        console.log(oTable.fnGetData())
+      success: (data) ->
+        update_table(data)
     )
-  get_query_table('test-table')
+
+  update_table = (new_data) ->
+    old_data = table.fnGetData()
+
+    #add the new data to an empty table
+    table.fnAddData(new_data) if old_data = []
+    #otherwise figure out what changed and update the table
+    #sort both arrays by uuid, which is in the 8th index
+    new_data.sort (a, b) ->
+      a[7] - b[7]
+    old_data.sort (a, b) ->
+      a[7] - b[7]
+
+
+
+  #initialize table
+  table = create_table('#queries-table')
+  get_new_table_data('all')

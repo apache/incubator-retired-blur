@@ -17,8 +17,6 @@
 .jstree-apple a .jstree-icon { background-position:-56px -20px; }
 .jstree-apple a.jstree-loading .jstree-icon { background:url("throbber.gif") center center no-repeat !important; }
 
-.jstree-apple.jstree-focused { background:white; }
-
 .jstree-apple .jstree-no-dots li, 
 .jstree-apple .jstree-no-dots .jstree-leaf > ins { background:transparent; }
 .jstree-apple .jstree-no-dots .jstree-open > ins { background-position:-18px 0; }

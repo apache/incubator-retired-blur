@@ -61,7 +61,11 @@
                 %ul
                   -@tschema[table].each do |family, sets|
                     %li#family{:id=>"#{table}.#{family}"}
-                      %a{:href=>'#'}= family
+                      %a{:href=>'#'}
+                        = family
+                        (
+                        =@tdesc[table].analyzerDefinition.fullTextAnalyzerClassName
+                        )
                       %ul
                         -sets.each do |word|
                           %li#column{:id=>"#{table}.#{family}.#{word}"}

@@ -13,6 +13,8 @@ class QueryController < ApplicationController
 	  table = params[:table]
 	  @columns = client.schema(table)
 	  close_thrift
+	  
+	  render '_filters.html.haml', :layout=>false
   end
 
 	def create

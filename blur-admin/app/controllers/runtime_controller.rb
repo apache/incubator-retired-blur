@@ -27,6 +27,7 @@ class RuntimeController < ApplicationController
           row.push "Complete" if query[column] == 1
           row.push "Incomplete" if query[:incomplete] 
           row.push "Interrupted" if query[:interrupted] 
+          row.push "Running" if query[:running]
         else
           row.push query[column]
         end

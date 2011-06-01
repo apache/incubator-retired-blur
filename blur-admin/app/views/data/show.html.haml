@@ -60,6 +60,9 @@
                 -@tschema[table].each do |family, sets|
                   %li
                     =family
+                    (
+                    =@tdesc[table].analyzerDefinition.fullTextAnalyzerClassName
+                    )
                     %ul#def-elements
                       -sets.each do |word|
                         %li

@@ -1,8 +1,7 @@
 - content_for :title, 'Runtime'
 
 - content_for :javascript do
-  = javascript_include_tag 'compiled/runtime', 'jquery.dataTables.js', 'jquery.dataTables.columnFilter.js'
-
+  = javascript_include_tag 'compiled/runtime', 'jquery.dataTables.js'
 = stylesheet_link_tag 'demo_table.css'
 Tables:
 %select#table-select{:name => 'tables'}

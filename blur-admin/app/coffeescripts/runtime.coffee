@@ -134,12 +134,12 @@ $(document).ready ->
       url: '/runtime/queries/' + table_name
       dataType: 'json'
       success: (data, textStatus, jqXHR) ->
-        console.log(data)
         #Insert button if query is still running
         (if a[8] then a[8] = "<input type='button', class='runtime-cancel-query', value='Cancel', id='#{a[7]}', table='#{a[9]}'>" else a[8] = '') for a in data
         $('#queries-table').dataTable({
           "aaData": data
 
         })
+
     )
   get_query_table('test-table')

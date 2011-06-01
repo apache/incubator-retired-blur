@@ -31,70 +31,9 @@ Tables:
         %th Super Query
         %th Start
         %th Fetch
-        %th
-          Time - ms
-          %br
-          (cpu/real)
-        %th Status
-        %th uuid
-        %th Actions
-    %tfoot
-      %tr
-        %th Query
-        %th Super Query
-        %th Start
-        %th Fetch
-        %th
-          Time - ms
-          %br
-          (cpu/real)
+        %th CPU Time (ms)
+        %th Real Time (ms)
         %th Status
         %th uuid
         %th Actions
     %tbody
-      -@running_queries.each do |query|
-        %tr{:class => "#{query.table_name}"}
-          %td
-            =query.query_string
-          %td
-            -if (query.super_query_on)
-              On
-            -else
-              Off
-          %td
-            -if (query.start)
-              = query.start
-            -else
-              ???
-          %td
-            -if (query.fetch_num)
-              = query.fetch_num
-            -else
-              ???
-          %td
-            -if (query.cpu_time and query.real_time)
-              =query.cpu_time.to_s + '/' + query.real_time.to_s
-            -else
-              ???
-          %td
-            -if (query.complete == 1)
-              complete
-            -elsif (query.interrupted)
-              interrupted
-            -elsif (query.running)
-              running
-            -else
-              ???
-          %td
-            -if (query.uuid)
-              = query.uuid
-            -else
-              ???
-          %td
-            -if (query.running)
-              %input{:type => "button", :class => "runtime-cancel-query", :value => "Cancel", :id => query.uuid, :title => query.table_name}
-           
-      -if @running_queries.empty?
-        %tr
-          %td{:colspan => 8, :class => 'error'}
-            %b No Available Queries

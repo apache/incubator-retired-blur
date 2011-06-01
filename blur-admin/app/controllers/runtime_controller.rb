@@ -5,6 +5,35 @@ class RuntimeController < ApplicationController
     @tables = client.tableList()
     @running_queries = BlurQueries.all
     close_thrift
+
+    respond_to do |format|
+      format.html
+      format.json
+    end
+  end
+
+  def queries
+    if params[:table] == "all"
+      running_queries = BlurQueries.all
+    else
+      running_queries = BlurQueries.where(:table_name => params[:table]).all
+    end
+    @table = []
+    columns = [:query_string, :super_query_on, :start, :fetch_num, :cpu_time, :real_time, :complete, :uuid, :running, :table_name, :updated_at]
+    running_queries.each do |query|
+      row = []
+      columns.each do |column|
+        if column == :complete
+          row.push "Complete" if query[column] == 1
+          row.push "Incomplete" if query[:incomplete] 
+          row.push "Interrupted" if query[:interrupted] 
+        else
+          row.push query[column]
+        end
+      end
+      @table.push row
+    end
+    render :json => @table
   end
 
   def cancel

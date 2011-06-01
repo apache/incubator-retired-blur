@@ -56,6 +56,7 @@ $(document).ready ->
         xValues[i] = i
         i++
     )
+    filter_table($('#table-select').val())
     graphData =
       cpuTime: cpuTime
       xValues: xValues
@@ -65,6 +66,7 @@ $(document).ready ->
   #takes in the queries and sets up the graphs
   setupGraph2 = (queries) ->
     font ="8px 'Fontin Sans', Fontin-Sans, sans-serif"
+
     graphData = prepGraphData2(queries)
     $('#average-time-graph').empty()
     realGraph = Raphael('average-time-graph')
@@ -77,6 +79,7 @@ $(document).ready ->
     #TODO actually graph something for usage
 
   #FUNCTION prepGraphData2
+    filter_table($('#table-select').val())
   #takes in the queries and returns an array of objects containing the coords for the graphs
   prepGraphData2 = (queries) ->
     realTime = new Array
@@ -105,7 +108,6 @@ $(document).ready ->
   $('#table-select').change ->
     makeAJAXRequest1()
     makeAJAXRequest2()
-    filter_table($('#table-select').val())
 
   #initial ajax request on page load
   makeAJAXRequest1()
@@ -123,19 +125,21 @@ $(document).ready ->
       )
     )
 
-  #Set up filter table
-  $('#queries-table').dataTable().columnFilter({
-    sPlaceHolder: 'head:after'
-    aoColumns: [
-      {type: "number"}
-      {type: "select", values: [ 'On', 'Off']}
-      {type: "number"}
-      {type: "number"}
-      {type: "number"}
-      {type: "select", values: [ 'complete', 'incomplete', 'interrupted']}
-      {type: "number"}
-      null
-    ]
-   })
-  
 
+  #TODO: Add table refreshing based on last updated field
+
+  table_data = []
+  get_query_table = (table_name) ->
+    $.ajax(
+      url: '/runtime/queries/' + table_name
+      dataType: 'json'
+      success: (data, textStatus, jqXHR) ->
+        console.log(data)
+        #Insert button if query is still running
+        (if a[8] then a[8] = "<input type='button', class='runtime-cancel-query', value='Cancel', id='#{a[7]}', table='#{a[9]}'>" else a[8] = '') for a in data
+        $('#queries-table').dataTable({
+          "aaData": data
+
+        })
+    )
+  get_query_table('test-table')

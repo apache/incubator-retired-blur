@@ -1,25 +1,25 @@
 - content_for :title, 'Environment Status'
 .status-container
-  #hdfs-status.inner-container
-    %h3 HDFS Status
+  #hdfs-status.inner-container.outer-container
+    .titles
+      %h2 HDFS Status
     #hdfs-placeholder
-      %h3 TODO:
       %ul
         %li get HDFS capacity data
         %li generate pie chart of capacity data
         %li something else?
         %li and that other thing
         %li with the stuff
-
-  #zookeeper-status.inner-container
-    %h3 Zookeeper Status
+  #zookeeper-status.inner-container.outer-container
+    .titles
+      %h2 Zookeeper Status
     #zookeeper-placeholder
-      %h3 TODO:
       %ul
         %li determine how to make zookeeper calls
         %li populate this space with a dump of the contains in the blur folder stored in zookeeper
-#bottom-container
-  %h3 Blur status
+#bottom-container.outer-container
+  .titles
+    %h2 Blur Status
   .status-container
     .inner-container.bottom-status
       %h3="Controllers(" + @controllers.length.to_s + ")"
@@ -37,4 +37,3 @@
             %li
               =shard
               .sparkline
-

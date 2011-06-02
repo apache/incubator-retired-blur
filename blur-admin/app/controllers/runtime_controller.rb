@@ -3,12 +3,17 @@ class RuntimeController < ApplicationController
   def show
     client = setup_thrift
     @tables = client.tableList()
-    @running_queries = BlurQueries.all
     close_thrift
+
+    if params[:table_name] and params[:table_name].downcase != 'all'
+      @blur_queries = BlurQueries.where(:table_name => params[:table_name]).all
+    else
+      @blur_queries = BlurQueries.all
+    end
 
     respond_to do |format|
       format.html
-      format.json
+      format.js
     end
   end
 

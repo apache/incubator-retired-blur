@@ -112,13 +112,13 @@ $(document).ready ->
   #change listener for the table selector
   $('#table-select').change ->
     if console then console.log "Table select changed to:  " + $('#table-select :selected').val() 
-    #makeAJAXRequest1()
-    #makeAJAXRequest2()
+    makeAJAXRequest1()
+    makeAJAXRequest2()
     update_table($('#table-select :selected').val())
 
   #initial ajax request on page load
-  #makeAJAXRequest1()
-  #makeAJAXRequest2()
+  makeAJAXRequest1()
+  makeAJAXRequest2()
 
   #sets up the listeners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->

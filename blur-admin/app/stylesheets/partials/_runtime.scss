@@ -1,12 +1,17 @@
 .runtime-graph{
   width: 200px;
   height: 200px;
+  
+}
+
+.inside-container{
   border: 1px solid black;
+  display: inline-block;
 }
 
 .runtime-graph-container {
   text-align: center;
-  width: 202px;
+  width: 250px;
   display: inline-block;
   margin: 0 10px 0 10px;
   h4{
@@ -27,7 +32,7 @@
   h2 {
     display: inline-block;
     font-size: 200%;
-    color: #555;
+    color: #555;display: inline-block;
     font-weight: bold;
   }
 }
@@ -61,4 +66,11 @@
   margin: 15px 20px 20px 20px;
   color: #555;
   font-weight: bold;
+}
+
+.rotate-text{
+  -webkit-transform: rotate(-90deg);
+  -moz-transform: rotate(-90deg);
+  display: inline-block;
+  text-align: left;
 }

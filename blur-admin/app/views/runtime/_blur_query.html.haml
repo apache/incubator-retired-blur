@@ -1,0 +1,41 @@
+- empty_message = 'Not Available'
+%tr
+  %td
+    =blur_query.query_string
+  %td
+    -if (blur_query.super_query_on)
+      On
+    -else
+      Off
+  %td
+    -if (blur_query.start)
+      = blur_query.start
+    -else
+      =empty_message
+  %td
+    -if (blur_query.fetch_num)
+      = blur_query.fetch_num
+    -else
+      =empty_message 
+  %td
+    -if (blur_query.cpu_time and blur_query.real_time)
+      =blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s
+    -else
+      =empty_message 
+  %td
+    -if (blur_query.complete == 1)
+      Complete
+    -elsif (blur_query.interrupted)
+      Interrupted
+    -elsif (blur_query.running)
+      Running
+    -else
+      =empty_message
+  %td
+    -if blur_query.uuid
+      = blur_query.uuid
+    -else
+      =empty_message
+  %td
+    -if (blur_query.running)
+      %input{:type => "button", :class => "runtime-cancel-query", :value => "Cancel", :id => blur_query.uuid, :title => blur_query.table_name}

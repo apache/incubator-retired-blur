@@ -1,0 +1,18 @@
+%table#queries-table
+  %thead
+    %tr
+      %th Query
+      %th Super Query
+      %th Start
+      %th Fetch
+      %th CPU time / Real time (ms)
+      %th Status
+      %th uuid
+      %th Actions
+  %tbody
+    -if @blur_queries.empty?
+      %tr
+        %td{:colspan => 8, :class => 'error'}
+          %b No Available Queries
+    -else
+      =render :partial => 'blur_query', :collection => @blur_queries

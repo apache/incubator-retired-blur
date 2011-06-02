@@ -5,7 +5,7 @@ $(document).ready ->
   makeAJAXRequest1 =() ->
     table = $('#table-select').val()
     if table != ' ' and table != undefined and table != 'undefined'
-      url = '/runtime/cpu/' + table
+      url = '/runtime/cpu/' + tabletable
       $.ajax(
         url: url
         type: 'GET'
@@ -56,7 +56,6 @@ $(document).ready ->
         xValues[i] = i
         i++
     )
-    filter_table($('#table-select').val())
     graphData =
       cpuTime: cpuTime
       xValues: xValues
@@ -79,7 +78,6 @@ $(document).ready ->
     #TODO actually graph something for usage
 
   #FUNCTION prepGraphData2
-    filter_table($('#table-select').val())
   #takes in the queries and returns an array of objects containing the coords for the graphs
   prepGraphData2 = (queries) ->
     realTime = new Array
@@ -104,10 +102,19 @@ $(document).ready ->
       $('#queries-table tr').filter(".#{table_name}").show()
       $('#queries-table tr').not(".#{table_name}").hide()
 
+
+  update_table = (table_name) ->
+    $.ajax(
+      url: 'runtime/update/' + table_name
+      dataType: 'script'
+    )
+
   #change listener for the table selector
   $('#table-select').change ->
+    if console then console.log "Table select changed to:  " + $('#table-select :selected').val() 
     makeAJAXRequest1()
     makeAJAXRequest2()
+    update_table($('#table-select :selected').val())
 
   #initial ajax request on page load
   makeAJAXRequest1()
@@ -124,36 +131,8 @@ $(document).ready ->
       )
     )
 
-  #Table Updating Logic
-  #TODO: Add table refreshing based on last updated field
-  
-  create_table = (table_id) ->
-    $(table_id).dataTable()
-
   get_new_table_data = (table_name) ->
     $.ajax(
-      url: '/runtime/queries/' + table_name
-      dataType: 'json'
-      success: (data) ->
-        #Add button into table if running is true
-        (if a[8] then a[8] = "<input type='button', class='runtime-cancel-query', value='Cancel', id='#{a[7]}', table='#{a[9]}'>" else a[8] = '') for a in data
-        update_table(data)
+      url: '/runtime/show/' + table_name
+
     )
-
-  update_table = (new_data) ->
-    old_data = table.fnGetData()
-
-    #add the new data to an empty table
-    table.fnAddData(new_data) if old_data = []
-    #otherwise figure out what changed and update the table
-    #sort both arrays by uuid, which is in the 8th index
-    new_data.sort (a, b) ->
-      a[7] - b[7]
-    old_data.sort (a, b) ->
-      a[7] - b[7]
-
-
-
-  #initialize table
-  table = create_table('#queries-table')
-  get_new_table_data('all')

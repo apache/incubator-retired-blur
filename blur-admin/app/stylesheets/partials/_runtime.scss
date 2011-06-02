@@ -12,6 +12,7 @@
   h4{
     color: #555;
     font-weight: bold;
+    margin-bottom: 5px;
   }
 }
 
@@ -21,7 +22,7 @@
 }
 
 #queries-title {
-  margin: 10px 0 -10px 0;
+  margin: 10px 0 -5px 0;
   display: inline-block;
   h2 {
     display: inline-block;
@@ -32,6 +33,7 @@
 }
 
 #queries-table {
+  border: solid 1px #AAA;
   width: 100%;
   margin:0 0 20px 0;
   tr
@@ -43,10 +45,10 @@
     }
   }
 
-  tr:nth-child(odd) {background-color: #F0F0F0;}
+  tr:nth-child(odd) {background-color: #C4d9ff;}
 
   #queries-table-header {
-    background-color: #DDD;
+    background-color: #C4d9ff;
     color: #555;
     th{
       font-weight: bold;

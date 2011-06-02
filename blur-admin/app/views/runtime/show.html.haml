@@ -1,27 +1,27 @@
 - content_for :title, 'Runtime'
 
 - content_for :javascript do
-  =javascript_include_tag 'compiled/runtime'  
+  = javascript_include_tag 'compiled/runtime'
 
-=stylesheet_link_tag 'demo_table.css'
-Tables:
-%select#table-select{:name => 'tables'}
-  %option{:value => 'all'}
-    All
-  -@tables.each do |table|
-    %option{:value => table}
-      =table
-#runtime-graphs
-  .runtime-graph-container
-    %h4 Query Performance Graph
-    #performance-graph.runtime-graph
-  .runtime-graph-container
-    %h4 Average Time Graph
-    #average-time-graph.runtime-graph
-  .runtime-graph-container
-    %h4 Table Usage Graph
-    #usage-graph.runtime-graph
-#runtime-queries
-  #queries-title
-    %h2 Queries
-    =render :partial => 'query_table'
+#runtime-page
+  Tables:
+  %select#table-select{:name => 'tables'}
+    %option{:value => 'all'}
+      All
+    -@tables.each do |table|
+      %option{:value => table}
+        =table
+  #runtime-graphs
+    .runtime-graph-container
+      %h4 Query Performance
+      #performance-graph.runtime-graph
+    .runtime-graph-container
+      %h4 Average Time
+      #average-time-graph.runtime-graph
+    .runtime-graph-container
+      %h4 Table Usage
+      #usage-graph.runtime-graph
+  #runtime-queries
+    #queries-title
+      %h2 Queries
+      =render :partial => 'query_table'

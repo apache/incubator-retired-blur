@@ -11,13 +11,19 @@
 
 .runtime-graph-container {
   text-align: center;
-  width: 250px;
+  width: 212px;
   display: inline-block;
   margin: 0 10px 0 10px;
   h4{
     color: #555;
     font-weight: bold;
     margin-bottom: 5px;
+  }
+  .y-axis{
+    width: 10px;
+  }
+  .x-axis{
+    width: 202px;
   }
 }
 

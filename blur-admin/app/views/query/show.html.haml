@@ -7,15 +7,18 @@
         = label_tag :q, "Search Query:"
       = text_area_tag :q, params[:q]
     #filter_section
-      = label_tag :t, "Table:"
-      = select_tag :t, options_for_select(@tables)
-      %br
-      #filter_columns
-        = render 'filters'
-    %p
+      .partial-section
+        = label_tag :t, "Table:"
+        = select_tag :t, options_for_select(@tables)
+
+      .partial-section
+        Column Families:
+        #filter_columns
+          = render 'filters'
+
     = submit_tag "Search"
 
-  #results_section
+  #results_section.partial-section
 
 -content_for :javascript do
   =javascript_include_tag 'jquery.jstree', 'compiled/query'

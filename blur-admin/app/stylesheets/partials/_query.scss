@@ -8,7 +8,6 @@ textarea#q {
   vertical-align: top;
 }
 
-
 table {
 	table-layout: strict;
 	width: 100%;
@@ -18,6 +17,9 @@ table {
 	thead {
 		th {
 			text-align: center;
+                        color: #555;
+                        font-weight: bold;
+                        font-size: 120%;
 		}
 		
 		tr.columnsets th {
@@ -58,3 +60,9 @@ table {
   margin-left: 20px;
   margin-right: 25px;
 }
+
+.partial-section{
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+

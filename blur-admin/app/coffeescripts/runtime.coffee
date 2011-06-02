@@ -5,7 +5,7 @@ $(document).ready ->
   makeAJAXRequest1 =() ->
     table = $('#table-select').val()
     if table != ' ' and table != undefined and table != 'undefined'
-      url = '/runtime/cpu/' + tabletable
+      url = '/runtime/cpu/' + table
       $.ajax(
         url: url
         type: 'GET'
@@ -129,10 +129,4 @@ $(document).ready ->
       url: url
       type: 'GET'
       )
-    )
-
-  get_new_table_data = (table_name) ->
-    $.ajax(
-      url: '/runtime/show/' + table_name
-
     )

@@ -447,7 +447,6 @@ public class IndexManager {
                     if (selector.columnFamiliesToFetch.contains(columnFamily)) {
                         return FieldSelectorResult.LOAD;
                     }
-                    return FieldSelectorResult.NO_LOAD;
                 }
                 String columnName = getColumnName(fieldName);
                 if (selector.columnsToFetch != null) {

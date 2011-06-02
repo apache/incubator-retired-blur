@@ -46,9 +46,15 @@
   tr
   {
     height: 50px;
-    th, td{
+    td{
       text-align: center;
       font-size: 100%;
+    }
+    th{
+      text-align: center;
+      font-weight: bold;
+      font-size: 120%;
+      color: #555;
     }
   }
 

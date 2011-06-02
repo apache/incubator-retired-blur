@@ -155,5 +155,5 @@ $(document).ready ->
 
 
   #initialize table
-  table = create_table('#queries-table')
-  get_new_table_data('all')
+  #table = create_table('#queries-table')
+  #get_new_table_data('all')

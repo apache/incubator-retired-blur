@@ -1,7 +1,6 @@
 $(document).ready ->
   #FUNCTION makeAJAXRequest1:
   #Runs the AJAX request for current query information
-  firstRun = true
   makeAJAXRequest1 =() ->
     table = $('#table-select').val()
     if table != ' ' and table != undefined and table != 'undefined'
@@ -13,9 +12,8 @@ $(document).ready ->
         success: (data) ->
           if data.length > 0
             setupGraph1(data)
-            firstRun = false
       )
-    setTimeout(makeAJAXRequest1, 5000)
+    #setTimeout(makeAJAXRequest1, 5000)
 
   #FUNCTION makeAJAXRequest2:
   #Runs the AJAX request for current query information
@@ -30,13 +28,37 @@ $(document).ready ->
         success: (data) ->
           if data.length > 0
             setupGraph2(data)
-            firstRun = false
       )
-    setTimeout(makeAJAXRequest2, 5000)
+    #setTimeout(makeAJAXRequest2, 5000)
+    
+  #Request data for Query Performance and Average Time graphs
+  request_graph_data =() ->
+    if console then console.log('request_graph_data')
+    table_name = $('#table-select :selected').val()
+    request_types = 
+      real:
+        url:      '/runtime/real/'
+        function: setupGraph2
+      cpu:
+        url:      '/runtime/cpu/'
+        function: setupGraph1
+    
+    for request_type of request_types
+      if console then console.log('sending ajax to: ' + request_types[request_type].url + table_name)
+      $.ajax(
+        url: request_types[request_type].url + table_name
+        type: 'GET'
+        dataType: 'json'
+        success: (data) ->
+          if data.length > 0
+            if console then console.log('calling function' + request_types[request_type])
+            request_types[request_type].function(data)
+      )
 
   #FUNCTION setupGraph1
   #takes in the queries and sets up the graphs
   setupGraph1 = (queries) ->
+    if console then console.log 'setupGraph1 !'
     font ="8px 'Fontin Sans', Fontin-Sans, sans-serif"
     graphData = prepGraphData1(queries)
     $('#performance-graph').empty()
@@ -47,6 +69,7 @@ $(document).ready ->
   #FUNCTION prepGraphData1
   #takes in the queries and returns an array of objects containing the coords for the graphs
   prepGraphData1 = (queries) ->
+    if console then console.log 'prepGraphData1 !'
     cpuTime = new Array
     xValues = new Array
     i = 0
@@ -64,6 +87,7 @@ $(document).ready ->
   #FUNCTION setupGraph2
   #takes in the queries and sets up the graphs
   setupGraph2 = (queries) ->
+    if console then console.log('setupGraph2')
     font ="8px 'Fontin Sans', Fontin-Sans, sans-serif"
 
     graphData = prepGraphData2(queries)
@@ -80,6 +104,7 @@ $(document).ready ->
   #FUNCTION prepGraphData2
   #takes in the queries and returns an array of objects containing the coords for the graphs
   prepGraphData2 = (queries) ->
+    if console then console.log('prepGraphData2')
     realTime = new Array
     xValues = new Array
     i = 0
@@ -93,15 +118,6 @@ $(document).ready ->
       realTime: realTime
       xValues: xValues
     return graphData
-
-  #FUNCTION Filter the query table
-  filter_table = (table_name) ->
-    if table_name == 'all'
-      $('#queries-table tr').show()
-    else
-      $('#queries-table tr').filter(".#{table_name}").show()
-      $('#queries-table tr').not(".#{table_name}").hide()
-
 
   update_table = (table_name) ->
     $.ajax(
@@ -117,8 +133,9 @@ $(document).ready ->
     update_table($('#table-select :selected').val())
 
   #initial ajax request on page load
-  makeAJAXRequest1()
-  makeAJAXRequest2()
+  #makeAJAXRequest1()
+  #makeAJAXRequest2()
+  request_graph_data()
 
   #sets up the listeners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->

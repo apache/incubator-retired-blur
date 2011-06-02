@@ -1,8 +1,9 @@
 - content_for :title, 'Runtime'
 
 - content_for :javascript do
-  = javascript_include_tag 'compiled/runtime', 'jquery.dataTables.js'
-= stylesheet_link_tag 'demo_table.css'
+  =javascript_include_tag 'compiled/runtime'  
+
+=stylesheet_link_tag 'demo_table.css'
 Tables:
 %select#table-select{:name => 'tables'}
   %option{:value => 'all'}
@@ -23,17 +24,4 @@ Tables:
 #runtime-queries
   #queries-title
     %h2 Queries
-  %table#queries-table
-    %thead
-      %tr
-        %th Query
-        %th Super Query
-        %th Start
-        %th Fetch
-        %th CPU Time (ms)
-        %th Real Time (ms)
-        %th Status
-        %th uuid
-        %th Actions
-    %tbody
-      = render :partial => 'blur_query', :collection => @blur_queries
+    =render :partial => 'query_table'

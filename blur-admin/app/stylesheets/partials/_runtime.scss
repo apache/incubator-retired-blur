@@ -1,7 +1,7 @@
 .runtime-graph{
   width: 200px;
   height: 200px;
-  
+  border: 1px solid black;
 }
 
 .inside-container{
@@ -27,8 +27,10 @@
 }
 
 #queries-title {
-  margin: 10px 0 -5px 0;
+  margin-top: 10px;
+  margin-bottom: -5px;
   display: inline-block;
+  width: 100%;
   h2 {
     display: inline-block;
     font-size: 200%;
@@ -40,17 +42,17 @@
 #queries-table {
   border: solid 1px #AAA;
   width: 100%;
-  margin:0 0 20px 0;
+  margin-bottom: 20px;
   tr
   {
     height: 50px;
     th, td{
       text-align: center;
-      font-size: 90%;
+      font-size: 100%;
     }
   }
 
-  tr:nth-child(odd) {background-color: #C4d9ff;}
+  tr:nth-child(odd) {background-color: #eee;}
 
   #queries-table-header {
     background-color: #C4d9ff;

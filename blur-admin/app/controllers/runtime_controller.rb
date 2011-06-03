@@ -1,8 +1,8 @@
 class RuntimeController < ApplicationController
 
   def show
-    client = setup_thrift
-    @tables = client.tableList()
+    setup_thrift
+    @tables = @client.tableList()
     close_thrift
 
     if params[:table_name] and params[:table_name].downcase != 'all'
@@ -18,8 +18,8 @@ class RuntimeController < ApplicationController
   end
 
   def cancel
-    client = setup_thrift
-    client.cancelQuery(params[:table], params[:uuid])
+    setup_thrift
+    @client.cancelQuery(params[:table], params[:uuid])
     close_thrift
   end
 

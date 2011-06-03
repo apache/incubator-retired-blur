@@ -16,7 +16,7 @@
         #filter_columns
           = render 'filters'
 
-    = submit_tag "Search"
+    = submit_tag "Search", :disabled => true, :id => "search_submit"
 
   #results_section.partial-section
 

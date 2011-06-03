@@ -6,14 +6,10 @@ class ApplicationController < ActionController::Base
   def setup_thrift
     @transport = Thrift::FramedTransport.new(Thrift::BufferedTransport.new(Thrift::Socket.new(BLUR_THRIFT[:host], BLUR_THRIFT[:port])))
     protocol = Thrift::BinaryProtocol.new(@transport)
-    client = Blur::Blur::Client.new(protocol)
+    @client = Blur::Blur::Client.new(protocol)
     @transport.open()
-    
-    client
-    
   rescue Thrift::TransportException
-    client = nil
-    client
+    @client = nil
   end
   
   def close_thrift

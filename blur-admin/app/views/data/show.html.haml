@@ -1,4 +1,6 @@
 - content_for :title, 'Data'
+- content_for :javascript do
+  =javascript_include_tag 'jquery.jstree','compiled/data'
 
 #data-dtables
   #dtables-title
@@ -10,8 +12,7 @@
       %th Shards
       %th Count
       %th Size
-      %th
-        Queries/Second
+      %th Queries/Second
       %th Enabled
       %th Actions
 
@@ -34,19 +35,19 @@
           =get_count(table)
         %td
           -a_blur_table = get_a_blur_table(table)
-          -if (a_blur_table != nil)
+          -if a_blur_table
             =number_to_human_size(a_blur_table.current_size)
           -else
             not available
         %td
-          -if (a_blur_table != nil)
+          -if a_blur_table
             =number_with_delimiter(a_blur_table.query_usage, :delimiter => ',')
           -else
             not available
         %td
-          %input{:type => "checkbox", :checked => @tdesc[table].isEnabled, :class => "enable", :id => table}
+          = checkbox_tag table, "1", @tdesc[table].isEnabled, :class=>'enable'
         %td
-          %input{:type => "button", :class => "delete-table", :value => "delete", :id => table}
+          = submit_tag table, 'delete', :class=>'delete-table'
       %tr
         %td{:colspan => 7}
           %b location:
@@ -62,10 +63,7 @@
                   -@tschema[table].each do |family, sets|
                     %li#family{:id=>"#{table}.#{family}"}
                       %a{:href=>'#'}
-                        = family
-                        (
-                        =@tdesc[table].analyzerDefinition.fullTextAnalyzerClassName
-                        )
+                        = "#{family} (#{@tdesc[table].analyzerDefinition.fullTextAnalyzerClassName})"
                       %ul
                         -sets.each do |word|
                           %li#column{:id=>"#{table}.#{family}.#{word}"}
@@ -75,6 +73,4 @@
       %tr
         %td{:colspan => 7, :class => 'error'}
           %b No Available Tables
--content_for :javascript do
-  =javascript_include_tag 'jquery.jstree','compiled/data'
 

@@ -1,57 +1,41 @@
 class DataController < ApplicationController
-  require 'thrift/blur'
-
+  before_filter :setup_thrift
+  after_filter :close_thrift
+  
   def show
-    client = setup_thrift
     bq = Blur::BlurQuery.new
     bq.queryStr = '*'
 		bq.fetch = 1
     bq.superQueryOn = false
-    @tables = client.tableList()
-    @tables = @tables.sort
-    @tdesc = Hash.new
-    @tschema = Hash.new
-    @tserver = Hash.new
-    @tcount = Hash.new
+    @tables = client.tableList.sort
+    @tdesc = {}
+    @tschema = {}
+    @tserver = {}
+    @tcount = {}
     @tables.each do |table|
-      @tdesc[table] = client.describe(table)
-      @tschema[table] = client.schema(table).columnFamilies
-      @tserver[table] = client.shardServerLayout(table)
-      @tcount[table] = client.query(table, bq).totalResults
+      @tdesc[table] = @client.describe(table)
+      @tschema[table] = @client.schema(table).columnFamilies
+      @tserver[table] = @client.shardServerLayout(table)
+      @tcount[table] = @client.query(table, bq).totalResults
     end
-    close_thrift
   end
 
   def enable_table
     logger.info "*** enabling table #{params[:name]} ***"
-    #TODO: Enable the table in params[:table]
-    result = true
-    client = setup_thrift
-    client.enableTable(params[:name])
-    #result = client.describe(params[:name]).isEnabled
-    close_thrift
-    render :json => result
+    @client.enableTable(params[:name])
+    render :json => @client.describe(params[:name]).isEnabled
   end
 
   def disable_table
     logger.info "*** disabling tabldeleteIndexFilese #{params[:name]} ***"
-    #TODO: Disable the table in params[:table]
-    result = true
-    client = setup_thrift
-    client.disableTable(params[:name])
-    #result = client.describe(params[:name]).isEnabled
-    close_thrift
-    render :json => result
+    @client.disableTable(params[:name])
+    render :json => !@client.describe(params[:name]).isEnabled
   end
 
   def destroy_table 
     logger.info "*** deleting table #{params[:name]} ***"
-    #TODO: Delete the table specified in params[:table] - uncomment call
-    result = true
-    client = setup_thrift
+    # TODO: Uncomment below when we can create a table
     #client.removeTable(params[:name], false)
-    #result = client.describe(params[:name]).isEnabled
-    close_thrift
-    render :json => result
+    render :json => !@client.tableList.include? params[:name]
   end
 end

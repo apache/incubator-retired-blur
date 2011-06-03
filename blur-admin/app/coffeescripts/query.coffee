@@ -14,6 +14,16 @@ $(document).ready ->
           ['column_data[]', n[0].id]
       }
     })
+    #Disable checkbox when no columns are selected
+    $('.column_family_filter').click -> toggle_submit()
+
+  # Function to enable or disable submit button based on checkbox status
+  toggle_submit = () ->
+    if $(':checked').length>0
+      $(':submit').removeAttr('disabled')
+    else
+      $(':submit').attr('disabled', 'disabled')
+    
   
   $('#t').change -> $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
   
@@ -37,8 +47,3 @@ $(document).ready ->
   
   setup_filter_tree()
 
-  $('.column_family_filter').click ->
-    if $('.jstree-checked').length>0
-      $('#search_submit').removeAttr('disabled')
-    else
-      $('#search_submit').attr('disabled', 'disabled')

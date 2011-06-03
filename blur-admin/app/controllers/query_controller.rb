@@ -2,7 +2,6 @@ class QueryController < ApplicationController
 
 	def show
 	  client = setup_thrift
-	  
 	  @tables = client.tableList
 	  @tables.sort! unless @tables.blank?
 	  @columns = client.schema(@tables.first) unless @tables.blank?

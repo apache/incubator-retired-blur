@@ -17,32 +17,6 @@ class RuntimeController < ApplicationController
     end
   end
 
-  def queries
-    if params[:table] == "all"
-      running_queries = BlurQueries.all
-    else
-      running_queries = BlurQueries.where(:table_name => params[:table]).all
-    end
-    @table = []
-    columns = [:query_string, :super_query_on, :start, :fetch_num, :cpu_time, :real_time, :complete, :uuid, :running, :table_name, :updated_at]
-    running_queries.each do |query|
-      row = []
-      columns.each do |column|
-        if column == :complete
-          if query[:complete] then row.push "Complete"
-          elsif query[:running] then row.push "Running"
-          elsif query[:interrupted] then row.push "Interrupted"
-          else row.push "???"
-          end
-        else
-          row.push query[column]
-        end
-      end
-      @table.push row
-    end
-    render :json => @table
-  end
-
   def cancel
     client = setup_thrift
     client.cancelQuery(params[:table], params[:uuid])
@@ -63,7 +37,7 @@ class RuntimeController < ApplicationController
     render :json => curr_cpu_times
   end
 
-   def query_time_real
+  def query_time_real
     curr_real_times = []
     if (params[:table] == "all")
       curr_queries = BlurQueries.all
@@ -78,4 +52,3 @@ class RuntimeController < ApplicationController
   end
 
 end
-

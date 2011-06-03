@@ -3,11 +3,6 @@
   %td
     =blur_query.query_string
   %td
-    -if (blur_query.super_query_on)
-      On
-    -else
-      Off
-  %td
     -if (blur_query.start)
       = blur_query.start
     -else
@@ -29,11 +24,6 @@
       Interrupted
     -elsif (blur_query.running)
       Running
-    -else
-      =empty_message
-  %td
-    -if blur_query.uuid
-      = blur_query.uuid
     -else
       =empty_message
   %td

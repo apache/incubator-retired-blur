@@ -14,12 +14,13 @@ $(document).ready ->
           ['column_data[]', n[0].id]
       }
     })
-    #Disable checkbox when no columns are selected
+    #Disable submit button when no columns are selected
     $('.column_family_filter').click -> toggle_submit()
-
+    #Disable submit button when no text in input
+    $('#q').keydown -> toggle_submit()
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
-    if $(':checked').length>0
+    if $(':checked').length>0 and $('#q').val() isnt  ''
       $(':submit').removeAttr('disabled')
     else
       $(':submit').attr('disabled', 'disabled')

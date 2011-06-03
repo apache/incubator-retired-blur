@@ -31,30 +31,6 @@ $(document).ready ->
       )
     #setTimeout(makeAJAXRequest2, 5000)
     
-  #Request data for Query Performance and Average Time graphs
-  request_graph_data =() ->
-    if console then console.log('request_graph_data')
-    table_name = $('#table-select :selected').val()
-    request_types = 
-      real:
-        url:      '/runtime/real/'
-        function: setupGraph2
-      cpu:
-        url:      '/runtime/cpu/'
-        function: setupGraph1
-    
-    for request_type of request_types
-      if console then console.log('sending ajax to: ' + request_types[request_type].url + table_name)
-      $.ajax(
-        url: request_types[request_type].url + table_name
-        type: 'GET'
-        dataType: 'json'
-        success: (data) ->
-          if data.length > 0
-            if console then console.log('calling function' + request_types[request_type])
-            request_types[request_type].function(data)
-      )
-
   #FUNCTION setupGraph1
   #takes in the queries and sets up the graphs
   setupGraph1 = (queries) ->
@@ -133,9 +109,8 @@ $(document).ready ->
     update_table($('#table-select :selected').val())
 
   #initial ajax request on page load
-  #makeAJAXRequest1()
-  #makeAJAXRequest2()
-  request_graph_data()
+  makeAJAXRequest1()
+  makeAJAXRequest2()
 
   #sets up the listeners for the cancel buttons (mysql)
   $('.runtime-cancel-query').click(() ->

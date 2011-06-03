@@ -97,7 +97,7 @@ $(document).ready ->
 
   update_table = (table_name) ->
     $.ajax(
-      url: 'runtime/update/' + table_name
+      url: 'runtime/show/' + table_name
       dataType: 'script'
     )
 

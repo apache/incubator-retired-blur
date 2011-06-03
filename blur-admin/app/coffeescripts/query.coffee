@@ -16,14 +16,6 @@ $(document).ready ->
     })
   
   $('#t').change -> $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
-
-  $('.column_family_filter').click ->
-    if $('.jstree-checked')?
-      alert "enable"
-      $('#search_submit').removeAttr('disabled')
-    else
-      alert "disable"
-      $('#search_submit').attr('disabled', 'disabled')
   
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
     if(data)
@@ -44,4 +36,9 @@ $(document).ready ->
   )
   
   setup_filter_tree()
-  true
+
+  $('.column_family_filter').click ->
+    if $('.jstree-checked').length>0
+      $('#search_submit').removeAttr('disabled')
+    else
+      $('#search_submit').attr('disabled', 'disabled')

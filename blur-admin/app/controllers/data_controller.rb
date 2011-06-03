@@ -7,7 +7,7 @@ class DataController < ApplicationController
     bq.queryStr = '*'
 		bq.fetch = 1
     bq.superQueryOn = false
-    @tables = client.tableList.sort
+    @tables = @client.tableList.sort
     @tdesc = {}
     @tschema = {}
     @tserver = {}
@@ -36,6 +36,6 @@ class DataController < ApplicationController
     logger.info "*** deleting table #{params[:name]} ***"
     # TODO: Uncomment below when we can create a table
     #client.removeTable(params[:name], false)
-    render :json => !@client.tableList.include? params[:name]
+    render :json => !@client.tableList.include?(params[:name])
   end
 end

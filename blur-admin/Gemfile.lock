@@ -56,6 +56,11 @@ GEM
       chunky_png (~> 1.1)
       fssm (>= 0.2.7)
       sass (~> 3.1)
+    configatron (2.8.0)
+      yamler (>= 0.1.0)
+    cover_me (1.0.0)
+      configatron
+      hashie
     diff-lcs (1.1.2)
     erubis (2.6.6)
       abstract (>= 1.0.0)
@@ -68,6 +73,7 @@ GEM
       sexp_processor (~> 3.0)
     fssm (0.2.7)
     haml (3.1.1)
+    hashie (1.0.0)
     hirb (0.4.5)
     i18n (0.5.0)
     jquery-rails (1.0.9)
@@ -159,6 +165,7 @@ GEM
     treetop (1.4.9)
       polyglot (>= 0.3.1)
     tzinfo (0.3.27)
+    yamler (0.1.0)
 
 PLATFORMS
   ruby
@@ -168,6 +175,7 @@ DEPENDENCIES
   barista
   ci_reporter
   compass
+  cover_me
   haml
   jquery-rails (>= 0.2.6)
   metric_fu

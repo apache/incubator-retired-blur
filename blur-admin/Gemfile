@@ -15,5 +15,6 @@ group :development, :test do
 	gem 'rspec-rails'
 	gem 'ci_reporter'
 	gem 'metric_fu'
+	gem 'cover_me'
 end
 

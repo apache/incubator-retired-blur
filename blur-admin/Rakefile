@@ -4,6 +4,7 @@
 require File.expand_path('../config/application', __FILE__)
 require 'rake'
 require 'ci/reporter/rake/rspec'
+require 'metric_fu'
 
 module ::BlurAdmin
   class Application
@@ -13,6 +14,13 @@ end
 
 module ::RakeFileUtils
   extend Rake::FileUtilsExt
+end
+
+MetricFu::Configuration.run do |config|
+  config.metrics = [:stats, :flog, :flay, :reek, :roodi, :rails_best_practices, :hotspots]
+  config.flog    = { :dirs_to_flog => ['app'] }
+  config.reek    = { :dirs_to_reek => ['app'] }
+  config.roodi   = { :dirs_to_roodi => ['app'] }
 end
 
 BlurAdmin::Application.load_tasks

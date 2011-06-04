@@ -14,5 +14,6 @@ group :development, :test do
 	gem 'autotest'
 	gem 'rspec-rails'
 	gem 'ci_reporter'
+	gem 'metric_fu'
 end
 

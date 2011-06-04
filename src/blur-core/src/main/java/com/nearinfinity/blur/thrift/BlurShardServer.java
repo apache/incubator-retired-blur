@@ -250,6 +250,8 @@ public class BlurShardServer extends ExecutionContextIface {
             descriptor.shardCount = indexServer.getShardCount(table);
             descriptor.isEnabled = tableEnabled;
             descriptor.tableUri = indexServer.getTableUri(table);
+            descriptor.compressionBlockSize = indexServer.getCompressionBlockSize(table);
+            descriptor.compressionClass = indexServer.getCompressionCodec(table).getClass().getName();
             return descriptor;
         } catch (Exception e) {
             LOG.error("Unknown error while trying to describe table [" + table + "]", e);

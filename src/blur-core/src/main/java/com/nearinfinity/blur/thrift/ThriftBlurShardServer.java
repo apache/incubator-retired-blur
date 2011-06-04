@@ -179,6 +179,10 @@ public class ThriftBlurShardServer extends ThriftServer {
             public boolean isSafeForRemoval(String dirName, String name) throws IOException {
                 String table = HdfsUtil.getTable(dirName);
                 String shard = HdfsUtil.getShard(dirName);
+                List<String> tableList = indexServer.getTableList();
+                if (!tableList.contains(table)) {
+                    return true;
+                }
                 Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
                 if (blurIndexes.containsKey(shard)) {
                     return false;

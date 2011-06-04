@@ -4,7 +4,7 @@
 	<groupId>com.nearinfinity.blur</groupId>
 	<artifactId>blur</artifactId>
 	<packaging>pom</packaging>
-	<version>${blur_version}</version>
+	<version>0.1-SNAPSHOT</version>
 	<name>Blur</name>
 	
 	<properties>

@@ -5,3 +5,4 @@ tmp/
 public/javascripts/compiled
 public/stylesheets/compiled
 .*~
+spec/reports

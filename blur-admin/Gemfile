@@ -13,5 +13,6 @@ gem 'thrift'
 group :development, :test do
 	gem 'autotest'
 	gem 'rspec-rails'
+	gem 'ci_reporter'
 end
 

@@ -1,12 +1,10 @@
 class DataController < ApplicationController
   before_filter :setup_thrift
+  before_filter :find_table_name, :only => [:enable_table, :disable_table, :destroy_table]
   after_filter :close_thrift
   
   def show
-    bq = Blur::BlurQuery.new
-    bq.queryStr = '*'
-		bq.fetch = 1
-    bq.superQueryOn = false
+    bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
     @tables = @client.tableList.sort
     @tdesc = {}
     @tschema = {}
@@ -21,21 +19,25 @@ class DataController < ApplicationController
   end
 
   def enable_table
-    logger.info "*** enabling table #{params[:name]} ***"
-    @client.enableTable(params[:name])
-    render :json => @client.describe(params[:name]).isEnabled
+    @client.enableTable table_name
+    render :json => @client.describe(table_name.isEnabled)
   end
 
   def disable_table
-    logger.info "*** disabling tabldeleteIndexFilese #{params[:name]} ***"
-    @client.disableTable(params[:name])
-    render :json => !@client.describe(params[:name]).isEnabled
+    @client.disableTable table_name
+    render :json => !@client.describe(table_name.isEnabled)
   end
 
   def destroy_table 
-    logger.info "*** deleting table #{params[:name]} ***"
     # TODO: Uncomment below when we can create a table
     #client.removeTable(params[:name], false)
-    render :json => !@client.tableList.include?(params[:name])
+    render :json => !@client.tableList.include?(table_name)
   end
+
+  protected
+
+  def find_table_name
+    table_name = params[:name]
+  end
+
 end

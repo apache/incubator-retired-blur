@@ -18,10 +18,7 @@ class QueryController < ApplicationController
 		# TODO: Add in fetch filter, paging, superQueryOn/Off
 		
 	  table = params[:t]
-		bq = Blur::BlurQuery.new
-    bq.queryStr = params[:q]
-		bq.fetch = 25
-		bq.uuid = Time.now.to_i*1000+rand(1000)
+		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => 25, :uuid => Time.now.to_i*1000+rand(1000)
 
     families = params[:column_data].collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact
     columns = {}
@@ -39,7 +36,7 @@ class QueryController < ApplicationController
 		sel = Blur::Selector.new
 		sel.columnFamiliesToFetch = families unless families.blank?
 		sel.columnsToFetch = columns unless columns.blank?
-		
+
 		bq.selector = sel
 
 		blur_results = @client.query(table, bq)
@@ -48,14 +45,14 @@ class QueryController < ApplicationController
     families.each do |family|
       families_with_columns[family] = @client.schema(table).columnFamilies[family]
     end
-                
+
     visible_families = (families + columns.keys).uniq
     @results = []
     @result_count = blur_results.totalResults
     blur_results.results.each do |result|
       row = result.fetchResult.rowResult.row 
       max_record_count = row.columnFamilies.collect {|cf| cf.records.keys.count }.max
-         
+
       # organize into multidimensional array of rows and columns
       table_rows = Array.new(max_record_count) { [] }
       (0...max_record_count).each do |i|

@@ -1,8 +1,8 @@
 class DataController < ApplicationController
   before_filter :setup_thrift
-  before_filter :find_table_name, :only => [:enable_table, :disable_table, :destroy_table]
+  before_filter :table_name, :only => [:enable_table, :disable_table, :destroy_table]
   after_filter :close_thrift
-  
+
   def show
     bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
     @tables = @client.tableList.sort
@@ -36,7 +36,7 @@ class DataController < ApplicationController
 
   protected
 
-  def find_table_name
+  def table_name
     table_name = params[:name]
   end
 

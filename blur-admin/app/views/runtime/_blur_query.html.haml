@@ -11,7 +11,7 @@
     -if (blur_query.fetch_num)
       = blur_query.fetch_num
     -else
-      =empty_message 
+      =empty_message
   %td
     -if (blur_query.cpu_time and blur_query.real_time)
       =blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s

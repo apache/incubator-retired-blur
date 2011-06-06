@@ -3,7 +3,7 @@ class RuntimeController < ApplicationController
   after_filter :close_thrift
 
   def show
-    @tables = @client.tableList()
+    @tables = @client.tableList
     table_name = params[:id]
     if table_name and table_name.downcase != 'all'
       @blur_queries = BlurQueries.find_all_by_table_name table_name
@@ -18,9 +18,11 @@ class RuntimeController < ApplicationController
   end
 
   def update
-    cancel? table_name uuid = params[:cancel, :table, :uuid] 
+    cancel = params[:cancel]
+    table_name = params[:table]
+    uuid = params[:uuid]
 
-    if cancel?
+    if cancel
       @client.cancelQuery(table_name, uuid.to_i)
     end
 

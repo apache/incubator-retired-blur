@@ -12,8 +12,8 @@ BlurAdmin::Application.routes.draw do
   end
 
   controller "data" do
-    match 'data/update/:id', :to => :update, :as => :update_table, :via => :put
-    match 'data/delete/:id', :to => :destroy, :as => :delete_table, :via => :delete
+    match 'data/:id', :to => :update, :as => :update_table, :via => :put
+    match 'data/:id', :to => :destroy, :as => :delete_table, :via => :delete
   end
 
   controller "runtime" do

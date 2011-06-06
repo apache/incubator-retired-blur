@@ -1,26 +1,31 @@
 $(document).ready ->
 
-  # Updates query table with ajax
+  # Function updates the queries table
   update_table = (table_name) ->
     $.ajax(
       url: 'runtime/' + table_name
       dataType: 'script'
     )
 
-  #change listener for the table selector
-  $('#table-select').change ->
-    update_table($('#table-select :selected').val())
+  # Function cancels a query
+  update_query = (table_name, uuid, cancel) ->
+    url = '/runtime/' + table_name + '/' + uuid
+    data = 'cancel=' + cancel
+    $.ajax(
+      data: data
+      url: url
+      type: 'PUT'
+    )
 
-  #sets up the listeners for the cancel buttons (mysql)
-  $('.cancel').click(() ->
+  #change listener for the table selector
+  $('#table-select').live('change', ->
+    update_table($(this).val())
+  )
+  
+  #sets up the listeners for the cancel buttons 
+  $('.cancel').live('click', ->
     uuid = $(this).attr('uuid')
     table_name = $(this).attr('table_name')
     cancel = $(this).attr('cancel')
-
-    url = '/runtime/' + table_name + '/' + uuid
-    $.ajax(
-      data: 'cancel=' + cancel
-      url: url
-      type: 'PUT'
-      )
+    update_query(table_name, uuid, cancel)
     )

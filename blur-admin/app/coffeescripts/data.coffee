@@ -1,34 +1,23 @@
 $(document).ready ->
-  #Creates an AJAX request to enable or disable a table upon
-  #Check or uncheck of 'Enable / Disable' checkbox
-  $(".enable").click( ->
-    #Determine whether table is to be enabled or disabled
-    if $(this).is ':checked'
-      action = "enable"
-    else if $(this).not ':checked'
-      action = "disable"
 
-    console.log action
-
-    url = "/data/" + $(this).attr('table_name')
+  update_table = (table_name, action) ->
+    url = "/data/" + table_name 
     data = 'operation=' + action
     result = $.ajax(
       data: data
       url: url
       type: 'PUT'
     )
-  )
 
-  #FUNCTION delete a table
-  $(".delete-table").click( ->
-    table_name = $(this).attr('table_name')
+  # Function to delete a table
+  delete_table = (table_name) ->
     confirmation = confirm("Are you sure you want to delete #{table_name}?")
     if confirmation
       url = "/data/" + table_name
       result = $.ajax(
         url: url
         type: 'DELETE')
-  )
+
 
   # Function to initialize the filter tree
   setup_filter_tree = () ->
@@ -41,3 +30,18 @@ $(document).ready ->
     })
     
   setup_filter_tree()
+
+  #Listener to delete a table
+  $(".delete-table").live('click', ->
+    delete_table( $(this).attr('table_name') )
+  )
+  
+  #Listener to Enable/Disable a table
+  $(".enable").live('click', ->
+    if $(this).is ':checked'
+      action = "enable"
+    else if $(this).not ':checked'
+      action = "disable"
+    table_name = $(this).attr('table_name')
+    update_table(table_name, action)
+  )

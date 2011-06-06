@@ -24,7 +24,7 @@
         %td
           .table-def
             %ul
-              -get_shards(table).each do |host, shards|
+              -shards(table).each do |host, shards|
                 %li#hosts{:id=>"#{host}"}
                   %a{:href=>'#'}= host
                   %ul
@@ -32,16 +32,16 @@
                       %li#shards{:id=>"#{host}_#{shard}"}
                         %a{:href=>'#'}= shard
         %td
-          =get_count(table)
+          = number_with_delimiter(@tcount[table], :delimiter => ',')
         %td
-          -a_blur_table = get_a_blur_table(table)
-          -if a_blur_table
-            =number_to_human_size(a_blur_table.current_size)
+          -blur_table = BlurTables.find_by_table_name table
+          -if blur_table
+            =number_to_human_size(blur_table.current_size)
           -else
             not available
         %td
-          -if a_blur_table
-            =number_with_delimiter(a_blur_table.query_usage, :delimiter => ',')
+          -if blur_table
+            =number_with_delimiter(blur_table.query_usage, :delimiter => ',')
           -else
             not available
         %td
@@ -51,7 +51,7 @@
       %tr
         %td{:colspan => 7}
           %b location:
-          =get_loc(table)
+          = @tdesc[table].tableUri
       %tr
         %td{:colspan => 7}
           %b definition:

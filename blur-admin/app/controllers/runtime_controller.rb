@@ -18,7 +18,7 @@ class RuntimeController < ApplicationController
   end
 
   def cancel
-    @client.cancelQuery(params[:table], params[:uuid])
+    @client.cancelQuery(params[:table, :uuid])
   end
 
 end

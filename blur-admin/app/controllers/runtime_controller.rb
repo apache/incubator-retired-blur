@@ -17,8 +17,14 @@ class RuntimeController < ApplicationController
     end
   end
 
-  def cancel
-    @client.cancelQuery(params[:table], params[:uuid])
+  def update
+    if params[:cancel]
+      @client.cancelQuery(params[:table], params[:uuid].to_i)
+    end
+
+    #TODO Change render so that it spits back a status of the cancel
+    render :nothing => true
+
   end
 
 end

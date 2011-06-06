@@ -18,10 +18,8 @@ BlurAdmin::Application.routes.draw do
   end
 
   controller "runtime" do
-    match 'runtime/cancel/:table/:uuid', :to => :cancel, :as => :cancel, :via => :get
+    match 'runtime/update/:table/:uuid', :to => :update, :as => :update, :via => :put
     match 'runtime/show/:table_name', :to => :show, :via => :get
-    match 'runtime/cpu/:table', :to => :query_time_cpu, :as => :query_time_cpu, :via => :get
-    match 'runtime/real/:table', :to => :query_time_real, :as => :query_time_real, :via => :get
   end
 
   # The priority is based upon order of creation:

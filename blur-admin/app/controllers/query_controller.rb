@@ -11,7 +11,6 @@ class QueryController < ApplicationController
 	def filters
 	  table = params[:table]
 	  @columns = @client.schema(table)
-	  
 	  render '_filters.html.haml', :layout=>false
   end
 
@@ -55,7 +54,7 @@ class QueryController < ApplicationController
     @result_count = blur_results.totalResults
     blur_results.results.each do |result|
       row = result.fetchResult.rowResult.row 
-      max_record_count = row.columnFamilies.max {|cf| cf.records.keys.count }
+      max_record_count = row.columnFamilies.collect {|cf| cf.records.keys.count }.max
          
       # organize into multidimensional array of rows and columns
       table_rows = Array.new(max_record_count) { [] }

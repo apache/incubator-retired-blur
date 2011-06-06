@@ -45,9 +45,9 @@
           -else
             not available
         %td
-          = check_box_tag table, "1", @tdesc[table].isEnabled, :class=>'enable'
+          = check_box_tag '', "1", @tdesc[table].isEnabled, :class=>'enable', :table_name => table
         %td
-          = submit_tag 'delete', :class=>'delete-table'
+          = submit_tag 'delete', :class=>'delete-table', :table_name => table
       %tr
         %td{:colspan => 7}
           %b location:

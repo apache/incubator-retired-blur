@@ -12,14 +12,13 @@ BlurAdmin::Application.routes.draw do
   end
 
   controller "data" do
-    match 'data/table/:name', :to => :destroy_table, :via => :delete
-    match 'data/table/:name/enable', :to => :enable_table, :via => :put
-    match 'data/table/:name/disable', :to => :disable_table, :via => :put
+    match 'data/update/:id', :to => :update, :as => :update_table, :via => :put
+    match 'data/delete/:id', :to => :destroy, :as => :delete_table, :via => :delete
   end
 
   controller "runtime" do
-    match 'runtime/update/:table/:uuid', :to => :update, :as => :update, :via => :put
-    match 'runtime/show/:table_name', :to => :show, :via => :get
+    match 'runtime/:table/:uuid', :to => :update, :as => :update, :via => :put
+    match 'runtime/:id', :to => :show, :via => :get
   end
 
   # The priority is based upon order of creation:

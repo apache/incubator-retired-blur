@@ -4,9 +4,9 @@ class RuntimeController < ApplicationController
 
   def show
     @tables = @client.tableList()
-    table_name = params[:table_name]
+    table_name = params[:id]
     if table_name and table_name.downcase != 'all'
-      @blur_queries = BlurQueries.where(:table_name => table_name.all)
+      @blur_queries = BlurQueries.find_all_by_table_name table_name
     else
       @blur_queries = BlurQueries.all
     end
@@ -18,8 +18,10 @@ class RuntimeController < ApplicationController
   end
 
   def update
-    if params[:cancel]
-      @client.cancelQuery(params[:table], params[:uuid].to_i)
+    cancel? table_name uuid = params[:cancel, :table, :uuid] 
+
+    if cancel?
+      @client.cancelQuery(table_name, uuid.to_i)
     end
 
     #TODO Change render so that it spits back a status of the cancel

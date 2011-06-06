@@ -8,18 +8,23 @@ $(document).ready ->
     else if $(this).not ':checked'
       action = "disable"
 
-    url = "/data/table/" + $(this).attr('id') + "/" + action
-    
+    console.log action
+
+    url = "/data/" + $(this).attr('table_name')
+    data = 'operation=' + action
     result = $.ajax(
+      data: data
       url: url
-      type: 'PUT' )
+      type: 'PUT'
+    )
   )
 
   #FUNCTION delete a table
   $(".delete-table").click( ->
-    confirmation = confirm("Are you sure you want to delete this table?")
+    table_name = $(this).attr('table_name')
+    confirmation = confirm("Are you sure you want to delete #{table_name}?")
     if confirmation
-      url = "/data/table/" + $(this).attr('id')
+      url = "/data/" + table_name
       result = $.ajax(
         url: url
         type: 'DELETE')

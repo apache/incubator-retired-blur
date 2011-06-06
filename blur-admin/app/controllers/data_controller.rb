@@ -1,6 +1,6 @@
 class DataController < ApplicationController
   before_filter :setup_thrift
-  before_filter :table_name, :only => [:enable_table, :disable_table, :destroy_table]
+  before_filter :table_name, :only => [:update, :destroy_table]
   after_filter :close_thrift
 
   def show
@@ -18,17 +18,20 @@ class DataController < ApplicationController
     end
   end
 
-  def enable_table
-    @client.enableTable table_name
-    render :json => @client.describe(table_name.isEnabled)
+  #TODO: Add feedback to enable / disable on view
+  def update
+    action = params[:operation]
+    if action == 'enable'
+      @client.enableTable table_name
+    elsif action == 'disable'
+      @client.disableTable table_name
+    end
+
+    render :json => @client.describe(table_name).isEnabled
   end
 
-  def disable_table
-    @client.disableTable table_name
-    render :json => !@client.describe(table_name.isEnabled)
-  end
-
-  def destroy_table 
+  #TODO: Add feedback to delete button on view
+  def destroy 
     # TODO: Uncomment below when we can create a table
     #client.removeTable(params[:name], false)
     render :json => !@client.tableList.include?(table_name)
@@ -37,7 +40,7 @@ class DataController < ApplicationController
   protected
 
   def table_name
-    table_name = params[:name]
+    table_name = params[:id]
   end
 
 end

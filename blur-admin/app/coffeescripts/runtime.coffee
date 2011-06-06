@@ -3,7 +3,7 @@ $(document).ready ->
   # Updates query table with ajax
   update_table = (table_name) ->
     $.ajax(
-      url: 'runtime/show/' + table_name
+      url: 'runtime/' + table_name
       dataType: 'script'
     )
 
@@ -17,10 +17,10 @@ $(document).ready ->
     table_name = $(this).attr('table_name')
     cancel = $(this).attr('cancel')
 
-    url = '/runtime/update/' + table_name + '/' + uuid
+    url = '/runtime/' + table_name + '/' + uuid
     $.ajax(
-      url: url
       data: 'cancel=' + cancel
+      url: url
       type: 'PUT'
       )
     )

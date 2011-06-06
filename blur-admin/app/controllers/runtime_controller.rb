@@ -1,12 +1,12 @@
 class RuntimeController < ApplicationController
+  before_filter :setup_thrift
+  after_filter :close_thrift
 
   def show
-    setup_thrift
     @tables = @client.tableList()
-    close_thrift
-
-    if params[:table_name] and params[:table_name].downcase != 'all'
-      @blur_queries = BlurQueries.where(:table_name => params[:table_name]).all
+    table_name = params[:table_name]
+    if table_name and table_name.downcase != 'all'
+      @blur_queries = BlurQueries.where(:table_name => table_name.all)
     else
       @blur_queries = BlurQueries.all
     end
@@ -18,37 +18,7 @@ class RuntimeController < ApplicationController
   end
 
   def cancel
-    setup_thrift
     @client.cancelQuery(params[:table], params[:uuid])
-    close_thrift
-  end
-
-  def query_time_cpu
-    curr_cpu_times = []
-    if (params[:table] == "all")
-      curr_queries = BlurQueries.all
-    else
-      curr_queries = BlurQueries.where(:table_name => params[:table]).all
-    end
-    curr_queries.each do |a|
-      curr_cpu_times.push(a.cpu_time)
-    end
-
-    render :json => curr_cpu_times
-  end
-
-  def query_time_real
-    curr_real_times = []
-    if (params[:table] == "all")
-      curr_queries = BlurQueries.all
-    else
-      curr_queries = BlurQueries.where(:table_name => params[:table]).all
-    end
-    curr_queries.each do |a|
-      curr_real_times.push(a.real_time)
-    end
-
-    render :json => curr_real_times
   end
 
 end

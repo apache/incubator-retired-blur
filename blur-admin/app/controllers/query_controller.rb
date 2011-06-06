@@ -81,7 +81,7 @@ class QueryController < ApplicationController
             else    
               if families.include? columnFamilyName       
                 families_with_columns[columnFamilyName].count.times { |t| cfspan << ' ' }
-              elseclose_thrift
+              else
                 columns[columnFamilyName].count.times { |t| cfspan << ' ' }
               end
             end

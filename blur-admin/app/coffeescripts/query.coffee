@@ -18,6 +18,7 @@ $(document).ready ->
     $('.column_family_filter').click -> toggle_submit()
     #Disable submit button when no text in input
     $('#q').keydown -> toggle_submit()
+
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
     if $(':checked').length>0 and $('#q').val() isnt  ''
@@ -41,7 +42,6 @@ $(document).ready ->
     matches = response.replace(/\n/g,'<br/>').match(/<pre>(.*?)<\/pre>/i)
     
     error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
-    #error_content = '<div style="color:red;font-style:italic; font-weight:bold">Please select at least one Column Family to search.</div>'
     $('#results_section').html(error_content)
     true
   )

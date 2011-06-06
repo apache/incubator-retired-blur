@@ -9,8 +9,7 @@ class QueryController < ApplicationController
 	end
 	
 	def filters
-	  table = params[:table]
-	  @columns = @client.schema(table)
+	  @columns = @client.schema(params[:table])
 	  render '_filters.html.haml', :layout=>false
   end
 
@@ -34,9 +33,9 @@ class QueryController < ApplicationController
       end
     end
 
-		sel = Blur::Selector.new
-		sel.columnFamiliesToFetch = families unless families.blank?
-		sel.columnsToFetch = columns unless columns.blank?
+		sel = Blur::Selector.new :columnFamiliesToFetch => families, :columnsToFetch => columns
+		#sel.columnFamiliesToFetch = families unless families.blank?
+		#sel.columnsToFetch = columns unless columns.blank?
 
 		bq.selector = sel
 
@@ -76,18 +75,18 @@ class QueryController < ApplicationController
                       cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
                 end
               end
-            else    
+            else
               if families_include
-                families_with_columns[column_family_name].count.times { |t| cfspan << ' ' }
+                families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
               else
-                columns[column_family_name].count.times { |t| cfspan << ' ' }
+                columns[column_family_name].count.times { |count_time| cfspan << ' ' }
               end
             end
           else
             if families_include
-              families_with_columns[column_family_name].count.times { |t| cfspan << ' ' }
+              families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
             else
-              columns[column_family_name].count.times { |t| cfspan << ' ' }
+              columns[column_family_name].count.times { |count_time| cfspan << ' ' }
             end
           end
         end

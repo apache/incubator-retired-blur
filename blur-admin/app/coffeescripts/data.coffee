@@ -1,8 +1,8 @@
 $(document).ready ->
 
-  update_table = (table_name, action) ->
+  update_table = (table_name, enabled) ->
     url = "/data/" + table_name 
-    data = 'operation=' + action
+    data = 'enabled=' + enabled
     result = $.ajax(
       data: data
       url: url
@@ -39,9 +39,9 @@ $(document).ready ->
   #Listener to Enable/Disable a table
   $(".enable").live('click', ->
     if $(this).is ':checked'
-      action = "enable"
+      enabled = true
     else if $(this).not ':checked'
-      action = "disable"
+      enabled = false
     table_name = $(this).attr('table_name')
-    update_table(table_name, action)
+    update_table(table_name, enabled)
   )

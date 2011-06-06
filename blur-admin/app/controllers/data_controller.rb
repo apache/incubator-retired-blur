@@ -20,11 +20,11 @@ class DataController < ApplicationController
 
   #TODO: Add feedback to enable / disable on view
   def update
-    action = params[:operation]
-    if action == 'enable'
+    enabled = params[:enabled]
+    if enabled == 'true'
       @client.enableTable table_name
-    elsif action == 'disable'
-      @client.disableTable table_name
+    elsif enabled == 'false'
+      #@client.disableTable table_name
     end
 
     render :json => @client.describe(table_name).isEnabled

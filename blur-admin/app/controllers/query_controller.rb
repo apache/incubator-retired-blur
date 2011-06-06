@@ -1,24 +1,21 @@
 class QueryController < ApplicationController
 
+  before_filter :setup_thrift
+  after_filter :close_thrift
+
 	def show
-	  client = setup_thrift
-	  @tables = client.tableList.sort!
-	  @columns = client.schema(@tables.first) unless @tables.blank?
-	  close_thrift
+	  @tables = @client.tableList.sort!
+	  @columns = @client.schema(@tables.first) unless @tables.blank?
 	end
 	
 	def filters
-	  client = setup_thrift
 	  table = params[:table]
-	  @columns = client.schema(table)
-	  close_thrift
+	  @columns = @client.schema(table)
 	  
 	  render '_filters.html.haml', :layout=>false
   end
 
-	def create
-		client = setup_thrift
-		
+	def create		
 		# TODO: Add in fetch filter, paging, superQueryOn/Off
 		
 	  table = params[:t]
@@ -46,11 +43,11 @@ class QueryController < ApplicationController
 		
 		bq.selector = sel
 
-		blur_results = client.query(table, bq)
+		blur_results = @client.query(table, bq)
 
     families_with_columns = {}
     families.each do |family|
-      families_with_columns[family] = client.schema(table).columnFamilies[family]
+      families_with_columns[family] = @client.schema(table).columnFamilies[family]
     end
                 
     visible_families = (families + columns.keys).uniq
@@ -84,7 +81,7 @@ class QueryController < ApplicationController
             else    
               if families.include? columnFamilyName       
                 families_with_columns[columnFamilyName].count.times { |t| cfspan << ' ' }
-              else
+              elseclose_thrift
                 columns[columnFamilyName].count.times { |t| cfspan << ' ' }
               end
             end
@@ -102,7 +99,6 @@ class QueryController < ApplicationController
       
       @results << record
     end
-		close_thrift
 		
     @all_columns = families_with_columns.merge columns
 		

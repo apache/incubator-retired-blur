@@ -21,14 +21,14 @@ $(document).ready ->
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
-    if $(':checked').length>0 and $('#q').val() isnt  ''
+    if $('.jstree-checked').length>0 and $('#q').val() isnt  ''
       $(':submit').removeAttr('disabled')
     else
       $(':submit').attr('disabled', 'disabled')
-    
-  
+
   $('#t').change -> $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
-  
+  $('#filter_columns').load('query/' + $('#t').val() + '/filters', setup_filter_tree)
+
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
     if(data)
       $('#results_section').html(data)
@@ -45,6 +45,3 @@ $(document).ready ->
     $('#results_section').html(error_content)
     true
   )
-  
-  setup_filter_tree()
-

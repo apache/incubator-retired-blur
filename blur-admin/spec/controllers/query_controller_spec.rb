@@ -9,7 +9,7 @@ describe QueryController do
   end
   describe "filters" do
     it "gets the columns and columns families for the filter" do
-    
+      
     end
   end
   describe "create" do

@@ -7,4 +7,9 @@ describe RuntimeController do
       response.should render_template "show"
     end
   end
+  describe "update" do
+    it "cancels a running query if cancel is true" do
+      
+    end
+  end
 end

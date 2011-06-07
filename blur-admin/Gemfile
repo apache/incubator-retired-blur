@@ -9,6 +9,7 @@ gem 'compass'
 gem 'haml'
 gem 'barista'
 gem 'thrift'
+gem 'authlogic'
 
 group :development, :test do
 	gem 'autotest'
@@ -16,5 +17,6 @@ group :development, :test do
 	gem 'ci_reporter'
 	gem 'metric_fu'
 	gem 'cover_me'
+  gem 'nifty-generators'
 end
 

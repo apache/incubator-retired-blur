@@ -52,13 +52,13 @@ public class QueryCollector {
 
 					 */
 					
+					System.out.println(tables);
 					for (String table : tables) {
 						List<BlurQueryStatus> currentQueries = client.currentQueries(table);
 						
 						for (BlurQueryStatus blurQueryStatus : currentQueries) {
 							//Check if query exists
 							List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete from blur_queries where table_name=? and uuid=?", new Object[]{table, blurQueryStatus.getUuid()});
-							
 							if (existingRow.isEmpty()) {
 								System.out.println("Inserting new query");
 //								System.out.println("Start time:" + blurQueryStatus.getQuery().get);
@@ -83,7 +83,7 @@ public class QueryCollector {
 												blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnsToFetch()),
 												blurQueryStatus.getQuery().getUserId()
 											});
-							} else if ((Integer)existingRow.get(0).get("COMPLETE") != 1){
+							} else {
 								System.out.println("Updating existing query");
 								jdbc.update("update blur_queries set cpu_time=?, real_time=?, complete=?, interrupted=?, running=? where id=?", 
 											new Object[] {blurQueryStatus.getCpuTime(),

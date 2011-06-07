@@ -32,6 +32,9 @@ GEM
     activesupport (3.0.7)
     arel (2.0.10)
     arrayfields (4.7.4)
+    authlogic (3.0.3)
+      activerecord (>= 3.0.7)
+      activerecord (>= 3.0.7)
     autotest (4.4.6)
       ZenTest (>= 4.4.1)
     barista (1.0.0)
@@ -101,7 +104,9 @@ GEM
       roodi (>= 2.1.0)
       syntax
     mime-types (1.16)
+    mocha (0.9.12)
     mysql (2.8.1)
+    nifty-generators (0.4.6)
     polyglot (0.3.1)
     rack (1.2.3)
     rack-mount (0.6.14)
@@ -171,6 +176,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  authlogic
   autotest
   barista
   ci_reporter
@@ -179,7 +185,9 @@ DEPENDENCIES
   haml
   jquery-rails (>= 0.2.6)
   metric_fu
+  mocha
   mysql
+  nifty-generators
   rails (= 3.0.7)
   rspec-rails
   sqlite3

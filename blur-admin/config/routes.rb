@@ -1,4 +1,6 @@
 BlurAdmin::Application.routes.draw do
+  resources :users, :user_sessions
+
   resource :data, :only => [:show]
   resource :runtime, :controller => 'runtime', :only => [:show]
   resource :config, :controller => 'config'
@@ -20,6 +22,9 @@ BlurAdmin::Application.routes.draw do
     match 'runtime/:table/:uuid', :to => :update, :as => :update, :via => :put
     match 'runtime/:id', :to => :show, :via => :get
   end
+
+  match 'login' => 'user_sessions#new', :as => :login
+  match 'logout' => 'user_sessions#destroy', :as => :logout
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

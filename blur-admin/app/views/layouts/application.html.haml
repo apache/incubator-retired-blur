@@ -14,6 +14,13 @@
       .container
         #hd
           = link_to image_tag('blur_logo.png'), root_path
+          = link_to "Register", new_user_path
+          |
+          = link_to "Log In", login_path
+          |
+          = link_to "Log Out", logout_path
+          |
+          = notice
       #nav
         %ul
           - controller = params[:controller]

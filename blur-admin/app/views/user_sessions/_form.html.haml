@@ -1,0 +1,17 @@
+= form_for @user_session do |f|
+  -if @user_session.errors.any?
+    #error_explanation
+      %h2= "#{pluralize(@user_session.errors.count, 'error')} prohibited successful login"
+      %ul
+        - @user.errors.full_messages.each do |msg|
+          %li= msg
+  %p
+    = f.label :username
+    %br
+    = f.text_field :username
+  %p
+    = f.label :password, 'Password'
+    %br
+    = f.password_field :password
+  %p
+    = f.submit

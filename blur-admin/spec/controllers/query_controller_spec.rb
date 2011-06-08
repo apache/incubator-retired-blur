@@ -9,12 +9,11 @@ describe QueryController do
   end
   describe "filters" do
     it "gets the columns and columns families for the filter" do
-      
+      get :filters, :table => "employee_super_mart"
+      response.should render_template "filters"
     end
   end
   describe "create" do
-    it "displays the results for a query" do
-    
-    end
+    it "displays the results for a query"
   end
 end

@@ -15,7 +15,8 @@ describe QueryController do
   end
   describe "create" do
     it "displays the results for a query" do
-      get :create, :t => "employee_super_mart", :q => "employee.name:bob", :column_data => ["name"]
+      get :create, :t => "employee_super_mart", :q => "employee.name:bob", :column_data => 
+        ["family_department", "column_department_deptNo", "column_department_moreThanOneDepartment", "column_department_name"]
       response.should render_template "create"
     end
   end

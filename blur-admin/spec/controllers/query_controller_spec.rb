@@ -19,5 +19,10 @@ describe QueryController do
         ["family_department", "column_department_deptNo", "column_department_moreThanOneDepartment", "column_department_name"]
       response.should render_template "create"
     end
+    it "displays the results for a dif query" do
+      get :create, :t => "employee_super_mart", :q => "employee.name:bob", :column_data =>
+        ["column_department_moreThanOneDepartment", "column_department_name"]
+      response.should render_template "create"
+    end
   end
 end

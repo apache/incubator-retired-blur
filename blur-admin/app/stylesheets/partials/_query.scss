@@ -14,6 +14,7 @@ table {
         border: solid 1px #AAA;
 	empty-cells: show;
 	border-spacing: 1px;
+	margin-bottom: 0;
 	thead {
 		th {
 			text-align: center;
@@ -73,6 +74,23 @@ table {
 }
 
 #results_section{
-  height: 500px;
+  height: 0px;
+  width: 100%;
+  border: none;
   overflow: auto;
+  background-color : #ffffff;
+}
+
+#checkall{
+	padding-right:10px;
+	padding-left:10px;
+}
+
+#fullscreen{
+	float: right;
+	padding-right:10px;
+}
+
+#cboxContent{
+	background-color: rgba(192,192,192,0.5);
 }

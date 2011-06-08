@@ -31,9 +31,13 @@ class DataController < ApplicationController
   end
 
   #TODO: Add feedback to delete button on view
-  def destroy 
+  def destroy
+    if underlying
+      #client.removeTable(params[:name], true)
     # TODO: Uncomment below when we can create a table
-    #client.removeTable(params[:name], false)
+    else
+      #client.removeTable(params[:name], false)
+    end
     render :json => !@client.tableList.include?(table_name)
   end
 

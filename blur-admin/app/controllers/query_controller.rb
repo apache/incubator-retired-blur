@@ -33,9 +33,9 @@ class QueryController < ApplicationController
       end
     end
 
-		sel = Blur::Selector.new :columnFamiliesToFetch => families, :columnsToFetch => columns
-		#sel.columnFamiliesToFetch = families unless families.blank?
-		#sel.columnsToFetch = columns unless columns.blank?
+		sel = Blur::Selector.new #:columnFamiliesToFetch => families, :columnsToFetch => columns
+		sel.columnFamiliesToFetch = families unless families.blank?
+		sel.columnsToFetch = columns unless columns.blank?
 
 		bq.selector = sel
 

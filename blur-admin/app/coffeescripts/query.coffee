@@ -81,7 +81,7 @@ $(document).ready ->
   	win_width = $(window).width() * .9
   	table_name = $("#t option:selected").val()
   	table_name = "Results for query on " + table_name
-  	$('<div id="full_screen_dialog">' + $('#results_section').html() + '</div>').dialog({height: win_height, width: win_width, movable: "false", esizable:"false", title: table_name, modal: "true", close: (event, ui) -> $("#full_screen_dialog").remove() })
+  	$('<div id="full_screen_dialog">' + $('#results_section').html() + '</div>').dialog({height: win_height, width: win_width, modal: true, draggable: false, resizable: false, title: table_name, close: (event, ui) -> $("#full_screen_dialog").remove() })
 
   #Live Listeners for this document
   #listeners for check all and uncheck all
@@ -91,3 +91,4 @@ $(document).ready ->
   #Disable submit button when no text in input
   $('#q').live("keyup", -> toggle_submit())
   $('#filter_section').live("click", -> toggle_submit())
+  $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").remove())

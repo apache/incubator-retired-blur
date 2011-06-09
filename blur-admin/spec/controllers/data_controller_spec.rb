@@ -5,6 +5,7 @@ describe DataController do
     before do
       @client = mock(Blur::Blur::Client)
       controller.stub!(:thrift_client).and_return(@client)
+      controller.stub!(:close_thrift)
     end
     it "renders the show template" do
       bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false

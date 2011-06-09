@@ -2,7 +2,18 @@ require "spec_helper"
 
 describe DataController do
   describe "show" do
+    before do
+      @client = mock(Blur::Blur::Client)
+      controller.stub!(:thrift_client).and_return(@client)
+    end
     it "renders the show template" do
+      bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
+      @client.should_receive(:tableList).and_return(['blah'])
+      @client.should_receive(:describe).with('blah').and_return(Blur::TableDescriptor.new)
+      @client.should_receive(:schema).with('blah').and_return(Blur::Schema.new)
+      @client.should_receive(:shardServerLayout).with('blah').and_return(Blur::Blur::ShardServerLayout_result.new)
+      @client.should_receive(:query).with('blah', bq).and_return(Blur::BlurResults.new)
+      
       get :show
       response.should render_template "show"
     end

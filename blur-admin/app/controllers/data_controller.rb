@@ -5,16 +5,18 @@ class DataController < ApplicationController
 
   def show
     bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
-    @tables = @client.tableList.sort
+    @tables = thrift_client.tableList.sort
+    
+    puts @tables.inspect
     @tdesc = {}
     @tschema = {}
     @tserver = {}
     @tcount = {}
     @tables.each do |table|
-      @tdesc[table] = @client.describe(table)
-      @tschema[table] = @client.schema(table).columnFamilies
-      @tserver[table] = @client.shardServerLayout(table)
-      @tcount[table] = @client.query(table, bq).totalResults
+      @tdesc[table] = thrift_client.describe(table)
+      @tschema[table] = thrift_client.schema(table).columnFamilies
+      @tserver[table] = thrift_client.shardServerLayout(table)
+      @tcount[table] = thrift_client.query(table, bq).totalResults
     end
   end
 

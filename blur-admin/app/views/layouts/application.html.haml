@@ -36,7 +36,7 @@
           %li{:class => controller == 'config' && 'active'}
             = link_to 'Configuration', config_path
 
-          %li{:class => controller == 'query' && 'active'}
+          %li{:class => controller == 'query' && 'active', :id => "left"}
             = link_to 'Query', query_path
       #bd_background
         #bd_wrap.container

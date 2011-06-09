@@ -3,7 +3,7 @@
   letter-spacing: 25px;
   white-space: nowrap;
   overflow: hidden;
-  margin: 0 0 30px;
+  margin: 0 0px 25px 25px;
 }
 
 .inner-container {
@@ -21,10 +21,14 @@
   border: solid 1px #AAA;
   @include border-radius;
   background-color:white;
+  margin-right: 10px;
 }
 #bottom-container {
-  margin: 20px;
+  margin: 25px;
   padding: 5px;
+  .status-container{
+    text-align: left ;
+  }
 }
 .titles{
   display: inline-block;

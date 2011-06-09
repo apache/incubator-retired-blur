@@ -10,14 +10,15 @@ $(document).ready ->
     )
 
   # Function to delete a table
-  delete_table = (table_name) ->
+  delete_table = (table_name, underlying) ->
     #to-do: Add the functionality for the jquery dialog and asking to be sure of deleting underlying
-    confirmation = confirm("Are you sure you want to delete #{table_name}?")
-    if confirmation
-      url = "/data/" + table_name
-      result = $.ajax(
-        url: url
-        type: 'DELETE')
+    url = "/data/" + table_name
+    data = 'underlying=' + underlying
+    result = $.ajax(
+      success: $("tr#" + table_name).remove()
+      data: data
+      url: url
+      type: 'DELETE')
 
 
   # Function to initialize the filter tree
@@ -34,7 +35,13 @@ $(document).ready ->
 
   #Listener to delete a table
   $(".delete-table").live('click', ->
-    delete_table( $(this).attr('table_name') )
+    table_name = $(this).attr('table_name')
+    $(".ui-confirm").attr("table", table_name)
+    $("#confirm-dialog").empty()
+    $("#confirm-dialog").append("<p>This will delete the <em>\"" + table_name + "\" </em> table, Do you wish to continue?</p>")
+    $(".ui-confirm").dialog({modal: true, draggable: false, resizable: false, title: "Confirm Delete", width: "450px"})
+    #load up the dialog
+    #delete_table( $(this).attr('table_name') )
   )
   
   #Listener to Enable/Disable a table
@@ -46,3 +53,11 @@ $(document).ready ->
     table_name = $(this).attr('table_name')
     update_table(table_name, enabled)
   )
+  
+  #listener to hide dialog on click
+  $('.ui-widget-overlay').live("click", -> $(".ui-confirm").dialog("close"))
+  #listeners for the cancel/OK buttons on the dialog
+  $('.cancel').live("click", -> $(".ui-confirm").dialog("close"))
+  $('.ok').live("click", -> 
+    delete_table($(".ui-confirm").attr("table"), $("#underlying-confirm").is(":checked"))
+    $(".ui-confirm").dialog("close"))

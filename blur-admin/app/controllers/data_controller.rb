@@ -22,12 +22,12 @@ class DataController < ApplicationController
   def update
     enabled = params[:enabled]
     if enabled == 'true'
-      @client.enableTable table_name
+      thrift_client.enableTable table_name
     elsif enabled == 'false'
-      #@client.disableTable table_name
+      #thrift_client.disableTable table_name
     end
 
-    render :json => @client.describe(table_name).isEnabled
+    render :json => thrift_client.describe(table_name).isEnabled
   end
 
   #TODO: Add feedback to delete button on view
@@ -38,7 +38,7 @@ class DataController < ApplicationController
     else
       #client.removeTable(params[:name], false)
     end
-    render :json => !@client.tableList.include?(table_name)
+    render :json => !thrift_client.tableList.include?(table_name)
   end
 
   protected

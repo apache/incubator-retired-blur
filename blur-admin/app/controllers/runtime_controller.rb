@@ -1,9 +1,8 @@
 class RuntimeController < ApplicationController
-  before_filter :setup_thrift
   after_filter :close_thrift
 
   def show
-    @tables = @client.tableList
+    @tables = thrift_client.tableList
     table_name = params[:id]
     if table_name and table_name.downcase != 'all'
       @blur_queries = BlurQueries.find_all_by_table_name table_name
@@ -23,7 +22,7 @@ class RuntimeController < ApplicationController
     uuid = params[:uuid]
 
     if cancel
-      @client.cancelQuery(table_name, uuid.to_i)
+      thrift_client.cancelQuery(table_name, uuid.to_i)
     end
 
     #TODO Change render so that it spits back a status of the cancel

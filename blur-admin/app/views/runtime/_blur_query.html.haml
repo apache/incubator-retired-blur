@@ -1,7 +1,12 @@
 - empty_message = 'Not Available'
 %tr
   %td
-    =blur_query.query_string
+    -if blur_query.userid
+      =blur_query.userid + ":"
+    -if blur_query.query_string
+      =truncate(blur_query.query_string, :length => 20, :ommision => "...")
+    -else
+      =empty_message
   %td
     -if blur_query.start
       = blur_query.start

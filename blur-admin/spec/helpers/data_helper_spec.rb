@@ -1,8 +1,9 @@
 require "spec_helper"
 
 describe DataHelper do
-  describe "#get_shards" do
-    it "returns the shards" do
+  describe "#shards" do
+    it "returns the shards and hosts" do
+
 			#TODO
       #helper.get_shards().should eq("...")
     end

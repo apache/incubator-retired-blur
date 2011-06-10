@@ -11,6 +11,7 @@ $(document).ready ->
 
   # Function to delete a table
   delete_table = (table_name) ->
+    #to-do: Add the functionality for the jquery dialog and asking to be sure of deleting underlying
     confirmation = confirm("Are you sure you want to delete #{table_name}?")
     if confirmation
       url = "/data/" + table_name

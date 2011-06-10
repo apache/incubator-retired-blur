@@ -1,4 +1,4 @@
-- content_for :title, 'Query'
+-content_for :title, 'Query'
 -content_for :javascript do
   =javascript_include_tag 'jquery.jstree', 'compiled/query'
 
@@ -12,6 +12,8 @@
       .partial-section
         = label_tag :t, "Table:"
         = select_tag :t, options_for_select(@tables)
+        %a{:title => "Check All", :href => "#", :id => "checkall"} Check All
+        %a{:title => "Uncheck All", :href => "#", :id => "uncheckall"} Uncheck All
 
       .partial-section
         Column Families:
@@ -19,6 +21,6 @@
           = render 'filters'
 
     = submit_tag "Search", :disabled => true, :id => "search_submit"
-
-  #results_section.partial-section
+  
+  #results_container.partial-section
 

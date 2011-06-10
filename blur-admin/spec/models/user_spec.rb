@@ -74,14 +74,5 @@ describe 'User Model' do
       @user.should be_valid
     end
   end
-
-  describe 'Destroy a User'
-    before do
-      @user.save
-    end
-    
-    it 'is destroyed succesfully' do
-      @user
-    end
-  end 
 end
+

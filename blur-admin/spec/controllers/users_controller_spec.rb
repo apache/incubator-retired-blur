@@ -130,7 +130,7 @@ describe UsersController do
       it "should redirect to the user and include notice" do
         user.should_receive(:update_attributes).with('username' => 'newname').and_return(true)
         put :update, {:id => 'id', :user => {:username => 'newname'}}
-        response.should redirect_to(user_url(user))
+        response.should redirect_to(user)
         flash[:notice].should_not be_blank
       end
 
@@ -156,3 +156,4 @@ describe UsersController do
     end
   end
 end
+

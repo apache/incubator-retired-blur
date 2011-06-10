@@ -1,33 +1,35 @@
 - if @results and not @results.empty?
-  Results:
-  = @result_count
-  %table
-    %thead
-      %tr
-        %th
-        - @all_columns.each do |family, set|
-          %th{:colspan => set.count}
-            = family
-      %tr.columnsets
-        %th id
-        - @all_columns.each do |family, set|
-          - set.each do |s|
-            %th
-              = s.gsub(/([A-Z])/, '&shy;\1').html_safe
+  #results_info.partial-section
+    Results:
+    = @result_count
+    %a{:title => "Full Screen", :href => "#ui-dialog", :id => "fullscreen"} Full Screen
+  #results_section.partial-section
+    %table#result_table.result_table
+      %thead
+        %tr
+          %th
+          - @all_columns.each do |family, set|
+            %th{:colspan => set.count}
+              = family
+        %tr.columnsets
+          %th id
+          - @all_columns.each do |family, set|
+            - set.each do |s|
+              %th
+                = s.gsub(/([A-Z])/, '&shy;\1').html_safe
 
-    %tfoot
-      %tbody
-        - @results.each do |result|
-          - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
-          - result[:table_rows].each_with_index do |table_row, i|
-            %tr{:class => stripe_class}
-              - if i == 0
-                %td{:rowspan => result[:max_record_count]}
-                  = result[:id]
+        %tbody
+          - @results.each do |result|
+            - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
+            - result[:table_rows].each_with_index do |table_row, i|
+              %tr{:class => stripe_class}
+                - if i == 0
+                  %td{:rowspan => result[:max_record_count]}
+                    = result[:id]
 
-              - reset_cycle('column-cycle')
-              - table_row.each do |cfs|
-                - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-                - cfs.each do |column|
-                  %td{:class => cf_stripe}
-                    = column
+                - reset_cycle('column-cycle')
+                - table_row.each do |cfs|
+                  - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
+                  - cfs.each do |column|
+                    %td{:class => cf_stripe}
+                      = column

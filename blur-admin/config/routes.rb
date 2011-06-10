@@ -1,8 +1,8 @@
 BlurAdmin::Application.routes.draw do
   resources :users, :user_sessions
 
-  resource :data, :only => [:show]
-  resource :runtime, :controller => 'runtime', :only => [:show]
+  resource :data
+  resource :runtime, :controller => 'runtime'
   resource :config, :controller => 'config'
 	resource :query, :controller => 'query'
 	resource :env, :controller => 'env'
@@ -83,4 +83,3 @@ BlurAdmin::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id(.:format)))'
 end
-

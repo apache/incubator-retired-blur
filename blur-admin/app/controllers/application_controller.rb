@@ -13,6 +13,11 @@ class ApplicationController < ActionController::Base
   rescue Thrift::TransportException
     @client = nil
   end
+  
+  def thrift_client
+    setup_thrift unless @client
+    @client
+  end
 
   def close_thrift
     @transport.close()

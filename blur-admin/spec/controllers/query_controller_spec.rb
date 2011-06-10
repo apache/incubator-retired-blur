@@ -26,7 +26,7 @@ describe QueryController do
   end
 
   describe "create" do
-    it "works when column_family & record_count < count & families_include" do
+    it "1 works when column_family & record_count < count & families_include" do
       set = Set.new ['deptNo', 'moreThanOneDepartment', 'name'] 
       test_schema = Blur::Schema.new :columnFamilies => {'table1'=> set}
 
@@ -48,7 +48,7 @@ describe QueryController do
       response.should render_template "create"
     end
     
-    it "works when column_family & record_count < count & !families_include" do
+    it "2 works when column_family & record_count < count & !families_include" do
       test_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
       test_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => ['val1', 'val2', 'val3']
       test_col3 = Blur::Column.new :name => 'name', :values => ['val1', 'val2', 'val3']
@@ -66,29 +66,29 @@ describe QueryController do
       response.should render_template "create"
     end
 
-    it "works when column_family & !record_count < count & families_include" do
+    it "3 works when column_family & !record_count < count & families_include" do
       set = Set.new ['deptNo', 'moreThanOneDepartment', 'name']
       test_schema = Blur::Schema.new :columnFamilies => {'table1'=> set, 'table2' => set}
 
       test_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
       test_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => []
       test_col3 = Blur::Column.new :name => 'name', :values => ['val1']
-      test_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test_col1, test_col2, test_col3]}, :family => 'table1'
 
-      set1 = Set.new [test_cf1]
-      test_row1 = Blur::Row.new :id => 'string' , :columnFamilies => set1
-      test_rowresult1 = Blur::FetchRowResult.new :row => test_row1
-      test_fetchresult1 = Blur::FetchResult.new :rowResult => test_rowresult1
-      test_result1 = Blur::BlurResult.new :fetchResult => test_fetchresult1
+      test_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test_col1, test_col2, test_col3]}, :family => 'table1'
+      #set1 = Set.new [test_cf1]
+      #test_row1 = Blur::Row.new :id => 'string' , :columnFamilies => set1
+      #test_rowresult1 = Blur::FetchRowResult.new :row => test_row1
+      #test_fetchresult1 = Blur::FetchResult.new :rowResult => test_rowresult1
+      #test_result1 = Blur::BlurResult.new :fetchResult => test_fetchresult1
 
       test_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test_col1], 'key2' => [test_col1, test_col2, test_col3]}, :family => 'table2'
-      set2 = Set.new [test_cf2]
+      set2 = Set.new [test_cf2, test_cf1]
       test_row2 = Blur::Row.new :id => 'string' , :columnFamilies => set2
       test_rowresult2 = Blur::FetchRowResult.new :row => test_row2
       test_fetchresult2 = Blur::FetchResult.new :rowResult => test_rowresult2
       test_result2 = Blur::BlurResult.new :fetchResult => test_fetchresult2
 
-      test_query = Blur::BlurResults.new :results => [test_result1, test_result2], :totalResults => 2
+      test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1 #test_result1,
 
       @client.should_receive(:query).and_return(test_query)
       @client.should_receive(:schema).with('table').and_return(test_schema)
@@ -98,26 +98,26 @@ describe QueryController do
       response.should render_template "create"
     end
 
-    it "works when column_family & !record_count < count & !families_include" do
+    it "4 works when column_family & !record_count < count & !families_include" do
       test_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
       test_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => ['val1', 'val2', 'val3']
       test_col3 = Blur::Column.new :name => 'name', :values => ['val1', 'val2', 'val3']
 
       test_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test_col1, test_col2, test_col3]}, :family => 'table1'
-      set1 = Set.new [test_cf1]
-      test_row1 = Blur::Row.new :id => 'string' , :columnFamilies => set1
-      test_rowresult1 = Blur::FetchRowResult.new :row => test_row1
-      test_fetchresult1 = Blur::FetchResult.new :rowResult => test_rowresult1
-      test_result1 = Blur::BlurResult.new :fetchResult => test_fetchresult1
+      #set1 = Set.new [test_cf1]
+      #test_row1 = Blur::Row.new :id => 'string' , :columnFamilies => set1
+      #test_rowresult1 = Blur::FetchRowResult.new :row => test_row1
+      #test_fetchresult1 = Blur::FetchResult.new :rowResult => test_rowresult1
+      #test_result1 = Blur::BlurResult.new :fetchResult => test_fetchresult1
 
       test_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test_col1], 'key2' => [test_col1, test_col2, test_col3]}, :family => 'table2'
-      set2 = Set.new [test_cf2]
+      set2 = Set.new [test_cf2, test_cf1]
       test_row2 = Blur::Row.new :id => 'string' , :columnFamilies => set2
       test_rowresult2 = Blur::FetchRowResult.new :row => test_row2
       test_fetchresult2 = Blur::FetchResult.new :rowResult => test_rowresult2
       test_result2 = Blur::BlurResult.new :fetchResult => test_fetchresult2
 
-      test_query = Blur::BlurResults.new :results => [test_result1, test_result2], :totalResults => 2
+      test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
 
       @client.should_receive(:query).and_return(test_query)
 
@@ -125,7 +125,7 @@ describe QueryController do
       response.should render_template "create"
     end
 
-    it "works when !column_family & families_include" do
+    it "5 works when !column_family & families_include" do
       set = Set.new ['deptNo', 'moreThanOneDepartment', 'name']
       test_schema = Blur::Schema.new :columnFamilies => {'table1'=> set, 'table2'=> set}
 
@@ -156,7 +156,7 @@ describe QueryController do
       response.should render_template "create"
     end
 
-    it "works when !column_family & !families_include" do
+    it "6 works when !column_family & !families_include" do
       test_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
       test_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => []
       test_col3 = Blur::Column.new :name => 'name', :values => ['val1']

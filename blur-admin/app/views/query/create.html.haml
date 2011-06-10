@@ -1,9 +1,9 @@
 - if @results and not @results.empty?
-  #results_info.partial-section
+  #results_info.partial-results
     Results:
     = @result_count
     %a{:title => "Full Screen", :href => "#ui-dialog", :id => "fullscreen"} Full Screen
-  #results_section.partial-section
+  #results_section.partial-results
     %table#result_table.result_table
       %thead
         %tr

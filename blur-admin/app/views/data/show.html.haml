@@ -79,7 +79,7 @@
   #confirm-buttons
     %form
       %input#underlying-confirm{:type => "checkbox", :checked => false}
-        Delete underlying table index
+        =label_tag :t, "Delete underlying table index", :id => "delete-label"
       %button#confirm-submit.cancel{:type => "button"}
         Cancel
       %button#confirm-submit.ok{:type => "button"}

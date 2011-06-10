@@ -1,6 +1,7 @@
 %table#queries-table
   %thead
     %tr
+      %th User ID
       %th Query
       %th Start
       %th Fetch
@@ -10,7 +11,7 @@
   %tbody
     -if @blur_queries.empty?
       %tr
-        %td{:colspan => 8, :class => 'error'}
+        %td{:colspan => 7, :class => 'error'}
           %b No Available Queries
     -else
       =render :partial => 'blur_query', :collection => @blur_queries

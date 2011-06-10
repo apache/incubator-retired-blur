@@ -6,8 +6,6 @@ describe RuntimeController do
     controller.stub!(:thrift_client).and_return(@client)
     controller.stub!(:close_thrift)
     @blur_queries = mock_model(BlurQueries)
-    #BlurQueries.should_receive(:find_all_by_table_name).and_return([@blur_queries])
-    #BlurQueries.should_receive(:all).and_return([@blur_queries])
   end
 
   describe "show" do
@@ -21,7 +19,6 @@ describe RuntimeController do
     it "renders the show template when id is all tables" do
       @client.should_receive(:tableList).and_return(['blah'])
       BlurQueries.should_receive(:all).and_return([@blur_queries])
-
       get :show, :id => 'all'
       response.should render_template "show"
     end

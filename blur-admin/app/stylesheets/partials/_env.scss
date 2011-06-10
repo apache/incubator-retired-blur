@@ -3,11 +3,11 @@
   letter-spacing: 25px;
   white-space: nowrap;
   overflow: hidden;
-  margin: 0 0px 25px 25px;
+  margin: 0px 15px 0px 15px;
 }
 
 .inner-container {
-  width: 45%;
+  width: 47%;
   vertical-align: top;
   display: inline-block;
   text-align: left;
@@ -22,6 +22,7 @@
   @include border-radius;
   background-color:white;
   margin-right: 10px;
+  margin-bottom: 25px;
 }
 #bottom-container {
   margin: 25px;
@@ -43,4 +44,14 @@
   border: solid 1px #AAA;
   @include border-radius;
   background-color:#F6F6F6;
+}
+
+.left-container{
+  float: left;
+  margin-right: 0px;
+}
+
+.right-container{
+  float: right;
+  margin-left: 0px;
 }

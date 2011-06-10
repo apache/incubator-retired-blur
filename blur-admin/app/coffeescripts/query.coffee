@@ -32,7 +32,7 @@ $(document).ready ->
       $('#results_container').html(data)
       #set the border once the table has content
       #set the proper height based on whether the window or the table are larger
-      win_height = $(window).height() - 435
+      win_height = $(window).height() - 425
       table_height = $('.result_table').height()
       if win_height < table_height
         $('#results_section').css('height', win_height) 
@@ -56,7 +56,7 @@ $(document).ready ->
 
   #On window resize set the proper height based on whether the window or the table are larger
   $(window).resize ->
-    win_height = $(window).height() - 435
+    win_height = $(window).height() - 425
     table_height = $('.result_table').height()
     if win_height < table_height
       $('#results_section').css('height', win_height) 

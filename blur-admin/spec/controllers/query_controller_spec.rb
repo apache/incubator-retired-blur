@@ -75,11 +75,6 @@ describe QueryController do
       test_col3 = Blur::Column.new :name => 'name', :values => ['val1']
 
       test_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test_col1, test_col2, test_col3]}, :family => 'table1'
-      #set1 = Set.new [test_cf1]
-      #test_row1 = Blur::Row.new :id => 'string' , :columnFamilies => set1
-      #test_rowresult1 = Blur::FetchRowResult.new :row => test_row1
-      #test_fetchresult1 = Blur::FetchResult.new :rowResult => test_rowresult1
-      #test_result1 = Blur::BlurResult.new :fetchResult => test_fetchresult1
 
       test_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test_col1], 'key2' => [test_col1, test_col2, test_col3]}, :family => 'table2'
       set2 = Set.new [test_cf2, test_cf1]
@@ -104,11 +99,6 @@ describe QueryController do
       test_col3 = Blur::Column.new :name => 'name', :values => ['val1', 'val2', 'val3']
 
       test_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test_col1, test_col2, test_col3]}, :family => 'table1'
-      #set1 = Set.new [test_cf1]
-      #test_row1 = Blur::Row.new :id => 'string' , :columnFamilies => set1
-      #test_rowresult1 = Blur::FetchRowResult.new :row => test_row1
-      #test_fetchresult1 = Blur::FetchResult.new :rowResult => test_rowresult1
-      #test_result1 = Blur::BlurResult.new :fetchResult => test_fetchresult1
 
       test_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test_col1], 'key2' => [test_col1, test_col2, test_col3]}, :family => 'table2'
       set2 = Set.new [test_cf2, test_cf1]

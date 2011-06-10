@@ -61,3 +61,9 @@ $(document).ready ->
   $('.ok').live("click", -> 
     delete_table($(".ui-confirm").attr("table"), $("#underlying-confirm").is(":checked"))
     $(".ui-confirm").dialog("close"))
+  $('#delete-label').live("click", -> 
+    if $("#underlying-confirm").is(":checked")
+      $("#underlying-confirm").attr("checked", false)
+    else
+      $("#underlying-confirm").attr("checked", true)
+  )

@@ -7,20 +7,21 @@
     #search_section
       .query-title
         = label_tag :q, "Search Query:"
-      = text_area_tag :q, params[:q]
+      .query-input
+        = label_tag :q, "Query:"
+        = text_area_tag :q, params[:q] 
     #filter_section
       .partial-section
         = label_tag :t, "Table:"
         = select_tag :t, options_for_select(@tables)
-        %a{:title => "Check All", :href => "#", :id => "checkall"} Check All
-        %a{:title => "Uncheck All", :href => "#", :id => "uncheckall"} Uncheck All
 
       .partial-section
-        Column Families:
+        .column-title
+          Column Families:
+          %a{:title => "Check All", :href => "#", :id => "checkall"} Check All
+          %a{:title => "Uncheck All", :href => "#", :id => "uncheckall"} Uncheck All
         #filter_columns
           = render 'filters'
-
-    = submit_tag "Search", :disabled => true, :id => "search_submit"
-  
-  #results_container.partial-section
+            
+  #results_container.partial-results
 

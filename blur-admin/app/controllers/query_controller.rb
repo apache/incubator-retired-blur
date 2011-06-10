@@ -17,6 +17,9 @@ class QueryController < ApplicationController
 		
 	  table = params[:t]
 		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => 25, :uuid => Time.now.to_i*1000+rand(1000)
+    if params[:s]
+      bq.superQueryOn = false
+    end
 
     column_data_val = params[:column_data]
     families = column_data_val.collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact

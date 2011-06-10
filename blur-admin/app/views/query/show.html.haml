@@ -8,6 +8,9 @@
       .query-title
         = label_tag :q, "Search Query:"
       = text_area_tag :q, params[:q]
+    #super_query_section
+      = label_tag :s, "Super Query Off:"
+      = check_box_tag :s, true, false
     #filter_section
       .partial-section
         = label_tag :t, "Table:"

@@ -67,7 +67,7 @@ describe QueryController do
     end
 
     it "works when column_family & !record_count < count & families_include" do
-      assigns[:count] = 10
+      assigns[:count] = 0
 
       set = Set.new ['deptNo', 'moreThanOneDepartment', 'name']
       test_schema = Blur::Schema.new :columnFamilies => {'table1'=> set}
@@ -91,7 +91,7 @@ describe QueryController do
     end
 
     it "works when column_family & !record_count < count & !families_include" do
-      assigns[:count] = 10
+      assigns[:count] = 0
 
       test_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
       test_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => ['val1', 'val2', 'val3']

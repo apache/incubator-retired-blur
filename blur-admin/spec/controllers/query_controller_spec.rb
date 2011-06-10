@@ -191,7 +191,7 @@ describe QueryController do
       @client.should_receive(:query).and_return(test_query)
       @client.should_receive(:schema).with('table').and_return(test_schema)
 
-      get :create, :t => "table", :q => "query", :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :s => false
+      get :create, :t => "table", :q => "query", :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :s => true
       response.should render_template "create"
     end
   end

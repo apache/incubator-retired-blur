@@ -52,10 +52,10 @@ body #nav {
 	ul {
 		@include inline-block-list(10px);
 		@include text-shadow(0 1px 0 black);
-                margin-right: 20px;
+    margin-right: 55px;
 
 		li {
-			margin: 6px 0.5em 0 0.5em;
+			margin: 6px .5em 0 .5em;
 			padding: 0;
 			color: #ddd;
 			cursor: pointer;
@@ -69,12 +69,12 @@ body #nav {
 				@include box-shadow(0 1px 3px rgba(0, 0, 0, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, 0.2) inset);
 				background-color: #323c46;
 				}
-				a {
-					cursor: pointer;
-					padding: 0.5em 1em;
-					line-height: 28px;
-					@include unstyled-link;
-				}
+			a {
+				cursor: pointer;
+				padding: 0.5em 1em;
+				line-height: 28px;
+				@include unstyled-link;
+			}
 		}
 	}
 }

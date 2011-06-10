@@ -17,10 +17,11 @@
       %th Actions
 
     -@tables.each do |table|
-      %tr
+      %tr.tr-underline{:id => table}
         %td
           %b
-            =table
+            name:
+          =table
         %td
           .table-def
             %ul
@@ -48,11 +49,11 @@
           = check_box_tag '', "1", @tdesc[table].isEnabled, :class=>'enable', :table_name => table
         %td
           = submit_tag 'delete', :class=>'delete-table', :table_name => table
-      %tr
+      %tr{:id => table}
         %td{:colspan => 7}
           %b location:
           = @tdesc[table].tableUri
-      %tr
+      %tr.tr-underline{:id => table}
         %td{:colspan => 7}
           %b definition:
           .table-def
@@ -68,9 +69,18 @@
                         -sets.each do |word|
                           %li#column{:id=>"#{table}.#{family}.#{word}"}
                             %a{:href=>'#'}= word
-      %tr
     -if @tables.empty?
       %tr
         %td{:colspan => 7, :class => 'error'}
           %b No Available Tables
 
+#confirm.ui-confirm{:hidden => true}
+  #confirm-dialog
+  #confirm-buttons
+    %form
+      %input#underlying-confirm{:type => "checkbox", :checked => false}
+        Delete underlying table index
+      %button#confirm-submit.cancel{:type => "button"}
+        Cancel
+      %button#confirm-submit.ok{:type => "button"}
+        Delete

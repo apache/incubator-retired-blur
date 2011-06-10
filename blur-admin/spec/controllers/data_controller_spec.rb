@@ -1,7 +1,7 @@
 require "spec_helper"
 
 describe DataController do
-  before do
+  before (:each) do
     @client = mock(Blur::Blur::Client)
     controller.stub!(:thrift_client).and_return(@client)
     controller.stub!(:close_thrift)
@@ -34,7 +34,11 @@ describe DataController do
   end
   
   describe "destroy" do
-    it "deletes a table from the list"
-      #TODO: when delete table is uncommented, write test
+    it "deletes a table from the list" do
+      #TODO: when delete table is uncommented, write test for delete
+      @client.should_receive(:tableList).and_return(['table1', 'table2'])
+      delete :destroy, :id => 'a_table'
+      response.should render_template true
+    end
   end
 end

@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe UsersController do
-  fixtures :all
 
   describe "GET index" do
     let(:users) { [] }

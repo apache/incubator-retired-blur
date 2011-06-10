@@ -1,15 +1,14 @@
 class QueryController < ApplicationController
 
-  before_filter :setup_thrift
   after_filter :close_thrift
 
 	def show
-	  @tables = @client.tableList.sort!
-	  @columns = @client.schema(@tables.first) unless @tables.blank?
+	  @tables = thrift_client.tableList.sort!
+	  @columns = thrift_client.schema(@tables.first) unless @tables.blank?
 	end
 	
 	def filters
-	  @columns = @client.schema(params[:table])
+	  @columns = thrift_client.schema(params[:table])
 	  render '_filters.html.haml', :layout=>false
   end
 
@@ -39,11 +38,11 @@ class QueryController < ApplicationController
 
 		bq.selector = sel
 
-		blur_results = @client.query(table, bq)
+		blur_results = thrift_client.query(table, bq)
 
     families_with_columns = {}
     families.each do |family|
-      families_with_columns[family] = @client.schema(table).columnFamilies[family]
+      families_with_columns[family] = thrift_client.schema(table).columnFamilies[family]
     end
 
     visible_families = (families + columns.keys).uniq

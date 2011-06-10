@@ -104,7 +104,6 @@ GEM
       roodi (>= 2.1.0)
       syntax
     mime-types (1.16)
-    mocha (0.9.12)
     mysql (2.8.1)
     nifty-generators (0.4.6)
     polyglot (0.3.1)
@@ -185,7 +184,6 @@ DEPENDENCIES
   haml
   jquery-rails (>= 0.2.6)
   metric_fu
-  mocha
   mysql
   nifty-generators
   rails (= 3.0.7)

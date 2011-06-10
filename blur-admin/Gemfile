@@ -19,5 +19,3 @@ group :development, :test do
 	gem 'cover_me'
   gem 'nifty-generators'
 end
-
-gem "mocha", :group => :test

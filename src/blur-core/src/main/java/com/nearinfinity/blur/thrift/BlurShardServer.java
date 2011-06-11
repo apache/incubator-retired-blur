@@ -166,9 +166,14 @@ public class BlurShardServer extends ExecutionContextIface {
         }
     }
 
-    private void checkTableStatus(ExecutionContext context, String table) throws BlurException {
+    private void checkTableStatus(ExecutionContext context, String table) throws BlurException, TException {
         if (!isTableEnabled(context, table)) {
-            throw new BlurException("Table [" + table + "] is disabled.", null);
+            List<String> tableList = tableList();
+            if (tableList.contains(table)) {
+                throw new BlurException("Table [" + table + "] is disabled.", null);
+            } else {
+                throw new BlurException("Table [" + table + "] does not exist.", null);
+            }
         }
     }
 

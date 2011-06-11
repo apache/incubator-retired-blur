@@ -37,7 +37,7 @@ public class ZkUtils {
 
     public static final int ANY_VERSION = -1;
 
-    public static final int DEFAULT_ZK_SESSION_TIMEOUT = 10000;
+    public static final int DEFAULT_ZK_SESSION_TIMEOUT = 60000;
 
     public static ZooKeeper newZooKeeper(final String zkConnectionString) throws IOException {
         final int sessionTimeout = DEFAULT_ZK_SESSION_TIMEOUT;

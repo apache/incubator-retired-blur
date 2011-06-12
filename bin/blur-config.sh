@@ -1,4 +1,7 @@
-. ~/.bash_profile
+
+export BLUR_HOME=`dirname "$this"`/..
+export BLUR_HOME_CONF=$BLUR_HOME/conf
+
 . $BLUR_HOME/conf/blur-env.sh
 
 BLUR_CLASSPATH=$BLUR_HOME/conf

@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -81,8 +82,14 @@ public class ReplicationDaemon implements Runnable {
     private IndexInputFactory indexInputFactory = new IndexInputFactory() {
         @Override
         public void replicationComplete(RepliaWorkUnit workUnit, LocalIOWrapper wrapper, int bufferSize) throws IOException {
-            IndexInput localInput = wrapper.wrapInput(workUnit.directory.openFromLocal(workUnit.replicaIndexInput.fileName, BUFFER_SIZE));
-            workUnit.replicaIndexInput.localInput.set(localInput);
+            ReplicaIndexInput replicaIndexInput = workUnit.replicaIndexInput;
+            ReplicaHdfsDirectory directory = workUnit.directory;
+            String fileName = replicaIndexInput.fileName;
+            AtomicReference<IndexInput> localInputRef = replicaIndexInput.localInput;
+            
+            IndexInput openFromLocal = directory.openFromLocal(fileName, BUFFER_SIZE);
+            IndexInput localInput = wrapper.wrapInput(openFromLocal);
+            localInputRef.set(localInput);
         }
     };
     

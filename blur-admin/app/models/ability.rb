@@ -12,7 +12,7 @@ class Ability
     end
 
     if user.has_role? :editor
-      puts "*** Editor Role ***"
+      can [:update, :destroy], :data
 
     end
 

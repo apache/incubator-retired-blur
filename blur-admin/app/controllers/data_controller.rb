@@ -7,6 +7,7 @@ class DataController < ApplicationController
   def show
     bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
     @tables = thrift_client.tableList.sort
+    
     @tdesc = {}
     @tschema = {}
     @tserver = {}

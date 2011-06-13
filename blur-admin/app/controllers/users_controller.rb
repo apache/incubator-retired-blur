@@ -29,7 +29,7 @@ class UsersController < ApplicationController
 
   def update
     @user = User.find(params[:id])
-    
+    puts params[:user] 
     if @user.update_attributes(params[:user])
       redirect_to @user, :notice  => "Successfully updated user."
     else

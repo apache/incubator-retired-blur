@@ -6,20 +6,38 @@
         - @user.errors.full_messages.each do |msg|
           %li= msg
   %p
-    = f.label :username
-    %br
-    = f.text_field :username
+    - if can? :update, @user, :username
+      = f.label :username
+      %br
+      = f.text_field :username
+    - else
+      %strong Username:
+      = @user.username
   %p
-    = f.label :email
-    %br
-    = f.email_field :email
+    - if can? :update, @user, :email
+      = f.label :email
+      %br
+      = f.email_field :email
+    - else
+      %strong Email:
+      = @user.email
   %p
-    = f.label :password, 'Password'
-    %br
-    = f.password_field :password
+    - if can? :update, @user, :password
+      = f.label :password, 'Password'
+      %br
+      = f.password_field :password
   %p
-    = f.label :password_confirmation, 'Password Confirmation'
-    %br
-    = f.password_field :password_confirmation
+    - if can? :update, @user, :password_confirmation
+      = f.label :password_confirmation, 'Password Confirmation'
+      %br
+      = f.password_field :password_confirmation
+  %p
+    - if can? :update, @user, :admin
+      = f.label :admin, 'Administrator'
+      = f.check_box :admin
+  %p
+    - if can? :update, @user, :editor
+      = f.label :editor, 'Editor'
+      = f.check_box :editor
   %p
     = f.submit

@@ -6,6 +6,12 @@
 %p
   %strong Email:
   = @user.email
+- if @user.has_role? :admin
+  %p
+    %strong Administrator
+- if @user.has_role? :editor
+  %p
+    %strong Editor
 
 %p
   = link_to "Edit", edit_user_path(@user)

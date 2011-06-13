@@ -25,8 +25,8 @@ class Ability
       end
 
       if user.has_role? :admin
-        can [:index, :destroy], :users
-        can :edit, :users
+        can [:show, :index, :edit, :destroy], :users
+        can :update, :users, [:admin, :editor]
       end
 
 

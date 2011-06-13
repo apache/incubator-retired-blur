@@ -23,15 +23,16 @@
             name:
           =table
         %td
-          .table-def
-            %ul
-              -shards(table).each do |host, shards|
-                %li#hosts{:id=>"#{host}"}
-                  %a{:href=>'#'}= host
-                  %ul
-                    -shards.each do |shard|
-                      %li#shards{:id=>"#{host}_#{shard}"}
-                        %a{:href=>'#'}= shard
+          .table-hosts
+            
+            -host_num = shards(table).length
+            -shard_num = shards(table).values[0].length
+            %a{:href=>'#', :class => "host-shards", :id => table} 
+              Hosts: 
+              =host_num 
+              Shards: 
+              =shard_num
+            
         %td
           = number_with_delimiter(@tcount[table], :delimiter => ',')
         %td
@@ -58,11 +59,11 @@
           %b definition:
           .table-def
             %ul
-              %li#families{:id=>"#{table}"}
-                %a{:href=>'#'}Column Families
+              %li#families{:id=>"#{table}", :class => "family-node"}
+                %a{:href=>'#', :class => 'families'}Column Families
                 %ul
                   -@tschema[table].each do |family, sets|
-                    %li#family{:id=>"#{table}.#{family}"}
+                    %li#family{:id=>"#{table}.#{family}", :class => "family-node"}
                       %a{:href=>'#'}
                         = "#{family} (#{@tdesc[table].analyzerDefinition.fullTextAnalyzerClassName})"
                       %ul
@@ -84,3 +85,16 @@
         Cancel
       %button#confirm-submit.ok{:type => "button"}
         Delete
+
+-@tables.each do |table|
+  #display.shard-info{:hidden => true, :class => table}
+    Shard Servers:
+    .table-def
+      %ul
+        -shards(table).each do |host, shards|
+          %li#hosts{:id=>"#{host}"}
+            %a{:href=>'#'}= host
+            %ul
+              -shards.each do |shard|
+                %li#shards{:id=>"#{host}_#{shard}"}
+                  %a{:href=>'#'}= shard

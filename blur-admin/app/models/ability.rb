@@ -10,6 +10,9 @@ class Ability
       # view, edit, and destroy own account
       can [:show, :edit, :destroy], :users, :id => user.id
 
+      # edit own username, email, password
+      can :update, :users, [:username, :email, :password, :password_confirmation], :id => user.id
+
       # logout
       can :destroy, :user_sessions
 

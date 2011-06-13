@@ -16,6 +16,13 @@ $(document).ready ->
       url: url
       type: 'PUT'
     )
+  
+  # Function queries for the new info
+  show_info = (uuid) ->
+    $.ajax(
+      url: '/runtime/queries/' + uuid
+      type: 'GET'
+    )
 
   #change listener for the table selector
   $('#table-select').live('change', ->
@@ -29,5 +36,10 @@ $(document).ready ->
     cancel = $(this).attr('cancel')
     update_query(table_name, uuid, cancel)
     )
+    
+  $('.info').live('click', ->
+    #to-do call the show dialog method afterwards
+    $('#more-info-container').load('runtime/queries/' + $(this).attr('id'), alert "hello")
+  )
 
   $('[title]').tooltip({});

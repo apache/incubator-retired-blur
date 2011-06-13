@@ -11,7 +11,6 @@ $(document).ready ->
 
   # Function to delete a table
   delete_table = (table_name, underlying) ->
-    #to-do: Add the functionality for the jquery dialog and asking to be sure of deleting underlying
     url = "/data/" + table_name
     data = 'underlying=' + underlying
     result = $.ajax(

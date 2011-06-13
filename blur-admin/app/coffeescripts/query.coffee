@@ -66,13 +66,17 @@ $(document).ready ->
   #fucntionality for check all
   check_all = () ->
      $('.jstree-unchecked').addClass('jstree-checked')
+     $('.jstree-undetermined').addClass('jstree-checked')
      $('.jstree-unchecked').removeClass('jstree-unchecked')
+     $('.jstree-undetermined').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').attr('checked', 'checked')
 
   #fucntionality for uncheck all
   uncheck_all = () ->
      $('.jstree-checked').addClass('jstree-unchecked')
+     $('.jstree-undetermined').addClass('jstree-unchecked')
      $('.jstree-checked').removeClass('jstree-checked')
+     $('.jstree-undetermined').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').removeAttr('checked')
 
   #functionality for displaying results in a lightbox

@@ -20,6 +20,7 @@ BlurAdmin::Application.routes.draw do
 
   controller "runtime" do
     match 'runtime/:table/:uuid', :to => :update, :as => :update, :via => :put
+    match 'runtime/queries/:uuid', :to => :info, :via => :get
     match 'runtime/:id', :to => :show, :via => :get
   end
 

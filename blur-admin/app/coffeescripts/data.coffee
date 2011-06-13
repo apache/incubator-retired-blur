@@ -29,7 +29,9 @@ $(document).ready ->
         theme: 'apple',
         icons: false,
       }
-    })
+    }).bind("select_node.jstree", (event, data) -> 
+      $(this).jstree('toggle_node')
+    )
     
   setup_filter_tree()
 
@@ -73,8 +75,4 @@ $(document).ready ->
   $('.host-shards').live('click', ->
     table = $(this).attr('id')
     $('#display.shard-info.' + table ).dialog({modal: true, draggable: false, resizable: false, title: "Shard Server Information", width: "450px"})
-  )
-  
-  $('.table-def').live('click', ->
-    $('.table-def').jstree("toggle_node", $(this).attr('id'))
   )

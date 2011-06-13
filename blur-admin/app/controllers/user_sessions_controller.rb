@@ -1,23 +1,23 @@
 class UserSessionsController < ApplicationController
 
+
+
   def new
     @user_session = UserSession.new
   end
 
   def create
-    puts params[:user_session]
     @user_session = UserSession.new params[:user_session]
     if @user_session.save
-      redirect_to root_url, :notice => "Successfully logged in." 
+      redirect_back_or_default root_path
     else
       render :action => 'new'
     end
   end
 
   def destroy
-    @user_session = UserSession.find
-    @user_session.destroy
-    redirect_to root_url, :notice => "Successfully logged out."
+    current_user_session.destroy
+    redirect_to login_path, :notice => "Successfully Logged Out" 
   end
 
 end

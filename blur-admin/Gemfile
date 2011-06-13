@@ -10,6 +10,8 @@ gem 'haml'
 gem 'barista'
 gem 'thrift'
 gem 'authlogic'
+gem 'cancan'
+gem 'role_model'
 
 group :development, :test do
 	gem 'autotest'

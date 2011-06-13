@@ -2,6 +2,8 @@ class DataController < ApplicationController
   before_filter :table_name, :only => [:update, :destroy_table]
   after_filter :close_thrift
 
+  authorize_resource :class => false
+
   def show
     bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
     @tables = thrift_client.tableList.sort

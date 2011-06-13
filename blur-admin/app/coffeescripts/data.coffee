@@ -76,5 +76,5 @@ $(document).ready ->
   )
   
   $('.table-def').live('click', ->
-    $('.table-def').jstree("toggle_node", $(this).attr('id'))
+    $(this).jstree("toggle_node")
   )

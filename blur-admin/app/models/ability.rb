@@ -3,21 +3,32 @@ class Ability
 
   def initialize(user)
 
-    user ||= User.new # guest user (not logged in)
+    if user # logged in
+      # view pages
+      can :show, [:data, :env, :query, :runtime]
 
-    if user.has_role? :viewer
-      can :show, :all
-      cannot :show, User
-      can :show, User, :id => user.id
-    end
+      # view, edit, and destroy own account
+      can [:show, :edit, :destroy], :users, :id => user.id
 
-    if user.has_role? :editor
-      can [:update, :destroy], :data
+      # logout
+      can :destroy, :user_sessions
 
-    end
+      # query
+      can [:filters, :create], :query
 
-    if user.has_role? :admin
-      can :show, User
+      if user.has_role? :editor
+        can [:update, :destroy], :data
+        can :update, :runtime
+      end
+
+      if user.has_role? :admin
+        can [:index, :destroy], :users
+        can :edit, :users
+      end
+
+
+    else  # not logged in
+      can [:create, :new], [:users, :user_sessions]
     end
 
 

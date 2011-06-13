@@ -10,7 +10,7 @@ gem 'haml'
 gem 'barista'
 gem 'thrift'
 gem 'authlogic'
-gem 'cancan'
+gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
 gem 'role_model'
 
 group :development, :test do

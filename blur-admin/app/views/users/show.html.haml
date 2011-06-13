@@ -6,15 +6,6 @@
 %p
   %strong Email:
   = @user.email
-%p
-  %strong Crypted Password:
-  = @user.crypted_password
-%p
-  %strong Password Salt:
-  = @user.password_salt
-%p
-  %strong Persistence Token:
-  = @user.persistence_token
 
 %p
   = link_to "Edit", edit_user_path(@user)

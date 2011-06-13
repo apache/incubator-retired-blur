@@ -4,6 +4,7 @@ class ApplicationController < ActionController::Base
 	require 'thrift/blur'
 
   before_filter :current_user_session, :current_user
+  enable_authorization
 
   def setup_thrift
     @transport = Thrift::FramedTransport.new(Thrift::BufferedTransport.new(Thrift::Socket.new(BLUR_THRIFT[:host], BLUR_THRIFT[:port])))

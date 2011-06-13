@@ -4,16 +4,13 @@
   %tr
     %th Username
     %th Email
-    %th Crypted password
-    %th Password salt
-    %th Persistence token
+    %th
+    %th
+    %th
   - for user in @users
     %tr
       %td= user.username
       %td= user.email
-      %td= user.crypted_password
-      %td= user.password_salt
-      %td= user.persistence_token
       %td= link_to 'Show', user
       %td= link_to 'Edit', edit_user_path(user)
       %td= link_to 'Destroy', user, :confirm => 'Are you sure?', :method => :delete

@@ -8,15 +8,36 @@ describe DataController do
   end
 
   describe "show" do
+    before (:each) do
+      @bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
+      @table_descriptor = Blur::TableDescriptor.new :isEnabled => true, :tableUri => 'a string'
+      @table_schema = Blur::Schema.new :table => 'a string', :columnFamilies => {'col_fam' => 'col'}
+      @table_shards = Blur::Blur::ShardServerLayout_result.new
+      @table_query = Blur::BlurResults.new :totalResults => 5
+    end
+
     it "renders the show template" do
-      bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
       @client.should_receive(:tableList).and_return(['blah'])
-      @client.should_receive(:describe).with('blah').and_return(Blur::TableDescriptor.new)
-      @client.should_receive(:schema).with('blah').and_return(Blur::Schema.new)
-      @client.should_receive(:shardServerLayout).with('blah').and_return(Blur::Blur::ShardServerLayout_result.new)
-      @client.should_receive(:query).with('blah', bq).and_return(Blur::BlurResults.new)
+      @client.should_receive(:describe).with('blah').and_return(@table_descriptor)
+      @client.should_receive(:schema).with('blah').and_return(@table_schema)
+      @client.should_receive(:shardServerLayout).with('blah').and_return(@table_shards)
+      @client.should_receive(:query).with('blah', @bq).and_return(@table_query)
       get :show
       response.should render_template "show"
+    end
+
+    it "finds and assigns variables" do
+      @client.should_receive(:tableList).and_return(['blah'])
+      @client.should_receive(:describe).with('blah').and_return(@table_descriptor)
+      @client.should_receive(:schema).with('blah').and_return(@table_schema)
+      @client.should_receive(:shardServerLayout).with('blah').and_return(@table_shards)
+      @client.should_receive(:query).with('blah', @bq).and_return(@table_query)
+      get :show
+      assigns(:tables).should == ['blah']
+      assigns(:tdesc).should == {'blah' => @table_descriptor}
+      assigns(:tschema).should == {'blah' => @table_schema.columnFamilies}
+      assigns(:tserver).should == {'blah' => @table_shards}
+      assigns(:tcount).should == {'blah' => @table_query.totalResults}
     end
   end
 
@@ -29,7 +50,7 @@ describe DataController do
       response.should render_template true
     end
 
-    it "disbales the table if enable is false"
+    it "disables the table if enable is false"
       #TODO: when disable is uncommented, write test
   end
   

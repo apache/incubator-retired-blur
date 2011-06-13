@@ -41,7 +41,7 @@ $(document).ready ->
       $('#results_section').css('border', 'solid 1px #AAA')
     else
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
-      $('#results_section').html(error_content)
+      $('#results_container').html(error_content)
     true
   )
   #Error message associated with ajax errors

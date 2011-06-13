@@ -5,7 +5,7 @@
       =blur_query.userid
     -else
       =empty_message
-  %td{:title => blur_query.query_string}
+  %td{:class => "query-string", :title => blur_query.query_string}
     -if blur_query.query_string
       =truncate(blur_query.query_string, :length => 20, :ommision => "...")
     -else

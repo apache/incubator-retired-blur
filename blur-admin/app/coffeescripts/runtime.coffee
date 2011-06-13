@@ -29,3 +29,5 @@ $(document).ready ->
     cancel = $(this).attr('cancel')
     update_query(table_name, uuid, cancel)
     )
+
+  $('[title]').tooltip({});

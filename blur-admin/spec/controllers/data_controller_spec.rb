@@ -1,10 +1,13 @@
 require "spec_helper"
 
 describe DataController do
-  before (:each) do
+  before(:each) do
     @client = mock(Blur::Blur::Client)
     controller.stub!(:thrift_client).and_return(@client)
     controller.stub!(:close_thrift)
+    @ability = Ability.new User.new
+    @ability.stub!(:can?).and_return(true)
+    controller.stub!(:current_ability).and_return(@ability)
   end
 
   describe "show" do

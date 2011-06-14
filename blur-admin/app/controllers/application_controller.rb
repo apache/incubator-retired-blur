@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
 	require 'thrift/blur'
 
   enable_authorization do |exception|
-    puts params.to_s
+    puts exception
     if current_user
       redirect_to root_url, :alert => "Unauthorized"
     else
@@ -13,7 +13,6 @@ class ApplicationController < ActionController::Base
   end
 
   before_filter :current_user_session, :current_user
-  enable_authorization
 
   def setup_thrift
     @transport = Thrift::FramedTransport.new(Thrift::BufferedTransport.new(Thrift::Socket.new(BLUR_THRIFT[:host], BLUR_THRIFT[:port])))

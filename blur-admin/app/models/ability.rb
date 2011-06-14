@@ -28,13 +28,14 @@ class Ability
       end
 
       if user.has_role? :admin
-        can [:show, :index, :edit, :destroy], :users
+        can [:show, :index, :edit, :destroy, :create, :new], :users
         can :update, :users, [:admin, :editor]
       end
 
-
     else  # not logged in
-      can [:create, :new], [:users, :user_sessions]
+      can :new, [:users, :user_sessions]
+      can :create, :user_sessions
+      can :create, :users, [:username, :email, :password, :password_confirmation]
     end
 
 

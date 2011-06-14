@@ -6,16 +6,15 @@
 %p
   %strong Email:
   = @user.email
-- if @user.has_role? :admin
-  %p
-    %strong Administrator
-- if @user.has_role? :editor
-  %p
-    %strong Editor
-
 %p
-  = link_to "Edit", edit_user_path(@user)
-  |
-  = link_to "Destroy", @user, :confirm => 'Are you sure?', :method => :delete
-  |
-  = link_to "View All", users_path
+  %strong
+    = @user.roles.to_a.join ', '
+%p
+  - if can? :edit, @user
+    = link_to "Edit", edit_user_path(@user)
+  - if can? :destroy, @user
+    |
+    = link_to "Delete User", @user, :confirm => 'Are you sure?', :method => :delete
+  - if can? :index, :users
+    |
+    = link_to "View All Users", users_path

@@ -9,6 +9,9 @@ describe UserSessionsController do
   before(:each) do
     activate_authlogic
     @mock_user_session = nil
+    @ability = Ability.new User.new
+    @ability.stub!(:can?).and_return(true)
+    controller.stub!(:current_ability).and_return(@ability)
   end
 
   describe "GET 'new'" do

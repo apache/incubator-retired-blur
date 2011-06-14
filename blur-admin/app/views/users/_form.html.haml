@@ -6,7 +6,7 @@
         - @user.errors.full_messages.each do |msg|
           %li= msg
   %p
-    - if can? :update, @user, :username
+    - if can?(:update, @user, :username) || can?(:create, @user, :username)
       = f.label :username
       %br
       = f.text_field :username
@@ -14,7 +14,7 @@
       %strong Username:
       = @user.username
   %p
-    - if can? :update, @user, :email
+    - if can?(:update, @user, :email) || can?(:create, @user, :email)
       = f.label :email
       %br
       = f.email_field :email
@@ -22,22 +22,21 @@
       %strong Email:
       = @user.email
   %p
-    - if can? :update, @user, :password
+    - if can?(:update, @user, :password) || can?(:create, @user, :password)
       = f.label :password, 'Password'
       %br
       = f.password_field :password
   %p
-    - if can? :update, @user, :password_confirmation
+    - if can?(:update, @user, :password_confirmation) || can?(:create, @user, :password_confirmation)
       = f.label :password_confirmation, 'Password Confirmation'
       %br
       = f.password_field :password_confirmation
+
+  %strong Roles:
+  - User.valid_roles.each do |role|
+    %p
+      - if can?(:update, @user, role) || can?(:create, @user, role)
+        = f.label role, role.capitalize
+        = f.check_box role
   %p
-    - if can? :update, @user, :admin
-      = f.label :admin, 'Administrator'
-      = f.check_box :admin
-  %p
-    - if can? :update, @user, :editor
-      = f.label :editor, 'Editor'
-      = f.check_box :editor
-  %p
-    = f.submit
+    = f.submit 'Register'

@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 describe UsersController do
+  before do
+    @ability = Ability.new User.new
+    @ability.stub!(:can?).and_return(true)
+    controller.stub!(:current_ability).and_return(@ability)
+  end
 
   describe "GET index" do
     let(:users) { [] }
@@ -44,7 +49,7 @@ describe UsersController do
     let(:user) { mock_model(User).as_null_object }
 
     it "should create a new user" do
-      User.should_receive(:new).and_return(user)
+      User.should_receive(:new).at_least(1).times.and_return(user)
       get :new
     end
 
@@ -127,8 +132,8 @@ describe UsersController do
     context "update is successful" do
 
       it "should redirect to the user and include notice" do
-        user.should_receive(:update_attributes).with('username' => 'newname').and_return(true)
-        put :update, {:id => 'id', :user => {:username => 'newname'}}
+        user.should_receive(:update_attributes).and_return(true)
+        put :update, {:id => 'id'}
         response.should redirect_to(user)
         flash[:notice].should_not be_blank
       end
@@ -147,6 +152,8 @@ describe UsersController do
 
   
   describe "DELETE destroy" do
+    before do
+    end
     it "should find and destroy the user" do
       user = mock_model(User).as_null_object
       User.stub(:find).with('id').and_return(user)

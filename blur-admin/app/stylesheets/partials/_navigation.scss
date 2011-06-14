@@ -96,16 +96,23 @@ body #nav {
   font-size: 1.2em;
   font-weight: bold;
   border: 2px solid;
-  @include border-radius(5px);
+  border-top-style: none;
+  $radius: 5px;
+  -webikit-border-bottom-right-radius: $radius; 
+  -webikit-border-bottom-left-radius: $radius;
+  -moz-border-radius-bottomright: $radius;
+  -mox-border-radius-bottomleft: $radius;
+  border-bottom-right-radius: $radius;
+  border-bottom-left-radius: $radius;
 }
 #notice {
-  $green: #00FF00;
-  border-color: darken($green, 25%);
-  background-color: darken($green, 5%);
+  $green: #DDFFD9;
+  border-color: darken($green, 40%);
+  background-color: $green;
 }
 
 #alert {
-  $yellow: #FFFF00;
-  border-color: darken($yellow, 20%);
+  $yellow: #FFFFC8;
+  border-color: darken($yellow, 40%);
   background-color: $yellow;
 }

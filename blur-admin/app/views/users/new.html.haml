@@ -1,5 +1,10 @@
 - content_for :title, 'New User'
 
+%h2 Register
+
 = render 'form'
 
-%p= link_to "Back to List", users_path
+- if @current_user
+  %p= link_to "Back to List", users_path
+- else
+  %p= link_to "Log In", login_path

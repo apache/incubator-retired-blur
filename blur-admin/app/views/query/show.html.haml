@@ -11,8 +11,8 @@
         = label_tag :q, "Query:"
         = text_area_tag :q, params[:q]
     #super_query_section.partial-section
-      = label_tag :s, "Super Query Off:"
-      = check_box_tag :s, true, false
+      = label_tag :s, "Super Query On:"
+      = check_box_tag :s, true, true
     #filter_section
       .partial-section
         = label_tag :t, "Table:"
@@ -21,8 +21,8 @@
       .partial-section
         .column-title
           Column Families:
-          %a{:title => "Check All", :href => "#", :id => "checkall"} Check All
-          %a{:title => "Uncheck All", :href => "#", :id => "uncheckall"} Uncheck All
+          %a{:title => "Check All", :href => '#', :id => 'checkall'} Check All
+          %a{:title => "Uncheck All", :href => '#', :id => "uncheckall"} Uncheck All
         #filter_columns
           = render 'filters'
     #result_number_section.partial-section{:class => 'hidden'}

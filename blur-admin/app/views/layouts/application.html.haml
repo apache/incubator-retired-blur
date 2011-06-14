@@ -14,16 +14,22 @@
       .container
         #hd
           = link_to image_tag('blur_logo.png'), root_path
-          #user_nav.inline
+          #user_nav
             - if @current_user
               = "Welcome, " + @current_user.username if @current_user
               |
+              - if can? :index, :users
+                = link_to "Admin", users_path
+                |
               = link_to "Log Out", logout_path
 
             - else
               = link_to "Register", new_user_path
               |
               = link_to "Log In", login_path
+          - flash.each do |type, message|
+            .flash{ :id => "#{type}" }
+              = message
       #nav
         %ul
           - controller = params[:controller]

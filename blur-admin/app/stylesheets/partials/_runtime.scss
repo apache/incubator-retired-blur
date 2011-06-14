@@ -87,3 +87,16 @@
 .ui-tooltip {
   color: #555;
 }
+
+#confirm-resubmit{
+  margin-top: 10px;
+  float: right;
+}
+
+#more-info-table tr:nth-child(odd) {
+  background-color: #EEE;
+}
+
+#more-info-label{
+  font-weight: bold;
+}

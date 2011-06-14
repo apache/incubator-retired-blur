@@ -39,7 +39,7 @@
       =submit_tag 'Cancel', :class => 'cancel', :name => 'Cancel Query', :cancel => true, :uuid => blur_query.uuid, :table_name =>  blur_query.table_name
   %td
     -if blur_query.uuid
-      -link = "#" + blur_query.uuid
+      -link = '#' + blur_query.uuid
       %a{:href => link, :class => "info", :id => blur_query.uuid}
         More Info
     -else

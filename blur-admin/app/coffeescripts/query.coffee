@@ -114,4 +114,6 @@ $(document).ready ->
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   #submits form when number of requested results changes
-  $('#r').change -> $('#query_form').submit()
+  $('#r').change -> 
+    $('#query_form').submit()
+    $('#loading-spinner').removeAttr("hidden")

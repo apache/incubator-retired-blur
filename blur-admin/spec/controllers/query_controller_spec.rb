@@ -86,13 +86,13 @@ describe QueryController do
     it "renders the create template when column_family & record_count < count & families_include" do
       @client.should_receive(:query).and_return(@test1_query)
       @client.should_receive(:schema).with('table').and_return(@test_schema1)
-      get :create, :t => "table", :q => "query", :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
     
     it "renders the create template when column_family & record_count < count & !families_include" do
       @client.should_receive(:query).and_return(@test1_query)
-      get :create, :t => "table", :q => "query", :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
@@ -104,7 +104,7 @@ describe QueryController do
       @client.should_receive(:query).and_return(test_query)
       @client.should_receive(:schema).with('table').and_return(@test_schema2)
       @client.should_receive(:schema).with('table').and_return(@test_schema2)
-      get :create, :t => "table", :q => "query", :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
       response.should render_template "create"
     end
 
@@ -114,27 +114,27 @@ describe QueryController do
       test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
 
       @client.should_receive(:query).and_return(test_query)
-      get :create, :t => "table", :q => "query", :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
       response.should render_template "create"
     end
 
     it "renders the create template when !column_family & families_include" do
       @client.should_receive(:query).and_return(@test2_query)
       @client.should_receive(:schema).with('table').and_return(@test_schema2)
-      get :create, :t => "table", :q => "query", :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
     it "renders the create template when !column_family & !families_include" do
       @client.should_receive(:query).and_return(@test2_query)
-      get :create, :t => "table", :q => "query", :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
     it "renders the create template when superQueryOn is false" do
       @client.should_receive(:query).and_return(@test1_query)
       @client.should_receive(:schema).with('table').and_return(@test_schema1)
-      get :create, :t => "table", :q => "query", :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :s => true
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :s => true
       response.should render_template "create"
     end
   end

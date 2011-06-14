@@ -10,7 +10,7 @@
       .query-input
         = label_tag :q, "Query:"
         = text_area_tag :q, params[:q]
-    #super_query_section
+    #super_query_section.partial-section
       = label_tag :s, "Super Query Off:"
       = check_box_tag :s, true, false
     #filter_section
@@ -25,6 +25,8 @@
           %a{:title => "Uncheck All", :href => "#", :id => "uncheckall"} Uncheck All
         #filter_columns
           = render 'filters'
+    #result_number_section.partial-section{:class => 'hidden'}
+      = label_tag :r, 'Number of results shown:'
+      = select_tag :r, options_for_select([25, 50, 100])
             
   #results_container.partial-results
-

@@ -21,14 +21,19 @@ $(document).ready ->
       $(':submit').removeAttr('disabled')
     else
       $(':submit').attr('disabled', 'disabled')
+      $('#result_number_section').addClass('hidden')
 
-  $('#t').change -> $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
+  $('#t').change -> 
+    $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
+    $('#result_number_section').addClass('hidden')
   $('#filter_columns').load('query/' + $('#t').val() + '/filters', setup_filter_tree)
 
   #functionality for ajax success
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
     if(data)
-	  #If data is returned properly process it
+      #shows number of results option if there are results
+      $('#result_number_section').removeClass('hidden')
+      #If data is returned properly process it
       $('#results_container').html(data)
       #set the border once the table has content
       #set the proper height based on whether the window or the table are larger
@@ -40,6 +45,8 @@ $(document).ready ->
         $('#results_section').css('height', table_height)
       $('#results_section').css('border', 'solid 1px #AAA')
     else
+      #hides number of results option if there are no results
+      $('#result_number_section').addClass('hidden')
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
     true
@@ -48,8 +55,9 @@ $(document).ready ->
   $('#query_form').bind('ajax:error', (evt, data, status)-> 
     response = data.responseText
     matches = response.replace(/\n/g,'<br/>').match(/<pre>(.*?)<\/pre>/i)
-    
     error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
+    #hides number of results option if there are no results
+    $('#result_number_section').addClass('hidden')
     $('#results_section').html(error_content)
     true
   )
@@ -92,3 +100,6 @@ $(document).ready ->
   $('#q').live("keyup", -> toggle_submit())
   $('#filter_section').live("click", -> toggle_submit())
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").remove())
+
+  #submits form when number of requested results changes
+  $('#r').change -> $('#query_form').submit()

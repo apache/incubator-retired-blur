@@ -65,8 +65,8 @@ table {
 }
 
 .partial-section{
-  margin-top: 15px;
-  margin-bottom: 15px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .partial-results{
@@ -106,4 +106,8 @@ b{
 
 .column-title{
   margin-bottom: 10px;
+}
+
+.hidden{
+  display: none;
 }

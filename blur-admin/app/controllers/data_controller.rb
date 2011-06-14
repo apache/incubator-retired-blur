@@ -1,19 +1,14 @@
 class DataController < ApplicationController
   before_filter :table_name, :only => [:update, :destroy_table]
+  before_filter :setup_thrift, :only => [:show]
   after_filter :close_thrift
 
   def show
-    bq = Blur::BlurQuery.new :queryStr => '*', :fetch => 1, :superQueryOn => false
-    @tables = thrift_client.tableList.sort
-    @tdesc = {}
-    @tschema = {}
-    @tserver = {}
-    @tcount = {}
-    @tables.each do |table|
-      @tdesc[table] = thrift_client.describe(table)
-      @tschema[table] = thrift_client.schema(table).columnFamilies
-      @tserver[table] = thrift_client.shardServerLayout(table)
-      @tcount[table] = thrift_client.query(table, bq).totalResults
+    @blur_tables = BlurTables.all
+    @blur_tables.each do |table|
+      table.describe= thrift_client.describe(table.table_name)
+      table.schema= thrift_client.schema(table.table_name).columnFamilies
+      table.server= thrift_client.shardServerLayout(table.table_name)
     end
   end
 

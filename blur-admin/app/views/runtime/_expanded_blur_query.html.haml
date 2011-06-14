@@ -31,14 +31,14 @@
         -else
           =empty_message
     %tr 
-      %td{:id => "more-info-label"} Status
+      %td{:id => "more-info-label"} UUID
       %td
         -if @blur_query.uuid
           =@blur_query.uuid
         -else
           =empty_message
     %tr 
-      %td{:id => "more-info-label"} UUID
+      %td{:id => "more-info-label"} Status
       %td
         -if @blur_query.complete == 1
           Complete

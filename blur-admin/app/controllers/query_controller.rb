@@ -12,11 +12,11 @@ class QueryController < ApplicationController
 	  render '_filters.html.haml', :layout=>false
   end
 
-	def create		
+	def create
 		# TODO: Add in fetch filter, paging, superQueryOn/Off
 		
 	  table = params[:t]
-		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => 25, :uuid => Time.now.to_i*1000+rand(1000)
+		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => params[:r].to_i, :uuid => Time.now.to_i*1000+rand(1000)
     if params[:s]
       bq.superQueryOn = false
     end

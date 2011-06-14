@@ -30,8 +30,7 @@ class RuntimeController < ApplicationController
   end
   
   def info
-    @uuid = params[:uuid]
-    @blur_query = (BlurQueries.where :uuid => @uuid)[0]
+    @blur_query = (BlurQueries.where :uuid => params[:uuid])[0]
     render :partial=>'expanded_blur_query', :layout => false
   end
 

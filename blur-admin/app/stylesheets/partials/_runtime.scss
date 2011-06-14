@@ -14,11 +14,6 @@
   width: 202px;
   display: inline-block;
   margin: 0 10px 0 10px;
-  h4{
-    color: #555;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
 }
 
 #runtime-graphs {
@@ -34,7 +29,8 @@
   h2 {
     display: inline-block;
     font-size: 200%;
-    color: #555;display: inline-block;
+    color: #555;
+    display: inline-block;
     font-weight: bold;
   }
 }
@@ -74,6 +70,11 @@
   margin: 15px 20px 20px 20px;
   color: #555;
   font-weight: bold;
+  h4{
+    color: #555;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
 }
 
 .rotate-text{
@@ -86,4 +87,8 @@
 
 .ui-tooltip {
   color: #555;
+}
+
+.section{
+  margin-bottom: 10px;
 }

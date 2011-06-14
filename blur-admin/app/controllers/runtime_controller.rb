@@ -34,4 +34,8 @@ class RuntimeController < ApplicationController
     render :partial=>'expanded_blur_query', :layout => false
   end
 
+  def create
+    
+  end
+
 end

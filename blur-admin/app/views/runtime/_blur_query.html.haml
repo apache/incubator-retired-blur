@@ -1,6 +1,6 @@
 - empty_message = 'Not Available'
-%tr
-  %td
+%tr{:class => blur_query.uuid}
+  %td{:class => blur_query.uuid, :class => "user-id"}
     -if blur_query.userid 
       =blur_query.userid
     -else
@@ -10,22 +10,22 @@
       =truncate(blur_query.query_string, :length => 20, :ommision => "...")
     -else
       =empty_message
-  %td
+  %td{:id => blur_query.uuid, :class => "start-time"}
     -if blur_query.start
       = blur_query.start
     -else
       =empty_message
-  %td
+  %td{:id => blur_query.uuid, :class => "fetch"}
     -if blur_query.fetch_num
       = blur_query.fetch_num
     -else
       =empty_message
-  %td
+  %td{:id => blur_query.uuid, :class => "time"}
     -if blur_query.cpu_time and blur_query.real_time
       =blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s
     -else
       =empty_message 
-  %td
+  %td{:id => blur_query.uuid, :class => "status"}
     -if blur_query.complete == 1
       Complete
     -elsif blur_query.interrupted
@@ -40,7 +40,8 @@
         =submit_tag 'Cancel', :class => 'cancel', :name => 'Cancel Query', :cancel => true, :uuid => blur_query.uuid, :table_name =>  blur_query.table_name 
   %td
     -if blur_query.uuid
-      %a{:href => "#", :class => "info", :id => blur_query.uuid}
-        =blur_query.uuid
+      -link = '#' + blur_query.uuid
+      %a{:href => link, :class => "info", :id => blur_query.uuid}
+        More Info
     -else
       =empty_message

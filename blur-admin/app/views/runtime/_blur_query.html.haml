@@ -1,9 +1,8 @@
 - empty_message = 'Not Available'
 %tr
   %td
-    -if blur_query.userid
-      %a{:href => "#", :class => "info", :id => blur_query.uuid} 
-        =blur_query.userid
+    -if blur_query.userid 
+      =blur_query.userid
     -else
       =empty_message
   %td{:class => "query-string", :title => blur_query.query_string}
@@ -38,4 +37,10 @@
   %td
     -if blur_query.running
       =submit_tag 'Cancel', :class => 'cancel', :name => 'Cancel Query', :cancel => true, :uuid => blur_query.uuid, :table_name =>  blur_query.table_name
+  %td
+    -if blur_query.uuid
+      %a{:href => "#", :class => "info", :id => blur_query.uuid}
+        =blur_query.uuid
+    -else
+      =empty_message
     

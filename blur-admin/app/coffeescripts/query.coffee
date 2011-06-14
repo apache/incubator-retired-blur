@@ -95,4 +95,4 @@ $(document).ready ->
   #Disable submit button when no text in input
   $('#q').live("keyup", -> toggle_submit())
   $('#filter_section').live("click", -> toggle_submit())
-  $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").remove())
+  $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))

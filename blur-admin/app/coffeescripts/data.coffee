@@ -56,10 +56,10 @@ $(document).ready ->
   #listener to hide dialog on click
   $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
   #listeners for the cancel/OK buttons on the dialog
-  $('.cancel').live("click", -> $(".ui-confirm").dialog("close"))
+  $('.cancel').live("click", -> $(".ui-dialog-content").dialog("close"))
   $('.ok').live("click", -> 
     delete_table($(".ui-confirm").attr("table"), $("#underlying-confirm").is(":checked"))
-    $(".ui-confirm").dialog("close"))
+    $(".ui-dialog-content").dialog("close"))
   $('#delete-label').live("click", -> 
     if $("#underlying-confirm").is(":checked")
       $("#underlying-confirm").attr("checked", false)

@@ -1,3 +1,5 @@
+- empty_message = 'Not Available'
+
 %table#more-info-table{:hidden => true}
   %thead
     %tr
@@ -5,9 +7,7 @@
       %th query_string
       %th cpu_time
       %th real_time
-      %th complete
-      %th interrupted
-      %th running
+      %th Status
       %th uuid
       %th created_at
       %th updated_at
@@ -23,9 +23,97 @@
       %th userid
   %tbody
     %tr.more-info-body
-    
-    
-    
-    
-    
-    
+      %td
+        -if @blur_query.id
+          =@blur_query.id
+        -else
+          =empty_message
+      %td
+        -if @blur_query.query_string
+          =@blur_query.query_string
+        -else
+          =empty_message
+      %td
+        -if @blur_query.cpu_time
+          =@blur_query.cpu_time
+        -else
+          =empty_message
+      %td
+        -if @blur_query.real_time
+          =@blur_query.real_time
+        -else
+          =empty_message
+      %td
+        -if @blur_query.uuid
+          =@blur_query.uuid
+        -else
+          =empty_message
+      %td
+        -if @blur_query.complete == 1
+          Complete
+        -elsif @blur_query.interrupted
+          Interrupted
+        -elsif @blur_query.running
+          Running
+        -else
+          =empty_message
+      %td
+        -if @blur_query.created_at
+          =@blur_query.created_at
+        -else
+          =empty_message
+      %td
+        -if @blur_query.updated_at
+          =@blur_query.updated_at
+        -else
+          =empty_message
+      %td
+        -if @blur_query.table_name
+          =@blur_query.table_name
+        -else
+          =empty_message
+      %td
+        -if @blur_query.super_query_on
+          =@blur_query.super_query_on
+        -else
+          =empty_message
+      %td
+        -if @blur_query.facets
+          =@blur_query.facets
+        -else
+          =empty_message
+      %td
+        -if @blur_query.start
+          =@blur_query.start
+        -else
+          =empty_message
+      %td
+        -if @blur_query.fetch_num
+          =@blur_query.fetch_num
+        -else
+          =empty_message
+      %td
+        -if @blur_query.pre_filters
+          =@blur_query.pre_filters
+        -else
+          =empty_message
+      %td
+        -if @blur_query.post_filters
+          =@blur_query.post_filters
+        -else
+          =empty_message
+      %td
+        -if @blur_query.selector_column_families
+          =@blur_query.selector_column_families
+        -else
+          =empty_message
+      %td
+        -if @blur_query.selector_columns
+          =@blur_query.selector_columns
+        -else
+          =empty_message
+      %td
+        -if @blur_query.userid
+          =@blur_query.userid
+        -else
+          =empty_message

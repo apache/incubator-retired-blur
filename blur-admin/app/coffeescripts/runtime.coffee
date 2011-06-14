@@ -38,8 +38,12 @@ $(document).ready ->
     )
     
   $('.info').live('click', ->
-    #to-do call the show dialog method afterwards
-    $('#more-info-container').load('runtime/queries/' + $(this).attr('id'), alert "hello")
+    $('#more-info-container').load('runtime/queries/' + $(this).attr('id'), -> 
+      $("#more-info-container").dialog({modal: true, draggable: false, resizable: false, title: "Additional Info", width: "90%"})
+      $("#more-info-table").removeAttr("hidden")
+    )
   )
+
+  $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
 
   $('[title]').tooltip({});

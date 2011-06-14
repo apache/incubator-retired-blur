@@ -31,9 +31,8 @@ class RuntimeController < ApplicationController
   
   def info
     @uuid = params[:uuid]
-    @result = (BlurQueries.where :uuid => @uuid)[0]
-    puts @result.uuid
-    render :template=>'runtime/_expanded_blur_query.html.haml', :layout => false
+    @blur_query = (BlurQueries.where :uuid => @uuid)[0]
+    render :partial=>'expanded_blur_query', :layout => false
   end
 
 end

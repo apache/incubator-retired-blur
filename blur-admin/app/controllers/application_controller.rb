@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
   enable_authorization do |exception|
     puts params.to_s
     if current_user
-      redirect_to root_url, :alert => "You do not have authorization"
+      redirect_to root_url, :alert => "Unauthorized"
     else
       redirect_to login_path, :alert => "Please login"
     end

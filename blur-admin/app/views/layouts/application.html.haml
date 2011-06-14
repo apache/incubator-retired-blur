@@ -16,11 +16,8 @@
           = link_to image_tag('blur_logo.png'), root_path
           #user_nav
             - if @current_user
-              = "Welcome, " + @current_user.username if @current_user
+              = "Welcome, " + @current_user.username
               |
-              - if can? :index, :users
-                = link_to "Admin", users_path
-                |
               = link_to "Log Out", logout_path
 
             - else
@@ -42,11 +39,13 @@
           %li{:class => controller == 'runtime' && 'active'}
             = link_to 'Runtime', runtime_path
 
-          %li{:class => controller == 'config' && 'active'}
-            = link_to 'Configuration', config_path
-
           %li{:class => controller == 'query' && 'active', :id => "left"}
             = link_to 'Query', query_path
+          
+          - if can? :index, :users
+            %li{:class => controller == 'users' && 'active', :id=> "left"}
+              = link_to 'Admin', users_path
+
       #bd_background
         #bd_wrap.container
           #bd
@@ -62,4 +61,3 @@
     -# - content_for :javascript do
     -#   = javascript_include_tag 'compiled/runtime'
     = yield :javascript
-

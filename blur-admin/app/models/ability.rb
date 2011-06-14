@@ -19,6 +19,9 @@ class Ability
       # query
       can [:filters, :create], :query
 
+      # view more info on runtime
+      can :info, :runtime
+
       if user.has_role? :editor
         can [:update, :destroy], :data
         can :update, :runtime

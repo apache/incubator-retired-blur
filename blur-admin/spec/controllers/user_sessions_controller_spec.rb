@@ -9,6 +9,9 @@ describe UserSessionsController do
   before(:each) do
     activate_authlogic
     @mock_user_session = nil
+    @ability = Ability.new User.new
+    @ability.stub!(:can?).and_return(true)
+    controller.stub!(:current_ability).and_return(@ability)
   end
 
   describe "GET 'new'" do
@@ -58,7 +61,7 @@ describe UserSessionsController do
     it "redirects to root_url with notice" do
       UserSession.stub(:find).and_return(mock_user_session)
       delete :destroy
-      response.should redirect_to(root_url)
+      response.should redirect_to(login_path)
       flash[:notice].should_not be_blank
 
 

@@ -1,3 +1,10 @@
+GIT
+  remote: git://github.com/ryanb/cancan.git
+  revision: f6c2054f7e237f510ab4be2876e8e76aa7373e8d
+  branch: 2.0
+  specs:
+    cancan (2.0.0.alpha)
+
 GEM
   remote: http://rubygems.org/
   specs:
@@ -139,6 +146,7 @@ GEM
       ruby2ruby (~> 1.2)
       ruby_parser (~> 2.0)
       sexp_processor (~> 3.0)
+    role_model (0.7.0)
     roodi (2.1.0)
       ruby_parser
     rspec (2.6.0)
@@ -180,6 +188,7 @@ DEPENDENCIES
   authlogic
   autotest
   barista
+  cancan!
   ci_reporter
   compass
   cover_me
@@ -189,6 +198,7 @@ DEPENDENCIES
   mysql
   nifty-generators
   rails (= 3.0.7)
+  role_model
   rspec-rails
   sqlite3
   thrift_client

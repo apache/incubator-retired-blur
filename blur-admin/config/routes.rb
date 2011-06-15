@@ -3,7 +3,6 @@ BlurAdmin::Application.routes.draw do
 
   resource :data
   resource :runtime, :controller => 'runtime'
-  resource :config, :controller => 'config'
 	resource :query, :controller => 'query'
 	resource :env, :controller => 'env'
 

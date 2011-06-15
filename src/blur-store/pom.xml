@@ -28,6 +28,11 @@
 			<version>3.0.2.1</version>
 		</dependency>
 		<dependency>
+			<groupId>com.nearinfinity.lucene</groupId>
+			<artifactId>lucene-compression</artifactId>
+			<version>0.1</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop</artifactId>
 			<version>0.20.2-core</version>

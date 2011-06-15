@@ -27,8 +27,8 @@ ActiveRecord::Schema.define(:version => 20110607191131) do
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 2147483647
-    t.text     "post_filters",             :limit => 2147483647
+    t.text     "pre_filters",              :limit => 16777215
+    t.text     "post_filters",             :limit => 16777215
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"

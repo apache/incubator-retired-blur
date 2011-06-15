@@ -5,6 +5,14 @@ class BlurTables < ActiveRecord::Base
     describe_table
     @table_description.isEnabled
   end
+
+  def enable
+    BlurThriftClient.client.enableTable self.table_name
+  end
+  
+  def disable
+    BlurThriftClient.client.disableTable self.table_name
+  end 
   
   def table_uri
     describe_table

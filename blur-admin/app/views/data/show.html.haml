@@ -45,7 +45,7 @@
           =number_with_delimiter(table.query_usage, :delimiter => ',')
         %td
           - if can? :update, :data  
-            = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table    
+            = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table.table_name    
           -else 
             =table.is_enabled?
         

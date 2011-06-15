@@ -11,6 +11,8 @@ gem 'barista'
 gem 'thrift'
 gem 'authlogic'
 
+gem 'capistrano'
+
 group :development, :test do
 	gem 'autotest'
 	gem 'rspec-rails'

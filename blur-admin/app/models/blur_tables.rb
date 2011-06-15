@@ -11,8 +11,15 @@ class BlurTables < ActiveRecord::Base
   end
   
   def disable
-    BlurThriftClient.client.disableTable self.table_name
+    # TODO: uncomment line below when thrift does not error
+    # when trying to access disabled tables
+    #BlurThriftClient.client.disableTable self.table_name
   end 
+
+  def destroy underlying=false
+    #TODO: return true or false depending on catching a thrift error
+    BlurThriftClient.client.removeTable self.table_name underlying
+  end
   
   def table_uri
     describe_table
@@ -54,6 +61,6 @@ class BlurTables < ActiveRecord::Base
   end
   
   def list_server
-    @server_layout = BlurThriftClient.client.shardServerLayout(self.table_name)
+    @server_layout = BlurThriftClient.client.shardServerLayout(self.table_name) unless @server_layout
   end
 end

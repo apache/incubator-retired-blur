@@ -18,6 +18,17 @@
   #runtime-queries
     #queries-title
       %h2 Queries
-      =render 'query_table'
+
+    = render 'query_table'
       
 #more-info-container
+
+#failure-message{:hidden => true}
+  #failed-info{:hidden => true}
+  #failed-buttons 
+    %form
+      =label_tag :t, "The cancel was unsuccessful, would you like to try canceling again?", :id => "failed-label"
+      %button#confirm-resubmit.cancel{:type => "button"}
+        Cancel
+      %button#confirm-resubmit.resubmit{:type => "button"}
+        Re-Submit

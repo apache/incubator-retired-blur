@@ -31,6 +31,8 @@ $(document).ready ->
   #functionality for ajax success
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
     if(data)
+      #hide the loading image
+      $('#loading-spinner').attr("hidden", true)
       #shows number of results option if there are results
       $('#result_number_section').removeClass('hidden')
       #If data is returned properly process it
@@ -51,6 +53,11 @@ $(document).ready ->
       $('#results_container').html(error_content)
     true
   )
+  
+  $('#search_submit').live('click', -> 
+    $('#loading-spinner').removeAttr("hidden")
+  )
+  
   #Error message associated with ajax errors
   $('#query_form').bind('ajax:error', (evt, data, status)-> 
     response = data.responseText
@@ -76,7 +83,7 @@ $(document).ready ->
      $('.jstree-unchecked').addClass('jstree-checked')
      $('.jstree-undetermined').addClass('jstree-checked')
      $('.jstree-unchecked').removeClass('jstree-unchecked')
-     $('.jstree-undetermined').removeClass('jstree-undetermined')
+     $('.jstree-checked').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').attr('checked', 'checked')
 
   #fucntionality for uncheck all
@@ -107,4 +114,6 @@ $(document).ready ->
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   #submits form when number of requested results changes
-  $('#r').change -> $('#query_form').submit()
+  $('#r').change -> 
+    $('#query_form').submit()
+    $('#loading-spinner').removeAttr("hidden")

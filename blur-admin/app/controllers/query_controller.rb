@@ -15,7 +15,7 @@ class QueryController < ApplicationController
 		
 	  table = params[:t]
 		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => params[:r].to_i, :uuid => Time.now.to_i*1000+rand(1000)
-    if params[:s]
+    if !params[:s]
       bq.superQueryOn = false
     end
 

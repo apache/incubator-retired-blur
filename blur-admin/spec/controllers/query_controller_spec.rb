@@ -134,7 +134,7 @@ describe QueryController do
     it "renders the create template when superQueryOn is false" do
       @client.should_receive(:query).and_return(@test1_query)
       @client.should_receive(:schema).with('table').and_return(@test_schema1)
-      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :s => true
+      get :create, :t => "table", :q => "query", :r => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :s => false
       response.should render_template "create"
     end
   end

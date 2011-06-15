@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
 
 	require 'thrift/blur'
+	require 'blur_thrift_client'
 
   enable_authorization do |exception|
     puts exception
@@ -13,23 +14,9 @@ class ApplicationController < ActionController::Base
   end
 
   before_filter :current_user_session, :current_user
-
-  def setup_thrift
-    @transport = Thrift::FramedTransport.new(Thrift::BufferedTransport.new(Thrift::Socket.new(BLUR_THRIFT[:host], BLUR_THRIFT[:port])))
-    protocol = Thrift::BinaryProtocol.new(@transport)
-    @client = Blur::Blur::Client.new(protocol)
-    @transport.open()
-  rescue Thrift::TransportException
-    @client = nil
-  end
   
   def thrift_client
-    setup_thrift unless @client
-    @client
-  end
-
-  def close_thrift
-    @transport.close()
+    BlurThriftClient.client
   end
 
   private

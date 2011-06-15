@@ -38,11 +38,20 @@
               =shard_num
             
         %td
-          = number_with_delimiter(table.record_count, :delimiter => ',')
+          -if table.record_count
+            = number_with_delimiter(table.record_count, :delimiter => ',')
+          -else
+            Not Available
         %td
-          =table.current_size
+          - if table.current_size
+            =table.current_size
+          - else
+            Not Available
         %td
-          =number_with_delimiter(table.query_usage, :delimiter => ',')
+          - if table.query_usage
+            =number_with_delimiter(table.query_usage, :delimiter => ',')
+          - else
+            Not Available
         %td
           - if can? :update, :data  
             = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table    

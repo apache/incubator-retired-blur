@@ -8,6 +8,24 @@ describe DataController do
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
     controller.stub!(:current_ability).and_return(@ability)
+    
+    @blur_tables = mock_model(BlurTables);
+    
+  end
+
+  describe "show" do
+    it "renders the show template" do
+      #need to test the new model setup
+      BlurTables.should_receive(:all).and_return([@blur_tables])      
+      get :show
+      response.should render_template "show"
+    end
+    
+    it "checks the assignment of blur_tables" do
+      BlurTables.should_receive(:all).and_return([@blur_tables])      
+      get :show
+      assigns(:blur_tables).should == [@blur_tables]
+    end
   end
 
   describe "update" do

@@ -1,7 +1,5 @@
 class QueryController < ApplicationController
 
-  after_filter :close_thrift
-
 	def show
 	  @tables = thrift_client.tableList.sort!
 	  @columns = thrift_client.schema(@tables.first) unless @tables.blank?

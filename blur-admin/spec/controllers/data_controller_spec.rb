@@ -21,7 +21,7 @@ describe DataController do
       @client.should_receive(:describe).with('blah').and_return(@table_descriptor)
       @client.should_receive(:schema).with('blah').and_return(@table_schema)
       @client.should_receive(:shardServerLayout).with('blah').and_return(@table_shards)
-      @client.should_receive(:query).with('blah', @bq).and_return(@table_query)
+      # @client.should_receive(:query).with('blah', @bq).and_return(@table_query)
       get :show
       response.should render_template "show"
     end
@@ -31,13 +31,13 @@ describe DataController do
       @client.should_receive(:describe).with('blah').and_return(@table_descriptor)
       @client.should_receive(:schema).with('blah').and_return(@table_schema)
       @client.should_receive(:shardServerLayout).with('blah').and_return(@table_shards)
-      @client.should_receive(:query).with('blah', @bq).and_return(@table_query)
+      # @client.should_receive(:query).with('blah', @bq).and_return(@table_query)
       get :show
       assigns(:tables).should == ['blah']
       assigns(:tdesc).should == {'blah' => @table_descriptor}
       assigns(:tschema).should == {'blah' => @table_schema.columnFamilies}
       assigns(:tserver).should == {'blah' => @table_shards}
-      assigns(:tcount).should == {'blah' => @table_query.totalResults}
+      # assigns(:tcount).should == {'blah' => @table_query.totalResults}
     end
   end
 

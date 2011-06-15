@@ -14,7 +14,7 @@
       %th Size
       %th Queries/Second
       %th Enabled
-      - if can? :update, :data
+      - if can? :destroy, :data
         - col_span = 7
         %th Actions
       - else
@@ -44,15 +44,20 @@
         %td
           =number_with_delimiter(table.query_usage, :delimiter => ',')
         %td
-          = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table
-        %td
-          = submit_tag 'delete', :class=>'delete-table', :table_name => table.table_name
+          - if can? :update, :data  
+            = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table    
+          -else 
+            =table.is_enabled?
+        
+        - if can? :delete, :data  
+          %td
+            = submit_tag 'delete', :class=>'delete-table', :table_name => table.table_name
       %tr{:id => table.table_name}
-        %td{:colspan => 7}
+        %td{:colspan => col_span}
           %b location:
           = table.table_uri
       %tr.tr-underline{:id => table.table_name}
-        %td{:colspan => 7}
+        %td{:colspan => col_span}
           %b definition:
           .table-def
             %ul

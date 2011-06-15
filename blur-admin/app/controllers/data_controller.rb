@@ -5,7 +5,6 @@ class DataController < ApplicationController
     @blur_tables = BlurTables.all
   end
 
-  #TODO: Add feedback to enable / disable on view
   def update
     enabled = params[:enabled]
     if enabled == 'true'
@@ -17,7 +16,6 @@ class DataController < ApplicationController
     render :json => thrift_client.describe(table_name).isEnabled
   end
 
-  #TODO: Add feedback to delete button on view
   def destroy
     #client.removeTable(params[:name], params[:underlying])
     render :json => !thrift_client.tableList.include?(table_name)

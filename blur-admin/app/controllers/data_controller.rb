@@ -15,16 +15,14 @@ class DataController < ApplicationController
 
     render :json => thrift_client.describe(table_name).isEnabled
   end
-
+  
   def destroy
     #client.removeTable(params[:name], params[:underlying])
     render :json => !thrift_client.tableList.include?(table_name)
   end
-
+  
   protected
-
   def table_name
     table_name = params[:id]
   end
-
 end

@@ -10,30 +10,6 @@ describe DataController do
     controller.stub!(:current_ability).and_return(@ability)
   end
 
-  describe "show" do
-    before (:each) do
-      #the previous setup is now irrelevant with the use of models
-    end
-
-    it "renders the show template" do
-      #need to test the new model setup
-      get :show
-      response.should render_template "show"
-    end
-
-    it "finds and assigns variables" do
-      
-      #repeat the shoulds from the above test
-      
-      # @client.should_receive(:query).with('blah', @bq).and_return(@table_query)
-      get :show
-      
-      #test the new assigns of variables with the model
-      
-      # assigns(:tcount).should == {'blah' => @table_query.totalResults}
-    end
-  end
-
   describe "update" do
     it "enables the table if enable is true" do
       table_descr = Blur::TableDescriptor.new :isEnabled => true

@@ -1,6 +1,4 @@
 class RuntimeController < ApplicationController
-  after_filter :close_thrift, :only => [:show, :update]
-
   def show
     @tables = thrift_client.tableList
     table_name = params[:id]

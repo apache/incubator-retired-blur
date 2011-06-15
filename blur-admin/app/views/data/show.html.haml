@@ -14,74 +14,64 @@
       %th Size
       %th Queries/Second
       %th Enabled
-      - if can? :update, :data
+      - if can? :destroy, :data
         - col_span = 7
         %th Actions
       - else
         - col_span = 6
 
-    -@tables.each do |table|
-      %tr.tr-underline{:id => table}
+    -@blur_tables.each do |table|
+      %tr.tr-underline{:id => table.table_name}
         %td
           %b
             name:
-          =table
+          =table.table_name
         %td
           .table-hosts
             
-            -host_num = shards(table).length
-            -shard_num = shards(table).values[0].length
-            %a{:href=>'#', :class => "host-shards", :id => table} 
+            -host_num = table.shards.length
+            -shard_num = table.shards.values[0].length
+            %a{:href=>'#', :class => "host-shards", :id => table.table_name} 
               Hosts: 
               =host_num 
               Shards: 
               =shard_num
             
         %td
-          = number_with_delimiter(@tcount[table], :delimiter => ',')
+          = number_with_delimiter(table.record_count, :delimiter => ',')
         %td
-          -blur_table = BlurTables.find_by_table_name table
-          -if blur_table
-            =number_to_human_size(blur_table.current_size)
-          -else
-            not available
+          =table.current_size
         %td
-          -if blur_table
-            =number_with_delimiter(blur_table.query_usage, :delimiter => ',')
-          -else
-            not available
+          =number_with_delimiter(table.query_usage, :delimiter => ',')
+        %td
+          - if can? :update, :data  
+            = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table    
+          -else 
+            =table.is_enabled?
+        
+        - if can? :delete, :data  
           %td
-            - if can? :update, :data
-              = check_box_tag '', "1", @tdesc[table].isEnabled, :class=>'enable', :table_name => table
-            - else
-              = @tdesc[table].isEnabled
-          - if can? :update, :data
-            %td
-              = submit_tag 'delete', :class=>'delete-table', :table_name => table
-      %tr{:id => table}
+            = submit_tag 'delete', :class=>'delete-table', :table_name => table.table_name
+      %tr{:id => table.table_name}
         %td{:colspan => col_span}
           %b location:
-          = @tdesc[table].tableUri
-      %tr.tr-underline{:id => table}
+          = table.table_uri
+      %tr.tr-underline{:id => table.table_name}
         %td{:colspan => col_span}
           %b definition:
           .table-def
             %ul
-              %li#families{:id=>"#{table}", :class => "family-node"}
+              %li#families{:id=>"#{table.table_name}", :class => "family-node"}
                 %a{:href=>'#', :class => 'families'}Column Families
                 %ul
-                  -@tschema[table].each do |family, sets|
-                    %li#family{:id=>"#{table}.#{family}", :class => "family-node"}
+                  -table.schema.each do |family, sets|
+                    %li#family{:id=>"#{table.table_name}.#{family}", :class => "family-node"}
                       %a{:href=>'#'}
-                        = "#{family} (#{@tdesc[table].analyzerDefinition.fullTextAnalyzerClassName})"
+                        = "#{family} (#{table.table_analyzer})"
                       %ul
                         -sets.each do |word|
-                          %li#column{:id=>"#{table}.#{family}.#{word}"}
+                          %li#column{:id=>"#{table.table_name}.#{family}.#{word}"}
                             %a{:href=>'#'}= word
-    -if @tables.empty?
-      %tr
-        %td{:colspan => col_span, :class => 'error'}
-          %b No Available Tables
 
 #confirm.ui-confirm{:hidden => true}
   #confirm-dialog
@@ -94,12 +84,12 @@
       %button#confirm-submit.ok{:type => "button"}
         Delete
 
--@tables.each do |table|
-  #display.shard-info{:hidden => true, :class => table}
+-@blur_tables.each do |table|
+  #display.shard-info{:hidden => true, :class => table.table_name}
     Shard Servers:
     .table-def
       %ul
-        -shards(table).each do |host, shards|
+        -table.shards.each do |host, shards|
           %li#hosts{:id=>"#{host}"}
             %a{:href=>'#'}= host
             %ul

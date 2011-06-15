@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110613135529) do
+ActiveRecord::Schema.define(:version => 20110614201547) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -40,6 +40,7 @@ ActiveRecord::Schema.define(:version => 20110613135529) do
     t.integer  "query_usage"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "record_count", :limit => 8
   end
 
   create_table "hdfs_stats", :force => true do |t|

@@ -25,8 +25,8 @@
         %td
           .table-hosts
             
-            -host_num = shards(table).length
-            -shard_num = shards(table).values[0].length
+            -host_num = table.shards.length
+            -shard_num = table.shards.values[0].length
             %a{:href=>'#', :class => "host-shards", :id => table.table_name} 
               Hosts: 
               =host_num 
@@ -40,13 +40,13 @@
         %td
           =number_with_delimiter(table.query_usage, :delimiter => ',')
         %td
-          = check_box_tag '', "1", table.describe.isEnabled, :class=>'enable', :table_name => table
+          = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table
         %td
           = submit_tag 'delete', :class=>'delete-table', :table_name => table.table_name
       %tr{:id => table.table_name}
         %td{:colspan => 7}
           %b location:
-          = table.describe.tableUri
+          = table.table_uri
       %tr.tr-underline{:id => table.table_name}
         %td{:colspan => 7}
           %b definition:
@@ -58,7 +58,7 @@
                   -table.schema.each do |family, sets|
                     %li#family{:id=>"#{table.table_name}.#{family}", :class => "family-node"}
                       %a{:href=>'#'}
-                        = "#{family} (#{table.describe.analyzerDefinition.fullTextAnalyzerClassName})"
+                        = "#{family} (#{table.table_analyzer})"
                       %ul
                         -sets.each do |word|
                           %li#column{:id=>"#{table.table_name}.#{family}.#{word}"}
@@ -80,7 +80,7 @@
     Shard Servers:
     .table-def
       %ul
-        -shards(table).each do |host, shards|
+        -table.shards.each do |host, shards|
           %li#hosts{:id=>"#{host}"}
             %a{:href=>'#'}= host
             %ul

@@ -1,15 +1,8 @@
 class DataController < ApplicationController
   before_filter :table_name, :only => [:update, :destroy_table]
-  before_filter :setup_thrift, :only => [:show]
-  after_filter :close_thrift
 
   def show
     @blur_tables = BlurTables.all
-    @blur_tables.each do |table|
-      table.describe= thrift_client.describe(table.table_name)
-      table.schema= thrift_client.schema(table.table_name).columnFamilies
-      table.server= thrift_client.shardServerLayout(table.table_name)
-    end
   end
 
   #TODO: Add feedback to enable / disable on view

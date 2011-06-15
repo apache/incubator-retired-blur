@@ -36,6 +36,7 @@ class RuntimeController < ApplicationController
 
   def create
     
+    #render :template=>'runtime/query_table.html.haml', :layout => false
   end
 
 end

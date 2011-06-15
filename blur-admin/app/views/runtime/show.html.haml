@@ -18,7 +18,15 @@
   #runtime-queries
     #queries-title
       %h2 Queries
-
+    %h4 Filters:
+    = form_tag runtime_path, :method => 'post', :id=>'runtime_filters', :remote => true do
+      #super-query-filter.section
+        = label_tag :on, 'Super Query On:'
+        = check_box_tag :on, true, false
+        = label_tag :off, 'Super Query Off:'
+        = check_box_tag :off, true, false
+      #submit-filter.section
+        = submit_tag 'Filter', :id => 'filter-runtime'
     = render 'query_table'
       
 #more-info-container

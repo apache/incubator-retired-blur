@@ -14,9 +14,10 @@
       .container
         #hd
           = link_to image_tag('blur_logo.png'), root_path
-          #user_nav.inline
+          #user_nav
             - if @current_user
-              = "Welcome, " + @current_user.username if @current_user
+              = "Welcome, "
+              = link_to "#{@current_user.username}", @current_user
               |
               = link_to "Log Out", logout_path
 
@@ -24,6 +25,9 @@
               = link_to "Register", new_user_path
               |
               = link_to "Log In", login_path
+          - flash.each do |type, message|
+            .flash{ :id => "#{type}" }
+              = message
       #nav
         %ul
           - controller = params[:controller]
@@ -36,11 +40,13 @@
           %li{:class => controller == 'runtime' && 'active'}
             = link_to 'Runtime', runtime_path
 
-          %li{:class => controller == 'config' && 'active'}
-            = link_to 'Configuration', config_path
-
           %li{:class => controller == 'query' && 'active', :id => "left"}
             = link_to 'Query', query_path
+          
+          - if can? :index, :users
+            %li{:class => controller == 'users' && 'active', :id=> "left"}
+              = link_to 'Admin', users_path
+
       #bd_background
         #bd_wrap.container
           #bd
@@ -56,4 +62,3 @@
     -# - content_for :javascript do
     -#   = javascript_include_tag 'compiled/runtime'
     = yield :javascript
-

@@ -10,6 +10,9 @@ describe QueryController do
     set = Set.new ['deptNo', 'moreThanOneDepartment', 'name']
     @test_schema1 = Blur::Schema.new :columnFamilies => {'table1'=> set}
     @test_schema2 = Blur::Schema.new :columnFamilies => {'table1'=> set, 'table2' => set}
+    @ability = Ability.new User.new
+    @ability.stub!(:can?).and_return(true)
+    controller.stub!(:current_ability).and_return(@ability)
   end
 
   describe "show" do

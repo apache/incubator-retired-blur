@@ -10,6 +10,8 @@ gem 'haml'
 gem 'barista'
 gem 'thrift_client'
 gem 'authlogic'
+gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
+gem 'role_model'
 
 group :development, :test do
 	gem 'autotest'

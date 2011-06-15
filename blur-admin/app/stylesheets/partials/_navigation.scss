@@ -3,6 +3,7 @@
   img {
     margin-top: 12.5px;
     margin-left: 5px;
+    float: left;
   }
 }
 
@@ -41,6 +42,7 @@
   color: darken($footer-color, 40%);
   @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
   @include text-shadow(0 -1px 0 lighten($footer-color, 5%));
+  text-align: center;
 }
 
 body #nav {
@@ -77,4 +79,40 @@ body #nav {
 			}
 		}
 	}
+}
+
+#user_nav {
+  display: block;
+  float: right;
+  padding: 1.1em 5em 0 0;
+  font-size: 1.2em;
+}
+
+.flash {
+  width: 30%;
+  margin: 0 auto;
+  padding: .5em 0;
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  border: 2px solid;
+  border-top-style: none;
+  $radius: 5px;
+  -webikit-border-bottom-right-radius: $radius; 
+  -webikit-border-bottom-left-radius: $radius;
+  -moz-border-radius-bottomright: $radius;
+  -mox-border-radius-bottomleft: $radius;
+  border-bottom-right-radius: $radius;
+  border-bottom-left-radius: $radius;
+}
+#notice {
+  $green: #DDFFD9;
+  border-color: darken($green, 40%);
+  background-color: $green;
+}
+
+#alert {
+  $yellow: #FFFFC8;
+  border-color: darken($yellow, 40%);
+  background-color: $yellow;
 }

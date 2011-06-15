@@ -7,8 +7,9 @@
       %th Fetch
       %th CPU time / Real time (ms)
       %th Status
-      %th Actions
-      %th 
+      - if can? :update, :runtime
+        %th Actions
+      %th
   %tbody
     -if @blur_queries.empty?
       %tr

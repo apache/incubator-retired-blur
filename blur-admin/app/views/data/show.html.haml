@@ -14,7 +14,11 @@
       %th Size
       %th Queries/Second
       %th Enabled
-      %th Actions
+      - if can? :update, :data
+        - col_span = 7
+        %th Actions
+      - else
+        - col_span = 6
 
     -@blur_tables.each do |table|
       %tr.tr-underline{:id => table.table_name}

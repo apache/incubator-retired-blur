@@ -67,6 +67,7 @@ ActiveRecord::Schema.define(:version => 20110614201547) do
     t.string   "persistence_token"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "roles_mask"
   end
 
 end

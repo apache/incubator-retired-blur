@@ -6,6 +6,9 @@ describe RuntimeController do
     controller.stub!(:thrift_client).and_return(@client)
     controller.stub!(:close_thrift)
     @blur_queries = mock_model(BlurQueries)
+    @ability = Ability.new User.new
+    @ability.stub!(:can?).and_return(true)
+    controller.stub!(:current_ability).and_return(@ability)
   end
 
   describe "show" do

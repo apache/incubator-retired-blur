@@ -7,6 +7,7 @@ $(document).ready ->
       dataType: 'script'
     )
 
+
   # Function cancels a query
   update_query = (table_name, uuid, cancel) ->
     url = '/runtime/' + table_name + '/' + uuid

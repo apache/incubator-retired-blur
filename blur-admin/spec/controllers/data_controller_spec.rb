@@ -29,23 +29,36 @@ describe DataController do
   end
 
   describe "update" do
+    before do
+      @table = double(BlurTables)
+    end
+
+
     it "enables the table if enable is true" do
-      table_descr = Blur::TableDescriptor.new :isEnabled => true
-      @client.should_receive(:enableTable).with('a_table').and_return(true)
-      @client.should_receive(:describe).with('a_table').and_return(table_descr)
+      BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+      @table.should_receive(:enable)
+      @table.should_receive(:is_enabled?).and_return(true)
       put :update, :enabled => 'true', :id => "a_table"
       response.should render_template true
     end
 
-    it "disables the table if enable is false"
-      #TODO: when disable is uncommented, write test
+    it "disables the table if enable is false" do
+      BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+      @table.should_receive(:disable)
+      @table.should_receive(:is_enabled?).and_return(false)
+      put :update, :enabled => 'false', :id => "a_table"
+      response.should render_template false
+    end
   end
   
   describe "destroy" do
+    before do
+      @table = double(BlurTables)
+    end
     it "deletes a table from the list" do
-      #TODO: when delete table is uncommented, write test for delete
-      @client.should_receive(:tableList).and_return(['table1', 'table2'])
-      delete :destroy, :id => 'a_table'
+      @table.should_receive(:destroy).with(true)
+      BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+      delete :destroy, :id => 'a_table', :underlying => true
       response.should render_template true
     end
   end

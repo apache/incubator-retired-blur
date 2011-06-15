@@ -1,5 +1,5 @@
 class DataController < ApplicationController
-  before_filter :table_name, :only => [:update, :destroy_table]
+  before_filter :table_name, :only => [:update, :destroy]
 
   def show
     @blur_tables = BlurTables.all
@@ -7,21 +7,22 @@ class DataController < ApplicationController
 
   def update
     enabled = params[:enabled]
+    table = BlurTables.find_by_table_name(table_name)
     if enabled == 'true'
-      BlurTables.find_by_table_name(table_name).enable
+      table.enable
     elsif enabled == 'false'
-      # TODO: uncomment line below when thrift does not error
-      # when trying to access disabled tables
-      #BlurTables.find_by_table_name(table_name).disable
+      table.disable
     end
 
-    render :json => thrift_client.describe(table_name).isEnabled
+    render :json => table.is_enabled?
   end
   
   def destroy
+    table = BlurTables.find_by_table_name(table_name)
     # TODO: uncomment line below when ready to destroy tables 
     #client.removeTable(params[:name], params[:underlying])
-    render :json => !thrift_client.tableList.include?(table_name)
+    table.destroy params[:underlying]
+    render :json => true # change based on result of .destroy
   end
   
   protected

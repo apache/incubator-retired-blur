@@ -12,7 +12,7 @@ role :db,  "nic-blurtest01.nearinfinity.com", :primary => true # This is where R
 
 set :user, "localadmin"
 set :use_sudo, false
-set :migrate_env, test
+set :migrate_env, :test
 
 # if you're still using the script/reaper helper you will need
 # these http://github.com/rails/irs_process_scripts

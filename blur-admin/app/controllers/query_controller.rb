@@ -1,12 +1,12 @@
 class QueryController < ApplicationController
 
 	def show
-	  @tables = thrift_client.tableList.sort!
-	  @columns = thrift_client.schema(@tables.first) unless @tables.blank?
+	  @tables = BlurThriftClient.client.tableList.sort!
+	  @columns = BlurThriftClient.client.schema(@tables.first) unless @tables.blank?
 	end
 	
 	def filters
-	  @columns = thrift_client.schema(params[:table])
+	  @columns = BlurThriftClient.client.schema(params[:table])
 	  render '_filters.html.haml', :layout=>false
   end
 
@@ -39,11 +39,11 @@ class QueryController < ApplicationController
 
 		bq.selector = sel
 
-		blur_results = thrift_client.query(table, bq)
+		blur_results = BlurThriftClient.client.query(table, bq)
 
     families_with_columns = {}
     families.each do |family|
-      families_with_columns[family] = thrift_client.schema(table).columnFamilies[family]
+      families_with_columns[family] = BlurThriftClient.client.schema(table).columnFamilies[family]
     end
 
     visible_families = (families + columns.keys).uniq

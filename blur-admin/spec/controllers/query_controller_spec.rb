@@ -4,8 +4,7 @@ describe QueryController do
 
   before (:each) do
     @client = mock(Blur::Blur::Client)
-    controller.stub!(:thrift_client).and_return(@client)
-    controller.stub!(:close_thrift)
+    BlurThriftClient.stub!(:client).and_return(@client)
     
     set = Set.new ['deptNo', 'moreThanOneDepartment', 'name']
     @test_schema1 = Blur::Schema.new :columnFamilies => {'table1'=> set}

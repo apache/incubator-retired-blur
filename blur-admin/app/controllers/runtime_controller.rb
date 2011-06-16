@@ -1,6 +1,7 @@
 class RuntimeController < ApplicationController
   def show
-    @tables = thrift_client.tableList
+    #TODO: Change @tables to populate from db once status is working
+    @tables = BlurThriftClient.client.tableList
     table_name = params[:id]
     if table_name and table_name.downcase != 'all'
       @blur_queries = BlurQueries.find_all_by_table_name table_name
@@ -15,16 +16,13 @@ class RuntimeController < ApplicationController
   end
 
   def update
-    cancel = params[:cancel]
-    table_name = params[:table]
-    uuid = params[:uuid]
-
-    if cancel
-      thrift_client.cancelQuery(table_name, uuid.to_i)
+    if params[:cancel]
+      table_name = params[:table]
+      uuid = params[:uuid]
+      query = BlurQueries.find_by_table_name_and_uuid table_name, uuid
+      result = query.cancel
     end
-
-    #TODO Change render so that it spits back a status of the cancel
-    render :nothing => true
+    render :json => result
   end
   
   def info

@@ -15,6 +15,7 @@ import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import com.nearinfinity.agent.collectors.HDFSCollector;
 import com.nearinfinity.agent.collectors.QueryCollector;
+import com.nearinfinity.agent.collectors.TableCollector;
 
 public class Agent {
 
@@ -73,9 +74,17 @@ public class Agent {
 			//Pull Query information
 			if (activeCollectors.contains("queries")) {
 				try {
-					QueryCollector.startCollecting(props.getProperty("queries.url"), jdbc);
+					QueryCollector.startCollecting(props.getProperty("blur.url"), jdbc);
 				} catch (Exception e) {
 					System.out.println("Unable to collect Query status, will try again next pass: " + e.getMessage());
+				}
+			}
+			//Pull Table information
+			if (activeCollectors.contains("tables")) {
+				try {
+					TableCollector.startCollecting(props.getProperty("blur.url"), jdbc);
+				} catch (Exception e) {
+					System.out.println("Unable to collect Table information, will try again next pass: " + e.getMessage());
 				}
 			}
 			

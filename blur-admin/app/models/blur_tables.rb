@@ -26,8 +26,8 @@ class BlurTables < ActiveRecord::Base
       #TODO: Uncomment line below when ready to delete tables in Blur
       #BlurThriftClient.client.removeTable self.table_name underlying
       return true;
-    rescue => exception
-      puts exception
+    rescue
+      puts "Exception in BlurTable.destroy"
       return false;
     end
   end
@@ -54,14 +54,16 @@ class BlurTables < ActiveRecord::Base
   
   def shards
     list_server
+    puts @server_layout
     if @server_layout
       hosts = {}
       @server_layout.each do |shard,host|
         hosts[host] = [] unless hosts.has_key? host
         hosts[host] << shard
       end
+      return hosts
     end
-    hosts ? hosts : nil
+    hosts
   end
   
   private
@@ -71,7 +73,6 @@ class BlurTables < ActiveRecord::Base
       @table_description = BlurThriftClient.client.describe(self.table_name) unless @table_description
     rescue
       puts "Exception in BlurTable.describe_table"
-      return false
     end
   end
   
@@ -80,7 +81,6 @@ class BlurTables < ActiveRecord::Base
       @table_schema = BlurThriftClient.client.schema(self.table_name).columnFamilies unless @table_schema
     rescue
       puts "Exception in BlurTable.schema_table"
-      return false
     end
   end
   
@@ -89,7 +89,6 @@ class BlurTables < ActiveRecord::Base
       @server_layout = BlurThriftClient.client.shardServerLayout(self.table_name) unless @server_layout
     rescue
       puts "Exception in BlurTable.list_server"
-      return false
     end
   end
 end

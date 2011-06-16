@@ -37,16 +37,15 @@ describe BlurTables do
     end
     
     it "given a schema check that shards returns the formatted hash" do
-      @table_server = {'a_shard' => 'a_host'}
+      @server_layout = {'a_shard' => 'a_host'}
       @returned_host = {'a_host'=>['a_shard']}
-      @blur_tables.stub!(:server).and_return(@table_server)
+      @client.stub!(:shardServerLayout).and_return(@server_layout)
       @blur_tables.shards.should == @returned_host
     end
     
     it "method returns the proper schema" do
       @blur_tables.schema.should == {:family => "tree"}
     end
-    
   end
   
   describe "server" do

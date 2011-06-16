@@ -9,20 +9,18 @@ class DataController < ApplicationController
     enabled = params[:enabled]
     table = BlurTables.find_by_table_name(table_name)
     if enabled == 'true'
-      table.enable
+      result = table.enable
     elsif enabled == 'false'
-      table.disable
+      result = table.disable
     end
 
-    render :json => table.is_enabled?
+    render :json => result
   end
   
   def destroy
     table = BlurTables.find_by_table_name(table_name)
-    # TODO: uncomment line below when ready to destroy tables 
-    #client.removeTable(params[:name], params[:underlying])
-    table.destroy params[:underlying]
-    render :json => true # change based on result of .destroy
+    result = table.destroy params[:underlying]
+    render :json => result
   end
   
   protected

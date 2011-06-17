@@ -72,13 +72,13 @@
       %tr.tr-underline{:id => table.table_name}
         %td{:colspan => col_span}
           %b definition:
-          - if table.schema
+          - if table.table_schema
             .table-def
               %ul
                 %li#families{:id=>"#{table.table_name}", :class => "family-node"}
                   %a{:href=>'#', :class => 'families'}Column Families
                   %ul
-                    -table.schema.each do |family, sets|
+                    -table.table_schema.each do |family, sets|
                       %li#family{:id=>"#{table.table_name}.#{family}", :class => "family-node"}
                         %a{:href=>'#'}
                           = "#{family} (#{table.table_analyzer})"

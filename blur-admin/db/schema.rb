@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110617142244) do
+ActiveRecord::Schema.define(:version => 20110617163052) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -44,7 +44,7 @@ ActiveRecord::Schema.define(:version => 20110617142244) do
     t.integer  "status"
     t.string   "table_uri"
     t.text     "table_analyzer"
-    t.text     "schema"
+    t.text     "table_schema"
     t.text     "server"
   end
 

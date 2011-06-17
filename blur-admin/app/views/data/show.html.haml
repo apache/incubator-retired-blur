@@ -28,13 +28,13 @@
           =table.table_name
         %td
           .table-hosts
-            - if table.shards
+            - if table.table_schema
             
               %a{:href=>'#', :class => "host-shards", :id => table.table_name} 
                 Hosts: 
-                = table.shards.length
+                = table.table_schema.length
                 Shards: 
-                = table.shards.values.inject(0) {|sum, shard_list| sum + shard_list.length}
+                = table.table_schema.values.inject(0) {|sum, shard_list| sum + shard_list.length}
             - else
               Not Available
             
@@ -103,10 +103,10 @@
 -@blur_tables.each do |table|
   #display.shard-info{:hidden => true, :class => table.table_name}
     Shard Servers:
-    - if table.shards
+    - if table.table_schema
       .table-def
         %ul
-          -table.shards.each do |host, shards|
+          -table.table_schema.each do |host, shards|
             %li#hosts{:id=>"#{host}"}
               %a{:href=>'#'}= host
               %ul

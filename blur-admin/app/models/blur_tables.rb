@@ -1,11 +1,16 @@
 class BlurTables < ActiveRecord::Base
   require 'blur_thrift_client'
 
+  def is_enabled?
+    self.status == 2
+
+  end
+
   def enable
     begin
       BlurThriftClient.client.enableTable self.table_name
     ensure
-      return self.status == 2
+      return self.is_enabled?
     end
   end
   
@@ -13,7 +18,7 @@ class BlurTables < ActiveRecord::Base
     begin
       BlurThriftClient.client.disableTable self.table_name
     ensure
-      return self.status == 2
+      return self.is_enables?
     end
   end 
 

@@ -21,7 +21,7 @@ set :use_sudo, false
 set :deploy_subdir, "blur-admin"
 
 before "deploy:restart" do
-  run "cd #{current_path} && rake RAILS_ENV=production sass:build"
+  run "cd #{current_path} && bundle exec compass compile"
   run "cd #{current_path} && rake RAILS_ENV=production barista:brew"
 end
 

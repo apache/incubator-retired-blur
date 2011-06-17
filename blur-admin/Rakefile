@@ -14,8 +14,6 @@ module ::RakeFileUtils
   extend Rake::FileUtilsExt
 end
 
-puts Rails.env
-
 if Rails.env == 'development' or Rails.env == 'test'
   require 'ci/reporter/rake/rspec'
   require 'metric_fu'

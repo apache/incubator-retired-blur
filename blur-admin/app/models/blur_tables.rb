@@ -18,7 +18,7 @@ class BlurTables < ActiveRecord::Base
     begin
       BlurThriftClient.client.disableTable self.table_name
     ensure
-      return self.is_enables?
+      return self.is_enabled?
     end
   end 
 

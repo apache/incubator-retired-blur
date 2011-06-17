@@ -2,11 +2,23 @@ class RuntimeController < ApplicationController
   def show
     @tables = thrift_client.tableList
     table_name = params[:id]
+
     if table_name and table_name.downcase != 'all'
       @blur_queries = BlurQueries.find_all_by_table_name table_name
     else
       @blur_queries = BlurQueries.all
     end
+
+    #if params[:commit] == 'Filter'
+      #@blur_queries.each do |query|
+        #if params[:super] == 'off' and query.super_query_on == true
+          #@blur_queries.delete(query)
+        #end
+        #if params[:super] == 'on' and query.super_query_on == false
+          #@blur_queries.delete(query)
+        #end
+      #end
+    #end
 
     respond_to do |format|
       format.html
@@ -34,7 +46,6 @@ class RuntimeController < ApplicationController
 
   def create
     
-    #render :template=>'runtime/query_table.html.haml', :layout => false
   end
 
 end

@@ -1,7 +1,8 @@
 $(document).ready ->
 
   # Function updates the queries table
-  update_table = (table_name) ->
+  update_table = () ->
+    table_name = $('#table-select').val()
     $.ajax(
       url: 'runtime/' + table_name
       dataType: 'script'
@@ -36,7 +37,7 @@ $(document).ready ->
 
   #change listener for the table selector
   $('#table-select').live('change', ->
-    update_table($(this).val())
+    update_table()
   )
   
   #sets up the listeners for the cancel buttons 
@@ -63,3 +64,83 @@ $(document).ready ->
   $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
 
   $('[title]').tooltip({});
+
+
+
+
+
+
+  $(".complete").live('click', ->
+    if $(this).is ':checked'
+      $('tr').each( ->
+        if $(this).attr('r') == 'false' and $(this).attr('i') == 'false'
+          $(this).removeAttr("hidden")
+      )
+    else if $(this).not ':checked'
+      $('tr').each( ->
+        if $(this).attr('r') == 'false' and $(this).attr('i') == 'false'
+          $(this).attr("hidden", true)
+        )
+  )
+
+  $(".running").live('click', ->
+    if $(this).is ':checked'
+      $('tr').each( ->
+        if $(this).attr('r') == 'true'
+          $(this).removeAttr("hidden")
+      )
+    else if $(this).not ':checked'
+      $('tr').each( ->
+        if $(this).attr('r') == 'true'
+          $(this).attr("hidden", true)
+        )
+  )
+
+  $(".interrupted").live('click', ->
+    if $(this).is ':checked'
+      $('tr').each( ->
+        if $(this).attr('i') == 'true'
+          $(this).removeAttr("hidden")
+      )
+    else if $(this).not ':checked'
+      $('tr').each( ->
+        if $(this).attr('i') == 'true'
+          $(this).attr("hidden", true)
+        )
+  )
+
+
+
+  $(".both").live('click', ->
+    if $(this).is ':checked'
+      $('tr').each( ->
+        $(this).removeAttr("hidden")
+      )
+  )
+
+  $(".on").live('click', ->
+    if $(this).is ':checked'
+      $('tr').each( ->
+        if $(this).attr('s') == 'true'
+          $(this).removeAttr("hidden")
+        else if $(this).attr('s') == 'false'
+          $(this).attr("hidden", true)
+      )
+  )
+
+  $(".off").live('click', ->
+    if $(this).is ':checked'
+      $('tr').each( ->
+        if $(this).attr('s') == 'false'
+          $(this).removeAttr("hidden")
+        else if $(this).attr('s') == 'true'
+          $(this).attr("hidden", true)
+      )
+  )
+
+
+
+
+
+
+  #$('.filter-section').live("click", -> update_table())

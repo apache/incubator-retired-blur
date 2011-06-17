@@ -41,4 +41,12 @@ test:
   username: root
   password:
 
+production:
+  adapter: mysql
+  encoding: utf8
+  database: blurtools
+  host: localhost
+  pool: 5
+  username: root
+  password: 
 <% end %>

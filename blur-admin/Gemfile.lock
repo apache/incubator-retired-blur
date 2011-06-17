@@ -40,6 +40,12 @@ GEM
     barista (1.0.0)
       coffee-script (~> 2.1.1)
     builder (2.1.2)
+    capistrano (2.6.0)
+      highline
+      net-scp (>= 1.0.0)
+      net-sftp (>= 2.0.0)
+      net-ssh (>= 2.0.14)
+      net-ssh-gateway (>= 1.1.0)
     chronic (0.3.0)
     chunky_png (1.2.0)
     churn (0.0.13)
@@ -77,6 +83,7 @@ GEM
     fssm (0.2.7)
     haml (3.1.1)
     hashie (1.0.0)
+    highline (1.6.2)
     hirb (0.4.5)
     i18n (0.5.0)
     jquery-rails (1.0.9)
@@ -105,6 +112,13 @@ GEM
       syntax
     mime-types (1.16)
     mysql (2.8.1)
+    net-scp (1.0.4)
+      net-ssh (>= 1.99.1)
+    net-sftp (2.0.5)
+      net-ssh (>= 2.0.9)
+    net-ssh (2.1.4)
+    net-ssh-gateway (1.1.0)
+      net-ssh (>= 1.99.1)
     nifty-generators (0.4.6)
     polyglot (0.3.1)
     rack (1.2.3)
@@ -178,6 +192,7 @@ DEPENDENCIES
   authlogic
   autotest
   barista
+  capistrano
   ci_reporter
   compass
   cover_me

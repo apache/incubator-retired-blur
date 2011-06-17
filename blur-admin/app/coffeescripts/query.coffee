@@ -47,6 +47,8 @@ $(document).ready ->
         $('#results_section').css('height', table_height)
       $('#results_section').css('border', 'solid 1px #AAA')
     else
+      #hide the loading image
+      $('#loading-spinner').attr("hidden", true)
       #hides number of results option if there are no results
       $('#result_number_section').addClass('hidden')
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'

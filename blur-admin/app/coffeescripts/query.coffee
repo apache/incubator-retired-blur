@@ -31,8 +31,6 @@ $(document).ready ->
   #functionality for ajax success
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
     if(data)
-      #hide the loading image
-      $('#loading-spinner').attr("hidden", true)
       #shows number of results option if there are results
       $('#result_number_section').removeClass('hidden')
       #If data is returned properly process it
@@ -48,9 +46,12 @@ $(document).ready ->
       $('#results_section').css('border', 'solid 1px #AAA')
     else
       #hides number of results option if there are no results
-      $('#result_number_section').addClass('hidden')
+      $('#result_number_section').hide()
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
+    #hide the loading image
+    $('#loading-spinner').hide()
+
     true
   )
   
@@ -59,13 +60,14 @@ $(document).ready ->
   )
   
   #Error message associated with ajax errors
-  $('#query_form').bind('ajax:error', (evt, data, status)-> 
+  $('#query_form').bind('ajax:error', (evt, data, status)->
     response = data.responseText
     matches = response.replace(/\n/g,'<br/>').match(/<pre>(.*?)<\/pre>/i)
     error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
     #hides number of results option if there are no results
-    $('#result_number_section').addClass('hidden')
-    $('#results_section').html(error_content)
+    $('#results_container').html(error_content)
+    $('#result_number_section').hide()
+    $('#loading-spinner').hide()
     true
   )
 

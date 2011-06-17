@@ -1,8 +1,9 @@
 class BlurTables < ActiveRecord::Base
   require 'blur_thrift_client'
-  
+
   def is_enabled?
-    describe_table ? @table_description.isEnabled : false
+    self.status == 2
+
   end
 
   def enable
@@ -29,64 +30,6 @@ class BlurTables < ActiveRecord::Base
     rescue
       puts "Exception in BlurTable.destroy"
       return false;
-    end
-  end
-  
-  def table_uri
-    describe_table
-    @table_description ? @table_description.tableUri : nil
-  end
-  
-  def table_analyzer
-    describe_table
-    @table_description ? @table_description.analyzerDefinition.fullTextAnalyzerClassName : nil
-  end
-  
-  def schema
-    schema_table
-    @table_schema ? @table_schema : nil
-  end
-  
-  def server
-    list_server
-    @server_layout ? @server_layout : nil
-  end
-  
-  def shards
-    list_server
-    if @server_layout
-      hosts = {}
-      @server_layout.each do |shard,host|
-        hosts[host] = [] unless hosts.has_key? host
-        hosts[host] << shard
-      end
-    end
-    hosts
-  end
-  
-  private
-  
-  def describe_table 
-    begin
-      @table_description = BlurThriftClient.client.describe(self.table_name) unless @table_description
-    rescue
-      puts "Exception in BlurTable.describe_table"
-    end
-  end
-  
-  def schema_table
-    begin
-      @table_schema = BlurThriftClient.client.schema(self.table_name).columnFamilies unless @table_schema
-    rescue
-      puts "Exception in BlurTable.schema_table"
-    end
-  end
-  
-  def list_server
-    begin
-      @server_layout = BlurThriftClient.client.shardServerLayout(self.table_name) unless @server_layout
-    rescue
-      puts "Exception in BlurTable.list_server"
     end
   end
 end

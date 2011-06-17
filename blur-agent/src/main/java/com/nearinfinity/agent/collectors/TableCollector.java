@@ -42,7 +42,7 @@ public class TableCollector {
 		BlurClientManager.execute(connection, new BlurCommand<Void>() {
 			@Override
 			public Void call(Client client) throws Exception {
-				System.out.println("Updating MYSQL");
+				System.out.println("Checking For Updates in 'blur_tables'");
 				List<String> tables = client.tableList();
 				//mapper used to generate the json
 				ObjectMapper mapper = new ObjectMapper();

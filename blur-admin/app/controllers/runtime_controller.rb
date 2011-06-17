@@ -6,15 +6,15 @@ class RuntimeController < ApplicationController
     time = params[:time].to_i
     now_time = Time.now
     if params[:time]
-      past_time = now_time - time.minutes
+      past_time = Time.zone.now - time.minutes
     else
-      past_time = now_time - 1.minutes
+      past_time = Time.zone.now - 1.minutes
     end
 
     if table_name and table_name.downcase != 'all'
-      @blur_queries = BlurQueries.find_all_by_table_name table_name, :conditions => {:created_at => past_time..now_time}
+      @blur_queries = BlurQueries.where :table_name => table_name, :create_at => past_time..now_time
     else
-      @blur_queries = BlurQueries.all :conditions => {:created_at => past_time..now_time}
+      @blur_queries = BlurQueries.where :created_at => past_time..now_time
     end
 
     respond_to do |format|

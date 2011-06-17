@@ -12,7 +12,7 @@ class RuntimeController < ApplicationController
     end
 
     if table_name and table_name.downcase != 'all'
-      @blur_queries = BlurQueries.where :table_name => table_name, :create_at => past_time..now_time
+      @blur_queries = BlurQueries.where :table_name => table_name, :created_at => past_time..now_time
     else
       @blur_queries = BlurQueries.where :created_at => past_time..now_time
     end

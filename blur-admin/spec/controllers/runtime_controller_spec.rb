@@ -14,14 +14,14 @@ describe RuntimeController do
     it "renders the show template when id is a given table" do
       @client.should_receive(:tableList).and_return(['a_table'])
       BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'a_table'
+      get :show, :id => 'a_table', :time => 1
       response.should render_template "show"
     end
 
     it "finds and assigns variables when id is a given table" do
       @client.should_receive(:tableList).and_return(['a_table'])
       BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'a_table'
+      get :show, :id => 'a_table', :time => 1
       assigns(:tables).should == ['a_table']
       assigns(:blur_queries).should == [@blur_queries]
     end
@@ -29,14 +29,14 @@ describe RuntimeController do
     it "renders the show template when id is all tables" do
       @client.should_receive(:tableList).and_return(['a_table'])
       BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'all'
+      get :show, :id => 'all', :time => 1
       response.should render_template "show"
     end
 
     it "finds and assigns variables when id is all tables" do
       @client.should_receive(:tableList).and_return(['a_table'])
       BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'all'
+      get :show, :id => 'all', :time => 1
       assigns(:tables).should == ['a_table']
       assigns(:blur_queries).should == [@blur_queries]
     end

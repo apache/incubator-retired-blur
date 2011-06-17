@@ -108,8 +108,8 @@ $(document).ready ->
     filter_status()
     filter_super()
     $('.header').removeAttr("hidden")
-    if $('#queries-table tbody').children().length <= 1
-      $('#queries-table tbody').append('<tr><td colspan="8", class="error", bgcolor="#eee">No Available Queries</td></tr>')
+    #if $('#queries-table tbody').children().length <= 1
+      #$('#queries-table tbody').append('<tr><td colspan="8", class="error", bgcolor="#eee">No Available Queries</td></tr>')
 
   $(".filter-section").live('click', ->
     filter_queries()

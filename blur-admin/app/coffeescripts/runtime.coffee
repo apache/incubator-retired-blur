@@ -3,9 +3,15 @@ $(document).ready ->
   # Function updates the queries table
   update_table = () ->
     table_name = $('#table-select').val()
+    time_string = $('#t').val().split(' ')
+    if time_string[1] == 'hour'
+      time_number = '60'
+    else
+      time_number = time_string[0]
     $.ajax(
-      url: 'runtime/' + table_name
+      url: 'runtime/' + table_name + '/' + time_number
       dataType: 'script'
+      success: -> filter_queries()
     )
 
 
@@ -65,82 +71,57 @@ $(document).ready ->
 
   $('[title]').tooltip({});
 
-
-
-
-
-
-  $(".complete").live('click', ->
-    if $(this).is ':checked'
+  #status filter
+  filter_status = () ->
+    if $(".complete").is ':checked'
       $('tr').each( ->
         if $(this).attr('r') == 'false' and $(this).attr('i') == 'false'
           $(this).removeAttr("hidden")
       )
-    else if $(this).not ':checked'
-      $('tr').each( ->
-        if $(this).attr('r') == 'false' and $(this).attr('i') == 'false'
-          $(this).attr("hidden", true)
-        )
-  )
-
-  $(".running").live('click', ->
-    if $(this).is ':checked'
+    if $(".running").is ':checked'
       $('tr').each( ->
         if $(this).attr('r') == 'true'
           $(this).removeAttr("hidden")
       )
-    else if $(this).not ':checked'
-      $('tr').each( ->
-        if $(this).attr('r') == 'true'
-          $(this).attr("hidden", true)
-        )
-  )
-
-  $(".interrupted").live('click', ->
-    if $(this).is ':checked'
+    if $(".interrupted").is ':checked'
       $('tr').each( ->
         if $(this).attr('i') == 'true'
           $(this).removeAttr("hidden")
       )
-    else if $(this).not ':checked'
+
+  #super query filter
+  filter_super = () ->
+    selected = $("input[@name='super']:checked").val()
+    if selected == 'on'
       $('tr').each( ->
-        if $(this).attr('i') == 'true'
-          $(this).attr("hidden", true)
-        )
-  )
-
-
-
-  $(".both").live('click', ->
-    if $(this).is ':checked'
-      $('tr').each( ->
-        $(this).removeAttr("hidden")
-      )
-  )
-
-  $(".on").live('click', ->
-    if $(this).is ':checked'
-      $('tr').each( ->
-        if $(this).attr('s') == 'true'
-          $(this).removeAttr("hidden")
-        else if $(this).attr('s') == 'false'
+        if $(this).attr('s') != 'true'
           $(this).attr("hidden", true)
       )
-  )
-
-  $(".off").live('click', ->
-    if $(this).is ':checked'
+    else if selected == 'off'
       $('tr').each( ->
-        if $(this).attr('s') == 'false'
-          $(this).removeAttr("hidden")
-        else if $(this).attr('s') == 'true'
+        if $(this).attr('s') != 'false'
           $(this).attr("hidden", true)
       )
+
+  filter_queries = () ->
+    $('tr').each( -> $(this).attr("hidden", true))
+    filter_status()
+    filter_super()
+    $('.header').removeAttr("hidden")
+    if $('#queries-table tbody').children().length <= 1
+      $('#queries-table tbody').append('<tr><td colspan="8", class="error", bgcolor="#eee">No Available Queries</td></tr>')
+
+  $(".filter-section").live('click', ->
+    filter_queries()
   )
 
+  $('#t').live('change', ->
+    update_table()
+  )
 
-
-
-
-
-  #$('.filter-section').live("click", -> update_table())
+  $('#filters-header').live('click', ->
+    if $('#filters-body').attr("hidden")
+      $('#filters-body').removeAttr("hidden")
+    else
+      $('#filters-body').attr("hidden", true)
+  )

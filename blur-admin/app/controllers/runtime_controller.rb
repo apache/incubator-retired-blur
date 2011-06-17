@@ -3,23 +3,19 @@ class RuntimeController < ApplicationController
     #TODO: Change @tables to populate from db once status is working
     @tables = BlurThriftClient.client.tableList
     table_name = params[:id]
-
-    if table_name and table_name.downcase != 'all'
-      @blur_queries = BlurQueries.find_all_by_table_name table_name
+    time = params[:time].to_i
+    now_time = Time.now
+    if params[:time]
+      past_time = now_time - time.minutes
     else
-      @blur_queries = BlurQueries.all
+      past_time = now_time - 1.minutes
     end
 
-    #if params[:commit] == 'Filter'
-      #@blur_queries.each do |query|
-        #if params[:super] == 'off' and query.super_query_on == true
-          #@blur_queries.delete(query)
-        #end
-        #if params[:super] == 'on' and query.super_query_on == false
-          #@blur_queries.delete(query)
-        #end
-      #end
-    #end
+    if table_name and table_name.downcase != 'all'
+      @blur_queries = BlurQueries.find_all_by_table_name table_name, :conditions => {:created_at => past_time..now_time}
+    else
+      @blur_queries = BlurQueries.all :conditions => {:created_at => past_time..now_time}
+    end
 
     respond_to do |format|
       format.html

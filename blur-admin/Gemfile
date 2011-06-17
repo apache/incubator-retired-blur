@@ -13,6 +13,8 @@ gem 'authlogic'
 gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
 gem 'role_model'
 
+gem 'capistrano'
+
 group :development, :test do
 	gem 'autotest'
 	gem 'rspec-rails'

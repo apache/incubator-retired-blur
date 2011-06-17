@@ -33,21 +33,37 @@ describe DataController do
       @table = double(BlurTables)
     end
 
+    context "when successfull" do
 
-    it "enables the table if enable is true" do
-      BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
-      @table.should_receive(:enable)
-      @table.should_receive(:is_enabled?).and_return(true)
-      put :update, :enabled => 'true', :id => "a_table"
-      response.should render_template true
+      it "enable the table if enable is true" do
+        BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+        @table.should_receive(:enable).and_return(true)
+        put :update, :enabled => 'true', :id => "a_table"
+        response.should render_template true
+      end
+
+      it "disable the table if enable is false" do
+        BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+        @table.should_receive(:disable).and_return(true)
+        put :update, :enabled => 'false', :id => "a_table"
+        response.should render_template true
+      end
     end
 
-    it "disables the table if enable is false" do
-      BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
-      @table.should_receive(:disable)
-      @table.should_receive(:is_enabled?).and_return(false)
-      put :update, :enabled => 'false', :id => "a_table"
-      response.should render_template false
+    context "when unsuccessfull" do
+      it "attempts to enable the table if enable is true, and renders false" do
+        BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+        @table.should_receive(:enable).and_return(false)
+        put :update, :enabled => 'true', :id => "a_table"
+        response.should render_template false
+      end
+
+      it "attempts to disable the table if enable is false, and renders false" do
+        BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+        @table.should_receive(:disable).and_return(false)
+        put :update, :enabled => 'false', :id => "a_table"
+        response.should render_template false
+      end
     end
   end
   
@@ -60,6 +76,13 @@ describe DataController do
       BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
       delete :destroy, :id => 'a_table', :underlying => true
       response.should render_template true
+    end
+
+    it "renders false when the table cannot be deleted" do
+      @table.should_receive(:destroy).with(true).and_return false
+      BlurTables.should_receive(:find_by_table_name).with("a_table").and_return(@table)
+      delete :destroy, :id => 'a_table', :underlying => true
+      response.should render_template false
     end
   end
 end

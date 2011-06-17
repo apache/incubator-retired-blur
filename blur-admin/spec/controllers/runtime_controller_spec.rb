@@ -3,8 +3,7 @@ require "spec_helper"
 describe RuntimeController do
   before do
     @client = mock(Blur::Blur::Client)
-    controller.stub!(:thrift_client).and_return(@client)
-    controller.stub!(:close_thrift)
+    BlurThriftClient.stub!(:client).and_return(@client)
     @blur_queries = mock_model(BlurQueries)
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
@@ -51,7 +50,8 @@ describe RuntimeController do
 
     it "cancels a running query if cancel is true" do
       #TODO: check that canceling query works
-      @client.should_receive(:cancelQuery).and_return(true)
+      BlurQueries.should_receive(:find_by_table_name_and_uuid).with('a_table', '1234').and_return(@blur_queries)
+      @blur_queries.should_receive(:cancel).and_return(:true)
       put :update, :cancel => true, :table => 'a_table', :uuid => '1234'
       response.should render_template true
     end
@@ -59,15 +59,15 @@ describe RuntimeController do
 
   describe "info" do
     it "renders the show template" do
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
+      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_queries)
       get :info, :uuid => '123'
       response.should render_template true
     end
 
     it "finds and assigns variables" do
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
+      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_queries)
       get :info, :uuid => '123'
-      assigns(:blur_query).should == @blur_queries
+      assigns(:blur_query).should be @blur_queries
     end
   end
 end

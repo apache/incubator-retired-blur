@@ -28,14 +28,15 @@
           =table.table_name
         %td
           .table-hosts
+            - if table.shards
             
-            -host_num = table.shards.length
-            -shard_num = table.shards.values[0].length
-            %a{:href=>'#', :class => "host-shards", :id => table.table_name} 
-              Hosts: 
-              =host_num 
-              Shards: 
-              =shard_num
+              %a{:href=>'#', :class => "host-shards", :id => table.table_name} 
+                Hosts: 
+                = table.shards.length
+                Shards: 
+                = table.shards.values.inject(0) {|sum, shard_list| sum + shard_list.length}
+            - else
+              Not Available
             
         %td
           -if table.record_count
@@ -64,23 +65,29 @@
       %tr{:id => table.table_name}
         %td{:colspan => col_span}
           %b location:
-          = table.table_uri
+          - if table.table_uri
+            = table.table_uri
+          - else
+            Not Available
       %tr.tr-underline{:id => table.table_name}
         %td{:colspan => col_span}
           %b definition:
-          .table-def
-            %ul
-              %li#families{:id=>"#{table.table_name}", :class => "family-node"}
-                %a{:href=>'#', :class => 'families'}Column Families
-                %ul
-                  -table.schema.each do |family, sets|
-                    %li#family{:id=>"#{table.table_name}.#{family}", :class => "family-node"}
-                      %a{:href=>'#'}
-                        = "#{family} (#{table.table_analyzer})"
-                      %ul
-                        -sets.each do |word|
-                          %li#column{:id=>"#{table.table_name}.#{family}.#{word}"}
-                            %a{:href=>'#'}= word
+          - if table.schema
+            .table-def
+              %ul
+                %li#families{:id=>"#{table.table_name}", :class => "family-node"}
+                  %a{:href=>'#', :class => 'families'}Column Families
+                  %ul
+                    -table.schema.each do |family, sets|
+                      %li#family{:id=>"#{table.table_name}.#{family}", :class => "family-node"}
+                        %a{:href=>'#'}
+                          = "#{family} (#{table.table_analyzer})"
+                        %ul
+                          -sets.each do |word|
+                            %li#column{:id=>"#{table.table_name}.#{family}.#{word}"}
+                              %a{:href=>'#'}= word
+          - else
+            Not Available
 
 #confirm.ui-confirm{:hidden => true}
   #confirm-dialog
@@ -96,12 +103,13 @@
 -@blur_tables.each do |table|
   #display.shard-info{:hidden => true, :class => table.table_name}
     Shard Servers:
-    .table-def
-      %ul
-        -table.shards.each do |host, shards|
-          %li#hosts{:id=>"#{host}"}
-            %a{:href=>'#'}= host
-            %ul
-              -shards.each do |shard|
-                %li#shards{:id=>"#{host}_#{shard}"}
-                  %a{:href=>'#'}= shard
+    - if table.shards
+      .table-def
+        %ul
+          -table.shards.each do |host, shards|
+            %li#hosts{:id=>"#{host}"}
+              %a{:href=>'#'}= host
+              %ul
+                -shards.each do |shard|
+                  %li#shards{:id=>"#{host}_#{shard}"}
+                    %a{:href=>'#'}= shard

@@ -1,8 +1,17 @@
 class EnvController < ApplicationController
 
   def show
-    @controllers = thrift_client.controllerServerList
-    @shards = thrift_client.shardServerList
+    begin
+      @controllers = BlurThriftClient.client.controllerServerList
+    rescue
+      @controllers = nil
+    end
+
+    begin
+      @shards = BlurThriftClient.shardServerList
+    rescue
+      @shards = nil
+    end
   end
 
 end

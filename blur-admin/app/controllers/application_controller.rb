@@ -15,9 +15,9 @@ class ApplicationController < ActionController::Base
 
   before_filter :current_user_session, :current_user
   
-  def thrift_client
-    BlurThriftClient.client
-  end
+# def thrift_client
+#   BlurThriftClient.client
+# end
 
   private
     

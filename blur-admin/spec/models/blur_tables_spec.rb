@@ -27,6 +27,11 @@ describe BlurTables do
     it "method table_analyzer returns the proper analyzer" do
       @blur_tables.table_analyzer.should == "blah"
     end
+    
+    it "throws an exception when the returned table is not valid" do
+      @client.stub!(:describe).with('blah').and_raise(Exception)
+      lambda{ @blur_tables.table_uri }.should raise_exception
+    end
   end
   
   describe "schema" do
@@ -36,10 +41,10 @@ describe BlurTables do
       @client.stub!(:schema).with('blah').and_return(@table_schema)
     end
     
-    it "given a schema check that shards returns the formatted hash" do
-      @table_server = {'a_shard' => 'a_host'}
+    it "given a specific schema checks that it returns the formatted hash" do
+      @server_layout = {'a_shard' => 'a_host'}
       @returned_host = {'a_host'=>['a_shard']}
-      @blur_tables.stub!(:server).and_return(@table_server)
+      @client.stub!(:shardServerLayout).and_return(@server_layout)
       @blur_tables.shards.should == @returned_host
     end
     
@@ -47,17 +52,51 @@ describe BlurTables do
       @blur_tables.schema.should == {:family => "tree"}
     end
     
+    it "throws an exception when the returned schema is not valid" do
+      @client.stub!(:schema).with('blah').and_raise(Exception)
+      lambda{ @blur_tables.schema }.should raise_exception
+    end
   end
   
   describe "server" do
     
-    before(:each) do
-      @client.stub!(:shardServerLayout).with('blah').and_return("blah")
-    end
-    
     it "method returns the proper server list" do
+      @client.stub!(:shardServerLayout).with('blah').and_return("blah")
       @blur_tables.server.should == "blah"
     end
     
+    it "throws an exception when the returned server layout is not valid" do
+      @client.stub!(:shardServerLayout).with('blah').and_raise(Exception)
+      lambda{ @blur_tables.server }.should raise_exception
+    end
+    
   end
+  
+  describe "enable" do
+    
+    before(:each) do
+      @table_descr = Blur::TableDescriptor.new :isEnabled => true
+    end
+    
+    it "method sends the signal to enable the table through thrift" do
+      @client.stub!(:describe).and_return(@table_descr)
+      @blur_tables.stub!(:table_name).and_return('blah')
+      @client.should_receive(:enableTable).with('blah')
+      @blur_tables.enable.should == true
+    end
+  end
+  
+  describe "disable" do
+    
+    before(:each) do
+      @table_descr = Blur::TableDescriptor.new :isEnabled => false
+    end
+    
+    it "method sends the signal to disabl the table through thrift" do
+      @client.stub!(:describe).and_return(@table_descr)
+      @blur_tables.stub!(:table_name).and_return('blah')
+      @client.should_receive(:disableTable).with('blah')
+      @blur_tables.disable.should == false
+    end
+  end  
 end

@@ -24,18 +24,26 @@
     %h2 Blur Status
   .status-container
     .inner-container.bottom-status.left-container
-      %h3="Controllers(" + @controllers.length.to_s + ")"
-      #controllers-placeholder
-        %ul
-          -@controllers.each do |theController|
-            %li
-              =theController
-              .sparkline
+      - if @controllers
+        %h3="Controllers(" + @controllers.length.to_s + ")"
+        #controllers-placeholder
+          %ul
+            -@controllers.each do |theController|
+              %li
+                =theController
+                .sparkline
+      - else
+        %h3 Controllers
+        %p Not Available
     .inner-container.bottom-status.right-container
-      %h3="Shards(" + @shards.length.to_s + ")"
-      #shards-placeholder
-        %ul
-          -@shards.each do |shard|
-            %li
-              =shard
-              .sparkline
+      - if @shards
+        %h3="Shards(" + @shards.length.to_s + ")"
+        #shards-placeholder
+          %ul
+            -@shards.each do |shard|
+              %li
+                =shard
+                .sparkline
+      - else
+        %h3 Shards
+        %p Not Available

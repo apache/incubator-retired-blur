@@ -59,15 +59,15 @@ describe RuntimeController do
 
   describe "info" do
     it "renders the show template" do
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
+      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_queries)
       get :info, :uuid => '123'
       response.should render_template true
     end
 
     it "finds and assigns variables" do
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
+      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_queries)
       get :info, :uuid => '123'
-      assigns(:blur_query).should == @blur_queries
+      assigns(:blur_query).should be @blur_queries
     end
   end
 end

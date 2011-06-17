@@ -54,14 +54,12 @@ class BlurTables < ActiveRecord::Base
   
   def shards
     list_server
-    puts @server_layout
     if @server_layout
       hosts = {}
       @server_layout.each do |shard,host|
         hosts[host] = [] unless hosts.has_key? host
         hosts[host] << shard
       end
-      return hosts
     end
     hosts
   end

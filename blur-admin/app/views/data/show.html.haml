@@ -28,13 +28,13 @@
           =table.table_name
         %td
           .table-hosts
-            - if table.table_schema
+            - if table.schema
             
               %a{:href=>'#', :class => "host-shards", :id => table.table_name} 
                 Hosts: 
-                = table.table_schema.length
+                = table.schema.length
                 Shards: 
-                = table.table_schema.values.inject(0) {|sum, shard_list| sum + shard_list.length}
+                = table.schema.values.inject(0) {|sum, shard_list| sum + shard_list.length}
             - else
               Not Available
             
@@ -78,7 +78,7 @@
                 %li#families{:id=>"#{table.table_name}", :class => "family-node"}
                   %a{:href=>'#', :class => 'families'}Column Families
                   %ul
-                    -table.table_schema.each do |family, sets|
+                    -table.schema.each do |family, sets|
                       %li#family{:id=>"#{table.table_name}.#{family}", :class => "family-node"}
                         %a{:href=>'#'}
                           = "#{family} (#{table.table_analyzer})"
@@ -106,7 +106,7 @@
     - if table.table_schema
       .table-def
         %ul
-          -table.table_schema.each do |host, shards|
+          -table.schema.each do |host, shards|
             %li#hosts{:id=>"#{host}"}
               %a{:href=>'#'}= host
               %ul

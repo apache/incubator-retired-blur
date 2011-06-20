@@ -4,7 +4,7 @@ class RuntimeController < ApplicationController
     @tables = BlurThriftClient.client.tableList
     table_name = params[:id]
     time = params[:time].to_i
-    now_time = Time.now
+    now_time = Time.zone.now
     if params[:time]
       past_time = Time.zone.now - time.minutes
     else

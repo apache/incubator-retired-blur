@@ -45,8 +45,8 @@ production:
   adapter: mysql
   encoding: utf8
   database: blurtools
-  host: localhost
+  host: nic-mysqldev01.nearinfinity.com
   pool: 5
-  username: root
-  password: 
+  username: blurtools
+  password: blurtools
 <% end %>

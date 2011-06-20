@@ -17,7 +17,6 @@
             - set.each do |s|
               %th
                 = s.gsub(/([A-Z])/, '&shy;\1').html_safe
-
         %tbody
           - @results.each do |result|
             - stripe_class = cycle('odd', 'even', :name => 'row-cycle')

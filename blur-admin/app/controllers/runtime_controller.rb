@@ -3,10 +3,9 @@ class RuntimeController < ApplicationController
     #TODO: Change @tables to populate from db once status is working
     @tables = BlurThriftClient.client.tableList
     table_name = params[:id]
-    time = params[:time].to_i
     now_time = Time.zone.now
     if params[:time]
-      past_time = Time.zone.now - time.minutes
+      past_time = Time.zone.now - params[:time].to_i.minutes
     else
       past_time = Time.zone.now - 1.minutes
     end
@@ -32,14 +31,10 @@ class RuntimeController < ApplicationController
     end
     render :json => result
   end
-  
+
   def info
     @blur_query = BlurQueries.find_by_uuid params[:uuid]
     render :partial=>'expanded_blur_query', :layout => false
-  end
-
-  def create
-    
   end
 
 end

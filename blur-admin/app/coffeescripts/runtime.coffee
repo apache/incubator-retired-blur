@@ -14,7 +14,6 @@ $(document).ready ->
       success: -> filter_queries()
     )
 
-
   # Function cancels a query
   update_query = (table_name, uuid, cancel) ->
     url = '/runtime/' + table_name + '/' + uuid
@@ -41,12 +40,12 @@ $(document).ready ->
       type: 'GET'
     )
 
-  #change listener for the table selector
+  # Change listener for the table selector
   $('#table-select').live('change', ->
     update_table()
   )
   
-  #sets up the listeners for the cancel buttons 
+  # Sets up the listeners for the cancel buttons
   $('.cancel').live('click', ->
     $(this).attr("enabled", false)
     uuid = $(this).attr('uuid')
@@ -62,16 +61,17 @@ $(document).ready ->
     )
   )
   
-  #dialog listeners
+  # Dialog listeners
   $('.cancel').live("click", -> $(".ui-dialog-content").dialog("close"))
   $('.resubmit').live("click", -> 
     update_query($("#failed-info").attr("table"), $("#failed-info").attr("uuid"), true)
   )
   $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
 
-  $('[title]').tooltip({});
+  # Displays the full query string on hover
+  $('[title]').tooltip({})
 
-  #status filter
+  # Function for filtering queries based on current status
   filter_status = () ->
     if $(".complete").is ':checked'
       $('tr').each( ->
@@ -89,7 +89,7 @@ $(document).ready ->
           $(this).removeAttr("hidden")
       )
 
-  #super query filter
+  # Function for filtering queries basec on super query on/off
   filter_super = () ->
     selected = $("input[@name='super']:checked").val()
     if selected == 'on'
@@ -103,22 +103,27 @@ $(document).ready ->
           $(this).attr("hidden", true)
       )
 
+  # Function to filter queries based on current values seleced for filters
   filter_queries = () ->
     $('tr').each( -> $(this).attr("hidden", true))
     filter_status()
     filter_super()
     $('.header').removeAttr("hidden")
-    #if $('#queries-table tbody').children().length <= 1
-      #$('#queries-table tbody').append('<tr><td colspan="8", class="error", bgcolor="#eee">No Available Queries</td></tr>')
+    $('.error').removeAttr("hidden")
+    if $('#queries-table tbody tr:visible').children().length < 1
+      $('#queries-table tbody').append('<tr><td colspan="8", class="error", bgcolor="#eee">No Available Queries</td></tr>')
 
+  # Filter queries when a filter is clicked on
   $(".filter-section").live('click', ->
     filter_queries()
   )
 
+  # Filter by time range
   $('#t').live('change', ->
     update_table()
   )
 
+  # Hide/Display filter options on click
   $('#filters-header').live('click', ->
     if $('#filters-body').attr("hidden")
       $('#filters-body').removeAttr("hidden")

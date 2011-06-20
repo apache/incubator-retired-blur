@@ -16,7 +16,7 @@ class DataController < ApplicationController
 
     render :json => result
   end
-  
+
   def destroy
     table = BlurTables.find_by_table_name(table_name)
     result = table.destroy params[:underlying]

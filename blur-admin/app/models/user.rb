@@ -26,7 +26,7 @@ class User < ActiveRecord::Base
       self.roles.delete :editor if self.has_role? :editor
     end
   end
-  
+
   def admin
     return true if self.has_role? :admin
     false

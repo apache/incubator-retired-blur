@@ -20,6 +20,7 @@ public class QueryCollector {
 				@Override
 				public Void call(Client client) throws Exception {
 					List<String> tables = client.tableList();
+					System.out.println("Checking For Updates in 'blur_queries'");
 					
 					
 					/**

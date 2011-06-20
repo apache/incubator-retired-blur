@@ -1,0 +1,13 @@
+# Mysql connection information
+store.url=jdbc:mysql://nic-mysqldev01.nearinfinity.com/blurtools
+store.user=blurtools
+store.password=blurtools
+
+# Active Collectors
+active.collectors=queries|tables
+
+# HDFS Collector properties
+hdfs.url=hdfs://192.168.64.130:8020
+
+# Blur properties
+blur.url=blur04.nearinfinity.com:40020

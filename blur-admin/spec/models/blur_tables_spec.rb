@@ -41,5 +41,10 @@ describe BlurTables do
       @blur_tables.schema.keys.each {|host| host.should match  /Host/}
       @blur_tables.schema.values.flatten.each {|shard| shard.should match /shard/}
     end
+
+    it "returns nil when the table_schema has not been populated" do
+      blur_table = BlurTables.new
+      blur_table.schema.should be nil
+    end
   end
 end

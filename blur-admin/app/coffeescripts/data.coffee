@@ -1,5 +1,6 @@
 $(document).ready ->
 
+  # Function to enable/disable a table
   update_table = (table_name, enabled) ->
     url = "/data/" + table_name 
     data = 'enabled=' + enabled
@@ -31,10 +32,11 @@ $(document).ready ->
     }).bind("select_node.jstree", (event, data) -> 
       $(this).jstree('toggle_node')
     )
-    
+
+  # Calls the function to initialize the filter tree
   setup_filter_tree()
 
-  #Listener to delete a table
+  # Listener to delete a table
   $(".delete-table").live('click', ->
     table_name = $(this).attr('table_name')
     $(".ui-confirm").attr("table", table_name)
@@ -43,7 +45,7 @@ $(document).ready ->
     $(".ui-confirm").dialog({modal: true, draggable: false, resizable: false, title: "Confirm Delete", width: "450px"})
   )
   
-  #Listener to Enable/Disable a table
+  # Listener to Enable/Disable a table
   $(".enable").live('click', ->
     if $(this).is ':checked'
       enabled = true
@@ -53,9 +55,10 @@ $(document).ready ->
     update_table(table_name, enabled)
   )
   
-  #listener to hide dialog on click
+  # Listener to hide dialog on click
   $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
-  #listeners for the cancel/OK buttons on the dialog
+
+  # Listeners for the cancel/OK buttons on the dialog
   $('.cancel').live("click", -> $(".ui-dialog-content").dialog("close"))
   $('.ok').live("click", -> 
     delete_table($(".ui-confirm").attr("table"), $("#underlying-confirm").is(":checked"))
@@ -66,11 +69,11 @@ $(document).ready ->
     else
       $("#underlying-confirm").attr("checked", true)
   )
-  
+
   $('.jstree-clicked').live('click', ->
     $('.jstree-clicked').removeAttr('class', 'jstree-clicked')
   )
-  
+
   $('.host-shards').live('click', ->
     table = $(this).attr('id')
     $('#display.shard-info.' + table ).dialog({modal: true, draggable: false, resizable: false, title: "Shard Server Information", width: "450px"})

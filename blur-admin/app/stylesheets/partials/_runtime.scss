@@ -4,12 +4,7 @@
   border: 1px solid black;
 }
 
-.inside-container{
-  border: 1px solid black;
-  display: inline-block;
-}
-
-.runtime-graph-container {
+.runtime-graph-container{
   text-align: center;
   width: 202px;
   display: inline-block;
@@ -77,18 +72,9 @@
   }
 }
 
-.rotate-text{
-  -webkit-transform: rotate(-90deg);
-  -moz-transform: rotate(-90deg);
-  display: inline-block;
-  text-align: left;
-}
-
-
 .ui-tooltip {
   color: #555;
 }
-
 
 .filter-section{
   margin: 0px 0px 10px 10px;
@@ -108,5 +94,9 @@
 }
 
 #more-info-label{
+  font-weight: bold;
+}
+
+.error{
   font-weight: bold;
 }

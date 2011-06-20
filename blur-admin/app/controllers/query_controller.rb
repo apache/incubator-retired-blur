@@ -11,7 +11,7 @@ class QueryController < ApplicationController
   end
 
 	def create
-		# TODO: Add in fetch filter, paging, superQueryOn/Off
+		# TODO: Add in fetch filter
 		
 	  table = params[:t]
 		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => params[:r].to_i, :uuid => Time.now.to_i*1000+rand(1000)
@@ -91,7 +91,7 @@ class QueryController < ApplicationController
           end
         end
       end
-    
+
       record = {:id => row.id, :max_record_count => max_record_count, :row => row, :table_rows => table_rows}
       
       @results << record
@@ -101,5 +101,4 @@ class QueryController < ApplicationController
 		
 		render :template=>'query/create.html.haml', :layout => false
 	end
-
 end

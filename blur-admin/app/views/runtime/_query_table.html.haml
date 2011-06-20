@@ -12,8 +12,8 @@
       %th
   %tbody
     -if @blur_queries.empty?
-      %tr
-        %td{:colspan => 8, :class => 'error'}
+      %tr{:class => 'error'}
+        %td{:colspan => 8}
           %b No Available Queries
     -else
       = render :partial => 'blur_query', :collection => @blur_queries

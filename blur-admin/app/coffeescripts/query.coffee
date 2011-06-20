@@ -23,12 +23,13 @@ $(document).ready ->
       $(':submit').attr('disabled', 'disabled')
       $('#result_number_section').addClass('hidden')
 
+  # Reload the filters when the table selector is changed
   $('#t').change -> 
     $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
     $('#result_number_section').addClass('hidden')
   $('#filter_columns').load('query/' + $('#t').val() + '/filters', setup_filter_tree)
 
-  #functionality for ajax success
+  # Functionality for ajax success
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
     if(data)
       #shows number of results option if there are results
@@ -54,12 +55,13 @@ $(document).ready ->
 
     true
   )
-  
+
+  # Show spinner when submit button is clicked
   $('#search_submit').live('click', -> 
     $('#loading-spinner').removeAttr("hidden")
   )
   
-  #Error message associated with ajax errors
+  # Error message associated with ajax errors
   $('#query_form').bind('ajax:error', (evt, data, status)->
     response = data.responseText
     matches = response.replace(/\n/g,'<br/>').match(/<pre>(.*?)<\/pre>/i)
@@ -71,7 +73,7 @@ $(document).ready ->
     true
   )
 
-  #On window resize set the proper height based on whether the window or the table are larger
+  # On window resize set the proper height based on whether the window or the table are larger
   $(window).resize ->
     win_height = $(window).height() - 425
     table_height = $('.result_table').height()
@@ -80,7 +82,7 @@ $(document).ready ->
     else
       $('#results_section').css('height', table_height)
 
-  #fucntionality for check all
+  # Fucntionality for check all
   check_all = () ->
      $('.jstree-unchecked').addClass('jstree-checked')
      $('.jstree-undetermined').addClass('jstree-checked')
@@ -88,7 +90,7 @@ $(document).ready ->
      $('.jstree-checked').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').attr('checked', 'checked')
 
-  #fucntionality for uncheck all
+  # Fucntionality for uncheck all
   uncheck_all = () ->
      $('.jstree-checked').addClass('jstree-unchecked')
      $('.jstree-undetermined').addClass('jstree-unchecked')
@@ -96,7 +98,7 @@ $(document).ready ->
      $('.jstree-undetermined').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').removeAttr('checked')
 
-  #functionality for displaying results in a lightbox
+  # Functionality for displaying results in a lightbox
   table_screen = () ->
   	win_height = $(window).height() * .9
   	win_width = $(window).width() * .9
@@ -115,7 +117,7 @@ $(document).ready ->
 
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
-  #submits form when number of requested results changes
+  # Submits form when number of requested results changes
   $('#r').change -> 
     $('#query_form').submit()
     $('#loading-spinner').removeAttr("hidden")

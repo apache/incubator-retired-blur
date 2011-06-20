@@ -2,6 +2,10 @@ package com.nearinfinity.agent;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,6 +24,24 @@ import com.nearinfinity.agent.collectors.TableCollector;
 public class Agent {
 
 	public static void main(String[] args) throws ParseException {
+		try {
+			File pidFile = new File("agent.pid");
+			PrintWriter pidOut = new PrintWriter(pidFile);
+			System.out.println("Wrote pid file to: " + pidFile.getAbsolutePath());
+			String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();  
+		    int p = nameOfRunningVM.indexOf('@');  
+		    String pid = nameOfRunningVM.substring(0, p);
+		    pidOut.write(pid);
+		    pidOut.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("Unable to find pid file. " + e.getMessage());
+			System.exit(1);
+		} catch (IOException e) {
+			System.out.println("Unable to write to pid file. " + e.getMessage());
+			System.exit(1);
+		}
+		
+		
 		if (args.length == 0) {
 			System.out.println("Config file location must be the first argument.");
 			System.exit(1);

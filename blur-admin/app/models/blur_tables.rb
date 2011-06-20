@@ -1,6 +1,10 @@
 class BlurTables < ActiveRecord::Base
   require 'blur_thrift_client'
 
+  def schema
+    JSON.parse self.table_schema
+  end
+
   def is_enabled?
     self.status == 2
 

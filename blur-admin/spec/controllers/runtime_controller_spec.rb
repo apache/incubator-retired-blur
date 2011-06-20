@@ -4,41 +4,51 @@ describe RuntimeController do
   before do
     @client = mock(Blur::Blur::Client)
     BlurThriftClient.stub!(:client).and_return(@client)
-    @blur_queries = mock_model(BlurQueries)
+    mock_time = Time.local(2011, 6, 28, 10, 20, 30)
+    @blur_query_mock = mock_model(BlurQueries, :created_at => mock_time)
+    controller.stub!(:now).and_return(mock_time + 30.seconds)
+
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
     controller.stub!(:current_ability).and_return(@ability)
   end
 
   describe "show" do
-    it "renders the show template when id is a given table" do
+    it "renders the show template when id is a given table and the default time is used" do
       @client.should_receive(:tableList).and_return(['a_table'])
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'a_table', :time => 1
+      BlurQueries.should_receive(:where).and_return([@blur_query_mock])
+      get :show, :id => 'a_table'
       response.should render_template "show"
     end
 
-    it "finds and assigns variables when id is a given table" do
+    it "finds and assigns variables when id is a given table and the default time is used" do
       @client.should_receive(:tableList).and_return(['a_table'])
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'a_table', :time => 1
+      BlurQueries.should_receive(:where).and_return([@blur_query_mock])
+      get :show, :id => 'a_table'
       assigns(:tables).should == ['a_table']
-      assigns(:blur_queries).should == [@blur_queries]
+      assigns(:blur_queries).should == [@blur_query_mock]
     end
 
-    it "renders the show template when id is all tables" do
+    it "renders the show template when id is all tables and the default time is used" do
       @client.should_receive(:tableList).and_return(['a_table'])
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'all', :time => 1
+      BlurQueries.should_receive(:where).and_return([@blur_query_mock])
+      get :show, :id => 'all'
       response.should render_template "show"
     end
 
-    it "finds and assigns variables when id is all tables" do
+    it "finds and assigns variables when id is all tables and the default time is used" do
       @client.should_receive(:tableList).and_return(['a_table'])
-      BlurQueries.should_receive(:where).and_return([@blur_queries])
-      get :show, :id => 'all', :time => 1
+      BlurQueries.should_receive(:where).and_return([@blur_query_mock])
+      get :show, :id => 'all'
       assigns(:tables).should == ['a_table']
-      assigns(:blur_queries).should == [@blur_queries]
+      assigns(:blur_queries).should == [@blur_query_mock]
+    end
+
+    it "renders the show template when given the selected time" do
+      @client.should_receive(:tableList).and_return(['a_table'])
+      BlurQueries.should_receive(:where).and_return([@blur_query_mock])
+      get :show, :id => 'a_table', :time => 1
+      response.should render_template "show"
     end
   end
 
@@ -50,8 +60,8 @@ describe RuntimeController do
 
     it "cancels a running query if cancel is true" do
       #TODO: check that canceling query works
-      BlurQueries.should_receive(:find_by_table_name_and_uuid).with('a_table', '1234').and_return(@blur_queries)
-      @blur_queries.should_receive(:cancel).and_return(:true)
+      BlurQueries.should_receive(:find_by_table_name_and_uuid).with('a_table', '1234').and_return(@blur_query_mock)
+      @blur_query_mock.should_receive(:cancel).and_return(:true)
       put :update, :cancel => true, :table => 'a_table', :uuid => '1234'
       response.should render_template true
     end
@@ -59,15 +69,15 @@ describe RuntimeController do
 
   describe "info" do
     it "renders the show template" do
-      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_queries)
+      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_query_mock)
       get :info, :uuid => '123'
       response.should render_template true
     end
 
     it "finds and assigns variables" do
-      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_queries)
+      BlurQueries.should_receive(:find_by_uuid).with('123').and_return(@blur_query_mock)
       get :info, :uuid => '123'
-      assigns(:blur_query).should be @blur_queries
+      assigns(:blur_query).should be @blur_query_mock
     end
   end
 end

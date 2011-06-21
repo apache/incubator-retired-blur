@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110617163052) do
+ActiveRecord::Schema.define(:version => 20110621230340) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -48,6 +48,30 @@ ActiveRecord::Schema.define(:version => 20110617163052) do
     t.text     "server"
   end
 
+  create_table "blur_zookeeper_instances", :force => true do |t|
+    t.string   "host"
+    t.string   "port"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "clusters", :force => true do |t|
+    t.string   "name"
+    t.integer  "controller_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "controllers", :force => true do |t|
+    t.integer  "status"
+    t.string   "blur_version"
+    t.string   "node_name"
+    t.string   "node_location"
+    t.integer  "blur_zookeeper_instance_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "hdfs_stats", :force => true do |t|
     t.string   "hdfs_name"
     t.integer  "config_capacity"
@@ -60,6 +84,16 @@ ActiveRecord::Schema.define(:version => 20110617163052) do
     t.integer  "missing_blocks"
     t.integer  "total_nodes"
     t.integer  "dead_nodes"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "shards", :force => true do |t|
+    t.integer  "status"
+    t.string   "blur_version"
+    t.string   "node_name"
+    t.string   "node_location"
+    t.integer  "cluster_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

@@ -8,9 +8,9 @@ class User < ActiveRecord::Base
 
   # declare the valid roles -- do not change the order if you add more
   # roles later, always append them at the end!
-  roles :editor, :admin
+  roles :editor, :admin, :reader, :auditor
 
-  # 'admin' and 'editor' are virtual attributes needed to use form helpers
+  # the roles are virtual attributes needed to use form helpers
   def admin=(admin)
     if admin == "1"
       self.roles << :admin unless self.has_role? :admin
@@ -27,6 +27,22 @@ class User < ActiveRecord::Base
     end
   end
 
+  def reader=(reader)
+    if reader == "1"
+      self.roles << :reader unless self.has_role? :reader
+    elsif reader == "0"
+      self.roles.delete :admin if self.has_role? :admin
+    end
+  end
+
+  def auditor=(auditor)
+    if auditor == "1"
+      self.roles << :auditor unless self.has_role? :auditor
+    elsif auditor == "0"
+      self.roles.delete :auditor if self.has_role? :auditor
+    end
+  end
+
   def admin
     return true if self.has_role? :admin
     false
@@ -36,4 +52,14 @@ class User < ActiveRecord::Base
     return true if self.has_role? :editor
     false
   end
+end
+
+def reader
+  return true if self.has_role? :editor
+  false
+end
+
+def auditor
+  return true if self.has_role? :auditor
+  false
 end

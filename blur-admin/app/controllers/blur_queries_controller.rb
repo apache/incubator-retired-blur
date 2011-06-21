@@ -32,15 +32,9 @@ class BlurQueriesController < ApplicationController
     @blur_query = BlurQuery.find_by_id params[:id]
     if params[:cancel]
       @blur_query.cancel
-      @blur_query.complete += 1
     end
     respond_to do |format|
       format.js
     end
-  end
-
-  def info
-    @blur_query = BlurQuery.find_by_uuid params[:uuid]
-    render :partial=>'expanded_blur_query', :layout => false
   end
 end

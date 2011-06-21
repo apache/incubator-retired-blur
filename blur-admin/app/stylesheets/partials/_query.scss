@@ -1,11 +1,11 @@
 textarea#q {
-  width: 100%;
-  height: 50px;
+  width: 50%;
+  height: 30px;
 }
-
-.column_family_filter {
-  @include inline-block;
-  vertical-align: top;
+textarea#a {
+  margin-left: 5px;
+  width: 50%;
+  height:15px;
 }
 
 table {
@@ -75,7 +75,6 @@ table {
 }
 
 #results_section{
-  height: 0px;
   width: 100%;
   border: none;
   overflow: auto;
@@ -83,9 +82,8 @@ table {
 }
 
 #checkall{
-	padding-right:10px;
-	padding-left:10px;
-	margin-bottom: 10px;
+	padding-right:5px;
+	padding-left:5px;
 }
 
 #fullscreen{
@@ -100,12 +98,8 @@ b{
   font-weight:bold
 }
 
-#search_submit{
-  float: right;
-}
-
 .column-title{
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .hidden{
@@ -116,3 +110,22 @@ b{
   float: right;
   padding-right: 10px;
 }
+
+.half-section{
+  display: inline-block;
+  vertical-align: top;
+}
+
+#filter_section{
+  width: 20%;
+  float: left;
+}
+
+#query_section{
+  width: 75%;
+  float: right;
+}
+
+select#r{ margin-left: 5px; }
+
+.query-input{ vertical-align: top; }

@@ -4,29 +4,35 @@
 
 #query-page
   = form_tag query_path, :method => 'post', :id=>'query_form', :remote => true do
-    #search_section
-      .query-title
-        = label_tag :q, "Search Query:"
-      .query-input
-        = label_tag :q, "Query:"
-        = text_area_tag :q, params[:q]
-    #super_query_section.partial-section
-      = label_tag :s, "Super Query:"
-      = check_box_tag :s, true, true
-    #filter_section
+    #filter_section.half-section
       .partial-section
         = label_tag :t, "Table:"
         = select_tag :t, options_for_select(@tables)
-
+      .partial-section
+        = label_tag :s, "Super Query:"
+        = check_box_tag :s, true, true
       .partial-section
         .column-title
           Column Families:
+        .column-title
           %a{:title => "Check All", :href => '#', :id => 'checkall'} Check All
           %a{:title => "Uncheck All", :href => '#', :id => "uncheckall"} Uncheck All
         #filter_columns
           = render 'filters'
-    #result_number_section.partial-section{:class => 'hidden'}
-      = label_tag :r, 'Number of results shown:'
-      = select_tag :r, options_for_select([25, 50, 100])
-
-  #results_container.partial-results
+      .partial-section
+        = label_tag :r, 'Fetch:'
+        = select_tag :r, options_for_select([25, 50, 100])
+      .partial-section
+        = label_tag :a, 'Start:'
+        = text_area_tag :a, 0
+      .partial-section
+        = submit_tag "Search", :disabled => true, :id => "search_submit"
+    #query_section.half-section
+      #search_section
+        .query-title
+          = label_tag :q, "Search:"
+        .query-input
+          = label_tag :q, "Query:"
+        .query-input
+          = text_area_tag :q, params[:q]
+      #results_container.partial-results

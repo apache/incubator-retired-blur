@@ -14,7 +14,7 @@ class QueryController < ApplicationController
 		# TODO: Add in fetch filter
 		
 	  table = params[:t]
-		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => params[:r].to_i, :uuid => Time.now.to_i*1000+rand(1000)
+		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => params[:r].to_i, :start => params[:a].to_i, :uuid => Time.now.to_i*1000+rand(1000)
     if !params[:s]
       bq.superQueryOn = false
     end

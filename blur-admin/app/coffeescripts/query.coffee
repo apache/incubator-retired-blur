@@ -1,5 +1,6 @@
 $(document).ready ->
   # Function to initialize the filter tree
+  #$('#filter_columns').hide()
   setup_filter_tree = () ->
     $('.column_family_filter').jstree({
       plugins: ["themes", "html_data", "checkbox", "sort", "ui"],
@@ -21,19 +22,16 @@ $(document).ready ->
       $(':submit').removeAttr('disabled')
     else
       $(':submit').attr('disabled', 'disabled')
-      $('#result_number_section').addClass('hidden')
 
   # Reload the filters when the table selector is changed
-  $('#t').change -> 
+  $('#t').change ->
     $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
-    $('#result_number_section').addClass('hidden')
   $('#filter_columns').load('query/' + $('#t').val() + '/filters', setup_filter_tree)
 
   # Functionality for ajax success
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
     if(data)
       #shows number of results option if there are results
-      $('#result_number_section').removeClass('hidden')
       #If data is returned properly process it
       $('#results_container').html(data)
       #set the border once the table has content
@@ -47,7 +45,6 @@ $(document).ready ->
       $('#results_section').css('border', 'solid 1px #AAA')
     else
       #hides number of results option if there are no results
-      $('#result_number_section').hide()
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
     #hide the loading image
@@ -68,7 +65,6 @@ $(document).ready ->
     error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
     #hides number of results option if there are no results
     $('#results_container').html(error_content)
-    $('#result_number_section').hide()
     $('#loading-spinner').hide()
     true
   )
@@ -112,12 +108,29 @@ $(document).ready ->
   $('#uncheckall').live('click', -> uncheck_all())
   $('#fullscreen').live('click', -> table_screen())
   #Disable submit button when no text in input
-  $('#q').live("keyup", -> toggle_submit())
+  $('#q').live("keyup", (name) ->
+    #toggle_submit()
+    if name.keyCode == 13
+      name.preventDefault()
+      $('#query_form').submit()
+    else
+      toggle_submit()
+  )
+
   $('#filter_section').live("click", -> toggle_submit())
 
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   # Submits form when number of requested results changes
-  $('#r').change -> 
-    $('#query_form').submit()
-    $('#loading-spinner').removeAttr("hidden")
+  #$('#r').change ->
+    #$('#query_form').submit()
+    #$('#loading-spinner').removeAttr("hidden")
+
+  #$('#filter_columns').show()
+
+  #$('.column_family_filter').check_all()
+
+  #$('#q').change(alert($(this).val()))
+
+  $("#filter_section").jstree("check_all");
+

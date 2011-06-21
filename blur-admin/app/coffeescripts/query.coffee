@@ -47,7 +47,7 @@ $(document).ready ->
 
   # Show spinner when submit button is clicked
   $('#search_submit').live('click', -> 
-    $('#loading-spinner').removeAttr("hidden")
+    $('#loading-spinner').show()
   )
   
   # Error message associated with ajax errors
@@ -93,10 +93,14 @@ $(document).ready ->
   #Disable submit button when no text in input
   $('#q').live("keyup", (name) ->
     #toggle_submit()
-    if name.keyCode == 13
-      name.preventDefault()
-      $('#query_form').submit()
-      $('#loading-spinner').removeAttr("hidden")
+    if name.keyCode == 13 && !name.shiftKey
+      if $(':submit').attr('disabled')
+        error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
+        $('#results_container').html(error_content)
+      else
+        name.preventDefault()
+        $('#query_form').submit()
+        $('#loading-spinner').show()
     else
       toggle_submit()
   )
@@ -104,14 +108,3 @@ $(document).ready ->
   $('#filter_section').live("click", -> toggle_submit())
 
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
-
-  # Submits form when number of requested results changes
-
-  #$('#r').change ->
-    #$('#query_form').submit()
-    #$('#loading-spinner').removeAttr("hidden")
-
-  
-  #$("#results_container").jstree("check_all");
-
-

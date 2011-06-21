@@ -2,7 +2,7 @@
   - @columns.columnFamilies.each do |family, cols|
     .column_family_filter
       %ul
-        %li#family{:id=>family}
+        %li#family{:id=>family, :class => 'jstree-checked'}
           %a{:href=>'#'}= family
           %ul
             - cols.each do |col|

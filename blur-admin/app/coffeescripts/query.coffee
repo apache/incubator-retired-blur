@@ -35,14 +35,6 @@ $(document).ready ->
       #If data is returned properly process it
       $('#results_container').html(data)
       #set the border once the table has content
-      #set the proper height based on whether the window or the table are larger
-      win_height = $(window).height() - 425
-      table_height = $('.result_table').height()
-      if win_height < table_height
-        $('#results_section').css('height', win_height) 
-      else
-        $('#results_section').css('height', table_height)
-      $('#results_section').css('border', 'solid 1px #AAA')
     else
       #hides number of results option if there are no results
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
@@ -68,15 +60,6 @@ $(document).ready ->
     $('#loading-spinner').hide()
     true
   )
-
-  # On window resize set the proper height based on whether the window or the table are larger
-  $(window).resize ->
-    win_height = $(window).height() - 425
-    table_height = $('.result_table').height()
-    if win_height < table_height
-      $('#results_section').css('height', win_height) 
-    else
-      $('#results_section').css('height', table_height)
 
   # Fucntionality for check all
   check_all = () ->
@@ -113,6 +96,7 @@ $(document).ready ->
     if name.keyCode == 13
       name.preventDefault()
       $('#query_form').submit()
+      $('#loading-spinner').removeAttr("hidden")
     else
       toggle_submit()
   )
@@ -122,15 +106,12 @@ $(document).ready ->
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   # Submits form when number of requested results changes
+
   #$('#r').change ->
     #$('#query_form').submit()
     #$('#loading-spinner').removeAttr("hidden")
 
-  #$('#filter_columns').show()
+  
+  #$("#results_container").jstree("check_all");
 
-  #$('.column_family_filter').check_all()
-
-  #$('#q').change(alert($(this).val()))
-
-  $("#filter_section").jstree("check_all");
 

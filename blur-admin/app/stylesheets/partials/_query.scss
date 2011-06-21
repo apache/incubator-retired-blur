@@ -77,7 +77,7 @@ table {
 #results_section{
   width: 100%;
   border: none;
-  overflow: auto;
+  overflow-x: scroll;
   background-color : #ffffff;
 }
 
@@ -122,8 +122,8 @@ b{
 }
 
 #query_section{
-  width: 75%;
-  float: right;
+  width: 80%;
+
 }
 
 select#r{ margin-left: 5px; }

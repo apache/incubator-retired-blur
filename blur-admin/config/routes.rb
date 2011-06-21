@@ -1,6 +1,6 @@
 BlurAdmin::Application.routes.draw do
-  resources :users, :user_sessions
-
+  resources :users, :user_sessions, :blur_queries, :blur_tables
+  
   resource :data
   resource :runtime, :controller => 'runtime'
 	resource :search, :controller => 'search'
@@ -13,14 +13,14 @@ BlurAdmin::Application.routes.draw do
   end
 
   controller "data" do
-    match 'data/:id', :to => :update, :as => :update_table, :via => :put
-    match 'data/:id', :to => :destroy, :as => :delete_table, :via => :delete
+    match 'blur_tables/:id', :to => :update, :as => :update_table, :via => :put
+    match 'blur_tables/:id', :to => :destroy, :as => :delete_table, :via => :delete
   end
 
-  controller "runtime" do
-    match 'runtime/:table/:uuid', :to => :update, :as => :update, :via => :put
-    match 'runtime/queries/:uuid', :to => :info, :via => :get
-    match 'runtime/:id/:time', :to => :show, :via => :get
+  controller :blur_queries do
+    match 'blur_queries/:table/:uuid', :to => :update, :as => :update, :via => :put
+    match 'blur_queries/queries/:uuid', :to => :info, :via => :get
+    match 'blur_queries/:id/:time', :to => :index, :via => :get
   end
 
   match 'login' => 'user_sessions#new', :as => :login

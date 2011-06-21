@@ -1,5 +1,7 @@
-class BlurTables < ActiveRecord::Base
+class BlurTable < ActiveRecord::Base
   require 'blur_thrift_client'
+
+  has_many :blur_queries
 
   def schema
     if self.table_schema

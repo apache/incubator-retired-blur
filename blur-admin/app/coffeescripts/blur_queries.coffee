@@ -9,14 +9,14 @@ $(document).ready ->
     else
       time_number = time_string[0]
     $.ajax(
-      url: 'runtime/' + table_name + '/' + time_number
+      url: 'blur_queries/' + table_name + '/' + time_number
       dataType: 'script'
       success: -> filter_queries()
     )
 
   # Function cancels a query
   update_query = (table_name, uuid, cancel) ->
-    url = '/runtime/' + table_name + '/' + uuid
+    url = '/blur_queries/' + table_name + '/' + uuid
     data = 'cancel=' + cancel
     $("#failed-info").attr("uuid", uuid)
     $("#failed-info").attr("table", table_name)
@@ -36,7 +36,7 @@ $(document).ready ->
   # Function queries for the new info
   show_info = (uuid) ->
     $.ajax(
-      url: '/runtime/queries/' + uuid
+      url: '/blur_queries/queries/' + uuid
       type: 'GET'
     )
 
@@ -55,7 +55,7 @@ $(document).ready ->
     )
     
   $('.info').live('click', ->
-    $('#more-info-container').load('runtime/queries/' + $(this).attr('id'), -> 
+    $('#more-info-container').load('blur_queries/queries/' + $(this).attr('id'), -> 
       $("#more-info-container").dialog({modal: true, draggable: false, resizable: false, title: "Additional Info", width: "50%", position: "top"})
       $("#more-info-table").removeAttr("hidden")
     )

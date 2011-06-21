@@ -1,6 +1,6 @@
 - empty_message = 'Not Available'
-%tr{:class => blur_query.uuid, :s => blur_query.super_query_on.to_s, :r => blur_query.running.to_s, :i => blur_query.interrupted.to_s}
-  %td{:class => blur_query.uuid, :class => "user-id"}
+%tr{:id => blur_query.id}
+  %td
     - if blur_query.userid
       = blur_query.userid
     - else
@@ -10,22 +10,22 @@
       = truncate(blur_query.query_string, :length => 20, :ommision => "...")
     - else
       =empty_message
-  %td{:id => blur_query.uuid, :class => "start-time"}
+  %td
     - if blur_query.start
       = blur_query.start
     - else
       =empty_message
-  %td{:id => blur_query.uuid, :class => "fetch"}
+  %td
     - if blur_query.fetch_num
       = blur_query.fetch_num
     - else
       = empty_message
-  %td{:id => blur_query.uuid, :class => "time"}
+  %td
     - if blur_query.cpu_time and blur_query.real_time
       = blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s
     - else
       = empty_message 
-  %td{:id => blur_query.uuid, :class => "status"}
+  %td
     - if blur_query.shards
       = number_to_percentage 100 * blur_query.complete / blur_query.shards.to_f, :precision => 0
     - else
@@ -33,11 +33,7 @@
   - if can? :update, :runtime
     %td
       - if blur_query.running
-        = submit_tag 'Cancel', :class => 'cancel', :name => 'Cancel Query', :cancel => true, :uuid => blur_query.uuid, :table_name =>  blur_query.table_name 
+        = form_tag "/blur_queries/#{blur_query.id}", :method => 'put', :remote => true, :id => blur_query.id do
+          = submit_tag 'Cancel', :name => 'cancel', :confirm => "Are you sure?"
   %td
-    - if blur_query.uuid
-      - link = '#' + blur_query.uuid
-      %a{:href => link, :class => "info", :id => blur_query.uuid}
-        More Info
-    - else
-      = empty_message
+    = link_to "More Info", blur_query, :remote => true

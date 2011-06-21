@@ -108,3 +108,18 @@ $(document).ready ->
   $('#filter_section').live("click", -> toggle_submit())
 
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
+
+  $('#hidefilters').live('click', ->
+    $('#filter_section').hide(1000, ->
+      $('#query_section').removeClass('partial-page')
+      $('#query_section').addClass('full-page')
+      $('#showfilters').show()
+    )
+  )
+
+  $('#showfilters').live('click', ->
+    $('#query_section').addClass('partial-page')
+    $('#query_section').removeClass('full-page')
+    $('#filter_section').show('blind', { direction: "horizontal" }, 1000)
+    $('#showfilters').hide()
+  )

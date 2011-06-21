@@ -87,7 +87,7 @@ public class TableCollector {
 					} else {
 						//Update Table
 						jdbc.update("update blur_tables set status=?, table_uri=?, table_analyzer=?, table_schema=?, server=? where table_name=?", 
-								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
+								new Object[]{descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString, table});
 					}
 				}
 				

@@ -141,6 +141,21 @@ public class BlurShardServerTest {
                 throw new RuntimeException("no impl");
             }
 
+			@Override
+			public long getRecordCount(String table) throws IOException {
+				throw new RuntimeException("no impl");
+			}
+
+			@Override
+			public long getRowCount(String table) throws IOException {
+				throw new RuntimeException("no impl");
+			}
+
+			@Override
+			public long getTableSize(String table) throws IOException {
+				throw new RuntimeException("no impl");
+			}
+
         };
     }
 

@@ -50,7 +50,7 @@ import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.lucene.compressed.CompressionCodec;
 
-public abstract class AdminIndexServer implements IndexServer {
+public abstract class AdminIndexServer extends AbstractIndexServer {
     
     private static final Log LOG = LogFactory.getLog(AdminIndexServer.class);
 

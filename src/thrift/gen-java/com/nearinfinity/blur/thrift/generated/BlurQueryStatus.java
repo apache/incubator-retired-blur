@@ -24,30 +24,35 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQueryStatus");
 
   private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRUCT, (short)1);
-  private static final org.apache.thrift.protocol.TField REAL_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("realTime", org.apache.thrift.protocol.TType.I64, (short)2);
-  private static final org.apache.thrift.protocol.TField CPU_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("cpuTime", org.apache.thrift.protocol.TType.I64, (short)3);
-  private static final org.apache.thrift.protocol.TField COMPLETE_FIELD_DESC = new org.apache.thrift.protocol.TField("complete", org.apache.thrift.protocol.TType.DOUBLE, (short)4);
-  private static final org.apache.thrift.protocol.TField RUNNING_FIELD_DESC = new org.apache.thrift.protocol.TField("running", org.apache.thrift.protocol.TType.BOOL, (short)5);
-  private static final org.apache.thrift.protocol.TField INTERRUPTED_FIELD_DESC = new org.apache.thrift.protocol.TField("interrupted", org.apache.thrift.protocol.TType.BOOL, (short)6);
-  private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)7);
+  private static final org.apache.thrift.protocol.TField CPU_TIMES_FIELD_DESC = new org.apache.thrift.protocol.TField("cpuTimes", org.apache.thrift.protocol.TType.MAP, (short)2);
+  private static final org.apache.thrift.protocol.TField COMPLETE_SHARDS_FIELD_DESC = new org.apache.thrift.protocol.TField("completeShards", org.apache.thrift.protocol.TType.I32, (short)3);
+  private static final org.apache.thrift.protocol.TField TOTAL_SHARDS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalShards", org.apache.thrift.protocol.TType.I32, (short)4);
+  private static final org.apache.thrift.protocol.TField STATE_FIELD_DESC = new org.apache.thrift.protocol.TField("state", org.apache.thrift.protocol.TType.I32, (short)5);
+  private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)6);
 
   public BlurQuery query;
-  public long realTime;
-  public long cpuTime;
-  public double complete;
-  public boolean running;
-  public boolean interrupted;
+  public Map<String,CpuTime> cpuTimes;
+  public int completeShards;
+  public int totalShards;
+  /**
+   * 
+   * @see QueryState
+   */
+  public QueryState state;
   public long uuid;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     QUERY((short)1, "query"),
-    REAL_TIME((short)2, "realTime"),
-    CPU_TIME((short)3, "cpuTime"),
-    COMPLETE((short)4, "complete"),
-    RUNNING((short)5, "running"),
-    INTERRUPTED((short)6, "interrupted"),
-    UUID((short)7, "uuid");
+    CPU_TIMES((short)2, "cpuTimes"),
+    COMPLETE_SHARDS((short)3, "completeShards"),
+    TOTAL_SHARDS((short)4, "totalShards"),
+    /**
+     * 
+     * @see QueryState
+     */
+    STATE((short)5, "state"),
+    UUID((short)6, "uuid");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -64,17 +69,15 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
       switch(fieldId) {
         case 1: // QUERY
           return QUERY;
-        case 2: // REAL_TIME
-          return REAL_TIME;
-        case 3: // CPU_TIME
-          return CPU_TIME;
-        case 4: // COMPLETE
-          return COMPLETE;
-        case 5: // RUNNING
-          return RUNNING;
-        case 6: // INTERRUPTED
-          return INTERRUPTED;
-        case 7: // UUID
+        case 2: // CPU_TIMES
+          return CPU_TIMES;
+        case 3: // COMPLETE_SHARDS
+          return COMPLETE_SHARDS;
+        case 4: // TOTAL_SHARDS
+          return TOTAL_SHARDS;
+        case 5: // STATE
+          return STATE;
+        case 6: // UUID
           return UUID;
         default:
           return null;
@@ -116,29 +119,26 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
   }
 
   // isset id assignments
-  private static final int __REALTIME_ISSET_ID = 0;
-  private static final int __CPUTIME_ISSET_ID = 1;
-  private static final int __COMPLETE_ISSET_ID = 2;
-  private static final int __RUNNING_ISSET_ID = 3;
-  private static final int __INTERRUPTED_ISSET_ID = 4;
-  private static final int __UUID_ISSET_ID = 5;
-  private BitSet __isset_bit_vector = new BitSet(6);
+  private static final int __COMPLETESHARDS_ISSET_ID = 0;
+  private static final int __TOTALSHARDS_ISSET_ID = 1;
+  private static final int __UUID_ISSET_ID = 2;
+  private BitSet __isset_bit_vector = new BitSet(3);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurQuery.class)));
-    tmpMap.put(_Fields.REAL_TIME, new org.apache.thrift.meta_data.FieldMetaData("realTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.CPU_TIME, new org.apache.thrift.meta_data.FieldMetaData("cpuTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.COMPLETE, new org.apache.thrift.meta_data.FieldMetaData("complete", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.DOUBLE)));
-    tmpMap.put(_Fields.RUNNING, new org.apache.thrift.meta_data.FieldMetaData("running", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.INTERRUPTED, new org.apache.thrift.meta_data.FieldMetaData("interrupted", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.CPU_TIMES, new org.apache.thrift.meta_data.FieldMetaData("cpuTimes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CpuTime.class))));
+    tmpMap.put(_Fields.COMPLETE_SHARDS, new org.apache.thrift.meta_data.FieldMetaData("completeShards", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TOTAL_SHARDS, new org.apache.thrift.meta_data.FieldMetaData("totalShards", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.STATE, new org.apache.thrift.meta_data.FieldMetaData("state", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, QueryState.class)));
     tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -150,25 +150,20 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
 
   public BlurQueryStatus(
     BlurQuery query,
-    long realTime,
-    long cpuTime,
-    double complete,
-    boolean running,
-    boolean interrupted,
+    Map<String,CpuTime> cpuTimes,
+    int completeShards,
+    int totalShards,
+    QueryState state,
     long uuid)
   {
     this();
     this.query = query;
-    this.realTime = realTime;
-    setRealTimeIsSet(true);
-    this.cpuTime = cpuTime;
-    setCpuTimeIsSet(true);
-    this.complete = complete;
-    setCompleteIsSet(true);
-    this.running = running;
-    setRunningIsSet(true);
-    this.interrupted = interrupted;
-    setInterruptedIsSet(true);
+    this.cpuTimes = cpuTimes;
+    this.completeShards = completeShards;
+    setCompleteShardsIsSet(true);
+    this.totalShards = totalShards;
+    setTotalShardsIsSet(true);
+    this.state = state;
     this.uuid = uuid;
     setUuidIsSet(true);
   }
@@ -182,11 +177,26 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     if (other.isSetQuery()) {
       this.query = new BlurQuery(other.query);
     }
-    this.realTime = other.realTime;
-    this.cpuTime = other.cpuTime;
-    this.complete = other.complete;
-    this.running = other.running;
-    this.interrupted = other.interrupted;
+    if (other.isSetCpuTimes()) {
+      Map<String,CpuTime> __this__cpuTimes = new HashMap<String,CpuTime>();
+      for (Map.Entry<String, CpuTime> other_element : other.cpuTimes.entrySet()) {
+
+        String other_element_key = other_element.getKey();
+        CpuTime other_element_value = other_element.getValue();
+
+        String __this__cpuTimes_copy_key = other_element_key;
+
+        CpuTime __this__cpuTimes_copy_value = new CpuTime(other_element_value);
+
+        __this__cpuTimes.put(__this__cpuTimes_copy_key, __this__cpuTimes_copy_value);
+      }
+      this.cpuTimes = __this__cpuTimes;
+    }
+    this.completeShards = other.completeShards;
+    this.totalShards = other.totalShards;
+    if (other.isSetState()) {
+      this.state = other.state;
+    }
     this.uuid = other.uuid;
   }
 
@@ -197,16 +207,12 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
   @Override
   public void clear() {
     this.query = null;
-    setRealTimeIsSet(false);
-    this.realTime = 0;
-    setCpuTimeIsSet(false);
-    this.cpuTime = 0;
-    setCompleteIsSet(false);
-    this.complete = 0.0;
-    setRunningIsSet(false);
-    this.running = false;
-    setInterruptedIsSet(false);
-    this.interrupted = false;
+    this.cpuTimes = null;
+    setCompleteShardsIsSet(false);
+    this.completeShards = 0;
+    setTotalShardsIsSet(false);
+    this.totalShards = 0;
+    this.state = null;
     setUuidIsSet(false);
     this.uuid = 0;
   }
@@ -235,119 +241,117 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     }
   }
 
-  public long getRealTime() {
-    return this.realTime;
+  public int getCpuTimesSize() {
+    return (this.cpuTimes == null) ? 0 : this.cpuTimes.size();
   }
 
-  public BlurQueryStatus setRealTime(long realTime) {
-    this.realTime = realTime;
-    setRealTimeIsSet(true);
+  public void putToCpuTimes(String key, CpuTime val) {
+    if (this.cpuTimes == null) {
+      this.cpuTimes = new HashMap<String,CpuTime>();
+    }
+    this.cpuTimes.put(key, val);
+  }
+
+  public Map<String,CpuTime> getCpuTimes() {
+    return this.cpuTimes;
+  }
+
+  public BlurQueryStatus setCpuTimes(Map<String,CpuTime> cpuTimes) {
+    this.cpuTimes = cpuTimes;
     return this;
   }
 
-  public void unsetRealTime() {
-    __isset_bit_vector.clear(__REALTIME_ISSET_ID);
+  public void unsetCpuTimes() {
+    this.cpuTimes = null;
   }
 
-  /** Returns true if field realTime is set (has been assigned a value) and false otherwise */
-  public boolean isSetRealTime() {
-    return __isset_bit_vector.get(__REALTIME_ISSET_ID);
+  /** Returns true if field cpuTimes is set (has been assigned a value) and false otherwise */
+  public boolean isSetCpuTimes() {
+    return this.cpuTimes != null;
   }
 
-  public void setRealTimeIsSet(boolean value) {
-    __isset_bit_vector.set(__REALTIME_ISSET_ID, value);
+  public void setCpuTimesIsSet(boolean value) {
+    if (!value) {
+      this.cpuTimes = null;
+    }
   }
 
-  public long getCpuTime() {
-    return this.cpuTime;
+  public int getCompleteShards() {
+    return this.completeShards;
   }
 
-  public BlurQueryStatus setCpuTime(long cpuTime) {
-    this.cpuTime = cpuTime;
-    setCpuTimeIsSet(true);
+  public BlurQueryStatus setCompleteShards(int completeShards) {
+    this.completeShards = completeShards;
+    setCompleteShardsIsSet(true);
     return this;
   }
 
-  public void unsetCpuTime() {
-    __isset_bit_vector.clear(__CPUTIME_ISSET_ID);
+  public void unsetCompleteShards() {
+    __isset_bit_vector.clear(__COMPLETESHARDS_ISSET_ID);
   }
 
-  /** Returns true if field cpuTime is set (has been assigned a value) and false otherwise */
-  public boolean isSetCpuTime() {
-    return __isset_bit_vector.get(__CPUTIME_ISSET_ID);
+  /** Returns true if field completeShards is set (has been assigned a value) and false otherwise */
+  public boolean isSetCompleteShards() {
+    return __isset_bit_vector.get(__COMPLETESHARDS_ISSET_ID);
   }
 
-  public void setCpuTimeIsSet(boolean value) {
-    __isset_bit_vector.set(__CPUTIME_ISSET_ID, value);
+  public void setCompleteShardsIsSet(boolean value) {
+    __isset_bit_vector.set(__COMPLETESHARDS_ISSET_ID, value);
   }
 
-  public double getComplete() {
-    return this.complete;
+  public int getTotalShards() {
+    return this.totalShards;
   }
 
-  public BlurQueryStatus setComplete(double complete) {
-    this.complete = complete;
-    setCompleteIsSet(true);
+  public BlurQueryStatus setTotalShards(int totalShards) {
+    this.totalShards = totalShards;
+    setTotalShardsIsSet(true);
     return this;
   }
 
-  public void unsetComplete() {
-    __isset_bit_vector.clear(__COMPLETE_ISSET_ID);
+  public void unsetTotalShards() {
+    __isset_bit_vector.clear(__TOTALSHARDS_ISSET_ID);
   }
 
-  /** Returns true if field complete is set (has been assigned a value) and false otherwise */
-  public boolean isSetComplete() {
-    return __isset_bit_vector.get(__COMPLETE_ISSET_ID);
+  /** Returns true if field totalShards is set (has been assigned a value) and false otherwise */
+  public boolean isSetTotalShards() {
+    return __isset_bit_vector.get(__TOTALSHARDS_ISSET_ID);
   }
 
-  public void setCompleteIsSet(boolean value) {
-    __isset_bit_vector.set(__COMPLETE_ISSET_ID, value);
+  public void setTotalShardsIsSet(boolean value) {
+    __isset_bit_vector.set(__TOTALSHARDS_ISSET_ID, value);
   }
 
-  public boolean isRunning() {
-    return this.running;
+  /**
+   * 
+   * @see QueryState
+   */
+  public QueryState getState() {
+    return this.state;
   }
 
-  public BlurQueryStatus setRunning(boolean running) {
-    this.running = running;
-    setRunningIsSet(true);
+  /**
+   * 
+   * @see QueryState
+   */
+  public BlurQueryStatus setState(QueryState state) {
+    this.state = state;
     return this;
   }
 
-  public void unsetRunning() {
-    __isset_bit_vector.clear(__RUNNING_ISSET_ID);
+  public void unsetState() {
+    this.state = null;
   }
 
-  /** Returns true if field running is set (has been assigned a value) and false otherwise */
-  public boolean isSetRunning() {
-    return __isset_bit_vector.get(__RUNNING_ISSET_ID);
+  /** Returns true if field state is set (has been assigned a value) and false otherwise */
+  public boolean isSetState() {
+    return this.state != null;
   }
 
-  public void setRunningIsSet(boolean value) {
-    __isset_bit_vector.set(__RUNNING_ISSET_ID, value);
-  }
-
-  public boolean isInterrupted() {
-    return this.interrupted;
-  }
-
-  public BlurQueryStatus setInterrupted(boolean interrupted) {
-    this.interrupted = interrupted;
-    setInterruptedIsSet(true);
-    return this;
-  }
-
-  public void unsetInterrupted() {
-    __isset_bit_vector.clear(__INTERRUPTED_ISSET_ID);
-  }
-
-  /** Returns true if field interrupted is set (has been assigned a value) and false otherwise */
-  public boolean isSetInterrupted() {
-    return __isset_bit_vector.get(__INTERRUPTED_ISSET_ID);
-  }
-
-  public void setInterruptedIsSet(boolean value) {
-    __isset_bit_vector.set(__INTERRUPTED_ISSET_ID, value);
+  public void setStateIsSet(boolean value) {
+    if (!value) {
+      this.state = null;
+    }
   }
 
   public long getUuid() {
@@ -383,43 +387,35 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
       }
       break;
 
-    case REAL_TIME:
+    case CPU_TIMES:
       if (value == null) {
-        unsetRealTime();
+        unsetCpuTimes();
       } else {
-        setRealTime((Long)value);
+        setCpuTimes((Map<String,CpuTime>)value);
       }
       break;
 
-    case CPU_TIME:
+    case COMPLETE_SHARDS:
       if (value == null) {
-        unsetCpuTime();
+        unsetCompleteShards();
       } else {
-        setCpuTime((Long)value);
+        setCompleteShards((Integer)value);
       }
       break;
 
-    case COMPLETE:
+    case TOTAL_SHARDS:
       if (value == null) {
-        unsetComplete();
+        unsetTotalShards();
       } else {
-        setComplete((Double)value);
+        setTotalShards((Integer)value);
       }
       break;
 
-    case RUNNING:
+    case STATE:
       if (value == null) {
-        unsetRunning();
+        unsetState();
       } else {
-        setRunning((Boolean)value);
-      }
-      break;
-
-    case INTERRUPTED:
-      if (value == null) {
-        unsetInterrupted();
-      } else {
-        setInterrupted((Boolean)value);
+        setState((QueryState)value);
       }
       break;
 
@@ -439,20 +435,17 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     case QUERY:
       return getQuery();
 
-    case REAL_TIME:
-      return new Long(getRealTime());
+    case CPU_TIMES:
+      return getCpuTimes();
 
-    case CPU_TIME:
-      return new Long(getCpuTime());
+    case COMPLETE_SHARDS:
+      return new Integer(getCompleteShards());
 
-    case COMPLETE:
-      return new Double(getComplete());
+    case TOTAL_SHARDS:
+      return new Integer(getTotalShards());
 
-    case RUNNING:
-      return new Boolean(isRunning());
-
-    case INTERRUPTED:
-      return new Boolean(isInterrupted());
+    case STATE:
+      return getState();
 
     case UUID:
       return new Long(getUuid());
@@ -470,16 +463,14 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     switch (field) {
     case QUERY:
       return isSetQuery();
-    case REAL_TIME:
-      return isSetRealTime();
-    case CPU_TIME:
-      return isSetCpuTime();
-    case COMPLETE:
-      return isSetComplete();
-    case RUNNING:
-      return isSetRunning();
-    case INTERRUPTED:
-      return isSetInterrupted();
+    case CPU_TIMES:
+      return isSetCpuTimes();
+    case COMPLETE_SHARDS:
+      return isSetCompleteShards();
+    case TOTAL_SHARDS:
+      return isSetTotalShards();
+    case STATE:
+      return isSetState();
     case UUID:
       return isSetUuid();
     }
@@ -508,48 +499,39 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
         return false;
     }
 
-    boolean this_present_realTime = true;
-    boolean that_present_realTime = true;
-    if (this_present_realTime || that_present_realTime) {
-      if (!(this_present_realTime && that_present_realTime))
+    boolean this_present_cpuTimes = true && this.isSetCpuTimes();
+    boolean that_present_cpuTimes = true && that.isSetCpuTimes();
+    if (this_present_cpuTimes || that_present_cpuTimes) {
+      if (!(this_present_cpuTimes && that_present_cpuTimes))
         return false;
-      if (this.realTime != that.realTime)
-        return false;
-    }
-
-    boolean this_present_cpuTime = true;
-    boolean that_present_cpuTime = true;
-    if (this_present_cpuTime || that_present_cpuTime) {
-      if (!(this_present_cpuTime && that_present_cpuTime))
-        return false;
-      if (this.cpuTime != that.cpuTime)
+      if (!this.cpuTimes.equals(that.cpuTimes))
         return false;
     }
 
-    boolean this_present_complete = true;
-    boolean that_present_complete = true;
-    if (this_present_complete || that_present_complete) {
-      if (!(this_present_complete && that_present_complete))
+    boolean this_present_completeShards = true;
+    boolean that_present_completeShards = true;
+    if (this_present_completeShards || that_present_completeShards) {
+      if (!(this_present_completeShards && that_present_completeShards))
         return false;
-      if (this.complete != that.complete)
-        return false;
-    }
-
-    boolean this_present_running = true;
-    boolean that_present_running = true;
-    if (this_present_running || that_present_running) {
-      if (!(this_present_running && that_present_running))
-        return false;
-      if (this.running != that.running)
+      if (this.completeShards != that.completeShards)
         return false;
     }
 
-    boolean this_present_interrupted = true;
-    boolean that_present_interrupted = true;
-    if (this_present_interrupted || that_present_interrupted) {
-      if (!(this_present_interrupted && that_present_interrupted))
+    boolean this_present_totalShards = true;
+    boolean that_present_totalShards = true;
+    if (this_present_totalShards || that_present_totalShards) {
+      if (!(this_present_totalShards && that_present_totalShards))
         return false;
-      if (this.interrupted != that.interrupted)
+      if (this.totalShards != that.totalShards)
+        return false;
+    }
+
+    boolean this_present_state = true && this.isSetState();
+    boolean that_present_state = true && that.isSetState();
+    if (this_present_state || that_present_state) {
+      if (!(this_present_state && that_present_state))
+        return false;
+      if (!this.state.equals(that.state))
         return false;
     }
 
@@ -588,52 +570,42 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetRealTime()).compareTo(typedOther.isSetRealTime());
+    lastComparison = Boolean.valueOf(isSetCpuTimes()).compareTo(typedOther.isSetCpuTimes());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRealTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.realTime, typedOther.realTime);
+    if (isSetCpuTimes()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cpuTimes, typedOther.cpuTimes);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetCpuTime()).compareTo(typedOther.isSetCpuTime());
+    lastComparison = Boolean.valueOf(isSetCompleteShards()).compareTo(typedOther.isSetCompleteShards());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetCpuTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
+    if (isSetCompleteShards()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.completeShards, typedOther.completeShards);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetComplete()).compareTo(typedOther.isSetComplete());
+    lastComparison = Boolean.valueOf(isSetTotalShards()).compareTo(typedOther.isSetTotalShards());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetComplete()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.complete, typedOther.complete);
+    if (isSetTotalShards()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.totalShards, typedOther.totalShards);
       if (lastComparison != 0) {
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetRunning()).compareTo(typedOther.isSetRunning());
+    lastComparison = Boolean.valueOf(isSetState()).compareTo(typedOther.isSetState());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetRunning()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.running, typedOther.running);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetInterrupted()).compareTo(typedOther.isSetInterrupted());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetInterrupted()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.interrupted, typedOther.interrupted);
+    if (isSetState()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.state, typedOther.state);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -673,47 +645,50 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // REAL_TIME
-          if (field.type == org.apache.thrift.protocol.TType.I64) {
-            this.realTime = iprot.readI64();
-            setRealTimeIsSet(true);
+        case 2: // CPU_TIMES
+          if (field.type == org.apache.thrift.protocol.TType.MAP) {
+            {
+              org.apache.thrift.protocol.TMap _map83 = iprot.readMapBegin();
+              this.cpuTimes = new HashMap<String,CpuTime>(2*_map83.size);
+              for (int _i84 = 0; _i84 < _map83.size; ++_i84)
+              {
+                String _key85;
+                CpuTime _val86;
+                _key85 = iprot.readString();
+                _val86 = new CpuTime();
+                _val86.read(iprot);
+                this.cpuTimes.put(_key85, _val86);
+              }
+              iprot.readMapEnd();
+            }
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // CPU_TIME
-          if (field.type == org.apache.thrift.protocol.TType.I64) {
-            this.cpuTime = iprot.readI64();
-            setCpuTimeIsSet(true);
+        case 3: // COMPLETE_SHARDS
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
+            this.completeShards = iprot.readI32();
+            setCompleteShardsIsSet(true);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // COMPLETE
-          if (field.type == org.apache.thrift.protocol.TType.DOUBLE) {
-            this.complete = iprot.readDouble();
-            setCompleteIsSet(true);
+        case 4: // TOTAL_SHARDS
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
+            this.totalShards = iprot.readI32();
+            setTotalShardsIsSet(true);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5: // RUNNING
-          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
-            this.running = iprot.readBool();
-            setRunningIsSet(true);
+        case 5: // STATE
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
+            this.state = QueryState.findByValue(iprot.readI32());
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 6: // INTERRUPTED
-          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
-            this.interrupted = iprot.readBool();
-            setInterruptedIsSet(true);
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 7: // UUID
+        case 6: // UUID
           if (field.type == org.apache.thrift.protocol.TType.I64) {
             this.uuid = iprot.readI64();
             setUuidIsSet(true);
@@ -741,21 +716,30 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
       this.query.write(oprot);
       oprot.writeFieldEnd();
     }
-    oprot.writeFieldBegin(REAL_TIME_FIELD_DESC);
-    oprot.writeI64(this.realTime);
+    if (this.cpuTimes != null) {
+      oprot.writeFieldBegin(CPU_TIMES_FIELD_DESC);
+      {
+        oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, this.cpuTimes.size()));
+        for (Map.Entry<String, CpuTime> _iter87 : this.cpuTimes.entrySet())
+        {
+          oprot.writeString(_iter87.getKey());
+          _iter87.getValue().write(oprot);
+        }
+        oprot.writeMapEnd();
+      }
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldBegin(COMPLETE_SHARDS_FIELD_DESC);
+    oprot.writeI32(this.completeShards);
     oprot.writeFieldEnd();
-    oprot.writeFieldBegin(CPU_TIME_FIELD_DESC);
-    oprot.writeI64(this.cpuTime);
+    oprot.writeFieldBegin(TOTAL_SHARDS_FIELD_DESC);
+    oprot.writeI32(this.totalShards);
     oprot.writeFieldEnd();
-    oprot.writeFieldBegin(COMPLETE_FIELD_DESC);
-    oprot.writeDouble(this.complete);
-    oprot.writeFieldEnd();
-    oprot.writeFieldBegin(RUNNING_FIELD_DESC);
-    oprot.writeBool(this.running);
-    oprot.writeFieldEnd();
-    oprot.writeFieldBegin(INTERRUPTED_FIELD_DESC);
-    oprot.writeBool(this.interrupted);
-    oprot.writeFieldEnd();
+    if (this.state != null) {
+      oprot.writeFieldBegin(STATE_FIELD_DESC);
+      oprot.writeI32(this.state.getValue());
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldBegin(UUID_FIELD_DESC);
     oprot.writeI64(this.uuid);
     oprot.writeFieldEnd();
@@ -776,24 +760,28 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("realTime:");
-    sb.append(this.realTime);
+    sb.append("cpuTimes:");
+    if (this.cpuTimes == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.cpuTimes);
+    }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("cpuTime:");
-    sb.append(this.cpuTime);
+    sb.append("completeShards:");
+    sb.append(this.completeShards);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("complete:");
-    sb.append(this.complete);
+    sb.append("totalShards:");
+    sb.append(this.totalShards);
     first = false;
     if (!first) sb.append(", ");
-    sb.append("running:");
-    sb.append(this.running);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("interrupted:");
-    sb.append(this.interrupted);
+    sb.append("state:");
+    if (this.state == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.state);
+    }
     first = false;
     if (!first) sb.append(", ");
     sb.append("uuid:");

@@ -83,11 +83,11 @@ public class TableCollector {
 					if (existingTable.isEmpty()) {
 						//New Table
 						jdbc.update("insert into blur_tables (table_name, status, table_uri, table_analyzer, table_schema, server) values (?, ?, ?, ?, ?, ?)", 
-								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, shardServerString, schemaString});
+								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
 					} else {
 						//Update Table
 						jdbc.update("update blur_tables set status=?, table_uri=?, table_analyzer=?, table_schema=?, server=? where table_name=?", 
-								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, shardServerString, schemaString});
+								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
 					}
 				}
 				

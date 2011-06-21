@@ -3,7 +3,6 @@ package com.nearinfinity.agent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.sql.DriverManager;
@@ -35,9 +34,6 @@ public class Agent {
 		    pidOut.close();
 		} catch (FileNotFoundException e) {
 			System.out.println("Unable to find pid file. " + e.getMessage());
-			System.exit(1);
-		} catch (IOException e) {
-			System.out.println("Unable to write to pid file. " + e.getMessage());
 			System.exit(1);
 		}
 		

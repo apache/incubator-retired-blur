@@ -44,6 +44,7 @@ import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
+import com.nearinfinity.blur.manager.stats.MergerTableStats;
 import com.nearinfinity.blur.manager.status.MergerQueryStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
@@ -57,6 +58,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
@@ -174,6 +176,23 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get current searches [{0}]", e, table);
             throw new BException("Unknown error while trying to get current searches [{0}]", e, table);
+        }
+    }
+    
+    @Override
+    public TableStats getTableStats(final String table) throws BlurException, TException {
+    	try {
+    		return scatterGather(new BlurCommand<TableStats>() {
+
+				@Override
+				public TableStats call(Client client) throws Exception {
+					return client.getTableStats(table);
+				}
+    			
+    		}, new MergerTableStats());
+    	} catch (Exception e) {
+            LOG.error("Unknown error while trying to get table stats [{0}]", e, table);
+            throw new BException("Unknown error while trying to get table stats [{0}]", e, table);
         }
     }
 

@@ -1,7 +1,6 @@
 namespace java com.nearinfinity.blur.thrift.generated
 namespace rb blur
 
-
 exception BlurException {
   1:string message,
   2:string stackTraceStr
@@ -142,14 +141,24 @@ struct TableDescriptor {
   6:i32 compressionBlockSize
 }
 
+enum QueryState {
+  RUNNING,
+  INTERRUPTED,
+  COMPLETE
+}
+
+struct CpuTime {
+  1:i64 cpuTime,
+  2:i64 realTime
+}
+
 struct BlurQueryStatus {
   1:BlurQuery query,
-  2:i64 realTime,
-  3:i64 cpuTime,
-  4:double complete,
-  5:bool running,
-  6:bool interrupted,
-  7:i64 uuid
+  2:map<string,CpuTime> cpuTimes,
+  3:i32 completeShards,
+  4:i32 totalShards,
+  5:QueryState state,
+  6:i64 uuid
 }
 
 struct Schema {
@@ -183,6 +192,14 @@ struct RowMutation {
   3:list<RecordMutation> recordMutations
 }
 
+struct TableStats {
+  1:string tableName,
+  2:i64 bytes,
+  3:i64 recordCount,
+  4:i64 rowCount,
+  5:i64 queries
+}
+
 service Blur {
   list<string> shardServerList() throws (1:BlurException ex)
   list<string> controllerServerList() throws (1:BlurException ex)
@@ -198,6 +215,7 @@ service Blur {
   BlurQuerySuggestions querySuggestions(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
 
   Schema schema(1:string table) throws (1:BlurException ex)
+  TableStats getTableStats(1:string table) throws (1:BlurException ex)
   list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)
   i64 recordFrequency(1:string table, 2:string columnFamily, 3:string columnName, 4:string value) throws (1:BlurException ex)
 

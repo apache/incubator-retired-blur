@@ -15,6 +15,14 @@ module Blur
       VALID_VALUES = Set.new([SUPER, AGGREGATE, BEST, CONSTANT]).freeze
     end
 
+    module QueryState
+      RUNNING = 0
+      INTERRUPTED = 1
+      COMPLETE = 2
+      VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE"}
+      VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE]).freeze
+    end
+
     module RecordMutationType
       DELETE_ENTIRE_RECORD = 0
       REPLACE_ENTIRE_RECORD = 1
@@ -453,29 +461,48 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    class CpuTime
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      CPUTIME = 1
+      REALTIME = 2
+
+      FIELDS = {
+        CPUTIME => {:type => ::Thrift::Types::I64, :name => 'cpuTime'},
+        REALTIME => {:type => ::Thrift::Types::I64, :name => 'realTime'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
     class BlurQueryStatus
       include ::Thrift::Struct, ::Thrift::Struct_Union
       QUERY = 1
-      REALTIME = 2
-      CPUTIME = 3
-      COMPLETE = 4
-      RUNNING = 5
-      INTERRUPTED = 6
-      UUID = 7
+      CPUTIMES = 2
+      COMPLETESHARDS = 3
+      TOTALSHARDS = 4
+      STATE = 5
+      UUID = 6
 
       FIELDS = {
         QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => Blur::BlurQuery},
-        REALTIME => {:type => ::Thrift::Types::I64, :name => 'realTime'},
-        CPUTIME => {:type => ::Thrift::Types::I64, :name => 'cpuTime'},
-        COMPLETE => {:type => ::Thrift::Types::DOUBLE, :name => 'complete'},
-        RUNNING => {:type => ::Thrift::Types::BOOL, :name => 'running'},
-        INTERRUPTED => {:type => ::Thrift::Types::BOOL, :name => 'interrupted'},
+        CPUTIMES => {:type => ::Thrift::Types::MAP, :name => 'cpuTimes', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::CpuTime}},
+        COMPLETESHARDS => {:type => ::Thrift::Types::I32, :name => 'completeShards'},
+        TOTALSHARDS => {:type => ::Thrift::Types::I32, :name => 'totalShards'},
+        STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => Blur::QueryState},
         UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'}
       }
 
       def struct_fields; FIELDS; end
 
       def validate
+        unless @state.nil? || Blur::QueryState::VALID_VALUES.include?(@state)
+          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+        end
       end
 
       ::Thrift::Struct.generate_accessors self
@@ -542,6 +569,30 @@ module Blur
         unless @rowMutationType.nil? || Blur::RowMutationType::VALID_VALUES.include?(@rowMutationType)
           raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field rowMutationType!')
         end
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TableStats
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLENAME = 1
+      BYTES = 2
+      RECORDCOUNT = 3
+      ROWCOUNT = 4
+      QUERIES = 5
+
+      FIELDS = {
+        TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+        BYTES => {:type => ::Thrift::Types::I64, :name => 'bytes'},
+        RECORDCOUNT => {:type => ::Thrift::Types::I64, :name => 'recordCount'},
+        ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'},
+        QUERIES => {:type => ::Thrift::Types::I64, :name => 'queries'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
       end
 
       ::Thrift::Struct.generate_accessors self

@@ -276,6 +276,11 @@ public class DistributedIndexServerTest {
             list.removeAll(getOfflineShardServers());
             return list;
         }
+
+		@Override
+		public long getTableSize(String table) throws IOException {
+			throw new RuntimeException("no impl");
+		}
         
         
     }

@@ -515,14 +515,14 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
         case 4: // RECORD
           if (field.type == org.apache.thrift.protocol.TType.SET) {
             {
-              org.apache.thrift.protocol.TSet _set92 = iprot.readSetBegin();
-              this.record = new HashSet<Column>(2*_set92.size);
-              for (int _i93 = 0; _i93 < _set92.size; ++_i93)
+              org.apache.thrift.protocol.TSet _set97 = iprot.readSetBegin();
+              this.record = new HashSet<Column>(2*_set97.size);
+              for (int _i98 = 0; _i98 < _set97.size; ++_i98)
               {
-                Column _elem94;
-                _elem94 = new Column();
-                _elem94.read(iprot);
-                this.record.add(_elem94);
+                Column _elem99;
+                _elem99 = new Column();
+                _elem99.read(iprot);
+                this.record.add(_elem99);
               }
               iprot.readSetEnd();
             }
@@ -564,9 +564,9 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       oprot.writeFieldBegin(RECORD_FIELD_DESC);
       {
         oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, this.record.size()));
-        for (Column _iter95 : this.record)
+        for (Column _iter100 : this.record)
         {
-          _iter95.write(oprot);
+          _iter100.write(oprot);
         }
         oprot.writeSetEnd();
       }

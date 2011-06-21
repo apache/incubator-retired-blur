@@ -16,6 +16,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public interface IfaceExtended extends Iface {
@@ -25,6 +26,8 @@ public interface IfaceExtended extends Iface {
     List<String> controllerServerList(ExecutionContext context) throws BlurException, TException;
 
     List<BlurQueryStatus> currentQueries(ExecutionContext context, String table) throws BlurException, TException;
+    
+    TableStats getTableStats(ExecutionContext context, String table) throws BlurException, TException;
 
     TableDescriptor describe(ExecutionContext context, String table) throws BlurException, TException;
 

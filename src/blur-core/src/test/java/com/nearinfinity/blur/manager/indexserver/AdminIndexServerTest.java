@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
+import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
@@ -54,7 +55,12 @@ public class AdminIndexServerTest {
         adminIndexServer.setDynamicConfig(dynamicConfig);
         adminIndexServer.init();
     }
-
+    
+    @Test
+    public void testNothing() {
+    	
+    }
+    
 //    @Test
     public void testAdminIndexServerTableList() {
         assertTrue(adminIndexServer.getTableList().isEmpty());
@@ -137,6 +143,11 @@ public class AdminIndexServerTest {
             protected void tableStatusChanged(String table) {
                 throw new RuntimeException();
             }
+
+			@Override
+			public long getTableSize(String table) throws IOException {
+				throw new RuntimeException();
+			}
         };
     }
 }

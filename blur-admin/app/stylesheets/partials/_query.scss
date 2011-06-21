@@ -1,19 +1,19 @@
 textarea#q {
   width: 50%;
-  height: 30px;
+  height: 32px;
 }
 textarea#a {
   margin-left: 5px;
   width: 50%;
-  height:15px;
+  height:16px;
 }
 
 table {
 	table-layout: strict;
 	width: 100%;
-        
 	empty-cells: show;
-	border-spacing: 1px;
+
+        display: inline-block;
 	margin-bottom: 0;
 	thead {
 		th {
@@ -53,7 +53,7 @@ table {
   color: #555;
   font-weight: bold;
   font-size: 200%;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
 }
 
 #query-page{
@@ -118,14 +118,21 @@ b{
 
 #filter_section{
   width: 20%;
-  float: left;
+  float: left;display: inline-block;
 }
 
-#query_section{
-  width: 80%;
-
+#bar_section{ 
+  width: 6px;
+  background-color : #eee;
+  display: inline-block;
+  height: 99%;
 }
+
+.full-page{ width: 98%; display: inline-block;}
+.partial-page{ width: 77%; display: inline-block; float: right;}
 
 select#r{ margin-left: 5px; }
 
 .query-input{ vertical-align: top; }
+
+#showfilters{ display: none; }

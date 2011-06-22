@@ -1,4 +1,21 @@
 $(document).ready ->
+  # Ajax request handling for delete
+  $('form.delete')
+    .live('ajax:beforeSend', (evt, xhr, settings) ->
+      console.log "beforeSend"
+      $(this).find('input[type=submit]').attr('disabled', 'disabled')
+    ).live('ajax:complete', (evt, xhr, status) ->
+      $(this).find('input[type=submit]').removeAttr('disabled')
+    ).live('ajax:success', (evt, data, status, xhr) ->
+      id = $(this).closest('tr').attr('id')
+      $(this).closest('tr').siblings('#' + id).remove()
+      $(this).closest('tr').remove()
+    ).live('ajax:error', (evt, xhr, status, error) ->
+      console.log "error"
+    ).live('submit', ->
+      console.log "Submit"
+    )
+
 
   # Function to enable/disable a table
   update_table = (table_name, enabled) ->

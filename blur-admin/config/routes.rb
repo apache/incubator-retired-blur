@@ -12,17 +12,6 @@ BlurAdmin::Application.routes.draw do
     match 'search/:table/filters', :to => :filters, :as => :search_filters, :via => :get
   end
 
-  controller "data" do
-    match 'blur_tables/:id', :to => :update, :as => :update_table, :via => :put
-    match 'blur_tables/:id', :to => :destroy, :as => :delete_table, :via => :delete
-  end
-
-  controller :blur_queries do
-    match 'blur_queries/:table/:uuid', :to => :update, :as => :update, :via => :put
-    match 'blur_queries/queries/:uuid', :to => :info, :via => :get
-    match 'blur_queries/:id/:time', :to => :index, :via => :get
-  end
-
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
 

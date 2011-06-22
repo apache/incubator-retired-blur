@@ -1,30 +1,26 @@
 class BlurTablesController < ApplicationController
-  before_filter :table_name, :only => [:update, :destroy]
-
   def index
     @blur_tables = BlurTable.all
   end
 
   def update
-    enabled = params[:enabled]
-    table = BlurTable.find_by_table_name(table_name)
-    if enabled == 'true'
-      result = table.enable
-    elsif enabled == 'false'
-      result = table.disable
+    @blur_table = BlurTable.find(params[:id])
+    if params[:enable]
+      result = @blur_table.enable
+    elsif params[:disable]
+      result = @blur_table.disable
     end
 
-    render :json => result
+    respond_to do |format|
+      format.js { render :partial => 'blur_table' }
+    end
   end
 
   def destroy
-    table = BlurTable.find_by_table_name(table_name)
+    table = BlurTable.find(params[:id])
     result = table.destroy params[:underlying]
-    render :json => result
-  end
-  
-  protected
-  def table_name
-    table_name = params[:id]
+    respond_to do |format|
+      format.js  { render :nothing => true }
+    end
   end
 end

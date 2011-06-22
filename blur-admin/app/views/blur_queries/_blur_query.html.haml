@@ -1,21 +1,21 @@
 - empty_message = 'Not Available'
 %tr{:id => blur_query.id}
-  %td
+  %td.userid
     - if blur_query.userid
       = blur_query.userid
     - else
       = empty_message
-  %td{:class => "query-string", :title => blur_query.query_string}
+  %td{:class => "query_string", :title => blur_query.query_string}
     - if blur_query.query_string
       = truncate(blur_query.query_string, :length => 20, :ommision => "...")
     - else
       =empty_message
-  %td
+  %td.start
     - if blur_query.start
       = blur_query.start
     - else
       =empty_message
-  %td
+  %td.fetch_num
     - if blur_query.fetch_num
       = blur_query.fetch_num
     - else
@@ -35,5 +35,5 @@
       - if blur_query.running
         = form_tag "/blur_queries/#{blur_query.id}", :method => 'put', :remote => true, :id => blur_query.id do
           = submit_tag 'Cancel', :name => 'cancel', :confirm => "Are you sure?"
-  %td
+  %td.info
     = link_to "More Info", blur_query, :remote => true

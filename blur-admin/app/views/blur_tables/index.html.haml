@@ -1,6 +1,6 @@
 - content_for :title, 'Data'
 - content_for :javascript do
-  =javascript_include_tag 'jquery.jstree','compiled/data'
+  =javascript_include_tag 'jquery.jstree','compiled/blur_tables'
 
 #data-dtables
   #dtables-title
@@ -14,14 +14,10 @@
       %th Size
       %th Queries/Second
       %th Enabled
-      - if can? :destroy, :data
-        - col_span = 7
-        %th Actions
-      - else
-        - col_span = 6
+      %th Actions
 
     -@blur_tables.each do |table|
-      %tr.tr-underline{:id => table.table_name}
+      %tr.tr-underline{:id => "blur_table_#{table.id}"}
         %td
           %b
             name:
@@ -53,22 +49,32 @@
           - else
             Not Available
         %td
-          - if can? :update, :data  
-            = check_box_tag '', "1", table.is_enabled?, :class=>'enable', :table_name => table.table_name    
-          -else 
-            =table.is_enabled?        
-        - if can? :delete, :data  
-          %td
-            = submit_tag 'delete', :class=>'delete-table', :table_name => table.table_name
-      %tr{:id => table.table_name}
-        %td{:colspan => col_span}
+          - if table.is_enabled?
+            Enabled
+          - else
+            Disabled
+        %td
+          - if can? :delete, :data
+            - if !table.is_enabled?
+              = form_tag "/blur_tables/#{table.id}", :class => 'delete', :method => :delete, :remote => true do
+                = submit_tag 'delete', :confirm => "Are you sure?"
+          - if can? :update, :data
+            = form_tag "/blur_tables/#{table.id}", :class => 'update', :method => :put, :remote => true do
+              - if table.is_enabled?
+                = hidden_field_tag 'enable', true
+                = submit_tag 'Enable', :confirm => "Are you sure?"
+              - else
+                = hidden_field_tag 'disable', true
+                = submit_tag 'Disable', :confirm => "Are you sure?"
+      %tr{:id => "blur_table_#{table.id}"}
+        %td{:colspan => 7}
           %b location:
           - if table.table_uri
             = table.table_uri
           - else
             Not Available
-      %tr.tr-underline{:id => table.table_name}
-        %td{:colspan => col_span}
+      %tr.tr-underline{:id => "blur_table_#{table.id}"}
+        %td{:colspan => 7}
           %b definition:
           - if table.table_schema
             .table-def

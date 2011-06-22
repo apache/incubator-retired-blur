@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.0.7'
+gem 'rails', '3.0.9'
 
 gem 'sqlite3'
 gem 'mysql'
@@ -22,4 +22,5 @@ group :development, :test do
 	gem 'metric_fu'
 	gem 'cover_me'
   gem 'nifty-generators'
+  gem 'rails-erd'
 end

@@ -1,3 +1,15 @@
 :plain
-  $("#{escape_javascript(render 'show')}").dialog({modal: true, draggable: false, resizable: false, title: "Additional Info", width: "50%", position: "top"})
-
+  $("#{escape_javascript(render 'show')}").dialog({
+    modal: true,
+    draggable: false,
+    resizable: false,
+    title: "Additional Info",
+    close: function(event, ui) {
+      $(this).remove();
+    },
+    open: function(event, ui) {
+      $('.ui-widget-overlay').bind('click', function(){
+        $('#more-info-table').dialog('close');
+      });
+    }
+  })

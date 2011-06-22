@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110621230340) do
+ActiveRecord::Schema.define(:version => 20110622025021) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -49,10 +49,8 @@ ActiveRecord::Schema.define(:version => 20110621230340) do
   end
 
   create_table "blur_zookeeper_instances", :force => true do |t|
-    t.string   "host"
-    t.string   "port"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string "url"
+    t.string "name"
   end
 
   create_table "clusters", :force => true do |t|

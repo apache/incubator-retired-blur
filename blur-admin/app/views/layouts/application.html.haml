@@ -41,7 +41,7 @@
             = link_to 'Runtime', runtime_path
 
           %li{:class => controller == 'query' && 'active', :id => "left"}
-            = link_to 'Query', query_path
+            = link_to 'Search', query_path
           
           - if can? :index, :users
             %li{:class => controller == 'users' && 'active', :id=> "left"}
@@ -52,7 +52,6 @@
           #bd
             #bd-pad
               = yield
-      #root-footer
     #ft
       .container
         Connected to blur04

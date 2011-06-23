@@ -1,18 +1,18 @@
 - if @results and not @results.empty?
   #results_info.partial-results
-    Results:
-    = @result_count
-    %a{:title => "Full Screen", :href => "#ui-dialog", :id => "fullscreen"} Full Screen
+    = "#{@result_count} results found in #{@result_time} ms"
   #results_section.partial-results
     %table#result_table.result_table.tableWithFloatingHeader
       %thead
         %tr
+          %th
           %th
           - @all_columns.each do |family, set|
             %th{:colspan => set.count}
               = family
         %tr.columnsets
           %th id
+          %th record id
           - @all_columns.each do |family, set|
             - set.each do |s|
               %th
@@ -25,6 +25,8 @@
                 - if i == 0
                   %td{:rowspan => result[:max_record_count]}
                     = result[:id]
+                  %td{:rowspan => result[:max_record_count]}
+                    = result[:recordid]
 
                 - reset_cycle('column-cycle')
                 - table_row.each do |cfs|

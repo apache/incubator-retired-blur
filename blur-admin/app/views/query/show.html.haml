@@ -5,6 +5,8 @@
 #query-page
   = form_tag query_path, :method => 'post', :id=>'query_form', :remote => true do
     #filter_section.half-section
+      .filter-title
+        =label_tag :f, "Filters:"
       .partial-section
         = label_tag :t, "Table:"
         = select_tag :t, options_for_select(@tables)
@@ -17,7 +19,7 @@
         .column-title
           %a{:title => "Check All", :href => '#', :id => 'checkall'} Check All
           %a{:title => "Uncheck All", :href => '#', :id => "uncheckall"} Uncheck All
-        #filter_columns
+        #filter_columns{:style=>'display:none'}
           = render 'filters'
       .partial-section
         = label_tag :r, 'Fetch:'
@@ -27,8 +29,8 @@
         = text_area_tag :a, 0
       .partial-section
         = submit_tag "Search", :disabled => true, :id => "search_submit"
-      .partial-section
-        %a{:title => "Hide Filters", :href => '#', :id => "hidefilters"} Hide Filters
+    #bar_section{:style=>'display:none'}
+      %img{:id => "arrow", :class => 'ui-icon ui-icon-triangle-1-w'}
     #query_section.half-section.partial-page
       #search_section
         .query-title
@@ -38,6 +40,4 @@
         .query-input
           = text_area_tag :q, params[:q]
           %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :hidden => true}
-        .partial-section
-          %a{:title => "Show Filters", :href => '#', :id => "showfilters"} Show Filters
       #results_container.partial-results

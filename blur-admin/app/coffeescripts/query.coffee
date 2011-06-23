@@ -1,6 +1,5 @@
 $(document).ready ->
   # Function to initialize the filter tree
-  #$('#filter_columns').hide()
   setup_filter_tree = () ->
     $('.column_family_filter').jstree({
       plugins: ["themes", "html_data", "checkbox", "sort", "ui"],
@@ -15,6 +14,19 @@ $(document).ready ->
           ['column_data[]', n[0].id]
       }
     })
+    $('.column_family_filter').bind("loaded.jstree", ->
+      $('#filter_columns').show()
+      $('#bar_section').css('min-height', $('#filter_section').height() + 20 )
+      $('#bar_section').show()
+    )
+
+  # Setup the filters onload
+  setup_filter_tree()
+
+  # Reload the filters when the table selector is changed
+  $('#t').change ->
+    $('#filter_columns').hide()
+    $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
@@ -22,11 +34,6 @@ $(document).ready ->
       $(':submit').removeAttr('disabled')
     else
       $(':submit').attr('disabled', 'disabled')
-
-  # Reload the filters when the table selector is changed
-  $('#t').change ->
-    $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
-  $('#filter_columns').load('query/' + $('#t').val() + '/filters', setup_filter_tree)
 
   # Functionality for ajax success
   $('#query_form').bind('ajax:success', (evt, data, status)-> 
@@ -39,9 +46,10 @@ $(document).ready ->
       #hides number of results option if there are no results
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
+
     #hide the loading image
     $('#loading-spinner').hide()
-
+    $('#bar_section').css('height', $('#query_section').height() )
     true
   )
 
@@ -58,6 +66,7 @@ $(document).ready ->
     #hides number of results option if there are no results
     $('#results_container').html(error_content)
     $('#loading-spinner').hide()
+    $('#bar_section').css('height', $('#query_section').height() )
     true
   )
 
@@ -77,28 +86,19 @@ $(document).ready ->
      $('.jstree-undetermined').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').removeAttr('checked')
 
-  # Functionality for displaying results in a lightbox
-  table_screen = () ->
-  	win_height = $(window).height() * .9
-  	win_width = $(window).width() * .9
-  	table_name = $("#t option:selected").val()
-  	table_name = "Results for query on " + table_name
-  	$('<div id="full_screen_dialog">' + $('#results_section').html() + '</div>').dialog({height: win_height, width: win_width, modal: true, draggable: false, resizable: false, title: table_name, close: (event, ui) -> $("#full_screen_dialog").remove() })
-
   #Live Listeners for this document
   #listeners for check all and uncheck all
   $('#checkall').live('click', -> check_all())
   $('#uncheckall').live('click', -> uncheck_all())
-  $('#fullscreen').live('click', -> table_screen())
+
   #Disable submit button when no text in input
   $('#q').live("keyup", (name) ->
-    #toggle_submit()
     if name.keyCode == 13 && !name.shiftKey
       if $(':submit').attr('disabled')
         error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
         $('#results_container').html(error_content)
+        $('#bar_section').css('height', $('#query_section').height() )
       else
-        name.preventDefault()
         $('#query_form').submit()
         $('#loading-spinner').show()
     else
@@ -109,17 +109,19 @@ $(document).ready ->
 
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
-  $('#hidefilters').live('click', ->
-    $('#filter_section').hide(1000, ->
-      $('#query_section').removeClass('partial-page')
-      $('#query_section').addClass('full-page')
-      $('#showfilters').show()
-    )
-  )
-
-  $('#showfilters').live('click', ->
-    $('#query_section').addClass('partial-page')
-    $('#query_section').removeClass('full-page')
-    $('#filter_section').show('blind', { direction: "horizontal" }, 1000)
-    $('#showfilters').hide()
+  $('#bar_section').live('click', ->
+    if $('#query_section').is('.partial-page')
+      $('#filter_section').hide(1000, ->
+        $('#query_section').removeClass('partial-page')
+        $('#query_section').addClass('full-page')
+        $('#arrow').removeClass('ui-icon-triangle-1-w')
+        $('#arrow').addClass('ui-icon-triangle-1-e')
+      )
+    else
+      $('#query_section').addClass('partial-page')
+      $('#query_section').removeClass('full-page')
+      $('#filter_section').show('blind', { direction: "horizontal" }, 1000, ->
+        $('#arrow').removeClass('ui-icon-triangle-1-e')
+        $('#arrow').addClass('ui-icon-triangle-1-w')
+      )
   )

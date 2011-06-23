@@ -49,7 +49,9 @@ class QueryController < ApplicationController
     visible_families = (families + columns.keys).uniq
     @results = []
     @result_count = blur_results.totalResults
+    @result_time = blur_results.realTime
     blur_results.results.each do |result|
+      record_id = result.fetchResult.recordResult
       row = result.fetchResult.rowResult.row
       max_record_count = row.columnFamilies.collect {|cf| cf.records.keys.count }.max
 
@@ -92,7 +94,7 @@ class QueryController < ApplicationController
         end
       end
 
-      record = {:id => row.id, :max_record_count => max_record_count, :row => row, :table_rows => table_rows}
+      record = {:id => row.id, :recordid => record_id, :max_record_count => max_record_count, :row => row, :table_rows => table_rows}
       
       @results << record
     end

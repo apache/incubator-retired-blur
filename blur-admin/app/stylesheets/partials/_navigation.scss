@@ -7,10 +7,6 @@
   }
 }
 
-#root {
-	overflow: hidden;
-}
-
 #bd_background {
 	background: white image-url('background-gradient.png') repeat-x top left;
 }
@@ -19,13 +15,19 @@
 	margin-top: -5px;
 }
 
+html,body{ height: 100%; }
+
+#root{ height: 100%; }
+
 #bd {
+  overflow: auto;
   margin: 0 auto 0;
   background-image: image-url('left-shadow.png'), image-url('right-shadow.png');
   background-repeat: no-repeat;
   background-position: 0px 1px, right 1px;
   #bd-pad {
     margin: 0 27px;
+                overflow: auto;
 		padding: 1em;
 		background: white;
 		@include min-height(image-height('left-shadow.png') + 10px);

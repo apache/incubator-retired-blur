@@ -16,6 +16,10 @@ BlurAdmin::Application.routes.draw do
     match 'blur_tables/:id/schema', :to => :schema, :via => :get
   end
 
+  controller :blur_queries do
+    match 'blur_queries/:id/more_info', :to => :more_info, :via => :get
+  end
+
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
 

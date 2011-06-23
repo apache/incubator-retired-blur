@@ -1,30 +1,22 @@
 class BlurQueriesController < ApplicationController
-  def show
-    @blur_query = BlurQuery.find(params[:id])
-
-    respond_to do |format|
-      format.js
-    end
-  end
-
 
   def index
     filters = {}
-
-    # add filters for columns
+    # filters for columns
     [:blur_table_id, :super_query_on].each do |category|
       filters[category] = params[category] unless params[category] == nil or params[category] == ''
     end
-    
-    # add filter for time
+    # filter for time
     past_time = params[:time] ? Time.zone.now - params[:time].to_i.minutes : Time.zone.now - 1.minutes
     filters[:created_at] = past_time..Time.zone.now
-
     @blur_tables = BlurTable.all
     @blur_queries = BlurQuery.where filters
     respond_to do |format|
-      format.html
-      format.js
+      format.html do
+        if request.xhr?
+          render :partial => 'query_table'
+        end
+      end
     end
   end
 
@@ -34,7 +26,14 @@ class BlurQueriesController < ApplicationController
       @blur_query.cancel
     end
     respond_to do |format|
-      format.js
+      format.html {render :partial => 'blur_query', :locals => { :blur_query => @blur_query }}
+    end
+  end
+
+  def more_info
+    @blur_query = BlurQuery.find(params[:id])
+    respond_to do |format|
+      format.html {render :partial => 'more_info', :locals => {:blur_query => @blur_query}}
     end
   end
 end

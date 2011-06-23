@@ -33,7 +33,7 @@
   - if can? :update, :runtime
     %td
       - if blur_query.running
-        = form_tag "/blur_queries/#{blur_query.id}", :method => 'put', :remote => true, :id => blur_query.id do
+        = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do
           = submit_tag 'Cancel', :name => 'cancel', :confirm => "Are you sure?"
   %td.info
-    = link_to "More Info", blur_query, :remote => true
+    = link_to "More Info", "/blur_queries/#{blur_query.id}/more_info", :class => 'more_info', :remote => true

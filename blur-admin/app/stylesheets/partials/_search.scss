@@ -1,4 +1,4 @@
-#query-page{
+#search-page{
   color: #555;
   font-weight: bold;
   margin-top: 5px;
@@ -16,7 +16,7 @@
 .full-page{ width: 98%; }
 .partial-page{ width: 80%; }
 
-#query_form{ height: 100%; }
+#search_form{ height: 100%; }
 
 #filter_section{
   width: 18%;
@@ -84,7 +84,7 @@ table {
   }
 }
 
-.query-title{
+.search-title{
   display: inline-block;
   color: #555;
   font-weight: bold;
@@ -141,7 +141,7 @@ b{ font-weight:bold; }
 
 select#r{ margin-left: 5px; }
 
-.query-input{ vertical-align: top; }
+.search-input{ vertical-align: top; }
 
 #search_submit{
   float: right;

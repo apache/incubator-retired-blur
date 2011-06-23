@@ -28,7 +28,7 @@ describe Ability do
     it "can not view pages" do
       @ability.should_not be_able_to :access, :data
       @ability.should_not be_able_to :access, :env
-      @ability.should_not be_able_to :access, :query
+      @ability.should_not be_able_to :access, :search
       @ability.should_not be_able_to :access, :runtime
     end
   end
@@ -45,7 +45,7 @@ describe Ability do
     it "can view pages" do
       @ability.should be_able_to :show, :data
       @ability.should be_able_to :show, :env
-      @ability.should be_able_to :show, :query
+      @ability.should be_able_to :show, :search
       @ability.should be_able_to :show, :runtime
       @ability.should be_able_to :info, :runtime
     end
@@ -69,8 +69,8 @@ describe Ability do
     end
 
     it "can perform queries" do
-      @ability.should be_able_to :filters, :query
-      @ability.should be_able_to :create, :query
+      @ability.should be_able_to :filters, :search
+      @ability.should be_able_to :create, :search
     end
 
     it "can not create a new user or session" do

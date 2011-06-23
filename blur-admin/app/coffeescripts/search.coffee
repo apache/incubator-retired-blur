@@ -26,7 +26,7 @@ $(document).ready ->
   # Reload the filters when the table selector is changed
   $('#t').change ->
     $('#filter_columns').hide()
-    $('#filter_columns').load('query/' + $(this).val() + '/filters', setup_filter_tree)
+    $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
@@ -36,7 +36,7 @@ $(document).ready ->
       $(':submit').attr('disabled', 'disabled')
 
   # Functionality for ajax success
-  $('#query_form').bind('ajax:success', (evt, data, status)-> 
+  $('#search_form').bind('ajax:success', (evt, data, status)->
     if(data)
       #shows number of results option if there are results
       #If data is returned properly process it
@@ -59,7 +59,7 @@ $(document).ready ->
   )
   
   # Error message associated with ajax errors
-  $('#query_form').bind('ajax:error', (evt, data, status)->
+  $('#search_form').bind('ajax:error', (evt, data, status)->
     response = data.responseText
     matches = response.replace(/\n/g,'<br/>').match(/<pre>(.*?)<\/pre>/i)
     error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
@@ -99,7 +99,7 @@ $(document).ready ->
         $('#results_container').html(error_content)
         $('#bar_section').css('height', $('#query_section').height() )
       else
-        $('#query_form').submit()
+        $('#search_form').submit()
         $('#loading-spinner').show()
     else
       toggle_submit()

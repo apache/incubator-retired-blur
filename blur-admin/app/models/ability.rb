@@ -5,7 +5,7 @@ class Ability
 
     if user # logged in
       # view pages
-      can :show, [:data, :env, :query, :runtime]
+      can :show, [:data, :env, :search, :runtime]
 
       # view, edit, and destroy own account
       can [:show, :edit, :destroy], :users, :id => user.id
@@ -16,8 +16,8 @@ class Ability
       # logout
       can :destroy, :user_sessions
 
-      # query
-      can [:filters, :create], :query
+      # search
+      can [:filters, :create], :search
 
       # view more info on runtime
       can :info, :runtime

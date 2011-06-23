@@ -3,13 +3,13 @@ BlurAdmin::Application.routes.draw do
 
   resource :data
   resource :runtime, :controller => 'runtime'
-	resource :query, :controller => 'query'
+	resource :search, :controller => 'search'
 	resource :env, :controller => 'env'
 
   root :to => "env#show"
 
-  controller "query" do
-    match 'query/:table/filters', :to => :filters, :as => :query_filters, :via => :get
+  controller "search" do
+    match 'search/:table/filters', :to => :filters, :as => :search_filters, :via => :get
   end
 
   controller "data" do

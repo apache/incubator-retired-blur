@@ -1,6 +1,6 @@
 require "spec_helper"
 
-describe QueryController do
+describe SearchController do
 
   before (:each) do
     @client = mock(Blur::Blur::Client)

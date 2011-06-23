@@ -1,9 +1,9 @@
--content_for :title, 'Query'
+-content_for :title, 'Search'
 -content_for :javascript do
-  =javascript_include_tag 'jquery.jstree', 'compiled/query'
+  =javascript_include_tag 'jquery.jstree', 'compiled/search'
 
-#query-page
-  = form_tag query_path, :method => 'post', :id=>'query_form', :remote => true do
+#search-page
+  = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section.half-section
       .filter-title
         =label_tag :f, "Filters:"
@@ -33,11 +33,11 @@
       %img{:id => "arrow", :class => 'ui-icon ui-icon-triangle-1-w'}
     #query_section.half-section.partial-page
       #search_section
-        .query-title
+        .search-title
           = label_tag :q, "Search:"
-        .query-input
+        .search-input
           = label_tag :q, "Query:"
-        .query-input
+        .search-input
           = text_area_tag :q, params[:q]
           %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :hidden => true}
       #results_container.partial-results

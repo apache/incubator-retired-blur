@@ -1,4 +1,4 @@
-class QueryController < ApplicationController
+class SearchController < ApplicationController
 
 	def show
 	  @tables = BlurThriftClient.client.tableList.sort!
@@ -112,6 +112,6 @@ class QueryController < ApplicationController
 
     @all_columns = families_with_columns.merge columns
 
-		render :template=>'query/create.html.haml', :layout => false
+		render :template=>'search/create.html.haml', :layout => false
 	end
 end

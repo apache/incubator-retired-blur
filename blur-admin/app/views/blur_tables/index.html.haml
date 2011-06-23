@@ -27,16 +27,3 @@
       %button#confirm-submit.ok{:type => "button"}
         Delete
 
--@blur_tables.each do |table|
-  #display.shard-info{:hidden => true, :class => table.table_name}
-    Shard Servers:
-    - if table.table_schema
-      .table-def
-        %ul
-          -table.schema.each do |host, shards|
-            %li#hosts{:id=>"#{host}"}
-              %a{:href=>'#'}= host
-              %ul
-                -shards.each do |shard|
-                  %li#shards{:id=>"#{host}_#{shard}"}
-                    %a{:href=>'#'}= shard

@@ -12,6 +12,10 @@ BlurAdmin::Application.routes.draw do
     match 'search/:table/filters', :to => :filters, :as => :search_filters, :via => :get
   end
 
+  controller "blur_tables" do
+    match 'blur_tables/:id/schema', :to => :schema, :via => :get
+  end
+
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
 
@@ -64,7 +68,7 @@ BlurAdmin::Application.routes.draw do
 
   # You can have the root of your site routed with "root"
   # just remember to delete public/index.html.
-  root :to => "main#index"
+  root :to => "env#show"
 
   # See how all your routes lay out with "rake routes"
 

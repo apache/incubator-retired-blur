@@ -5,24 +5,24 @@
     %b name:
     = blur_table.table_name
   %td
-    .blur_table_hosts
-      - if blur_table.schema
-        %a{:href=>'', :class => "host-shards"} 
-          Hosts: 
-          = blur_table.schema.length
-          Shards: 
-          = blur_table.schema.values.inject(0) {|sum, shard_list| sum + shard_list.length}
-      - else
-        = nil_message
+    - if blur_table.schema
+      = link_to "/blur_tables/#{blur_table.id}/schema", :class => 'schema', :remote => true do
+        Hosts: 
+        = blur_table.schema.length
+        Shards: 
+        = blur_table.schema.values.inject(0) {|sum, shard_list| sum + shard_list.length}
+    - else
+      = nil_message
   %td= blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
   %td= blur_table.current_size ? blur_table.current_size : nil_message
   %td= blur_table.query_usage ? number_with_delimiter(blur_table.query_usage, :delimiter => ',') : nil_message
-  %td= blur_table.is_enabled? ? "Enabdled" : "Disabled"
+  %td= blur_table.is_enabled? ? "Enabled" : "Disabled"
   %td
     - if can? :delete, :data
       - if !blur_table.is_enabled?
         = form_tag "/blur_tables/#{blur_table.id}", :class => 'delete', :method => :delete, :remote => true do
-          = submit_tag 'Delete', :confirm => "Are you sure?"
+          = hidden_field_tag :delete_index
+          = tag :input, :type => :button, :value => :Delete, :class => :delete_blur_table_button
     - if can? :update, :data
       = form_tag "/blur_tables/#{blur_table.id}", :class => 'update', :method => :put, :remote => true do
         - if !blur_table.is_enabled?

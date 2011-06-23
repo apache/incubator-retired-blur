@@ -18,9 +18,17 @@ class BlurTablesController < ApplicationController
 
   def destroy
     table = BlurTable.find(params[:id])
-    result = table.destroy params[:underlying]
+    destroy_index = params[:delete_index] == 'true'
     respond_to do |format|
       format.js  { render :nothing => true }
+    end
+  end
+
+  def schema
+    @schema = BlurTable.find(params[:id]).schema
+
+    respond_to do |format|
+      format.html { render :partial => 'schema', :locals => {:schema => @schema} }
     end
   end
 end

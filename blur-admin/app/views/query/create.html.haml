@@ -23,7 +23,7 @@
             - result[:table_rows].each_with_index do |table_row, i|
               %tr{:class => stripe_class}
                 - if i == 0
-                  %td{:rowspan => result[:max_record_count]}
+                  %td.id_cell{:rowspan => result[:max_record_count]}
                     = result[:id]
                   %td{:rowspan => result[:max_record_count]}
                     = result[:recordid]

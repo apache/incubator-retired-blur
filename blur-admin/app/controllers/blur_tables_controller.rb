@@ -17,8 +17,10 @@ class BlurTablesController < ApplicationController
   end
 
   def destroy
-    table = BlurTable.find(params[:id])
+    @blur_table = BlurTable.find(params[:id])
     destroy_index = params[:delete_index] == 'true'
+    @blur_table.destroy destroy_index
+
     respond_to do |format|
       format.js  { render :nothing => true }
     end

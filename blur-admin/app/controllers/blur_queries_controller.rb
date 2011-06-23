@@ -21,8 +21,8 @@ class BlurQueriesController < ApplicationController
   end
 
   def update
-    @blur_query = BlurQuery.find_by_id params[:id]
-    if params[:cancel]
+    @blur_query = BlurQuery.find params[:id]
+    if params[:cancel] == 'true'
       @blur_query.cancel
     end
     respond_to do |format|

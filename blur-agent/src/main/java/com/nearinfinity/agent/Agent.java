@@ -3,7 +3,6 @@ package com.nearinfinity.agent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.sql.DriverManager;
@@ -14,16 +13,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import com.nearinfinity.agent.collectors.HDFSCollector;
 import com.nearinfinity.agent.collectors.QueryCollector;
 import com.nearinfinity.agent.collectors.TableCollector;
-import com.nearinfinity.agent.listeners.ControllerListener;
+import com.nearinfinity.agent.zookeeper.ZookeeperInstance;
 
 public class Agent {
 
@@ -87,23 +83,7 @@ public class Agent {
 		for (String zkInstance : zooKeeperInstances) {
 			String zkUrl = props.getProperty("zk."+zkInstance+".url");
 			System.out.println(zkUrl);
-			initializeZkInstanceModel(zkInstance, zkUrl, jdbc);
-			
-			
-			try {
-				ZooKeeper zk = new ZooKeeper(zkUrl, 3000, new Watcher(){
-					@Override
-					public void process(WatchedEvent evt) {
-						System.out.println(evt);
-					}
-				});
-				
-				//Setup watchers for instance
-				new ControllerListener(zk, zkInstance);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			
+			new ZookeeperInstance(zkInstance, zkUrl, jdbc);
 		}
 		
 		List<String> activeCollectors = new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|")));
@@ -146,14 +126,4 @@ public class Agent {
 		
 		System.out.println("Exiting polling agent");
 	}
-	
-	private void initializeZkInstanceModel(String name, String url, JdbcTemplate jdbc) {
-		int instanceCount = jdbc.queryForInt("select count(1) from blur_zookeeper_instances where name = ?", new Object[]{name});
-		if (instanceCount == 0) {
-			jdbc.update("insert into blur_zookeeper_instances (name, url) values (?, ?)", new Object[]{name, url});
-		} else {
-			// TODO: Determine if we want to allow changing of the host and port here
-		}
-	}
-
 }

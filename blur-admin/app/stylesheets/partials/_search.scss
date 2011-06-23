@@ -27,6 +27,8 @@
 
 #bar_section{
   width: 1%;
+  height: 100%;
+  position:fixed;
   background-color: #eee;
   display: inline-block;
   cursor: pointer;
@@ -137,6 +139,7 @@ b{ font-weight:bold; }
   position: fixed;
   top: 50%;
   margin-left: -2px;
+  border:none;
 }
 
 select#r{ margin-left: 5px; }

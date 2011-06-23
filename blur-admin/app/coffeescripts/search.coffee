@@ -35,6 +35,11 @@ $(document).ready ->
     else
       $(':submit').attr('disabled', 'disabled')
 
+  # Show spinner when submit button is clicked
+  $('#search_submit').live('click', ->
+    $('#loading-spinner').show()
+  )
+
   # Functionality for ajax success
   $('#search_form').bind('ajax:success', (evt, data, status)->
     if(data)
@@ -46,16 +51,9 @@ $(document).ready ->
       #hides number of results option if there are no results
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
-
-    #hide the loading image
     $('#loading-spinner').hide()
     $('#bar_section').css('height', $('#query_section').height() )
     true
-  )
-
-  # Show spinner when submit button is clicked
-  $('#search_submit').live('click', -> 
-    $('#loading-spinner').show()
   )
   
   # Error message associated with ajax errors
@@ -118,10 +116,19 @@ $(document).ready ->
         $('#arrow').addClass('ui-icon-triangle-1-e')
       )
     else
-      $('#query_section').addClass('partial-page')
       $('#query_section').removeClass('full-page')
+      $('#query_section').addClass('partial-page')
       $('#filter_section').show('blind', { direction: "horizontal" }, 1000, ->
         $('#arrow').removeClass('ui-icon-triangle-1-e')
         $('#arrow').addClass('ui-icon-triangle-1-w')
       )
+  )
+
+  $('.check_filter').live('click', ->
+    name = '.' + $(this).attr('name')
+    if $(name).is(":visible")
+      $(name).hide()
+    else
+      $(name).show()
+      
   )

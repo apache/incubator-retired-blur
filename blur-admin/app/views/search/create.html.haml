@@ -7,13 +7,13 @@
         %tr
           %th
           - @all_columns.each do |family, set|
-            %th{:colspan => set.count}
+            %th{:colspan => set.count, :class => "family_#{family}"}
               = family
         %tr.columnsets
-          %th row id
+          %th rowId
           - @all_columns.each do |family, set|
             - set.each do |s|
-              %th
+              %th{:class => "column_#{family}_#{s} family_#{family}"}
                 = s.gsub(/([A-Z])/, '&shy;\1').html_safe
         %tbody
           - @results.each do |result|
@@ -25,8 +25,9 @@
                     = result[:id]
 
                 - reset_cycle('column-cycle')
-                - table_row.each do |cfs|
+                - table_row.each_with_index do |cfs, j|
                   - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-                  - cfs.each do |column|
-                    %td{:class => cf_stripe}
+                  - cfs.each_with_index do |column, k|
+                    %td{:class => "#{cf_stripe} family_#{@family_names[j]} column_#{@family_names[j]}_#{@column_names[j][k]}"}
                       = column
+

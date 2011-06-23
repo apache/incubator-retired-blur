@@ -3,8 +3,8 @@
     .column_family_filter
       %ul
         %li#family{:id=>family, :class => 'jstree-checked'}
-          %a{:href=>'#'}= family
+          %a{:href=>'#', :class => 'check_filter', :name => "family_#{family}"}= family
           %ul
             - cols.each do |col|
               %li#column{:id=>"#{family}_#{col}"}
-                %a{:href=>'#'}= col
+                %a{:href=>'#', :class => 'check_filter', :name => "column_#{family}_#{col}"}= col

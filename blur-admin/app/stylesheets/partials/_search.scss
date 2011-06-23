@@ -5,35 +5,39 @@
   margin-left: 20px;
   margin-right: 25px;
   height: 100%;
-  overflow: auto;
 }
 
-#query_section{
-  display: inline-block;
-  float: right;
-  margin-right: 2px;
-}
+
 .full-page{ width: 98%; }
 .partial-page{ width: 80%; }
 
 #search_form{ height: 100%; }
 
+$filter-width: 18%;
 #filter_section{
-  width: 18%;
-  float:left;
+  width: $filter-width;
+  position:fixed;
+  top:$nav-height + $header-height;
   display: inline-block;
   height: 100%;
 }
 
+$bar-width: 1%;
 #bar_section{
-  width: 1%;
+  width: $bar-width;
   height: 100%;
   position:fixed;
+  left: $filter-width;
   background-color: #eee;
   display: inline-block;
   cursor: pointer;
 }
 
+#query_section{
+  margin-right: 2px;
+  position:relative;
+  left:$filter-width + $bar_width;
+}
 #results_section{
   width: 100%;
   overflow-x: scroll;
@@ -147,7 +151,6 @@ select#r{ margin-left: 5px; }
 .search-input{ vertical-align: top; }
 
 #search_submit{
-  float: right;
   margin-right: 10px;
 }
 

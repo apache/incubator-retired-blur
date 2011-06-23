@@ -16,31 +16,21 @@ $(document).ready ->
       console.log "Submit"
     )
 
+  # Ajax request handling for enable/disable
+  $('form.update')
+    .live('ajax:beforeSend', (evt, xhr, settings) ->
+      $(this).find('input[type=submit]').attr('disabled', 'disabled')
+    ).live('ajax:complete', (evt, xhr, status) ->
+      $(this).find('input[type=submit]').removeAttr('disabled')
+    ).live('ajax:success', (evt, data, status, xhr) ->
 
-  # Function to enable/disable a table
-  update_table = (table_name, enabled) ->
-    url = "/data/" + table_name 
-    data = 'enabled=' + enabled
-    result = $.ajax(
-      data: data
-      url: url
-      type: 'PUT'
+    ).live('ajax:error', (evt, xhr, status, error) ->
+    ).live('submit', ->
     )
-
-  # Function to delete a table
-  delete_table = (table_name, underlying) ->
-    url = "/data/" + table_name
-    data = 'underlying=' + underlying
-    result = $.ajax(
-      success: $("tr#" + table_name).remove()
-      data: data
-      url: url
-      type: 'DELETE')
-
 
   # Function to initialize the filter tree
   setup_filter_tree = () ->
-    $('.table-def').jstree({
+    $('.blur_table_definition').jstree({
       plugins: ["themes", "html_data", "sort", "ui"],
       themes: {
         theme: 'apple',
@@ -53,25 +43,6 @@ $(document).ready ->
   # Calls the function to initialize the filter tree
   setup_filter_tree()
 
-  # Listener to delete a table
-  $(".delete-table").live('click', ->
-    table_name = $(this).attr('table_name')
-    $(".ui-confirm").attr("table", table_name)
-    $("#confirm-dialog").empty()
-    $("#confirm-dialog").append("<p>This will delete the <em>\"" + table_name + "\" </em> table, Do you wish to continue?</p>")
-    $(".ui-confirm").dialog({modal: true, draggable: false, resizable: false, title: "Confirm Delete", width: "450px"})
-  )
-  
-  # Listener to Enable/Disable a table
-  $(".enable").live('click', ->
-    if $(this).is ':checked'
-      enabled = true
-    else if $(this).not ':checked'
-      enabled = false
-    table_name = $(this).attr('table_name')
-    update_table(table_name, enabled)
-  )
-  
   # Listener to hide dialog on click
   $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
 

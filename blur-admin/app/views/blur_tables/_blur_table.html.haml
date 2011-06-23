@@ -1,0 +1,56 @@
+- nil_message = "Not Available"
+
+%tr.tr-underline{:id => "blur_table_#{blur_table.id}"}
+  %td
+    %b name:
+    = blur_table.table_name
+  %td
+    .blur_table_hosts
+      - if blur_table.schema
+        %a{:href=>'', :class => "host-shards"} 
+          Hosts: 
+          = blur_table.schema.length
+          Shards: 
+          = blur_table.schema.values.inject(0) {|sum, shard_list| sum + shard_list.length}
+      - else
+        = nil_message
+  %td= blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
+  %td= blur_table.current_size ? blur_table.current_size : nil_message
+  %td= blur_table.query_usage ? number_with_delimiter(blur_table.query_usage, :delimiter => ',') : nil_message
+  %td= blur_table.is_enabled? ? "Enabled" : "Disabled"
+  %td
+    - if can? :delete, :data
+      - if true #!blur_table.is_enabled?
+        = form_tag "/blur_tables/#{blur_table.id}", :class => 'delete', :method => :delete, :remote => true do
+          = submit_tag 'delete', :confirm => "Are you sure?"
+    - if can? :update, :data
+      = form_tag "/blur_tables/#{blur_table.id}", :class => 'update', :method => :put, :remote => true do
+        - if true #blur_table.is_enabled?
+          = hidden_field_tag 'enable', true
+          = submit_tag 'Enable', :confirm => "Are you sure?"
+          // Add in - else
+          = hidden_field_tag 'disable', true
+          = submit_tag 'Disable', :confirm => "Are you sure?"
+
+%tr{:id => "blur_table_#{blur_table.id}"}
+  %td{:colspan => 7}
+    %b location:
+    = blur_table.table_uri ? blur_table.table_uri : nil_message
+
+- if blur_table.definition
+  %tr.tr-underline{:id => "blur_table_#{blur_table.id}"}
+    %td{:colspan => 7}
+      %b definition:
+      .blur_table_definition
+        %ul
+          %li#families{:id=>"#{blur_table.table_name}", :class => "family-node"}
+            %a{:href=>'', :class => 'families'}Column Families
+            %ul
+              -blur_table.definition["columnFamilies"].each do |family, columns|
+                %li#family{:id=>"#{blur_table.table_name}.#{family}", :class => "family-node"}
+                  %a{:href=>'#'}
+                    = "#{family} (#{blur_table.table_analyzer})"
+                  %ul
+                    -columns.each do |column|
+                      %li#column{:id=>"#{blur_table.table_name}.#{family}.#{column}"}
+                        %a{:href=>'#'}= column

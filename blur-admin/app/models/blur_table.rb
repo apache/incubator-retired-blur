@@ -11,6 +11,14 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
+  def definition
+    if self.server
+      JSON.parse self.server
+    else
+      return nil
+    end
+  end
+
   def is_enabled?
     self.status == 2
   end

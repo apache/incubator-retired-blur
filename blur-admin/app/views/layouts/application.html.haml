@@ -11,7 +11,7 @@
       = stylesheet_link_tag 'ie'
   %body
     #root
-      .container
+      #top.container
         #hd
           = link_to image_tag('blur_logo.png'), root_path
           #user_nav
@@ -28,24 +28,24 @@
           - flash.each do |type, message|
             .flash{ :id => "#{type}" }
               = message
-      #nav
-        %ul
-          - controller = params[:controller]
-          %li{:class => controller == 'env' && 'active'}
-            = link_to 'Environment Status', '/'
+        #nav
+          %ul
+            - controller = params[:controller]
+            %li{:class => controller == 'env' && 'active'}
+              = link_to 'Environment Status', '/'
 
-          %li{:class => controller == 'data' && 'active'}
-            = link_to 'Data', data_path
+            %li{:class => controller == 'data' && 'active'}
+              = link_to 'Data', data_path
 
-          %li{:class => controller == 'runtime' && 'active'}
-            = link_to 'Runtime', runtime_path
+            %li{:class => controller == 'runtime' && 'active'}
+              = link_to 'Runtime', runtime_path
 
-          %li{:class => controller == 'search' && 'active', :id => "left"}
-            = link_to 'Search', search_path
+            %li{:class => controller == 'search' && 'active', :id => "left"}
+              = link_to 'Search', search_path
           
-          - if can? :index, :users
-            %li{:class => controller == 'users' && 'active', :id=> "left"}
-              = link_to 'Admin', users_path
+            - if can? :index, :users
+              %li{:class => controller == 'users' && 'active', :id=> "left"}
+                = link_to 'Admin', users_path
 
       #bd_background
         #bd_wrap.container

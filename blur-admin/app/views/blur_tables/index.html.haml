@@ -1,13 +1,11 @@
-- content_for :title, 'Data'
+- content_for :title, 'Blur Tables'
 - content_for :javascript do
   =javascript_include_tag 'jquery.jstree','compiled/blur_tables'
 
-#data-dtables
-  #dtables-title
-    %h2 Tables
-    %br
-  %table#dtables-table
-    %tr#dtables-table-header
+#blur_tables_wrapper
+  %h2 Tables
+  %table#blur_tables_table
+    %tr#header
       %th Table
       %th Shards
       %th Count

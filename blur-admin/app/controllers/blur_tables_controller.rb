@@ -6,13 +6,13 @@ class BlurTablesController < ApplicationController
   def update
     @blur_table = BlurTable.find(params[:id])
     if params[:enable]
-      result = @blur_table.enable
+      @blur_table.enable
     elsif params[:disable]
-      result = @blur_table.disable
+      @blur_table.disable
     end
 
     respond_to do |format|
-      format.js { render :partial => 'blur_table' }
+      format.html { render :partial => 'blur_table', :locals => {:blur_table => @blur_table }}
     end
   end
 

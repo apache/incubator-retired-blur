@@ -1,32 +1,4 @@
 $(document).ready ->
-  # Ajax request handling for delete
-  $('form.delete')
-    .live('ajax:beforeSend', (evt, xhr, settings) ->
-      console.log "beforeSend"
-      $(this).find('input[type=submit]').attr('disabled', 'disabled')
-    ).live('ajax:complete', (evt, xhr, status) ->
-      $(this).find('input[type=submit]').removeAttr('disabled')
-    ).live('ajax:success', (evt, data, status, xhr) ->
-      id = $(this).closest('tr').attr('id')
-      $(this).closest('tr').siblings('#' + id).remove()
-      $(this).closest('tr').remove()
-    ).live('ajax:error', (evt, xhr, status, error) ->
-      console.log "error"
-    ).live('submit', ->
-      console.log "Submit"
-    )
-
-  # Ajax request handling for enable/disable
-  $('form.update')
-    .live('ajax:beforeSend', (evt, xhr, settings) ->
-      $(this).find('input[type=submit]').attr('disabled', 'disabled')
-    ).live('ajax:complete', (evt, xhr, status) ->
-      $(this).find('input[type=submit]').removeAttr('disabled')
-    ).live('ajax:success', (evt, data, status, xhr) ->
-
-    ).live('ajax:error', (evt, xhr, status, error) ->
-    ).live('submit', ->
-    )
 
   # Function to initialize the filter tree
   setup_filter_tree = () ->
@@ -38,6 +10,35 @@ $(document).ready ->
       }
     }).bind("select_node.jstree", (event, data) -> 
       $(this).jstree('toggle_node')
+    )
+
+  # Ajax request handling for delete
+  $('form.delete')
+    .live('ajax:beforeSend', (evt, xhr, settings) ->
+      $(this).find('input[type=submit]').attr('disabled', 'disabled')
+    ).live('ajax:complete', (evt, xhr, status) ->
+      $(this).find('input[type=submit]').removeAttr('disabled')
+    ).live('ajax:success', (evt, data, status, xhr) ->
+      id = $(this).closest('tr').attr('id')
+      selector = "table#blur_tables_table > tbody > tr##{id}"
+      $(selector).remove()
+    ).live('ajax:error', (evt, xhr, status, error) ->
+      console.log "Error in delete ajax call"
+    )
+
+  # Ajax request handling for enable/disable
+  $('form.update')
+    .live('ajax:beforeSend', (evt, xhr, settings) ->
+      $(this).find('input[type=submit]').attr('disabled', 'disabled')
+    ).live('ajax:complete', (evt, xhr, status) ->
+      $(this).find('input[type=submit]').removeAttr('disabled')
+    ).live('ajax:success', (evt, data, status, xhr) ->
+      row = $(this).closest('tr')
+      row.siblings("##{row.attr('id')}").remove()
+      row.replaceWith data
+      setup_filter_tree()
+    ).live('ajax:error', (evt, xhr, status, error) ->
+      console.log "Error in update ajax call"
     )
 
   # Calls the function to initialize the filter tree

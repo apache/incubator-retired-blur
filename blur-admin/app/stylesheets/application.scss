@@ -8,9 +8,9 @@
 @import "partials/base";
 
 // Application specific pages
-@import "partials/search";
-@import "partials/runtime";
-@import "partials/data";
+@import "partials/query";
+@import "partials/blur_queries";
+@import "partials/blur_tables";
 @import "partials/env";
 
 // add other imports here, do not add to this file

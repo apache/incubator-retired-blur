@@ -1,8 +1,6 @@
 BlurAdmin::Application.routes.draw do
   resources :users, :user_sessions, :blur_queries, :blur_tables
   
-  resource :data
-  resource :runtime, :controller => 'runtime'
 	resource :search, :controller => 'search'
 	resource :env, :controller => 'env'
 

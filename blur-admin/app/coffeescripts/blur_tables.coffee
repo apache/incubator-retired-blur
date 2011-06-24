@@ -9,11 +9,11 @@ $(document).ready ->
         icons: false,
     .bind "select_node.jstree", (event, data) -> 
       $(this).jstree('toggle_node')
-    $('.schema_tree').bind("loaded.jstree", ->
-      $('.schema_tree').show()
+    $('.host_tree').bind("loaded.jstree", ->
+      $('.host_tree').show()
     )
-    $('.blur_table_definition').bind("loaded.jstree", ->
-      $('.blur_table_definition').show()
+    $('.blur_table_schema').bind("loaded.jstree", ->
+      $('.blur_table_schema').show()
     )
 
   # Calls the function to initialize the filter tree

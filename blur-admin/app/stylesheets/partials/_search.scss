@@ -8,7 +8,7 @@
 }
 
 
-.full-page{ width: 98%; }
+.full-page{ width: 100%; left:0px!important }
 .partial-page{ width: 80%; }
 
 #search_form{ height: 100%; }
@@ -140,7 +140,7 @@ b{ font-weight:bold; }
 
 #arrow{
   display: inline-block;
-  position: fixed;
+  position: relative;
   top: 50%;
   margin-left: -2px;
   border:none;
@@ -157,4 +157,8 @@ select#r{ margin-left: 5px; }
 .id_cell{
   text-align:left;
   vertical-align: top;
+}
+
+.collapsed-bar{
+  left:0 !important;
 }

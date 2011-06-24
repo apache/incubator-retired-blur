@@ -44,7 +44,7 @@ describe Ability do
 
     it "can view pages" do
       @ability.should be_able_to :index, :blur_tables
-      @ability.should be_able_to :schema, :blur_tables
+      @ability.should be_able_to :hosts, :blur_tables
       @ability.should be_able_to :show, :env
       @ability.should be_able_to :show, :search
       @ability.should be_able_to :index, :blur_queries

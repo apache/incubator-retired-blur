@@ -11,7 +11,7 @@ BlurAdmin::Application.routes.draw do
   end
 
   controller "blur_tables" do
-    match 'blur_tables/:id/schema', :to => :schema, :via => :get
+    match 'blur_tables/:id/hosts', :to => :hosts, :via => :get
   end
 
   controller :blur_queries do

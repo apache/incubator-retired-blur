@@ -5,12 +5,12 @@
     %b name:
     = blur_table.table_name
   %td
-    - if blur_table.schema
-      = link_to "/blur_tables/#{blur_table.id}/schema", :class => 'schema', :remote => true do
+    - if blur_table.server
+      = link_to "/blur_tables/#{blur_table.id}/hosts", :class => 'hosts', :remote => true do
         Hosts: 
-        = blur_table.schema.length
+        = blur_table.hosts.keys.length
         Shards: 
-        = blur_table.schema.values.inject(0) {|sum, shard_list| sum + shard_list.length}
+        = blur_table.hosts.values.flatten.length
     - else
       = nil_message
   %td= blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
@@ -37,16 +37,16 @@
     %b location:
     = blur_table.table_uri ? blur_table.table_uri : nil_message
 
-- if blur_table.definition
+- if blur_table.schema
   %tr.tr-underline{:id => "blur_table_#{blur_table.id}"}
     %td{:colspan => 7}
-      %b definition:
-      .blur_table_definition
+      %b schema:
+      .blur_table_schema
         %ul
           %li#families{:id=>"#{blur_table.table_name}", :class => "family-node"}
             %a{:href=>'', :class => 'families'}Column Families
             %ul
-              -blur_table.definition["columnFamilies"].each do |family, columns|
+              -blur_table.schema["columnFamilies"].each do |family, columns|
                 %li#family{:id=>"#{blur_table.table_name}.#{family}", :class => "family-node"}
                   %a{:href=>'#'}
                     = "#{family} (#{blur_table.table_analyzer})"

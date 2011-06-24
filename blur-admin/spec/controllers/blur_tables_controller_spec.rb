@@ -76,20 +76,20 @@ describe BlurTablesController do
    end
   end
 
-  describe "GET schema" do
+  describe "GET hosts" do
 
-    it "should assign @schema to be the requested table's schema" do
+    it "should assign @hosts to be the requested table's hosts" do
       BlurTable.should_receive(:find).with('1').and_return(@table)
-      @table.should_receive(:schema).and_return("Some JSON")
-      get :schema, :id => '1'
-      assigns(:schema).should == "Some JSON"
+      @table.should_receive(:hosts).and_return("Some JSON")
+      get :hosts, :id => '1'
+      assigns(:hosts).should == "Some JSON"
     end
 
-    it "should render the schema partial" do
+    it "should render the hosts partial" do
       BlurTable.stub(:find).and_return(@table)
-      @table.stub(:schema)
-      get :schema, :id => '1'
-      response.should render_template( :partial =>  '_schema' )
+      @table.stub(:hosts)
+      get :hosts, :id => '1'
+      response.should render_template( :partial =>  '_hosts' )
     end
 
   end

@@ -1,9 +1,8 @@
-.schema
-  Shard Servers:
-  - if schema
-    .schema_tree
+.hosts
+  - if hosts
+    .host_tree
       %ul
-        -schema.each do |host, shards|
+        -hosts.each do |host, shards|
           %li.host{:id=>"#{host}"}
             %a{:href=>''}= host
             %ul

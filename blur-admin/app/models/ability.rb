@@ -25,7 +25,7 @@ class Ability
       can :more_info, :blur_queries
 
       # View schema on blur_tables
-      can :schema, :blur_tables
+      can :hosts, :blur_tables
 
       if user.has_role? :editor
         can [:update, :destroy], :blur_tables

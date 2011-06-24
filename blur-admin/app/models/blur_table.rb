@@ -3,17 +3,19 @@ class BlurTable < ActiveRecord::Base
 
   has_many :blur_queries
 
-  def schema
-    if self.table_schema
-      JSON.parse self.table_schema
+  # Returns a map of host => [shards] of all hosts/shards associated with the table
+  def hosts
+    if self.server
+      JSON.parse self.server
     else
       return nil
     end
+
   end
 
-  def definition
-    if self.server
-      JSON.parse self.server
+  def schema
+    if self.table_schema
+      JSON.parse self.table_schema
     else
       return nil
     end

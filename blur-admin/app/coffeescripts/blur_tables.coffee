@@ -11,7 +11,7 @@ $(document).ready ->
       $(this).jstree('toggle_node')
 
   # Calls the function to initialize the filter tree
-  setup_filter_tree($('.blur_table_definition'))
+  setup_filter_tree($('.blur_table_schema'))
 
   # Ajax request handling for enable/disable
   $('form.update')
@@ -29,9 +29,8 @@ $(document).ready ->
       console.log "Error in update ajax call"
     
   # Ajax request handling for schema
-  $('a.schema')
+  $('a.hosts')
     .live 'ajax:success', (evt, data, status, xhr) ->
-      console.log data
       $(data).dialog
         modal: true
         draggable: false
@@ -40,8 +39,8 @@ $(document).ready ->
         close: (event, ui) ->
           $(this).remove()
       $('ui-widget-overlay').bind 'click', ->
-        $('.schema').dialog 'close'
-      setup_filter_tree($('.schema_tree'))
+        $('.hosts').dialog 'close'
+      setup_filter_tree($('.host_tree'))
 
   # Listener for delete button (launches dialog box)
   $('.delete_blur_table_button').live 'click', ->

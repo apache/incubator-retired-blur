@@ -26,11 +26,11 @@ class BlurTablesController < ApplicationController
     end
   end
 
-  def schema
-    @schema = BlurTable.find(params[:id]).schema
+  def hosts
+    @hosts = BlurTable.find(params[:id]).hosts
 
     respond_to do |format|
-      format.html { render :partial => 'schema', :locals => {:schema => @schema} }
+      format.html { render :partial => 'hosts', :locals => {:hosts => @hosts} }
     end
   end
 end

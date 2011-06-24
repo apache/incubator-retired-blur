@@ -74,6 +74,8 @@ $(document).ready ->
      $('.jstree-unchecked').removeClass('jstree-unchecked')
      $('.jstree-checked').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').attr('checked', 'checked')
+     $('th').show()
+     $('td').show()
 
   # Fucntionality for uncheck all
   uncheck_all = () ->
@@ -82,6 +84,9 @@ $(document).ready ->
      $('.jstree-checked').removeClass('jstree-checked')
      $('.jstree-undetermined').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').removeAttr('checked')
+     $('th').hide()
+     $('td').hide()
+     $('.rowId').show()
 
   #Live Listeners for this document
   #listeners for check all and uncheck all
@@ -135,20 +140,34 @@ $(document).ready ->
     name = '.'+$(this).attr('name')
     element = name.split("_")[0]
     family = '#'+name.split("_")[1]
+    recordId_name = '.column_'+name.split("_")[1]+'_recordId'
+    curr_col_span = $(family).attr('colspan')
+    max_col_span = $(family).attr('children')
+
     if $(name).is(":visible")
       if element == ".column"
-        num = $(family).attr('colspan')
-        $(family).attr('colspan', num-1)
+        if curr_col_span <= 2
+          name = '.family_'+name.split("_")[1]
+        else
+          $(family).attr('colspan', curr_col_span-1)
+        $(name).hide()
       else
-        num = $(family).attr('children')
-        $(family).attr('colspan', num)
-      $(name).hide()
+        list_length = $('#'+$(this).attr('name')).find("> ul > .jstree-checked").length + 1
+        if curr_col_span < max_col_span || curr_col_span < list_length
+          $(family).attr('colspan', max_col_span)
+          $(name).show() #show whole fam
+        else
+          $(name).hide()
     else
       if element == ".column"
-        num = parseInt($(family).attr('colspan'))
-        $(family).attr('colspan', num+1)
+        if $(family).is(":visible")
+          if $('#result_table').find('thead > tr > ' + name).length > 0
+            $(family).attr('colspan', 1+parseInt(curr_col_span))
+        else
+          $(family).attr('colspan', 2)
+          $(family).show()
+          $(recordId_name).show()
       else
-        num = $(family).attr('children')
-        $(family).attr('colspan', num)
+        $(family).attr('colspan', max_col_span)
       $(name).show()
   )

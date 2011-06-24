@@ -113,9 +113,6 @@ class SearchController < ApplicationController
     @all_columns = families_with_columns.merge columns
     @column_names = @all_columns.values
     @family_names = @all_columns.keys
-    #@all_columns.each do |k, e|
-      #@column_names = @column_names + e
-    #end
 
 		render :template=>'search/create.html.haml', :layout => false
 	end

@@ -5,12 +5,12 @@
     %table#result_table.result_table.tableWithFloatingHeader
       %thead
         %tr
-          %th
+          %th.rowId
           - @all_columns.each do |family, set|
             %th{:colspan => set.count, :class => "family_#{family}", :id => family, :children => set.count}
               = family
         %tr.columnsets
-          %th rowId
+          %th.rowId rowId
           - @all_columns.each do |family, set|
             - set.each do |s|
               %th{:class => "column_#{family}_#{s} family_#{family}"}
@@ -21,7 +21,7 @@
             - result[:table_rows].each_with_index do |table_row, i|
               %tr{:class => stripe_class}
                 - if i == 0
-                  %td.id_cell{:rowspan => result[:max_record_count]}
+                  %td.rowId.id_cell{:rowspan => result[:max_record_count]}
                     = result[:id]
 
                 - reset_cycle('column-cycle')

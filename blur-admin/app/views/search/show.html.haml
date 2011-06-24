@@ -4,8 +4,8 @@
 
 #search-page
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
-    #filter_section.half-section
-      .filter-title
+    #filter_section
+      .filter-title.title
         =label_tag :f, "Filters:"
       .partial-section
         = label_tag :t, "Table:"
@@ -31,9 +31,9 @@
         = submit_tag "Search", :disabled => true, :id => "search_submit"
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
-    #query_section.half-section.partial-page
+    #query_section.partial-page
       #search_section
-        .search-title
+        .search-title.title
           = label_tag :q, "Search:"
         .search-input
           = label_tag :q, "Query:"

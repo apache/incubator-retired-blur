@@ -11,6 +11,13 @@
         = truncate(blur_query.query_string, :length => 20, :ommision => "...")
       - else
         =empty_message
+  %td
+    - if blur_query.super_query_on
+      On
+    - elsif blur_query.super_query_on == false
+      Off
+    - else
+      = empty_message
   %td.start
     - if blur_query.start
       = blur_query.start

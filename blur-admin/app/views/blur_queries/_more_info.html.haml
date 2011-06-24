@@ -57,10 +57,12 @@
         -else
           =empty_message
     %tr
-      %td{:id => "more-info-label"} Super Query On
+      %td{:id => "more-info-label"} Super Query
       %td
         -if @blur_query.super_query_on
-          =@blur_query.super_query_on
+          On
+        -elsif @blur_query.super_query_on == false
+          Off
         -else
           =empty_message
     %tr 

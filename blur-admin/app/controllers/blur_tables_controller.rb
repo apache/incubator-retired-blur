@@ -1,6 +1,7 @@
 class BlurTablesController < ApplicationController
   def index
     @blur_tables = BlurTable.all
+    @blur_tables.sort!{|t1,t2|t1 <=> t2}
   end
 
   def update

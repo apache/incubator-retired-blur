@@ -23,7 +23,6 @@
                 - if i == 0
                   %td.rowId.id_cell{:rowspan => result[:max_record_count]}
                     = result[:id]
-
                 - reset_cycle('column-cycle')
                 - table_row.each_with_index do |cfs, j|
                   - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')

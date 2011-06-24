@@ -26,10 +26,10 @@ describe Ability do
     end
 
     it "can not view pages" do
-      @ability.should_not be_able_to :access, :data
+      @ability.should_not be_able_to :access, :blur_tables
       @ability.should_not be_able_to :access, :env
       @ability.should_not be_able_to :access, :search
-      @ability.should_not be_able_to :access, :runtime
+      @ability.should_not be_able_to :access, :blur_queries
     end
   end
 
@@ -43,11 +43,12 @@ describe Ability do
     end
 
     it "can view pages" do
-      @ability.should be_able_to :show, :data
+      @ability.should be_able_to :index, :blur_tables
+      @ability.should be_able_to :schema, :blur_tables
       @ability.should be_able_to :show, :env
       @ability.should be_able_to :show, :search
-      @ability.should be_able_to :show, :runtime
-      @ability.should be_able_to :info, :runtime
+      @ability.should be_able_to :index, :blur_queries
+      @ability.should be_able_to :more_info, :blur_queries
     end
 
     it "can view, edit and delete itself" do
@@ -107,12 +108,12 @@ describe Ability do
     end
   
     it "can enable, disable, and delete tables" do
-      @ability.should be_able_to :update, :data
-      @ability.should be_able_to :destroy, :data
+      @ability.should be_able_to :update, :blur_tables
+      @ability.should be_able_to :destroy, :blur_tables
     end
 
     it "can cancel queries" do
-      @ability.should be_able_to :update, :runtime
+      @ability.should be_able_to :update, :blur_queries
     end
   end
   

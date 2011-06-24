@@ -10,6 +10,7 @@ $(document).ready ->
       $('#filter_spinner').hide()
     .live 'ajax:success', (evt, data, status, xhr) ->
       $('#queries-table').replaceWith(data)
+      $('[title]').tooltip()
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: Add error handling
 
@@ -45,7 +46,7 @@ $(document).ready ->
     active: false
   
   # Displays the full query string on hover
-  $('[title]').tooltip({})
+  $('[title]').tooltip()
 
   # Listener for the table selector
   $('#blur_table_id').live 'change', ->

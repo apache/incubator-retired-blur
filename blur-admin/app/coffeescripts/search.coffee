@@ -68,31 +68,26 @@ $(document).ready ->
 
   # Fucntionality for check all
   check_all = () ->
-     $('.jstree-unchecked').addClass('jstree-checked')
-     $('.jstree-undetermined').addClass('jstree-checked')
-     $('.jstree-unchecked').removeClass('jstree-unchecked')
-     $('.jstree-checked').removeClass('jstree-undetermined')
-     $('.jstree-real-checkbox').attr('checked', 'checked')
-     $('th').show()
-     $('td').show()
+    $('.column_family_filter').jstree("check_all")
+    $('th').show()
+    $('td').show()
 
   # Fucntionality for uncheck all
   uncheck_all = () ->
-     $('.jstree-checked').addClass('jstree-unchecked')
-     $('.jstree-undetermined').addClass('jstree-unchecked')
-     $('.jstree-checked').removeClass('jstree-checked')
-     $('.jstree-undetermined').removeClass('jstree-undetermined')
-     $('.jstree-real-checkbox').removeAttr('checked')
-     $('th').hide()
-     $('td').hide()
-     $('.rowId').show()
+    $('.column_family_filter').jstree("uncheck_all")
+    $('th').hide()
+    $('td').hide()
+    $('.rowId').show()
 
-  #Live Listeners for this document
-  #listeners for check all and uncheck all
+  # Listeners for check all and uncheck all
   $('#checkall').live('click', -> check_all())
   $('#uncheckall').live('click', -> uncheck_all())
 
-  #Disable submit button when no text in input
+  # Live listeners for this page
+  $('#filter_section').live("click", -> toggle_submit())
+  $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
+
+  # Disable submit button when no text in input
   $('#q').live("keyup", (name) ->
     if name.keyCode == 13 && !name.shiftKey
       if $(':submit').attr('disabled')
@@ -106,10 +101,7 @@ $(document).ready ->
       toggle_submit()
   )
 
-  $('#filter_section').live("click", -> toggle_submit())
-
-  $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
-  
+  # Hides/Shows filter section
   $('#bar_section').live('click', ->
     if $('#query_section').is('.partial-page')
       $('#filter_section').hide()
@@ -118,7 +110,6 @@ $(document).ready ->
       $('#arrow').removeClass('ui-icon-triangle-1-w')
       $('#arrow').addClass('ui-icon-triangle-1-e')
       $('#bar_section').addClass('collapsed-bar')
-      
     else
       $('#query_section').removeClass('full-page')
       $('#query_section').addClass('partial-page')
@@ -126,9 +117,9 @@ $(document).ready ->
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
       $('#bar_section').removeClass('collapsed-bar')
-
   )
 
+  # Filters results table when filter checks are changed
   $('.check_filter').live('click', ->
     name = '.'+$(this).attr('name')
     element = name.split("_")[0]

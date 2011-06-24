@@ -45,7 +45,7 @@ class BlurTable < ActiveRecord::Base
       #BlurThriftClient.client.removeTable self.table_name underlying
       return true;
     rescue
-      puts "Exception in BlurTables.destroy"
+      puts "Exception in BlurTable.destroy"
       return false;
     end
   end

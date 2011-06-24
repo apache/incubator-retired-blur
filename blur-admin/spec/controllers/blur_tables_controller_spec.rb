@@ -52,17 +52,18 @@ describe BlurTablesController do
     end
   end
   
-  describe "destroy" do
+  describe "DELETE destroy" do
 
-    it "should assign @blur_table to be the blur table being updated" do
+    it "should assign @blur_table to be the blur table being deleted" do
       BlurTable.should_receive(:find).with('1').and_return(@table)
-      put :update, :id => '1'
+      @table.stub(:destroy)
+      delete :destroy, :id => '1'
       assigns(:blur_table).should == @table
     end
 
     it "should delete a table and preserve the index" do
       BlurTable.stub(:find).and_return(@table)
-      @table.should_receive(:destroy)
+      @table.should_receive(:destroy).with(false)
       delete :destroy, :id => '1', :delete_index => ''
       response.should render_template nil
     end
@@ -73,5 +74,23 @@ describe BlurTablesController do
       delete :destroy, :id => '1', :delete_index => 'true'
       response.should render_template nil
    end
+  end
+
+  describe "GET schema" do
+
+    it "should assign @schema to be the requested table's schema" do
+      BlurTable.should_receive(:find).with('1').and_return(@table)
+      @table.should_receive(:schema).and_return("Some JSON")
+      get :schema, :id => '1'
+      assigns(:schema).should == "Some JSON"
+    end
+
+    it "should render the schema partial" do
+      BlurTable.stub(:find).and_return(@table)
+      @table.stub(:schema)
+      get :schema, :id => '1'
+      response.should render_template( :partial =>  '_schema' )
+    end
+
   end
 end

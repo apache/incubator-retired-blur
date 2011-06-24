@@ -26,10 +26,11 @@
     - else
       = empty_message 
   %td
-    - if blur_query.shards
-      = number_to_percentage 100 * blur_query.complete / blur_query.shards.to_f, :precision => 0
+    - if blur_query.blur_table.schema
+      - num_shards = blur_query.blur_table.schema.values.flatten.count
+      = number_to_percentage 100 * blur_query.complete / num_shards, :precision => 0
     - else
-      Not Available
+      = empty_message
   - if can? :update, :runtime
     %td
       - if blur_query.running

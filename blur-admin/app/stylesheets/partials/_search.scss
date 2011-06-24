@@ -135,6 +135,7 @@ b{ font-weight:bold; }
 #loading-spinner{
   float: right;
   padding-right: 10px;
+  vertical-align: top;
 }
 
 .half-section{
@@ -153,7 +154,7 @@ b{ font-weight:bold; }
 
 select#r{ margin-left: 5px; }
 
-.search-input{ vertical-align: top; }
+.search-input{ vertical-align: top; min-width: 320px; }
 
 #search_submit{
   margin-right: 10px;
@@ -165,6 +166,6 @@ select#r{ margin-left: 5px; }
 }
 
 .collapsed-bar{
-  left:0 !important;
+  left: 27px !important;
   margin-left: 0 !important;
 }

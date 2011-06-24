@@ -50,6 +50,8 @@ html,body{ height: 100%; }
 
 #ft {
   $footer-color: lighten($base-theme-color, 20%);
+  position:relative;
+  top: $header-height + $nav-height;
   background-color: $footer-color; 
   text-align: center;
   height: $footer-height - 1px;

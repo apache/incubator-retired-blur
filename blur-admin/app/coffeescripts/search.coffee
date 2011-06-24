@@ -110,30 +110,24 @@ $(document).ready ->
   $('#filter_section').live("click", -> toggle_submit())
 
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
-
+  
   $('#bar_section').live('click', ->
     if $('#query_section').is('.partial-page')
-      $('#arrow').hide()
-      $('#arrow').css('position','static')
-      $('#filter_section').hide(1000, ->
-        $('#query_section').removeClass('partial-page')
-        $('#query_section').addClass('full-page')
-        $('#arrow').removeClass('ui-icon-triangle-1-w')
-        $('#arrow').addClass('ui-icon-triangle-1-e')
-        $('#arrow').css('position','fixed')
-        $('#arrow').show()
-      )
+      $('#filter_section').hide()
+      $('#query_section').removeClass('partial-page')
+      $('#query_section').addClass('full-page')
+      $('#arrow').removeClass('ui-icon-triangle-1-w')
+      $('#arrow').addClass('ui-icon-triangle-1-e')
+      $('#bar_section').addClass('collapsed-bar')
+      
     else
       $('#query_section').removeClass('full-page')
       $('#query_section').addClass('partial-page')
-      $('#arrow').hide()
-      $('#arrow').css('position','static')
-      $('#filter_section').show('blind', { direction: "horizontal" }, 1000, ->
-        $('#arrow').removeClass('ui-icon-triangle-1-e')
-        $('#arrow').addClass('ui-icon-triangle-1-w')
-        $('#arrow').css('position','fixed')
-        $('#arrow').show()
-      )
+      $('#filter_section').show()
+      $('#arrow').removeClass('ui-icon-triangle-1-e')
+      $('#arrow').addClass('ui-icon-triangle-1-w')
+      $('#bar_section').removeClass('collapsed-bar')
+
   )
 
   $('.check_filter').live('click', ->

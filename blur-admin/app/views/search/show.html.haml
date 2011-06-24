@@ -19,7 +19,7 @@
         .column-title
           %a{:title => "Check All", :href => '#', :id => 'checkall'} Check All
           %a{:title => "Uncheck All", :href => '#', :id => "uncheckall"} Uncheck All
-        #filter_columns{:style=>'display:none'}
+        #filter_columns
           = render 'filters'
       .partial-section
         = label_tag :r, 'Fetch:'
@@ -29,7 +29,7 @@
         = text_field_tag :a, 0
       .partial-section
         = submit_tag "Search", :disabled => true, :id => "search_submit"
-    #bar_section{:style=>'display:none'}
+    #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
     #query_section.half-section.partial-page
       #search_section

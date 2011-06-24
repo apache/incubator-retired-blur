@@ -39,7 +39,7 @@ class BlurTable < ActiveRecord::Base
     ensure
       return self.is_enabled?
     end
-  end 
+  end
 
   def destroy underlying=false
     begin

@@ -4,7 +4,7 @@ class Ability
   def initialize(user)
 
     if user # logged in
-      
+
       # view pages
       can :index, [:blur_queries, :blur_tables, :search]
       can :show, [:env, :search]

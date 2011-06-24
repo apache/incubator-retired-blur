@@ -42,7 +42,7 @@
 
             %li{:class => controller == 'search' && 'active', :id => "left"}
               = link_to 'Search', search_path
-          
+
             - if can? :index, :users
               %li{:class => controller == 'users' && 'active', :id=> "left"}
                 = link_to 'Admin', users_path

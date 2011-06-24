@@ -2,6 +2,7 @@
   $shaded_row_background_color: #EEE;
   $header_background_color: #C4D9FF;
   $header_text_color: #555;
+  margin: 5px 20px 20px 20px;
 
   @mixin table-base {
     display: table;
@@ -26,7 +27,6 @@
   }
 
   h2 {
-    margin: 15px 20px 20px 20px;
     color: #555;
     font-weight: bold;
   }
@@ -53,5 +53,12 @@
 
   .ui-tooltip {
     color: $header_text_color;
+  }
+
+  color: #555;
+  font-weight: bold;
+
+  #blur_table_id{
+    margin-bottom: 15px;
   }
 }

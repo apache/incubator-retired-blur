@@ -31,7 +31,7 @@
       = number_to_percentage 100 * blur_query.complete / num_shards, :precision => 0
     - else
       = empty_message
-  - if can? :update, :runtime
+  - if can? :update, :blur_queries
     %td
       - if blur_query.running
         = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do

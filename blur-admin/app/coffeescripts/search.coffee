@@ -16,8 +16,8 @@ $(document).ready ->
     })
     $('.column_family_filter').bind("loaded.jstree", ->
       $('#filter_columns').show()
-      $('#bar_section').css('min-height', $('#filter_section').height() + 20 )
       $('#bar_section').show()
+
     )
 
   # Setup the filters onload
@@ -52,7 +52,6 @@ $(document).ready ->
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
     $('#loading-spinner').hide()
-    $('#bar_section').css('height', $('#query_section').height() )
     true
   )
   
@@ -109,26 +108,47 @@ $(document).ready ->
 
   $('#bar_section').live('click', ->
     if $('#query_section').is('.partial-page')
+      $('#arrow').hide()
+      $('#arrow').css('position','static')
       $('#filter_section').hide(1000, ->
         $('#query_section').removeClass('partial-page')
         $('#query_section').addClass('full-page')
         $('#arrow').removeClass('ui-icon-triangle-1-w')
         $('#arrow').addClass('ui-icon-triangle-1-e')
+        $('#arrow').css('position','fixed')
+        $('#arrow').show()
       )
     else
       $('#query_section').removeClass('full-page')
       $('#query_section').addClass('partial-page')
+      $('#arrow').hide()
+      $('#arrow').css('position','static')
       $('#filter_section').show('blind', { direction: "horizontal" }, 1000, ->
         $('#arrow').removeClass('ui-icon-triangle-1-e')
         $('#arrow').addClass('ui-icon-triangle-1-w')
+        $('#arrow').css('position','fixed')
+        $('#arrow').show()
       )
   )
 
   $('.check_filter').live('click', ->
-    name = '.' + $(this).attr('name')
+    name = '.'+$(this).attr('name')
+    element = name.split("_")[0]
+    family = '#'+name.split("_")[1]
     if $(name).is(":visible")
+      if element == ".column"
+        num = $(family).attr('colspan')
+        $(family).attr('colspan', num-1)
+      else
+        num = $(family).attr('children')
+        $(family).attr('colspan', num)
       $(name).hide()
     else
+      if element == ".column"
+        num = parseInt($(family).attr('colspan'))
+        $(family).attr('colspan', num+1)
+      else
+        num = $(family).attr('children')
+        $(family).attr('colspan', num)
       $(name).show()
-      
   )

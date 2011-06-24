@@ -7,7 +7,7 @@
         %tr
           %th
           - @all_columns.each do |family, set|
-            %th{:colspan => set.count, :class => "family_#{family}"}
+            %th{:colspan => set.count, :class => "family_#{family}", :id => family, :children => set.count}
               = family
         %tr.columnsets
           %th rowId

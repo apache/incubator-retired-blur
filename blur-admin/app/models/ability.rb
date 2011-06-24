@@ -5,11 +5,6 @@ class Ability
 
     if user # logged in
       
-      # TODO: change below once done debugging
-      # anything on new pages
-      can :access, :all
-
-
       # view pages
       can :show, [:data, :env, :search, :runtime]
 

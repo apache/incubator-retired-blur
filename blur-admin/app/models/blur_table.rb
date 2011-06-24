@@ -51,4 +51,16 @@ class BlurTable < ActiveRecord::Base
       return false;
     end
   end
+
+  def <=> (other)
+    if other.is_enabled? == self.is_enabled?
+      return 0
+    end
+    if self.is_enabled?
+      return 1
+    else
+      return -1
+    end
+  end
+
 end

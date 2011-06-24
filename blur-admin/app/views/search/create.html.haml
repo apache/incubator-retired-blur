@@ -2,18 +2,18 @@
   #results_info.partial-results
     = "#{@result_count} results found in #{@result_time} ms"
   #results_section.partial-results
-    %table#result_table.result_table.tableWithFloatingHeader
+    %table#result_table.result_table
       %thead
         %tr
-          %th
+          %th.rowId
           - @all_columns.each do |family, set|
-            %th{:colspan => set.count}
+            %th{:colspan => set.count, :class => "family_#{family}", :id => family, :children => set.count}
               = family
         %tr.columnsets
-          %th row id
+          %th.rowId rowId
           - @all_columns.each do |family, set|
             - set.each do |s|
-              %th
+              %th{:class => "column_#{family}_#{s} family_#{family}"}
                 = s.gsub(/([A-Z])/, '&shy;\1').html_safe
         %tbody
           - @results.each do |result|
@@ -21,12 +21,13 @@
             - result[:table_rows].each_with_index do |table_row, i|
               %tr{:class => stripe_class}
                 - if i == 0
-                  %td.id_cell{:rowspan => result[:max_record_count]}
+                  %td.rowId.id_cell{:rowspan => result[:max_record_count]}
                     = result[:id]
 
                 - reset_cycle('column-cycle')
-                - table_row.each do |cfs|
+                - table_row.each_with_index do |cfs, j|
                   - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-                  - cfs.each do |column|
-                    %td{:class => cf_stripe}
+                  - cfs.each_with_index do |column, k|
+                    %td{:class => "#{cf_stripe} family_#{@family_names[j]} column_#{@family_names[j]}_#{@column_names[j][k]}"}
                       = column
+

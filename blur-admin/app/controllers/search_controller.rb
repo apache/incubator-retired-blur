@@ -28,13 +28,13 @@ class SearchController < ApplicationController
         parts = value.split('_')
         if (!columns.has_key?(parts[1]))
           columns[parts[1]] = []
-          columns[parts[1]] << 'record id'
+          columns[parts[1]] << 'recordId'
         end
         columns[parts[1]] << parts[2]
       end
     end
 
-		sel = Blur::Selector.new #:columnFamiliesToFetch => families, :columnsToFetch => columns
+		sel = Blur::Selector.new
 		sel.columnFamiliesToFetch = families unless families.blank?
 		sel.columnsToFetch = columns unless columns.blank?
 
@@ -44,7 +44,7 @@ class SearchController < ApplicationController
 
     families_with_columns = {}
     families.each do |family|
-      families_with_columns[family] = ['record id']
+      families_with_columns[family] = ['recordId']
       BlurThriftClient.client.schema(table).columnFamilies[family].each do |family_name|
         families_with_columns[family] << family_name
       end
@@ -72,7 +72,7 @@ class SearchController < ApplicationController
               if families_include
                 families_with_columns[column_family_name].each do |column|
                   found_set = column_family.records.values[record_count].find { |col| column == col.name }
-                    if !(column == 'record id')
+                    if !(column == 'recordId')
                       cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
                     else
                       cfspan << column_family.records.keys[record_count]
@@ -81,7 +81,7 @@ class SearchController < ApplicationController
               else
                 columns[column_family_name].each do |column|
                   found_set = column_family.records.values[record_count].find { |col| column == col.name }
-                    if !(column == 'record id')
+                    if !(column == 'recordId')
                       cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
                     else
                       cfspan << column_family.records.keys[record_count]
@@ -111,6 +111,8 @@ class SearchController < ApplicationController
     end
 
     @all_columns = families_with_columns.merge columns
+    @column_names = @all_columns.values
+    @family_names = @all_columns.keys
 
 		render :template=>'search/create.html.haml', :layout => false
 	end

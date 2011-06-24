@@ -17,7 +17,6 @@ $(document).ready ->
     $('.column_family_filter').bind("loaded.jstree", ->
       $('#filter_columns').show()
       $('#bar_section').show()
-
     )
 
   # Setup the filters onload
@@ -35,6 +34,11 @@ $(document).ready ->
     else
       $(':submit').attr('disabled', 'disabled')
 
+  # Show spinner when submit button is clicked
+  $('#search_submit').live('click', ->
+    $('#loading-spinner').show()
+  )
+
   # Functionality for ajax success
   $('#search_form').bind('ajax:success', (evt, data, status)->
     if(data)
@@ -46,15 +50,8 @@ $(document).ready ->
       #hides number of results option if there are no results
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
-
-    #hide the loading image
     $('#loading-spinner').hide()
     true
-  )
-
-  # Show spinner when submit button is clicked
-  $('#search_submit').live('click', -> 
-    $('#loading-spinner').show()
   )
   
   # Error message associated with ajax errors
@@ -76,6 +73,8 @@ $(document).ready ->
      $('.jstree-unchecked').removeClass('jstree-unchecked')
      $('.jstree-checked').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').attr('checked', 'checked')
+     $('th').show()
+     $('td').show()
 
   # Fucntionality for uncheck all
   uncheck_all = () ->
@@ -84,6 +83,9 @@ $(document).ready ->
      $('.jstree-checked').removeClass('jstree-checked')
      $('.jstree-undetermined').removeClass('jstree-undetermined')
      $('.jstree-real-checkbox').removeAttr('checked')
+     $('th').hide()
+     $('td').hide()
+     $('.rowId').show()
 
   #Live Listeners for this document
   #listeners for check all and uncheck all
@@ -118,11 +120,47 @@ $(document).ready ->
       $('#bar_section').addClass('collapsed-bar')
       
     else
-      $('#query_section').addClass('partial-page')
       $('#query_section').removeClass('full-page')
+      $('#query_section').addClass('partial-page')
       $('#filter_section').show()
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
       $('#bar_section').removeClass('collapsed-bar')
-      
+
+  )
+
+  $('.check_filter').live('click', ->
+    name = '.'+$(this).attr('name')
+    element = name.split("_")[0]
+    family = '#'+name.split("_")[1]
+    recordId_name = '.column_'+name.split("_")[1]+'_recordId'
+    curr_col_span = $(family).attr('colspan')
+    max_col_span = $(family).attr('children')
+
+    if $(name).is(":visible")
+      if element == ".column"
+        if curr_col_span <= 2
+          name = '.family_'+name.split("_")[1]
+        else
+          $(family).attr('colspan', curr_col_span-1)
+        $(name).hide()
+      else
+        list_length = $('#'+$(this).attr('name')).find("> ul > .jstree-checked").length + 1
+        if curr_col_span < max_col_span || curr_col_span < list_length
+          $(family).attr('colspan', max_col_span)
+          $(name).show() #show whole fam
+        else
+          $(name).hide()
+    else
+      if element == ".column"
+        if $(family).is(":visible")
+          if $('#result_table').find('thead > tr > ' + name).length > 0
+            $(family).attr('colspan', 1+parseInt(curr_col_span))
+        else
+          $(family).attr('colspan', 2)
+          $(family).show()
+          $(recordId_name).show()
+      else
+        $(family).attr('colspan', max_col_span)
+      $(name).show()
   )

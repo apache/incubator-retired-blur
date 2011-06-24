@@ -7,9 +7,8 @@
   height: 100%;
 }
 
-
-.full-page{ width: 100%; left:0px!important }
-.partial-page{ width: 80%; }
+.full-page{ width: 100%; left: 0px !important; max-width: 100%; }
+.partial-page{ width: 77%; margin-left: 47px; max-width: 77%;}
 
 #search_form{ height: 100%; }
 
@@ -26,8 +25,9 @@ $bar-width: 1%;
 #bar_section{
   width: $bar-width;
   height: 100%;
-  position:fixed;
+  position: fixed;
   left: $filter-width;
+  margin-left: 59px;
   background-color: #eee;
   display: inline-block;
   cursor: pointer;
@@ -35,19 +35,23 @@ $bar-width: 1%;
 
 #query_section{
   margin-right: 2px;
-  position:relative;
-  left:$filter-width + $bar_width;
-}
-#results_section{
-  width: 100%;
-  overflow-x: scroll;
-  background-color : #ffffff;
-  margin-bottom: 30px;
-  border: solid 1px #AAA;
+  position: relative;
+  left: $filter-width + $bar_width;
+  width: auto;
+  margin-right: 22px;
 }
 
+#results_section{
+  overflow-x: scroll;
+  background-color : #ffffff;
+  margin-bottom: 50px;
+  border: solid 1px #AAA;
+  width: auto;
+}
+
+
 textarea#q {
-  width: 50%;
+  width: 256px;
   height: 32px;
 }
 
@@ -103,7 +107,7 @@ table {
   color: #555;
   font-weight: bold;
   font-size: 150%;
-  margin-top: 5px;
+  margin-top: 15px;
 }
 
 .partial-section{
@@ -114,6 +118,7 @@ table {
 .partial-results{
   margin-top: 10px;
   margin-bottom: 10px;
+  width: auto;
 }
 
 #checkall{
@@ -130,6 +135,7 @@ b{ font-weight:bold; }
 #loading-spinner{
   float: right;
   padding-right: 10px;
+  vertical-align: top;
 }
 
 .half-section{
@@ -148,17 +154,18 @@ b{ font-weight:bold; }
 
 select#r{ margin-left: 5px; }
 
-.search-input{ vertical-align: top; }
+.search-input{ vertical-align: top; min-width: 320px; }
 
 #search_submit{
   margin-right: 10px;
+  float: right;
 }
 
 .id_cell{
-  text-align:left;
   vertical-align: top;
 }
 
 .collapsed-bar{
-  left:0 !important;
+  left: 27px !important;
+  margin-left: 0 !important;
 }

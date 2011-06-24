@@ -20,7 +20,7 @@ $nav-height: 45px;
 
 #bd_background {
 	background: white image-url('background-gradient.png') repeat-x top left;
-  background-attachment:fixed;
+  background-attachment:scroll;
 }
 
 #bd_wrap {
@@ -64,7 +64,7 @@ html,body{ height: 100%; }
 }
 
 body #nav {
-	background: white image-url('gradient.png') repeat-x 0 -58px;
+	background: transparent image-url('gradient.png') repeat-x 0 -58px;
 	@include box-shadow(0 -2px 1px $base-theme-color);
 	text-align: right;
   width:100%;

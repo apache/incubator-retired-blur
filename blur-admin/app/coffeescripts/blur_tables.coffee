@@ -30,7 +30,7 @@ $(document).ready ->
       row = $(this).closest('tr')
       row.siblings("##{row.attr('id')}").remove()
       row.replaceWith data
-      setup_filter_tree($('.blur_table_definition'))
+      setup_filter_tree($('.blur_table_schema'))
     .live 'ajax:error', (evt, xhr, status, error) ->
       console.log "Error in update ajax call"
     

@@ -27,14 +27,25 @@ class Ability
       # View schema on blur_tables
       can :hosts, :blur_tables
 
+      if user.has_role? :reader
+
+      end
+
       if user.has_role? :editor
         can [:update, :destroy], :blur_tables
         can :update, :blur_queries
       end
 
+      if user.has_role? :auditor
+        # This is a hack to get around CanCan 2.0's lack of filtering by resource fields.
+        # At least it keeps the can? syntax in the views somewhat consistent
+        # And allows for testing in the same place as all the other permissions
+        can :audit, :blur_queries
+      end
+
       if user.has_role? :admin
         can [:show, :index, :edit, :destroy, :create, :new], :users
-        can :update, :users, [:admin, :editor]
+        can :update, :users, [:admin, :editor, :reader, :auditor]
       end
 
     else  # not logged in

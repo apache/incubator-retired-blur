@@ -39,6 +39,8 @@ describe Ability do
       @user.stub(:id).and_return(123)
       @user.stub(:has_role?).with(:editor).and_return(false)
       @user.stub(:has_role?).with(:admin).and_return(false)
+      @user.stub(:has_role?).with(:auditor).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(false)
       @ability = Ability.new @user
     end
 
@@ -96,6 +98,10 @@ describe Ability do
       @ability.should_not be_able_to :update, @user, :admin
       @ability.should_not be_able_to :update, @user, :editor 
     end
+
+    it "can not audit blur_queries" do
+      @ability.should_not be_able_to :audit, :blur_queries
+    end
   end
 
   describe "when an editor" do
@@ -104,6 +110,8 @@ describe Ability do
       @user.stub(:id).and_return(123)
       @user.stub(:has_role?).with(:editor).and_return(true)
       @user.stub(:has_role?).with(:admin).and_return(false)
+      @user.stub(:has_role?).with(:auditor).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(false)
       @ability = Ability.new @user
     end
   
@@ -116,13 +124,31 @@ describe Ability do
       @ability.should be_able_to :update, :blur_queries
     end
   end
+
+  describe "when an auditor" do
+    before(:each) do
+      @user = User.new
+      @user.stub(:id).and_return(123)
+      @user.stub(:has_role?).with(:editor).and_return(false)
+      @user.stub(:has_role?).with(:admin).and_return(false)
+      @user.stub(:has_role?).with(:auditor).and_return(true)
+      @user.stub(:has_role?).with(:reader).and_return(false)
+      @ability = Ability.new @user
+    end
   
-  describe "when an editor" do
+    it "can audit blur_queries" do
+      @ability.should be_able_to :audit, :blur_queries
+    end
+  end
+  
+  describe "when an admin" do
     before(:each) do
       @user = User.new
       @user.stub(:id).and_return(123)
       @user.stub(:has_role?).with(:editor).and_return(false)
       @user.stub(:has_role?).with(:admin).and_return(true)
+      @user.stub(:has_role?).with(:auditor).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(false)
       @ability = Ability.new @user
       @other_user = User.new
     end

@@ -2,13 +2,14 @@
 
 %table#more-info-table
   %tbody
-    %tr 
-      %td{:id => "more-info-label"} Query String
-      %td
-        -if @blur_query.query_string
-          =@blur_query.query_string
-        -else
-          =empty_message
+    - if can? :audit, :blur_queries
+      %tr 
+        %td{:id => "more-info-label"} Query String
+        %td
+          -if @blur_query.query_string
+            =@blur_query.query_string
+          -else
+            =empty_message
     %tr 
       %td{:id => "more-info-label"} CPU Time
       %td

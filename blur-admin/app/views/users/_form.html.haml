@@ -18,8 +18,8 @@
 
   %strong Roles:
   - User.valid_roles.each do |role|
-    %p
-      - if (!@user.new_record? and can? :update, @user, role) or  (@user.new_record? and can? :create, @user, role)
+    - if (!@user.new_record? and can? :update, @user, role) or  (@user.new_record? and can? :create, @user, role)
+      %p
         = f.label role, role.capitalize
         = f.check_box role
   %p

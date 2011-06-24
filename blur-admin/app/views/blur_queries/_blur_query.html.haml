@@ -5,11 +5,12 @@
       = blur_query.userid
     - else
       = empty_message
-  %td{:class => "query_string", :title => blur_query.query_string}
-    - if blur_query.query_string
-      = truncate(blur_query.query_string, :length => 20, :ommision => "...")
-    - else
-      =empty_message
+  - if can? :audit, :blur_queries
+    %td{:class => "query_string", :title => blur_query.query_string}
+      - if blur_query.query_string
+        = truncate(blur_query.query_string, :length => 20, :ommision => "...")
+      - else
+        =empty_message
   %td.start
     - if blur_query.start
       = blur_query.start

@@ -1,5 +1,5 @@
 class User < ActiveRecord::Base
-  attr_accessible :username, :email, :password, :password_confirmation, :admin, :editor
+  attr_accessible :username, :email, :password, :password_confirmation, :admin, :editor, :auditor, :reader
   acts_as_authentic
 
   include RoleModel
@@ -31,7 +31,7 @@ class User < ActiveRecord::Base
     if reader == "1"
       self.roles << :reader unless self.has_role? :reader
     elsif reader == "0"
-      self.roles.delete :admin if self.has_role? :admin
+      self.roles.delete :reader if self.has_role? :reader
     end
   end
 

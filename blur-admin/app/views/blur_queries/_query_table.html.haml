@@ -2,7 +2,8 @@
   %thead
     %tr{:class => 'header'}
       %th User ID
-      %th Query
+      - if can? :audit, :blur_queries
+        %th Query
       %th Start
       %th Fetch
       %th CPU time / Real time (ms)

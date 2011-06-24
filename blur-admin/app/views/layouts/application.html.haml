@@ -34,11 +34,11 @@
             %li{:class => controller == 'env' && 'active'}
               = link_to 'Environment Status', '/'
 
-          %li{:class => controller == 'blur_tables' && 'active'}
-            = link_to 'Blur Tables', blur_tables_path
+            %li{:class => controller == 'blur_tables' && 'active'}
+              = link_to 'Blur Tables', blur_tables_path
 
-          %li{:class => controller == 'blur_queries' && 'active'}
-            = link_to 'Blur Queries', blur_queries_path
+            %li{:class => controller == 'blur_queries' && 'active'}
+              = link_to 'Blur Queries', blur_queries_path
 
             %li{:class => controller == 'search' && 'active', :id => "left"}
               = link_to 'Search', search_path

@@ -7,8 +7,8 @@
   height: 100%;
 }
 
-.full-page{ width: 100%; left: 0px !important }
-.partial-page{ width: 80%; margin-left: 47px; }
+.full-page{ width: 100%; left: 0px !important; max-width: 100%; }
+.partial-page{ width: 77%; margin-left: 47px; max-width: 77%;}
 
 #search_form{ height: 100%; }
 
@@ -37,17 +37,21 @@ $bar-width: 1%;
   margin-right: 2px;
   position: relative;
   left: $filter-width + $bar_width;
+  width: auto;
+  margin-right: 22px;
 }
 
 #results_section{
   overflow-x: scroll;
   background-color : #ffffff;
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   border: solid 1px #AAA;
+  width: auto;
 }
 
+
 textarea#q {
-  width: 50%;
+  width: 256px;
   height: 32px;
 }
 
@@ -114,6 +118,7 @@ table {
 .partial-results{
   margin-top: 10px;
   margin-bottom: 10px;
+  width: auto;
 }
 
 #checkall{
@@ -152,6 +157,7 @@ select#r{ margin-left: 5px; }
 
 #search_submit{
   margin-right: 10px;
+  float: right;
 }
 
 .id_cell{

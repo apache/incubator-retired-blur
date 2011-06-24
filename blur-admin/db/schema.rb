@@ -10,11 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-<<<<<<< HEAD
 ActiveRecord::Schema.define(:version => 20110623200720) do
-=======
-ActiveRecord::Schema.define(:version => 20110621202658) do
->>>>>>> refactored blur_tables and blur_queries, UJS for blur_queries page
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"

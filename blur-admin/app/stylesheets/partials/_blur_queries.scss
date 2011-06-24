@@ -4,9 +4,13 @@
   $header_text_color: #555;
 
   @mixin table-base {
+    display: table;
     border: solid 1px #AAA;
     tr:nth-child(odd) { background-color: $shaded_row_background_color; };
     text-align: center;
+    tr.error td{
+      text-align: center;
+    }
     th {
       font-weight: bold;
       font-size: 120%;

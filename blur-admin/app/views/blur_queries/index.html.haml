@@ -16,7 +16,7 @@
         = image_tag "/images/spinner.gif", :id => "filter_spinner", :alt => "Loading...", :hidden => true
       %div
         = label_tag :super_query_on, 'Super Query:'
-        = select_tag :super_query_on, options_for_select([['Both', nil], ['On', true], ['Off', false]])
+        = select_tag :super_query_on, options_for_select([['All Queries', nil], ['Super Query On', true], ['Super Query Off', false]])
         %br
         = label_tag :time, 'Time:'
         = select_tag :time, options_for_select([['1 minute', 1], ['5 minutes', 5], ['15 minutes', 15], ['30 minutes', 30], ['1 hour', 60]])

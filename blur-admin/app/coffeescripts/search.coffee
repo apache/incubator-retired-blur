@@ -17,7 +17,6 @@ $(document).ready ->
     $('.column_family_filter').bind("loaded.jstree", ->
       $('#filter_columns').show()
       $('#bar_section').show()
-
     )
 
   # Setup the filters onload

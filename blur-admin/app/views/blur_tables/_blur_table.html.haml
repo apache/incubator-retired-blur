@@ -41,7 +41,7 @@
   %tr.tr-underline{:id => "blur_table_#{blur_table.id}"}
     %td{:colspan => 7}
       %b definition:
-      .blur_table_definition
+      .blur_table_definition{:style=>'display:none'}
         %ul
           %li#families{:id=>"#{blur_table.table_name}", :class => "family-node"}
             %a{:href=>'', :class => 'families'}Column Families

@@ -1,7 +1,7 @@
 .schema
   Shard Servers:
   - if schema
-    .schema_tree
+    .schema_tree{:style=>'display:none'}
       %ul
         -schema.each do |host, shards|
           %li.host{:id=>"#{host}"}

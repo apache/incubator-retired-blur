@@ -22,7 +22,6 @@ ActiveRecord::Schema.define(:version => 20110623200720) do
     t.string   "uuid"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.string   "table_name"
     t.boolean  "super_query_on"
     t.string   "facets"
     t.integer  "start"
@@ -32,6 +31,7 @@ ActiveRecord::Schema.define(:version => 20110623200720) do
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"
+    t.integer  "blur_table_id"
   end
 
   create_table "blur_tables", :force => true do |t|

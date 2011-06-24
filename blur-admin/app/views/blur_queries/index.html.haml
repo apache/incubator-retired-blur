@@ -1,0 +1,38 @@
+- content_for :title, 'Blur Queries'
+
+- content_for :javascript do
+  = javascript_include_tag 'compiled/blur_queries'
+
+#blur_queries_wrapper
+  %h2 Blur Queries
+
+  = form_tag "/blur_queries", :id => "filter_form", :method => :get, :remote => true do
+    = label_tag :blur_table_id, 'Blur Table:'
+    = select_tag :blur_table_id, options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
+
+    #filter_wrapper
+      %h3
+        = link_to 'Filters', ''
+        = image_tag "/images/spinner.gif", :id => "filter_spinner", :alt => "Loading...", :hidden => true
+      %div
+        = label_tag :super_query_on, 'Super Query:'
+        = select_tag :super_query_on, options_for_select([['All Queries', nil], ['Super Query On', true], ['Super Query Off', false]])
+        %br
+        = label_tag :time, 'Time:'
+        = select_tag :time, options_for_select([['1 minute', 1], ['5 minutes', 5], ['15 minutes', 15], ['30 minutes', 30], ['1 hour', 60]])
+        %br
+        = submit_tag 'filter'
+
+  = render 'query_table'
+
+#more-info-container
+
+#failure-message{:hidden => true}
+  #failed-info{:hidden => true}
+  #failed-buttons 
+    %form
+      =label_tag :t, "The cancel was unsuccessful, would you like to try canceling again?", :id => "failed-label"
+      %button#confirm-resubmit.cancel{:type => "button"}
+        Cancel
+      %button#confirm-resubmit.resubmit{:type => "button"}
+        Re-Submit

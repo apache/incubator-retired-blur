@@ -1,0 +1,75 @@
+
+#blur_tables_wrapper{
+  margin-top: 5px;
+  margin-left: 20px;
+  margin-right: 20px;
+
+  h2{
+    color: #555;
+    font-weight: bold;
+    font-size: 200%;
+  }
+
+  .expandable a, .collapsible a, .expandable a:hover, .collapsible a:hover {
+    text-decoration: none;
+    color: #000;
+    padding-left:20px;
+    position: relative;
+    left: -20px;
+  }
+
+  li {
+    list-style-image: none;
+  }
+
+  .expandable {
+    list-style-image: image-url("plus.png");
+  }
+
+  .collapsible {
+    list-style-image: image-url("minus.png");
+  }
+
+  #confirm-submit{
+    float: right;
+  }
+
+  #blur_tables_table {
+    display: table;
+    border: solid 1px #AAA;
+    width: 100%;
+    margin-bottom: 20px;
+    tr {
+      th, td{
+        text-align: left;
+      }
+    }
+    tr:nth-child(8n) {background-color:#EEE;}
+    tr:nth-child(8n-1) {background-color:#EEE;}
+    tr:nth-child(8n-2) {background-color:#EEE;}
+    tr:nth-child(8n-3) {background-color:#EEE;}
+
+    #header {
+      height: 50px;
+      background-color: #C4d9ff;
+      color: #555;
+      th{
+        font-weight: bold;
+        font-size: 120%;
+      }
+    }
+  }
+
+  .delete-table {
+    font-size: 85%;
+    text-align: center;
+  }
+
+  .tr-underline{
+    border-bottom: solid 1px #AAA;
+  }
+
+  .jstree-icon{
+    cursor: pointer;
+  }
+}

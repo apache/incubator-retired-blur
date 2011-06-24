@@ -1,9 +1,19 @@
-class BlurTables < ActiveRecord::Base
+class BlurTable < ActiveRecord::Base
   require 'blur_thrift_client'
+
+  has_many :blur_queries
 
   def schema
     if self.table_schema
       JSON.parse self.table_schema
+    else
+      return nil
+    end
+  end
+
+  def definition
+    if self.server
+      JSON.parse self.server
     else
       return nil
     end
@@ -23,7 +33,7 @@ class BlurTables < ActiveRecord::Base
 
   def disable
     begin
-      BlurThriftClient.client.disableTable self.table_name
+      #BlurThriftClient.client.disableTable self.table_name
     ensure
       return self.is_enabled?
     end
@@ -35,7 +45,7 @@ class BlurTables < ActiveRecord::Base
       #BlurThriftClient.client.removeTable self.table_name underlying
       return true;
     rescue
-      puts "Exception in BlurTables.destroy"
+      puts "Exception in BlurTable.destroy"
       return false;
     end
   end

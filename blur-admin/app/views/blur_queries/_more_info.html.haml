@@ -1,6 +1,6 @@
 - empty_message = 'Not Available'
 
-%table#more-info-table{:hidden => true}
+%table#more-info-table
   %tbody
     %tr 
       %td{:id => "more-info-label"} Query String
@@ -51,8 +51,8 @@
     %tr 
       %td{:id => "more-info-label"} Table Name
       %td
-        -if @blur_query.table_name
-          =@blur_query.table_name
+        -if @blur_query.blur_table.table_name
+          =@blur_query.blur_table.table_name
         -else
           =empty_message
     %tr

@@ -10,16 +10,17 @@
 .full-page{ width: 100%; left: 0px !important; max-width: 100%; }
 .partial-page{ width: 77%; margin-left: 47px; max-width: 77%;}
 
-$filter-width: 18%;
+$filter-width: 200px;
 #filter_section{
   width: $filter-width;
+  margin-bottom:$footer-height;
   position:fixed;
+  overflow:auto;
   top: $nav-height + $header-height;
   display: inline-block;
-  height: 100%;
 }
 
-$bar-width: 1%;
+$bar-width: 10px;
 #bar_section{
   width: $bar-width;
   height: 100%;

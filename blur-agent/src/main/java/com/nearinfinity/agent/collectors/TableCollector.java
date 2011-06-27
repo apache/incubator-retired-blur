@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.nearinfinity.agent.TableMap;
 import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
@@ -50,9 +51,12 @@ public class TableCollector {
 				jdbc.update("update blur_tables set status = 0 where table_name not in ('" + StringUtils.join(tables, "','") + "')");
 				
 				//Create and update tables
-				for (String table : tables) {
+				for (String table : tables) {				
 					List<Map<String, Object>> existingTable = jdbc.queryForList("select id from blur_tables where table_name=?", table);
 					TableDescriptor descriptor = client.describe(table);
+					
+					//add the tablename and tableid to the map that acts as a dictionary
+					TableMap.get().put(table, (Integer)(existingTable.get(0).get("id")));
 					
 					//strings that are being mocked to json
 					Schema schema = client.schema(table);

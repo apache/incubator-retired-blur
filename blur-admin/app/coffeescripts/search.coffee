@@ -88,12 +88,12 @@ $(document).ready ->
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   # Disable submit button when no text in input
-  $('#q').live("keyup", (name) ->
+  $('#q').live("keypress", (name) ->
     if name.keyCode == 13 && !name.shiftKey
+      name.preventDefault()
       if $(':submit').attr('disabled')
         error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
         $('#results_container').html(error_content)
-        $('#bar_section').css('height', $('#query_section').height() )
       else
         $('#search_form').submit()
         $('#loading-spinner').show()

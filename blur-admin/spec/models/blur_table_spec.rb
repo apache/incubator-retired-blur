@@ -3,11 +3,11 @@ require 'spec_helper'
 describe BlurTable do
   
   before(:each) do
-      @client = mock(ThriftClient)
-      BlurThriftClient.stub!(:client).and_return(@client)
-      @table = BlurTable.new :table_name =>    'blah',
-                                    :status =>        "2",
-                                    :server =>  "{\"Host1:101\":[\"shard-001\", \"shard-002\", \"shard-003\"], \"Host2:102\":[\"shard-004\", \"shard-005\", \"shard-006\"]}"
+    @client = mock(ThriftClient)
+    BlurThriftClient.stub!(:client).and_return(@client)
+    @table = BlurTable.new :table_name =>    'blah',
+                                  :status =>        "2",
+                                  :server =>  "{\"Host1:101\":[\"shard-001\", \"shard-002\", \"shard-003\"], \"Host2:102\":[\"shard-004\", \"shard-005\", \"shard-006\"]}"
   end
   
   describe "enable " do
@@ -36,6 +36,29 @@ describe BlurTable do
     it "returns nil when the server has not been populated" do
       blur_table = BlurTable.new
       blur_table.server.should be nil
+    end
+  end
+
+  describe "sort" do
+    before(:each) do
+      @disabled = BlurTable.new :status => "1"
+      @enabled = BlurTable.new :status => "2"
+    end
+
+    it "returns 0 when two tables have the same status" do
+      (@table <=> @enabled).should == 0
+    end
+
+    it "returns 1 when a table is enabled" do
+      (@table <=> @enabled).should == 0
+    end
+
+    it "returns 1 when a table is enabled and the other is not" do
+      (@table <=> @disabled).should == 1
+    end
+
+    it "returns -1 when a table is diasbled and the other is not" do
+      (@disabled <=> @enabled).should == -1
     end
   end
 end

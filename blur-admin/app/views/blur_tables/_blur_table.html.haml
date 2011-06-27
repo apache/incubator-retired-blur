@@ -7,9 +7,9 @@
   %td
     - if blur_table.server
       = link_to "/blur_tables/#{blur_table.id}/hosts", :class => 'hosts', :remote => true do
-        Hosts: 
+        Hosts:
         = blur_table.hosts.keys.length
-        Shards: 
+        Shards:
         = blur_table.hosts.values.flatten.length
     - else
       = nil_message

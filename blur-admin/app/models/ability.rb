@@ -14,7 +14,6 @@ class Ability
       # logout
       can :destroy, :user_sessions
 
-
       if user.has_role? :reader
 
         # view pages

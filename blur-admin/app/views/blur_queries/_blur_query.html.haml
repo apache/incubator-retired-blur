@@ -32,7 +32,7 @@
     - if blur_query.cpu_time and blur_query.real_time
       = blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s
     - else
-      = empty_message 
+      = empty_message
   %td
     - if blur_query.blur_table.schema
       - num_shards = blur_query.blur_table.schema.values.flatten.count

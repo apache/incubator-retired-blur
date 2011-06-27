@@ -8,3 +8,4 @@ public/stylesheets/compiled
 spec/reports
 coverage
 coverage.data
+.idea/*

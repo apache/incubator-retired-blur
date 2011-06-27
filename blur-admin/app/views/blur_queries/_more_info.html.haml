@@ -3,7 +3,7 @@
 %table#more-info-table
   %tbody
     - if can? :audit, :blur_queries
-      %tr 
+      %tr
         %td{:id => "more-info-label"} Query String
         %td
           -if @blur_query.query_string

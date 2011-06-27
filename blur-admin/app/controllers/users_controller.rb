@@ -28,7 +28,7 @@ class UsersController < ApplicationController
   end
 
   def update
-    puts params[:user] 
+    puts params[:user]
     if @user.update_attributes(params[:user])
       redirect_to @user, :notice  => "Successfully updated user."
     else

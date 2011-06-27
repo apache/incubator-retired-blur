@@ -89,6 +89,24 @@ describe Ability do
     it "can not audit blur_queries" do
       @ability.should_not be_able_to :audit, :blur_queries
     end
+
+    it "can not view pages" do
+      @ability.should_not be_able_to :index, :blur_tables
+      @ability.should_not be_able_to :hosts, :blur_tables
+      @ability.should_not be_able_to :show, :env
+      @ability.should_not be_able_to :show, :search
+      @ability.should_not be_able_to :index, :blur_queries
+      @ability.should_not be_able_to :more_info, :blur_queries
+    end
+
+    it "can not perform queries" do
+      @ability.should_not be_able_to :filters, :search
+      @ability.should_not be_able_to :create, :search
+    end
+
+    it "can not audit query strings" do
+      @ability.should_not be_able_to :audit, :blur_query
+    end
   end
 
   describe "when a reader" do

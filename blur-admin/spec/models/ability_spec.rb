@@ -86,8 +86,8 @@ describe Ability do
       @ability.should_not be_able_to :update, @user, :editor 
     end
 
-    it "can not audit blur_queries" do
-      @ability.should_not be_able_to :audit, :blur_queries
+    it "can not view query_strings on blur_query page" do
+      @ability.should_not be_able_to :index, :blur_queries, :query_string
     end
 
     it "can not view pages" do
@@ -104,9 +104,6 @@ describe Ability do
       @ability.should_not be_able_to :create, :search
     end
 
-    it "can not audit query strings" do
-      @ability.should_not be_able_to :audit, :blur_query
-    end
   end
 
   describe "when a reader" do
@@ -129,7 +126,12 @@ describe Ability do
       @ability.should be_able_to :more_info, :blur_queries
     end
 
-    it "can perform queries" do
+    it "can not view query strings" do
+      @ability.should_not be_able_to :more_info, :blur_queries, :query_string
+      @ability.should_not be_able_to :index, :blur_queries, :query_string
+    end
+
+    it "can search" do
       @ability.should be_able_to :filters, :search
       @ability.should be_able_to :create, :search
     end
@@ -164,11 +166,12 @@ describe Ability do
       @user.stub(:has_role?).with(:admin).and_return(false)
       @user.stub(:has_role?).with(:auditor).and_return(true)
       @user.stub(:has_role?).with(:reader).and_return(true)
-      @ability = Ability.new @user
+      @ability = Ability.new(@user)
     end
   
-    it "can audit blur_queries" do
-      @ability.should be_able_to :audit, :blur_queries
+    it "can view blur query string" do
+      @ability.should be_able_to :index, :blur_queries, :query_string
+      @ability.should be_able_to :more_info, :blur_queries, :query_string
     end
   end
   

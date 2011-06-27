@@ -17,14 +17,20 @@ class Ability
       if user.has_role? :reader
 
         # view pages
-        can :index, [:blur_queries, :blur_tables, :search]
+        can :index, [:blur_tables, :search]
         can :show, [:env, :search]
 
         # search
         can [:filters, :create], :search
 
-        # view more info on blur_queries
-        can :more_info, :blur_queries
+        # can view everything but query_string on blur_tables:
+        attributes = BlurQuery.new.attribute_names
+        attributes.delete "query_string"
+        attributes.collect! {|attribute| attribute.to_sym}
+        can :index, :blur_queries, attributes
+
+        # view more info on blur_queries on with everything but query_string
+        can :more_info, :blur_queries, attributes
 
         # View schema on blur_tables
         can :hosts, :blur_tables
@@ -37,10 +43,8 @@ class Ability
       end
 
       if user.has_role? :auditor
-        # This is a hack to get around CanCan 2.0's lack of filtering by resource fields.
-        # At least it keeps the can? syntax in the views somewhat consistent
-        # And allows for testing in the same place as all the other permissions
-        can :audit, :blur_queries
+        can :index, :blur_queries, :query_string
+        can :more_info, :blur_queries, :query_string
       end
 
       if user.has_role? :admin

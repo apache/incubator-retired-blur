@@ -2,7 +2,7 @@
   %thead
     %tr{:class => 'header'}
       %th User ID
-      - if can? :audit, :blur_queries
+      - if can? :index, :blur_queries, :query_string
         %th Query
       %th Super Query
       %th Start

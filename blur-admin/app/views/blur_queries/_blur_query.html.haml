@@ -5,7 +5,7 @@
       = blur_query.userid
     - else
       = empty_message
-  - if can? :audit, :blur_queries
+  - if can? :index, :blur_queries, :query_string
     %td{:class => "query_string", :title => blur_query.query_string}
       - if blur_query.query_string
         = truncate(blur_query.query_string, :length => 20, :ommision => "...")

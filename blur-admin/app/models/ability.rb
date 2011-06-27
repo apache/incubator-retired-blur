@@ -18,7 +18,7 @@ class Ability
 
         # view pages
         can :index, [:blur_tables, :search]
-        can :show, [:env, :search]
+        can :show, [:blur_zookeeper_instances, :search]
 
         # search
         can [:filters, :create], :search

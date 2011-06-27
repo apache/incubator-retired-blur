@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   enable_authorization do |exception|
     puts exception
     if current_user
-      if can? :show, :env
+      if can? :show, :blur_zookeeper_instances
         redirect_to root_url, :alert => "Unauthorized"
       else
         redirect_to logout_url, :alert => "Unauthorized"
@@ -22,12 +22,14 @@ class ApplicationController < ActionController::Base
   private
 
     def current_user_session
-      return @current_user_session if defined? @current_user_session
-      @current_user_session = UserSession.find
+      @current_user_session ||= UserSession.find
     end
 
     def current_user
-      return @current_user if defined? @current_user
-      @current_user = current_user_session && current_user_session.user
+      @current_user ||= current_user_session && current_user_session.user
+    end
+
+    def current_blur_zookeeper_instance
+
     end
 end

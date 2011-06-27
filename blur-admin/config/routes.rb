@@ -1,21 +1,22 @@
 BlurAdmin::Application.routes.draw do
-  resources :users, :user_sessions, :blur_queries, :blur_tables
+  resources :users, :user_sessions
+  resources :blur_zookeeper_instances, :only => :show
 
 	resource :search, :controller => 'search'
 	resource :env, :controller => 'env'
 
-  root :to => "env#show"
+  root :to => "blur_zookeeper_instances#show"
+
+  resources :blur_tables do
+    get 'hosts', :on => :member
+  end
+
+  resources :blur_queries do
+    get 'more_info', :on => :member
+  end
 
   controller "search" do
     match 'search/:table/filters', :to => :filters, :as => :search_filters, :via => :get
-  end
-
-  controller "blur_tables" do
-    match 'blur_tables/:id/hosts', :to => :hosts, :via => :get
-  end
-
-  controller :blur_queries do
-    match 'blur_queries/:id/more_info', :to => :more_info, :via => :get
   end
 
   match 'login' => 'user_sessions#new', :as => :login

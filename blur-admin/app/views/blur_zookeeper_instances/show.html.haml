@@ -1,0 +1,49 @@
+- content_for :title, 'Environment Status'
+- content_for :javascript do
+  = javascript_include_tag 'compiled/blur_zookeeper_instances'
+.status-container
+  #hdfs-status.inner-container.outer-container.left-container
+    .titles
+      %h2 HDFS Status
+    #hdfs-placeholder
+      %ul
+        %li get HDFS capacity data
+        %li generate pie chart of capacity data
+        %li something else?
+        %li and that other thing
+        %li with the stuff
+  #zookeeper-status.inner-container.outer-container.right-container
+    .titles
+      %h2 Zookeeper Status
+    #zookeeper-placeholder
+      %ul
+        %li determine how to make zookeeper calls
+        %li populate this space with a dump of the contains in the blur folder stored in zookeeper
+#bottom-container.outer-container
+  .titles
+    %h2 Blur Status
+  .status-container
+    .inner-container.bottom-status.left-container
+      - if @controllers
+        %h3="Controllers(" + @controllers.length.to_s + ")"
+        #controllers-placeholder
+          %ul
+            -@controllers.each do |theController|
+              %li
+                =theController
+                .sparkline
+      - else
+        %h3 Controllers
+        %p Not Available
+    .inner-container.bottom-status.right-container
+      - if @shards
+        %h3="Shards(" + @shards.length.to_s + ")"
+        #shards-placeholder
+          %ul
+            -@shards.each do |shard|
+              %li
+                =shard
+                .sparkline
+      - else
+        %h3 Shards
+        %p Not Available

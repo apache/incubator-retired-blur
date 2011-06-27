@@ -38,7 +38,7 @@
           %ul
             - controller = params[:controller]
             %li{:class => controller == 'env' && 'active'}
-              = link_to 'Environment Status', '/'
+              = link_to 'Environment Status', root_path
 
             %li{:class => controller == 'blur_tables' && 'active'}
               = link_to 'Blur Tables', blur_tables_path

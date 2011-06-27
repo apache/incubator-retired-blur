@@ -4,10 +4,6 @@ class Ability
   def initialize(user)
 
     if user # logged in
-      
-      # view pages
-      can :index, [:blur_queries, :blur_tables, :search]
-      can :show, [:env, :search]
 
       # view, edit, and destroy own account
       can [:show, :edit, :destroy], :users, :id => user.id
@@ -18,16 +14,21 @@ class Ability
       # logout
       can :destroy, :user_sessions
 
-      # search
-      can [:filters, :create], :search
-
-      # view more info on blur_queries
-      can :more_info, :blur_queries
-
-      # View schema on blur_tables
-      can :hosts, :blur_tables
 
       if user.has_role? :reader
+
+        # view pages
+        can :index, [:blur_queries, :blur_tables, :search]
+        can :show, [:env, :search]
+
+        # search
+        can [:filters, :create], :search
+
+        # view more info on blur_queries
+        can :more_info, :blur_queries
+
+        # View schema on blur_tables
+        can :hosts, :blur_tables
 
       end
 

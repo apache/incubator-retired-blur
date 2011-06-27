@@ -55,7 +55,7 @@ class User < ActiveRecord::Base
 end
 
 def reader
-  return true if self.has_role? :editor
+  return true if self.has_role? :reader
   false
 end
 

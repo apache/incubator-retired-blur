@@ -7,7 +7,11 @@ class ApplicationController < ActionController::Base
   enable_authorization do |exception|
     puts exception
     if current_user
-      redirect_to root_url, :alert => "Unauthorized"
+      if can? :show, :env
+        redirect_to root_url, :alert => "Unauthorized"
+      else
+        redirect_to logout_url, :alert => "Unauthorized"
+      end
     else
       redirect_to login_path, :alert => "Please login"
     end

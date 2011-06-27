@@ -44,14 +44,6 @@ describe Ability do
       @ability = Ability.new @user
     end
 
-    it "can view pages" do
-      @ability.should be_able_to :index, :blur_tables
-      @ability.should be_able_to :hosts, :blur_tables
-      @ability.should be_able_to :show, :env
-      @ability.should be_able_to :show, :search
-      @ability.should be_able_to :index, :blur_queries
-      @ability.should be_able_to :more_info, :blur_queries
-    end
 
     it "can view, edit and delete itself" do
       @ability.should be_able_to :show, @user
@@ -69,11 +61,6 @@ describe Ability do
 
     it "can not view the admin page" do
       @ability.should_not be_able_to :index, :users
-    end
-
-    it "can perform queries" do
-      @ability.should be_able_to :filters, :search
-      @ability.should be_able_to :create, :search
     end
 
     it "can not create a new user or session" do
@@ -104,6 +91,32 @@ describe Ability do
     end
   end
 
+  describe "when a reader" do
+    before(:each) do
+      @user = User.new
+      @user.stub(:id).and_return(123)
+      @user.stub(:has_role?).with(:editor).and_return(false)
+      @user.stub(:has_role?).with(:admin).and_return(false)
+      @user.stub(:has_role?).with(:auditor).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(true)
+      @ability = Ability.new @user
+    end
+
+    it "can view pages" do
+      @ability.should be_able_to :index, :blur_tables
+      @ability.should be_able_to :hosts, :blur_tables
+      @ability.should be_able_to :show, :env
+      @ability.should be_able_to :show, :search
+      @ability.should be_able_to :index, :blur_queries
+      @ability.should be_able_to :more_info, :blur_queries
+    end
+
+    it "can perform queries" do
+      @ability.should be_able_to :filters, :search
+      @ability.should be_able_to :create, :search
+    end
+  end
+
   describe "when an editor" do
     before(:each) do
       @user = User.new
@@ -111,7 +124,7 @@ describe Ability do
       @user.stub(:has_role?).with(:editor).and_return(true)
       @user.stub(:has_role?).with(:admin).and_return(false)
       @user.stub(:has_role?).with(:auditor).and_return(false)
-      @user.stub(:has_role?).with(:reader).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(true)
       @ability = Ability.new @user
     end
   
@@ -132,7 +145,7 @@ describe Ability do
       @user.stub(:has_role?).with(:editor).and_return(false)
       @user.stub(:has_role?).with(:admin).and_return(false)
       @user.stub(:has_role?).with(:auditor).and_return(true)
-      @user.stub(:has_role?).with(:reader).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(true)
       @ability = Ability.new @user
     end
   
@@ -148,7 +161,7 @@ describe Ability do
       @user.stub(:has_role?).with(:editor).and_return(false)
       @user.stub(:has_role?).with(:admin).and_return(true)
       @user.stub(:has_role?).with(:auditor).and_return(false)
-      @user.stub(:has_role?).with(:reader).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(true)
       @ability = Ability.new @user
       @other_user = User.new
     end

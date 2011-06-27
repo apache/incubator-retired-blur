@@ -2,6 +2,12 @@
 %html
   %head
     =csrf_meta_tag
+    = javascript_include_tag 'raphael-min','g.raphael-min','g.pie-min','g.bar-min','g.line-min','jquery', 'jquery-ui', 'rails', 'application'
+
+    -# Use this syntax in haml templates to add page specific javascript
+    -# - content_for :javascript do
+    -#   = javascript_include_tag 'compiled/runtime'
+    = yield :javascript
     %title
       = yield(:title)
       | Blur Admin
@@ -55,9 +61,4 @@
     #ft
       .container
         Connected to blur04
-    = javascript_include_tag 'raphael-min','g.raphael-min','g.pie-min','g.bar-min','g.line-min','jquery', 'jquery-ui', 'rails', 'application'
 
-    -# Use this syntax in haml templates to add page specific javascript
-    -# - content_for :javascript do
-    -#   = javascript_include_tag 'compiled/runtime'
-    = yield :javascript

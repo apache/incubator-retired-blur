@@ -103,6 +103,10 @@ describe Ability do
       @ability.should_not be_able_to :filters, :search
       @ability.should_not be_able_to :create, :search
     end
+
+    it "can not audit query strings" do
+      @ability.should_not be_able_to :audit, :blur_query
+    end
   end
 
   describe "when a reader" do

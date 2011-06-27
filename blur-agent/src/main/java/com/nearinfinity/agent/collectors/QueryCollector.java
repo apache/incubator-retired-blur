@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONValue;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.nearinfinity.agent.TableMap;
 import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
@@ -37,16 +38,16 @@ public class QueryCollector {
 						| uuid                     | varchar(255) | YES  |     | NULL    |                |
 						| created_at               | datetime     | YES  |     | NULL    |                |
 						| updated_at               | datetime     | YES  |     | NULL    |                |
-						| table_name               | varchar(255) | YES  |     | NULL    |                |
 						| super_query_on           | tinyint(1)   | YES  |     | NULL    |                |
 						| facets                   | varchar(255) | YES  |     | NULL    |                |
 						| start                    | int(11)      | YES  |     | NULL    |                |
 						| fetch_num                | int(11)      | YES  |     | NULL    |                |
-						| pre_filters              | mediumtext   | YES  |     | NULL    |                |
-						| post_filters             | mediumtext   | YES  |     | NULL    |                |
+						| pre_filters              | longtext     | YES  |     | NULL    |                |
+						| post_filters             | longtext     | YES  |     | NULL    |                |
 						| selector_column_families | text         | YES  |     | NULL    |                |
 						| selector_columns         | text         | YES  |     | NULL    |                |
 						| userid                   | varchar(255) | YES  |     | NULL    |                |
+						| blur_table_id            | int(11)      | YES  |     | NULL    |                |
 						+--------------------------+--------------+------+-----+---------+----------------+
 
 
@@ -57,10 +58,10 @@ public class QueryCollector {
 						
 						for (BlurQueryStatus blurQueryStatus : currentQueries) {
 							//Check if query exists
-							List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete from blur_queries where table_name=? and uuid=?", new Object[]{table, blurQueryStatus.getUuid()});
+							List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete from blur_queries where blur_table_id=? and uuid=?", new Object[]{TableMap.get().get(table), blurQueryStatus.getUuid()});
 							if (existingRow.isEmpty()) {
 //								System.out.println("Start time:" + blurQueryStatus.getQuery().get);
-								jdbc.update("insert into blur_queries (query_string, cpu_time, real_time, complete, interrupted, running, uuid, created_at, table_name, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
+								jdbc.update("insert into blur_queries (query_string, cpu_time, real_time, complete, interrupted, running, uuid, created_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
 											new Object[]{blurQueryStatus.getQuery().getQueryStr(), 
 												blurQueryStatus.getCpuTime(),
 												blurQueryStatus.getRealTime(),
@@ -70,7 +71,7 @@ public class QueryCollector {
 												blurQueryStatus.getUuid(),
 //												new Date(blurQueryStatus.getQuery().getStartTime()),
 												new Date(),
-												table,
+												TableMap.get().get(table),
 												blurQueryStatus.getQuery().isSuperQueryOn(),
 												StringUtils.join(blurQueryStatus.getQuery().getFacets(), ", "),
 												blurQueryStatus.getQuery().getStart(),

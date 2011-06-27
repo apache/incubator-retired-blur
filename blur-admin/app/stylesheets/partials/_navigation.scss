@@ -29,7 +29,6 @@ $nav-height: 45px;
 
 html,body{ height: 100%; }
 
-#root{ height: 100%; }
 
 #bd {
   position:relative;
@@ -50,11 +49,11 @@ html,body{ height: 100%; }
 
 #ft {
   $footer-color: lighten($base-theme-color, 20%);
-  position:relative;
-  top: $header-height + $nav-height;
   background-color: $footer-color; 
   text-align: center;
-  height: $footer-height - 1px;
+  position:relative;
+  top: $header-height + $nav-height;
+  height: $footer-height;
   line-height: $footer-height - 1px;
   border-top: 1px solid darken($footer-color, 10%);
   color: darken($footer-color, 40%);

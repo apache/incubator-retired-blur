@@ -38,5 +38,5 @@
           = text_area_tag :q, params[:q]
           = submit_tag "Search", :disabled => true, :id => "search_submit"
 
-        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :hidden => true }
+        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none;" }
       #results_container

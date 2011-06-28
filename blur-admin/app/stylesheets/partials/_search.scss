@@ -101,7 +101,7 @@ table {
 }
 .search-title{
   position:relative;
-  top:-10px;
+  top:-11px;
 }
 
 .partial-section{
@@ -109,8 +109,8 @@ table {
   margin-bottom: 20px;
 }
 
-.partial-results{
-  margin-bottom: 5px;
+.results-count{
+  margin-top:20px;
   width: auto;
 }
 
@@ -140,14 +140,14 @@ select#r{ margin-left: 5px; }
 .search-input{
   vertical-align: top;
   display:inline-block;
+  position:relative;
 }
 
 #search_submit{
   display:block;
-  float: right;
-  position:relative;
-  width:50px;
-  left:-50px;
+  position:absolute;
+  margin-top:5px;
+  right:0;
 }
 
 .id_cell{ vertical-align: top; }
@@ -161,4 +161,11 @@ select#r{ margin-left: 5px; }
 .query-label{
   vertical-align:top;
   display:inline-block;
+  margin-right:5px;
+}
+
+#q{
+  font:inherit;
+  font-weight:normal;
+  padding:0 2px 0;
 }

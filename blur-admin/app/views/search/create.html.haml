@@ -27,6 +27,6 @@
                 - table_row.each_with_index do |cfs, j|
                   - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
                   - cfs.each_with_index do |column, k|
-                    %td{:class => "#{cf_stripe} family_#{@family_names[j]} column_#{@family_names[j]}_#{@column_names[j][k]}"}
+                    %td{:class => "#{cf_stripe} family_#{@family_names[j]} column_#{@family_names[j]}_#{@column_names[j][k]}", :title => "#{@family_names[j]}: #{@column_names[j][k]}"}
                       = column
 

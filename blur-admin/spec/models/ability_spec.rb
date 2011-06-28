@@ -27,7 +27,7 @@ describe Ability do
 
     it "can not view pages" do
       @ability.should_not be_able_to :access, :blur_tables
-      @ability.should_not be_able_to :access, :env
+      @ability.should_not be_able_to :access, :blur_zookeeper_instances
       @ability.should_not be_able_to :access, :search
       @ability.should_not be_able_to :access, :blur_queries
     end
@@ -93,7 +93,7 @@ describe Ability do
     it "can not view pages" do
       @ability.should_not be_able_to :index, :blur_tables
       @ability.should_not be_able_to :hosts, :blur_tables
-      @ability.should_not be_able_to :show, :env
+      @ability.should_not be_able_to :show, :blur_zookeeper_instances
       @ability.should_not be_able_to :show, :search
       @ability.should_not be_able_to :index, :blur_queries
       @ability.should_not be_able_to :more_info, :blur_queries
@@ -120,7 +120,7 @@ describe Ability do
     it "can view pages" do
       @ability.should be_able_to :index, :blur_tables
       @ability.should be_able_to :hosts, :blur_tables
-      @ability.should be_able_to :show, :env
+      @ability.should be_able_to :show, :blur_zookeeper_instances
       @ability.should be_able_to :show, :search
       @ability.should be_able_to :index, :blur_queries
       @ability.should be_able_to :more_info, :blur_queries

@@ -27,8 +27,6 @@
       .partial-section
         = label_tag :a, 'Start:'
         = text_field_tag :a, 0
-      .partial-section
-        = submit_tag "Search", :disabled => true, :id => "search_submit"
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
     #query_section.partial-page
@@ -36,8 +34,9 @@
         .search-title.title
           = label_tag :q, "Search:"
         .search-input
-          = label_tag :q, "Query:"
-        .search-input
+          .query-label= label_tag :q, "Query:"
           = text_area_tag :q, params[:q]
-          %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :hidden => true }
+          = submit_tag "Search", :disabled => true, :id => "search_submit"
+
+        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :hidden => true }
       #results_container

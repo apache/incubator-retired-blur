@@ -1,7 +1,7 @@
 - if @results and not @results.empty?
-  #results_info.partial-results
+  #results_info.results-count
     = "#{@result_count} results found in #{@result_time} ms"
-  #results_section.partial-results
+  #results_section
     %table#result_table.result_table
       %thead
         %tr

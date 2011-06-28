@@ -17,7 +17,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  before_filter :current_user_session, :current_user
+  before_filter :current_user_session, :current_user 
 
   private
 
@@ -30,6 +30,8 @@ class ApplicationController < ActionController::Base
     end
 
     def current_blur_zookeeper_instance
-
+      #If no current instance in session, then default to first record
+      session[:current_blur_zookeeper_instance_id] ||= BlurZookeeperInstance.first.id
+      @current_blur_zookeeper_instance = BlurZookeeperInstance.find session[:current_blur_zookeeper_instance_id]
     end
 end

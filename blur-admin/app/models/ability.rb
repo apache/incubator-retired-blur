@@ -35,6 +35,9 @@ class Ability
         # View schema on blur_tables
         can :hosts, :blur_tables
 
+        # Change current blur instance
+        can :blur_zookeeper_instances, :set_current
+
       end
 
       if user.has_role? :editor

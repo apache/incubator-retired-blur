@@ -1,57 +1,46 @@
-.status-container {
-  text-align: center;
-  letter-spacing: 25px;
-  white-space: nowrap;
-  overflow: hidden;
-  margin: 0px 15px 0px 15px;
-}
-
-.inner-container {
-  width: 47%;
-  vertical-align: top;
-  display: inline-block;
-  text-align: left;
-  letter-spacing: 1px;
-  overflow: visible;
-  white-space: normal;
-  padding: 5px;
-  margin: 10px;
-}
-.bottom-status {
-  border: solid 1px #AAA;
-  @include border-radius;
-  background-color:white;
-  margin-right: 10px;
-  margin-bottom: 25px;
-}
-#bottom-container {
-  margin: 25px;
-  padding: 5px;
-  .status-container{
-    text-align: left ;
-  }
-}
-.titles{
-  display: inline-block;
-  h2{
-    display: inline-block;
+#blur_zookeeper_instances_wrapper {
+  margin: 0px 15px;
+  h2 {
     color: #555;
-    font-weight: bold;
     font-size: 200%;
+    font-weight: bold;
   }
-}
-.outer-container{
-  border: solid 1px #AAA;
-  @include border-radius;
-  background-color:#F6F6F6;
-}
 
-.left-container{
-  float: left;
-  margin-right: 0px;
-}
+  @mixin outer-container {
+    border: solid 1px #AAA;
+    @include border-radius;
+    background-color:#F6F6F6;
+    margin: 10px 0px;
+    padding: 5px;
+  }
 
-.right-container{
-  float: right;
-  margin-left: 0px;
+  @mixin inner-container {
+    border: solid 1px #AAA;
+    @include border-radius;
+    background-color: #FFF;
+    @include inline-block;
+    margin: 0px 15px 25px 15px;
+    padding: 10px;
+    width: 45%;
+    vertical-align: top;
+  }
+
+  #hdfs {
+    @include outer-container;
+    @include inline-block;
+    width: 47%;
+    margin-right: 15px;
+
+  }
+  #zookeeper {
+    @include outer-container;
+    @include inline-block;
+    vertical-align: top;
+    width: 47%;
+    margin-left: 15px;
+  }
+  #blur {
+    @include outer-container;
+    #controllers, #shards{ @include inner-container; }
+  }
 }

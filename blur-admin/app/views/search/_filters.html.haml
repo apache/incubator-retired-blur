@@ -1,5 +1,5 @@
 - if @columns
-  - @columns.columnFamilies.each do |family, cols|
+  - @columns.each do |family, cols|
     .column_family_filter
       %ul
         %li#family{:id=>family, :class => 'jstree-checked'}

@@ -6,9 +6,9 @@ describe SearchController do
     @client = mock(Blur::Blur::Client)
     BlurThriftClient.stub!(:client).and_return(@client)
     
-    set = Set.new ['deptNo', 'moreThanOneDepartment', 'name']
-    @test_schema1 = Blur::Schema.new :columnFamilies => {'table1'=> set}
-    @test_schema2 = Blur::Schema.new :columnFamilies => {'table1'=> set, 'table2' => set}
+    set = ['deptNo', 'moreThanOneDepartment', 'name']
+    @schema1 = :columnFamilies => {'table1'=> set}
+    @schema2 = :columnFamilies => {'table1'=> set, 'table2' => set}
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
     controller.stub!(:current_ability).and_return(@ability)
@@ -16,7 +16,7 @@ describe SearchController do
 
   describe "show" do
     it "renders the show template" do
-      @client.should_receive(:tableList).and_return(['blah'])
+
       @client.should_receive(:schema).with('blah').and_return(Blur::Schema.new)
       get :show
       response.should render_template "show"

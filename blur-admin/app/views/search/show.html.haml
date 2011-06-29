@@ -9,7 +9,7 @@
         =label_tag :f, "Filters:"
       .partial-section
         = label_tag :t, "Table:"
-        = select_tag :t, options_for_select(@tables)
+        = select_tag :t, options_for_select(@blur_tables_names)
       .partial-section
         = label_tag :s, "Super Query:"
         = check_box_tag :s, true, true
@@ -27,6 +27,7 @@
       .partial-section
         = label_tag :a, 'Start:'
         = text_field_tag :a, 0
+
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
     #query_section.partial-page

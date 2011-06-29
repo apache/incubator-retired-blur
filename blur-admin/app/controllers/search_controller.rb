@@ -1,12 +1,13 @@
 class SearchController < ApplicationController
 
 	def show
-	  @tables = BlurThriftClient.client.tableList.sort!
-	  @columns = BlurThriftClient.client.schema(@tables.first) unless @tables.blank?
+    @blur_tables = BlurTable.all
+	  @blur_tables_names = @blur_tables.collect {|blur_table| blur_table.table_name} if @blur_tables
+	  @columns = @blur_tables.first.schema["columnFamilies"] if @blur_tables
 	end
 
 	def filters
-	  @columns = BlurThriftClient.client.schema(params[:table])
+	  @columns = BlurTable.find_by_table_name(params[:table]).schema["columnFamilies"]
 	  render '_filters.html.haml', :layout=>false
   end
 

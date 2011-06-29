@@ -44,4 +44,17 @@
     @include outer-container;
     #controllers, #shards{ @include inner-container; }
   }
+  
+  td.label {
+    font-weight: bold;
+  }
+  .offline {
+    text-align:center;
+    padding: 5px;
+  }
+  .online {
+    text-align: center;
+    padding: 5px;
+    background: transparent;
+  }
 }

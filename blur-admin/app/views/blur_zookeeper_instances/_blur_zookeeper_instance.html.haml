@@ -8,17 +8,26 @@
       %li and that other thing
       %li with the stuff
   #zookeeper
-    %h2 Zookeeper Status
-    %ul
-      %li
-        %b Name:
-        = @current_blur_zookeeper_instance.name
-      %li
-        %b URL:
-        = @current_blur_zookeeper_instance.url
-      %li
-        %b Status:
-        = @current_blur_zookeeper_instance.status
+    %h2 Zookeeper Information
+    %table
+      %tbody
+        %tr
+          %td.label Name:
+          %td.value= @current_blur_zookeeper_instance.name
+        %tr
+          %td.label Connection:
+          %td.value= @current_blur_zookeeper_instance.url
+        %tr
+          %td.label Status:
+          %td.value
+            - if @current_blur_zookeeper_instance.status == 0
+              .online.ui-widget
+                .ui-state-default.ui-corner-all
+                  Online
+            - else 
+              .offline.ui-widget
+                .ui-state-error.ui-corner-all
+                  Offline
   #blur
     %h2 Blur Status
     #controllers

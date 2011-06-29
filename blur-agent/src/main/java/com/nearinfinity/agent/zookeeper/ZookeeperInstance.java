@@ -9,6 +9,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.nearinfinity.agent.listeners.ClusterListener;
 import com.nearinfinity.agent.listeners.ControllerListener;
 
 public class ZookeeperInstance implements Watcher {
@@ -21,30 +22,31 @@ public class ZookeeperInstance implements Watcher {
 		this.name = name;
 		this.url = url;
 		this.jdbc = jdbc;
-		setupZookeeper();
+		setupWatcher(this);
 	}
 	
-	private void setupZookeeper() {
-		final Watcher connectionWatcher = this;
-		final int zkInstanceId = initializeZkInstanceModel(name, url, jdbc);
+	private void setupWatcher(final Watcher watcher) {
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
 				while (true) {
 					boolean online = true;
 					try {
-						zk = new ZooKeeper(url, 3000, connectionWatcher);
+						zk = new ZooKeeper(url, 3000, watcher);
 					} catch (IOException e) {
 						online = false;
 					}
 					
-					jdbc.update("update blur_zookeeper_instances set status=? where name=?", new Object[]{online ? 0 : 1, name});
+					int instanceId = initializeZkInstanceModel(name, url, jdbc, online);
 					
 					if (online) {
-						new ControllerListener(zk, name, zkInstanceId, jdbc);
+						// TODO: Name will not be needed in the future
+						new ControllerListener(zk, name, instanceId, jdbc);
+						new ClusterListener(zk, instanceId, jdbc);
+						
 						try {
-							synchronized (connectionWatcher) {
-								connectionWatcher.wait();
+							synchronized (watcher) {
+								watcher.wait();
 								System.out.println("Zookeeper Watcher was woken up, time to do work.");
 							}
 						} catch (InterruptedException e) {
@@ -63,17 +65,17 @@ public class ZookeeperInstance implements Watcher {
 				}
 			}
 		}).start();
-		
-		
 	}
 	
-	private int initializeZkInstanceModel(String name, String url, JdbcTemplate jdbc) {
+	
+	private int initializeZkInstanceModel(String name, String url, JdbcTemplate jdbc, boolean online) {
 		List<Map<String, Object>> instances = jdbc.queryForList("select id from blur_zookeeper_instances where name = ?", new Object[]{name});
 		if (instances.isEmpty()) {
 			jdbc.update("insert into blur_zookeeper_instances (name, url, status) values (?, ?,?)", new Object[]{name, url, 1});
 			return jdbc.queryForInt("select id from blur_zookeeper_instances where name = ?", new Object[]{name});
 		} else {
 			// TODO: Determine if we want to allow changing of the host and port here
+			jdbc.update("update blur_zookeeper_instances set status=? where name=?", new Object[]{online ? 0 : 1, name});
 		}
 		return (Integer) instances.get(0).get("ID");
 	}

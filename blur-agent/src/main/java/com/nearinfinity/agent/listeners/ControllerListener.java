@@ -23,28 +23,19 @@ public class ControllerListener implements Watcher {
 		this.zkInstanceId = zkInstanceId;
 		this.jdbc = jdbc;
 		
-		setupControllers();
-		
-		final Watcher controllerWatcher = this;
-		
+		setupWatcher(this);
+	}
+	
+	private void setupWatcher(final Watcher watcher) {
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
 				while (true) {
-					List<String> controllers = getControllers();
+					updateControllers();
 					
-					//TODO: Remove this if when we get a real cluster;
-					if (!controllers.isEmpty()) {
-						jdbc.update("update controllers set status = 0 where node_name not in ('" + StringUtils.join(controllers, "','") + "')");
-						
-						for (String controller : controllers) {
-							initializeController(controller, "");
-						}
-					}
-					
-					synchronized (controllerWatcher) {
+					synchronized (watcher) {
 						try {
-							controllerWatcher.wait();
+							watcher.wait();
 						} catch (InterruptedException e) {
 							System.out.println("Exiting Controller listener");
 							return;
@@ -56,19 +47,28 @@ public class ControllerListener implements Watcher {
 		}).start();
 	}
 	
-	private void setupControllers() {
-		System.out.println("Checking controllers");
-		List<String> children = getControllers();
-		
-		//TODO: This code should change to say all are offline if children is empty
-		if (children.isEmpty()) {
-			// Add dummy entry
-			initializeController("placeholder", "placeholder");
+	private void updateControllers() {
+		List<String> onlineControllers = getControllers();
+		markOfflineControllers(onlineControllers);
+		addNewControllers(onlineControllers);
+	}
+	
+	private void markOfflineControllers(List<String> controllers) {
+		if (controllers.isEmpty()) {
+			jdbc.update("update controllers set status = 0");
 		} else {
-			for (String child : children) {
-				//TODO: get uri
-				initializeController(child, "");
+			jdbc.update("update controllers set status = 0 where node_name not in ('" + StringUtils.join(controllers, "','") + "')");
+			
+			for (String controller : controllers) {
+				initializeController(controller, "");
 			}
+		}
+	}
+	
+	private void addNewControllers(List<String> controllers) {
+		for (String controller : controllers) {
+			//TODO: get uri
+			initializeController(controller, "");
 		}
 	}
 	

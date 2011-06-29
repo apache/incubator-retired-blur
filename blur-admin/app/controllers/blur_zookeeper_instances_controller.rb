@@ -5,7 +5,7 @@ class BlurZookeeperInstancesController < ApplicationController
 
     @blur_zookeeper_instances = BlurZookeeperInstance.all
     @controllers = current_blur_zookeeper_instance.controllers
-    @clusters = @controllers.collect {|controller| controller.clusters}.flatten
+    @clusters = current_blur_zookeeper_instance.clusters
     @shards = @clusters.collect{|cluster| cluster.shards}.flatten
     respond_to do |format|
       format.html { render :partial => 'blur_zookeeper_instance' if request.xhr? }

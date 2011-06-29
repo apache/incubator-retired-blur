@@ -96,3 +96,16 @@ $(document).ready ->
   # Remove blue oval around clicked jstree elements
   $('.jstree-clicked').live 'click', ->
     $('.jstree-clicked').removeAttr('class', 'jstree-clicked')
+
+  # Toggle the table accordion
+  $('.table-toggle').live 'click', ->
+    row = $(this).parent().parent().next()
+    row.toggle()
+    row.next().toggle()
+    $(this).toggleClass('ui-icon-triangle-1-n')
+    $(this).toggleClass('ui-icon-triangle-1-s')
+
+  #setup accordions
+  $('tr.blur-table-row').hide()
+  $('table-head-row').show()
+

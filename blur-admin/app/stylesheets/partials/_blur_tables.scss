@@ -73,6 +73,10 @@
     cursor: pointer;
   }
 }
-
+.table-toggle{
+display:inline-block;
+position:relative;
+top:5px;
+}
 .host_tree{ display: none; }
 .blur_table_schema{ display:none; }

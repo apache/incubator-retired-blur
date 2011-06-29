@@ -1,7 +1,8 @@
 - nil_message = "Not Available"
 
-%tr.tr-underline{:id => "blur_table_#{blur_table.id}"}
+%tr.table-head-row.tr-underline{:id => "blur_table_#{blur_table.id}"}
   %td
+    .table-toggle.ui-icon.ui-icon-triangle-1-n
     %b name:
     = blur_table.table_name
   %td
@@ -32,13 +33,13 @@
           = hidden_field_tag 'disable', true
           = submit_tag 'Disable', :confirm => "Are you sure?"
 
-%tr{:id => "blur_table_#{blur_table.id}"}
+%tr.blur-table-row{:id => "blur_table_#{blur_table.id}"}
   %td{:colspan => 7}
     %b location:
     = blur_table.table_uri ? blur_table.table_uri : nil_message
 
 - if blur_table.schema
-  %tr.tr-underline{:id => "blur_table_#{blur_table.id}"}
+  %tr.blur-table-row.tr-underline{:id => "blur_table_#{blur_table.id}"}
     %td{:colspan => 7}
       %b schema:
       .blur_table_schema

@@ -109,9 +109,10 @@ table {
   margin-bottom: 20px;
 }
 
-.results-count{
-  margin-top:20px;
+#results_container{
+  margin-top:25px;
   width: auto;
+  position:relative;
 }
 
 #checkall{ padding: 0 5px 0 5px; }
@@ -146,7 +147,7 @@ select#r{ margin-left: 5px; }
 #search_submit{
   display:block;
   position:absolute;
-  margin-top:5px;
+  margin-top:4px;
   right:0;
 }
 
@@ -168,4 +169,11 @@ select#r{ margin-left: 5px; }
   font:inherit;
   font-weight:normal;
   padding:0 2px 0;
+}
+#query-help-link{
+  vertical-align:top;
+  cursor:pointer;
+}
+#hidden-help-container{
+ display:none;
 }

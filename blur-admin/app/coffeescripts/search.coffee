@@ -37,19 +37,23 @@ $(document).ready ->
   # Show spinner when submit button is clicked
   $('#search_submit').live('click', ->
     $('#loading-spinner').show()
+
   )
 
   # Functionality for ajax success
   $('#search_form').bind('ajax:success', (evt, data, status)->
+
     if(data)
       #shows number of results option if there are results
       #If data is returned properly process it
       $('#results_container').html(data)
+      $('#example-box').hide()
       #set the border once the table has content
     else
       #hides number of results option if there are no results
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
+      $('#example-box').show()
     $('#loading-spinner').hide()
     true
   )
@@ -61,6 +65,7 @@ $(document).ready ->
     error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
     #hides number of results option if there are no results
     $('#results_container').html(error_content)
+    $('#example-box').show()
     $('#loading-spinner').hide()
     $('#bar_section').css('height', $('#query_section').height() )
     true
@@ -155,3 +160,12 @@ $(document).ready ->
         $(family).attr('colspan', max_col_span)
       $(name).show()
   )
+
+  $('#query-help-link').live 'click', ->
+    $('#help-dialog').dialog(
+      modal:true
+      draggable:false
+      resizable: false
+      title:"Query Help"
+      width:500
+    )

@@ -36,7 +36,13 @@
         .search-input
           .query-label= label_tag :q, "Query:"
           = text_area_tag :q, params[:q]
+          %a#query-help-link ?
           = submit_tag "Search", :disabled => true, :id => "search_submit"
 
         %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none;" }
       #results_container
+#hidden-help-container
+  %ul#help-dialog
+    %li Placeholder
+    %li This will be a pop up showing how to form Blur Queries
+    %li To edit this, change the bottom of app/views/search/show.html.haml

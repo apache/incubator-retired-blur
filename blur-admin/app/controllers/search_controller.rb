@@ -26,12 +26,14 @@ class SearchController < ApplicationController
     end
 
     column_data_val = params[:column_data]
+    # Parse out column family names from requested column families and columns
     families = column_data_val.collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact
     columns = {}
     column_data_val.each do |value|
       parts = value.split('_')
       if parts[0] == 'column' and !families.include?(parts[1])
         parts = value.split('_')
+        # possible TODO: block below can be replaced with: columns[parts[1]] ||= ['recordId']
         if (!columns.has_key?(parts[1]))
           columns[parts[1]] = []
           columns[parts[1]] << 'recordId'

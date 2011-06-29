@@ -5,14 +5,13 @@
 #search-page
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
-      .filter-title.title
-        =label_tag :f, "Filters:"
+      %h2 Filters:
       .partial-section
-        = label_tag :t, "Table:"
-        = select_tag :t, options_for_select(@blur_tables_names)
+        = label_tag :blur_table, "Table:"
+        = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
       .partial-section
-        = label_tag :s, "Super Query:"
-        = check_box_tag :s, true, true
+        = label_tag :super_query, "Super Query:"
+        = check_box_tag :super_query, true, true
       .partial-section
         .column-title
           Column Families:
@@ -22,11 +21,11 @@
         #filter_columns
           = render 'filters'
       .partial-section
-        = label_tag :r, 'Fetch:'
-        = select_tag :r, options_for_select([25, 50, 100])
+        = label_tag :result_count, 'Fetch:'
+        = select_tag :result_count, options_for_select([25, 50, 100])
       .partial-section
-        = label_tag :a, 'Start:'
-        = text_field_tag :a, 0
+        = label_tag :start_record, 'Start:'
+        = number_field_tag :start_record, 0
 
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
@@ -36,7 +35,7 @@
           = label_tag :q, "Search:"
         .search-input
           .query-label= label_tag :q, "Query:"
-          = text_area_tag :q, params[:q]
+          = text_area_tag :query_string, params[:query_string]
           %a#query-help-link ?
           = submit_tag "Search", :disabled => true, :id => "search_submit"
 

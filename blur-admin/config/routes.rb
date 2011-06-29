@@ -18,7 +18,7 @@ BlurAdmin::Application.routes.draw do
   end
 
   controller "search" do
-    match 'search/:table/filters', :to => :filters, :as => :search_filters, :via => :get
+    match 'search/:blur_table_id/filters', :to => :filters, :as => :search_filters, :via => :get
   end
 
   match 'login' => 'user_sessions#new', :as => :login

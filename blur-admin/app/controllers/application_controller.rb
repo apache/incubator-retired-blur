@@ -30,6 +30,13 @@ class ApplicationController < ActionController::Base
     end
 
     def current_blur_zookeeper_instance
+      #Reset current zookeeper instance if previous zookeeper no longer exists
+      puts session[:current_blur_zookeper_instance_id]
+      if session[:current_blur_zookeeper_instance_id] and !BlurZookeeperInstance.find_by_id session[:current_blur_zookeeper_instance_id]
+        session.delete :current_blur_zookeeper_instance_id
+        redirect_to blur_zookeeper_instance_path, :notice => "Your previous blur zookeeper instance no longer exists"
+      end
+
       #If no current instance in session, then default to first record
       session[:current_blur_zookeeper_instance_id] ||= BlurZookeeperInstance.first.id
       @current_blur_zookeeper_instance = BlurZookeeperInstance.find session[:current_blur_zookeeper_instance_id]

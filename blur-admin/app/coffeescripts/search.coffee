@@ -23,7 +23,7 @@ $(document).ready ->
   setup_filter_tree()
 
   # Reload the filters when the table selector is changed
-  $('#t').change ->
+  $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
 

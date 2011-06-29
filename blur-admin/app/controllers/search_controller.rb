@@ -2,21 +2,26 @@ class SearchController < ApplicationController
 
 	def show
     @blur_tables = BlurTable.all
-	  @blur_tables_names = @blur_tables.collect {|blur_table| blur_table.table_name} if @blur_tables
-	  @columns = @blur_tables.first.schema["columnFamilies"] if @blur_tables
+	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
 	end
 
 	def filters
-	  @columns = BlurTable.find_by_table_name(params[:table]).schema["columnFamilies"]
+    blur_table = BlurTable.find params[:blur_table_id]
+    begin
+      @columns = blur_table.schema["columnFamilies"]
+    rescue NoMethodError
+      @columns = []
+    end
 	  render '_filters.html.haml', :layout=>false
   end
 
 	def create
 		# TODO: Add in fetch filter
 
-	  table = params[:t]
-		bq = Blur::BlurQuery.new :queryStr => params[:q], :fetch => params[:r].to_i, :start => params[:a].to_i, :uuid => Time.now.to_i*1000+rand(1000)
-    if !params[:s]
+    @blur_table = BlurTable.find params[:blur_table]
+    table = @blur_table.table_name
+		bq = Blur::BlurQuery.new :queryStr => params[:query_string], :fetch => params[:result_count].to_i, :start => params[:start_record].to_i, :uuid => Time.now.to_i*1000+rand(1000)
+    if !params[:super_query]
       bq.superQueryOn = false
     end
 
@@ -46,8 +51,8 @@ class SearchController < ApplicationController
     families_with_columns = {}
     families.each do |family|
       families_with_columns[family] = ['recordId']
-      BlurThriftClient.client.schema(table).columnFamilies[family].each do |family_name|
-        families_with_columns[family] << family_name
+      @blur_table.schema['columnFamilies'][family].each do |column|
+        families_with_columns[family] << column
       end
     end
 

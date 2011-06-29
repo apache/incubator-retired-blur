@@ -4,6 +4,6 @@ class Shard < ActiveRecord::Base
 
   # Nested has_many :through relationships are not supported in rails (until 3.1)
   def blur_zookeeper_instance
-    self.controller.zookeeper_instance
+    self.controller.blur_zookeeper_instance
   end
 end

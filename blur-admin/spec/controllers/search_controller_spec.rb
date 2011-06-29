@@ -7,54 +7,59 @@ describe SearchController do
     BlurThriftClient.stub!(:client).and_return(@client)
     
     set = ['deptNo', 'moreThanOneDepartment', 'name']
-    @schema1 = :columnFamilies => {'table1'=> set}
-    @schema2 = :columnFamilies => {'table1'=> set, 'table2' => set}
+    @schema1 = {:columnFamilies => {'table1'=> set}}
+    @schema2 = {:columnFamilies => {'table1'=> set, 'table2' => set}}
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
     controller.stub!(:current_ability).and_return(@ability)
   end
 
   describe "show" do
-    it "renders the show template" do
+    before :each do
+      @table = Factory.stub( :blur_table_with_schema )
+      BlurTable.stub(:all).and_return [@table]
+    end
 
-      @client.should_receive(:schema).with('blah').and_return(Blur::Schema.new)
+    it "renders the show template" do
       get :show
       response.should render_template "show"
     end
     
-    it "find and assign tables and columns" do
-      @client.should_receive(:tableList).and_return(['table1'])
-      @client.should_receive(:schema).with('table1').and_return(@test_schema1)
+    it "find and assign tables, and columns" do
+      BlurTable.should_receive(:all)
       get :show
-      assigns(:tables).should == ['table1']
-      assigns(:columns).should == @test_schema1
+      assigns(:blur_tables).should == [@table]
+      assigns(:columns).should == @table.schema["columnFamilies"]
     end
 
     it "find and assign tables and columns when no tables are available" do
-      @client.should_receive(:tableList).and_return([])
+      BlurTable.should_receive(:all).and_return []
       get :show
-      assigns(:tables).should == []
-      assigns(:columns).should == nil
+      assigns(:blur_tables).should == []
+      assigns(:columns).should be nil
     end
   end
   
   describe "filters" do
+    before :each do
+      @table = Factory.stub( :blur_table_with_schema )
+      BlurTable.stub(:find).and_return @table
+    end
+
     it "renders the filters template" do
-      @client.should_receive(:schema).with('table1').and_return(Blur::Schema.new)
-      get :filters, :table => 'table1'
+      get :filters, :blur_table_id => @table.id
       response.should render_template "filters"
     end
 
-    it "should find and assign columns" do
-      @client.should_receive(:schema).with('table1').and_return(@test_schema1)
-      get :filters, :table => 'table1'
-      assigns(:columns).should == @test_schema1
+    it "should assign columns" do
+      BlurTable.should_receive(:find).with(@table.id)
+      get :filters, :blur_table_id => @table.id
+      assigns(:columns).should == @table.schema["columnFamilies"]
     end
   end
 
   describe "create" do
     before (:each) do
-      test1_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
       test1_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => ['val1', 'val2', 'val3']
       test1_col3 = Blur::Column.new :name => 'name', :values => ['val1', 'val2', 'val3']
       @test1_cf1 =  Blur::ColumnFamily.new :records => {'key1' => [test1_col1, test1_col2, test1_col3]}, :family => 'table1'

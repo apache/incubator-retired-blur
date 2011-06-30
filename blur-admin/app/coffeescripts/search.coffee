@@ -169,3 +169,6 @@ $(document).ready ->
       title:"Query Help"
       width:500
     )
+
+  # Listener to hide dialog on click
+  $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))

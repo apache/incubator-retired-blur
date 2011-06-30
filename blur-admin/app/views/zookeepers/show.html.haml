@@ -1,11 +1,11 @@
 - content_for :title, 'Environment Status'
 - content_for :javascript do
-  = javascript_include_tag 'compiled/blur_zookeeper_instances'
+  = javascript_include_tag 'compiled/zookeepers'
 
-#blur_zookeeper_instances_wrapper
-  .blur_zookeeper_instance_select
-    = form_tag blur_zookeeper_instance_path, :id => 'change_current_zookeeper_instance',  :method => :get, :remote => :true do
+#zookeepers_wrapper
+  .zookeeper_select
+    = form_tag zookeeper_path, :id => 'change_current_zookeeper',  :method => :get, :remote => :true do
       %b Current Blur Zookeeper Instance:
-      = select_tag( :id, options_from_collection_for_select( @blur_zookeeper_instances, :id, :name, @current_blur_zookeeper_instance.id ), :id => 'zookeeper_instance_id' )
+      = select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
 
-  = render 'blur_zookeeper_instance'
+  = render 'zookeeper'

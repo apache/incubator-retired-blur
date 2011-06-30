@@ -37,7 +37,7 @@
         #nav
           %ul
             - controller = params[:controller]
-            %li{:class => controller == 'blur_zookeeper_instances' && 'active'}
+            %li{:class => controller == 'zookeepers' && 'active'}
               = link_to 'Environment Status', root_path
 
             %li{:class => controller == 'blur_tables' && 'active'}

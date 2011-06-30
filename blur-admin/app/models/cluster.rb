@@ -1,5 +1,5 @@
 class Cluster < ActiveRecord::Base
-  belongs_to :blur_zookeeper_instance
+  belongs_to :zookeeper
   has_many :shards
-  has_one :blur_zookeeper_instance, :through => :controller
+  has_one :zookeeper, :through => :controller
 end

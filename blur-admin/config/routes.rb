@@ -4,10 +4,10 @@ BlurAdmin::Application.routes.draw do
 	resource :search, :controller => 'search'
 	resource :env, :controller => 'env'
 
-  root :to => "blur_zookeeper_instances#show"
+  root :to => "zookeepers#show"
 
-  resources :blur_zookeeper_instances, :only => :show
-  match 'blur_zookeeper_instance' => 'blur_zookeeper_instances#show', :as => :blur_zookeeper_instance
+  resources :zookeepers, :only => :show
+  match 'zookeeper' => 'zookeepers#show', :as => :zookeeper
 
   resources :blur_tables do
     get 'hosts', :on => :member

@@ -1,3 +1,3 @@
 class Controller < ActiveRecord::Base
-  belongs_to :blur_zookeeper_instance
+  belongs_to :zookeeper
 end

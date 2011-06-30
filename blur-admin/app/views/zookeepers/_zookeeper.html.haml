@@ -1,4 +1,4 @@
-.zookeeper{ :id => @current_zookeeper.id }
+.zookeeper{ :id => @zookeeper.id }
   #hdfs
     %h2 HDFS Status
     %ul
@@ -13,14 +13,14 @@
       %tbody
         %tr
           %td.label Name:
-          %td.value= @current_zookeeper.name
+          %td.value= @zookeeper.name
         %tr
           %td.label Connection:
-          %td.value= @current_zookeeper.url
+          %td.value= @zookeeper.url
         %tr
           %td.label Status:
           %td.value
-            - if @current_zookeeper.status == 0
+            - if @zookeeper.status == 0
               .online.ui-widget
                 .ui-state-default.ui-corner-all
                   Online

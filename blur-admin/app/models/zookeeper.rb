@@ -1,4 +1,6 @@
 class Zookeeper < ActiveRecord::Base
-  has_many :controllers
-  has_many :clusters
+  set_table_name "blur_zookeeper_instances"
+  has_many :controllers, :foreign_key => "blur_zookeeper_id"
+  has_many :clusters, :foreign_key => "blur_zookeeper_id"
+  has_many :shards, :through => :clusters
 end

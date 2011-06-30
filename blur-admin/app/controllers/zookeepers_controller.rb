@@ -4,9 +4,10 @@ class ZookeepersController < ApplicationController
     session[:current_zookeeper_id] = params[:id] if params[:id]
 
     @zookeepers = Zookeeper.all
-    @controllers = current_zookeeper.controllers
-    @clusters = current_zookeeper.clusters
-    @shards = @clusters.collect{|cluster| cluster.shards}.flatten
+    @zookeeper = current_zookeeper
+    @controllers = @zookeeper.controllers
+    @clusters = @zookeeper.clusters
+    @shards = @zookeeper.shards
     respond_to do |format|
       format.html { render :partial => 'zookeeper' if request.xhr? }
     end

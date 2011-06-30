@@ -1,82 +1,106 @@
+$border_color: #AAA;
+$border_width: 1px;
+$border_style: solid;
+@mixin border {
+  border: $border_width $border_style $border_color;
+}
+@mixin border-left {
+  border-left: $border_width $border_style $border_color;
+}
+@mixin border-right {
+  border-right: $border_width $border_style $border_color;
+}
+@mixin border-bottom {
+  border-bottom: $border_width $border_style $border_color;
+}
+
+@mixin accordion-span {
+  height: 100%;
+  @include inline-block;
+}
 
 #blur_tables_wrapper{
   margin-top: 5px;
   margin-left: 20px;
   margin-right: 20px;
 
-  h2{
-    color: #555;
+  h3:nth-of-type(even) {background-color:#EEE;}
+
+  .blur_tables_header {
+    @include border;
+    margin: 0px;
+    height: 32px;
+    font-size: 1em;
     font-weight: bold;
-    font-size: 200%;
+    text-align: right;
+    vertical-align: bottom;
+    position: relative;
+    background-color: #C4D9FF;
+
+    span {
+      @include accordion-span;
+      @include inline-block;
+      vertical-align: bottom; 
+      text-align: center;
+      position: relative;
+      width: 100px;
+    }
+    span.table_name {
+      text-align: left;
+      border-left: 0px;
+      width: 10em;
+      font-size: 1.4em;
+    }
+
   }
 
-  .expandable a, .collapsible a, .expandable a:hover, .collapsible a:hover {
-    text-decoration: none;
-    color: #000;
-    padding-left:20px;
+  h3.blur_table {
+    &:hover {
+      cursor: pointer;
+    }
+    @include border-left;
+    @include border-right;
+    @include border-bottom;
+    margin: 0px;
+    height: 32px;
+    font-size: 1em;
+    font-weight: bold;
+    text-align: right;
+    vertical-align: bottom;
     position: relative;
-    left: -20px;
+
+    span {
+      @include accordion-span;
+      @include inline-block;
+      vertical-align: bottom; 
+      text-align: center;
+      position: relative;
+      width: 100px;
+    }
+    span.table_name {
+      @include float-left;
+      text-align: left;
+      border-left: 0px;
+      width: 10em;
+      font-size: 1.4em;
+    }
+ }
+
+  div.blur_table {
+    @include border-left;
+    @include border-right;
+    @include border-bottom;
   }
 
   li {
     list-style-image: none;
   }
 
-  .expandable {
-    list-style-image: image-url("plus.png");
-  }
-
-  .collapsible {
-    list-style-image: image-url("minus.png");
-  }
-
-  #confirm-submit{
-    float: right;
-  }
-
-  #blur_tables_table {
-    display: table;
-    border: solid 1px #AAA;
-    width: 100%;
-    margin-bottom: 20px;
-    tr {
-      th, td{
-        text-align: left;
-      }
-    }
-    tr:nth-child(8n) {background-color:#EEE;}
-    tr:nth-child(8n-1) {background-color:#EEE;}
-    tr:nth-child(8n-2) {background-color:#EEE;}
-    tr:nth-child(8n-3) {background-color:#EEE;}
-
-    #header {
-      height: 50px;
-      background-color: #C4d9ff;
-      color: #555;
-      th{
-        font-weight: bold;
-        font-size: 120%;
-      }
-    }
-  }
-
-  .delete-table {
-    font-size: 85%;
-    text-align: center;
-  }
-
-  .tr-underline{
-    border-bottom: solid 1px #AAA;
-  }
-
   .jstree-icon{
     cursor: pointer;
   }
+
+  .host_tree{ display: none; }
+  .schema{ display: none; }
 }
-.table-toggle{
-display:inline-block;
-position:relative;
-top:5px;
-}
-.host_tree{ display: none; }
-.blur_table_schema{ display:none; }
+

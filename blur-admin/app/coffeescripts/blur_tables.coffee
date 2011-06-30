@@ -1,4 +1,12 @@
 $(document).ready ->
+  # Set all tables to closed on page load
+  for table in $('div.blur_table')
+    $(table).hide()
+
+  # Accordion Bar Listener
+  $('h3.blur_table').live 'click', ->
+    id = $(this).attr('id')
+    $('div#' + id).slideToggle('fast')
 
   # Function to initialize a filter tree on the passed in element
   setup_filter_tree = (selector) ->
@@ -12,12 +20,12 @@ $(document).ready ->
     $('.host_tree').bind("loaded.jstree", ->
       $('.host_tree').show()
     )
-    $('.blur_table_schema').bind("loaded.jstree", ->
-      $('.blur_table_schema').show()
+    $('.schema').bind("loaded.jstree", ->
+      $('.schema').show()
     )
 
   # Calls the function to initialize the filter tree
-  setup_filter_tree($('.blur_table_schema'))
+  setup_filter_tree($('.schema'))
 
   # Ajax request handling for enable/disable
   $('form.update')
@@ -30,7 +38,7 @@ $(document).ready ->
       row = $(this).closest('tr')
       row.siblings("##{row.attr('id')}").remove()
       row.replaceWith data
-      setup_filter_tree($('.blur_table_schema'))
+      setup_filter_tree($('.schema'))
     .live 'ajax:error', (evt, xhr, status, error) ->
       console.log "Error in update ajax call"
     
@@ -96,16 +104,3 @@ $(document).ready ->
   # Remove blue oval around clicked jstree elements
   $('.jstree-clicked').live 'click', ->
     $('.jstree-clicked').removeAttr('class', 'jstree-clicked')
-
-  # Toggle the table accordion
-  $('.table-toggle').live 'click', ->
-    row = $(this).parent().parent().next()
-    row.toggle()
-    row.next().toggle()
-    $(this).toggleClass('ui-icon-triangle-1-n')
-    $(this).toggleClass('ui-icon-triangle-1-s')
-
-  #setup accordions
-  $('tr.blur-table-row').hide()
-  $('table-head-row').show()
-

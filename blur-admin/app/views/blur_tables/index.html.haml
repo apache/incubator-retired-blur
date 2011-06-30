@@ -3,18 +3,15 @@
   =javascript_include_tag 'jquery.jstree','compiled/blur_tables'
 
 #blur_tables_wrapper
-  %h2 Tables
-  %table#blur_tables_table
-    %tr#header
-      %th Table
-      %th Shards
-      %th Count
-      %th Size
-      %th Queries/Second
-      %th Enabled
-      %th Actions
+  .blur_tables_header
+    %span Hosts
+    %span Shards
+    %span Record Count
+    %span Size
+    %span Queries/Second
+    %span Status
 
-    = render :partial => 'blur_table', :collection => @blur_tables
+  = render :partial => 'blur_table', :collection => @blur_tables
 
 #confirm.ui-confirm{:hidden => true}
   #confirm-dialog

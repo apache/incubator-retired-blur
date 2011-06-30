@@ -1,5 +1,5 @@
 # Determines how many models are created in a has_many relationship when
-# using a 'plural' builder, i.e. Factory.build(:blur_zookeeper_instance_with_controllers)
+# using a 'plural' builder, i.e. Factory.build(:zookeeper_with_controllers)
 # Be careful setting this to a large number when creating a long chained model; as the name
 # suggests the number of models grows with Theta = a^(b-1) where b is model association chain
 # length and a is @recursive factor
@@ -7,7 +7,10 @@
 
 # Basic model definitions
 
-Factory.define :blur_zookeeper_instance do |t| end
+Factory.define :zookeeper do |t|
+
+
+end
 
 Factory.define :controller do |t| end
 
@@ -30,35 +33,35 @@ end
 
 # Create models with association chains already created. These  create create real objects and
 # persist them in the database
-Factory.define :blur_zookeeper_instance_with_controller, :parent => :blur_zookeeper_instance  do |t|
-  t.after_create { |blur_zookeeper_instance| Factory.create(:controller, :blur_zookeeper_instance => blur_zookeeper_instance) }
+Factory.define :zookeeper_with_controller, :parent => :zookeeper  do |t|
+  t.after_create { |zookeeper| Factory.create(:controller, :zookeeper => zookeeper) }
 end
 
-Factory.define :blur_zookeeper_instance_with_controllers, :parent => :blur_zookeeper_instance do |t|
-  t.after_create { |blur_zookeeper_instance| @recursive_factor.times {Factory.create(:controller, :blur_zookeeper_instance => blur_zookeeper_instance)} }
+Factory.define :zookeeper_with_controllers, :parent => :zookeeper do |t|
+  t.after_create { |zookeeper| @recursive_factor.times {Factory.create(:controller, :zookeeper => zookeeper)} }
 end
 
-Factory.define :blur_zookeeper_instance_with_cluster, :parent => :blur_zookeeper_instance_with_controller  do |t|
-  t.after_create do |blur_zookeeper_instance|
-    blur_zookeeper_instance.controllers.each { |controller| Factory.create(:cluster, :controller => controller) }
+Factory.define :zookeeper_with_cluster, :parent => :zookeeper_with_controller  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.controllers.each { |controller| Factory.create(:cluster, :controller => controller) }
   end
 end
 
-Factory.define :blur_zookeeper_instance_with_clusters, :parent => :blur_zookeeper_instance_with_controllers  do |t|
-  t.after_create do |blur_zookeeper_instance|
-    blur_zookeeper_instance.controllers.each { |controller| @recursive_factor.times {Factory.create(:cluster, :controller => controller)} }
+Factory.define :zookeeper_with_clusters, :parent => :zookeeper_with_controllers  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.controllers.each { |controller| @recursive_factor.times {Factory.create(:cluster, :controller => controller)} }
   end
 end
 
-Factory.define :blur_zookeeper_instance_with_shard, :parent => :blur_zookeeper_instance_with_cluster  do |t|
-  t.after_create do |blur_zookeeper_instance|
-    blur_zookeeper_instance.clusters.each { |cluster| Factory.create(:shard, :cluster => cluster) }
+Factory.define :zookeeper_with_shard, :parent => :zookeeper_with_cluster  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.clusters.each { |cluster| Factory.create(:shard, :cluster => cluster) }
   end
 end
 
-Factory.define :blur_zookeeper_instance_with_shards, :parent => :blur_zookeeper_instance_with_clusters  do |t|
-  t.after_create do |blur_zookeeper_instance|
-    blur_zookeeper_instance.clusters.each { |cluster| @recursive_factor.times {Factory.create(:shard, :cluster => cluster)} }
+Factory.define :zookeeper_with_shards, :parent => :zookeeper_with_clusters  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.clusters.each { |cluster| @recursive_factor.times {Factory.create(:shard, :cluster => cluster)} }
   end
 end
 

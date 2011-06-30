@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe BlurZookeeperInstancesController do
+describe ZookeepersController do
   before(:each) do
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
@@ -8,7 +8,7 @@ describe BlurZookeeperInstancesController do
   end
 
   describe 'GET show' do
-    it "sets the @blur_zookeeper_instances, @controlers, @clusters, and @shards variables" do
+    it "sets the @zookeepers, @controlers, @clusters, and @shards variables" do
       pending "finish testing once entity relations are finalized"
     end
   end

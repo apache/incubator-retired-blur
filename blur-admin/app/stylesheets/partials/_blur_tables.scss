@@ -30,6 +30,7 @@ $dark_background_color: #DDD;
 
   .blur_tables_header {
     margin: 0px;
+    padding: 0px 10px;
     height: 32px;
     font-size: 1em;
     font-weight: bold;
@@ -44,6 +45,7 @@ $dark_background_color: #DDD;
 
   h3.blur_table {
     margin: 0px;
+    padding: 0px 10px;
     height: 32px;
     font-size: 1em;
     color: #555;
@@ -60,7 +62,9 @@ $dark_background_color: #DDD;
     @include inline-block;
     text-align: center;
     width: 100px;
+    line-height: 32px;
   }
+
   span.table_name {
     text-align: left;
     float: left;
@@ -72,17 +76,32 @@ $dark_background_color: #DDD;
 
   div.blur_table {
     @include border-sides;
+    padding: 10px;
+
+    .schema, .actions, .hosts {
+      @include inline-block;
+      vertical-align: top;
+      width: 32%;
+
+      .location { padding-bottom: 10px; }
+
+      form {
+        display: inline;
+        margin: 0px;
+        input { margin: 0px; }
+      }
+    }
+
+    li {
+      list-style-image: none;
+    }
   }
 
-  li {
-    list-style-image: none;
-  }
 
   .jstree-icon{
     cursor: pointer;
   }
 
   .host_tree{ display: none; }
-  .schema{ display: none; }
+  .schema_list{ display: none; }
 }
-

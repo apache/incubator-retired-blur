@@ -1,9 +1,9 @@
 $(document).ready ->
-  # Set all tables to closed on page load
+  # Close all accordions on page load
   for table in $('div.blur_table')
     $(table).hide()
 
-  # Accordion Bar Listener
+  # Accordion open/close Listener
   $('h3.blur_table').live 'click', ->
     id = $(this).attr('id')
     $('div#' + id).slideToggle('fast')
@@ -17,15 +17,15 @@ $(document).ready ->
         icons: false,
     .bind "select_node.jstree", (event, data) -> 
       $(this).jstree('toggle_node')
-    $('.host_tree').bind("loaded.jstree", ->
-      $('.host_tree').show()
+    $('.host_list').bind("loaded.jstree", ->
+      $('.host_list').show()
     )
-    $('.schema').bind("loaded.jstree", ->
-      $('.schema').show()
+    $('.schema_list').bind("loaded.jstree", ->
+      $('.schema_list').show()
     )
 
   # Calls the function to initialize the filter tree
-  setup_filter_tree($('.schema'))
+  setup_filter_tree($('.schema_list'))
 
   # Ajax request handling for enable/disable
   $('form.update')
@@ -38,11 +38,11 @@ $(document).ready ->
       row = $(this).closest('tr')
       row.siblings("##{row.attr('id')}").remove()
       row.replaceWith data
-      setup_filter_tree($('.schema'))
+      setup_filter_tree($('.schema_list'))
     .live 'ajax:error', (evt, xhr, status, error) ->
       console.log "Error in update ajax call"
     
-  # Ajax request handling for schema
+  # Ajax request handling for host_list
   $('a.hosts')
     .live 'ajax:success', (evt, data, status, xhr) ->
       $(data).dialog
@@ -54,7 +54,7 @@ $(document).ready ->
           $(this).remove()
       $('ui-widget-overlay').bind 'click', ->
         $('.hosts').dialog 'close'
-      setup_filter_tree($('.host_tree'))
+      setup_filter_tree($('.host_list'))
 
   # Listener for delete button (launches dialog box)
   $('.delete_blur_table_button').live 'click', ->

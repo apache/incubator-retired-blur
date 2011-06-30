@@ -21,43 +21,46 @@
 
 
 .blur_table{:id => "blur_table_#{blur_table.id}"}
-  .location
-    %b location:
-    = blur_table.table_uri ? blur_table.table_uri : nil_message
-
-  - if blur_table.schema
-    %b schema:
-    .schema
-      %ul
-        %li#families{:id=>"#{blur_table.table_name}", :class => "family-node"}
-          %a{:href=>'', :class => 'families'}Column Families
-          %ul
-            -blur_table.schema["columnFamilies"].each do |family, columns|
-              %li#family{:id=>"#{blur_table.table_name}.#{family}", :class => "family-node"}
-                %a{:href=>'#'}
-                  = "#{family} (#{blur_table.table_analyzer})"
-                %ul
-                  -columns.each do |column|
-                    %li#column{:id=>"#{blur_table.table_name}.#{family}.#{column}"}
-                      %a{:href=>'#'}= column
-
   .actions
-    - if can? :delete, :blur_tables
-      - if !blur_table.is_enabled?
-        = form_tag "/blur_tables/#{blur_table.id}", :class => 'delete', :method => :delete, :remote => true do
-          = hidden_field_tag :delete_index
-          = tag :input, :type => :button, :value => :Delete, :class => :delete_blur_table_button
+    .location
+      %b Location:
+      = blur_table.table_uri ? blur_table.table_uri : nil_message
     - if can? :update, :blur_tables
       = form_tag "/blur_tables/#{blur_table.id}", :class => 'update', :method => :put, :remote => true do
         - if !blur_table.is_enabled?
           = hidden_field_tag 'enable', true
-          = submit_tag 'Enable', :confirm => "Are you sure?"
+          = submit_tag 'Enable Table', :confirm => "Are you sure?"
         - else
           = hidden_field_tag 'disable', true
-          = submit_tag 'Disable', :confirm => "Are you sure?"
+          = submit_tag 'Disable Table', :confirm => "Are you sure?"
+    - if can? :delete, :blur_tables and  !blur_table.is_enabled?
+      = form_tag "/blur_tables/#{blur_table.id}", :class => 'delete', :method => :delete, :remote => true do
+        = hidden_field_tag :delete_index
+        = tag :input, :type => :button, :value => 'Delete Table', :class => :delete_blur_table_button
+
+  .schema
+    %b Schema:
+    - if blur_table.schema
+      .schema_list
+        %ul
+          %li#families{:id=>"#{blur_table.table_name}", :class => "family-node"}
+            %a{:href=>'', :class => 'families'}Column Families
+            %ul
+              -blur_table.schema["columnFamilies"].each do |family, columns|
+                %li#family{:id=>"#{blur_table.table_name}.#{family}", :class => "family-node"}
+                  %a{:href=>'#'}
+                    = "#{family} (#{blur_table.table_analyzer})"
+                  %ul
+                    -columns.each do |column|
+                      %li#column{:id=>"#{blur_table.table_name}.#{family}.#{column}"}
+                        %a{:href=>'#'}= column
+    - else
+      = nil_message
+
   .hosts
+    %b Hosts:
     - if blur_table.hosts
-      .host_tree
+      .host_list
         %ul
           -blur_table.hosts.each do |host, shards|
             %li.host{:id=>"#{host}"}
@@ -67,4 +70,4 @@
                   %li.shard{:id=>"#{host}_#{shard}"}
                     %a{:href=>''}= shard
     - else
-      Not Available
+      = nil_message

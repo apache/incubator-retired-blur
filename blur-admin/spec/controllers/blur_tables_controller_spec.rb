@@ -75,22 +75,4 @@ describe BlurTablesController do
       response.should render_template nil
    end
   end
-
-  describe "GET hosts" do
-
-    it "should assign @hosts to be the requested table's hosts" do
-      BlurTable.should_receive(:find).with('1').and_return(@table)
-      @table.should_receive(:hosts).and_return("Some JSON")
-      get :hosts, :id => '1'
-      assigns(:hosts).should == "Some JSON"
-    end
-
-    it "should render the hosts partial" do
-      BlurTable.stub(:find).and_return(@table)
-      @table.stub(:hosts)
-      get :hosts, :id => '1'
-      response.should render_template( :partial =>  '_hosts' )
-    end
-
-  end
 end

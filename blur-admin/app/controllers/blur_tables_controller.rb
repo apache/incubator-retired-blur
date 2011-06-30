@@ -26,12 +26,4 @@ class BlurTablesController < ApplicationController
       format.js  { render :nothing => true }
     end
   end
-
-  def hosts
-    @hosts = BlurTable.find(params[:id]).hosts
-
-    respond_to do |format|
-      format.html { render :partial => 'hosts', :locals => {:hosts => @hosts} }
-    end
-  end
 end

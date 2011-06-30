@@ -15,7 +15,7 @@
       = nil_message
 
   %span= blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
-  %span= blur_table.current_size ? blur_table.current_size : nil_message
+  %span= blur_table.current_size ? number_to_human_size(blur_table.current_size, :precision => 3) : nil_message
   %span= blur_table.query_usage ? number_with_delimiter(blur_table.query_usage, :delimiter => ',') : nil_message
   %span= blur_table.is_enabled? ? "Enabled" : "Disabled"
 
@@ -41,10 +41,6 @@
                     %li#column{:id=>"#{blur_table.table_name}.#{family}.#{column}"}
                       %a{:href=>'#'}= column
 
-
-  = link_to "/blur_tables/#{blur_table.id}/hosts", :class => 'hosts', :remote => true do
-    Hosts
-
   .actions
     - if can? :delete, :blur_tables
       - if !blur_table.is_enabled?
@@ -59,3 +55,16 @@
         - else
           = hidden_field_tag 'disable', true
           = submit_tag 'Disable', :confirm => "Are you sure?"
+  .hosts
+    - if blur_table.hosts
+      .host_tree
+        %ul
+          -blur_table.hosts.each do |host, shards|
+            %li.host{:id=>"#{host}"}
+              %a{:href=>''}= host
+              %ul
+                -shards.each do |shard|
+                  %li.shard{:id=>"#{host}_#{shard}"}
+                    %a{:href=>''}= shard
+    - else
+      Not Available

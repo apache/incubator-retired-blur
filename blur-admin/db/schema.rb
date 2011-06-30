@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110629190801) do
+ActiveRecord::Schema.define(:version => 20110630161453) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -48,15 +48,9 @@ ActiveRecord::Schema.define(:version => 20110629190801) do
     t.text     "server"
   end
 
-  create_table "blur_zookeeper_instances", :force => true do |t|
-    t.string  "url"
-    t.string  "name"
-    t.integer "status"
-  end
-
   create_table "clusters", :force => true do |t|
     t.string   "name"
-    t.integer  "blur_zookeeper_instance_id"
+    t.integer  "zookeeper_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -66,7 +60,7 @@ ActiveRecord::Schema.define(:version => 20110629190801) do
     t.string   "blur_version"
     t.string   "node_name"
     t.string   "node_location"
-    t.integer  "blur_zookeeper_instance_id"
+    t.integer  "zookeeper_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -106,6 +100,12 @@ ActiveRecord::Schema.define(:version => 20110629190801) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "roles_mask"
+  end
+
+  create_table "zookeepers", :force => true do |t|
+    t.string  "url"
+    t.string  "name"
+    t.integer "status"
   end
 
 end

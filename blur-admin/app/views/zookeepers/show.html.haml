@@ -5,7 +5,7 @@
 #zookeepers_wrapper
   .zookeeper_select
     = form_tag zookeeper_path, :id => 'change_current_zookeeper',  :method => :get, :remote => :true do
-      %b Current Blur Zookeeper Instance:
+      %b Current Zookeeper Instance:
       = select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
 
   = render 'zookeeper'

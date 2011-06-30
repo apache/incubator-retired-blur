@@ -16,7 +16,7 @@ describe SearchController do
 
   describe "show" do
     before :each do
-      @table = Factory.stub( :blur_table_with_schema )
+      @table = Factory.stub( :blur_table )
       BlurTable.stub(:all).and_return [@table]
     end
 
@@ -42,7 +42,7 @@ describe SearchController do
   
   describe "filters" do
     before :each do
-      @table = Factory.stub( :blur_table_with_schema )
+      @table = Factory.stub( :blur_table )
       BlurTable.stub(:find).and_return @table
     end
 
@@ -82,7 +82,7 @@ describe SearchController do
       test2_result2 = create_blur_result(:set => test2_set2)
       @test2_query = Blur::BlurResults.new :results => [test2_result1, test2_result2], :totalResults => 2
 
-      @table = Factory.stub :blur_table_with_schema
+      @table = Factory.stub :blur_table
       BlurTable.stub(:find).with(@table.id).and_return(@table)
     end
 

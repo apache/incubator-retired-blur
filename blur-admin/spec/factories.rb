@@ -1,8 +1,7 @@
 # Determines how many models are created in a has_many relationship when
 # using a 'plural' builder, i.e. Factory.build(:zookeeper_with_controllers)
-# Be careful setting this to a large number when creating a long chained model; as the name
-# suggests the number of models grows with Theta = a^(b-1) where b is model association chain
-# length and a is @recursive factor
+# As the name suggests the number of models grows with Theta = a^(b-1) where
+# b is model association chain length and a is @recursive_factor
 @recursive_factor = 3
 
 # Basic model definitions
@@ -64,13 +63,17 @@ end
 # persist them in the database
 
 Factory.define :zookeeper_with_cluster, :parent => :zookeeper do |t|
-  t.after_create { |zookeeper| Factory.create(:controller, :zookeeper => zookeeper) }
-  t.after_create { |zookeeper| Factory.create(:cluster, :zookeeper => zookeeper) }
+  t.after_create do |zookeeper|
+    Factory.create :controller, :zookeeper => zookeeper
+    Factory.create :cluster,    :zookeeper => zookeeper
+  end
 end
 
 Factory.define :zookeeper_with_clusters, :parent => :zookeeper do |t|
-  t.after_create { |zookeeper| @recursive_factor.times {Factory.create(:controller, :zookeeper => zookeeper)} }
-  t.after_create { |zookeeper| @recursive_factor.times {Factory.create(:cluster,    :zookeeper => zookeeper)} }
+  t.after_create do |zookeeper|
+    @recursive_factor.times { Factory.create :controller, :zookeeper => zookeeper }
+    @recursive_factor.times { Factory.create :cluster,    :zookeeper => zookeeper }
+  end
 end
 
 Factory.define :zookeeper_with_shard, :parent => :zookeeper_with_cluster  do |t|

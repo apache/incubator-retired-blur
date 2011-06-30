@@ -3,7 +3,6 @@ $border_width: 1px;
 $border_style: solid;
 
 $light_background_color: #F0F0F0;
-$dark_background_color: #DDD;
 
 @mixin border        { border:        $border_width $border_style $border_color; }
 @mixin border-bottom { border-bottom: $border_width $border_style $border_color; }
@@ -11,65 +10,51 @@ $dark_background_color: #DDD;
 @mixin border-sides  { border-left:   $border_width $border_style $border_color; 
                        border-right:  $border_width $border_style $border_color; }
 
-@mixin accordion-span {
-  height: 100%;
-  @include inline-block;
-}
-
 #blur_tables_wrapper{
   margin-top: 5px;
   margin-left: 20px;
   margin-right: 20px;
 
-  h3:nth-of-type(even) {background-color: $light_background_color};
-  div.blur_table:nth-of-type(odd)    {background-color: $light_background_color};
+  h3:nth-of-type(even)            {background-color: $light_background_color};
+  div.blur_table:nth-of-type(odd) {background-color: $light_background_color};
 
   // Bottom border of last table element
   h3.blur_table:nth-last-of-type(1)  {@include border-bottom;};
   div.blur_table:nth-last-of-type(1) {@include border-bottom;};
 
-  .blur_tables_header {
+  h3.blur_table, .blur_tables_header {
     margin: 0px;
     padding: 0px 10px;
     height: 32px;
     font-size: 1em;
-    font-weight: bold;
     color: #555;
     text-align: right;
-    vertical-align: bottom;
-    position: relative;
-    background-color: #C4D9FF;
     @include border-top;
     @include border-sides;
+
+  }
+
+  .blur_tables_header {
+    font-weight: bold;
+    background-color: #C4D9FF;
   }
 
   h3.blur_table {
-    margin: 0px;
-    padding: 0px 10px;
-    height: 32px;
-    font-size: 1em;
-    color: #555;
-    text-align: right;
-    @include border-top;
-    @include border-sides;
-    &:hover {
-      cursor: pointer;
-    }
+    &:hover { cursor: pointer; }
  }
  
   span {
-    @include accordion-span;
+    height: 100%;
     @include inline-block;
     text-align: center;
-    width: 100px;
+    width: 130px;
     line-height: 32px;
   }
 
   span.table_name {
     text-align: left;
     float: left;
-    border-left: 0px;
-    width: 10em;
+    width: 14em;
     font-size: 1.4em;
     font-weight: bold;
   }
@@ -82,26 +67,12 @@ $dark_background_color: #DDD;
       @include inline-block;
       vertical-align: top;
       width: 32%;
-
-      .location { padding-bottom: 10px; }
-
-      form {
-        display: inline;
-        margin: 0px;
-        input { margin: 0px; }
-      }
     }
-
-    li {
-      list-style-image: none;
+    .actions .location { padding-bottom: 10px; }
+    .actions form {
+      display: inline;
+      margin: 0px;
+      input { margin: 0px; }
     }
   }
-
-
-  .jstree-icon{
-    cursor: pointer;
-  }
-
-  .host_tree{ display: none; }
-  .schema_list{ display: none; }
 }

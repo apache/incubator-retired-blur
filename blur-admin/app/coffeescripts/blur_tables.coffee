@@ -24,14 +24,14 @@ $(document).ready ->
       $('.schema_list').show()
     )
 
-  # Calls the function to initialize the filter tree
-  setup_filter_tree($('.schema_list'))
+  # Calls the function to initialize the filter tree on the schema list
+  setup_filter_tree $('.schema_list')
+  setup_filter_tree $('.host_list')
 
   # Ajax request handling for enable/disable
   $('form.update')
     .live 'ajax:beforeSend', (evt, xhr, settings) ->
       $(this).find('input[type=submit]').attr('disabled', 'disabled')
-
     .live 'ajax:complete', (evt, xhr, status) ->
       $(this).find('input[type=submit]').removeAttr('disabled')
     .live 'ajax:success', (evt, data, status, xhr) ->
@@ -42,20 +42,6 @@ $(document).ready ->
     .live 'ajax:error', (evt, xhr, status, error) ->
       console.log "Error in update ajax call"
     
-  # Ajax request handling for host_list
-  $('a.hosts')
-    .live 'ajax:success', (evt, data, status, xhr) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        title: "Hosts and Shards"
-        close: (event, ui) ->
-          $(this).remove()
-      $('ui-widget-overlay').bind 'click', ->
-        $('.hosts').dialog 'close'
-      setup_filter_tree($('.host_list'))
-
   # Listener for delete button (launches dialog box)
   $('.delete_blur_table_button').live 'click', ->
     form = $(this).closest('form.delete')

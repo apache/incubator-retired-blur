@@ -4,9 +4,18 @@ $(document).ready ->
     $(table).hide()
 
   # Accordion open/close Listener
+  # Stuff having to do with 'last' variable is a hack to make the
+  # bottom table's bottom border appear and dissapear on opening.
   $('h3.blur_table').live 'click', ->
     id = $(this).attr('id')
-    $('div#' + id).slideToggle('fast')
+    last = id == $('h3.blur_table').filter(':last').attr('id')
+    if last and $(this).css('border-bottom-width') isnt '0px'
+      $(this).css('border-bottom-width','0px')
+      last = false
+    $('div#' + id).slideToggle 'fast', ->
+      # Hack to remove border on last header element while open
+      if last and $('#' + id).css('border-bottom-width') is '0px'
+        $('#' + id).css('border-bottom-width', '1px')
 
   # Function to initialize a filter tree on the passed in element
   setup_filter_tree = (selector) ->

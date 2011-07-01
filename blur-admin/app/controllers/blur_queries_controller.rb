@@ -10,7 +10,7 @@ class BlurQueriesController < ApplicationController
     past_time = params[:time] ? Time.zone.now - params[:time].to_i.minutes : Time.zone.now - 1.minutes
     filters[:created_at] = past_time..Time.zone.now
     @blur_tables = BlurTable.all unless request.xhr?
-    @blur_queries = BlurQuery.where filters
+    @blur_queries = BlurQuery.all :conditions => filters, :order => "created_at desc"
     respond_to do |format|
       format.html do
         if request.xhr?

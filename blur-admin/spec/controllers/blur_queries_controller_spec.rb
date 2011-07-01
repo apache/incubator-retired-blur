@@ -38,28 +38,28 @@ describe BlurQueriesController do
     end
 
     it "should assign @blur_queries to be the collection of blur queries" do
-      BlurQuery.stub(:where).and_return([@query])
+      BlurQuery.stub(:all).and_return([@query])
       get :index
       assigns(:blur_queries).should == [@query]
     end
 
     it "filters blur queries to within the past minute if no time params given" do
-      BlurQuery.should_receive(:where).with(:created_at => Time.zone.now - 1.minutes .. Time.zone.now)
+      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.zone.now - 1.minutes .. Time.zone.now}, :order=>"created_at desc")
       get :index
     end
 
     it "filters blur queries to within a specified time if given a time parameter" do
-      BlurQuery.should_receive(:where).with :created_at => Time.zone.now - 60.minutes .. Time.zone.now
+      BlurQuery.should_receive(:all).with :conditions => {:created_at => Time.zone.now - 60.minutes .. Time.zone.now }, :order=>"created_at desc"
       get :index, :time => '60'
     end
 
     it "filters blur queries by super query status if given a super_query_on parameter" do
-      BlurQuery.should_receive(:where).with(:super_query_on => 'true', :created_at => Time.zone.now - 1.minutes .. Time.zone.now)
+      BlurQuery.should_receive(:all).with(:conditions => {:super_query_on => 'true', :created_at => Time.zone.now - 1.minutes .. Time.zone.now}, :order=>"created_at desc")
       get :index, :super_query_on => 'true'
     end
 
     it "filters blur queries by table if given a blur_table_id parameter" do
-      BlurQuery.should_receive(:where).with(:blur_table_id => '1', :created_at => Time.zone.now - 1.minutes .. Time.zone.now)
+      BlurQuery.should_receive(:all).with(:conditions => {:blur_table_id => '1', :created_at => Time.zone.now - 1.minutes .. Time.zone.now}, :order=>"created_at desc")
       get :index, :blur_table_id => '1'
     end
   end

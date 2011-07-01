@@ -20,7 +20,7 @@ class SearchController < ApplicationController
 
     @blur_table = BlurTable.find params[:blur_table]
     table = @blur_table.table_name
-		bq = Blur::BlurQuery.new :queryStr => params[:query_string], :fetch => params[:result_count].to_i, :start => params[:start_record].to_i, :uuid => Time.now.to_i*1000+rand(1000)
+		bq = Blur::BlurQuery.new :queryStr => params[:query_string], :fetch => params[:result_count].to_i, :start => params[:offset].to_i, :uuid => Time.now.to_i*1000+rand(1000)
     if !params[:super_query]
       bq.superQueryOn = false
     end

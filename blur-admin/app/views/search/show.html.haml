@@ -24,8 +24,8 @@
         = label_tag :result_count, 'Fetch:'
         = select_tag :result_count, options_for_select([25, 50, 100])
       .partial-section
-        = label_tag :start_record, 'Start:'
-        = number_field_tag :start_record, 0
+        = label_tag :offset, 'Offset:'
+        = number_field_tag :offset, 0
 
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w

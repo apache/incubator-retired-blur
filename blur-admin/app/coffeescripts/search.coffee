@@ -93,7 +93,7 @@ $(document).ready ->
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   # Disable submit button when no text in input
-  $('#q').live("keypress", (name) ->
+  $('#query_string').live("keypress", (name) ->
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
       if $(':submit').attr('disabled')

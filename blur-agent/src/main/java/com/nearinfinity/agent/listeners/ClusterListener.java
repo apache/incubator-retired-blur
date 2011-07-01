@@ -67,7 +67,9 @@ public class ClusterListener implements Watcher {
 		List<Map<String, Object>> instances = jdbc.queryForList("select id from clusters where name = ?", new Object[]{name});
 		if (instances.isEmpty()) {
 			jdbc.update("insert into clusters (name, zookeeper_id) values (?, ?)", new Object[]{name, zkInstanceId});
-			int queryForInt = jdbc.queryForInt("select id from clusters where name = ?", new Object[]{name});
+			int clusterId = jdbc.queryForInt("select id from clusters where name = ?", new Object[]{name});
+			
+			new ShardsListener(zk, clusterId, name, jdbc);
 			//TODO: Setup shards here
 		} else {
 			//Not sure if there is anything to update here

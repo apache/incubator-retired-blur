@@ -69,13 +69,13 @@ public class ZookeeperInstance implements Watcher {
 	
 	
 	private int initializeZkInstanceModel(String name, String url, JdbcTemplate jdbc, boolean online) {
-		List<Map<String, Object>> instances = jdbc.queryForList("select id from blur_zookeeper_instances where name = ?", new Object[]{name});
+		List<Map<String, Object>> instances = jdbc.queryForList("select id from zookeepers where name = ?", new Object[]{name});
 		if (instances.isEmpty()) {
-			jdbc.update("insert into blur_zookeeper_instances (name, url, status) values (?, ?,?)", new Object[]{name, url, 1});
-			return jdbc.queryForInt("select id from blur_zookeeper_instances where name = ?", new Object[]{name});
+			jdbc.update("insert into zookeepers (name, url, status) values (?, ?,?)", new Object[]{name, url, 1});
+			return jdbc.queryForInt("select id from zookeepers where name = ?", new Object[]{name});
 		} else {
 			// TODO: Determine if we want to allow changing of the host and port here
-			jdbc.update("update blur_zookeeper_instances set status=? where name=?", new Object[]{online ? 0 : 1, name});
+			jdbc.update("update zookeepers set status=? where name=?", new Object[]{online ? 0 : 1, name});
 		}
 		return (Integer) instances.get(0).get("ID");
 	}

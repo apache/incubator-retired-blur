@@ -86,7 +86,7 @@ public class ControllerListener implements Watcher {
 	private void initializeController(String name, String uri) {
 		List<Map<String, Object>> instances = jdbc.queryForList("select id from controllers where node_name = ?", new Object[]{name});
 		if (instances.isEmpty()) {
-			jdbc.update("insert into controllers (node_name, node_location, status, blur_zookeeper_instance_id, blur_version) values (?, ?, ?, ?, ?)", new Object[]{name, uri, 1, zkInstanceId, "1.0"});
+			jdbc.update("insert into controllers (node_name, node_location, status, zookeeper_id, blur_version) values (?, ?, ?, ?, ?)", new Object[]{name, uri, 1, zkInstanceId, "1.0"});
 		} else {
 			jdbc.update("update controllers set status=1, blur_version=? where node_name=?", new Object[]{"1.0", name});
 		}

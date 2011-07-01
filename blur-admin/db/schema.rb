@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110630161453) do
+ActiveRecord::Schema.define(:version => 20110701185350) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -77,6 +77,19 @@ ActiveRecord::Schema.define(:version => 20110630161453) do
     t.integer  "missing_blocks"
     t.integer  "total_nodes"
     t.integer  "dead_nodes"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "searches", :force => true do |t|
+    t.boolean  "super_query"
+    t.string   "columns"
+    t.integer  "fetch"
+    t.integer  "offset"
+    t.string   "name"
+    t.string   "query"
+    t.integer  "blur_table_id"
+    t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

@@ -20,6 +20,8 @@ public class QueryCollector {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
 				@Override
 				public Void call(Client client) throws Exception {
+					jdbc.update("delete from blur_queries where created_at+0 < NOW() - (2*60*60);");
+					
 					List<String> tables = client.tableList();
 					
 					

@@ -66,8 +66,10 @@ $light_background_color: #F0F0F0;
     .schema, .actions, .hosts {
       @include inline-block;
       vertical-align: top;
-      width: 32%;
     }
+    .schema  { min-width: 45.5% }
+    .actions { min-width: 30% }
+    .hosts   { min-width: 24%}
     .actions .location { padding-bottom: 10px; }
     .actions form {
       display: inline;

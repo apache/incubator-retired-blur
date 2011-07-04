@@ -19,6 +19,13 @@ $(document).ready ->
       $('#bar_section').show()
     )
 
+  #method to resize the table dynaimcally
+  sizeTable = (pixels) ->
+    if $(window).width() < $('thead').width()
+      $('#results_container').width($(window).width() - pixels)
+    else
+      $('#results_container').width($('thead').width())
+
   # Setup the filters onload
   setup_filter_tree()
 
@@ -46,8 +53,10 @@ $(document).ready ->
     if(data)
       #shows number of results option if there are results
       #If data is returned properly process it
+
       $('#results_container').html(data)
-      $('#example-box').hide()
+      sizeTable(315)
+
       #set the border once the table has content
     else
       #hides number of results option if there are no results
@@ -90,7 +99,6 @@ $(document).ready ->
 
   # Live listeners for this page
   $('#filter_section').live("click", -> toggle_submit())
-  $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   # Disable submit button when no text in input
   $('#query_string').live("keypress", (name) ->
@@ -108,20 +116,20 @@ $(document).ready ->
 
   # Hides/Shows filter section
   $('#bar_section').live('click', ->
-    if $('#query_section').is('.partial-page')
+    if !($('#filter_section').is(':hidden'))
       $('#filter_section').hide()
-      $('#query_section').removeClass('partial-page')
-      $('#query_section').addClass('full-page')
       $('#arrow').removeClass('ui-icon-triangle-1-w')
       $('#arrow').addClass('ui-icon-triangle-1-e')
       $('#bar_section').addClass('collapsed-bar')
+      sizeTable(70)
+      $('#results_container').css('left', 0)
     else
-      $('#query_section').removeClass('full-page')
-      $('#query_section').addClass('partial-page')
       $('#filter_section').show()
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
       $('#bar_section').removeClass('collapsed-bar')
+      sizeTable(315)
+      $('#results_container').css('left', 245)
   )
 
   # Filters results table when filter checks are changed
@@ -161,14 +169,6 @@ $(document).ready ->
       $(name).show()
   )
 
-  $('#query-help-link').live 'click', ->
-    $('#help-dialog').dialog(
-      modal:true
-      draggable:false
-      resizable: false
-      title:"Query Help"
-      width:500
-    )
-
-  # Listener to hide dialog on click
-  $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
+  $(window).resize( ->
+    sizeTable(315)
+   )

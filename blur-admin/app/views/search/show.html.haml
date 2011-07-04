@@ -2,10 +2,16 @@
 -content_for :javascript do
   =javascript_include_tag 'jquery.jstree', 'compiled/search'
 
-#search-page
+#form_section
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
-      %h2 Filters:
+      %h2 Search:
+      .partial-section
+        .search-input
+          .query-label= label_tag :q, "Query:"
+          = text_area_tag :query_string, params[:query_string]
+
+        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none;" }
       .partial-section
         = label_tag :blur_table, "Table:"
         = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
@@ -26,23 +32,9 @@
       .partial-section
         = label_tag :offset, 'Offset:'
         = number_field_tag :offset, 0
+      .partial_section
+        = submit_tag "Search", :disabled => true, :id => "search_submit"
 
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
-    #query_section.partial-page
-      #search_section
-        .search-title.title
-          = label_tag :q, "Search:"
-        .search-input
-          .query-label= label_tag :q, "Query:"
-          = text_area_tag :query_string, params[:query_string]
-          %a#query-help-link ?
-          = submit_tag "Search", :disabled => true, :id => "search_submit"
-
-        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none;" }
-      #results_container
-#hidden-help-container
-  %ul#help-dialog
-    %li Placeholder
-    %li This will be a pop up showing how to form Blur Queries
-    %li To edit this, change the bottom of app/views/search/show.html.haml
+#results_container

@@ -62,7 +62,7 @@ $(document).ready ->
       #hides number of results option if there are no results
       error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
       $('#results_container').html(error_content)
-      $('#example-box').show()
+      sizeTable(315)
     $('#loading-spinner').hide()
     true
   )
@@ -77,6 +77,7 @@ $(document).ready ->
     $('#example-box').show()
     $('#loading-spinner').hide()
     $('#bar_section').css('height', $('#query_section').height() )
+    sizeTable(315)
     true
   )
 
@@ -117,14 +118,14 @@ $(document).ready ->
   # Hides/Shows filter section
   $('#bar_section').live('click', ->
     if !($('#filter_section').is(':hidden'))
-      $('#filter_section').hide()
+      $('#filter_section').toggle('fast')
       $('#arrow').removeClass('ui-icon-triangle-1-w')
       $('#arrow').addClass('ui-icon-triangle-1-e')
       $('#bar_section').addClass('collapsed-bar')
       sizeTable(70)
       $('#results_container').css('left', 0)
     else
-      $('#filter_section').show()
+      $('#filter_section').toggle('fast')
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
       $('#bar_section').removeClass('collapsed-bar')

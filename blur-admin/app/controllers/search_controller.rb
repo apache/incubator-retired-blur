@@ -3,6 +3,7 @@ class SearchController < ApplicationController
 	def show
     @blur_tables = BlurTable.all
 	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
+    @searches = @current_user.searches.reverse
 	end
 
 	def filters

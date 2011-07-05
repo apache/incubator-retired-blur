@@ -35,7 +35,7 @@ Factory.define :blur_table do |t|
   t.current_size           { 10**12 + rand(999 * 10 ** 12) } #Between a terrabyte and a petabyte
   t.query_usage            { rand 500 }                      #Queries per second
   t.record_count           { 10**6 + rand(999 * 10 ** 6) }   #Between a million and a billion 
-  t.status                 { rand 2 }
+  t.status                 { 1 + rand(2) }
   t.sequence (:table_uri)  { |n| "blur_table#{n}.blur.example.com" }
   t.table_analyzer 'standard.table_analyzer'
   t.table_schema { |blur_table| "{\"table\":\"#{blur_table.table_name}\",\"setTable\":true,\"setColumnFamilies\":true,\"columnFamiliesSize\":2,\"columnFamilies\":{\"Column Family #1\":[\"Column #1\",\"Column #2\",\"Column #3\"],\"Column Family #1\":[\"Column #1\",\"Column #2\",\"Column #3\"]}}" }
@@ -85,6 +85,30 @@ end
 Factory.define :zookeeper_with_shards, :parent => :zookeeper_with_clusters  do |t|
   t.after_create do |zookeeper|
     zookeeper.clusters.each { |cluster| @recursive_factor.times {Factory.create(:shard, :cluster => cluster)} }
+  end
+end
+
+Factory.define :zookeeper_with_blur_table, :parent => :zookeeper_with_shard  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.shards.each { |shard| Factory.create(:blur_table, :shard => shard) }
+  end
+end
+
+Factory.define :zookeeper_with_blur_tables, :parent => :zookeeper_with_shards  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.shards.each { |shard| @recursive_factor.times {Factory.create(:blur_table, :shard => shard)} }
+  end
+end
+
+Factory.define :zookeeper_with_blur_query, :parent => :zookeeper_with_blur_table  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.blur_tables.each { |blur_table| Factory.create(:blur_query, :blur_table => blur_table) }
+  end
+end
+
+Factory.define :zookeeper_with_blur_queries, :parent => :zookeeper_with_blur_tables  do |t|
+  t.after_create do |zookeeper|
+    zookeeper.blur_tables.each { |blur_table| @recursive_factor.times {Factory.create(:blur_query, :blur_table => blur_table)} }
   end
 end
 

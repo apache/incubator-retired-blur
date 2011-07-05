@@ -21,7 +21,7 @@
             - result[:table_rows].each_with_index do |table_row, i|
               %tr{:class => stripe_class}
                 - if i == 0
-                  %td.rowId.id_cell{:rowspan => result[:max_record_count]}
+                  %td.rowId.id_cell{:rowspan => result[:max_record_count], :title => "rowId"}
                     = result[:id]
                 - reset_cycle('column-cycle')
                 - table_row.each_with_index do |cfs, j|

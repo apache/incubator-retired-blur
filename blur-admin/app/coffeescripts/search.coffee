@@ -16,7 +16,6 @@ $(document).ready ->
     })
     $('.column_family_filter').bind("loaded.jstree", ->
       $('#filter_columns').show()
-      $('#bar_section').show()
     )
 
   # Setup the filters onload
@@ -37,12 +36,10 @@ $(document).ready ->
   # Show spinner when submit button is clicked
   $('#search_submit').live('click', ->
     $('#loading-spinner').show()
-
   )
 
   # Functionality for ajax success
   $('#search_form').bind('ajax:success', (evt, data, status)->
-
     if(data)
       #shows number of results option if there are results
       #If data is returned properly process it
@@ -55,6 +52,7 @@ $(document).ready ->
       $('#results_container').html(error_content)
       $('#example-box').show()
     $('#loading-spinner').hide()
+    $('[title]').tooltip()
     true
   )
   
@@ -67,7 +65,6 @@ $(document).ready ->
     $('#results_container').html(error_content)
     $('#example-box').show()
     $('#loading-spinner').hide()
-    $('#bar_section').css('height', $('#query_section').height() )
     true
   )
 
@@ -93,7 +90,7 @@ $(document).ready ->
   $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   # Disable submit button when no text in input
-  $('#q').live("keypress", (name) ->
+  $('#query_string').live("keypress", (name) ->
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
       if $(':submit').attr('disabled')

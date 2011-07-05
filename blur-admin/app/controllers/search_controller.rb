@@ -129,6 +129,9 @@ class SearchController < ApplicationController
   def load
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
-    render 'show_save.coffee.erb'
+    @search = Search.find params['search_id']
+    respond_to do |format|
+      format.json  { render :json => @search }
+    end
   end
 end

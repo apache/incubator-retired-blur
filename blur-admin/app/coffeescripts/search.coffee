@@ -21,7 +21,7 @@ $(document).ready ->
 
   #method to resize the table dynamically
   sizeTable = (pixels) ->
-    if $(window).width() < $('thead').width()
+    if $(window).width() < $('thead').width() || $('thead').width() == null
       $('#results_container').width($(window).width() - pixels)
     else
       $('#results_container').width($('thead').width())
@@ -36,7 +36,7 @@ $(document).ready ->
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
-    if $('.jstree-checked').length>0 and $('#q').val() isnt  ''
+    if $('.jstree-checked').length>0 and $('#query_string').val() isnt  ''
       $(':submit').removeAttr('disabled')
     else
       $(':submit').attr('disabled', 'disabled')
@@ -78,23 +78,6 @@ $(document).ready ->
     sizeTable(315)
     true
   )
-
-  # Functionality for check all
-  check_all = () ->
-    $('.column_family_filter').jstree("check_all")
-    $('th').show()
-    $('td').show()
-
-  # Functionality for uncheck all
-  uncheck_all = () ->
-    $('.column_family_filter').jstree("uncheck_all")
-    $('th').hide()
-    $('td').hide()
-    $('.rowId').show()
-
-  # Listeners for check all and uncheck all
-  $('#checkall').live('click', -> check_all())
-  $('#uncheckall').live('click', -> uncheck_all())
 
   # Live listeners for this page
   $('#filter_section').live("click", -> toggle_submit())
@@ -175,7 +158,12 @@ $(document).ready ->
 
   #display the hidden saved searches
   $('#saved_search').live('click', ->
-     $('#searches').slideToggle('slow')
+     $('#searches').slideToggle('fast')
+  )
+
+  #display the hidden advanced options
+  $('#advanced_options').live('click', ->
+     $('.advanced-choices').slideToggle('fast')
   )
 
   $('.saved_item').live('click', ->
@@ -183,3 +171,8 @@ $(document).ready ->
       type: 'POST'}
     )
   )
+
+  $('.saved_item').bind('ajax:complete', (evt, data, status)->
+    alert "hello"
+  )
+

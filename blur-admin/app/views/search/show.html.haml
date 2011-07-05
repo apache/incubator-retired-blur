@@ -10,8 +10,6 @@
           %a{:title => "Saved Searches", :href => '#', :id => 'saved_search'} Saved Searches
         %select{:id => "searches", :size => 4, :style => "min-width:190px; display:none;" }
           = render "saved"
-
-
       #query_input.partial-section
         .search-input
           .query-label= label_tag :query_string, "Query:"
@@ -19,23 +17,26 @@
       #table_select.partial-section
         = label_tag :blur_table, "Table:"
         = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
-      #sq_select.partial-section
-        = label_tag :super_query, "Super Query:"
-        = check_box_tag :super_query, true, true
       #families_select.partial-section
         .column-title
           Column Families:
-        .column-title
-          %a{:title => "Check All", :href => '#', :id => 'checkall'} Check All
-          %a{:title => "Uncheck All", :href => '#', :id => "uncheckall"} Uncheck All
         #filter_columns
           = render 'filters'
-      #start_offset.partial-section
-        = label_tag :offset, 'Start:'
-        = number_field_tag :offset, 0, :min => 0
-      #fetch_select.partial-section
-        = label_tag :result_count, 'Fetch:'
-        = select_tag :result_count, options_for_select([25, 50, 100])
+
+      #advanced_section.partial-section
+        .advanced-label
+          %a{:title => "Advanced", :href => '#', :id => 'advanced_options'} Advanced Options
+        .advanced-choices{:style => "display:none;"}
+          #sq_select.partial-section
+            = label_tag :super_query, "Super Query:"
+            = check_box_tag :super_query, true, true
+          #start_offset.partial-section
+            = label_tag :offset, 'Start:'
+            = number_field_tag :offset, 0, :min => 0
+          #fetch_select.partial-section
+            = label_tag :result_count, 'Fetch:'
+            = select_tag :result_count, options_for_select([25, 50, 100])
+
       #search_send.partial_section
         %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none; margin-right:50px;" }
         = submit_tag "Search", :disabled => true, :id => "search_submit"

@@ -45,7 +45,7 @@ public class TableCollector {
 			public Void call(Client client) throws Exception {
 				List<String> tables = client.tableList();
 				//mapper used to generate the json
-				ObjectMapper mapper = new ObjectMapper();
+ 				ObjectMapper mapper = new ObjectMapper();
 				
 				//Mark deleted tables deleted
 				jdbc.update("update blur_tables set status = 0 where table_name not in ('" + StringUtils.join(tables, "','") + "')");
@@ -56,7 +56,9 @@ public class TableCollector {
 					TableDescriptor descriptor = client.describe(table);
 					
 					//add the tablename and tableid to the map that acts as a dictionary
-					TableMap.get().put(table, (Integer)(existingTable.get(0).get("id")));
+					if (!existingTable.isEmpty()){
+						TableMap.get().put(table, (Integer)(existingTable.get(0).get("id")));
+					}
 					
 					//strings that are being mocked to json
 					Schema schema = client.schema(table);

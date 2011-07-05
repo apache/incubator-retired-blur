@@ -166,8 +166,8 @@ $(document).ready ->
      $('.advanced-choices').slideToggle('fast')
   )
 
-  $('.saved_item').live('click', ->
-    $.ajax('/search/load/'+ $(this).attr('id'), {
+  $('#edit_icon').live('click', ->
+    $.ajax('/search/load/'+ $(this).parent().parent().attr('id'), {
       type: 'POST',
       success: (data) ->
         if data.success == false

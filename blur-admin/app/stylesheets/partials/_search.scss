@@ -184,3 +184,14 @@ select#r{ margin-left: 5px; }
  min-width: 185px;
  max-width: 185px;
 }
+
+.search_element{
+  max-width: 175px;
+}
+
+.action_icon{
+  cursor:pointer;
+  float:right;
+  padding-left: 2px;
+  padding-right: 2px;
+}

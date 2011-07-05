@@ -1,0 +1,12 @@
+- content_for :title, 'Environment Status'
+- content_for :javascript do
+  = javascript_include_tag 'compiled/zookeepers'
+
+#zookeepers_wrapper
+  - if @zookeepers
+    %ul
+    - @zookeepers.each do |zookeeper|
+      %li= zookeeper.name
+
+  - else
+    No Zookeeper Instances Available

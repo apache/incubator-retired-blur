@@ -26,22 +26,11 @@
     vertical-align: top;
   }
 
-  #hdfs {
+  #blur, #zookeeper {
     @include outer-container;
-    @include inline-block;
-    width: 47%;
-    margin-right: 15px;
+  }
 
-  }
-  #zookeeper {
-    @include outer-container;
-    @include inline-block;
-    vertical-align: top;
-    width: 47%;
-    margin-left: 15px;
-  }
   #blur {
-    @include outer-container;
     #controllers, #shards{ @include inner-container; }
   }
   

@@ -2,12 +2,10 @@ BlurAdmin::Application.routes.draw do
   resources :users, :user_sessions
 
 	resource :search, :controller => 'search'
-	resource :env, :controller => 'env'
 
-  root :to => "zookeepers#show"
-
-  resources :zookeepers, :only => :show
-  match 'zookeeper' => 'zookeepers#show', :as => :zookeeper
+  resources :zookeepers, :only => :index
+  match 'zookeeper' => 'zookeepers#show_current', :as => :zookeeper
+  match 'zookeepers/make_current' => 'zookeepers#make_current', :as => :make_current_zookeeper
 
   resources :blur_tables do
     get 'hosts', :on => :member
@@ -23,6 +21,8 @@ BlurAdmin::Application.routes.draw do
 
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
+
+  root :to => 'zookeepers#index'
 
   # The priority is based upon order of creation:
   # first created -> highest priority.
@@ -73,7 +73,6 @@ BlurAdmin::Application.routes.draw do
 
   # You can have the root of your site routed with "root"
   # just remember to delete public/index.html.
-  root :to => "env#show"
 
   # See how all your routes lay out with "rake routes"
 

@@ -1,15 +1,24 @@
 class ZookeepersController < ApplicationController
-  def show
-    # If request is for a specific blur instance, update the current blur instance in session
+
+  before_filter :zookeepers,        :only => :show_current
+  before_filter :current_zookeeper, :only => :show_current
+
+  def show_current
+    @zookeeper = @current_zookeeper
+
+    respond_to do |format|
+      format.html { render :show_current }
+    end
+  end
+
+  def index
+    @zookeepers = zookeepers
+  end
+
+  def make_current
     session[:current_zookeeper_id] = params[:id] if params[:id]
 
-    @zookeepers = Zookeeper.all
-    @zookeeper = current_zookeeper
-    @controllers = @zookeeper.controllers
-    @clusters = @zookeeper.clusters
-    @shards = @zookeeper.shards
-    respond_to do |format|
-      format.html { render :partial => 'zookeeper' if request.xhr? }
-    end
+    # Javascript redirect (has to be done in js)
+    render :js => "window.location.replace('#{request.referer}')"
   end
 end

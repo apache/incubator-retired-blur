@@ -4,11 +4,7 @@ $footer-height: 40px;
 $base-theme-color: #f6a828;
 $base-theme-background-color: #eeeeee;
 
-// Imports -------------------------------------------------------------------
-
 @import "susy";
-
-// Grid ----------------------------------------------------------------------
 
 $total-cols             : 12;
 $col-width              : 4em;
@@ -16,3 +12,5 @@ $gutter-width           : 1em;
 $side-gutter-width      : $gutter-width;
 
 $show-grid-backgrounds  : true;
+
+#ft { top: 4px; }

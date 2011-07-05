@@ -1,12 +1,4 @@
 .zookeeper{ :id => @zookeeper.id }
-  #hdfs
-    %h2 HDFS Status
-    %ul
-      %li get HDFS capacity data
-      %li generate pie chart of capacity data
-      %li something else?
-      %li and that other thing
-      %li with the stuff
   #zookeeper
     %h2 Zookeeper Information
     %table
@@ -31,21 +23,21 @@
   #blur
     %h2 Blur Status
     #controllers
-      - if @controllers
-        %h3= "Controllers(#{@controllers.length})"
+      - if @zookeeper.controllers
+        %h3= "Controllers(#{@zookeeper.controllers.length})"
         #controllers-placeholder
           %ul
-            - @controllers.each do |controller|
+            - @zookeeper.controllers.each do |controller|
               %li
                 = controller.node_name
       - else
         %h3 Controllers
         %p Not Available
     #shards
-      - if @shards
-        %h3= "Shards(#{@shards.length})"
+      - if @zookeeper.shards
+        %h3= "Shards(#{@zookeeper.shards.length})"
         %ul
-          - @shards.each do |shard|
+          - @zookeeper.shards.each do |shard|
             %li
               = shard.node_name
       - else

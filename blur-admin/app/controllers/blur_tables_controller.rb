@@ -1,4 +1,7 @@
 class BlurTablesController < ApplicationController
+  before_filter :zookeepers,        :only => :index
+  before_filter :current_zookeeper, :only => :index
+
   def index
     @blur_tables = BlurTable.all
     @blur_tables.sort!{|t1,t2|t1 <=> t2}

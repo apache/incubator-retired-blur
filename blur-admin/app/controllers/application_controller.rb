@@ -17,7 +17,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  before_filter :current_user_session, :current_user 
+  before_filter :current_user_session, :current_user
 
   private
 
@@ -31,14 +31,21 @@ class ApplicationController < ActionController::Base
 
     def current_zookeeper
       #Reset current zookeeper instance if previous zookeeper no longer exists
-      puts session[:current_blur_zookeper_instance_id]
-      if session[:current_zookeeper_id] and !Zookeeper.find_by_id session[:current_zookeeper_id]
+      if session[:current_zookeeper_id] && !Zookeeper.find_by_id(session[:current_zookeeper_id])
         session.delete :current_zookeeper_id
-        redirect_to zookeeper_path, :notice => "Your previous blur zookeeper instance no longer exists"
+        redirect_to root_path, :notice => "Your previous blur zookeeper instance no longer exists"
       end
 
-      #If no current instance in session, then default to first record
-      session[:current_zookeeper_id] ||= Zookeeper.first.id
-      @current_zookeeper = Zookeeper.find session[:current_zookeeper_id]
+      #If no current instance in session, then default to first record, if no first record, nil
+      if !session[:current_zookeeper_id]
+        @current_zookeeper = Zookeeper.first
+        session[:current_zookeeper_id] = @current_zookeeper.id if @current_zookeeper
+      else
+        @current_zookeeper = Zookeeper.find session[:current_zookeeper_id]
+      end
+    end
+
+    def zookeepers
+      @zookeepers ||= Zookeeper.all
     end
 end

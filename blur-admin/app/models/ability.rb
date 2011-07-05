@@ -17,8 +17,10 @@ class Ability
       if user.has_role? :reader
 
         # view pages
-        can :index, [:blur_tables, :search]
-        can :show, [:zookeepers, :search]
+        can :index, [:zookeepers, :blur_tables, :search]
+        can :show, [:search]
+        can :show_current, :zookeepers
+        can :make_current, :zookeepers
 
         # search
         can [:filters, :create], :search

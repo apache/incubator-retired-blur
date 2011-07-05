@@ -1,4 +1,5 @@
 class UserSessionsController < ApplicationController
+  skip_before_filter :current_zookeeper, :zookeepers
 
   def new
     @user_session = UserSession.new

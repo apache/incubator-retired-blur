@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110630161453) do
+ActiveRecord::Schema.define(:version => 20110701142732) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -26,8 +26,8 @@ ActiveRecord::Schema.define(:version => 20110630161453) do
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 2147483647
-    t.text     "post_filters",             :limit => 2147483647
+    t.text     "pre_filters",              :limit => 16777215
+    t.text     "post_filters",             :limit => 16777215
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"
@@ -36,7 +36,7 @@ ActiveRecord::Schema.define(:version => 20110630161453) do
 
   create_table "blur_tables", :force => true do |t|
     t.string   "table_name"
-    t.integer  "current_size"
+    t.integer  "current_size",   :limit => 8
     t.integer  "query_usage"
     t.datetime "created_at"
     t.datetime "updated_at"

@@ -3,6 +3,7 @@ class UsersController < ApplicationController
   load_and_authorize_resource
 
   before_filter :find_user, :only => [:show, :edit, :update, :destroy]
+  skip_before_filter :current_zookeeper, :zookeepers
 
   def index
     @users = User.all

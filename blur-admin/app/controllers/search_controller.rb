@@ -1,4 +1,6 @@
 class SearchController < ApplicationController
+  before_filter :zookeepers,        :only => :show
+  before_filter :current_zookeeper, :only => :show
 
 	def show
     @blur_tables = BlurTable.all

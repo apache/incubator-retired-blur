@@ -1,4 +1,6 @@
 class BlurQueriesController < ApplicationController
+  before_filter :zookeepers,        :only => :index
+  before_filter :current_zookeeper, :only => :index
 
   def index
     filters = {}

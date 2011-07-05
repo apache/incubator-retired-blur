@@ -19,6 +19,6 @@ class ZookeepersController < ApplicationController
     session[:current_zookeeper_id] = params[:id] if params[:id]
 
     # Javascript redirect (has to be done in js)
-    render :js => "window.location.replace('#{request.referer}')"
+    render :js => "window.location = '#{request.referer}'"
   end
 end

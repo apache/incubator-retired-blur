@@ -17,16 +17,13 @@ class SearchController < ApplicationController
   end
 
 	def create
-		# TODO: Add in fetch filter
-
-    @blur_table = BlurTable.find params[:blur_table]
+	  
+    buff = Search.new(:blur_table_id => params[:blur_table], :super_query => params[:super_query], :columns => JSON.generate(params[:column_data].drop(1)), :fetch => params[:result_count].to_i, :offset => params[:offset].to_i, :user_id => @current_user.id, :query => params[:query_string])
+    @blur_table = BlurTable.find buff.blur_table_id
     table = @blur_table.table_name
-		bq = Blur::BlurQuery.new :queryStr => params[:query_string], :fetch => params[:result_count].to_i, :start => params[:offset].to_i, :uuid => Time.now.to_i*1000+rand(1000)
-    if !params[:super_query]
-      bq.superQueryOn = false
-    end
+		bq = buff.prepare_search
 
-    column_data_val = params[:column_data]
+    column_data_val = JSON.parse buff.columns
     # Parse out column family names from requested column families and columns
     families = column_data_val.collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact
     columns = {}
@@ -130,8 +127,6 @@ class SearchController < ApplicationController
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
     @search = Search.find params['search_id']
-    respond_to do |format|
-      format.json  { render :json => @search }
-    end
+    render :json => {:saved => @search, :success => true }
   end
 end

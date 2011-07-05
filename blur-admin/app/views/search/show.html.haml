@@ -7,8 +7,11 @@
     #filter_section
       #saved_searches.partial-section
         .saved-label
-          = label_tag :saved_searches, "Saved Searches:"
-        = select_tag :saved_searches, options_from_collection_for_select(@searches, :id, :name), :size => 4, :style => "min-width:190px"
+          %a{:title => "Saved Searches", :href => '#', :id => 'saved_search'} Saved Searches
+        %select{:id => "searches", :size => 4, :style => "min-width:190px; display:none;" }
+          = render "saved"
+
+
       #query_input.partial-section
         .search-input
           .query-label= label_tag :query_string, "Query:"

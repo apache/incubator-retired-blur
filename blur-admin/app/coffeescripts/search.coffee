@@ -19,7 +19,7 @@ $(document).ready ->
       $('#bar_section').show()
     )
 
-  #method to resize the table dynaimcally
+  #method to resize the table dynamically
   sizeTable = (pixels) ->
     if $(window).width() < $('thead').width()
       $('#results_container').width($(window).width() - pixels)
@@ -74,20 +74,18 @@ $(document).ready ->
     error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
     #hides number of results option if there are no results
     $('#results_container').html(error_content)
-    $('#example-box').show()
     $('#loading-spinner').hide()
-    $('#bar_section').css('height', $('#query_section').height() )
     sizeTable(315)
     true
   )
 
-  # Fucntionality for check all
+  # Functionality for check all
   check_all = () ->
     $('.column_family_filter').jstree("check_all")
     $('th').show()
     $('td').show()
 
-  # Fucntionality for uncheck all
+  # Functionality for uncheck all
   uncheck_all = () ->
     $('.column_family_filter').jstree("uncheck_all")
     $('th').hide()
@@ -170,6 +168,18 @@ $(document).ready ->
       $(name).show()
   )
 
+  #resizes the table for the window
   $(window).resize( ->
     sizeTable(315)
    )
+
+  #display the hidden saved searches
+  $('#saved_search').live('click', ->
+     $('#searches').slideToggle('slow')
+  )
+
+  $('.saved_item').live('click', ->
+    $.ajax('/search/load/'+ $(this).attr('id'), {
+      type: 'POST'}
+    )
+  )

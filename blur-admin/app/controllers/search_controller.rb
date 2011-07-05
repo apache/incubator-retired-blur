@@ -124,5 +124,11 @@ class SearchController < ApplicationController
     @family_names = @all_columns.keys
 
 		render :template=>'search/create.html.haml', :layout => false
-	end
+  end
+
+  def load
+    #TODO logic to check if the saved search is valid if it is render the changes to the page
+    #otherwise change the state of the save and load what you can
+    render 'show_save.coffee.erb'
+  end
 end

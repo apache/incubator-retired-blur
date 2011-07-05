@@ -168,11 +168,21 @@ $(document).ready ->
 
   $('.saved_item').live('click', ->
     $.ajax('/search/load/'+ $(this).attr('id'), {
-      type: 'POST'}
+      type: 'POST',
+      success: (data) ->
+        if data.success == false
+          #tooltip it up
+          alert "We are all screwed"
+        $('.column_family_filter').jstree('uncheck_all')
+        $('#result_count').val(data.saved.search.fetch)
+        $('#offset').val(data.saved.search.offset)
+        $('#query_string').val(data.saved.search.query)
+        $('#super_query').val(data.saved.search.super_query)
+        arr = eval(data.saved.search.columns)
+        $.each(arr, (index, value) ->
+          $('.column_family_filter').jstree('check_node', "#" + value)
+        )
+      }
     )
-  )
-
-  $('.saved_item').bind('ajax:complete', (evt, data, status)->
-    alert "hello"
   )
 

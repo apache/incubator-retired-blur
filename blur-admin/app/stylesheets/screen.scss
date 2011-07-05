@@ -1,14 +1,14 @@
-@import "compass/reset";
 @import "partials/base";
-@import "blueprint";
 @import "compass";
 @import "compass/layout";
+@import "compass/reset";
+@import "application";
+@import "blueprint/typography";
 
 @include sticky-footer($footer-height, "#root", "#root-footer", "#ft");
-
+@include blueprint-typography;
 
 body {
-  @include blueprint-typography(true);
   margin:0 auto;
 }
 
@@ -20,4 +20,7 @@ a{
   font-weight: normal;
 }
 
-@import "application";
+#bd {
+  @include susy-grid-background;
+}
+

@@ -12,6 +12,7 @@ gem 'thrift_client'
 gem 'authlogic'
 gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
 gem 'role_model'
+gem 'compass-susy-plugin'
 
 gem 'capistrano'
 

@@ -53,12 +53,9 @@
               %li{:class => controller == 'users' && 'active', :id=> "left"}
                 = link_to 'Admin', users_path
 
-      #bd_background
-        #bd_wrap.container
-          #bd
-            #bd-pad
-              = yield
+      #bd
+        = yield
+      #root-footer
     #ft
-      .container
-        Connected to blur04
+      Connected to blur04
 

@@ -72,6 +72,8 @@ GEM
       chunky_png (~> 1.1)
       fssm (>= 0.2.7)
       sass (~> 3.1)
+    compass-susy-plugin (0.9)
+      compass (>= 0.11.1)
     configatron (2.8.0)
       yamler (>= 0.1.0)
     cover_me (1.0.0)
@@ -215,6 +217,7 @@ DEPENDENCIES
   capistrano
   ci_reporter
   compass
+  compass-susy-plugin
   cover_me
   factory_girl_rails
   haml

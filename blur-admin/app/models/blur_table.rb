@@ -1,6 +1,8 @@
 class BlurTable < ActiveRecord::Base
   require 'blur_thrift_client'
 
+  belongs_to :shard
+  has_one :cluster, :through => :shard
   has_many :blur_queries
 
   # Returns a map of host => [shards] of all hosts/shards associated with the table
@@ -63,4 +65,8 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
+  # rails 3.0 does not allow nested has_one :through relationships
+  def zookeeper
+    self.cluster.zookeeper
+  end
 end

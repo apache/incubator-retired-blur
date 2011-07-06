@@ -22,6 +22,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
 
 public abstract class ExecutionContextIface extends TableAdmin implements IfaceExtended {
 
@@ -107,6 +108,16 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
         ExecutionContext context = getContext();
         try {
             return currentQueries(context, table);
+        } finally {
+            record(context);
+        }
+    }
+    
+    @Override
+    public TableStats getTableStats(String table) throws BlurException, TException {
+    	ExecutionContext context = getContext();
+        try {
+            return getTableStats(context, table);
         } finally {
             record(context);
         }

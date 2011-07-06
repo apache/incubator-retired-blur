@@ -18,6 +18,9 @@ package com.nearinfinity.blur.manager.indexserver;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.security.URIParameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,7 +52,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.lucene.compressed.CompressionCodec;
 import com.nearinfinity.lucene.compressed.DeflaterCompressionCodec;
 
-public class LocalIndexServer implements IndexServer {
+public class LocalIndexServer extends AbstractIndexServer {
 
     private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
 
@@ -235,4 +238,26 @@ public class LocalIndexServer implements IndexServer {
     public CompressionCodec getCompressionCodec(String table) {
         return _compression;
     }
+
+	@Override
+	public long getTableSize(String table) throws IOException {
+		try {
+			File file = new File(new URI(getTableUri(table)));
+			return getFolderSize(file);
+		} catch(URISyntaxException e){
+			throw new IOException("bad URI", e);
+		}
+	}
+	
+	private long getFolderSize(File file){
+		long size = 0;
+		if(file.isDirectory()){
+			for (File sub : file.listFiles()) {
+				size += getFolderSize(sub);
+			}
+		} else {
+			size += file.length();
+		}
+		return size;
+	}
 }

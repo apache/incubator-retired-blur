@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.CpuTime;
+import com.nearinfinity.blur.thrift.generated.QueryState;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
@@ -50,11 +52,21 @@ public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
     }
 
     private BlurQueryStatus merge(BlurQueryStatus s1, BlurQueryStatus s2) {
-        s1.complete = avg(s1.complete,s2.complete);
-        s1.cpuTime = s1.cpuTime + s2.cpuTime;
-        s1.interrupted = s1.interrupted || s2.interrupted;
-        s1.realTime = s1.realTime + s2.realTime;
-        s1.running = s1.running || s2.running;
+    	s1.completeShards = s1.completeShards + s2.completeShards;
+    	s1.totalShards = s1.totalShards + s2.totalShards;
+    	if(s1.state != s2.state) {
+    		if(s1.state == QueryState.INTERRUPTED || s2.state == QueryState.INTERRUPTED){
+    			s1.state = QueryState.INTERRUPTED;
+    		} else if(s1.state == QueryState.RUNNING || s2.state == QueryState.RUNNING){
+    			s1.state = QueryState.RUNNING;
+    		} else {
+    			s1.state = QueryState.COMPLETE;
+    		}
+    	}
+    	if(s1.cpuTimes == null) {
+    		s1.cpuTimes = new HashMap<String, CpuTime>();
+    	}
+    	s1.cpuTimes.putAll(s2.cpuTimes);
         return s1;
     }
 

@@ -32,6 +32,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class DoNothingServer implements Iface {
@@ -127,4 +128,10 @@ public class DoNothingServer implements Iface {
     public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
         
     }
+
+	@Override
+	public TableStats getTableStats(String table) throws BlurException,
+			TException {
+		return null;
+	}
 }

@@ -44,6 +44,8 @@ public class Blur {
 
     public Schema schema(String table) throws BlurException, org.apache.thrift.TException;
 
+    public TableStats getTableStats(String table) throws BlurException, org.apache.thrift.TException;
+
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, org.apache.thrift.TException;
 
     public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, org.apache.thrift.TException;
@@ -83,6 +85,8 @@ public class Blur {
     public void querySuggestions(String table, BlurQuery blurQuery, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.querySuggestions_call> resultHandler) throws org.apache.thrift.TException;
 
     public void schema(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.schema_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void getTableStats(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.getTableStats_call> resultHandler) throws org.apache.thrift.TException;
 
     public void terms(String table, String columnFamily, String columnName, String startWith, short size, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.terms_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -524,6 +528,45 @@ public class Blur {
         throw result.ex;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "schema failed: unknown result");
+    }
+
+    public TableStats getTableStats(String table) throws BlurException, org.apache.thrift.TException
+    {
+      send_getTableStats(table);
+      return recv_getTableStats();
+    }
+
+    public void send_getTableStats(String table) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getTableStats", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      getTableStats_args args = new getTableStats_args();
+      args.setTable(table);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public TableStats recv_getTableStats() throws BlurException, org.apache.thrift.TException
+    {
+      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
+        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "getTableStats failed: out of sequence response");
+      }
+      getTableStats_result result = new getTableStats_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getTableStats failed: unknown result");
     }
 
     public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, org.apache.thrift.TException
@@ -1172,6 +1215,38 @@ public class Blur {
       }
     }
 
+    public void getTableStats(String table, org.apache.thrift.async.AsyncMethodCallback<getTableStats_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      getTableStats_call method_call = new getTableStats_call(table, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class getTableStats_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String table;
+      public getTableStats_call(String table, org.apache.thrift.async.AsyncMethodCallback<getTableStats_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getTableStats", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getTableStats_args args = new getTableStats_args();
+        args.setTable(table);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public TableStats getResult() throws BlurException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_getTableStats();
+      }
+    }
+
     public void terms(String table, String columnFamily, String columnName, String startWith, short size, org.apache.thrift.async.AsyncMethodCallback<terms_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       terms_call method_call = new terms_call(table, columnFamily, columnName, startWith, size, resultHandler, this, protocolFactory, transport);
@@ -1478,6 +1553,7 @@ public class Blur {
       processMap_.put("currentQueries", new currentQueries());
       processMap_.put("querySuggestions", new querySuggestions());
       processMap_.put("schema", new schema());
+      processMap_.put("getTableStats", new getTableStats());
       processMap_.put("terms", new terms());
       processMap_.put("recordFrequency", new recordFrequency());
       processMap_.put("fetchRow", new fetchRow());
@@ -1886,6 +1962,44 @@ public class Blur {
           return;
         }
         oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("schema", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class getTableStats implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        getTableStats_args args = new getTableStats_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getTableStats", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        getTableStats_result result = new getTableStats_result();
+        try {
+          result.success = iface_.getTableStats(args.table);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing getTableStats", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing getTableStats");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getTableStats", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getTableStats", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -2722,13 +2836,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list100 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list100.size);
-                for (int _i101 = 0; _i101 < _list100.size; ++_i101)
+                org.apache.thrift.protocol.TList _list105 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list105.size);
+                for (int _i106 = 0; _i106 < _list105.size; ++_i106)
                 {
-                  String _elem102;
-                  _elem102 = iprot.readString();
-                  this.success.add(_elem102);
+                  String _elem107;
+                  _elem107 = iprot.readString();
+                  this.success.add(_elem107);
                 }
                 iprot.readListEnd();
               }
@@ -2762,9 +2876,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter103 : this.success)
+          for (String _iter108 : this.success)
           {
-            oprot.writeString(_iter103);
+            oprot.writeString(_iter108);
           }
           oprot.writeListEnd();
         }
@@ -3346,13 +3460,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list104.size);
-                for (int _i105 = 0; _i105 < _list104.size; ++_i105)
+                org.apache.thrift.protocol.TList _list109 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list109.size);
+                for (int _i110 = 0; _i110 < _list109.size; ++_i110)
                 {
-                  String _elem106;
-                  _elem106 = iprot.readString();
-                  this.success.add(_elem106);
+                  String _elem111;
+                  _elem111 = iprot.readString();
+                  this.success.add(_elem111);
                 }
                 iprot.readListEnd();
               }
@@ -3386,9 +3500,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter107 : this.success)
+          for (String _iter112 : this.success)
           {
-            oprot.writeString(_iter107);
+            oprot.writeString(_iter112);
           }
           oprot.writeListEnd();
         }
@@ -4070,15 +4184,15 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map108 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map108.size);
-                for (int _i109 = 0; _i109 < _map108.size; ++_i109)
+                org.apache.thrift.protocol.TMap _map113 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map113.size);
+                for (int _i114 = 0; _i114 < _map113.size; ++_i114)
                 {
-                  String _key110;
-                  String _val111;
-                  _key110 = iprot.readString();
-                  _val111 = iprot.readString();
-                  this.success.put(_key110, _val111);
+                  String _key115;
+                  String _val116;
+                  _key115 = iprot.readString();
+                  _val116 = iprot.readString();
+                  this.success.put(_key115, _val116);
                 }
                 iprot.readMapEnd();
               }
@@ -4112,10 +4226,10 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter112 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter117 : this.success.entrySet())
           {
-            oprot.writeString(_iter112.getKey());
-            oprot.writeString(_iter112.getValue());
+            oprot.writeString(_iter117.getKey());
+            oprot.writeString(_iter117.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -4697,13 +4811,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list113 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list113.size);
-                for (int _i114 = 0; _i114 < _list113.size; ++_i114)
+                org.apache.thrift.protocol.TList _list118 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list118.size);
+                for (int _i119 = 0; _i119 < _list118.size; ++_i119)
                 {
-                  String _elem115;
-                  _elem115 = iprot.readString();
-                  this.success.add(_elem115);
+                  String _elem120;
+                  _elem120 = iprot.readString();
+                  this.success.add(_elem120);
                 }
                 iprot.readListEnd();
               }
@@ -4737,9 +4851,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter116 : this.success)
+          for (String _iter121 : this.success)
           {
-            oprot.writeString(_iter116);
+            oprot.writeString(_iter121);
           }
           oprot.writeListEnd();
         }
@@ -7555,14 +7669,14 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list117 = iprot.readListBegin();
-                this.success = new ArrayList<BlurQueryStatus>(_list117.size);
-                for (int _i118 = 0; _i118 < _list117.size; ++_i118)
+                org.apache.thrift.protocol.TList _list122 = iprot.readListBegin();
+                this.success = new ArrayList<BlurQueryStatus>(_list122.size);
+                for (int _i123 = 0; _i123 < _list122.size; ++_i123)
                 {
-                  BlurQueryStatus _elem119;
-                  _elem119 = new BlurQueryStatus();
-                  _elem119.read(iprot);
-                  this.success.add(_elem119);
+                  BlurQueryStatus _elem124;
+                  _elem124 = new BlurQueryStatus();
+                  _elem124.read(iprot);
+                  this.success.add(_elem124);
                 }
                 iprot.readListEnd();
               }
@@ -7596,9 +7710,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (BlurQueryStatus _iter120 : this.success)
+          for (BlurQueryStatus _iter125 : this.success)
           {
-            _iter120.write(oprot);
+            _iter125.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -9114,6 +9228,689 @@ public class Blur {
 
   }
 
+  public static class getTableStats_args implements org.apache.thrift.TBase<getTableStats_args, getTableStats_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getTableStats_args");
+
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    public String table;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      TABLE((short)1, "table");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getTableStats_args.class, metaDataMap);
+    }
+
+    public getTableStats_args() {
+    }
+
+    public getTableStats_args(
+      String table)
+    {
+      this();
+      this.table = table;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getTableStats_args(getTableStats_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+    }
+
+    public getTableStats_args deepCopy() {
+      return new getTableStats_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public getTableStats_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getTableStats_args)
+        return this.equals((getTableStats_args)that);
+      return false;
+    }
+
+    public boolean equals(getTableStats_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getTableStats_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getTableStats_args typedOther = (getTableStats_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getTableStats_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class getTableStats_result implements org.apache.thrift.TBase<getTableStats_result, getTableStats_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getTableStats_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public TableStats success;
+    public BlurException ex;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TableStats.class)));
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getTableStats_result.class, metaDataMap);
+    }
+
+    public getTableStats_result() {
+    }
+
+    public getTableStats_result(
+      TableStats success,
+      BlurException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getTableStats_result(getTableStats_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new TableStats(other.success);
+      }
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public getTableStats_result deepCopy() {
+      return new getTableStats_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
+    }
+
+    public TableStats getSuccess() {
+      return this.success;
+    }
+
+    public getTableStats_result setSuccess(TableStats success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public getTableStats_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((TableStats)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getTableStats_result)
+        return this.equals((getTableStats_result)that);
+      return false;
+    }
+
+    public boolean equals(getTableStats_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(getTableStats_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      getTableStats_result typedOther = (getTableStats_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.success = new TableStats();
+              this.success.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // EX
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.ex = new BlurException();
+              this.ex.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        this.success.write(oprot);
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getTableStats_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
   public static class terms_args implements org.apache.thrift.TBase<terms_args, terms_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("terms_args");
 
@@ -10087,13 +10884,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list121 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list121.size);
-                for (int _i122 = 0; _i122 < _list121.size; ++_i122)
+                org.apache.thrift.protocol.TList _list126 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list126.size);
+                for (int _i127 = 0; _i127 < _list126.size; ++_i127)
                 {
-                  String _elem123;
-                  _elem123 = iprot.readString();
-                  this.success.add(_elem123);
+                  String _elem128;
+                  _elem128 = iprot.readString();
+                  this.success.add(_elem128);
                 }
                 iprot.readListEnd();
               }
@@ -10127,9 +10924,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter124 : this.success)
+          for (String _iter129 : this.success)
           {
-            oprot.writeString(_iter124);
+            oprot.writeString(_iter129);
           }
           oprot.writeListEnd();
         }
@@ -12238,14 +13035,14 @@ public class Blur {
           case 2: // MUTATIONS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list125 = iprot.readListBegin();
-                this.mutations = new ArrayList<RowMutation>(_list125.size);
-                for (int _i126 = 0; _i126 < _list125.size; ++_i126)
+                org.apache.thrift.protocol.TList _list130 = iprot.readListBegin();
+                this.mutations = new ArrayList<RowMutation>(_list130.size);
+                for (int _i131 = 0; _i131 < _list130.size; ++_i131)
                 {
-                  RowMutation _elem127;
-                  _elem127 = new RowMutation();
-                  _elem127.read(iprot);
-                  this.mutations.add(_elem127);
+                  RowMutation _elem132;
+                  _elem132 = new RowMutation();
+                  _elem132.read(iprot);
+                  this.mutations.add(_elem132);
                 }
                 iprot.readListEnd();
               }
@@ -12277,9 +13074,9 @@ public class Blur {
         oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.mutations.size()));
-          for (RowMutation _iter128 : this.mutations)
+          for (RowMutation _iter133 : this.mutations)
           {
-            _iter128.write(oprot);
+            _iter133.write(oprot);
           }
           oprot.writeListEnd();
         }

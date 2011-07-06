@@ -55,6 +55,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurControllerServerTest {
@@ -316,6 +317,12 @@ public class BlurControllerServerTest {
             public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
                 throw new RuntimeException("not impl");
             }
+
+			@Override
+			public TableStats getTableStats(String table) throws BlurException, TException {
+				// TODO Auto-generated method stub
+				return new TableStats();
+			}
         };
     }
     

@@ -194,4 +194,11 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         _zookeeper = zookeeper;
     }
 
+	@Override
+	public long getTableSize(String table) throws IOException {
+		Path tablePath = new Path(getTableUri(table));
+		FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
+		return fileSystem.getFileStatus(tablePath).getLen();
+	}
+
 }

@@ -127,5 +127,11 @@ public interface IndexServer {
     CompressionCodec getCompressionCodec(String table);
     
     int getCompressionBlockSize(String table);
+    
+    long getRecordCount(String table) throws IOException;
+    
+    long getRowCount(String table) throws IOException;
+    
+    long getTableSize(String table) throws IOException;
 
 }

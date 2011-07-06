@@ -18,6 +18,7 @@ package com.nearinfinity.blur.manager.status;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +26,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.CpuTime;
+import com.nearinfinity.blur.thrift.generated.QueryState;
 
 public class QueryStatus implements Comparable<QueryStatus> {
 
@@ -82,31 +85,47 @@ public class QueryStatus implements Comparable<QueryStatus> {
     public BlurQueryStatus getQueryStatus() {
         BlurQueryStatus queryStatus = new BlurQueryStatus();
         queryStatus.query = blurQuery;
-        queryStatus.complete = getCompleteStatus();
-        if (CPU_TIME_SUPPORTED) {
-            queryStatus.cpuTime = getCpuTime();
-        }
-        queryStatus.running = !finished;
-        queryStatus.interrupted = interrupted;
-        if (queryStatus.running) {
-            queryStatus.realTime = System.currentTimeMillis() - startingTime;
-        } else {
-            queryStatus.realTime = finishedTime - startingTime;
-        }
+        queryStatus.totalShards = totalThreads;
+        queryStatus.completeShards = totalThreads-threads.size();
+        queryStatus.cpuTimes = getCpuTime();
+        queryStatus.state = getQueryState();
+        
         if (queryStatus.query != null) {
             queryStatus.uuid = queryStatus.query.uuid;
         }
         return queryStatus;
     }
 
-    private long getCpuTime() {
+    private QueryState getQueryState() {
+    	if(interrupted) {
+        	return QueryState.INTERRUPTED;
+        } else if (finished){
+        	return QueryState.COMPLETE;
+        } else {
+        	return QueryState.RUNNING;
+        }
+	}
+
+	private Map<String,CpuTime> getCpuTime() {
         long cpuTime = 0;
+        Map<String,CpuTime> cpuTimes = new HashMap<String, CpuTime>();
+        if (CPU_TIME_SUPPORTED) {
+        // TODO: Put cputime per shard into map
         for (Entry<Thread,Long> threadEntry : threads.entrySet()) {
             long startingThreadCpuTime = threadEntry.getValue();
             long currentThreadCpuTime = bean.getThreadCpuTime(threadEntry.getKey().getId());
             cpuTime += (currentThreadCpuTime - startingThreadCpuTime);
         }
-        return (cpuTime + cpuTimeOfFinishedThreads.get()) / 1000000;//convert to ms from ns
+        cpuTime = (cpuTime + cpuTimeOfFinishedThreads.get()) / 1000000; //convert to ms from ns
+        }
+        long realTime = 0;
+        if (!finished) {
+            realTime = System.currentTimeMillis() - startingTime;
+        } else {
+            realTime = finishedTime - startingTime;
+        }
+        cpuTimes.put("shard", new CpuTime( cpuTime, realTime)); 
+        return cpuTimes;
     }
 
     private double getCompleteStatus() {

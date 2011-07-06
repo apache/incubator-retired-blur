@@ -21,6 +21,12 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.ExecutionContext;
@@ -41,6 +47,8 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer extends ExecutionContextIface {
@@ -62,7 +70,8 @@ public class BlurShardServer extends ExecutionContextIface {
         TERMS, 
         DESCRIBE, 
         MUTATE, 
-        QUERY_SUGGESTIONS
+        QUERY_SUGGESTIONS,
+        GET_TABLE_STATS
     }
 
     @Override
@@ -131,6 +140,28 @@ public class BlurShardServer extends ExecutionContextIface {
         } finally {
             context.recordTime(Metrics.CURRENT_QUERIES, start, table);
         }
+    }
+    
+    @Override
+    public TableStats getTableStats(ExecutionContext context, String table) throws BlurException, TException {
+    	long start = context.startTime();
+    	try {
+    		checkTableStatus(context, table);
+    		try {
+	    		TableStats tableStats = new TableStats();
+	    		tableStats.tableName = table;
+	    		tableStats.recordCount = indexServer.getRecordCount(table);
+	    		tableStats.rowCount = indexServer.getRowCount(table);
+	    		tableStats.bytes = indexServer.getTableSize(table);
+	    		tableStats.queries = 0;
+	    		return tableStats;
+    		} catch(Exception e){
+    			LOG.error("Unknown error while trying to get table stats [table={0}]", e, table);
+                throw new BException(e.getMessage(), e);
+    		}
+    	} finally {
+    		context.recordTime(Metrics.GET_TABLE_STATS, start, table);
+    	}
     }
 
     public synchronized void close() {

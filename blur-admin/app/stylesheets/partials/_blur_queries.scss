@@ -1,13 +1,13 @@
 #blur_queries_wrapper {
-  $shaded_row_background_color: #EEE;
-  $header_background_color: #C4D9FF;
   $header_text_color: #555;
-  margin: 5px 20px 20px 20px;
+
+  @include full;
+  margin-top: 1em;
 
   @mixin table-base {
     display: table;
     border: solid 1px #AAA;
-    tr:nth-child(odd) { background-color: $shaded_row_background_color; };
+    tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
     tr.error td{
       text-align: center;
@@ -16,31 +16,20 @@
       font-weight: bold;
       font-size: 120%;
       color: $header_text_color;
-      background-color: $header_background_color;
+      background-color: #C4D9FF;
     }
     td {
       text-align: center;
       font-size: 100%;
       a { font-weight: bold; };
     }
-    
   }
 
-  h2 {
-    color: #555;
-    font-weight: bold;
-  }
-
-  #filter-form {
-    img {
-      display: inline;
-    }
-  }
+  #filter-form { img { display: inline; } }
 
   #queries-table {
     @include table-base;
     width: 100%;
-    margin-bottom: 20px;
     tr{
       height: 50px;
     }
@@ -48,17 +37,13 @@
 
   #more-info-table {
     @include table-base;
-    width: 100%
+    width: 100%;
   }
 
-  .ui-tooltip {
-    color: $header_text_color;
-  }
+  .ui-tooltip { color: $header_text_color; }
 
   color: #555;
   font-weight: bold;
 
-  #blur_table_id{
-    margin-bottom: 15px;
-  }
+  #blur_table_id{ margin-bottom: 15px; }
 }

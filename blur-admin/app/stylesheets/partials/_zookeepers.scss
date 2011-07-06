@@ -1,49 +1,46 @@
 #zookeepers_wrapper {
-  margin: 0px 15px;
-
-  h2 {
-    color: #555;
-    font-size: 200%;
-    font-weight: bold;
-  }
+  margin-top: 2em;
 
   @mixin outer-container {
     border: solid 1px #AAA;
     @include border-radius;
-    background-color:#F6F6F6;
-    margin: 10px 0px;
-    padding: 5px;
+    margin-bottom: 2em;
+    background-color: #F0F0F0;
   }
 
   @mixin inner-container {
     border: solid 1px #AAA;
     @include border-radius;
     background-color: #FFF;
-    @include inline-block;
-    margin: 0px 15px 25px 15px;
-    padding: 10px;
-    width: 45%;
-    vertical-align: top;
+    margin-bottom: 2em;
   }
 
   #blur, #zookeeper {
     @include outer-container;
+    @include full;
   }
 
   #blur {
-    #controllers, #shards{ @include inner-container; }
+    @include columns(30);
+    @include omega;
+    #controllers, #shards{
+      @include inner-container;
+      @include columns(14, 30);
+    }
+    #controllers{ @include alpha; }
+    #shards{ @include omega; }
   }
-  
+
   td.label {
     font-weight: bold;
   }
-  .offline {
+
+  table { @include alpha; }
+
+  .offline, .online {
     text-align:center;
     padding: 5px;
   }
-  .online {
-    text-align: center;
-    padding: 5px;
-    background: transparent;
-  }
+
+  .online { background: transparent; }
 }

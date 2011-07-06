@@ -1,16 +1,14 @@
-$footer-height: 40px;
+@import "susy";
+
+$footer-height: 45px;
+#ft { top: 4px; }
 
 // UI lightness theme settings
 $base-theme-color: #f6a828;
 $base-theme-background-color: #eeeeee;
 
-@import "susy";
-
-$total-cols             : 12;
-$col-width              : 4em;
-$gutter-width           : 1em;
-$side-gutter-width      : $gutter-width;
-
-$show-grid-backgrounds  : true;
-
-#ft { top: 4px; }
+$total-cols: 30;
+$col-width: 5em;
+$gutter-width: 1em;
+$side-gutter-width: 3em;
+$show-grid-backgrounds: true;

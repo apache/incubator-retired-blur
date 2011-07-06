@@ -10,17 +10,18 @@
 
 body {
   margin:0 auto;
+
 }
 
 #{headings()} {
   font-weight: bold;
 }
 
-a{
-  font-weight: normal;
+h2 {
+  color: #555;
+  font-size: 200%;
+  font-weight: bold;
+  @include alpha;
 }
 
-#bd {
-  @include susy-grid-background;
-}
 

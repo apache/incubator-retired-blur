@@ -1,50 +1,34 @@
 $header-height: 50px;
 $nav-height: 45px;
 
+html,body{ height: 100%; }
+
 #top{
   background-color:white;
   position:fixed;
   z-index:2;
   width:100%;
-}
-#hd {
-  height: $header-height;
-  z-index:2;
-  background-color:white;
-  img {
-    margin-top: 12.5px;
-    margin-left: 5px;
-    float: left;
+  #hd {
+    height: $header-height;
+    z-index: 2;
+    img {
+      margin-top: 12.5px;
+      margin-left: 5px;
+      float: left;
+    }
+    #user_nav {
+      display: block;
+      float: right;
+      padding: 1.1em 5em 0 0;
+      font-size: 1.2em;
+    }
   }
 }
-
-#bd_background {
-	background: white image-url('background-gradient.png') repeat-x top left;
-  background-attachment:scroll;
-}
-
-#bd_wrap {
-	margin-top: -5px;
-}
-
-html,body{ height: 100%; }
-
 
 #bd {
   position:relative;
   top: $header-height + $nav-height;
   overflow: auto;
-  margin: 0 auto 0;
-  background-image: image-url('left-shadow.png'), image-url('right-shadow.png');
-  background-repeat: no-repeat;
-  background-position: 0px 1px, right 1px;
-  #bd-pad {
-    margin: 0 27px;
-                overflow: auto;
-		padding: 1em;
-		background: white;
-		@include min-height(image-height('left-shadow.png') + 10px);
-  }
 }
 
 #ft {
@@ -63,46 +47,40 @@ html,body{ height: 100%; }
 }
 
 body #nav {
-	background: transparent image-url('gradient.png') repeat-x 0 -58px;
-	@include box-shadow(0 -2px 1px $base-theme-color);
-	text-align: right;
+  background: transparent image-url('gradient.png') repeat-x 0 -58px;
+  @include box-shadow(0 -2px 1px $base-theme-color);
+  text-align: right;
   width:100%;
-	height: $nav-height;
-	ul {
-		@include inline-block-list(10px);
-		@include text-shadow(0 1px 0 black);
+  height: $nav-height;
+  ul {
+    @include inline-block-list(10px);
+    @include text-shadow(0 1px 0 black);
     margin-right: 55px;
 
-		li {
-			margin: 6px .5em 0 .5em;
-			padding: 0;
-			color: #ddd;
-			cursor: pointer;
-			&:hover {
-				color: #eee;
-			}
+    li {
+      margin: 6px .5em 0 .5em;
+      padding: 0;
+      color: #ddd;
+      cursor: pointer;
+      &:hover {
+        color: #eee;
+      }
 
-			&.active {
-				color: $base-theme-color;
-				@include border-radius(3px);
-				@include box-shadow(0 1px 3px rgba(0, 0, 0, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, 0.2) inset);
-				background-color: #323c46;
-				}
-			a {
-				cursor: pointer;
-				padding: 0.5em 1em;
-				line-height: 28px;
-				@include unstyled-link;
-			}
-		}
-	}
-}
+    &.active {
+      color: $base-theme-color;
+      @include border-radius(3px);
+      @include box-shadow(0 1px 3px rgba(0, 0, 0, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, 0.2) inset);
+      background-color: #323c46;
+      }
 
-#user_nav {
-  display: block;
-  float: right;
-  padding: 1.1em 5em 0 0;
-  font-size: 1.2em;
+    a {
+      cursor: pointer;
+      padding: 0.5em 1em;
+      line-height: 28px;
+      @include unstyled-link;
+      }
+    }
+  }
 }
 
 .flash {
@@ -122,6 +100,7 @@ body #nav {
   border-bottom-right-radius: $radius;
   border-bottom-left-radius: $radius;
 }
+
 #notice {
   $green: #DDFFD9;
   border-color: darken($green, 40%);

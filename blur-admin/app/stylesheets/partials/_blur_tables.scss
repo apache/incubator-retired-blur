@@ -11,37 +11,37 @@ $light_background_color: #F0F0F0;
                        border-right:  $border_width $border_style $border_color; }
 
 #blur_tables_wrapper{
-  margin-top: 5px;
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-top: 2em;
+  margin-bottom: 2em;
+  @include full;
+  border: solid 1px #AAA;
+  @include border-radius;
 
   h3:nth-of-type(even)            {background-color: $light_background_color};
   div.blur_table:nth-of-type(odd) {background-color: $light_background_color};
 
   // Bottom border of last table element
-  h3.blur_table:nth-last-of-type(1)  {@include border-bottom;};
-  div.blur_table:nth-last-of-type(1) {@include border-bottom;};
+  h3.blur_table:nth-last-of-type(1)  {@include border-bottom-radius;};
+  div.blur_table:nth-last-of-type(1) {@include border-bottom-radius;};
 
   h3.blur_table, .blur_tables_header {
     margin: 0px;
-    padding: 0px 10px;
-    height: 32px;
     font-size: 1em;
     color: #555;
     text-align: right;
-    @include border-top;
-    @include border-sides;
-
+    font-weight: bold;
   }
+
+  h3{ 
+    @include border-top;
+  }
+
+  h3.blur_table { &:hover { cursor: pointer; } }
 
   .blur_tables_header {
-    font-weight: bold;
     background-color: #C4D9FF;
+    @include border-top-radius;
   }
-
-  h3.blur_table {
-    &:hover { cursor: pointer; }
- }
  
   span {
     height: 100%;
@@ -54,20 +54,19 @@ $light_background_color: #F0F0F0;
   span.table_name {
     text-align: left;
     float: left;
-    width: 14em;
     font-size: 1.4em;
-    font-weight: bold;
+    @include alpha;
   }
 
   div.blur_table {
-    @include border-sides;
-
     .schema, .actions, .hosts {
       @include inline-block;
       vertical-align: top;
-      margin: 10px 15px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      @include alpha;
     }
-    .actions .location { padding-bottom: 10px; }
+    .location { padding-bottom: 10px; }
     .actions form {
       display: inline;
       margin: 0px;

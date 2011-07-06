@@ -3,47 +3,58 @@
 -content_for :javascript do
   =javascript_include_tag 'jquery.jstree', 'compiled/search'
 
-#search-page
+#form_section
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
-      %h2 Filters:
-      .partial-section
-        = label_tag :blur_table, "Table:"
-        = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
-      .partial-section
-        = label_tag :super_query, "Super Query:"
-        = check_box_tag :super_query, true, true
-      .partial-section
-        .column-title
-          Column Families:
-        .column-title
-          %a{:title => "Check All", :href => '#', :id => 'checkall'} Check All
-          %a{:title => "Uncheck All", :href => '#', :id => "uncheckall"} Uncheck All
-        #filter_columns
-          = render 'filters'
-      .partial-section
-        = label_tag :result_count, 'Fetch:'
-        = select_tag :result_count, options_for_select([25, 50, 100])
-      .partial-section
-        = label_tag :start_record, 'Start:'
-        = number_field_tag :start_record, 0
+      #saved_searches.tab
+        .saved-section
+          .saved-label{:title => "Saved Searches"}
+            %label{:title => "Saved Searches", :id => 'saved_search'} Saved Searches
+          .saved-list#inner-section
+            = render "saved"
+      #standard_search.tab
+        .standard-label
+          %label{:id => 'stan_search'} Search
+        .standard-options#inner-section
+          #query_input.partial-section
+            .search-input
+              .query-label= label_tag :query_string, "Query:"
+              = text_area_tag :query_string, params[:query_string]
+          #table_select.partial-section
+            = label_tag :blur_table, "Table:"
+            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
+          #families_select.partial-section
+            .column-title
+              Column Families:
+            #filter_columns
+              = render 'filters'
+
+      #advanced_section.tab
+        .advanced-label
+          %label{:title => "Advanced", :id => 'advanced_options'} Advanced Options
+        .advanced-choices#inner-section{:style => "display:none;"}
+          #sq_select.partial-section
+            = label_tag :super_query, "Super Query:"
+            = check_box_tag :super_query, true, true
+          #start_offset.partial-section
+            = label_tag :offset, 'Start:'
+            = number_field_tag :offset, 0, :min => 0
+          #fetch_select.partial-section
+            = label_tag :result_count, 'Fetch:'
+            = select_tag :result_count, options_for_select([25, 50, 100])
+
+      #saving_section.tab
+        .saving-label
+          %label{:title => "Save Options", :id => 'saving_options'} Save Options
+        .search_save#inner-section{:style => "display:none; margin-bottom:3px;"}
+          = label_tag :save_submit, 'Name:'
+          = text_field_tag 'save_name'
+          = submit_tag "Save", :disabled => true, :id => "save_submit"
+
+      #search_send.partial_section
+        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none; margin-right:50px;" }
+        = submit_tag "Search", :disabled => true, :id => "search_submit"
 
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
-    #query_section.partial-page
-      #search_section
-        .search-title.title
-          = label_tag :q, "Search:"
-        .search-input
-          .query-label= label_tag :q, "Query:"
-          = text_area_tag :query_string, params[:query_string]
-          %a#query-help-link ?
-          = submit_tag "Search", :disabled => true, :id => "search_submit"
-
-        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none;" }
-      #results_container
-#hidden-help-container
-  %ul#help-dialog
-    %li Placeholder
-    %li This will be a pop up showing how to form Blur Queries
-    %li To edit this, change the bottom of app/views/search/show.html.haml
+#results_container

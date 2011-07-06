@@ -2,6 +2,7 @@ class BlurTable < ActiveRecord::Base
   require 'blur_thrift_client'
 
   has_many :blur_queries
+  has_many :searches
 
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts

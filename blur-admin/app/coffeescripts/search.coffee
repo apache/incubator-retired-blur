@@ -28,8 +28,12 @@ $(document).ready ->
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
-    if $('.jstree-checked').length>0 and $('#q').val() isnt  ''
-      $(':submit').removeAttr('disabled')
+    if $('.jstree-checked').length>0 and $('#query_string').val() isnt  ''
+      $('#search_submit').removeAttr('disabled')
+      if $('#save_name').val() isnt ''
+        $('#save_submit').removeAttr('disabled')
+      else
+        $('#save_submit').attr('disabled', 'disabled')
     else
       $(':submit').attr('disabled', 'disabled')
 
@@ -38,59 +42,34 @@ $(document).ready ->
     $('#loading-spinner').show()
   )
 
-  # Functionality for ajax success
-  $('#search_form').bind('ajax:success', (evt, data, status)->
-    if(data)
-      #shows number of results option if there are results
-      #If data is returned properly process it
-      $('#results_container').html(data)
-      $('#example-box').hide()
+  $('#search_form')
+    .live 'ajax:beforeSend', (evt, xhr, settings) ->
+      $('#loading-spinner').show()
+    .live 'ajax:complete', (evt, xhr, status) ->
+      $('#loading-spinner').hide()
+    .live 'ajax:success', (evt, data, status, xhr) ->
+      if(data)
+        #shows number of results option if there are results
+        #If data is returned properly process it
+        if($(data).attr("id") == 'searches')
+          $('.saved-list').html(data)
+          $('#searches').slideToggle('fast')
+        else
+          $('#results_container').html(data)
+
       #set the border once the table has content
-    else
-      #hides number of results option if there are no results
-      error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
-      $('#results_container').html(error_content)
-      $('#example-box').show()
-    $('#loading-spinner').hide()
-    $('[title]').tooltip()
-    true
-  )
-  
-  # Error message associated with ajax errors
-  $('#search_form').bind('ajax:error', (evt, data, status)->
-    response = data.responseText
-    matches = response.replace(/\n/g,'<br/>').match(/<pre>(.*?)<\/pre>/i)
-    error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
-    #hides number of results option if there are no results
-    $('#results_container').html(error_content)
-    $('#example-box').show()
-    $('#loading-spinner').hide()
-    true
-  )
-
-  # Fucntionality for check all
-  check_all = () ->
-    $('.column_family_filter').jstree("check_all")
-    $('th').show()
-    $('td').show()
-
-  # Fucntionality for uncheck all
-  uncheck_all = () ->
-    $('.column_family_filter').jstree("uncheck_all")
-    $('th').hide()
-    $('td').hide()
-    $('.rowId').show()
-
-  # Listeners for check all and uncheck all
-  $('#checkall').live('click', -> check_all())
-  $('#uncheckall').live('click', -> uncheck_all())
+      else
+        #hides number of results option if there are no results
+        error_content = '<div>No results for your search.</div>'
+        $('#results_container').html(error_content)
+    .live 'ajax:error', (evt, xhr, status, error) ->
+      console.log error
 
   # Live listeners for this page
   $('#filter_section').live("click", -> toggle_submit())
-  $('.ui-widget-overlay').live("click", -> $("#full_screen_dialog").dialog("close"))
 
   # Disable submit button when no text in input
-  $('#query_string').live("keypress", (name) ->
+  $('#query_string, #save_name').live("keypress keydown keyup", (name) ->
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
       if $(':submit').attr('disabled')
@@ -105,20 +84,18 @@ $(document).ready ->
 
   # Hides/Shows filter section
   $('#bar_section').live('click', ->
-    if $('#query_section').is('.partial-page')
-      $('#filter_section').hide()
-      $('#query_section').removeClass('partial-page')
-      $('#query_section').addClass('full-page')
+    if !($('#filter_section').is(':hidden'))
+      $('#filter_section').toggle('fast')
       $('#arrow').removeClass('ui-icon-triangle-1-w')
       $('#arrow').addClass('ui-icon-triangle-1-e')
       $('#bar_section').addClass('collapsed-bar')
+      $('#results_container').css('left', 0)
     else
-      $('#query_section').removeClass('full-page')
-      $('#query_section').addClass('partial-page')
-      $('#filter_section').show()
+      $('#filter_section').toggle('fast')
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
       $('#bar_section').removeClass('collapsed-bar')
+      $('#results_container').css('left', 245)
   )
 
   # Filters results table when filter checks are changed
@@ -158,14 +135,44 @@ $(document).ready ->
       $(name).show()
   )
 
-  $('#query-help-link').live 'click', ->
-    $('#help-dialog').dialog(
-      modal:true
-      draggable:false
-      resizable: false
-      title:"Query Help"
-      width:500
-    )
+  #display the hidden saved searches
+  $('.saved-label').live('click', ->
+     $('#searches').slideToggle('fast')
+  )
 
-  # Listener to hide dialog on click
-  $('.ui-widget-overlay').live("click", -> $(".ui-dialog-content").dialog("close"))
+  #display the hidden advanced options
+  $('.advanced-label').live('click', ->
+     $('.advanced-choices').slideToggle('fast')
+  )
+
+  #hide the search options
+  $('.standard-label').live('click', ->
+     $('.standard-options').slideToggle('fast')
+  )
+
+  #hide the search options
+  $('.saving-label').live('click', ->
+     $('.search_save').slideToggle('fast')
+  )
+
+  $('#edit_icon').live('click', ->
+    $.ajax('/search/load/'+ $(this).parent().attr('id'), {
+      type: 'POST',
+      success: (data) ->
+        if data.success == false
+          #tooltip it up
+          alert "We are all screwed"
+        $('.column_family_filter').jstree('uncheck_all')
+        $('#result_count').val(data.saved.search.fetch)
+        $('#offset').val(data.saved.search.offset)
+        $('#query_string').val(data.saved.search.query)
+        $('#super_query').val(data.saved.search.super_query)
+        arr = eval(data.saved.search.columns)
+        $.each(arr, (index, value) ->
+          $('.column_family_filter').jstree('check_node', "#" + value)
+        )
+        $('#search_submit').removeAttr('disabled')
+      }
+    )
+  )
+

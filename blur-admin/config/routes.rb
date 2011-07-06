@@ -21,6 +21,7 @@ BlurAdmin::Application.routes.draw do
 
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
+  match 'search/load/:search_id' => 'search#load'
 
   root :to => 'zookeepers#index'
 

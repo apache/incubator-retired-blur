@@ -159,9 +159,6 @@ $(document).ready ->
     $.ajax('/search/load/'+ $(this).parent().attr('id'), {
       type: 'POST',
       success: (data) ->
-        if data.success == false
-          #tooltip it up
-          alert "We are all screwed"
         $('.column_family_filter').jstree('uncheck_all')
         $('#result_count').val(data.saved.search.fetch)
         $('#offset').val(data.saved.search.offset)
@@ -172,6 +169,34 @@ $(document).ready ->
           $('.column_family_filter').jstree('check_node', "#" + value)
         )
         $('#search_submit').removeAttr('disabled')
+      }
+    )
+  )
+
+  $('#run_icon').live('click', ->
+    $.ajax('/search/'+ $(this).parent().attr('id'), {
+      type: 'POST',
+      success: (data) ->
+        if(data)
+        #shows number of results option if there are results
+        #If data is returned properly process it
+          $('#results_container').html(data)
+
+        #set the border once the table has content
+        else
+          #hides number of results option if there are no results
+          error_content = '<div>No results for your search.</div>'
+          $('#results_container').html(error_content)
+      }
+    )
+  )
+
+  $('#delete_icon').live('click', ->
+    $.ajax('/search/delete/'+ $(this).parent().attr('id'), {
+      type: 'POST',
+      success: (data) ->
+        $('.saved-list').html(data)
+        $('#searches').slideToggle('fast')
       }
     )
   )

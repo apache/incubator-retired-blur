@@ -14,10 +14,10 @@
     - else
       = nil_message
 
-  %span= blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
-  %span= blur_table.current_size ? number_to_human_size(blur_table.current_size, :precision => 3) : nil_message
-  %span= blur_table.query_usage ? number_with_delimiter(blur_table.query_usage, :delimiter => ',') : nil_message
-  %span= blur_table.is_enabled? ? "Enabled" : "Disabled"
+  %span.count= blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
+  %span.size= blur_table.current_size ? number_to_human_size(blur_table.current_size, :precision => 3) : nil_message
+  %span.second= blur_table.query_usage ? number_with_delimiter(blur_table.query_usage, :delimiter => ',') : nil_message
+  %span.status= blur_table.is_enabled? ? "Enabled" : "Disabled"
 
 
 .blur_table{:id => "blur_table_#{blur_table.id}"}

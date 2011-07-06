@@ -5,7 +5,7 @@ BlurAdmin::Application.routes.draw do
 
   resources :zookeepers, :only => :index
   match 'zookeeper' => 'zookeepers#show_current', :as => :zookeeper
-  match 'zookeepers/make_current' => 'zookeepers#make_current', :as => :make_current_zookeeper
+  match 'zookeepers/make_current' => 'zookeepers#make_current', :via => :put, :as => :make_current_zookeeper
 
   resources :blur_tables do
     get 'hosts', :on => :member

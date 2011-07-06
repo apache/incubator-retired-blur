@@ -1,5 +1,6 @@
 $(document).ready ->
-  # Function to initialize the filter tree
+  ########### METHODS ###############
+  # method to initialize the filter tree
   setup_filter_tree = () ->
     $('.column_family_filter').jstree({
       plugins: ["themes", "html_data", "checkbox", "sort", "ui"],
@@ -18,14 +19,6 @@ $(document).ready ->
       $('#filter_columns').show()
     )
 
-  # Setup the filters onload
-  setup_filter_tree()
-
-  # Reload the filters when the table selector is changed
-  $('#blur_table').change ->
-    $('#filter_columns').hide()
-    $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
-
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
     if $('.jstree-checked').length>0 and $('#query_string').val() isnt  ''
@@ -37,39 +30,28 @@ $(document).ready ->
     else
       $(':submit').attr('disabled', 'disabled')
 
+  ########### PAGE ACTIONS ##############
+  # Setup the filters onload
+  setup_filter_tree()
+
+
+  ########### PAGE ELEMENT LISTENERS ##############
+  # Reload the filters when the table selector is changed
+  $('#blur_table').change ->
+    $('#filter_columns').hide()
+    $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
+
   # Show spinner when submit button is clicked
   $('#search_submit').live('click', ->
     $('#loading-spinner').show()
   )
 
-  $('#search_form')
-    .live 'ajax:beforeSend', (evt, xhr, settings) ->
-      $('#loading-spinner').show()
-    .live 'ajax:complete', (evt, xhr, status) ->
-      $('#loading-spinner').hide()
-    .live 'ajax:success', (evt, data, status, xhr) ->
-      if(data)
-        #shows number of results option if there are results
-        #If data is returned properly process it
-        if($(data).attr("id") == 'searches')
-          $('.saved-list').html(data)
-          $('#searches').slideToggle('fast')
-        else
-          $('#results_container').html(data)
-
-      #set the border once the table has content
-      else
-        #hides number of results option if there are no results
-        error_content = '<div>No results for your search.</div>'
-        $('#results_container').html(error_content)
-    .live 'ajax:error', (evt, xhr, status, error) ->
-      console.log error
-
-  # Live listeners for this page
+  # listener that checks if the submit button should be enabled on click
   $('#filter_section').live("click", -> toggle_submit())
 
-  # Disable submit button when no text in input
+  # listener that checks if the submit button should be enabled on keystrokes
   $('#query_string, #save_name').live("keypress keydown keyup", (name) ->
+    #if it is enter then submit else check to see if we can enable the button
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
       if $(':submit').attr('disabled')
@@ -82,7 +64,7 @@ $(document).ready ->
       toggle_submit()
   )
 
-  # Hides/Shows filter section
+  # listener that Hides/Shows filter section
   $('#bar_section').live('click', ->
     if !($('#filter_section').is(':hidden'))
       $('#filter_section').toggle('fast')
@@ -98,7 +80,7 @@ $(document).ready ->
       $('#results_container').css('left', 245)
   )
 
-  # Filters results table when filter checks are changed
+  # listener that filters results table when filter checks are changed
   $('.check_filter').live('click', ->
     name = '.'+$(this).attr('name')
     element = name.split("_")[0]
@@ -135,26 +117,51 @@ $(document).ready ->
       $(name).show()
   )
 
-  #display the hidden saved searches
+  #listener that displays the hidden saved searches
   $('.saved-label').live('click', ->
      $('#searches').slideToggle('fast')
   )
 
-  #display the hidden advanced options
+  #listener that displays the hidden advanced options
   $('.advanced-label').live('click', ->
      $('.advanced-choices').slideToggle('fast')
   )
 
-  #hide the search options
+  #listener that hides the search options
   $('.standard-label').live('click', ->
      $('.standard-options').slideToggle('fast')
   )
 
-  #hide the search options
+  #listener that hides the search options
   $('.saving-label').live('click', ->
      $('.search_save').slideToggle('fast')
   )
 
+  ########### PAGE AJAX LISTENERS ##############
+  #ajax listener for the response from the search action
+  $('#search_form')
+    .live 'ajax:beforeSend', (evt, xhr, settings) ->
+      $('#loading-spinner').show()
+    .live 'ajax:complete', (evt, xhr, status) ->
+      $('#loading-spinner').hide()
+    .live 'ajax:success', (evt, data, status, xhr) ->
+      if(data)
+        #shows number of results option if there are results
+        #if data is returned properly process it
+        #if the data is from a save then display the html in the filter section
+        if($(data).attr("id") == 'searches')
+          $('.saved-list').html(data)
+          $('#searches').slideToggle('fast')
+        else
+          $('#results_container').html(data)
+      else
+        #hides number of results option if there are no results
+        error_content = '<div>No results for your search.</div>'
+        $('#results_container').html(error_content)
+    .live 'ajax:error', (evt, xhr, status, error) ->
+      console.log error
+
+  #ajax listener for the edit action
   $('#edit_icon').live('click', ->
     $.ajax('/search/load/'+ $(this).parent().attr('id'), {
       type: 'POST',
@@ -173,31 +180,35 @@ $(document).ready ->
     )
   )
 
+  #ajax listener for the run action
   $('#run_icon').live('click', ->
     $.ajax('/search/'+ $(this).parent().attr('id'), {
       type: 'POST',
       success: (data) ->
+        $('#loading-spinner').hide()
         if(data)
         #shows number of results option if there are results
         #If data is returned properly process it
           $('#results_container').html(data)
-
-        #set the border once the table has content
         else
           #hides number of results option if there are no results
           error_content = '<div>No results for your search.</div>'
           $('#results_container').html(error_content)
       }
     )
+    $('#loading-spinner').show()
   )
 
+  #ajax listener for the delete action
   $('#delete_icon').live('click', ->
     $.ajax('/search/delete/'+ $(this).parent().attr('id'), {
       type: 'POST',
       success: (data) ->
+        $('#loading-spinner').hide()
         $('.saved-list').html(data)
         $('#searches').slideToggle('fast')
       }
     )
+    $('#loading-spinner').show()
   )
 

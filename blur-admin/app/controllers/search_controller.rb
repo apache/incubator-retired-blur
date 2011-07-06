@@ -1,9 +1,9 @@
 class SearchController < ApplicationController
-  before_filter :zookeepers,        :only => :show
   before_filter :current_zookeeper, :only => :show
+  before_filter :zookeepers, :only => :show
 
 	def show
-    @blur_tables = BlurTable.all
+    @blur_tables = @current_zookeeper.blur_tables
 	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
     @searches = @current_user.searches.reverse
 	end

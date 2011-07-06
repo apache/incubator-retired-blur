@@ -16,25 +16,37 @@ describe SearchController do
 
   describe "show" do
     before :each do
-      @table = Factory.stub( :blur_table )
-      BlurTable.stub(:all).and_return [@table]
       @current_user.stub(:searches).and_return [mock(Search)]
+      @blur_table = Factory.stub :blur_table
+
+      # Set up association chain
+      @zookeeper  = Factory.stub :zookeeper
+
+      @zookeeper.stub(:blur_tables).and_return [@blur_table]
+
+      # ApplicationController.current_zookeeper
+      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:first).and_return @zookeeper
+      # ApplicationController.zookeepers
+      Zookeeper.stub(:all).and_return [@zookeeper]
+
     end
 
     it "renders the show template" do
       get :show
-      response.should render_template "show"
+      response.should render_template 'show'
+
     end
     
     it "find and assign tables, and columns" do
-      BlurTable.should_receive(:all)
+      @zookeeper.should_receive(:blur_tables)
       get :show
-      assigns(:blur_tables).should == [@table]
-      assigns(:columns).should == @table.schema["columnFamilies"]
+      assigns(:blur_tables).should == [@blur_table]
+      assigns(:columns).should == @blur_table.schema["columnFamilies"]
     end
 
     it "find and assign tables and columns when no tables are available" do
-      BlurTable.should_receive(:all).and_return []
+      @zookeeper.should_receive(:blur_tables).and_return []
       get :show
       assigns(:blur_tables).should == []
       assigns(:columns).should be nil
@@ -43,19 +55,19 @@ describe SearchController do
   
   describe "filters" do
     before :each do
-      @table = Factory.stub( :blur_table )
-      BlurTable.stub(:find).and_return @table
+      @blur_table = Factory.stub( :blur_table )
+      BlurTable.stub(:find).and_return @blur_table
     end
 
     it "renders the filters template" do
-      get :filters, :blur_table_id => @table.id
+      get :filters, :blur_table_id => @blur_table.id
       response.should render_template "filters"
     end
 
     it "should assign columns" do
-      BlurTable.should_receive(:find).with(@table.id)
-      get :filters, :blur_table_id => @table.id
-      assigns(:columns).should == @table.schema["columnFamilies"]
+      BlurTable.should_receive(:find).with(@blur_table.id)
+      get :filters, :blur_table_id => @blur_table.id
+      assigns(:columns).should == @blur_table.schema["columnFamilies"]
     end
   end
 
@@ -83,11 +95,10 @@ describe SearchController do
       test2_result2 = create_blur_result(:set => test2_set2)
       @test2_query = Blur::BlurResults.new :results => [test2_result1, test2_result2], :totalResults => 2
 
-      @table = Factory.stub :blur_table
-      BlurTable.stub(:find).with(@table.id).and_return(@table)
-
       @search = Search.new(:super_query => true, :columns => JSON.generate(["neighborhood", "family_titleHistory", "column_titleHistory_fromDate", "column_titleHistory_title"]), fetch: 25, offset: 5, name: "default", query: "employee.name:bob", blur_table_id: 17, user_id: 1)
       Search.stub(:new).and_return(@search)
+      @blur_table = Factory.stub :blur_table
+      BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
     end
 
     def create_blur_result(options)
@@ -121,7 +132,7 @@ describe SearchController do
       @client.should_receive(:query).and_return(test_query)
       @client.should_receive(:schema).with('table').and_return(@test_schema2)
       @client.should_receive(:schema).with('table').and_return(@test_schema2)
-      get :create, :blur_table => @table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
       response.should render_template "create"
     end
 
@@ -132,28 +143,28 @@ describe SearchController do
       test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
 
       @client.should_receive(:query).and_return(test_query)
-      get :create, :blur_table => @table.id, :query_string => "query", :result_count => 25, :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
       response.should render_template "create"
     end
 
     it "renders the create template when !column_family & families_include" do
       pending "Actually understing the action and these tests..."
       @client.should_receive(:query).and_return(@test2_query)
-      get :create, :blur_table => @table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
     it "renders the create template when !column_family & !families_include" do
       pending "Actually understing the action and these tests..."
       @client.should_receive(:query).and_return(@test2_query)
-      get :create, :blur_table => @table.id, :query_string => "query", :result_count => 25, :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
     it "renders the create template when superQueryOn is false" do
       pending "Actually understing the action and these tests..."
       @client.should_receive(:query).and_return(@test1_query)
-      get :create, :blur_table => @table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :super_query => false
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :super_query => false
       response.should render_template "create"
     end
   end

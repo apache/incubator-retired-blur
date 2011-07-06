@@ -28,7 +28,11 @@ class SearchController < ApplicationController
         format.html {render :partial =>"saved.html.haml" }
       end
     else
-      buff = Search.new(:blur_table_id => params[:blur_table], :super_query => params[:super_query], :columns => JSON.generate(params[:column_data].drop(1)), :fetch => params[:result_count].to_i, :offset => params[:offset].to_i, :user_id => @current_user.id, :query => params[:query_string])
+      if params[:search_id]
+        buff = Search.find params[:search_id]
+      else
+        buff = Search.new(:blur_table_id => params[:blur_table], :super_query => params[:super_query], :columns => JSON.generate(params[:column_data].drop(1)), :fetch => params[:result_count].to_i, :offset => params[:offset].to_i, :user_id => @current_user.id, :query => params[:query_string])
+      end
       @blur_table = BlurTable.find buff.blur_table_id
       table = @blur_table.table_name
       bq = buff.prepare_search

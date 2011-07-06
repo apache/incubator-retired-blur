@@ -4,6 +4,8 @@ class ApplicationController < ActionController::Base
 	require 'thrift/blur'
 	require 'blur_thrift_client'
 
+  before_filter :current_user_session, :current_user
+
   enable_authorization do |exception|
     puts exception
     if current_user
@@ -17,9 +19,27 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  before_filter :current_user_session, :current_user
-
   private
+
+    def current_zookeeper
+      # Load zookeeper from session. if that doesn't work, then delete id in session
+      @current_zookeeper = Zookeeper.find_by_id(session[:current_zookeeper_id]) or session.delete :current_zookeeper_id
+
+      #if that doesn't work, get first.  If that works, then set id in session
+      @current_zookeeper ||= Zookeeper.first and session[:current_zookeeper_id] = @current_zookeeper.id
+
+      # If there are no zookeepers, redirect to the dashboard
+      unless @current_zookeeper
+        redirect_to root_path, :alert => "No Zookeeper Instances" and return
+      end
+
+      # else return current zookeeper
+      @current_zookeeper
+    end
+
+    def zookeepers
+      @zookeepers ||= Zookeeper.all
+    end
 
     def current_user_session
       @current_user_session ||= UserSession.find
@@ -27,25 +47,5 @@ class ApplicationController < ActionController::Base
 
     def current_user
       @current_user ||= current_user_session && current_user_session.user
-    end
-
-    def current_zookeeper
-      #Reset current zookeeper instance if previous zookeeper no longer exists
-      if session[:current_zookeeper_id] && !Zookeeper.find_by_id(session[:current_zookeeper_id])
-        session.delete :current_zookeeper_id
-        redirect_to root_path, :notice => "Your previous blur zookeeper instance no longer exists"
-      end
-
-      #If no current instance in session, then default to first record, if no first record, nil
-      if !session[:current_zookeeper_id]
-        @current_zookeeper = Zookeeper.first
-        session[:current_zookeeper_id] = @current_zookeeper.id if @current_zookeeper
-      else
-        @current_zookeeper = Zookeeper.find session[:current_zookeeper_id]
-      end
-    end
-
-    def zookeepers
-      @zookeepers ||= Zookeeper.all
     end
 end

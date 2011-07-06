@@ -144,4 +144,12 @@ class SearchController < ApplicationController
     @search = Search.find params['search_id']
     render :json => {:saved => @search, :success => true }
   end
+
+  def delete
+    Search.find(params[:search_id]).delete
+    @searches = @current_user.searches.reverse
+    respond_to do |format|
+      format.html {render :partial =>"saved.html.haml" }
+    end
+  end
 end

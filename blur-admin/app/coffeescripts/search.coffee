@@ -191,3 +191,13 @@ $(document).ready ->
     )
   )
 
+  $('#delete_icon').live('click', ->
+    $.ajax('/search/delete/'+ $(this).parent().attr('id'), {
+      type: 'POST',
+      success: (data) ->
+        $('.saved-list').html(data)
+        $('#searches').slideToggle('fast')
+      }
+    )
+  )
+

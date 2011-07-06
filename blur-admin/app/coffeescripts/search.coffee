@@ -46,19 +46,18 @@ $(document).ready ->
 
   $('#search_form')
     .live 'ajax:beforeSend', (evt, xhr, settings) ->
-      console.log evt
-      console.log xhr
-      console.log settings
       $('#loading-spinner').show()
     .live 'ajax:complete', (evt, xhr, status) ->
       $('#loading-spinner').hide()
     .live 'ajax:success', (evt, data, status, xhr) ->
-      console.log data
       if(data)
         #shows number of results option if there are results
         #If data is returned properly process it
-
-        $('#results_container').html(data)
+        if($(data).attr("id") == 'searches')
+          $('.saved-list').html(data)
+          $('#searches').slideToggle('fast')
+        else
+          $('#results_container').html(data)
 
       #set the border once the table has content
       else

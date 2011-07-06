@@ -30,4 +30,12 @@ class BlurTablesController < ApplicationController
       format.js  { render :nothing => true }
     end
   end
+
+  def schema
+
+  end
+
+  def hosts
+
+  end
 end

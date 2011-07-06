@@ -96,4 +96,11 @@ describe ZookeepersController do
       response.body.should include "window.location ="
     end
   end
+
+  describe 'GET index' do
+    it "assigns the collection all zookeepers to @zookeepers" do
+      get :show_current
+      assigns(:zookeepers).should == [@zookeeper]
+    end
+  end
 end

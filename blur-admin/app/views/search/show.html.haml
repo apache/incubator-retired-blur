@@ -6,16 +6,15 @@
 #form_section
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
-      #saved_searches.tab
-        .saved-section
-          .saved-label{:title => "Saved Searches"}
-            %label{:title => "Saved Searches", :id => 'saved_search'} Saved Searches
-          .saved-list#inner-section
-            = render "saved"
-      #standard_search.tab
-        .standard-label
-          %label{:id => 'stan_search'} Search
-        .standard-options#inner-section
+      .tab#saved
+        .header#saved{:title => "Saved Searches"}
+          %label{:title => "Saved Searches", :id => 'saved'} Saved Searches
+        .body#saved
+          = render "saved"
+      .tab#standard
+        .header#standard
+          %label{:id => 'standard'} Search
+        .body#standard
           #query_input.partial-section
             .search-input
               .query-label= label_tag :query_string, "Query:"
@@ -29,10 +28,10 @@
             #filter_columns
               = render 'filters'
 
-      #advanced_section.tab
-        .advanced-label
-          %label{:title => "Advanced", :id => 'advanced_options'} Advanced Options
-        .advanced-choices#inner-section{:style => "display:none;"}
+      .tab#advanced
+        .header#advanced
+          %label{:title => "Advanced", :id => 'advanced'} Advanced Options
+        .body#advanced
           #sq_select.partial-section
             = label_tag :super_query, "Super Query:"
             = check_box_tag :super_query, true, true
@@ -43,10 +42,10 @@
             = label_tag :result_count, 'Fetch:'
             = select_tag :result_count, options_for_select([25, 50, 100])
 
-      #saving_section.tab
-        .saving-label
-          %label{:title => "Save Options", :id => 'saving_options'} Save Options
-        .search_save#inner-section{:style => "display:none; margin-bottom:3px;"}
+      .tab#store
+        .header#store
+          %label{:title => "Save Options", :id => 'store'} Save Options
+        .body#store
           = label_tag :save_submit, 'Name:'
           = text_field_tag 'save_name'
           = submit_tag "Save", :disabled => true, :id => "save_submit"

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.BufferedIndexInput;
@@ -47,10 +46,10 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     protected String shard;
     protected String table;
 
-    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache, 
+    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, final LocalFileCache localFileCache, 
             LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, ReplicationStrategy replicationStrategy)
             throws IOException {
-        this(table, shard, hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable, replicationDaemon, 
+        this(table, shard, hdfsDirPath, localFileCache, lockFactory, progressable, replicationDaemon, 
                 replicationStrategy, new LocalIOWrapper() {
             @Override
             public IndexOutput wrapOutput(IndexOutput indexOutput) {
@@ -64,9 +63,9 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         });
     }
 
-    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, FileSystem fileSystem, final LocalFileCache localFileCache,
+    public ReplicaHdfsDirectory(String table, String shard, Path hdfsDirPath, final LocalFileCache localFileCache,
             LockFactory lockFactory, Progressable progressable, ReplicationDaemon replicationDaemon, ReplicationStrategy replicationStrategy, final LocalIOWrapper wrapper) throws IOException {
-        super(HdfsUtil.getDirName(table, shard),hdfsDirPath, fileSystem, localFileCache, lockFactory, progressable);
+        super(HdfsUtil.getDirName(table, shard),hdfsDirPath, localFileCache, lockFactory, progressable);
         this.table = table;
         this.shard = shard;
         this.wrapper = wrapper;

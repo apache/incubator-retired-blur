@@ -127,7 +127,6 @@ public class ReplicationDaemon implements Runnable {
     }
 
     private void replicate() throws InterruptedException, IOException {
-        RepliaWorkUnit workUnit = null;
         while (!replicaQueue.isEmpty() && !closed) {
             LOG.info("Total files left to be replicated [{0}], totaling [{1} MB]",getNumberOfFilesToReplicate(),getSizeOfFilesToReplicate());
             RepliaWorkUnit unit = replicaQueue.take();
@@ -155,7 +154,7 @@ public class ReplicationDaemon implements Runnable {
             fileSystem.copyToLocalFile(source, dest);
             LOG.info("Finished copying file [{0}/{1}] locally.",dirName,fileName);
             
-            indexInputFactory.replicationComplete(workUnit, wrapper, BUFFER_SIZE);
+            indexInputFactory.replicationComplete(unit, wrapper, BUFFER_SIZE);
             replicaNames.remove(getLookupName(dirName,fileName));
         }
     }

@@ -21,7 +21,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -64,9 +63,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private Configuration _configuration = new Configuration();
     private BlurIndexReaderCloser _closer;
     private BlurIndexCommiter _commiter;
-//    private int _blockSize = 65536;
-//    private CompressionCodec _compression = new DeflaterCompressionCodec();
-
     private ZooKeeper _zookeeper;
     
     @Override
@@ -93,24 +89,17 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
         URI tableUri = getTableURI(table);
         Path tablePath = new Path(tableUri.toString());
-        FileSystem fileSystem = FileSystem.get(tableUri, _configuration);
-        if (!fileSystem.exists(tablePath)) {
-            throw new FileNotFoundException(tablePath.toString());
-        }
         Path hdfsDirPath = new Path(tablePath,shard);
-        if (!fileSystem.exists(hdfsDirPath)) {
-            throw new FileNotFoundException(hdfsDirPath.toString());
-        }
         
-        ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getBlurTablesLocksPath(), HdfsUtil.getDirName(table, shard));
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, fileSystem, _localFileCache, lockFactory, new Progressable() {
+        ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getBlurTablesLocksPath(), 
+                HdfsUtil.getDirName(table, shard));
+        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, 
+                _localFileCache, lockFactory, new Progressable() {
             @Override
             public void progress() {
                 //do nothing for now
             }
         }, _replicationDaemon, _replicationStrategy);
-        
-        
         
         CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, 
                 getCompressionCodec(table), 

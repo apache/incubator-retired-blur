@@ -24,8 +24,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -58,7 +56,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     protected BlurAnalyzer _analyzer;
     protected LockFactory _lockFactory;
     protected BlurTask _blurTask;
-    protected FileSystem _fileSystem;
     protected LocalFileCache _localFileCache;
     protected Counter _recordCounter;
     protected Counter _rowCounter;
@@ -73,7 +70,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
         setupCounters(context);
         setupAnalyzer(context);
-        setupFileSystem(context);
         setupLockFactory(context);
         setupLocalFileCache(context);
         setupDirectory(context);
@@ -154,11 +150,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
         _localFileCache = _blurTask.getLocalFileCache();
     }
 
-    protected void setupFileSystem(Context context) throws IOException {
-        Path path = nullCheck(_blurTask.getDirectoryPath());
-        _fileSystem = FileSystem.get(path.toUri(), context.getConfiguration());
-    }
-
     protected void setupLockFactory(Context context) throws IOException {
         // need to use zookeeper lock factory
         _lockFactory = new NoLockFactory();
@@ -166,7 +157,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
     protected void setupDirectory(Context context) throws IOException {
         String dirName = HdfsUtil.getDirName(nullCheck(_blurTask.getTableName()), nullCheck(_blurTask.getShardName()));
-        _directory = new WritableHdfsDirectory(dirName, nullCheck(_blurTask.getDirectoryPath()), nullCheck(_fileSystem),
+        _directory = new WritableHdfsDirectory(dirName, nullCheck(_blurTask.getDirectoryPath()),
                 nullCheck(_localFileCache), nullCheck(_lockFactory), context);
     }
 

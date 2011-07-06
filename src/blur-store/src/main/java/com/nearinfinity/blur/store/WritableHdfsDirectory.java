@@ -24,9 +24,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.util.Random;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.BufferedIndexOutput;
@@ -45,17 +51,18 @@ import com.nearinfinity.blur.store.indexinput.MMapIndexInput;
 public class WritableHdfsDirectory extends HdfsDirectory {
 
     private static final String SEGMENTS_GEN = "segments.gen";
-
     private static final Log LOG = LogFactory.getLog(WritableHdfsDirectory.class);
-
+    private static final long BACK_OFF = TimeUnit.SECONDS.toMillis(60);
+    
+    protected Random random = new Random();
     protected LocalFileCache _localFileCache;
     protected String _dirName;
     protected Progressable _progressable;
     protected int _retryCount = 10;
+    protected ExecutorService _service;
     
-    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
-            LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
-        this(dirName,hdfsDirPath,fileSystem,localFileCache,lockFactory,new Progressable() {
+    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, LocalFileCache localFileCache, LockFactory lockFactory) throws IOException {
+        this(dirName,hdfsDirPath,localFileCache,lockFactory,new Progressable() {
             @Override
             public void progress() {
                 
@@ -63,17 +70,17 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         });
     }
 
-    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, FileSystem fileSystem,
-            LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable) throws IOException {
-        super(hdfsDirPath, fileSystem);
-        this._dirName = dirName;
-        this._progressable = progressable;
+    public WritableHdfsDirectory(String dirName, Path hdfsDirPath, LocalFileCache localFileCache, LockFactory lockFactory, Progressable progressable) throws IOException {
+        super(hdfsDirPath);
+        _dirName = dirName;
+        _progressable = progressable;
         File segments = localFileCache.getLocalFile(dirName, SEGMENTS_GEN);
         if (segments.exists()) {
             segments.delete();
         }
-        this._localFileCache = localFileCache;
+        _localFileCache = localFileCache;
         setLockFactory(lockFactory);
+        _service = Executors.newSingleThreadExecutor();
     }
 
     @Override
@@ -88,35 +95,74 @@ public class WritableHdfsDirectory extends HdfsDirectory {
 
     @Override
     public void sync(String name) throws IOException {
-        File file = _localFileCache.getLocalFile(_dirName, name);
-        int count = 0;
-        while (true) {
-            Path dest = new Path(hdfsDirPath,name + ".sync." + count);
-            try {
-                LOG.debug("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),hdfsDirPath);
-                FSDataOutputStream outputStream = fileSystem.create(dest);
-                InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
-                byte[] buffer = new byte[4096];
-                int num;
-                while ((num = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, num);
-                    _progressable.progress();
-                }
-                close(outputStream);
-                close(inputStream);
-                rename(name + ".sync." + count,name);
+        CopyCallable callable = new CopyCallable(name, this);
+        Future<Boolean> future = _service.submit(callable);
+        try {
+            if (future.get()) {
                 return;
-            } catch (IOException e) {
-                if (count < _retryCount) {
-                    LOG.error("Error sync retry count [{0}] local file [{1}] to [{2}]",e,count,file.getAbsolutePath(),dest);
-                    count++;
-                    try {
-                        fileSystem.delete(dest, false);
-                    } catch (IOException ex) {
-                        LOG.error("Error trying to delete back file [{0}]",ex,dest);
+            }
+            throw new IOException("Unknown error during sync.");
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        } catch (ExecutionException e) {
+            throw new IOException(e);
+        }
+    }
+
+    public static class CopyCallable implements Callable<Boolean> {
+        
+        private String _name;
+        private WritableHdfsDirectory _directory;
+        
+        public CopyCallable(String name, WritableHdfsDirectory directory) {
+            _directory = directory;
+            _name = name;
+        }
+        
+        @Override
+        public Boolean call() throws Exception {
+            File file = _directory._localFileCache.getLocalFile(_directory._dirName, _name);
+            int count = 0;
+            while (true) {
+                Path dest = new Path(_directory._hdfsDirPath, _name + ".sync." + count);
+                try {
+                    LOG.info("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),_directory._hdfsDirPath);
+                    FSDataOutputStream outputStream = _directory.getFileSystem().create(dest);
+                    InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
+                    byte[] buffer = new byte[4096];
+                    int num;
+                    while ((num = inputStream.read(buffer)) != -1) {
+                        outputStream.write(buffer, 0, num);
+                        _directory._progressable.progress();
                     }
-                } else {
-                    throw e;
+                    _directory.close(outputStream);
+                    _directory.close(inputStream);
+                    _directory.rename(_name + ".sync." + count,_name);
+                    return true;
+                } catch (IOException e) {
+                    LOG.error("Error during copy of [{0}] local file [{1}] to [{2}], backing off copy for a moment.",e,count,file.getAbsolutePath(),dest);
+                    try {
+                        Thread.sleep(BACK_OFF);
+                    } catch (InterruptedException ex) {
+                        return false;
+                    }
+                    try {
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(_directory.random.nextInt(60)) + 1);
+                    } catch (InterruptedException ex) {
+                        return false;
+                    }
+                    _directory.reopenFileSystem();
+                    if (count < _directory._retryCount) {
+                        LOG.error("Error sync retry count [{0}] local file [{1}] to [{2}]",e,count,file.getAbsolutePath(),dest);
+                        count++;
+                        try {
+                            _directory.getFileSystem().delete(dest, false);
+                        } catch (IOException ex) {
+                            LOG.error("Error trying to delete back file [{0}]",ex,dest);
+                        }
+                    } else {
+                        throw e;
+                    }
                 }
             }
         }

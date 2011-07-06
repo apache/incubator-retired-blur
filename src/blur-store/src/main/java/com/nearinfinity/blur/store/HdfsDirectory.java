@@ -22,7 +22,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -36,18 +38,33 @@ import org.apache.lucene.store.IndexOutput;
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class HdfsDirectory extends Directory {
 
-    protected Path hdfsDirPath;
-    protected FileSystem fileSystem;
+    protected Path _hdfsDirPath;
+    protected AtomicReference<FileSystem> _fileSystemRef = new AtomicReference<FileSystem>();
+    protected Configuration _configuration;
 
-    public HdfsDirectory(Path hdfsDirPath, FileSystem fileSystem) {
-        this.hdfsDirPath = hdfsDirPath;
-        this.fileSystem = fileSystem;
+    public HdfsDirectory(Path hdfsDirPath) throws IOException {
+        _hdfsDirPath = hdfsDirPath;
+        
+        _configuration = new Configuration();
+        String disableCacheName = String.format("fs.%s.impl.disable.cache", _hdfsDirPath.toUri().getScheme());
+        _configuration.setBoolean(disableCacheName, true);
+        
+        reopenFileSystem();
         try {
-            if (!fileSystem.exists(hdfsDirPath)) {
-                fileSystem.mkdirs(hdfsDirPath);
+            if (!getFileSystem().exists(hdfsDirPath)) {
+                getFileSystem().mkdirs(hdfsDirPath);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    protected void reopenFileSystem() throws IOException {
+        FileSystem fileSystem = FileSystem.get(_hdfsDirPath.toUri(), _configuration);
+        FileSystem oldFs = _fileSystemRef.get();
+        _fileSystemRef.set(fileSystem);
+        if (oldFs != null) {
+            oldFs.close();
         }
     }
 
@@ -103,11 +120,11 @@ public class HdfsDirectory extends Directory {
     }
 
     protected void rename(String currentName, String newName) throws IOException {
-        fileSystem.rename(new Path(hdfsDirPath,currentName), new Path(hdfsDirPath,newName));
+        getFileSystem().rename(new Path(_hdfsDirPath,currentName), new Path(_hdfsDirPath,newName));
     }
     
     protected FSDataOutputStream getOutputStream(String name) throws IOException {
-        return fileSystem.create(new Path(hdfsDirPath, name));
+        return getFileSystem().create(new Path(_hdfsDirPath, name));
     }
     
     @Override
@@ -118,10 +135,70 @@ public class HdfsDirectory extends Directory {
     @Override
     public IndexInput openInput(final String name, int bufferSize) throws IOException {
         long length = fileLength(name);
-        final FSDataInputStream inputStream = fileSystem.open(new Path(hdfsDirPath, name));
+        final FSDataInputStream inputStream = getFileSystem().open(new Path(_hdfsDirPath, name));
         return new HdfsBufferedIndexInput(inputStream,length,bufferSize,name);
     }
     
+    @Override
+    public void deleteFile(String name) throws IOException {
+        if (!fileExists(name)) {
+            throw new FileNotFoundException(name);
+        }
+        getFileSystem().delete(new Path(_hdfsDirPath, name), false);
+    }
+
+    @Override
+    public boolean fileExists(String name) throws IOException {
+        return fileExistsHdfs(name);
+    }
+    
+    public boolean fileExistsHdfs(String name) throws IOException {
+        return getFileSystem().exists(new Path(_hdfsDirPath, name));
+    }
+
+    @Override
+    public long fileLength(String name) throws IOException {
+        if (!fileExists(name)) {
+            throw new FileNotFoundException(name);
+        }
+        FileStatus fileStatus = getFileSystem().getFileStatus(new Path(_hdfsDirPath, name));
+        return fileStatus.getLen();
+    }
+
+    @Override
+    public long fileModified(String name) throws IOException {
+        if (!fileExists(name)) {
+            throw new FileNotFoundException(name);
+        }
+        FileStatus fileStatus = getFileSystem().getFileStatus(new Path(_hdfsDirPath, name));
+        return fileStatus.getModificationTime();
+    }
+
+    @Override
+    public String[] listAll() throws IOException {
+        FileStatus[] listStatus = getFileSystem().listStatus(_hdfsDirPath);
+        List<String> files = new ArrayList<String>();
+        for (FileStatus status : listStatus) {
+            if (!status.isDir()) {
+                files.add(status.getPath().getName());
+            }
+        }
+        return files.toArray(new String[] {});
+    }
+
+    @Override
+    public void touchFile(String name) throws IOException {
+        // do nothing
+    }
+
+    public Path getHdfsDirPath() {
+        return _hdfsDirPath;
+    }
+
+    public FileSystem getFileSystem() {
+        return _fileSystemRef.get();
+    }
+
     public static class HdfsBufferedIndexInput extends BufferedIndexInput {
         
         private long length;
@@ -167,65 +244,4 @@ public class HdfsDirectory extends Directory {
             return clone;
         }
     }
-
-    @Override
-    public void deleteFile(String name) throws IOException {
-        if (!fileExists(name)) {
-            throw new FileNotFoundException(name);
-        }
-        fileSystem.delete(new Path(hdfsDirPath, name), false);
-    }
-
-    @Override
-    public boolean fileExists(String name) throws IOException {
-        return fileExistsHdfs(name);
-    }
-    
-    public boolean fileExistsHdfs(String name) throws IOException {
-        return fileSystem.exists(new Path(hdfsDirPath, name));
-    }
-
-    @Override
-    public long fileLength(String name) throws IOException {
-        if (!fileExists(name)) {
-            throw new FileNotFoundException(name);
-        }
-        FileStatus fileStatus = fileSystem.getFileStatus(new Path(hdfsDirPath, name));
-        return fileStatus.getLen();
-    }
-
-    @Override
-    public long fileModified(String name) throws IOException {
-        if (!fileExists(name)) {
-            throw new FileNotFoundException(name);
-        }
-        FileStatus fileStatus = fileSystem.getFileStatus(new Path(hdfsDirPath, name));
-        return fileStatus.getModificationTime();
-    }
-
-    @Override
-    public String[] listAll() throws IOException {
-        FileStatus[] listStatus = fileSystem.listStatus(hdfsDirPath);
-        List<String> files = new ArrayList<String>();
-        for (FileStatus status : listStatus) {
-            if (!status.isDir()) {
-                files.add(status.getPath().getName());
-            }
-        }
-        return files.toArray(new String[] {});
-    }
-
-    @Override
-    public void touchFile(String name) throws IOException {
-        // do nothing
-    }
-
-    public Path getHdfsDirPath() {
-        return hdfsDirPath;
-    }
-
-    public FileSystem getFileSystem() {
-        return fileSystem;
-    }
-
 }

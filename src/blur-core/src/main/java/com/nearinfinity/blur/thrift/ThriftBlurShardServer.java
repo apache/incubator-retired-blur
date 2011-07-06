@@ -98,7 +98,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         ReplicationStrategy replicationStrategy = new ReplicationStrategy() {
             @Override
             public boolean replicateLocally(String table, String name) {
-                if (name.endsWith(".fdt")) {
+                if (name.endsWith(".fdt") || name.endsWith(".fdz")) {
                     return false;
                 }
                 return true;

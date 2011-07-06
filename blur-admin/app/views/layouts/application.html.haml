@@ -66,6 +66,6 @@
     #ft
       - if @current_zookeeper && @zookeepers
         .zookeeper_select
-          = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',  :method => :get, :remote => :true do
+          = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',  :method => :put, :remote => :true do
             %b Current Zookeeper Instance:
             = select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )

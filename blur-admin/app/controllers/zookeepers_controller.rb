@@ -1,7 +1,7 @@
 class ZookeepersController < ApplicationController
 
-  before_filter :zookeepers,        :only => :show_current
   before_filter :current_zookeeper, :only => :show_current
+  before_filter :zookeepers, :only => [:show_current, :index]
 
   def show_current
     @zookeeper = @current_zookeeper
@@ -12,7 +12,6 @@ class ZookeepersController < ApplicationController
   end
 
   def index
-    @zookeepers = zookeepers
   end
 
   def make_current

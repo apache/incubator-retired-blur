@@ -22,20 +22,19 @@ class ApplicationController < ActionController::Base
   private
 
     def current_zookeeper
-      #Reset current zookeeper instance if previous zookeeper no longer exists
-      if session[:current_zookeeper_id] && !Zookeeper.find_by_id(session[:current_zookeeper_id])
-        session.delete :current_zookeeper_id
-        redirect_to root_path, :notice => "Your previous blur zookeeper instance no longer exists"
+      # Load zookeeper from session. if that doesn't work, then delete id in session
+      @current_zookeeper = Zookeeper.find_by_id(session[:current_zookeeper_id]) or session.delete :current_zookeeper_id
+
+      #if that doesn't work, get first.  If that works, then set id in session
+      @current_zookeeper ||= Zookeeper.first and session[:current_zookeeper_id] = @current_zookeeper.id
+
+      # If there are no zookeepers, redirect to the dashboard
+      unless @current_zookeeper
+        redirect_to root_path, :alert => "No Zookeeper Instances" and return
       end
 
-      #If no current instance in session, then default to first record, if no first record, nil
-      if !session[:current_zookeeper_id]
-        @current_zookeeper = Zookeeper.first
-        session[:current_zookeeper_id] = @current_zookeeper.id if @current_zookeeper
-      else
-        @current_zookeeper = Zookeeper.find session[:current_zookeeper_id]
-      end
-      return @current_zookeeper
+      # else return current zookeeper
+      @current_zookeeper
     end
 
     def zookeepers

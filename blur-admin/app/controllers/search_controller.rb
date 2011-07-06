@@ -1,8 +1,8 @@
 class SearchController < ApplicationController
+  before_filter :current_zookeeper, :only => :show
+  before_filter :zookeepers, :only => :show
 
 	def show
-    @zookeepers = zookeepers
-    @current_zookeeper = current_zookeeper
     @blur_tables = @current_zookeeper.blur_tables
 	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
 	end

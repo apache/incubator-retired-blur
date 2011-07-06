@@ -33,12 +33,12 @@ describe BlurQueriesController do
       Zookeeper.stub(:all).and_return [@zookeeper]
 
     end
-    it "should assign @zookeepers to be the collection of all zookeepers" do
+    it "assigns the collection all zookeepers to @zookeepers" do
       get :index
       assigns(:zookeepers).should == [@zookeeper]
     end
 
-    it "should assign @current_zookeeper" do
+    it "assigns the current zookeeper to @current_zookeeper" do
       get :index
       assigns(:current_zookeeper).should == @zookeeper
     end

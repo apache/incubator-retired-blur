@@ -157,13 +157,18 @@ $(document).ready ->
    )
 
   #display the hidden saved searches
-  $('#saved_search').live('click', ->
+  $('.saved-label').live('click', ->
      $('#searches').slideToggle('fast')
   )
 
   #display the hidden advanced options
-  $('#advanced_options').live('click', ->
+  $('.advanced-label').live('click', ->
      $('.advanced-choices').slideToggle('fast')
+  )
+
+  #hide the search options
+  $('.standard-label').live('click', ->
+     $('.standard-options').slideToggle('fast')
   )
 
   $('#edit_icon').live('click', ->
@@ -185,4 +190,6 @@ $(document).ready ->
       }
     )
   )
+
+  $(".saved-label").corner("top")
 

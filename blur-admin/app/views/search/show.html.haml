@@ -5,28 +5,33 @@
 #form_section
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
-      #saved_searches.partial-section
-        .saved-label
-          %a{:title => "Saved Searches", :href => '#', :id => 'saved_search'} Saved Searches
-        .saved-list
-          = render "saved"
-      #query_input.partial-section
-        .search-input
-          .query-label= label_tag :query_string, "Query:"
-          = text_area_tag :query_string, params[:query_string]
-      #table_select.partial-section
-        = label_tag :blur_table, "Table:"
-        = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
-      #families_select.partial-section
-        .column-title
-          Column Families:
-        #filter_columns
-          = render 'filters'
+      #saved_searches.tab
+        .saved-section
+          .saved-label{:title => "Saved Searches"}
+            %label{:title => "Saved Searches", :id => 'saved_search'} Saved Searches
+          .saved-list#inner-section
+            = render "saved"
+      #standard_search.tab
+        .standard-label
+          %label{:id => 'stan_search'} Search
+        .standard-options#inner-section
+          #query_input.partial-section
+            .search-input
+              .query-label= label_tag :query_string, "Query:"
+              = text_area_tag :query_string, params[:query_string]
+          #table_select.partial-section
+            = label_tag :blur_table, "Table:"
+            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
+          #families_select.partial-section
+            .column-title
+              Column Families:
+            #filter_columns
+              = render 'filters'
 
-      #advanced_section.partial-section
+      #advanced_section.tab
         .advanced-label
-          %a{:title => "Advanced", :href => '#', :id => 'advanced_options'} Advanced Options
-        .advanced-choices{:style => "display:none;"}
+          %label{:title => "Advanced", :id => 'advanced_options'} Advanced Options
+        .advanced-choices#inner-section{:style => "display:none;"}
           #sq_select.partial-section
             = label_tag :super_query, "Super Query:"
             = check_box_tag :super_query, true, true

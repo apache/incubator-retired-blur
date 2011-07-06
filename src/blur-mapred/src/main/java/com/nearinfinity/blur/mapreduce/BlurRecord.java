@@ -55,77 +55,77 @@ public class BlurRecord implements Writable {
         }
     }
     
-    private Operation operation = Operation.CREATE_ROW;
-    private String rowId;
-    private String recordId;
-    private String columnFamily;
-    private List<BlurColumn> columns = new ArrayList<BlurColumn>();
+    private Operation _operation = Operation.CREATE_ROW;
+    private String _rowId;
+    private String _recordId;
+    private String _columnFamily;
+    private List<BlurColumn> _columns = new ArrayList<BlurColumn>();
 
     @Override
     public void readFields(DataInput in) throws IOException {
         Operation.value(IOUtil.readVInt(in));
-        rowId = IOUtil.readString(in);
-        recordId = IOUtil.readString(in);
-        columnFamily = IOUtil.readString(in);
+        _rowId = IOUtil.readString(in);
+        _recordId = IOUtil.readString(in);
+        _columnFamily = IOUtil.readString(in);
         int size = IOUtil.readVInt(in);
-        columns.clear();
+        _columns.clear();
         for (int i = 0; i < size; i++) {
             BlurColumn column = new BlurColumn();
             column.readFields(in);
-            columns.add(column);
+            _columns.add(column);
         }
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
-        IOUtil.writeVInt(out, operation.getIntVal());
-        IOUtil.writeString(out, rowId);
-        IOUtil.writeString(out, recordId);
-        IOUtil.writeString(out, columnFamily);
-        IOUtil.writeVInt(out, columns.size());
-        for (BlurColumn column : columns) {
+        IOUtil.writeVInt(out, _operation.getIntVal());
+        IOUtil.writeString(out, _rowId);
+        IOUtil.writeString(out, _recordId);
+        IOUtil.writeString(out, _columnFamily);
+        IOUtil.writeVInt(out, _columns.size());
+        for (BlurColumn column : _columns) {
             column.write(out);
         }
     }
 
     public String getRowId() {
-        return rowId;
+        return _rowId;
     }
 
     public void setRowId(String rowId) {
-        this.rowId = rowId;
+        this._rowId = rowId;
     }
 
     public String getRecordId() {
-        return recordId;
+        return _recordId;
     }
 
     public void setRecordId(String recordId) {
-        this.recordId = recordId;
+        this._recordId = recordId;
     }
 
     public String getColumnFamily() {
-        return columnFamily;
+        return _columnFamily;
     }
 
     public void setColumnFamily(String columnFamily) {
-        this.columnFamily = columnFamily;
+        this._columnFamily = columnFamily;
     }
 
     public List<BlurColumn> getColumns() {
-        return columns;
+        return _columns;
     }
 
     public void setColumns(List<BlurColumn> columns) {
-        this.columns = columns;
+        this._columns = columns;
     }
     
     public void clearColumns() {
-        columns.clear();
+        _columns.clear();
     }
 
     public void addColumn(BlurColumn column) {
-        columns.add(column);
+        _columns.add(column);
     }
     
     public void addColumn(String name, String value) {
@@ -143,10 +143,10 @@ public class BlurRecord implements Writable {
     }
 
     public Operation getOperation() {
-        return operation;
+        return _operation;
     }
 
     public void setOperation(Operation operation) {
-        this.operation = operation;
+        this._operation = operation;
     }
 }

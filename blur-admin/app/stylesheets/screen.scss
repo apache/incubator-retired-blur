@@ -5,11 +5,11 @@
 @import "application";
 @import "blueprint/typography";
 
-@include sticky-footer($footer-height, "#root", "#root-footer", "#ft");
 @include blueprint-typography;
 
 body {
   margin:0 auto;
+
 }
 
 #{headings()} {

@@ -15,7 +15,7 @@
     = stylesheet_link_tag 'jquery-ui', 'compiled/print', :media => "print"
     /[if lt IE 8]
       = stylesheet_link_tag 'ie'
-  %body
+  %body#body_wrapper
     #root
       #top
         #hd
@@ -44,7 +44,7 @@
 
             %li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
               = link_to 'Dashboard', root_path
-              
+
             %li{:class => controller == 'zookeepers' && action == 'show' && 'active'}
               = link_to 'Environment Status', zookeeper_path
 

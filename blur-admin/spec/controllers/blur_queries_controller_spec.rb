@@ -27,8 +27,8 @@ describe BlurQueriesController do
       @blur_query.stub(:zookeeper).and_return(@zookeeper)
 
       # ApplicationController.current_zookeeper
+      Zookeeper.stub(:find_by_id).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
-      session.delete(:current_zookeeper_id)
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
 

@@ -24,8 +24,8 @@ describe SearchController do
       @zookeeper.stub(:blur_tables).and_return [@blur_table]
 
       # ApplicationController.current_zookeeper
+      Zookeeper.stub(:find_by_id).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
-      session.delete(:current_zookeeper_id)
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
 

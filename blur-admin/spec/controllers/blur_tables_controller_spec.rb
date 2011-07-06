@@ -21,10 +21,11 @@ describe BlurTablesController do
       @blur_table.stub(:zookeeper).and_return @zookeeper
 
       # ApplicationController.current_zookeeper
+      Zookeeper.stub(:find_by_id).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
-      session.delete(:current_zookeeper_id)
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
+
     end
 
     it "should assign @zookeepers to be the collection of all zookeepers" do

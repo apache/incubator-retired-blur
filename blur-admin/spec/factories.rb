@@ -59,7 +59,7 @@ Factory.define :blur_query do |t|
   #t.post_filters
 end
 
-# Create models with association chains already created. These  create create real objects and
+# Create models with association chains already created. These real objects and
 # persist them in the database
 
 Factory.define :zookeeper_with_cluster, :parent => :zookeeper do |t|

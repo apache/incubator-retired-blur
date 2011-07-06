@@ -4,6 +4,8 @@ class ApplicationController < ActionController::Base
 	require 'thrift/blur'
 	require 'blur_thrift_client'
 
+  before_filter :current_user_session, :current_user
+
   enable_authorization do |exception|
     puts exception
     if current_user
@@ -17,17 +19,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
-  before_filter :current_user_session, :current_user
-
   private
-
-    def current_user_session
-      @current_user_session ||= UserSession.find
-    end
-
-    def current_user
-      @current_user ||= current_user_session && current_user_session.user
-    end
 
     def current_zookeeper
       #Reset current zookeeper instance if previous zookeeper no longer exists
@@ -43,9 +35,18 @@ class ApplicationController < ActionController::Base
       else
         @current_zookeeper = Zookeeper.find session[:current_zookeeper_id]
       end
+      return @current_zookeeper
     end
 
     def zookeepers
       @zookeepers ||= Zookeeper.all
+    end
+
+    def current_user_session
+      @current_user_session ||= UserSession.find
+    end
+
+    def current_user
+      @current_user ||= current_user_session && current_user_session.user
     end
 end

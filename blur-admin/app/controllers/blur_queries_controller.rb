@@ -1,8 +1,8 @@
 class BlurQueriesController < ApplicationController
-  before_filter :zookeepers,        :only => :index
-  before_filter :current_zookeeper, :only => :index
 
   def index
+    @zookeepers = zookeepers
+    @current_zookeeper = current_zookeeper
     filters = {}
     # filters for columns
     [:blur_table_id, :super_query_on].each do |category|

@@ -177,6 +177,7 @@ $(document).ready ->
     $.ajax('/search/'+ $(this).parent().attr('id'), {
       type: 'POST',
       success: (data) ->
+        $('#loading-spinner').hide()
         if(data)
         #shows number of results option if there are results
         #If data is returned properly process it
@@ -189,15 +190,18 @@ $(document).ready ->
           $('#results_container').html(error_content)
       }
     )
+    $('#loading-spinner').show()
   )
 
   $('#delete_icon').live('click', ->
     $.ajax('/search/delete/'+ $(this).parent().attr('id'), {
       type: 'POST',
       success: (data) ->
+        $('#loading-spinner').hide()
         $('.saved-list').html(data)
         $('#searches').slideToggle('fast')
       }
     )
+    $('#loading-spinner').show()
   )
 

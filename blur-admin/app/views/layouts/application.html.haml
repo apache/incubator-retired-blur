@@ -19,7 +19,12 @@
     #root
       #top
         #hd
-          = link_to image_tag('blur_logo.png'), root_path
+          #logo_box
+            #logo
+              = link_to image_tag('blur_logo.png'), root_path
+            - flash.each do |type, message|
+              .flash{ :id => "#{type}" }
+                = message
           #user_nav
             - if @current_user
               = "Welcome, "
@@ -31,9 +36,7 @@
               = link_to "Register", new_user_path
               |
               = link_to "Log In", login_path
-          - flash.each do |type, message|
-            .flash{ :id => "#{type}" }
-              = message
+
         #nav
           %ul
             - controller = params[:controller]

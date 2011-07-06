@@ -43,4 +43,15 @@
   }
 
   .online { background: transparent; }
+
+  h2 , h3 { @include alpha; }
+  h3 { margin-top: 0.5em; }
+}
+
+#zookeeper_wrapper{
+  margin-top: 2em;
+  @include full;
+  @include prefix(1);
+  color: #555;
+  font-weight: bold;
 }

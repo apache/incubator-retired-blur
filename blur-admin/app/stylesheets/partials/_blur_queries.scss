@@ -2,9 +2,31 @@
   $header_text_color: #555;
 
   @include full;
-  margin-top: 1em;
+  margin-top: 2em;
+
+  #filter_form{
+    @include columns(30);
+    #filter_wrapper{
+      margin-bottom: 1em;
+      @include columns(10);
+      h3{
+        color: #555;
+        font-weight: bold;
+      }
+      .ui-widget-content, .ui-accordion-heading { color: #555; }
+      .ui-accordion-heading{
+        background-color: white;
+        @include border-radius;
+      }
+    }
+
+    #selector_wrapper{
+      @include columns(10);
+    }
+  }
 
   @mixin table-base {
+    @include border-radius;
     display: table;
     border: solid 1px #AAA;
     tr:nth-child(odd) { background-color: #F0F0F0; };
@@ -25,11 +47,10 @@
     }
   }
 
-  #filter-form { img { display: inline; } }
-
   #queries-table {
+    @include full;
+    @include omega(30);
     @include table-base;
-    width: 100%;
     tr{
       height: 50px;
     }

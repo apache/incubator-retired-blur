@@ -4,11 +4,7 @@
   = javascript_include_tag 'compiled/blur_queries'
 
 #blur_queries_wrapper
-  %h2 Blur Queries
-
   = form_tag "/blur_queries", :id => "filter_form", :method => :get, :remote => true do
-    = label_tag :blur_table_id, 'Blur Table:'
-    = select_tag :blur_table_id, options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
 
     #filter_wrapper
       %h3
@@ -22,6 +18,10 @@
         = select_tag :time, options_for_select([['1 minute', 1], ['5 minutes', 5], ['15 minutes', 15], ['30 minutes', 30], ['1 hour', 60]])
         %br
         = submit_tag 'filter'
+
+    #selector_wrapper
+      = label_tag :blur_table_id, 'Blur Table:'
+      = select_tag :blur_table_id, options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
 
   = render 'query_table'
 

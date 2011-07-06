@@ -10,18 +10,11 @@
 
 body {
   margin:0 auto;
-
 }
 
 #{headings()} {
   font-weight: bold;
-}
-
-h2 {
   color: #555;
-  font-size: 200%;
-  font-weight: bold;
-  @include alpha;
 }
 
-
+h2 { font-size: 200%; }

@@ -1,10 +1,13 @@
-- if @columns
-  - @columns.each do |family, cols|
-    .column_family_filter
-      %ul
-        %li#family{:id=>family, :class => 'jstree-checked'}
-          %a{:href=>'#', :class => 'check_filter', :name => "family_#{family}"}= family
+.column_family_filter
+  %ul
+    %li#neighborhood{:class => 'jstree-checked'}
+      %a{:href=>'#', :class => 'check_filter'} Families
+      - if @columns
+        - @columns.each do |family, cols|
           %ul
-            - cols.each do |col|
-              %li#column{:id=>"#{family}_#{col}"}
-                %a{:href=>'#', :class => 'check_filter', :name => "column_#{family}_#{col}"}= col
+            %li#family{:id=>family}
+              %a{:href=>'#', :class => 'check_filter', :name => "family_#{family}"}= family
+              %ul
+                - cols.each do |col|
+                  %li#column{:id=>"#{family}_#{col}"}
+                    %a{:href=>'#', :class => 'check_filter', :name => "column_#{family}_#{col}"}= col

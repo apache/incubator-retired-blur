@@ -2,6 +2,8 @@ class User < ActiveRecord::Base
   attr_accessible :username, :email, :password, :password_confirmation, :admin, :editor, :auditor, :reader
   acts_as_authentic
 
+  has_many :searches
+
   include RoleModel
 
   roles_attribute :roles_mask

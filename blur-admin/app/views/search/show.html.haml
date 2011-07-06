@@ -42,6 +42,14 @@
             = label_tag :result_count, 'Fetch:'
             = select_tag :result_count, options_for_select([25, 50, 100])
 
+      #saving_section.tab
+        .saving-label
+          %label{:title => "Save Options", :id => 'saving_options'} Save Options
+        .search_save#inner-section{:style => "display:none; margin-bottom:3px;"}
+          = label_tag :save_submit, 'Name:'
+          = text_field_tag 'save_name'
+          = submit_tag "Save", :disabled => true, :id => "save_submit"
+
       #search_send.partial_section
         %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none; margin-right:50px;" }
         = submit_tag "Search", :disabled => true, :id => "search_submit"

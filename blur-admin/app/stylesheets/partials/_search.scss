@@ -186,7 +186,7 @@ select#r{ margin-left: 5px; }
 }
 
 .search_element{
-  max-width: 175px;
+  width: 175px;
 }
 
 .action_icon{
@@ -215,6 +215,8 @@ select#r{ margin-left: 5px; }
 
 #standard_search{
   border-radius: 4px;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
   border: solid;
   border-width: 1px;
   border-color: #999;
@@ -224,11 +226,15 @@ select#r{ margin-left: 5px; }
 }
 
 #advanced_section{
+  @extend #standard_search;
+
+
+}
+
+#saving_section{
   border: solid;
   border-width: 1px;
   border-color: #999;
-
-  cursor:pointer;
 
   -webkit-border-radius: 4px;
   -webkit-border-bottom-right-radius: 10px;
@@ -252,6 +258,16 @@ select#r{ margin-left: 5px; }
 
 .advanced-label{
   text-align:center;
+  cursor:pointer;
+}
+
+.saving-label{
+  cursor:pointer;
+  text-align:center;
+}
+
+#saving_options{
+  cursor:pointer;
 }
 
 #stan_search{
@@ -268,4 +284,9 @@ select#r{ margin-left: 5px; }
 
 .tab{
   background-color:#EEE;
+}
+
+#searches{
+  margin: 5px 0px 5px 0px;
+  width:175px;
 }

@@ -19,13 +19,6 @@ $(document).ready ->
       $('#bar_section').show()
     )
 
-  #method to resize the table dynamically
-  sizeTable = (pixels) ->
-    if $(window).width() < $('thead').width() || $('thead').width() == null
-      $('#results_container').width($(window).width() - pixels)
-    else
-      $('#results_container').width($('thead').width())
-
   # Setup the filters onload
   setup_filter_tree()
 
@@ -37,7 +30,11 @@ $(document).ready ->
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
     if $('.jstree-checked').length>0 and $('#query_string').val() isnt  ''
-      $(':submit').removeAttr('disabled')
+      $('#search_submit').removeAttr('disabled')
+      if $('#save_name').val() isnt ''
+        $('#save_submit').removeAttr('disabled')
+      else
+        $('#save_submit').attr('disabled', 'disabled')
     else
       $(':submit').attr('disabled', 'disabled')
 
@@ -47,43 +44,35 @@ $(document).ready ->
 
   )
 
-  # Functionality for ajax success
-  $('#search_form').bind('ajax:success', (evt, data, status)->
+  $('#search_form')
+    .live 'ajax:beforeSend', (evt, xhr, settings) ->
+      console.log evt
+      console.log xhr
+      console.log settings
+      $('#loading-spinner').show()
+    .live 'ajax:complete', (evt, xhr, status) ->
+      $('#loading-spinner').hide()
+    .live 'ajax:success', (evt, data, status, xhr) ->
+      console.log data
+      if(data)
+        #shows number of results option if there are results
+        #If data is returned properly process it
 
-    if(data)
-      #shows number of results option if there are results
-      #If data is returned properly process it
-
-      $('#results_container').html(data)
-      sizeTable(315)
+        $('#results_container').html(data)
 
       #set the border once the table has content
-    else
-      #hides number of results option if there are no results
-      error_content = '<div style="color:red;font-style:italic; font-weight:bold">No results for your search.</div>'
-      $('#results_container').html(error_content)
-      sizeTable(315)
-    $('#loading-spinner').hide()
-    true
-  )
-  
-  # Error message associated with ajax errors
-  $('#search_form').bind('ajax:error', (evt, data, status)->
-    response = data.responseText
-    matches = response.replace(/\n/g,'<br/>').match(/<pre>(.*?)<\/pre>/i)
-    error_content = '<h3>Error Searching</h3><div style="background:#eee;padding:10px">' + matches[1] + " " + evt.toString() + '</div>'
-    #hides number of results option if there are no results
-    $('#results_container').html(error_content)
-    $('#loading-spinner').hide()
-    sizeTable(315)
-    true
-  )
+      else
+        #hides number of results option if there are no results
+        error_content = '<div>No results for your search.</div>'
+        $('#results_container').html(error_content)
+    .live 'ajax:error', (evt, xhr, status, error) ->
+      console.log error
 
   # Live listeners for this page
   $('#filter_section').live("click", -> toggle_submit())
 
   # Disable submit button when no text in input
-  $('#query_string').live("keypress", (name) ->
+  $('#query_string, #save_name').live("keypress keydown keyup", (name) ->
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
       if $(':submit').attr('disabled')
@@ -103,14 +92,12 @@ $(document).ready ->
       $('#arrow').removeClass('ui-icon-triangle-1-w')
       $('#arrow').addClass('ui-icon-triangle-1-e')
       $('#bar_section').addClass('collapsed-bar')
-      sizeTable(70)
       $('#results_container').css('left', 0)
     else
       $('#filter_section').toggle('fast')
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
       $('#bar_section').removeClass('collapsed-bar')
-      sizeTable(315)
       $('#results_container').css('left', 245)
   )
 
@@ -151,11 +138,6 @@ $(document).ready ->
       $(name).show()
   )
 
-  #resizes the table for the window
-  $(window).resize( ->
-    sizeTable(315)
-   )
-
   #display the hidden saved searches
   $('.saved-label').live('click', ->
      $('#searches').slideToggle('fast')
@@ -171,8 +153,13 @@ $(document).ready ->
      $('.standard-options').slideToggle('fast')
   )
 
+  #hide the search options
+  $('.saving-label').live('click', ->
+     $('.search_save').slideToggle('fast')
+  )
+
   $('#edit_icon').live('click', ->
-    $.ajax('/search/load/'+ $(this).parent().parent().attr('id'), {
+    $.ajax('/search/load/'+ $(this).parent().attr('id'), {
       type: 'POST',
       success: (data) ->
         if data.success == false
@@ -187,9 +174,8 @@ $(document).ready ->
         $.each(arr, (index, value) ->
           $('.column_family_filter').jstree('check_node', "#" + value)
         )
+        $('#search_submit').removeAttr('disabled')
       }
     )
   )
-
-  $(".saved-label").corner("top")
 

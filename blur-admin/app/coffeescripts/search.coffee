@@ -29,6 +29,7 @@ $(document).ready ->
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
   setup_filter_tree()
+  $('[title]').tooltip()
 
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
@@ -129,6 +130,7 @@ $(document).ready ->
           $('.body#saved').html(data)
         else
           $('#results_container').html data
+        $('[title]').tooltip()
       else
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'

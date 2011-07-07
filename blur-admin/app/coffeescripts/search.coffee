@@ -63,14 +63,14 @@ $(document).ready ->
       $('#filter_section').toggle('fast')
       $('#arrow').removeClass('ui-icon-triangle-1-w')
       $('#arrow').addClass('ui-icon-triangle-1-e')
-      $('#bar_section').addClass('collapsed-bar')
-      $('#results_container').css('left', 0)
+      $('#results_wrapper').removeClass('open_filters')
+      $('#results_wrapper').addClass('collapsed_filters')
     else
       $('#filter_section').toggle('fast')
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
-      $('#bar_section').removeClass('collapsed-bar')
-      $('#results_container').css('left', 245)
+      $('#results_wrapper').addClass('open_filters')
+      $('#results_wrapper').removeClass('collapsed_filters')
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->

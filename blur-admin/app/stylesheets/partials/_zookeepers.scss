@@ -20,6 +20,18 @@
     @include full;
   }
 
+  #zookeeper {
+    @include columns(30);
+    @include omega;
+    td.label {
+      font-weight: bold;
+    }
+    table { @include columns(29); @include alpha; }
+
+    .offline, .online { text-align:center; }
+    .online { background: transparent; }
+  }
+
   #blur {
     @include columns(30);
     @include omega;
@@ -30,12 +42,6 @@
     #controllers{ @include alpha; }
     #shards{ @include omega; }
   }
-
-  td.label {
-    font-weight: bold;
-  }
-
-  table { @include alpha; }
 
   .offline, .online {
     text-align:center;

@@ -2,13 +2,15 @@ class SearchController < ApplicationController
   before_filter :current_zookeeper, :only => :show
   before_filter :zookeepers, :only => :show
 
-	def show
+	#Show action that sets instance variables used to build the filter column
+  def show
     @blur_tables = @current_zookeeper.blur_tables
 	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
     @searches = @current_user.searches.reverse
 	end
 
-	def filters
+	#Filter action to help build the tree for column families
+  def filters
     blur_table = BlurTable.find params[:blur_table_id]
     begin
       @columns = blur_table.schema["columnFamilies"]
@@ -18,27 +20,34 @@ class SearchController < ApplicationController
 	  render '_filters.html.haml', :layout=>false
   end
 
-	def create
-
+	#Create action is a large action that handles all of the filter data
+  #and either saves the data or performs a search
+  def create
+    #If the commit method is save then save the form data to the DB
     if params[:commit] == 'Save'
-      #TODO save the element and then rerender the saved table
       Search.create(:name => params[:save_name], :blur_table_id => params[:blur_table], :super_query => params[:super_query], :columns => JSON.generate(params[:column_data].drop(1)), :fetch => params[:result_count].to_i, :offset => params[:offset].to_i, :user_id => @current_user.id, :query => params[:query_string])
       @searches = @current_user.searches.reverse
       respond_to do |format|
         format.html {render :partial =>"saved.html.haml" }
       end
+    #Otherwise perform a search
     else
+      #if the search_id param is set than the user is trying to directly run a saved query
       if params[:search_id]
         buff = Search.find params[:search_id]
+      #else build a new search to be used for this specific search
       else
         buff = Search.new(:blur_table_id => params[:blur_table], :super_query => params[:super_query], :columns => JSON.generate(params[:column_data].drop(1)), :fetch => params[:result_count].to_i, :offset => params[:offset].to_i, :user_id => @current_user.id, :query => params[:query_string])
       end
+
+      #use the model to begin building the blurquery
       @blur_table = BlurTable.find buff.blur_table_id
       table = @blur_table.table_name
       bq = buff.prepare_search
 
-      column_data_val = JSON.parse buff.columns
+
       # Parse out column family names from requested column families and columns
+      column_data_val = JSON.parse buff.columns
       families = column_data_val.collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact
       columns = {}
       column_data_val.each do |value|
@@ -54,14 +63,19 @@ class SearchController < ApplicationController
         end
       end
 
+      puts "Col####################{columns}#####################"
+      puts "Fam####################{families}#####################"
+      puts "Schema####################{@blur_table.schema}#####################"
+
+
+      #add the selectors that were just built to the blur query and retrieve the results
       sel = Blur::Selector.new
       sel.columnFamiliesToFetch = families unless families.blank?
       sel.columnsToFetch = columns unless columns.blank?
-
       bq.selector = sel
-
       blur_results = BlurThriftClient.client.query(table, bq)
 
+      #build a mapping from families to their associated columns
       families_with_columns = {}
       families.each do |family|
         families_with_columns[family] = ['recordId']
@@ -70,6 +84,8 @@ class SearchController < ApplicationController
         end
       end
 
+      ####Dear lord this is scary####
+      #this parses up the response object from blur and prepares it as a table
       visible_families = (families + columns.keys).uniq
       @results = []
       @result_count = blur_results.totalResults
@@ -138,6 +154,7 @@ class SearchController < ApplicationController
     end
   end
 
+  #save action that loads the state of a saved action and returns a json to be used to populate the form
   def load
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
@@ -145,6 +162,7 @@ class SearchController < ApplicationController
     render :json => {:saved => @search, :success => true }
   end
 
+  #Delete action used for deleting a saved search from a user's saved searches
   def delete
     Search.find(params[:search_id]).delete
     @searches = @current_user.searches.reverse

@@ -83,7 +83,7 @@ public class Agent {
 		for (String zkInstance : zooKeeperInstances) {
 			String zkUrl = props.getProperty("zk."+zkInstance+".url");
 			System.out.println(zkUrl);
-			new ZookeeperInstance(zkInstance, zkUrl, jdbc);
+			new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc)).start();
 		}
 		
 		List<String> activeCollectors = new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|")));

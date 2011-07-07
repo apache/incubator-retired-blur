@@ -4,102 +4,103 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import com.nearinfinity.agent.listeners.ClusterListener;
-import com.nearinfinity.agent.listeners.ControllerListener;
+import com.nearinfinity.agent.zookeeper.collectors.ClusterCollector;
+import com.nearinfinity.agent.zookeeper.collectors.ControllerCollector;
 
-public class ZookeeperInstance implements Watcher {
+public class ZookeeperInstance implements InstanceManager, Runnable {
 	private String name;
 	private String url;
+	private int instanceId;
 	private JdbcTemplate jdbc;
 	private ZooKeeper zk;
+	private Watcher watcher;
 	
 	public ZookeeperInstance(String name, String url, JdbcTemplate jdbc) {
 		this.name = name;
 		this.url = url;
 		this.jdbc = jdbc;
-		setupWatcher(this);
+		
+		initializeZkInstanceModel();
+		resetConnection();
 	}
 	
-	private void setupWatcher(final Watcher watcher) {
-		new Thread(new Runnable(){
-			@Override
-			public void run() {
-				while (true) {
-					boolean online = true;
-					try {
-						zk = new ZooKeeper(url, 3000, watcher);
-					} catch (IOException e) {
-						online = false;
-					}
-					
-					int instanceId = initializeZkInstanceModel(name, url, jdbc, online);
-					
-					if (online) {
-						// TODO: Name will not be needed in the future
-						new ControllerListener(zk, name, instanceId, jdbc);
-						new ClusterListener(zk, instanceId, jdbc);
-						
-						try {
-							synchronized (watcher) {
-								watcher.wait();
-								System.out.println("Zookeeper Watcher was woken up, time to do work.");
-							}
-						} catch (InterruptedException e) {
-							System.out.println("Exiting Zookeeper instance");
-							return;
-						}
-					} else {
-						System.out.println("Instance is not online.  Going to sleep for 30 seconds and try again.");
-						try {
-							Thread.sleep(30000);
-						} catch (InterruptedException e) {
-							System.out.println("Exiting Zookeeper instance");
-							return;
-						}
-					}
-				}
-			}
-		}).start();
-	}
-	
-	
-	private int initializeZkInstanceModel(String name, String url, JdbcTemplate jdbc, boolean online) {
+	private void initializeZkInstanceModel() {
 		List<Map<String, Object>> instances = jdbc.queryForList("select id from zookeepers where name = ?", new Object[]{name});
 		if (instances.isEmpty()) {
-			jdbc.update("insert into zookeepers (name, url, status) values (?, ?,?)", new Object[]{name, url, 1});
-			return jdbc.queryForInt("select id from zookeepers where name = ?", new Object[]{name});
+			jdbc.update("insert into zookeepers (name, url) values (?, ?)", new Object[]{name, url});
+			instanceId = jdbc.queryForInt("select id from zookeepers where name = ?", new Object[]{name});
 		} else {
-			// TODO: Determine if we want to allow changing of the host and port here
-			jdbc.update("update zookeepers set status=? where name=?", new Object[]{online ? 0 : 1, name});
+			instanceId = (Integer) instances.get(0).get("ID");
 		}
-		return (Integer) instances.get(0).get("ID");
+	}
+
+	@Override
+	public void resetConnection() {
+		zk = null;
+	}
+
+	@Override
+	public void run() {	
+		boolean needsInitialPath = true;
+		while(true) {
+			if (zk == null) {
+				try {
+					watcher = new ZookeeperWatcher(this);
+					zk = new ZooKeeper(url, 3000, watcher);
+				} catch (IOException e) {
+					zk = null;
+				}
+			}
+			
+			if (zk == null) {
+				System.out.println("Instance is not online.  Going to sleep for 30 seconds and try again.");
+				updateZookeeperStatus(false);
+				try {
+					Thread.sleep(30000);
+				} catch (InterruptedException e) {
+					System.out.println("Exiting Zookeeper instance");
+					return;
+				}
+			} else {
+				updateZookeeperStatus(true);
+				if (needsInitialPath) {
+					runInitialRegistration();
+					needsInitialPath = false;
+				}
+				try {
+					synchronized (watcher) {
+						watcher.wait();
+						System.out.println("Zookeeper Watcher was woken up, time to do work.");
+					}
+				} catch (InterruptedException e) {
+					System.out.println("Exiting Zookeeper instance");
+					return;
+				}
+			}
+		}
+	}
+	
+	private void updateZookeeperStatus(boolean online) {
+		jdbc.update("update zookeepers set status=? where id=?", (online ? 1 : 0), instanceId);
+	}
+
+	@Override
+	public ZooKeeper getInstance() {
+		return zk;
 	}
 	
 	@Override
-	public void process(WatchedEvent event) {
-        if (event.getType() == Event.EventType.None) {
-            // We are are being told that the state of the
-            // connection has changed
-            switch (event.getState()) {
-	            case SyncConnected:
-	                // In this particular example we don't need to do anything
-	                // here - watches are automatically re-registered with 
-	                // server and any watches triggered while the client was 
-	                // disconnected will be delivered (in order of course)
-	                break;
-	            case Expired:
-	                // It's all over
-	            	synchronized (this) {
-	            		notify();
-					}
-	                break;
-            }
-        }
+	public int getInstanceId() {
+		return instanceId;
+	}
+	
+	private void runInitialRegistration() {
+		ControllerCollector.collect(this, jdbc, name);
+		ClusterCollector.collect(this, jdbc);
 	}
 
 }

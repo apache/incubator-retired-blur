@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -47,9 +46,6 @@ public class TableCollector {
 				//mapper used to generate the json
  				ObjectMapper mapper = new ObjectMapper();
 				
-				//Mark deleted tables deleted
-				jdbc.update("update blur_tables set status = 0 where table_name not in ('" + StringUtils.join(tables, "','") + "')");
-				
 				//Create and update tables
 				for (String table : tables) {				
 					List<Map<String, Object>> existingTable = jdbc.queryForList("select id from blur_tables where table_name=?", table);
@@ -79,7 +75,7 @@ public class TableCollector {
 					String shardServerString = mapper.writeValueAsString(formattedShard);
 					
 					//other relevant data to be inserted
-					String tableUri = descriptor.tableUri;
+//					String tableUri = descriptor.tableUri;
 					String tableAnalyzer = descriptor.analyzerDefinition.fullTextAnalyzerClassName;
 					
 					
@@ -87,12 +83,12 @@ public class TableCollector {
 					
 					if (existingTable.isEmpty()) {
 						//New Table
-						jdbc.update("insert into blur_tables (table_name, status, table_uri, table_analyzer, table_schema, server) values (?, ?, ?, ?, ?, ?)", 
-								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
+//						jdbc.update("insert into blur_tables (table_name, status, table_uri, table_analyzer, table_schema, server) values (?, ?, ?, ?, ?, ?)", 
+//								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
 					} else {
 						//Update Table
-						jdbc.update("update blur_tables set status=?, table_uri=?, table_analyzer=?, table_schema=?, server=? where table_name=?", 
-								new Object[]{descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString, table});
+						jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=? where table_name=?", 
+								new Object[]{tableAnalyzer, schemaString, shardServerString, table});
 					}
 				}
 				

@@ -11,12 +11,13 @@ class SearchController < ApplicationController
 
 	#Filter action to help build the tree for column families
   def filters
-    blur_table = BlurTable.find params[:blur_table_id]
+    @blur_table = BlurTable.find params[:blur_table_id]
     begin
-      @columns = blur_table.schema["columnFamilies"]
+      @columns = @blur_table.schema["columnFamilies"]
     rescue NoMethodError
       @columns = []
     end
+    #TODO render the new saved list
 	  render '_filters.html.haml', :layout=>false
   end
 

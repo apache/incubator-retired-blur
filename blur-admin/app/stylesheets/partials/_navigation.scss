@@ -28,14 +28,7 @@ html,body{ height: 100%; }
         font-size: 1.2em;
         font-weight: bold;
 
-        border-top-style: none;
-        $radius: 5px;
-        -webikit-border-bottom-right-radius: $radius;
-        -webikit-border-bottom-left-radius: $radius;
-        -moz-border-radius-bottomright: $radius;
-        -mox-border-radius-bottomleft: $radius;
-        border-bottom-right-radius: $radius;
-        border-bottom-left-radius: $radius;
+        @include border-bottom-radius;
       }
     }
     #user_nav {

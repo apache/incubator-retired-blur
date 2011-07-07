@@ -25,7 +25,14 @@ class SearchController < ApplicationController
   def create
     #If the commit method is save then save the form data to the DB
     if params[:commit] == 'Save'
-      Search.create(:name => params[:save_name], :blur_table_id => params[:blur_table], :super_query => params[:super_query], :columns => JSON.generate(params[:column_data].drop(1)), :fetch => params[:result_count].to_i, :offset => params[:offset].to_i, :user_id => @current_user.id, :query => params[:query_string])
+      Search.create(:name          => params[:save_name],
+                    :blur_table_id => params[:blur_table],
+                    :super_query   => params[:super_query],
+                    :columns       => params[:column_data].drop(1).to_json,
+                    :fetch         => params[:result_count].to_i,
+                    :offset        => params[:offset].to_i,
+                    :user_id       => @current_user.id,
+                    :query         => params[:query_string])
       @searches = @current_user.searches.reverse
       respond_to do |format|
         format.html {render :partial =>"saved.html.haml" }
@@ -37,7 +44,13 @@ class SearchController < ApplicationController
         buff = Search.find params[:search_id]
       #else build a new search to be used for this specific search
       else
-        buff = Search.new(:blur_table_id => params[:blur_table], :super_query => params[:super_query], :columns => JSON.generate(params[:column_data].drop(1)), :fetch => params[:result_count].to_i, :offset => params[:offset].to_i, :user_id => @current_user.id, :query => params[:query_string])
+        buff = Search.new(:blur_table_id => params[:blur_table],
+                          :super_query   => params[:super_query],
+                          :columns       => params[:column_data].drop(1).to_json,
+                          :fetch         => params[:result_count].to_i,
+                          :offset        => params[:offset].to_i,
+                          :user_id       => @current_user.id,
+                          :query         => params[:query_string])
       end
 
       #use the model to begin building the blurquery
@@ -62,11 +75,6 @@ class SearchController < ApplicationController
           columns[parts[1]] << parts[2]
         end
       end
-
-      puts "Col####################{columns}#####################"
-      puts "Fam####################{families}#####################"
-      puts "Schema####################{@blur_table.schema}#####################"
-
 
       #add the selectors that were just built to the blur query and retrieve the results
       sel = Blur::Selector.new

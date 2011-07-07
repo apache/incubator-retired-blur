@@ -4,9 +4,9 @@ store.user=blurtools
 store.password=blurtools
 
 # ZooKeeper Instances
-zk.instances=
+zk.instances=blur04
 
-zk.default.url=blur04.nearinfinity.com
+zk.blur04.url=blur04.nearinfinity.com
 
 # Active Collectors
 active.collectors=queries|tables

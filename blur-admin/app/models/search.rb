@@ -10,9 +10,4 @@ class Search < ActiveRecord::Base
     end
     bq
   end
-
-  def is_valid?
-    puts @current_zookeeper.blur_tables
-    false
-  end
 end

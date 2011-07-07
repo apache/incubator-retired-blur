@@ -12,7 +12,9 @@
     #filter_wrapper{
       margin-bottom: 1em;
       @include columns(10);
-      h3{ @include standard-font; }
+      h3{
+        @include standard-font;
+      }
       .ui-widget-content, .ui-accordion-heading { color: #555; }
       .ui-accordion-heading{
         background-color: white;
@@ -21,8 +23,11 @@
     }
 
     #selector_wrapper{
-      @include columns(10);
+      @include columns(18);
       padding-top: 0.5em;
+    }
+    filter_spinner{
+      @include columns(1);
     }
   }
 

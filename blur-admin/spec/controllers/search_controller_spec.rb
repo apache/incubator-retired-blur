@@ -3,26 +3,18 @@ require "spec_helper"
 describe SearchController do
 
   before (:each) do
-    @client = mock(Blur::Blur::Client)
-    BlurThriftClient.stub!(:client).and_return(@client)
-    
-    set = ['deptNo', 'moreThanOneDepartment', 'name']
-    @schema1 = {:columnFamilies => {'table1'=> set}}
-    @schema2 = {:columnFamilies => {'table1'=> set, 'table2' => set}}
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
     controller.stub!(:current_ability).and_return(@ability)
-
     @current_user.stub(:searches).and_return [@search]
   end
 
   describe "show" do
     before :each do
-      @blur_table = Factory.stub :blur_table
 
+      @blur_table = Factory.stub :blur_table
       # Set up association chain
       @zookeeper  = Factory.stub :zookeeper
-
       @zookeeper.stub(:blur_tables).and_return [@blur_table]
 
       # ApplicationController.current_zookeeper
@@ -57,7 +49,7 @@ describe SearchController do
   end
   
   describe "filters" do
-    before :each do
+    before :each do 
       @blur_table = Factory.stub( :blur_table )
       BlurTable.stub(:find).and_return @blur_table
     end
@@ -76,14 +68,21 @@ describe SearchController do
 
   describe "create" do
     before (:each) do
+      @client = mock(Blur::Blur::Client)
+      BlurThriftClient.stub!(:client).and_return(@client)
+
+      column_families = ['deptNo', 'moreThanOneDepartment', 'name']
+      @schema1 = {:columnFamilies => {'table1'=> column_families}}
+      @schema2 = {:columnFamilies => {'table1'=> column_families, 'table2' => column_families}}
+
       test1_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
       test1_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => ['val1', 'val2', 'val3']
       test1_col3 = Blur::Column.new :name => 'name', :values => ['val1', 'val2', 'val3']
       @test1_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test1_col1, test1_col2, test1_col3]}, :family => 'table1'
       @test1_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test1_col1], 'key2' => [test1_col1, test1_col2, test1_col3]}, :family => 'table2'
 
-      test1_set1 = Set.new [@test1_cf1]
-      test1_result1 = create_blur_result(:set => test1_set1)
+      test1_set1 = [@test1_cf1]
+      test1_result1 = create_blur_result(test1_set1)
       @test1_query = Blur::BlurResults.new :results => [test1_result1], :totalResults => 1
 
       test2_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
@@ -92,22 +91,27 @@ describe SearchController do
       @test2_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test2_col1, test2_col2, test2_col3]}, :family => 'table1'
       @test2_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test2_col1], 'key2' => [test2_col1, test2_col2, test2_col3]}, :family => 'table2'
 
-      test2_set1 = Set.new [@test2_cf1]
-      test2_set2 = Set.new [@test2_cf2]
-      test2_result1 = create_blur_result(:set => test2_set1)
-      test2_result2 = create_blur_result(:set => test2_set2)
+      test2_set1 = [@test2_cf1]
+      test2_set2 = [@test2_cf2]
+      test2_result1 = create_blur_result(test2_set1)
+      test2_result2 = create_blur_result(test2_set2)
       @test2_query = Blur::BlurResults.new :results => [test2_result1, test2_result2], :totalResults => 2
-
-      @blur_table = Factory.stub :blur_table, :table_schema => JSON.generate({"table"=>"TestBlur", "setTable"=>true, "setColumnFamilies"=>true, "columnFamiliesSize"=>2, "columnFamilies"=>{"table1"=>["deptNo", "moreThanOneDepartment", "name"], "table2" => ["deptNo", "moreThanOneDepartment", "name"]}})
+ 
+      @blur_table = Factory.stub :blur_table, :table_schema => {"table"              => "TestBlur",
+                                                                "setTable"           => true,
+                                                                "setColumnFamilies"  => true,
+                                                                "columnFamiliesSize" => 2,
+                                                                "columnFamilies"     => {"table1"=> ["deptNo", "moreThanOneDepartment", "name"], 
+                                                                                         "table2" => ["deptNo", "moreThanOneDepartment", "name"]}
+                                                               }.to_json
       BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
     end
 
     def create_blur_result(options)
-      row = Blur::Row.new :id => 'string' , :columnFamilies => options[:set]
-      rowresult = Blur::FetchRowResult.new :row => row
-      fetchresult = Blur::FetchResult.new :rowResult => rowresult
-      result = Blur::BlurResult.new :fetchResult => fetchresult
-      result
+      row =         Blur::Row.new            :id          => 'string', :columnFamilies => options
+      rowresult =   Blur::FetchRowResult.new :row         => row
+      fetchresult = Blur::FetchResult.new    :rowResult   => rowresult
+      result =      Blur::BlurResult.new     :fetchResult => fetchresult
     end
     
     it "renders the create template when column_family & record_count < count & families_include" do
@@ -127,8 +131,8 @@ describe SearchController do
     end
 
     it "renders the create template when column_family & !record_count < count & families_include" do
-      set2 = Set.new [@test2_cf2, @test2_cf1]
-      test_result2 = create_blur_result(:set => set2)
+      set2 = [@test2_cf2, @test2_cf1]
+      test_result2 = create_blur_result(set2)
       test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
       @current_user.stub(:id).and_return(1)
 
@@ -138,8 +142,8 @@ describe SearchController do
     end
 
     it "renders the create template when column_family & !record_count < count & !families_include" do
-      set2 = Set.new [@test1_cf2, @test1_cf1]
-      test_result2 = create_blur_result(:set => set2)
+      set2 = [@test1_cf2, @test1_cf1]
+      test_result2 = create_blur_result(set2)
       test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
       @current_user.stub(:id).and_return(1)
 

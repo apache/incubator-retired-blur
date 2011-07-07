@@ -38,7 +38,16 @@ Factory.define :blur_table do |t|
   t.status                 { 1 + rand(2) }
   t.sequence (:table_uri)  { |n| "blur_table#{n}.blur.example.com" }
   t.table_analyzer 'standard.table_analyzer'
-  t.table_schema { |blur_table| "{\"table\":\"#{blur_table.table_name}\",\"setTable\":true,\"setColumnFamilies\":true,\"columnFamiliesSize\":2,\"columnFamilies\":{\"Column Family #1\":[\"Column #1\",\"Column #2\",\"Column #3\"],\"Column Family #1\":[\"Column #1\",\"Column #2\",\"Column #3\"]}}" }
+  t.table_schema do |blur_table|
+    { :table              => blur_table.table_name,
+      :setTable           => true,
+      :setColumnFamilies  => true,
+      :columnFamiliesSize => 3,
+      :columnFamilies     => { 'Column Family A' => ['Column A1', 'Column A2', 'Column A3'],
+                               'Column Family B' => ['Column B1', 'Column B2', 'Column B3'],
+                               'Column Family C' => ['Column C1', 'Column C2', 'Column C3'] }
+    }.to_json
+  end
 end
 
 Factory.define :blur_query do |t|
@@ -90,13 +99,21 @@ end
 
 Factory.define :zookeeper_with_blur_table, :parent => :zookeeper_with_shard  do |t|
   t.after_create do |zookeeper|
-    zookeeper.shards.each { |shard| Factory.create(:blur_table, :shard => shard) }
+    zookeeper.shards.each { |shard| Factory.create(:blur_table, :shards => [shard]) }
   end
 end
 
 Factory.define :zookeeper_with_blur_tables, :parent => :zookeeper_with_shards  do |t|
   t.after_create do |zookeeper|
-    zookeeper.shards.each { |shard| @recursive_factor.times {Factory.create(:blur_table, :shard => shard)} }
+    # NOTICE: this does not ensure that every shard will have a blur table,
+    # only that each blur table will have a shard
+    (zookeeper.shards.count * @recursive_factor).times do
+      blur_table = Factory.create :blur_table
+      # add an association to each shard with 50% probability
+      zookeeper.shards.count.times { |n| blur_table.shards << zookeeper.shards[n] if rand(2) == 1 }
+      # if no associations were added, then add a random one
+      blur_table.shards << zookeeper.shards[rand(zookeeper.shards.count)] if blur_table.shards.empty?
+    end
   end
 end
 

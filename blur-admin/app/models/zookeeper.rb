@@ -5,9 +5,9 @@ class Zookeeper < ActiveRecord::Base
   
   #rails 3.0 does not allow nested has_many :through relationships
   def blur_tables
-    self.shards.collect { |shard| shard.blur_tables }.flatten
+    self.shards.collect { |shard| shard.blur_tables }.flatten.uniq
   end
   def blur_queries
-    self.blur_tables.collect { |blur_table| blur_table.blur_queries }.flatten
+    self.blur_tables.collect { |blur_table| blur_table.blur_queries }.flatten.uniq
   end
 end

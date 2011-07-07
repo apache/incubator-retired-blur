@@ -5,18 +5,20 @@ class SearchController < ApplicationController
 	#Show action that sets instance variables used to build the filter column
   def show
     @blur_tables = @current_zookeeper.blur_tables
+    @blur_table = @blur_tables.first
 	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
     @searches = @current_user.searches.reverse
 	end
 
 	#Filter action to help build the tree for column families
   def filters
-    blur_table = BlurTable.find params[:blur_table_id]
+    @blur_table = BlurTable.find params[:blur_table_id]
     begin
-      @columns = blur_table.schema["columnFamilies"]
+      @columns = @blur_table.schema["columnFamilies"]
     rescue NoMethodError
       @columns = []
     end
+    #TODO render the new saved list
 	  render '_filters.html.haml', :layout=>false
   end
 
@@ -34,6 +36,8 @@ class SearchController < ApplicationController
                     :user_id       => @current_user.id,
                     :query         => params[:query_string])
       @searches = @current_user.searches.reverse
+      @blur_table = BlurTable.find params[:blur_table]
+
       respond_to do |format|
         format.html {render :partial =>"saved.html.haml" }
       end
@@ -54,8 +58,7 @@ class SearchController < ApplicationController
       end
 
       #use the model to begin building the blurquery
-      @blur_table = BlurTable.find buff.blur_table_id
-      table = @blur_table.table_name
+      @blur_table = BlurTable.find params[:blur_table]
       bq = buff.prepare_search
 
 
@@ -81,7 +84,7 @@ class SearchController < ApplicationController
       sel.columnFamiliesToFetch = families unless families.blank?
       sel.columnsToFetch = columns unless columns.blank?
       bq.selector = sel
-      blur_results = BlurThriftClient.client.query(table, bq)
+      blur_results = BlurThriftClient.client.query(@blur_table.table_name, bq)
 
       #build a mapping from families to their associated columns
       families_with_columns = {}
@@ -174,6 +177,7 @@ class SearchController < ApplicationController
   def delete
     Search.find(params[:search_id]).delete
     @searches = @current_user.searches.reverse
+    @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
       format.html {render :partial =>"saved.html.haml" }
     end

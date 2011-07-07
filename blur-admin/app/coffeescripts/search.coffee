@@ -36,6 +36,7 @@ $(document).ready ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
 
+
   # Show spinner when submit button is clicked
   $('#search_submit').live 'click', ->
     $('#loading-spinner').show()
@@ -125,8 +126,7 @@ $(document).ready ->
         #if data is returned properly process it
         #if the data is from a save then display the html in the filter section
         if $(data).attr("id") == 'searches'
-          $('.saved-list').html(data)
-          $('#searches').slideToggle 'fast'
+          $('.body#saved').html(data)
         else
           $('#results_container').html data
       else
@@ -153,7 +153,7 @@ $(document).ready ->
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->
-    $.ajax '/search/'+ $(this).parent().attr('id'),
+    $.ajax '/search/'+ $(this).parent().attr('id') + '/' + $('#blur_table option:selected').val(),
       type: 'POST',
       success: (data) ->
         $('#loading-spinner').hide()
@@ -170,11 +170,10 @@ $(document).ready ->
 
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
-    $.ajax '/search/delete/'+ $(this).parent().attr('id'),
-      type: 'POST',
-      success: data ->
+    $.ajax '/search/delete/'+ $(this).parent().attr('id') + '/' + $('#blur_table option:selected').val(),
+      type: 'DELETE',
+      success: (data) ->
         $('#loading-spinner').hide()
-        $('.saved-list').html(data)
-        $('#searches').slideToggle('fast')
+        $('.body#saved').html(data)
     $('#loading-spinner').show()
 

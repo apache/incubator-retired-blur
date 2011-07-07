@@ -36,6 +36,7 @@ $(document).ready ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
 
+
   # Show spinner when submit button is clicked
   $('#search_submit').live 'click', ->
     $('#loading-spinner').show()

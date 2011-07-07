@@ -137,7 +137,7 @@ $(document).ready ->
       console.log error
 
   #ajax listener for the edit action
-  $('#edit_icon').live 'click', ->
+  $('#edit_icon, #run_icon').live 'click', ->
     $.ajax '/search/load/'+ $(this).parent().attr('id'),
       type: 'POST',
       success: (data) ->

@@ -53,8 +53,6 @@ public class ShardCollector {
 	
 	private void updateOnlineShards(List<String> shards) {
 		for (String shard : shards) {
-			// TODO: Need to figure out how to get the info for shards (i.e. URI, enabled, etc)
-			
 			List<Map<String, Object>> instances = jdbc.queryForList("select id from shards where node_name = ?", new Object[]{shard});
 			if (instances.isEmpty()) {
 				jdbc.update("insert into shards (node_name, node_location, status, cluster_id, blur_version) values (?, ?, ?, ?, ?)", new Object[]{shard, "placeholder", 2, clusterId, "1.0"});

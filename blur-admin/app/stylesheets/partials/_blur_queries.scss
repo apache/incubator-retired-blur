@@ -1,5 +1,8 @@
 #blur_queries_wrapper {
-  $header_text_color: #555;
+  @mixin standard-font {
+    font-weight: bold;
+    color: #555;
+  }
 
   @include full;
   margin-top: 2em;
@@ -10,8 +13,7 @@
       margin-bottom: 1em;
       @include columns(10);
       h3{
-        color: #555;
-        font-weight: bold;
+        @include standard-font;
       }
       .ui-widget-content, .ui-accordion-heading { color: #555; }
       .ui-accordion-heading{
@@ -21,7 +23,11 @@
     }
 
     #selector_wrapper{
-      @include columns(10);
+      @include columns(18);
+      padding-top: 0.5em;
+    }
+    filter_spinner{
+      @include columns(1);
     }
   }
 
@@ -35,10 +41,10 @@
       text-align: center;
     }
     th {
-      font-weight: bold;
+      @include standard-font;
       font-size: 120%;
-      color: $header_text_color;
       background-color: #C4D9FF;
+      text-align: center;
     }
     td {
       text-align: center;
@@ -61,10 +67,9 @@
     width: 100%;
   }
 
-  .ui-tooltip { color: $header_text_color; }
+  .ui-tooltip { @include standard-font; }
 
-  color: #555;
-  font-weight: bold;
+  @include standard-font;
 
   #blur_table_id{ margin-bottom: 15px; }
 }

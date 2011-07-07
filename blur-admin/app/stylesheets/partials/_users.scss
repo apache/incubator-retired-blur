@@ -1,7 +1,8 @@
 #admin_wrapper{
   margin-top: 2em;
-  @include full;
-  @include alpha;
+  @include columns(30);
   color: #555;
   font-weight: bold;
+  table { @include columns(30); }
+  table, p { @include alpha; }
 }

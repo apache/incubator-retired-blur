@@ -1,9 +1,8 @@
-
 -content_for :title, 'Search'
 -content_for :javascript do
   =javascript_include_tag 'jquery.jstree', 'compiled/search'
 
-#form_section
+#search_page_wrapper
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
       .tab#saved
@@ -16,9 +15,8 @@
           %label{:id => 'standard'} Search
         .body#standard
           #query_input.partial-section
-            .search-input
-              .query-label= label_tag :query_string, "Query:"
-              = text_area_tag :query_string, params[:query_string]
+            .query-label= label_tag :query_string, "Query:"
+            = text_area_tag :query_string, params[:query_string]
           #table_select.partial-section
             = label_tag :blur_table, "Table:"
             = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
@@ -46,14 +44,17 @@
         .header#store
           %label{:title => "Save Options", :id => 'store'} Save Options
         .body#store
-          = label_tag :save_submit, 'Name:'
-          = text_field_tag 'save_name'
-          = submit_tag "Save", :disabled => true, :id => "save_submit"
+          .partial-section
+            = label_tag :save_submit, 'Name:'
+            = text_field_tag 'save_name'
+          .partial-section
+            = submit_tag "Save", :disabled => true, :id => "save_submit"
 
       #search_send.partial_section
         %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none; margin-right:50px;" }
         = submit_tag "Search", :disabled => true, :id => "search_submit"
 
+  #results_wrapper.open_filters
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
-#results_container
+    #results_container

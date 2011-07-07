@@ -153,7 +153,7 @@ $(document).ready ->
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->
-    $.ajax '/search/'+ $(this).parent().attr('id'),
+    $.ajax '/search/'+ $(this).parent().attr('id') + '/' + $('#blur_table option:selected').val(),
       type: 'POST',
       success: (data) ->
         $('#loading-spinner').hide()
@@ -170,8 +170,8 @@ $(document).ready ->
 
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
-    $.ajax '/search/delete/'+ $(this).parent().attr('id'),
-      type: 'POST',
+    $.ajax '/search/delete/'+ $(this).parent().attr('id') + '/' + $('#blur_table option:selected').val(),
+      type: 'DELETE',
       success: (data) ->
         $('#loading-spinner').hide()
         $('.body#saved').html(data)

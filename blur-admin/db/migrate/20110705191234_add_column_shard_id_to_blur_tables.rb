@@ -4,6 +4,6 @@ class AddColumnShardIdToBlurTables < ActiveRecord::Migration
   end
 
   def self.down
-    remove_column :blur_tables, :shard_id, :integer
+    remove_column :blur_tables, :shard_id
   end
 end

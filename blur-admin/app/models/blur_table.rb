@@ -1,7 +1,7 @@
 class BlurTable < ActiveRecord::Base
   require 'blur_thrift_client'
 
-  belongs_to :shard
+  has_and_belongs_to_many :shards
   has_one :cluster, :through => :shard
   has_many :blur_queries
   has_many :searches

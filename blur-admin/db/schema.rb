@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110705191234) do
+ActiveRecord::Schema.define(:version => 20110707132418) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -46,7 +46,6 @@ ActiveRecord::Schema.define(:version => 20110705191234) do
     t.text     "table_analyzer"
     t.text     "table_schema"
     t.text     "server"
-    t.integer  "shard_id"
   end
 
   create_table "clusters", :force => true do |t|
@@ -103,6 +102,11 @@ ActiveRecord::Schema.define(:version => 20110705191234) do
     t.integer  "cluster_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "shards_blur_tables", :id => false, :force => true do |t|
+    t.integer "shard_id"
+    t.integer "blur_table_id"
   end
 
   create_table "users", :force => true do |t|

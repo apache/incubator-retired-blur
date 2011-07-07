@@ -201,17 +201,18 @@ describe SearchController do
       Search.stub(:new).and_return(@search)
       Search.stub(:find).and_return(@search)
       Search.stub(:delete)
+      BlurTable.stub(:find)
     end
 
     it "renders the saved partial" do
-      get :delete, :search_id => 1
+      delete :delete, :search_id => 1, :blur_table => 1
       response.should render_template 'saved'
     end
 
     it "finds the correct table and deletes it from the DB" do
       Search.should_receive(:find).with(1)
       @search.should_receive(:delete)
-      get :delete, :search_id => 1
+      delete :delete, :search_id => 1, :blur_table => 1
     end
   end
 end

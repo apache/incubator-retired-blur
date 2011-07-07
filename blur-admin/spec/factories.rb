@@ -85,35 +85,17 @@ Factory.define :zookeeper_with_clusters, :parent => :zookeeper do |t|
   end
 end
 
-Factory.define :zookeeper_with_shard, :parent => :zookeeper_with_cluster  do |t|
+Factory.define :zookeeper_with_blur_table, :parent => :zookeeper_with_cluster  do |t|
   t.after_create do |zookeeper|
+    zookeeper.clusters.each { |cluster| Factory.create(:blur_table, :cluster => cluster) }
     zookeeper.clusters.each { |cluster| Factory.create(:shard, :cluster => cluster) }
   end
 end
 
-Factory.define :zookeeper_with_shards, :parent => :zookeeper_with_clusters  do |t|
+Factory.define :zookeeper_with_blur_tables, :parent => :zookeeper_with_clusters  do |t|
   t.after_create do |zookeeper|
+    zookeeper.clusters.each { |cluster| @recursive_factor.times {Factory.create(:blur_table, :cluster => cluster)} }
     zookeeper.clusters.each { |cluster| @recursive_factor.times {Factory.create(:shard, :cluster => cluster)} }
-  end
-end
-
-Factory.define :zookeeper_with_blur_table, :parent => :zookeeper_with_shard  do |t|
-  t.after_create do |zookeeper|
-    zookeeper.shards.each { |shard| Factory.create(:blur_table, :shards => [shard]) }
-  end
-end
-
-Factory.define :zookeeper_with_blur_tables, :parent => :zookeeper_with_shards  do |t|
-  t.after_create do |zookeeper|
-    # NOTICE: this does not ensure that every shard will have a blur table,
-    # only that each blur table will have a shard
-    (zookeeper.shards.count * @recursive_factor).times do
-      blur_table = Factory.create :blur_table
-      # add an association to each shard with 50% probability
-      zookeeper.shards.count.times { |n| blur_table.shards << zookeeper.shards[n] if rand(2) == 1 }
-      # if no associations were added, then add a random one
-      blur_table.shards << zookeeper.shards[rand(zookeeper.shards.count)] if blur_table.shards.empty?
-    end
   end
 end
 

@@ -2,7 +2,6 @@ class BlurTable < ActiveRecord::Base
   require 'blur_thrift_client'
 
   has_and_belongs_to_many :shards
-  has_one :cluster, :through => :shard
   has_many :blur_queries
   has_many :searches
 
@@ -67,6 +66,9 @@ class BlurTable < ActiveRecord::Base
   end
 
   # rails 3.0 does not allow nested has_one :through relationships
+  def cluster
+    self.shards.first.cluster
+  end
   def zookeeper
     self.cluster.zookeeper
   end

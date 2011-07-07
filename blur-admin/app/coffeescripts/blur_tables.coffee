@@ -1,4 +1,19 @@
 $(document).ready ->
+
+  # Function to initialize a filter tree on the passed in element
+  setup_filter_tree = (selector) ->
+    selector.jstree
+      plugins: ["themes", "html_data", "sort", "ui"],
+      themes:
+        theme: 'apple',
+        icons: false,
+    .bind "select_node.jstree", (event, data) -> 
+      $(this).jstree('toggle_node')
+    $('.hosts').bind "loaded.jstree", ->
+      $('.hosts').show()
+    $('.schema').bind "loaded.jstree", ->
+      $('.schema').show()
+
   # Close all accordions on page load
   for table in $('div.blur_table')
     $(table).hide()
@@ -17,25 +32,21 @@ $(document).ready ->
       if last and $('#' + id).css('border-bottom-width') is '0px'
         $('#' + id).css('border-bottom-width', '1px')
 
-  # Function to initialize a filter tree on the passed in element
-  setup_filter_tree = (selector) ->
-    selector.jstree
-      plugins: ["themes", "html_data", "sort", "ui"],
-      themes:
-        theme: 'apple',
-        icons: false,
-    .bind "select_node.jstree", (event, data) -> 
-      $(this).jstree('toggle_node')
-    $('.host_list').bind("loaded.jstree", ->
-      $('.host_list').show()
-    )
-    $('.schema_list').bind("loaded.jstree", ->
-      $('.schema_list').show()
-    )
-
-  # Calls the function to initialize the filter tree on the schema list
-  setup_filter_tree $('.schema_list')
-  setup_filter_tree $('.host_list')
+  # Ajax request handling for hosts/schema link
+  $('a#hosts, a#schema')
+    .live 'ajax:success', (evt, data, status, xhr) ->
+      title = $(this).attr('id')
+      $(data).dialog
+        modal: true
+        draggable: false
+        resizable: false
+        title: title
+        close: (event, ui) ->
+          $(this).remove()
+        open: ->
+          # Calls the function to initialize the filter tree on the schema list
+          setup_filter_tree $(this)
+          setup_filter_tree $(this)
 
   # Ajax request handling for enable/disable
   $('form.update')

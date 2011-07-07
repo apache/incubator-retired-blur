@@ -1,0 +1,17 @@
+.schema
+  %b Schema:
+  - if blur_table.schema
+    %ul
+      %li#families{:id=>"#{blur_table.table_name}", :class => "family-node"}
+        %a{:href=>'', :class => 'families'}Column Families
+        %ul
+          -blur_table.schema["columnFamilies"].each do |family, columns|
+            %li#family{:id=>"#{blur_table.table_name}.#{family}", :class => "family-node"}
+              %a{:href=>'#'}
+                = "#{family} (#{blur_table.table_analyzer})"
+              %ul
+                -columns.each do |column|
+                  %li#column{:id=>"#{blur_table.table_name}.#{family}.#{column}"}
+                    %a{:href=>'#'}= column
+  - else
+    Not Available

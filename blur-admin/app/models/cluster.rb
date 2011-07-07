@@ -1,7 +1,7 @@
 class Cluster < ActiveRecord::Base
   belongs_to :zookeeper
   has_many :shards
-  has_many :blur_tables, :through => :shards
+  has_many :blur_tables, :through => :shards, :group => :blur_table_id
 
   #rails 3.0 does not allow nested has_many :through relationships
   def blur_queries

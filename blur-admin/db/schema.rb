@@ -48,6 +48,11 @@ ActiveRecord::Schema.define(:version => 20110707132418) do
     t.text     "server"
   end
 
+  create_table "blur_tables_shards", :id => false, :force => true do |t|
+    t.integer "shard_id"
+    t.integer "blur_table_id"
+  end
+
   create_table "clusters", :force => true do |t|
     t.string   "name"
     t.integer  "zookeeper_id"
@@ -102,11 +107,6 @@ ActiveRecord::Schema.define(:version => 20110707132418) do
     t.integer  "cluster_id"
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "shards_blur_tables", :id => false, :force => true do |t|
-    t.integer "shard_id"
-    t.integer "blur_table_id"
   end
 
   create_table "users", :force => true do |t|

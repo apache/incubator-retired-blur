@@ -125,8 +125,7 @@ $(document).ready ->
         #if data is returned properly process it
         #if the data is from a save then display the html in the filter section
         if $(data).attr("id") == 'searches'
-          $('.saved-list').html(data)
-          $('#searches').slideToggle 'fast'
+          $('.body#saved').html(data)
         else
           $('#results_container').html data
       else
@@ -172,9 +171,8 @@ $(document).ready ->
   $('#delete_icon').live 'click', ->
     $.ajax '/search/delete/'+ $(this).parent().attr('id'),
       type: 'POST',
-      success: data ->
+      success: (data) ->
         $('#loading-spinner').hide()
-        $('.saved-list').html(data)
-        $('#searches').slideToggle('fast')
+        $('.body#saved').html(data)
     $('#loading-spinner').show()
 

@@ -13,14 +13,3 @@
     %span.status Status
 
   = render :partial => 'blur_table', :collection => @blur_tables
-
-#confirm.ui-confirm{:hidden => true}
-  #confirm-dialog
-  #confirm-buttons
-    %form
-      %input#underlying-confirm{:type => "checkbox", :checked => false}
-        =label_tag :t, "Delete underlying table index", :id => "delete-label"
-      %button#confirm-submit.cancel{:type => "button"}
-        Cancel
-      %button#confirm-submit.ok{:type => "button"}
-        Delete

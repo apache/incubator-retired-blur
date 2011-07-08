@@ -1,21 +1,9 @@
-@import "partials/base";
 @import "compass";
 @import "compass/layout";
 @import "compass/reset";
-@import "application";
+@import "susy";
 @import "blueprint/typography";
+@import "application";
 
 @include blueprint-typography;
 
-body {
-  margin:0 auto;
-  #top{ @include susy-grid-background }
-
-}
-
-#{headings()} {
-  font-weight: bold;
-  color: #555;
-}
-
-h2 { font-size: 200%; }

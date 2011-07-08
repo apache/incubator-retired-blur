@@ -1,5 +1,3 @@
-@import "susy";
-
 $footer-height: 45px;
 
 // UI lightness theme settings
@@ -11,3 +9,15 @@ $col-width: 5em;
 $gutter-width: 1em;
 $side-gutter-width: 3em;
 $show-grid-backgrounds: true;
+
+body {
+  margin:0 auto;
+  @include container;
+}
+
+#{headings()} {
+  font-weight: bold;
+  color: #555;
+}
+
+h2 { font-size: 200%; }

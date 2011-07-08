@@ -45,9 +45,11 @@
   #results_wrapper{
     @include omega;
 
+    #bar_section:hover { background-color: #FAD290; }
+
     #bar_section{
       @include columns(1);
-      width: 10px;
+      width: 1em;
       height: 100%;
       position: fixed;
       background-color: #eee;
@@ -71,7 +73,7 @@
       #results_section{
         overflow-x: scroll;
         background-color : #ffffff;
-        margin-bottom: 50px;
+        margin-bottom: 5em;
         border: solid 1px #AAA;
         width: auto;
       }

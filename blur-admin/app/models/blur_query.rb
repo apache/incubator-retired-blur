@@ -2,6 +2,7 @@ require 'blur_thrift_client'
 
 class BlurQuery < ActiveRecord::Base
   belongs_to :blur_table
+  has_one :cluster, :through => :blur_table
 
   def cancel
     begin
@@ -16,14 +17,6 @@ class BlurQuery < ActiveRecord::Base
 
   # rails 3.0 does not allow nested has_one :through relationships
   def zookeeper
-    self.shards.first.zookeeper
-  end
-
-  def cluster
-    self.shards.first.cluster
-  end
-  
-  def shards
-    self.blur_table.shards
+    self.blur_table.zookeeper
   end
 end

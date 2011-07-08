@@ -15,13 +15,11 @@ public class ControllerCollector {
 	private ZooKeeper zk;
 	private int instanceId;
 	private JdbcTemplate jdbc;
-	private String clusterName; // This will be removed in the future
 	
-	private ControllerCollector(InstanceManager manager, JdbcTemplate jdbc, String clusterName) {
+	private ControllerCollector(InstanceManager manager, JdbcTemplate jdbc) {
 		this.zk = manager.getInstance();
 		this.instanceId = manager.getInstanceId();
 		this.jdbc = jdbc;
-		this.clusterName = clusterName;
 		
 		updateControllers();
 	}
@@ -55,7 +53,8 @@ public class ControllerCollector {
 	
 	private List<String> getControllers() {
 		try {
-			return zk.getChildren("/blur/" + clusterName + "/online/controller-nodes", false);
+			// TODO: This will be changed when controller won't be under the cluster
+			return zk.getChildren("/blur/default/online/controller-nodes", false);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -64,7 +63,7 @@ public class ControllerCollector {
 		return new ArrayList<String>();
 	}
 
-	public static void collect(InstanceManager manager, JdbcTemplate jdbc, String clusterName) {
-		new ControllerCollector(manager, jdbc, clusterName);
+	public static void collect(InstanceManager manager, JdbcTemplate jdbc) {
+		new ControllerCollector(manager, jdbc);
 	}
 }

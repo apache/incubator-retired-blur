@@ -42,7 +42,7 @@ public class ClusterCollector {
 			}
 			
 			ShardCollector.collect(manager, jdbc, clusterId, cluster);
-			TableCollector.collect(manager, jdbc, cluster);
+			TableCollector.collect(manager, jdbc, clusterId, cluster);
 		}
 	}
 	

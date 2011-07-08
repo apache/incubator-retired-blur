@@ -6,8 +6,8 @@
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
       .tab#saved
-        .header#saved{:title => "Saved Searches"}
-          %label{:title => "Saved Searches", :id => 'saved'} Saved Searches
+        .header#saved
+          %label{:id => 'saved'} Saved Searches
         .body#saved
           = render "saved"
       .tab#standard
@@ -28,7 +28,7 @@
 
       .tab#advanced
         .header#advanced
-          %label{:title => "Advanced", :id => 'advanced'} Advanced Options
+          %label{:id => 'advanced'} Advanced Options
         .body#advanced
           #sq_select.partial-section
             = label_tag :super_query, "Super Query:"
@@ -42,7 +42,7 @@
 
       .tab#store
         .header#store
-          %label{:title => "Save Options", :id => 'store'} Save Options
+          %label{:id => 'store'} Save Options
         .body#store
           .partial-section
             = label_tag :save_submit, 'Name:'

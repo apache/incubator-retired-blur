@@ -1,8 +1,8 @@
-#admin_wrapper{
-  margin-top: 2em;
-  @include columns(30);
+#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{
+  @include full;
+  margin-top: 1em;
   color: #555;
   font-weight: bold;
-  table { @include columns(30); }
-  table, p { @include alpha; }
+  table { @include columns(31); }
+  #roles_wrapper {@include alpha; }
 }

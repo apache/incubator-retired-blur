@@ -18,27 +18,6 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class TableCollector {
 	public static void startCollecting(String connection, final JdbcTemplate jdbc) throws Exception {
-		/**
-		 * 
-					+----------------+--------------+------+-----+---------+----------------+
-					| Field          | Type         | Null | Key | Default | Extra          |
-					+----------------+--------------+------+-----+---------+----------------+
-					| id             | int(11)      | NO   | PRI | NULL    | auto_increment |
-					| table_name     | varchar(255) | YES  |     | NULL    |                |
-					| current_size   | int(11)      | YES  |     | NULL    |                |
-					| query_usage    | int(11)      | YES  |     | NULL    |                |
-					| created_at     | datetime     | YES  |     | NULL    |                |
-					| updated_at     | datetime     | YES  |     | NULL    |                |
-					| record_count   | bigint(20)   | YES  |     | NULL    |                |
-					| status         | int(11)      | YES  |     | NULL    |                |
-					| table_uri      | varchar(255) | YES  |     | NULL    |                |
-					| table_analyzer | text         | YES  |     | NULL    |                |
-					| schema         | text         | YES  |     | NULL    |                |
-					| server         | text         | YES  |     | NULL    |                |
-					+----------------+--------------+------+-----+---------+----------------+
-
-		 */
-		
 		BlurClientManager.execute(connection, new BlurCommand<Void>() {
 			@Override
 			public Void call(Client client) throws Exception {
@@ -48,6 +27,7 @@ public class TableCollector {
 				
 				//Create and update tables
 				for (String table : tables) {				
+					//TODO: This will be a problem because we aren't specifying the cluster
 					List<Map<String, Object>> existingTable = jdbc.queryForList("select id from blur_tables where table_name=?", table);
 					TableDescriptor descriptor = client.describe(table);
 					

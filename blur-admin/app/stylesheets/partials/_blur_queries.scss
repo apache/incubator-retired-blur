@@ -61,17 +61,11 @@
   }
 
   .ui-tooltip { @include standard-font; }
-
   @include standard-font;
-
   #blur_table_id{ margin-bottom: 15px; }
 }
 
-.ui-dialog {
-  width: 500px !important;
-  #more-info-table {
-    margin: 0px;
-    td{ color: #555; }
-    #more-info-label { white-space:nowrap; font-weight: bold;}
-  }
+#more-info-table {
+  td{ color: #555; }
+  .more-info-label { white-space:nowrap; font-weight: bold;}
 }

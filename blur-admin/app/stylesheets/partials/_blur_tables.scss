@@ -2,15 +2,12 @@
   margin-top: 2em;
   margin-bottom: 2em;
   @include full;
-  @include border;
+  @include border-sides;
+  @include border-top;
   @include border-radius;
 
   h3:nth-of-type(even)            {background-color: $shaded_row_color};
   div.blur_table:nth-of-type(odd) {background-color: $shaded_row_color};
-
-  // Bottom border of last table element
-  h3.blur_table:nth-last-of-type(1)  {@include border-bottom-radius;};
-  div.blur_table:nth-last-of-type(1) {@include border-bottom-radius;};
 
   h3.blur_table, .blur_tables_header {
     @include standard-font;
@@ -20,8 +17,8 @@
 
   .blur_tables_header {
     background-color: #C4D9FF;
-    @include border-top-radius;
     @include full($total-cols);
+    @include border-top-radius;
     height: $row-height;
   }
  
@@ -29,6 +26,7 @@
     margin-bottom: 0px;
     @include border-top;
     @include border-bottom;
+    border-top-width: 2px;
     @include full($total-cols);
     height: $row-height;
     &:hover {
@@ -37,19 +35,38 @@
   }
 
   div.blur_table {
-    .actions {
-      @include inline-block;
-      @include standard-font;
-      vertical-align: top;
+    height: 42px;
+    @include full($total-cols);
+    .location {
       margin-top: 10px;
       margin-bottom: 10px;
+      @include columns($total-cols / 2, $total-cols);
     }
-    .location { padding-bottom: 10px; }
+    .actions {
+      @include standard-font;
+      @include columns($total-cols / 2, $total-cols);
+      @include omega($total-cols);
+      margin-top: 10px;
+      margin-bottom: 10px;
+      text-align: right;
+    }
     .actions form {
-      display: inline;
       margin: 0px;
-      input { margin: 0px; }
+      display: inline;
+      input {
+        margin: 0px;
+        margin-right: 10px;
+      }
     }
+  }
+
+  h3.blur_table:last-of-type {
+    @include border-bottom-radius;
+  }
+
+  div.blur_table:last-of-type {
+    @include border-bottom;
+    @include border-bottom-radius;
   }
 
   span {
@@ -58,8 +75,8 @@
     line-height: $row-height;
   }
 
-  span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,$total-cols)}
-  span.status { @include omega($total-cols); }
+  span.hosts, span.count, span.size, span.second, span.status, span.schema {@include columns(3,$total-cols)}
+  span.schema { @include omega($total-cols); }
 
   span.table_name {
     @include columns(12, $total-cols);

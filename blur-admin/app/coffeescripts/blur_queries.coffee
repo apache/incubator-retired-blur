@@ -33,6 +33,7 @@ $(document).ready ->
         modal: true
         draggable: false
         resizable: false
+        width: 'auto'
         title: "Additional Info"
         close: (event, ui) ->
           $(this).remove()

@@ -5,12 +5,11 @@
     = blur_table.table_name
   %span.hosts
     - if blur_table.server
-      = blur_table.hosts.keys.length
-    - else
-      = nil_message
-  %span.shards
-    - if blur_table.server
-      = blur_table.hosts.values.flatten.length
+      = link_to hosts_blur_table_path(blur_table), :remote => true, :id => 'hosts' do
+        = blur_table.hosts.keys.length
+        &#47;
+        = blur_table.hosts.values.flatten.length
+
     - else
       = nil_message
 
@@ -18,24 +17,24 @@
   %span.size= blur_table.current_size ? number_to_human_size(blur_table.current_size, :precision => 4) : nil_message
   %span.second= blur_table.query_usage ? number_with_delimiter(blur_table.query_usage, :delimiter => ',') : nil_message
   %span.status= blur_table.is_enabled? ? "Enabled" : "Disabled"
+  %span.schema= link_to "view", schema_blur_table_path(blur_table), :remote => true, :id => 'schema'
 
 
 .blur_table{:id => "blur_table_#{blur_table.id}"}
   .location
     %b Location:
     = blur_table.table_uri ? blur_table.table_uri : nil_message
-  - if can? :update, :blur_tables
-    = form_tag "/blur_tables/#{blur_table.id}", :class => 'update', :id => "blur_table_#{blur_table.id}", :method => :put, :remote => true do
-      - if !blur_table.is_enabled?
-        = hidden_field_tag 'enable', true
-        = submit_tag 'Enable Table', :confirm => "Are you sure?"
-      - else
-        = hidden_field_tag 'disable', true
-        = submit_tag 'Disable Table', :confirm => "Are you sure?"
-  - if can? :delete, :blur_tables and  !blur_table.is_enabled?
-    = form_tag "/blur_tables/#{blur_table.id}", :class => 'delete', :id => "blur_table_#{blur_table.id}", :method => :delete, :remote => true do
-      = hidden_field_tag :delete_index, false
-      = tag :input, :type => :button, :value => 'Delete Table', :class => :delete_blur_table_button
 
-  = link_to "Schema", schema_blur_table_path(blur_table), :remote => true, :id => 'schema'
-  = link_to "Hosts", hosts_blur_table_path(blur_table), :remote => true, :id => 'hosts'
+  .actions
+    - if can? :update, :blur_tables
+      = form_tag "/blur_tables/#{blur_table.id}", :class => 'update', :id => "blur_table_#{blur_table.id}", :method => :put, :remote => true do
+        - if !blur_table.is_enabled?
+          = hidden_field_tag 'enable', true
+          = submit_tag 'Enable Table', :confirm => "Are you sure?"
+        - else
+          = hidden_field_tag 'disable', true
+          = submit_tag 'Disable Table', :confirm => "Are you sure?"
+    - if can? :delete, :blur_tables and  !blur_table.is_enabled?
+      = form_tag "/blur_tables/#{blur_table.id}", :class => 'delete', :id => "blur_table_#{blur_table.id}", :method => :delete, :remote => true do
+        = hidden_field_tag :delete_index, false
+        = tag :input, :type => :button, :value => 'Delete Table', :class => :delete_blur_table_button

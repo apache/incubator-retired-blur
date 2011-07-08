@@ -42,3 +42,7 @@ $row-height: 50px;
   border: 1px solid #999;
   @include border-radius;
 }
+
+.ui-dialog {
+  min-width: 300px;
+}

@@ -29,6 +29,7 @@ $(document).ready ->
         modal: true
         draggable: false
         resizable: false
+        width: 'auto'
         title: title.substring(0,1).toUpperCase() + title.substring(1)
         close: (event, ui) ->
           $(this).remove()

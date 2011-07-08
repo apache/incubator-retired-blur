@@ -3,14 +3,14 @@
   @include full;
 
   @mixin outer-container {
-    border: solid 1px #AAA;
+    @include border;
     @include border-radius;
     margin-bottom: 2em;
     background-color: #F0F0F0;
   }
 
   @mixin inner-container {
-    border: solid 1px #AAA;
+    @include border;
     @include border-radius;
     background-color: #FFF;
     margin-bottom: 2em;

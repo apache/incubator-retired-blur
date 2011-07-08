@@ -44,8 +44,6 @@ $(document).ready ->
         close: (event, ui) ->
           $(this).remove()
         open: ->
-          # Calls the function to initialize the filter tree on the schema list
-          setup_filter_tree $(this)
           setup_filter_tree $(this)
 
   # Ajax request handling for enable/disable
@@ -66,7 +64,7 @@ $(document).ready ->
   $('.delete_blur_table_button').live 'click', ->
     form = $(this).closest('form.delete')
     $("<div class='confirm_delete'>Do you want to delete the underlying table index?</div>").dialog
-      buttons: {
+      buttons:
         "Delete Index": ->
           form.find('#delete_index').val('true')
           form.submit()
@@ -76,7 +74,6 @@ $(document).ready ->
           $(this).dialog('close')
         "Cancel": ->
           $(this).dialog('close')
-      }
       close: ->
         $(this).remove()
 

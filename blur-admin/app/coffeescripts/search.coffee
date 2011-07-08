@@ -36,8 +36,9 @@ $(document).ready ->
   $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
-    $('.body#saved').load('reload/' + $(this).val())
-
+    $('.body#saved').load('reload/' + $(this).val(), ->
+      $('[title]').tooltip()
+    )
 
   # Show spinner when submit button is clicked
   $('#search_submit').live 'click', ->
@@ -76,6 +77,7 @@ $(document).ready ->
       $('#results_wrapper').addClass('open_filters')
       $('#results_wrapper').removeClass('collapsed_filters')
       $('#bar_section').width('1em');
+    $('[title]').tooltip()
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
@@ -133,11 +135,11 @@ $(document).ready ->
           $('.body#saved').html(data)
         else
           $('#results_container').html data
-        $('[title]').tooltip()
       else
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'
         $('#results_container').html(error_content)
+      $('[title]').tooltip()
     .live 'ajax:error', (evt, xhr, status, error) ->
       console.log error
 
@@ -170,7 +172,7 @@ $(document).ready ->
           #hides number of results option if there are no results
           error_content = '<div>No results for your search.</div>'
           $('#results_container').html error_content
-
+        $('[title]').tooltip()
     $('#loading-spinner').show()
 
   #ajax listener for the delete action

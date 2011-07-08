@@ -1,8 +1,7 @@
 #blur_queries_wrapper {
-  margin-top: 2em;
+  padding-top: 2em;
   margin-bottom: 2em;
   @include full;
-
 
   #filter_form{
     @include columns(30);

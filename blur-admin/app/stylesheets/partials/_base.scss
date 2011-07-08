@@ -13,9 +13,13 @@ $show-grid-backgrounds: true;
 body {
   margin:0 auto;
   @include container;
+  @include susy-grid-background;
+  #top { @include susy-grid-background; }
 }
 
-#{headings()} {
+h2 { font-size: 200%; }
+
+@mixin standard-font {
   font-weight: bold;
   color: #555;
 }

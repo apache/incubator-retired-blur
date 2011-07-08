@@ -2,6 +2,6 @@
   @include full;
   @include standard-font;
   margin-top: 1em;
-  table { @include columns(31); }
+  table { @include columns(30,$total-cols); }
   #roles_wrapper {@include alpha; }
 }

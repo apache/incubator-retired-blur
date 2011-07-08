@@ -79,8 +79,7 @@ $row-height: 50px;
   span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,$total-cols)}
 
   span.table_name {
-    @include columns(11, $total-cols);
-    @include prefix(1, $total-cols);
+    @include columns(12, $total-cols);
     text-align: left;
     font-size: 1.4em;
   }

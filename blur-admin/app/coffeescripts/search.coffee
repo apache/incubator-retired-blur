@@ -36,6 +36,7 @@ $(document).ready ->
   $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
+    $('.body#saved').load('reload/' + $(this).val())
 
 
   # Show spinner when submit button is clicked
@@ -141,7 +142,7 @@ $(document).ready ->
       console.log error
 
   #ajax listener for the edit action
-  $('#edit_icon').live 'click', ->
+  $('#edit_icon, #run_icon').live 'click', ->
     $.ajax '/search/load/'+ $(this).parent().attr('id'),
       type: 'POST',
       success: (data) ->

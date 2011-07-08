@@ -1,8 +1,12 @@
 - content_for :title, 'Edit User'
 
-= render 'form'
+#edit_user_wrapper
+  %h2 Edit User
 
-%p
-  = link_to "Show", @user
-  |
-  = link_to "View All", users_path
+  = render 'form'
+
+  %br
+  %p
+    = link_to "Show", @user
+    |
+    = link_to "View All", users_path

@@ -1,20 +1,22 @@
 - content_for :title, 'User'
 
-%p
-  %strong Username:
-  = @user.username
-%p
-  %strong Email:
-  = @user.email
-%p
-  %strong
-    = @user.roles.to_a.join ', '
-%p
-  - if can? :edit, @user
-    = link_to "Edit", edit_user_path(@user)
-  - if can? :destroy, @user
-    |
-    = link_to "Delete User", @user, :confirm => 'Are you sure?', :method => :delete
-  - if can? :index, :users
-    |
-    = link_to "View All Users", users_path
+#show_user_wrapper
+  %h2 User Info
+  %p
+    %strong Username:
+    = @user.username
+  %p
+    %strong Email:
+    = @user.email
+  %p
+    %strong
+      = @user.roles.to_a.join ', '
+  %p
+    - if can? :edit, @user
+      = link_to "Edit", edit_user_path(@user)
+    - if can? :destroy, @user
+      |
+      = link_to "Delete User", @user, :confirm => 'Are you sure?', :method => :delete
+    - if can? :index, :users
+      |
+      = link_to "View All Users", users_path

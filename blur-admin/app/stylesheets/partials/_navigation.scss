@@ -4,6 +4,7 @@ $nav-height: 45px;
 html,body{ height: 100%; }
 
 #top{
+  top:0px;
   background-color:white;
   position:fixed;
   z-index:2;
@@ -45,7 +46,7 @@ html,body{ height: 100%; }
   position:relative;
   top: $header-height + $nav-height;
   padding-bottom: 46px;
-  overflow: auto;
+
 }
 
 #body_wrapper{
@@ -56,6 +57,7 @@ html,body{ height: 100%; }
 #root{ height: 100%; min-height: 100%; margin-bottom: -46px; }
 
 #ft {
+  bottom: 0px;
   position:fixed;
   z-index:2;
   width: 100%;

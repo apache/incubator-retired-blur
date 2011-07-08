@@ -1,8 +1,8 @@
 .hidden{ display: none; }
 .inline{ display: inline; }
 
-@import "partials/navigation";
 @import "partials/base";
+@import "partials/navigation";
 
 // Application specific pages
 @import "partials/search";

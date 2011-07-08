@@ -9,6 +9,7 @@ BlurAdmin::Application.routes.draw do
 
   resources :blur_tables do
     get 'hosts', :on => :member
+    get 'schema', :on => :member
   end
 
   resources :blur_queries do

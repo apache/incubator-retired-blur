@@ -156,6 +156,9 @@ public class FacetQuery extends AbstractWrapperQuery {
             }
             for (int i = 0; i < facetLength; i++) {
                 Scorer facet = facets[i];
+                if (facet == null) {
+                    continue;
+                }
                 int docID = facet.docID();
                 if (docID == NO_MORE_DOCS) {
                     continue;

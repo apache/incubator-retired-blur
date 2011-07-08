@@ -43,7 +43,7 @@ public class BlurIndexWriter extends BlurIndex {
     private Directory _directory;
     private IndexWriter _writer;
     private BlurAnalyzer _analyzer;
-    private int _maxThreadCountForMerger = 5;
+    private int _maxThreadCountForMerger = 2;
     private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
     private RowIndexWriter _rowIndexWriter;
     private Directory _sync;
@@ -179,7 +179,7 @@ public class BlurIndexWriter extends BlurIndex {
             return _dir.openInput(arg0);
         }
 
-        public void setLockFactory(LockFactory lockFactory) {
+        public void setLockFactory(LockFactory lockFactory) throws IOException {
             _dir.setLockFactory(lockFactory);
         }
 

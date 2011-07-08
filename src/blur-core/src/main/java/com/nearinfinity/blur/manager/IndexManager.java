@@ -629,8 +629,7 @@ public class IndexManager {
     }
 
     private int getNumberOfShards(String table) {
-        List<String> list = indexServer.getShardList(table);
-        return list.size();
+        return indexServer.getShardCount(table);
     }
 
     public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {

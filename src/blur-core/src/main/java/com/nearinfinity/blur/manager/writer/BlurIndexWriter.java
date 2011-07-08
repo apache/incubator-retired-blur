@@ -77,12 +77,12 @@ public class BlurIndexWriter extends BlurIndex {
     
     @Override
     public synchronized boolean replaceRow(Iterable<Row> rows) throws IOException {
-        for (Row row : rows) {
-            synchronized (_writer) {
+        synchronized (_writer) {
+            for (Row row : rows) {
                 _rowIndexWriter.replace(row);
             }
+            rollOutNewReader(_writer.getReader());
         }
-        rollOutNewReader(_writer.getReader());
         return true;
     }
 

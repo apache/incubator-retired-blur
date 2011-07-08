@@ -34,38 +34,27 @@ $light_background_color: #F0F0F0;
 
   h3.blur_table, .blur_tables_header {
     @include standard-font;
-    margin: 0px;
     font-size: 1em;
     text-align: right;
   }
 
-  h3{ @include border-top; }
-  h3.blur_table { &:hover { cursor: pointer; } @include columns(31);}
-
   .blur_tables_header {
     background-color: #C4D9FF;
     @include border-top-radius;
-    @include columns(31);
+    @include full(30);
   }
  
-  span {
-    height: 100%;
-    text-align: center;
-    line-height: 32px;
-  }
-
-  span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,30); @include omega;}
-
-  span.table_name {
-    @include columns(9);
-    @include alpha;
-    text-align: left;
-    float: left;
-    font-size: 1.4em;
+  h3.blur_table { 
+    @include border-top;
+    @include border-bottom;
+    @include full(30);
+    &:hover {
+      cursor: pointer;
+    }
   }
 
   div.blur_table {
-    .schema, .actions, .hosts {
+    .actions {
       @include inline-block;
       @include alpha;
       @include standard-font;
@@ -79,6 +68,21 @@ $light_background_color: #F0F0F0;
       margin: 0px;
       input { margin: 0px; }
     }
+  }
+
+  span {
+    height: 100%;
+    text-align: center;
+    line-height: 32px;
+  }
+
+  span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,30); @include omega;}
+
+  span.table_name {
+    @include columns(12, 30);
+    @include alpha;
+    text-align: left;
+    font-size: 1.4em;
   }
 
   .jstree a { @include standard-font; }

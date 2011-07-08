@@ -182,4 +182,12 @@ class SearchController < ApplicationController
       format.html {render :partial =>"saved.html.haml" }
     end
   end
+
+  def reload
+    @searches = @current_user.searches.reverse
+    @blur_table = BlurTable.find params[:blur_table]
+    respond_to do |format|
+      format.html {render :partial =>"saved.html.haml" }
+    end
+  end
 end

@@ -36,6 +36,7 @@ $(document).ready ->
   $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
+    $('.body#saved').load('reload/' + $(this).val())
 
 
   # Show spinner when submit button is clicked

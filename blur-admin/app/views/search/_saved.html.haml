@@ -1,5 +1,5 @@
 #searches.partial-section
-  -if @searches.length != 0
+  -if @searches.length != 0 && !@blur_table.nil?
     -@searches.each do |search|
       -val = is_valid_search?(search)
       .search_element{:id => search.id}

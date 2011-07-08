@@ -1,17 +1,7 @@
 #search_page_wrapper{
   @include full;
 
-  @mixin standard-border {
-    border: 1px solid #999;
-    @include border-radius;
-  }
-
   @mixin search-margin { margin: .25em 0em .25em; }
-
-  @mixin standard-font {
-    font-weight: bold;
-    color: #555;
-  }
 
   #filter_section{
     @include columns(6);
@@ -71,10 +61,10 @@
       position: relative;
 
       #results_section{
+        @include border;
         overflow-x: scroll;
         background-color : #ffffff;
         margin-bottom: 5em;
-        border: solid 1px #AAA;
         width: auto;
       }
     }
@@ -126,10 +116,8 @@
   }
 
   //Navigation Tab outer divs
-  .tab { @include standard-border; }
+  .tab { @include border; @include border-radius; }
   .tab#standard, .tab#advanced { @include search-margin; }
-  .tab#saved { @include border-top-radius($default-border-radius*2); }
-  .tab#store { @include border-bottom-radius($default-border-radius*2); }
   .body#saved, .body#store, .body#advanced { display: none; }
 
   // Navigation Tabs labels

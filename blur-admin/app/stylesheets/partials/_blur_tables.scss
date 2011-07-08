@@ -1,30 +1,12 @@
-$border_color: #AAA;
-$border_width: 1px;
-$border_style: solid;
-
-$light_background_color: #F0F0F0;
-$row-height: 50px;
-
-@mixin border        { border:        $border_width $border_style $border_color; }
-@mixin border-bottom { border-bottom: $border_width $border_style $border_color; }
-@mixin border-top    { border-top:    $border_width $border_style $border_color; }
-@mixin border-sides  { border-left:   $border_width $border_style $border_color; 
-                       border-right:  $border_width $border_style $border_color; }
-
-@mixin standard-font {
-  font-weight: bold;
-  color: #555;
-}
-
 #blur_tables_wrapper{
   margin-top: 2em;
   margin-bottom: 2em;
   @include full;
-  border: solid 1px #AAA;
+  @include border;
   @include border-radius;
 
-  h3:nth-of-type(even)            {background-color: $light_background_color};
-  div.blur_table:nth-of-type(odd) {background-color: $light_background_color};
+  h3:nth-of-type(even)            {background-color: $shaded_row_color};
+  div.blur_table:nth-of-type(odd) {background-color: $shaded_row_color};
 
   // Bottom border of last table element
   h3.blur_table:nth-last-of-type(1)  {@include border-bottom-radius;};
@@ -77,6 +59,7 @@ $row-height: 50px;
   }
 
   span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,$total-cols)}
+  span.status { @include omega($total-cols); }
 
   span.table_name {
     @include columns(12, $total-cols);

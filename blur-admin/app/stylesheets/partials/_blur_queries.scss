@@ -1,9 +1,4 @@
 #blur_queries_wrapper {
-  @mixin standard-font {
-    font-weight: bold;
-    color: #555;
-  }
-
   margin-top: 2em;
   margin-bottom: 2em;
   @include full;
@@ -35,9 +30,9 @@
   }
 
   @mixin table-base {
+    @include border;
     @include border-radius;
     display: table;
-    border: solid 1px #AAA;
     tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
     tr.error td{

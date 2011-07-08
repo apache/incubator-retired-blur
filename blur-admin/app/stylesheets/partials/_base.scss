@@ -3,11 +3,11 @@ $footer-height: 45px;
 // UI lightness theme settings
 $base-theme-color: #f6a828;
 $base-theme-background-color: #eeeeee;
-
 $total-cols: 30;
-$col-width: 5em;
-$gutter-width: 1em;
-$side-gutter-width: 3em;
+$denominator: (($total-cols*5 + ($total-cols - 1) * 1 + 2 * 3) / 100);
+$col-width: (5%/$denominator);
+$gutter-width: (1%/$denominator);
+$side-gutter-width: (3%/$denominator);
 $show-grid-backgrounds: true;
 
 body {
@@ -20,4 +20,25 @@ body {
   color: #555;
 }
 
-h2 { font-size: 200%; }
+$border_color: #AAA;
+$border_width: 1px;
+$border_style: solid;
+
+$shaded_row_color: #F0F0F0;
+$row-height: 50px;
+
+@mixin border        { border:        $border_width $border_style $border_color; }
+@mixin border-bottom { border-bottom: $border_width $border_style $border_color; }
+@mixin border-top    { border-top:    $border_width $border_style $border_color; }
+@mixin border-sides  { border-left:   $border_width $border_style $border_color; 
+                       border-right:  $border_width $border_style $border_color; }
+
+@mixin standard-font {
+  font-weight: bold;
+  color: #555;
+}
+
+@mixin standard-border {
+  border: 1px solid #999;
+  @include border-radius;
+}

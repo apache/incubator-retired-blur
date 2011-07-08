@@ -4,7 +4,7 @@
   = javascript_include_tag 'compiled/blur_queries'
 
 #blur_queries_wrapper
-  = form_tag "/blur_queries", :id => "filter_form", :method => :get, :remote => true do
+  = form_tag refresh_path, :id => "filter_form", :method => :get, :remote => true do
 
     #filter_wrapper
       %h3
@@ -18,6 +18,8 @@
           = select_tag :time, options_for_select([['1 minute', 1], ['5 minutes', 5], ['15 minutes', 15], ['30 minutes', 30], ['1 hour', 60]])
         .query_filter
           = submit_tag 'filter'
+        = label_tag :refresh, 'Refresh every:'
+        = select_tag :refresh, options_for_select([['never', false], ['1 second', 1], ['10 seconds', 10], ['1 minute', 60], ['10 minutes', 600]])
 
     #selector_wrapper
       = label_tag :blur_table_id, 'Blur Table:'

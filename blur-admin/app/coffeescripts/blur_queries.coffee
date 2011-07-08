@@ -9,6 +9,7 @@ $(document).ready ->
       $(this).find("input[type=submit]").removeAttr('disabled')
       $('#filter_spinner').hide()
     .live 'ajax:success', (evt, data, status, xhr) ->
+      console.log(data)
       $('#queries-table').replaceWith(data)
       $('[title]').tooltip()
     .live 'ajax:error', (evt, xhr, status, error) ->

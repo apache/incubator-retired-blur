@@ -11,11 +11,6 @@ $row-height: 50px;
 @mixin border-sides  { border-left:   $border_width $border_style $border_color; 
                        border-right:  $border_width $border_style $border_color; }
 
-@mixin standard-font {
-  font-weight: bold;
-  color: #555;
-}
-
 #blur_tables_wrapper{
   margin-top: 2em;
   margin-bottom: 2em;
@@ -53,7 +48,6 @@ $row-height: 50px;
     &:hover {
       cursor: pointer;
     }
-
   }
 
   div.blur_table {

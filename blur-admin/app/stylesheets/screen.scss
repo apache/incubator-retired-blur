@@ -6,3 +6,8 @@
 @import "application";
 
 @include blueprint-typography;
+
+#{headings()} {
+  font-weight: bold;
+  color: #555;
+}

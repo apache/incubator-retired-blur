@@ -1,5 +1,6 @@
 #zookeepers_wrapper {
   margin-top: 2em;
+  @include full;
 
   @mixin outer-container {
     border: solid 1px #AAA;
@@ -17,24 +18,22 @@
 
   #blur, #zookeeper {
     @include outer-container;
-    @include full;
+    
   }
 
   #zookeeper {
-    @include columns(30);
-    @include omega;
+    @include columns(30,$total-cols);
     td.label {
       font-weight: bold;
     }
-    table { @include columns(29); @include alpha; }
+    table { @include prefix(1,30); @include columns(29,30);}
 
     .offline, .online { text-align:center; }
     .online { background: transparent; }
   }
 
   #blur {
-    @include columns(30);
-    @include omega;
+    @include columns(30,$total-cols);
     #controllers, #shards{
       @include inner-container;
       @include columns(14, 30);

@@ -51,6 +51,48 @@ describe BlurTablesController do
     end
   end
 
+  describe "GET schema" do
+    before do
+      BlurTable.stub(:find).and_return @blur_table
+    end
+    it "should assign @blur_table to be the blur table being whose schema is requested" do
+      BlurTable.should_receive(:find).with @blur_table.id
+      put :update, :id => @blur_table.id
+      assigns(:blur_table).should == @blur_table
+    end
+    it "should render the schema partial" do
+      get :schema, :id => @blur_table.id
+      response.should render_template :partial => "_schema"
+    end
+    describe "when an XHR request (ajax)" do
+      it "should render the schema partial" do
+        xhr :get, :schema, :id => @blur_table.id
+        response.should render_template :partial => "_schema"
+      end
+    end
+  end
+
+  describe "GET hosts" do
+    before do
+      BlurTable.stub(:find).and_return @blur_table
+    end
+    it "should assign @blur_table to be the blur table being whose hosts is requested" do
+      BlurTable.should_receive(:find).with @blur_table.id
+      put :update, :id => @blur_table.id
+      assigns(:blur_table).should == @blur_table
+    end
+    it "should render the hosts partial" do
+      get :hosts, :id => @blur_table.id
+      response.should render_template :partial => "_hosts"
+    end
+    describe "when an XHR request (ajax)" do
+      it "should render the hosts partial" do
+        xhr :get, :hosts, :id => @blur_table.id
+        response.should render_template :partial => "_hosts"
+      end
+    end
+  end
+
   describe "PUT update" do
     before do
       BlurTable.stub(:find).and_return(@blur_table)

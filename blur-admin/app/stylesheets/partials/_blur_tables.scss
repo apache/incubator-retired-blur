@@ -3,6 +3,7 @@ $border_width: 1px;
 $border_style: solid;
 
 $light_background_color: #F0F0F0;
+$row-height: 50px;
 
 @mixin border        { border:        $border_width $border_style $border_color; }
 @mixin border-bottom { border-bottom: $border_width $border_style $border_color; }
@@ -19,8 +20,6 @@ $light_background_color: #F0F0F0;
   margin-top: 2em;
   margin-bottom: 2em;
   @include full;
-  @include columns(30);
-  @include omega;
   border: solid 1px #AAA;
   @include border-radius;
 
@@ -33,40 +32,31 @@ $light_background_color: #F0F0F0;
 
   h3.blur_table, .blur_tables_header {
     @include standard-font;
-    margin: 0px;
     font-size: 1em;
     text-align: right;
   }
 
-  h3{ @include border-top; }
-  h3.blur_table { &:hover { cursor: pointer; } @include columns(31);}
-
   .blur_tables_header {
     background-color: #C4D9FF;
     @include border-top-radius;
-    @include columns(31);
+    @include full($total-cols);
+    height: $row-height;
   }
  
-  span {
-    height: 100%;
-    text-align: center;
-    line-height: 32px;
-  }
-
-  span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,30); @include omega;}
-
-  span.table_name {
-    @include columns(9);
-    @include alpha;
-    text-align: left;
-    float: left;
-    font-size: 1.4em;
+  h3.blur_table { 
+    margin-bottom: 0px;
+    @include border-top;
+    @include border-bottom;
+    @include full($total-cols);
+    height: $row-height;
+    &:hover {
+      cursor: pointer;
+    }
   }
 
   div.blur_table {
-    .schema, .actions, .hosts {
+    .actions {
       @include inline-block;
-      @include alpha;
       @include standard-font;
       vertical-align: top;
       margin-top: 10px;
@@ -78,6 +68,21 @@ $light_background_color: #F0F0F0;
       margin: 0px;
       input { margin: 0px; }
     }
+  }
+
+  span {
+    height: 100%;
+    text-align: center;
+    line-height: $row-height;
+  }
+
+  span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,$total-cols)}
+
+  span.table_name {
+    @include columns(11, $total-cols);
+    @include prefix(1, $total-cols);
+    text-align: left;
+    font-size: 1.4em;
   }
 
   .jstree a { @include standard-font; }

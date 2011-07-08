@@ -99,7 +99,7 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	}
 	
 	private void runInitialRegistration() {
-		ControllerCollector.collect(this, jdbc, name);
+		ControllerCollector.collect(this, jdbc);
 		ClusterCollector.collect(this, jdbc);
 	}
 

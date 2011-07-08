@@ -15,10 +15,12 @@ public class TableCollector {
 	private ZooKeeper zk;
 	private JdbcTemplate jdbc;
 	private String clusterName;
+	private int clusterId;
 	
-	private TableCollector(InstanceManager manager, JdbcTemplate jdbc, String clusterName) {
+	private TableCollector(InstanceManager manager, JdbcTemplate jdbc, int clusterId, String clusterName) {
 		this.zk = manager.getInstance();
 		this.jdbc = jdbc;
+		this.clusterId = clusterId;
 		this.clusterName = clusterName;
 		
 		updateTables();
@@ -43,9 +45,9 @@ public class TableCollector {
 	
 	private void markOfflineTables(List<String> tables) {
 		if (tables.isEmpty()) {
-			jdbc.update("update blur_tables set status = 0");
+			jdbc.update("update blur_tables set status = 0 where cluster_id=?", clusterId);
 		} else {
-			jdbc.update("update blur_tables set status = 0 where table_name not in ('" + StringUtils.join(tables, "','") + "')");
+			jdbc.update("update blur_tables set status = 0 where cluster_id='" + clusterId + "' and table_name not in ('" + StringUtils.join(tables, "','") + "')");
 		}
 	}
 	
@@ -63,16 +65,16 @@ public class TableCollector {
 				e.printStackTrace();
 			}
 			
-			List<Map<String, Object>> instances = jdbc.queryForList("select id from blur_tables where table_name = ?", new Object[]{table});
+			List<Map<String, Object>> instances = jdbc.queryForList("select id from blur_tables where table_name = ? and cluster_id=?", new Object[]{table, clusterId});
 			if (instances.isEmpty()) {
-				jdbc.update("insert into blur_tables (table_name, table_uri, status) values (?, ?, ?)", new Object[]{table, uri, (enabled ? 2 : 1)});
+				jdbc.update("insert into blur_tables (table_name, table_uri, status, cluster_id) values (?, ?, ?, ?)", new Object[]{table, uri, (enabled ? 2 : 1), clusterId});
 			} else {
-				jdbc.update("update blur_tables set status=? where table_name=?", new Object[]{(enabled ? 2 : 1), table});
+				jdbc.update("update blur_tables set status=? where table_name=? and cluster_id=?", new Object[]{(enabled ? 2 : 1), table, clusterId});
 			}
 		}
 	}
 	
-	public static void collect(InstanceManager manager, JdbcTemplate jdbc, String clusterName) {
-		new TableCollector(manager, jdbc, clusterName);
+	public static void collect(InstanceManager manager, JdbcTemplate jdbc, int clusterId, String clusterName) {
+		new TableCollector(manager, jdbc, clusterId, clusterName);
 	}
 }

@@ -53,10 +53,10 @@ $light_background_color: #F0F0F0;
     line-height: 32px;
   }
 
-  span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,30); @include omega;}
+  span.hosts, span.shards, span.count, span.size, span.second, span.status {@include columns(3,30); float:right;}
 
   span.table_name {
-    @include columns(9);
+    @include columns(9, 30);
     @include alpha;
     text-align: left;
     float: left;

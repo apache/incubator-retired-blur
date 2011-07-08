@@ -9,7 +9,7 @@
 
 body {
   margin:0 auto;
-
+  #blur_tables_wrapper{ @include susy-grid-background; }
 }
 
 #{headings()} {

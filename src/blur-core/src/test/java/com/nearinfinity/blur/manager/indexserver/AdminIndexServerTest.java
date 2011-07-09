@@ -46,7 +46,7 @@ public class AdminIndexServerTest {
     private ExecutorsDynamicConfig dynamicConfig;
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         dynamicConfig = new SimpleExecutorsDynamicConfig(10);
         dm = new ZkInMemory();
         adminIndexServer = newAdminIndexServer();

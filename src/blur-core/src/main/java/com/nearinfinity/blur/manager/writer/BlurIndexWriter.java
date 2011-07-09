@@ -76,7 +76,7 @@ public class BlurIndexWriter extends BlurIndex {
     }
     
     @Override
-    public synchronized boolean replaceRow(Iterable<Row> rows) throws IOException {
+    public boolean replaceRow(Iterable<Row> rows) throws IOException {
         synchronized (_writer) {
             for (Row row : rows) {
                 _rowIndexWriter.replace(row);

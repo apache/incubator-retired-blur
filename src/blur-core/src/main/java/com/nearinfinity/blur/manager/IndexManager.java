@@ -72,6 +72,7 @@ import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.status.QueryStatus;
 import com.nearinfinity.blur.manager.status.QueryStatusManager;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.manager.writer.BlurWAL;
 import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.MutationHelper;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -105,6 +106,7 @@ public class IndexManager {
     private boolean closed;
     private BlurPartitioner<BytesWritable, Void> blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
     private ExecutorsDynamicConfig dynamicConfig;
+    private BlurWAL _wal;
 
     public IndexManager() {
         BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
@@ -608,6 +610,7 @@ public class IndexManager {
 
     public void mutate(String table, List<RowMutation> mutations) throws BlurException, IOException {
         Map<String,List<Row>> rowMap = new HashMap<String, List<Row>>();
+        List<Row> allRows = new ArrayList<Row>();
         for (RowMutation mutation : mutations) {
             MutationHelper.validateMutation(mutation);
             String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), blurPartitioner);
@@ -616,8 +619,11 @@ public class IndexManager {
                 list = new ArrayList<Row>();
                 rowMap.put(shard, list);
             }
-            list.add(MutationHelper.toRow(mutation));
+            Row row = MutationHelper.toRow(mutation);
+            list.add(row);
+            allRows.add(row);
         }
+        _wal.append(allRows);
         Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
         for (String shard : rowMap.keySet()) {
             BlurIndex blurIndex = indexes.get(shard);
@@ -636,4 +642,7 @@ public class IndexManager {
         this.dynamicConfig = dynamicConfig;
     }
 
+    public void setWal(BlurWAL wal) {
+        _wal = wal;
+    }
 }

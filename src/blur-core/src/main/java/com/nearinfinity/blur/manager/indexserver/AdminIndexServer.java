@@ -45,7 +45,6 @@ import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
-import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.lucene.compressed.CompressionCodec;
@@ -74,6 +73,7 @@ public abstract class AdminIndexServer extends AbstractIndexServer {
     /**
      * All sub classes need to call super.init().
      * @return 
+     * @throws IOException 
      */
     public void init() {
         executorService = Executors.newThreadPool("admin-index-server",threadCount,dynamicConfig);

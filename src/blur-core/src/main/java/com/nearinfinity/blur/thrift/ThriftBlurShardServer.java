@@ -34,6 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -49,6 +51,7 @@ import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.manager.writer.BlurWAL;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
@@ -68,10 +71,16 @@ public class ThriftBlurShardServer extends ThriftServer {
         BlurConfiguration configuration = new BlurConfiguration();
         SimpleExecutorsDynamicConfig dynamicConfig = new SimpleExecutorsDynamicConfig(10);
 
-        String nodeName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
-        nodeName = nodeName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
+        String nodeNameHostName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
+        String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
         String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES),BLUR_LOCAL_CACHE_PATHES);
+        
+        Path walPath = new Path("hdfs://localhost:9000/blur." + nodeNameHostName + ".wal");
+        BlurWAL wal = new BlurWAL();
+        wal.setPath(walPath);
+        wal.setConfiguration(new Configuration());
+        wal.init();
         
         List<File> localFileCaches = new ArrayList<File>();
         for (String cachePath : localCacheDirs.split(",")) {
@@ -121,6 +130,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         final IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
         indexManager.setDynamicConfig(dynamicConfig);
+        indexManager.setWal(wal);
         indexManager.init();
 
         final BlurShardServer shardServer = new BlurShardServer();

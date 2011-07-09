@@ -25,6 +25,7 @@ import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.g
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodeLockPath;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodeShutdownPath;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;

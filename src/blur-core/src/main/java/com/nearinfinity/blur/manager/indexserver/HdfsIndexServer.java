@@ -44,6 +44,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.manager.writer.BlurWAL;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;

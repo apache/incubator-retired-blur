@@ -161,25 +161,6 @@ public class ThriftBlurShardServer extends ThriftServer {
                 System.exit(0);
             }
         }, zooKeeper);
-        
-//        new Thread(new Runnable() {
-//            
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(30000);
-//                    System.out.println("Load Testing.");
-//                } catch (InterruptedException e) {
-//                    return;
-//                }
-//                try {
-//                    LoadData.loadTest(shardServer, 100000, 200);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }).start();
-        
         server.start();
     }
 

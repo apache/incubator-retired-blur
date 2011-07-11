@@ -25,6 +25,7 @@ describe SearchHelper do
     end    
     
     it "returns false when the search is not a subset of the table schema" do
+      @invalid_search.columns = (JSON.parse(@invalid_search.columns) << "column_Column Family 1_Column 1D").to_json
       is_valid_search?(@invalid_search).should == false
     end
   end

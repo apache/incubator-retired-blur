@@ -186,11 +186,23 @@ describe SearchController do
       get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :super_query => false
       response.should render_template "create"
     end
+    
+    it "renders the create template when the search id is set" do
+      @client.should_receive(:query).and_return(@test1_query)
+      @current_user.stub(:id).and_return(1)
+      Search.stub(:find).and_return(Factory.stub :search, :columns => ["family_table1", 
+                                                                      "column_table1_deptNo",
+                                                                      "column_table1_moreThanOneDepartment",
+                                                                      "column_table1_name"].to_json)
+
+      get :create, :search_id => "1", :blur_table => @blur_table.id
+      response.should render_template "create"
+    end
   end
 
   describe "load" do
     before(:each) do
-      @search = Search.new(:super_query => true, :columns => JSON.generate(["neighborhood", "family_Column Family #1", "column_Column Family #1_Column #1", "column_Column Family #1_Column #2, ", "column_Column Family #1_Column #3"]), fetch: 25, offset: 5, name: "default", query: "employee.name:bob", blur_table_id: 17, user_id: 1)
+      @search = Factory.stub :search
       Search.stub(:new).and_return(@search)
     end
 
@@ -204,7 +216,7 @@ describe SearchController do
 
   describe "delete" do
     before(:each) do
-      @search = Search.new(:super_query => true, :columns => JSON.generate(["neighborhood", "family_Column Family #1", "column_Column Family #1_Column #1", "column_Column Family #1_Column #2, ", "column_Column Family #1_Column #3"]), fetch: 25, offset: 5, name: "default", query: "employee.name:bob", blur_table_id: 17, user_id: 1)
+      @search = Factory.stub :search
       Search.stub(:new).and_return(@search)
       Search.stub(:find).and_return(@search)
       Search.stub(:delete)
@@ -220,6 +232,41 @@ describe SearchController do
       Search.should_receive(:find).with(1)
       @search.should_receive(:delete)
       delete :delete, :search_id => 1, :blur_table => 1
+    end
+  end
+  
+  describe "reload" do
+    before(:each) do
+      @search = Factory.stub :search
+      @current_user.stub(:searches).and_return [@search]
+      Search.stub(:new).and_return(@search)
+      Search.stub(:find).and_return(@search)
+      BlurTable.stub(:find)
+    end
+
+    it "renders the saved partial" do
+      get :reload, :blur_table => 1
+      response.should render_template 'saved'
+    end
+  end
+  
+  describe "save" do
+    before(:each) do
+      @search = Factory.stub :search
+      @current_user.stub(:searches).and_return [@search]
+      Search.stub(:new).and_return(@search)
+      Search.stub(:find).and_return(@search)
+      BlurTable.stub(:find)
+    end
+
+    it "saves and renders the saved partial" do
+      @search = Factory.stub :search
+      @current_user.stub(:searches).and_return [@search]
+      @current_user.stub(:id).and_return [1]      
+      Search.stub(:create).and_return @search
+      Search.should_receive(:create)
+      get :save, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      response.should render_template 'saved'
     end
   end
 end

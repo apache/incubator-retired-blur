@@ -68,12 +68,13 @@ Factory.define :blur_query do |t|
   #t.post_filters
 end
 
+#create a valid search
 Factory.define :search do |t|
   t.super_query{ rand(1) == 0 } # 50% chance
-  t.sequence (:columns){ |n| ["family_Column Family #{n}", 
-                              "column_Column Family #{n}_Column #{n}A",
-                              "column_Column Family #{n}_Column #{n}B",
-                              "column_Column Family #{n}_Column #{n}C"].to_json }
+  t.sequence (:columns){ |n| ["family_Column Family 1", 
+                              "column_Column Family 1_Column 1A",
+                              "column_Column Family 1_Column 1B",
+                              "column_Column Family 1_Column 1C"].to_json }
   t.fetch { rand 10 ** 6 }
   t.offset { rand 1 ** 5 }
   t.sequence(:name) {|n| "Search #{n}"}

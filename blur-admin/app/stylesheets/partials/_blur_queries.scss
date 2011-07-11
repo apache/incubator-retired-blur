@@ -1,13 +1,13 @@
 #blur_queries_wrapper {
   padding-top: 2em;
-  margin-bottom: 2em;
+  padding-bottom: 2em;
   @include full;
 
   #filter_form{
-    @include columns(30);
+    @include columns(30, $total-cols);
     #filter_wrapper{
       margin-bottom: 1em;
-      @include columns(10);
+      @include columns(10, $total-cols);
       h3{
         @include standard-font;
       }
@@ -20,11 +20,12 @@
     }
 
     #selector_wrapper{
-      @include columns(18);
+      @include columns(17, $total-cols);
+      @include prefix(1);
       padding-top: 0.5em;
     }
     filter_spinner{
-      @include columns(1);
+      @include columns(1, $total-cols);
     }
   }
 
@@ -52,7 +53,7 @@
 
   #queries-table {
     @include full;
-    @include omega(30);
+    @include omega($total-cols);
     @include table-base;
     tr{
       height: 50px;

@@ -105,6 +105,7 @@ describe SearchController do
                                                                                          "table2" => ["deptNo", "moreThanOneDepartment", "name"]}
                                                                }.to_json
       BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
+      @current_user.stub(:username).and_return("name")
     end
 
     def create_blur_result(options)

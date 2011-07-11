@@ -66,8 +66,8 @@ describe SearchController do
     end
     
     it "rescues a no method error and returns an empty array of columns" do
-      get :filters, :blur_table_id => @blur_table.id
       @blur_table.stub(:schema).and_raise(NoMethodError)
+      get :filters, :blur_table_id => @blur_table.id
       response.should render_template "filters"
     end
   end
@@ -254,7 +254,6 @@ describe SearchController do
     before(:each) do
       @search = Factory.stub :search
       @current_user.stub(:searches).and_return [@search]
-      Search.stub(:new).and_return(@search)
       Search.stub(:find).and_return(@search)
       BlurTable.stub(:find)
     end

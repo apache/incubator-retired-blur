@@ -15,7 +15,7 @@ describe SearchController do
       @blur_table = Factory.stub :blur_table
       # Set up association chain
       @zookeeper  = Factory.stub :zookeeper
-      @zookeeper.stub(:blur_tables).and_return [@blur_table]
+      @zookeeper.stub_chain(:blur_tables, :find).and_return [@blur_table]
 
       # ApplicationController.current_zookeeper
       Zookeeper.stub(:find_by_id).and_return(nil)
@@ -41,7 +41,7 @@ describe SearchController do
     end
 
     it "find and assign tables and columns when no tables are available" do
-      @zookeeper.should_receive(:blur_tables).and_return []
+      @zookeeper.blur_tables.should_receive(:find).and_return []
       get :show
       assigns(:blur_tables).should == []
       assigns(:columns).should be nil
@@ -105,6 +105,7 @@ describe SearchController do
                                                                                          "table2" => ["deptNo", "moreThanOneDepartment", "name"]}
                                                                }.to_json
       BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
+      @current_user.stub(:username).and_return("name")
     end
 
     def create_blur_result(options)

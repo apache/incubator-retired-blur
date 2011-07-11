@@ -118,5 +118,16 @@
   // Navigation Tab label div
   .header label { cursor:pointer; }
   .tab { background-color:#EEE; }
-
+  
+  // Save Request Section
+  #save_button{ float: right; }
+  #save_name{ max-width: 105px; }
+  
+  //Help section styles
+  .help_list{
+    color: #747170;
+    .head{
+      font-weight: bold;
+    }
+  }
 }

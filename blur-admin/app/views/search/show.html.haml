@@ -45,10 +45,10 @@
           %label{:id => 'store'} Save Options
         .body#store
           .partial-section
-            = label_tag :save_submit, 'Name:'
+            = label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
-          .partial-section
-            = submit_tag "Save", :disabled => true, :id => "save_submit"
+            %button#save_button{:disabled => true, :name => "save"}
+              Save
 
       #search_send.partial_section
         %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none; margin-right:50px;" }
@@ -58,6 +58,23 @@
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
     #results_container
+      Use the "Saved Searches" tab to load a previously saved query. 
+      %ul  
+        %li The green play button will execute the query and display the results. 
+        %li The pencil will load the save into the form. 
+        %li The red "x" will delete the saved query.
+
+      Use the "Search" tab to execute a query.
+      %ul  
+        %li The . 
+      
+      Use the "Advanced Options" tab to further modify a query.
+      %ul  
+        %li The "Super Query" option allows you to turn superQuery on/off.
+    
+      Use the "Save Options" tab to save the current query.
+      %ul  
+        %li The ta
 
 #dialog-confirm{:title => "Delete this saved query?", :style => "display:none"} 
   %p This will permanently delete the selected saved query. Do you wish to continue?

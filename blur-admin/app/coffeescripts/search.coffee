@@ -20,9 +20,9 @@ $(document).ready ->
     if $('.jstree-checked').length > 0 and $('#query_string').val() isnt  ''
       $('#search_submit').removeAttr('disabled')
       if $('#save_name').val() isnt ''
-        $('#save_submit').removeAttr('disabled')
+        $('#save_button').removeAttr('disabled')
       else
-        $('#save_submit').attr('disabled', 'disabled')
+        $('#save_button').attr('disabled', 'disabled')
     else
       $(':submit').attr('disabled', 'disabled')
 
@@ -195,6 +195,20 @@ $(document).ready ->
     					$( this ).dialog "close"
     			}
     		}
+    		
+  #ajax listener for the save action
+  $('#save_button').live 'click', (evt) ->
+    $.ajax '/search/save/',
+      type: 'POST',
+      data: $('#search_form').serialize(),
+      success: (data) ->
+        $('#loading-spinner').hide()
+        if data
+        #display the results from the save
+          $('.body#saved').html(data)
+        $('[title]').tooltip()
+    $('#loading-spinner').show()
+    evt.preventDefault()
 
       
 

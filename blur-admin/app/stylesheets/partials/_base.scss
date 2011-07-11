@@ -13,7 +13,7 @@ $show-grid-backgrounds: true;
 body {
   margin:0 auto;
   @include container;
-  //@include susy-grid-background;
+
 }
 
 h2 { font-size: 200%; }

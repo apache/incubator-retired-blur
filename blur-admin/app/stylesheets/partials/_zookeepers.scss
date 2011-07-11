@@ -18,7 +18,6 @@
 
   #blur, #zookeeper {
     @include outer-container;
-    
   }
 
   #zookeeper {
@@ -39,9 +38,11 @@
     @include columns(30,$total-cols);
 
     #controllers, #shards{ @include columns(14.25, $total-cols); }
-    .blur_container{ @include inner-container; }
+    .blur_container{ @include inner-container; @include prefix(0.25);}
     #controllers{ @include prefix(0.25); }
     #shards{ @include omega($total-cols); @include suffix(0.25);}
+
+    .warning { color: #b81900; font-weight: bold; }
   }
 
   .offline, .online {
@@ -51,7 +52,7 @@
 
   .online { background: transparent; }
 
-  h2 , h3 { @include prefix(0.25) }
+  h2 { @include prefix(0.25) }
   h3 { margin-top: 0.5em; }
 }
 

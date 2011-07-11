@@ -177,10 +177,24 @@ $(document).ready ->
 
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
-    $.ajax '/search/delete/'+ $(this).parent().attr('id') + '/' + $('#blur_table option:selected').val(),
-      type: 'DELETE',
-      success: (data) ->
-        $('#loading-spinner').hide()
-        $('.body#saved').html(data)
-    $('#loading-spinner').show()
+    parent = $(this)
+    $( "#dialog-confirm" ).dialog {
+    			resizable: false,
+    			modal: true,
+    			buttons: {
+    				"Delete Query": ->
+    				  $( this ).dialog "close"
+    				  answer = true
+    				  $.ajax '/search/delete/'+ parent.parent().attr("id") + '/' + $('#blur_table option:selected').val(),
+                type: 'DELETE',
+                success: (data) ->
+                  $('.body#saved').html(data)
+                  $('#loading-spinner').hide()
+              $('#loading-spinner').show()
+    				Cancel: ->
+    					$( this ).dialog "close"
+    			}
+    		}
+
+      
 

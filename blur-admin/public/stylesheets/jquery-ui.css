@@ -566,3 +566,38 @@ button.ui-button::-moz-focus-inner { border: 0; padding: 0; } /* reset extra pad
  */
 .ui-progressbar { height:2em; text-align: left; }
 .ui-progressbar .ui-progressbar-value {margin: -1px; height:100%; }
+
+/*
+ * jQuery UI Tooltip 1.9m4
+ *
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Tooltip#theming
+ */
+.ui-tooltip {
+	padding:8px;
+	position:absolute;
+	z-index:9999;
+	-o-box-shadow: 0 0 5px #aaa;
+	-moz-box-shadow: 0 0 5px #aaa;
+	-webkit-box-shadow: 0 0 5px #aaa;
+	box-shadow: 0 0 5px #aaa;
+}
+/* Fades and background-images don't work well together in IE6, drop the image */
+* html .ui-tooltip {
+	background-image: none;
+}
+body .ui-tooltip { border-width:2px; }
+/*
+ * jQuery UI CSS Framework 1.9m4
+ *
+ * Copyright 2011, AUTHORS.txt (http://jqueryui.com/about)
+ * Dual licensed under the MIT or GPL Version 2 licenses.
+ * http://jquery.org/license
+ *
+ * http://docs.jquery.com/UI/Theming/API
+ *
+ * To view and modify this theme, visit http://jqueryui.com/themeroller/
+ */

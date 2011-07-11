@@ -3,7 +3,7 @@
   @mixin search-margin { margin: .25em 0em .25em; }
 
   #filter_section{
-    @include columns(6,$total-cols);
+    @include columns(5.5,$total-cols);
     @include standard-font;
     position:fixed;
     top: $nav-height + $header-height;
@@ -11,7 +11,8 @@
     
     .partial-section{ padding: 0.5em; }
 
-    #query_string{ min-width: 160px; }
+    #query_string{ resize:vertical; }
+    #query_string, #table_select { @include columns(5,5.5); }
 
     #search_send{
       margin-top: 1em;
@@ -25,7 +26,7 @@
   }
 
   .collapsed_filters{ @include columns(30,$total-cols); @include omega($total-cols);}
-  .open_filters{ @include columns(23,$total-cols); @include omega($total-cols); }
+  .open_filters{ @include columns(24,$total-cols); @include omega($total-cols); @include prefix(.5) }
   #results_wrapper{
     #bar_section:hover { background-color: #FAD290; }
 

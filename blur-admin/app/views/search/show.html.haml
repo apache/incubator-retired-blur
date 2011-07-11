@@ -47,7 +47,7 @@
           .partial-section
             = label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
-            %button#save_button{:disabled => true, :name => "save"}
+            %button#save_button{:disabled => true, :name => "save", :type => "button"}
               Save
 
       #search_send.partial_section
@@ -71,6 +71,8 @@
       Use the "Advanced Options" tab to further modify a query.
       %ul  
         %li The "Super Query" option allows you to turn superQuery on/off.
+        %li The "Start" option allows you to choose the starting element to display.
+        %li The "Fetch" option allows you to limit the amount of rows that are returned.
     
       Use the "Save Options" tab to save the current query.
       %ul  

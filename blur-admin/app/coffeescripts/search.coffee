@@ -208,7 +208,6 @@ $(document).ready ->
           $('.body#saved').html(data)
         $('[title]').tooltip()
     $('#loading-spinner').show()
-    evt.preventDefault()
 
       
 

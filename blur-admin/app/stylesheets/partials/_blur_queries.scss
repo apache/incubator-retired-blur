@@ -11,11 +11,6 @@
       h3{
         @include standard-font;
       }
-      .ui-widget-content, .ui-accordion-heading { color: #555; }
-      .ui-accordion-heading{
-        background-color: white;
-        @include border-radius;
-      }
       .query_filter{ margin-bottom: .75em; }
     }
 
@@ -41,6 +36,7 @@
     th {
       @include standard-font;
       font-size: 120%;
+      
       background-color: #C4D9FF;
       text-align: center;
     }

@@ -4,7 +4,7 @@ class SearchController < ApplicationController
 
 	#Show action that sets instance variables used to build the filter column
   def show
-    @blur_tables = @current_zookeeper.blur_tables
+    @blur_tables = @current_zookeeper.blur_tables.find(:all, :order => "table_name")
     @blur_table = @blur_tables.first
 	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
     @searches = @current_user.searches.reverse

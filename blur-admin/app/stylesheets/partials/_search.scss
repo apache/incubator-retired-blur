@@ -51,7 +51,7 @@
       position: relative;
 
       #results_section{
-        @include border;
+        @include standard-border;
         overflow-x: scroll;
         background-color : #ffffff;
         margin-bottom: 5em;
@@ -66,7 +66,9 @@
     empty-cells: show;
     display: inline-block;
     thead {
+      background-color: $table_header_color;
       th {
+        background: transparent;
         text-align: center;
         @include standard-font;
         font-size: 120%;

@@ -25,9 +25,9 @@
   }
 
   @mixin table-base {
-    @include border;
     @include border-radius;
     display: table;
+    @include border;
     tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
     tr.error td{

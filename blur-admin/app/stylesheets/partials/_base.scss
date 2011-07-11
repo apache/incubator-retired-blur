@@ -26,6 +26,7 @@ h2 { font-size: 200%; }
 $border_color: #AAA;
 $border_width: 1px;
 $border_style: solid;
+$table_header_color: #C4D9FF;
 
 $shaded_row_color: #F0F0F0;
 $row-height: 50px;
@@ -42,8 +43,8 @@ $row-height: 50px;
 }
 
 @mixin standard-border {
-  border: 1px solid #999;
   @include border-radius;
+  @include border;
 }
 
 .ui-dialog {

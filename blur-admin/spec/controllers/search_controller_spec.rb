@@ -64,6 +64,12 @@ describe SearchController do
       get :filters, :blur_table_id => @blur_table.id
       assigns(:columns).should == @blur_table.schema["columnFamilies"]
     end
+    
+    it "rescues a no method error and returns an empty array of columns" do
+      get :filters, :blur_table_id => @blur_table.id
+      @blur_table.stub(:schema).and_raise(NoMethodError)
+      response.should render_template "filters"
+    end
   end
 
   describe "create" do

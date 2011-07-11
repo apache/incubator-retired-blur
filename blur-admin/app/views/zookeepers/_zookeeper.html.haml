@@ -23,23 +23,25 @@
   #blur
     %h2 Blur Status
     #controllers
-      - if @zookeeper.controllers
-        %h3= "Controllers(#{@zookeeper.controllers.length})"
-        #controllers-placeholder
-          %ul
-            - @zookeeper.controllers.each do |controller|
-              %li
-                = controller.node_name
-      - else
-        %h3 Controllers
-        %p Not Available
+      .blur_container
+        - if @zookeeper.controllers
+          %h3= "Controllers(#{@zookeeper.controllers.length})"
+          #controllers-placeholder
+            %ul
+              - @zookeeper.controllers.each do |controller|
+                %li
+                  = controller.node_name
+        - else
+          %h3 Controllers
+          %p Not Available
     #shards
-      - if @zookeeper.shards
-        %h3= "Shards(#{@zookeeper.shards.length})"
-        %ul
-          - @zookeeper.shards.each do |shard|
-            %li
-              = shard.node_name
-      - else
-        %h3 Shards
-        %p Not Available
+      .blur_container
+        - if @zookeeper.shards
+          %h3= "Shards(#{@zookeeper.shards.length})"
+          %ul
+            - @zookeeper.shards.each do |shard|
+              %li
+                = shard.node_name
+        - else
+          %h3 Shards
+          %p Not Available

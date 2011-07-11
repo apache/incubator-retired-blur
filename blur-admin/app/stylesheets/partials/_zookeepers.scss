@@ -26,7 +26,10 @@
     td.label {
       font-weight: bold;
     }
-    table { @include prefix(1,30); @include columns(29,30);}
+    table {
+      @include prefix(0.25);
+      @include columns(29.5);
+    }
 
     .offline, .online { text-align:center; }
     .online { background: transparent; }
@@ -34,12 +37,11 @@
 
   #blur {
     @include columns(30,$total-cols);
-    #controllers, #shards{
-      @include inner-container;
-      @include columns(14, 30);
-    }
-    #controllers{ @include alpha; }
-    #shards{ @include omega; }
+
+    #controllers, #shards{ @include columns(14.25, $total-cols); }
+    .blur_container{ @include inner-container; }
+    #controllers{ @include prefix(0.25); }
+    #shards{ @include omega($total-cols); @include suffix(0.25);}
   }
 
   .offline, .online {
@@ -49,14 +51,14 @@
 
   .online { background: transparent; }
 
-  h2 , h3 { @include alpha; }
+  h2 , h3 { @include prefix(0.25) }
   h3 { margin-top: 0.5em; }
 }
 
 #zookeeper_wrapper{
-  margin-top: 2em;
-  @include full;
-  @include prefix(1);
+  padding-top: 2em;
+  @include full($total-cols);
+  @include alpha;
   color: #555;
   font-weight: bold;
 }

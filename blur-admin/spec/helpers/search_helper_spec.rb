@@ -11,5 +11,21 @@ require 'spec_helper'
 #   end
 # end
 describe SearchHelper do
-  pending "add some examples to (or delete) #{__FILE__}"
+  describe "is_valid_search?" do
+    before :each do
+      @valid_search = Factory.stub :search
+      @invalid_search = Factory.stub :search
+      @blur_table = Factory.stub :blur_table
+      
+      
+    end
+    
+    it "returns true when the search is a subset of the table schema" do 
+      is_valid_search?(@valid_search).should == true
+    end    
+    
+    it "returns false when the search is not a subset of the table schema" do
+      is_valid_search?(@invalid_search).should == false
+    end
+  end
 end

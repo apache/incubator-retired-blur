@@ -43,9 +43,9 @@ Factory.define :blur_table do |t|
       :setTable           => true,
       :setColumnFamilies  => true,
       :columnFamiliesSize => 3,
-      :columnFamilies     => { 'Column Family A' => ['Column A1', 'Column A2', 'Column A3'],
-                               'Column Family B' => ['Column B1', 'Column B2', 'Column B3'],
-                               'Column Family C' => ['Column C1', 'Column C2', 'Column C3'] }
+      :columnFamilies     => { 'Column Family 1' => ['Column 1A', 'Column 1B', 'Column 1C'],
+                               'Column Family 2' => ['Column 2A', 'Column 2B', 'Column 2C'],
+                               'Column Family 3' => ['Column 3A', 'Column 3B', 'Column 3C'] }
     }.to_json
   end
 end
@@ -66,6 +66,20 @@ Factory.define :blur_query do |t|
   #t.selector_columns
   #t.pre_filters
   #t.post_filters
+end
+
+Factory.define :search do |t|
+  t.super_query{ rand(1) == 0 } # 50% chance
+  t.sequence (:columns){ |n| ["family_Column Family #{n}", 
+                              "column_Column Family #{n}_Column #{n}A",
+                              "column_Column Family #{n}_Column #{n}B",
+                              "column_Column Family #{n}_Column #{n}C"].to_json }
+  t.fetch { rand 10 ** 6 }
+  t.offset { rand 1 ** 5 }
+  t.sequence(:name) {|n| "Search #{n}"}
+  t.query {"employee.name:bob"}
+  t.blur_table_id { rand 10 ** 6 }
+  t.user_id { rand 10 ** 6 }
 end
 
 # Create models with association chains already created. These real objects and

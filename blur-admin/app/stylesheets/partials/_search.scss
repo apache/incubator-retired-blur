@@ -12,7 +12,7 @@
     .partial-section{ padding: 0.5em; }
 
     #query_string{ resize:vertical; }
-    #query_string, #table_select { @include columns(5,5.5); }
+    #query_string, #blur_table_id { @include columns(5,5.5); }
 
     #search_send{
       margin-top: 1em;

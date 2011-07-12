@@ -12,7 +12,7 @@
   @mixin inner-container {
     @include border;
     @include border-radius;
-    background-color: #FFF;
+    background-color: #FFFFFF;
     margin-bottom: 2em;
   }
 
@@ -70,4 +70,4 @@
 }
 
 .warning { color: #b81900; font-weight: bold; }
-h4.name, .ui-state-highlight, .ui-state-error { display: inline-block; }
+h4.name, .ui-state-highlight, .ui-state-error { display: inline-block;  @include standard-font}

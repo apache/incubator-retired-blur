@@ -20,7 +20,7 @@
           = submit_tag 'filter'
         = hidden_field_tag :time_since_refresh
         = label_tag :refresh_period, 'Refresh every:'
-        = select_tag :refresh_period, options_for_select([['never', false], ['1 second', 1], ['10 seconds', 10], ['1 minute', 60], ['10 minutes', 600]])
+        = select_tag :refresh_period, options_for_select([['never', -1], ['1 second', 1], ['10 seconds', 10], ['1 minute', 60], ['10 minutes', 600]])
 
     #selector_wrapper
       = label_tag :blur_table_id, 'Blur Table:'

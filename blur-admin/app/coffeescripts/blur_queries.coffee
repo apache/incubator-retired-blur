@@ -8,7 +8,6 @@ $(document).ready ->
   # it accordingly
   empty_row = ->
     rows = $('#queries-table > tbody').children()
-    console.log rows.length
     if rows.length is 0
       $('#queries-table > tbody').prepend(
         '''
@@ -97,7 +96,7 @@ $(document).ready ->
           if $("#queries-table > tbody > ##{id}").length is 0
             # add new row
             $("#queries-table > tbody").prepend(row)
-            $(row).effect 'highlight', {color: add_color}, 'slow', ->
+            $(row).effect 'highlight', {color: add_color}, 'slow'
           else
             # replace existing row
             $("#queries-table > tbody > ##{id}").replaceWith(row)
@@ -144,4 +143,19 @@ $(document).ready ->
 
   # Listener for the table selector
   $('#blur_table_id').live 'change', ->
-   $('#filter_form').submit()
+    $('#filter_form').submit()
+
+  timer = null
+  period = null
+
+  set_timer = () ->
+    console.log 'refreshing...'
+    $('#filter_form').submit()
+    timer = setTimeout(set_timer, period)
+
+  # Listener for auto refresh queries
+  $('#refresh_period').live 'change', ->
+    clearTimeout(timer)
+    unless $(this).val() is '-1'
+      period = $(this).val() * 1000
+      set_timer()

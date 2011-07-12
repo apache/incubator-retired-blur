@@ -17,7 +17,6 @@ class ZookeepersController < ApplicationController
   def index
     time = Time.zone.now - 1.minutes
     @old_queries = BlurQuery.where ['created_at < ? and running = 1', time]
-    puts @old_queries.inspect
   end
 
   def make_current

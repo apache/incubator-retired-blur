@@ -1,7 +1,6 @@
 package com.nearinfinity.agent.collectors;
 
 import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -51,8 +50,10 @@ public class QueryCollector {
 							
 							if (existingRow.isEmpty()) {
 								Calendar cal = Calendar.getInstance();
+								System.out.println(cal.get(Calendar.ZONE_OFFSET));
 								TimeZone z = cal.getTimeZone();
-								cal.add(Calendar.MILLISECOND, -(z.getRawOffset()));
+								System.out.println(z.getDisplayName());
+								cal.add(Calendar.MILLISECOND, -(z.getRawOffset()+(1000*60*60)));
 								
 								jdbc.update("insert into blur_queries (query_string, cpu_time, real_time, complete, interrupted, running, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
 											new Object[]{blurQueryStatus.getQuery().getQueryStr(), 
@@ -79,7 +80,7 @@ public class QueryCollector {
 							} else {
 								Calendar cal = Calendar.getInstance();
 								TimeZone z = cal.getTimeZone();
-								cal.add(Calendar.MILLISECOND, -(z.getRawOffset()));
+								cal.add(Calendar.MILLISECOND, -(z.getRawOffset()+(1000*60*60)));
 								
 								jdbc.update("update blur_queries set cpu_time=?, real_time=?, complete=?, interrupted=?, running=?, updated_at=? where id=?", 
 											new Object[] {blurQueryStatus.getCpuTime(),

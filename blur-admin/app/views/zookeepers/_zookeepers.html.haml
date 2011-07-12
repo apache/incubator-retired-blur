@@ -28,7 +28,7 @@
                   Offline
       - else
         No controllers available
-    .zookeeper_nodes
+    .zookeeper_nodes.zookeeper_shards
       %h4 Shards
       - if zookeeper.shards and zookeeper.shards.length > 0
         - if zookeeper.shards.collect { |shard| shard.blur_version }.flatten.uniq.length == 1

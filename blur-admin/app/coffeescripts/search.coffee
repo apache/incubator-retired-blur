@@ -33,7 +33,7 @@ $(document).ready ->
 
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
-  $('#blur_table_id').change ->
+  $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
     $('.body#saved').load('reload/' + $(this).val(), ->

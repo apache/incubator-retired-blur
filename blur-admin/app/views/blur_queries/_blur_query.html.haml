@@ -1,5 +1,5 @@
 - empty_message = 'Not Available'
-%tr{:id => blur_query.id}
+%tr.blur_query{:id => blur_query.id, 'data-age' => Time.now - blur_query.created_at }
   %td.userid
     - if blur_query.userid
       = blur_query.userid
@@ -34,7 +34,7 @@
     - else
       = empty_message
   %td
-    - if blur_query.blur_table.schema
+    - if blur_query.blur_table.schema and blur_query.complete
       - num_shards = blur_query.blur_table.schema.values.flatten.count
       = number_to_percentage 100 * blur_query.complete / num_shards, :precision => 0
     - else

@@ -4,13 +4,15 @@ class BlurQueriesController < ApplicationController
   before_filter :zookeepers, :only => :index
 
   def index
+
     filters = {}
-    filters[:created_at] = (Time.zone.now - 1.minutes)..Time.zone.now
+    filters[:created_at] = (Time.now - 1.minutes)..Time.now
 
     @blur_tables = @current_zookeeper.blur_tables
 
+    @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" )
     # below line introduces a ton of sql queries when filtering with @current_zookeeper
-    @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" ).keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
+    @blur_queries.keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
   end
 
   def refresh
@@ -20,15 +22,21 @@ class BlurQueriesController < ApplicationController
       filters[category] = params[category] unless params[category] == nil or params[category] == ''
     end
     # filter for time
-    past_time = params[:time] ? Time.zone.now - params[:time].to_i.minutes : Time.zone.now - 1.minutes
-    filters[:created_at] = past_time..Time.zone.now
+    now = Time.now
+    past_time = params[:created_at_time] ? now - params[:created_at_time].to_i.minutes : now - 1.minutes
+    filters[:created_at] = past_time..now
 
+    # filter for refresh period
+    unless params[:time_since_refresh].empty?
+      previous_filter_time = now - params[:time_since_refresh].to_i.seconds
+      filters[:updated_at] = previous_filter_time .. now
+    end
+
+    @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" )
     # below line introduces a ton of sql queries when filtering with @current_zookeeper
-    @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" ).keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
+    @blur_queries.keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
     respond_to do |format|
-      format.html do
-          render :partial => 'query_table'
-      end
+      format.html {render :layout => false}
     end
   end
 

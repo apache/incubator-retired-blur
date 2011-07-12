@@ -1,6 +1,6 @@
 %table#queries-table
   %thead
-    %tr{:class => 'header'}
+    %tr.header
       %th User ID
       - if can? :index, :blur_queries, :query_string
         %th Query
@@ -14,7 +14,7 @@
       %th
   %tbody
     -if @blur_queries.empty?
-      %tr{:class => 'error'}
+      %tr#no-queries-row
         %td{:colspan => 9}
           %b No Available Queries
     -else

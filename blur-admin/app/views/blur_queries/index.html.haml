@@ -14,12 +14,13 @@
           = label_tag :super_query_on, 'Super Query:'
           = select_tag :super_query_on, options_for_select([['All Queries', nil], ['Super Query On', true], ['Super Query Off', false]])
         .query_filter
-          = label_tag :time, 'Time:'
-          = select_tag :time, options_for_select([['1 minute', 1], ['5 minutes', 5], ['15 minutes', 15], ['30 minutes', 30], ['1 hour', 60]])
+          = label_tag :created_at_time, 'Time:'
+          = select_tag :created_at_time, options_for_select([['1 minute', 1], ['5 minutes', 5], ['15 minutes', 15], ['30 minutes', 30], ['1 hour', 60]])
         .query_filter
           = submit_tag 'filter'
-        = label_tag :refresh, 'Refresh every:'
-        = select_tag :refresh, options_for_select([['never', false], ['1 second', 1], ['10 seconds', 10], ['1 minute', 60], ['10 minutes', 600]])
+        = hidden_field_tag :time_since_refresh
+        = label_tag :refresh_period, 'Refresh every:'
+        = select_tag :refresh_period, options_for_select([['never', -1], ['1 second', 1], ['10 seconds', 10], ['1 minute', 60], ['10 minutes', 600]])
 
     #selector_wrapper
       = label_tag :blur_table_id, 'Blur Table:'

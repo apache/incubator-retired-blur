@@ -1,12 +1,26 @@
 $(document).ready ->
-  # set default filter options
-  # keeps track of previous filter options
-  super_query_filter = ""
-  created_at_filter = "1"
-  blur_table_id = ""
-  last_refresh = new Date()
-  replace_table = null
-  time_since_refresh = null
+
+  # checks if the empty row is needed/not needed and inserts / removes
+  # it accordingly
+  empty_row = ->
+    rows = $('#queries-table > tbody').children()
+    console.log rows.length
+    if rows.length is 0
+      row = $('#no-queries-row')
+      if row.length is 0
+        row = (
+          '''
+    <tr id='no-queries-row'>
+      <td colspan='9'>
+        <b>No Available Queries</b>
+      </td>
+    </tr>
+          '''
+        )
+      $('#queries-table > tbody').prepend(row)
+    else if $('#blur-queries > tbody').children().length > 1 and
+            $('#blur-queries > tbody > #no-queries-row').length is 1
+      $('#no-queries-row').detach()
 
   # adds time to data-age of selected elements, and 
   # retires them if past retirment age
@@ -21,8 +35,15 @@ $(document).ready ->
       else
         $(row).attr 'data-age', "#{current_age}"
 
-  # function to remove an index from an array
-  Array::remove = (e) -> @[t..t] = [] if (t = @.indexOf(e)) > -1
+
+  # set default filter options
+  # keeps track of previous filter options
+  super_query_filter = ""
+  created_at_filter = "1"
+  blur_table_id = ""
+  last_refresh = new Date()
+  replace_table = null
+  time_since_refresh = null
 
   # Ajax request handling for filter form
   $('#filter_form')
@@ -53,35 +74,32 @@ $(document).ready ->
     .live 'ajax:beforeSend', (evt, xhr, settings) ->
       $(this).find("input[type=submit]").attr('disabled', 'disabled')
       $('#filter_spinner').show()
+      # remove rows older than the filter time
+      age_and_retire($('tr.blur_query'), time_since_refresh, created_at_filter * 60)
     .live 'ajax:complete', (evt, xhr, status) ->
       $(this).find("input[type=submit]").removeAttr('disabled')
       $('#filter_spinner').hide()
+      empty_row()
     .live 'ajax:success', (evt, data, status, xhr) ->
-      # replace white space in html because rails is stupid enough to put white space
-      # between and around rendered collections
-      rows = $ data.replace(/<\/tr>\s+<tr/g, '</tr><tr').replace(/(^\s*)|(\s*$)/g, '')
+      rows = $($.trim(data)) # rails renders whitespace if there are no rows
 
       if replace_table
         $('#queries-table > tbody').empty() #delete all rows
         $('#queries-table > tbody').append(rows) #insert new rows
       else
-        # remove rows older than the filter time
-        age_and_retire($('tr.blur_query'), time_since_refresh, created_at_filter * 60)
 
-        # replace duplicate rows
-        for row in rows
+        for row in $.makeArray(rows).reverse()
           #check if a row with the same id exists in the table already, if so replace it and
           #remove the row from the data object
           id = $(row).attr 'id'
-          if $("#queries-table > tbody > ##{id}").replaceWith(row) isnt []
-            console.log "Existing Row: Updating..."
+          if $("#queries-table > tbody > ##{id}").length is 0
+            # add new row
+            $("#queries-table > tbody").prepend(row)
+            $(row).effect 'highlight', {color: 'green'}, 'slow'
+          else
+            # replace existing row
+            $("#queries-table > tbody > ##{id}").replaceWith(row)
             $("#queries-table > tbody > ##{id}").effect 'highlight', {color: 'blue'}, 'slow'
-            row = []
-
-        # prepend remaining rows to table
-        $("#queries-table > tbody").prepend(rows)
-        rows.effect 'highlight', {color: 'green'}, 'slow'
-        console.log rows
 
       $('[title]').tooltip()
     .live 'ajax:error', (evt, xhr, status, error) ->

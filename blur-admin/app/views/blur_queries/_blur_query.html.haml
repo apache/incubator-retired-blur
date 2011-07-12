@@ -1,39 +1,39 @@
 - empty_message = 'Not Available'
-%tr.blur_query{:id => blur_query.id, 'data-age' => Time.now - blur_query.created_at }
-  %td.userid
+%tr[blur_query]{'data-age' => Time.now - blur_query.created_at }>
+  %td.userid<
     - if blur_query.userid
       = blur_query.userid
     - else
       = empty_message
   - if can? :index, :blur_queries, :query_string
-    %td{:class => "query_string", :title => blur_query.query_string}
+    %td{:class => "query_string", :title => blur_query.query_string}<
       - if blur_query.query_string
         = truncate(blur_query.query_string, :length => 20, :ommision => "...")
       - else
         =empty_message
-  %td
+  %td<
     - if blur_query.super_query_on
       On
     - elsif blur_query.super_query_on == false
       Off
     - else
       = empty_message
-  %td.start
+  %td.start<
     - if blur_query.start
       = blur_query.start
     - else
       =empty_message
-  %td.fetch_num
+  %td.fetch_num<
     - if blur_query.fetch_num
       = blur_query.fetch_num
     - else
       = empty_message
-  %td
+  %td<
     - if blur_query.cpu_time and blur_query.real_time
       = blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s
     - else
       = empty_message
-  %td
+  %td<
     - if blur_query.blur_table.schema and blur_query.complete
       - num_shards = blur_query.blur_table.schema.values.flatten.count
       = number_to_percentage 100 * blur_query.complete / num_shards, :precision => 0
@@ -44,5 +44,5 @@
       - if blur_query.running
         = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do
           = submit_tag 'Cancel', :name => 'cancel', :confirm => "Are you sure?"
-  %td.info
+  %td.info<
     = link_to "More Info", "/blur_queries/#{blur_query.id}/more_info", :class => 'more_info', :remote => true

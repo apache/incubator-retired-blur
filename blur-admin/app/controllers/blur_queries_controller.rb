@@ -36,7 +36,7 @@ class BlurQueriesController < ApplicationController
     # below line introduces a ton of sql queries when filtering with @current_zookeeper
     @blur_queries.keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
     respond_to do |format|
-      format.html {render :layout => false}
+      format.html {render @blur_queries}
     end
   end
 

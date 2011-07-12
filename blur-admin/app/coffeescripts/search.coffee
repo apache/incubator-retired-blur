@@ -33,7 +33,7 @@ $(document).ready ->
 
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
-  $('#blur_table_id').change ->
+  $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
     $('.body#saved').load('reload/' + $(this).val(), ->
@@ -160,7 +160,7 @@ $(document).ready ->
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->
-    $.ajax '/search/'+ $(this).parent().attr('id') + '/' + $('#blur_table_id option:selected').val(),
+    $.ajax '/search/'+ $(this).parent().attr('id') + '/' + $('#blur_table option:selected').val(),
       type: 'POST',
       success: (data) ->
         $('#loading-spinner').hide()
@@ -185,7 +185,7 @@ $(document).ready ->
     				"Delete Query": ->
     				  $( this ).dialog "close"
     				  answer = true
-    				  $.ajax '/search/delete/'+ parent.parent().attr("id") + '/' + $('#blur_table_id option:selected').val(),
+    				  $.ajax '/search/delete/'+ parent.parent().attr("id") + '/' + $('#blur_table option:selected').val(),
                 type: 'DELETE',
                 success: (data) ->
                   $('.body#saved').html(data)

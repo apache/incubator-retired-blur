@@ -18,8 +18,8 @@
             .query-label= label_tag :query_string, "Query:"
             = text_area_tag :query_string, params[:query_string]
           #table_select.partial-section
-            .table-label= label_tag :blur_table, "Table:"
-            = select("blur_table", :id, @blur_tables.collect{ |tab| [truncate(tab.table_name, :length => 25, :ommision => "..."), tab.id] })
+            = label_tag :blur_table, "Table:"
+            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
           #families_select.partial-section
             .column-title
               Column Families:

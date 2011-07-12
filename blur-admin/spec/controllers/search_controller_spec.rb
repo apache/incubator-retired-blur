@@ -125,7 +125,7 @@ describe SearchController do
       @client.should_receive(:query).and_return(@test1_query)
       @current_user.stub(:id).and_return(1)
       BlurTable.stub(:find).and_return(@blur_table)
-      get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => {:id => 17}, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => 17, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
     
@@ -133,7 +133,7 @@ describe SearchController do
       @client.should_receive(:query).and_return(@test2_query)
       @current_user.stub(:id).and_return(1)
       BlurTable.stub(:find).and_return(@blur_table)
-      get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => {:id => 17}, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => 17, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
@@ -144,7 +144,7 @@ describe SearchController do
       @current_user.stub(:id).and_return(1)
 
       @client.should_receive(:query).and_return(test_query)
-      get :create, :blur_table => {:id => @blur_table.id}, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
       response.should render_template "create"
     end
 
@@ -155,7 +155,7 @@ describe SearchController do
       @current_user.stub(:id).and_return(1)
 
       @client.should_receive(:query).and_return(test_query)
-      get :create, :blur_table => {:id => @blur_table.id}, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
       response.should render_template "create"
     end
 
@@ -164,7 +164,7 @@ describe SearchController do
 
       @current_user.stub(:id).and_return(1)
 
-      get :create, :blur_table => {:id => @blur_table.id}, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
@@ -174,7 +174,7 @@ describe SearchController do
       @current_user.stub(:id).and_return(1)
 
 
-      get :create, :blur_table => {:id => @blur_table.id}, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
@@ -183,7 +183,7 @@ describe SearchController do
 
       @current_user.stub(:id).and_return(1)
 
-      get :create, :blur_table => {:id => @blur_table.id}, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :super_query => false
+      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :super_query => false
       response.should render_template "create"
     end
     
@@ -264,7 +264,7 @@ describe SearchController do
       @current_user.stub(:id).and_return [1]      
       Search.stub(:create).and_return @search
       Search.should_receive(:create)
-      get :save, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :blur_table => {:id => 17}
+      get :save, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template 'saved'
     end
   end

@@ -21,10 +21,11 @@
           - if controller.status != 2
             .zookeeper_status_info
               = "Controller #{controller.node_name}: "
-              .ui-state-error.ui-corner-all
-                - if controller.status == 1
+              - if controller.status == 1
+                .ui-state-yellow.ui-corner-all
                   Disabled
-                - else
+              - else
+                .ui-state-error.ui-corner-all
                   Offline
       - else
         No controllers available
@@ -40,10 +41,11 @@
           - if shard.status != 2
             .zookeeper_status_info
               = "Shard #{shard.node_name}: "
-              .ui-state-error.ui-corner-all
-                - if shard.status == 1
+              - if shard.status == 1
+                .ui-state-yellow.ui-corner-all
                   Disabled
-                - else
+              - else
+                .ui-state-error.ui-corner-all
                   Offline
       - else
         No shards available

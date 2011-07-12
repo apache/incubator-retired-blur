@@ -65,11 +65,11 @@
   .zookeeper_shards { @include suffix(15); }
 }
 
-.ui-state-highlight, .ui-state-error {
+.ui-state-highlight, .ui-state-error, .ui-state-yellow {
   text-align:center;
   margin: 5px;
   width: 100px;
 }
 
 .warning { color: #b81900; font-weight: bold; }
-h4.name, .ui-state-highlight, .ui-state-error { display: inline-block;  @include standard-font}
+h4.name, .ui-state-highlight, .ui-state-error, .ui-state-yellow { display: inline-block; }

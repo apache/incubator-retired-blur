@@ -25,19 +25,18 @@
   }
 
   @mixin table-base {
-    @include border-radius;
+    @include standard-border;
     display: table;
-    @include border;
     tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
+    thead { background-color: #C4D9FF; @include standard-border;}
     tr.error td{
       text-align: center;
     }
     th {
       @include standard-font;
-      font-size: 120%;
+      font-size: 120%; 
       
-      background-color: #C4D9FF;
       text-align: center;
     }
     td {
@@ -64,5 +63,5 @@
 
 #more-info-table {
   td { color: #555; }
-  .more-info-label { white-space:nowrap; font-weight: bold;}
+  .more-info-label { white-space: nowrap; font-weight: bold;}
 }

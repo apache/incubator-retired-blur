@@ -5,6 +5,7 @@
   #filter_section{
     @include columns(5.5,$total-cols);
     @include standard-font;
+    padding-top: 1em;
     position:fixed;
     top: $nav-height + $header-height;
     display: inline-block;
@@ -48,6 +49,7 @@
       @include columns(29,$total-cols);
       @include omega($total-cols);
       position: relative;
+      padding-top: 1em;
 
       #results_section{
         @include standard-border;

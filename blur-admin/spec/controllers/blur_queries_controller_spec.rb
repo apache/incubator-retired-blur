@@ -15,7 +15,7 @@ describe BlurQueriesController do
   describe "GET index" do
     before do
       mock_time = Time.local(2011, 6, 28, 10, 20, 30)
-      Time.stub_chain(:zone, :now).and_return(mock_time + 30.seconds)
+      Time.stub(:now).and_return(mock_time + 30.seconds)
 
       # Set up association chain
       @zookeeper  = Factory.stub :zookeeper
@@ -55,24 +55,10 @@ describe BlurQueriesController do
       assigns(:blur_queries).should == [@blur_query]
     end
 
-    it "filters blur queries to within the past minute if no time params given" do
-      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.zone.now - 1.minutes .. Time.zone.now}, :order=>"created_at desc")
+    it "filters blur queries to within the past minute" do
+      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes .. Time.now},
+                                          :order=>"created_at desc")
       get :index
-    end
-
-    it "filters blur queries to within a specified time if given a time parameter" do
-      BlurQuery.should_receive(:all).with :conditions => {:created_at => Time.zone.now - 60.minutes .. Time.zone.now }, :order=>"created_at desc"
-      get :index, :time => '60'
-    end
-
-    it "filters blur queries by super query status if given a super_query_on parameter" do
-      BlurQuery.should_receive(:all).with(:conditions => {:super_query_on => 'true', :created_at => Time.zone.now - 1.minutes .. Time.zone.now}, :order=>"created_at desc")
-      get :index, :super_query_on => 'true'
-    end
-
-    it "filters blur queries by table if given a blur_table_id parameter" do
-      BlurQuery.should_receive(:all).with(:conditions => {:blur_table_id => '1', :created_at => Time.zone.now - 1.minutes .. Time.zone.now}, :order=>"created_at desc")
-      get :index, :blur_table_id => '1'
     end
 
     it "filters blur queries by zookeeper" do
@@ -90,15 +76,89 @@ describe BlurQueriesController do
       end
     end
 
-    context "when an XHR (ajax) request" do
-      it "should render the _blur_table partial" do
-        xhr :get, :index
-        response.should render_template(:partial => '_query_table') 
-      end
+  end
 
-      it "should not set @blur_tables variable" do
-        @current_zookeeper.should_not_receive(:blur_tables)
-        xhr :get, :index
+  describe "GET refresh" do
+    before do
+      mock_time = Time.local(2011, 6, 28, 10, 20, 30)
+      Time.stub(:now).and_return(mock_time + 30.seconds)
+
+      # Set up association chain
+      @zookeeper  = Factory.stub :zookeeper
+      @blur_table = Factory.stub :blur_table
+      @blur_query = Factory.stub :blur_query, :created_at => mock_time
+
+      @zookeeper.stub(:blur_tables).and_return([@blur_table])
+      BlurQuery.stub(:all).and_return([@blur_query])
+      @blur_query.stub(:zookeeper).and_return(@zookeeper)
+
+      # ApplicationController.current_zookeeper
+      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:first).and_return @zookeeper
+
+    end
+    it "assigns the current zookeeper to @current_zookeeper" do
+      get :refresh, :time_since_refresh => ''
+      assigns(:current_zookeeper).should == @zookeeper
+    end
+
+    it "should assign @blur_queries to be the collection of blur queries" do
+      BlurQuery.should_receive(:all)
+      get :refresh, :time_since_refresh => ''
+      assigns(:blur_queries).should == [@blur_query]
+    end
+
+    it "filters blur queries to within the past minute if no time params given" do
+      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes .. Time.now},
+                                          :order=>"created_at desc")
+      get :refresh, :time_since_refresh => ''
+    end
+
+    it "filters blur queries to within a specified time if given a time parameter" do
+      BlurQuery.should_receive(:all).with :conditions => {:created_at => Time.now - 60.minutes .. Time.now },
+                                          :order=>"created_at desc"
+      get :refresh, :created_at_time => '60', :time_since_refresh => ''
+    end
+
+    it "filters blur queries to within a specified updated_at if given the parameter" do
+      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes .. Time.now,
+                                                          :updated_at => Time.now - 14.seconds .. Time.now},
+                                          :order=>"created_at desc")
+      get :refresh, :time_since_refresh => '14'
+
+    end
+
+    it "filters blur queries by super query status if given a super_query_on parameter" do
+      BlurQuery.should_receive(:all).with(:conditions => {:super_query_on => 'true',
+                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                          :order=>"created_at desc")
+      get :refresh, :super_query_on => 'true', :time_since_refresh => ''
+    end
+
+    it "filters blur queries by table if given a blur_table_id parameter" do
+      BlurQuery.should_receive(:all).with(:conditions => {:blur_table_id => '1',
+                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                          :order=>"created_at desc")
+      get :refresh, :blur_table_id => '1', :time_since_refresh => ''
+    end
+
+    it "filters blur queries by zookeeper" do
+      other_query = Factory.stub :blur_query
+      other_query.stub(:zookeeper).and_return(Factory.stub :zookeeper)
+      BlurQuery.stub(:all).and_return [@blur_query, other_query]
+      get :refresh, :time_since_refresh => ''
+      assigns(:blur_queries).should_not include other_query
+    end
+
+    it "should render the _blur_query collection" do
+      get :refresh, :time_since_refresh => ''
+      response.should render_template '_blur_query', :collection => [@blur_query]
+    end
+
+    context "when an XHR (ajax) request" do
+      it "should render the _blur_query collection" do
+        xhr :get, :refresh, :time_since_refresh => ''
+        response.should render_template '_blur_query', :collection => [@blur_query]
       end
     end
   end

@@ -38,6 +38,15 @@
                   = "#{controller.node_name}"
                 - if @controller_nodes > 1
                   = "(blur version #{controller.blur_version})"
+                - if controller.status == 2
+                  .ui-state-highlight.ui-corner-all
+                    Online
+                - else
+                  .ui-state-error.ui-corner-all
+                    - if controller.status == 1
+                      Disabled
+                    - else
+                      Offline
         - else
           %h3 Controllers
           %p Not Available
@@ -56,6 +65,15 @@
                 = "#{shard.node_name}"
                 - if @shard_nodes > 1
                   = "(blur version #{shard.blur_version})"
+                - if shard.status == 2
+                  .ui-state-highlight.ui-corner-all
+                    Online
+                - else
+                  .ui-state-error.ui-corner-all
+                    - if shard.status == 1
+                      Disabled
+                    - else
+                      Offline
         - else
           %h3 Shards
           %p Not Available

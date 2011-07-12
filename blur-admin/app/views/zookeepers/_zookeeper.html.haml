@@ -13,13 +13,11 @@
           %td.label Status:
           %td.value
             - if @zookeeper.status == 1
-              .online.ui-widget
-                .ui-state-highlight.ui-corner-all
-                  Online
+              .ui-state-highlight.ui-corner-all
+                Online
             - else 
-              .offline.ui-widget
-                .ui-state-error.ui-corner-all
-                  Offline
+              .ui-state-error.ui-corner-all
+                Offline
   #blur
     %h2 Blur Status
     #controllers
@@ -41,12 +39,12 @@
                 - if controller.status == 2
                   .ui-state-highlight.ui-corner-all
                     Online
+                - elsif controller.status == 1
+                  .ui-state-yellow.ui-corner-all
+                    Disabled
                 - else
                   .ui-state-error.ui-corner-all
-                    - if controller.status == 1
-                      Disabled
-                    - else
-                      Offline
+                    Offline
         - else
           %h3 Controllers
           %p Not Available
@@ -68,12 +66,12 @@
                 - if shard.status == 2
                   .ui-state-highlight.ui-corner-all
                     Online
+                - elsif shard.status == 1
+                  .ui-state-yellow.ui-corner-all
+                    Disabled
                 - else
                   .ui-state-error.ui-corner-all
-                    - if shard.status == 1
-                      Disabled
-                    - else
-                      Offline
+                    Offline
         - else
           %h3 Shards
           %p Not Available

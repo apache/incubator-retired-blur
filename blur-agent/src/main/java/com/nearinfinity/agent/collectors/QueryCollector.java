@@ -50,9 +50,7 @@ public class QueryCollector {
 							
 							if (existingRow.isEmpty()) {
 								Calendar cal = Calendar.getInstance();
-								System.out.println(cal.get(Calendar.ZONE_OFFSET));
 								TimeZone z = cal.getTimeZone();
-								System.out.println(z.getDisplayName());
 								cal.add(Calendar.MILLISECOND, -(z.getRawOffset()+(1000*60*60)));
 								
 								jdbc.update("insert into blur_queries (query_string, cpu_time, real_time, complete, interrupted, running, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 

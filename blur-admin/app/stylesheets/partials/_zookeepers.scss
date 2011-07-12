@@ -57,17 +57,19 @@
   }
   .zookeeper_nodes {
     @include columns(7,$total-cols);
+    margin-bottom: 1em;
     h4 { margin-bottom: 0.5em; }
     .zookeeper_status_info { @include columns(7,7); display: inline-block;}
   }
   .zookeeper_controllers { @include prefix(1); }
+  .zookeeper_shards { @include suffix(15); }
 }
 
-.ui-state-highlight, .ui-state-error {
+.ui-state-highlight, .ui-state-error, .ui-state-yellow {
   text-align:center;
   margin: 5px;
   width: 100px;
 }
 
 .warning { color: #b81900; font-weight: bold; }
-h4.name, .ui-state-highlight, .ui-state-error { display: inline-block;  @include standard-font}
+h4.name, .ui-state-highlight, .ui-state-error, .ui-state-yellow { display: inline-block; }

@@ -78,6 +78,10 @@
 ----------------------------------*/
 .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {border: 1px solid #62a630; background: #95d169 url(images/ui-bg_highlight-soft_55_95d169_1x100.png) 50% top repeat-x; color: #555555; }
 .ui-state-highlight a, .ui-widget-content .ui-state-highlight a,.ui-widget-header .ui-state-highlight a { color: #555555; }
+
+
+.ui-state-yellow, .ui-widget-content .ui-state-yellow, .ui-widget-header .ui-state-yellow  {border: 1px solid #d0d00b; background: #fafa2e 50% top repeat-x; color: #555555; }
+.ui-state-yellow a, .ui-widget-content .ui-state-yellow a,.ui-widget-header .ui-state-yellow a { color: #555555; }
 .ui-state-error, .ui-widget-content .ui-state-error, .ui-widget-header .ui-state-error {border: 1px solid #cd0a0a; background: #b81900 url(images/ui-bg_diagonals-thick_18_b81900_40x40.png) 50% 50% repeat; color: #ffffff; }
 .ui-state-error a, .ui-widget-content .ui-state-error a, .ui-widget-header .ui-state-error a { color: #ffffff; }
 .ui-state-error-text, .ui-widget-content .ui-state-error-text, .ui-widget-header .ui-state-error-text { color: #ffffff; }

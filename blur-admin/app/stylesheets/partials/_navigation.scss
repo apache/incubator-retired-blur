@@ -1,8 +1,6 @@
 $header-height: 55px;
 $nav-height: 40px;
 
-html,body{ height: 100%; min-height: 100%;}
-
 #root{
   height: 100%;
   min-height: 100%;
@@ -89,7 +87,7 @@ html,body{ height: 100%; min-height: 100%;}
 }
 
 #ft {
-  bottom: 0px;
+  bottom: 0;
   position:fixed;
   z-index:2;
   width: 100%;

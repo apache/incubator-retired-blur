@@ -18,7 +18,7 @@
             .query-label= label_tag :query_string, "Query:"
             = text_area_tag :query_string, params[:query_string]
           #table_select.partial-section
-            = label_tag :blur_table, "Table:"
+            .table-label= label_tag :blur_table, "Table:"
             = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
           #families_select.partial-section
             .column-title
@@ -44,9 +44,10 @@
         .header#store
           %label{:id => 'store'} Save Options
         .body#store
-          .partial-section
+          .partial-section.save-label
             = label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
+          .partial-section
             %button#save_button{:disabled => true, :name => "save", :type => "button"}
               Save
 

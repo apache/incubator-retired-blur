@@ -1,0 +1,49 @@
+#zookeepers
+  - @zookeepers.each do |zookeeper|
+    .zookeeper_info
+      %h4.name= "#{zookeeper.name}: "
+      - if zookeeper.status == 1
+        .ui-state-highlight.ui-corner-all
+          Online
+      - else
+        .ui-state-error.ui-corner-all
+          Offline
+
+    .zookeeper_nodes.zookeeper_controllers
+      %h4 Controllers
+      - if zookeeper.controllers and zookeeper.controllers.length > 0
+        - if zookeeper.controllers.collect { |controller| controller.blur_version }.flatten.uniq.length == 1
+          = "All controllers are running blur version #{zookeeper.controllers.first.blur_version}"
+        - else
+          .warning
+            All controllers are NOT running the same blur version
+        - zookeeper.controllers.each do |controller|
+          - if controller.status != 2
+            .zookeeper_status_info
+              = "Controller #{controller.node_name}: "
+              .ui-state-error.ui-corner-all
+                - if controller.status == 1
+                  Disabled
+                - else
+                  Offline
+      - else
+        No controllers available
+    .zookeeper_nodes
+      %h4 Shards
+      - if zookeeper.shards and zookeeper.shards.length > 0
+        - if zookeeper.shards.collect { |shard| shard.blur_version }.flatten.uniq.length == 1
+          = "All shards are running blur version #{zookeeper.shards.first.blur_version}"
+        - else
+          .warning
+            All shards are NOT running the same blur version
+        - zookeeper.shards.each do |shard|
+          - if shard.status != 2
+            .zookeeper_status_info
+              = "Shard #{shard.node_name}: "
+              .ui-state-error.ui-corner-all
+                - if shard.status == 1
+                  Disabled
+                - else
+                  Offline
+      - else
+        No shards available

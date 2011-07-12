@@ -1,46 +1,42 @@
 #blur_queries_wrapper {
   padding-top: 2em;
-  margin-bottom: 2em;
+  padding-bottom: 2em;
   @include full;
 
   #filter_form{
-    @include columns(30);
+    @include columns(30, $total-cols);
     #filter_wrapper{
       margin-bottom: 1em;
-      @include columns(10);
+      @include columns(10, $total-cols);
       h3{
         @include standard-font;
-      }
-      .ui-widget-content, .ui-accordion-heading { color: #555; }
-      .ui-accordion-heading{
-        background-color: white;
-        @include border-radius;
       }
       .query_filter{ margin-bottom: .75em; }
     }
 
     #selector_wrapper{
-      @include columns(18);
+      @include columns(17, $total-cols);
+      @include prefix(1);
       padding-top: 0.5em;
     }
     filter_spinner{
-      @include columns(1);
+      @include columns(1, $total-cols);
     }
   }
 
   @mixin table-base {
-    @include border;
-    @include border-radius;
+    @include standard-border;
     display: table;
     tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
+    thead { background-color: #C4D9FF; @include standard-border;}
     tr.error td{
       text-align: center;
     }
     th {
       @include standard-font;
-      font-size: 120%;
-      background-color: #C4D9FF;
+      font-size: 120%; 
+      
       text-align: center;
     }
     td {
@@ -52,8 +48,9 @@
 
   #queries-table {
     @include full;
-    @include omega(30);
+    @include omega($total-cols);
     @include table-base;
+    margin-bottom: 95px;
     tr{
       height: 50px;
     }
@@ -65,6 +62,6 @@
 }
 
 #more-info-table {
-  td{ color: #555; }
-  .more-info-label { white-space:nowrap; font-weight: bold;}
+  td { color: #555; }
+  .more-info-label { white-space: nowrap; font-weight: bold;}
 }

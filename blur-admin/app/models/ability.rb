@@ -23,7 +23,7 @@ class Ability
         can :make_current, :zookeepers
 
         # search
-        can [:filters, :create, :load, :delete, :reload], :search
+        can [:filters, :create, :load, :delete, :reload, :save], :search
 
         # can view everything but query_string on blur_tables:
         attributes = BlurQuery.new.attribute_names

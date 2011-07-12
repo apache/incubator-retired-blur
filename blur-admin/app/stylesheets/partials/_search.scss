@@ -1,67 +1,58 @@
 #search_page_wrapper{
   @include full;
-
   @mixin search-margin { margin: .25em 0em .25em; }
 
   #filter_section{
-    @include columns(6);
+    @include columns(5.5,$total-cols);
     @include standard-font;
+    padding-top: 1em;
     position:fixed;
     top: $nav-height + $header-height;
     display: inline-block;
     
-    .partial-section{
-      margin: 1em 0em 1em;
-      @include full;
-    }
+    .partial-section{ padding: 0.5em; }
 
-    #query_string{ min-width: 160px; }
+    #query_string{ resize:vertical; }
+    #query_string, #blur_table_id { @include columns(5,5.5); }
 
     #search_send{
-      @include full;
       margin-top: 1em;
-      #loading-spinner{ @include alpha; }
+      #loading-spinner{ margin-left: 1em; }
       #search_submit{
         position: absolute;
-        display: block;
-        @include omega;
         right: 0;
       }
     }
   }
 
-  .collapsed_filters{ @include columns(31); }
-  .open_filters{ @include columns(24); }
+  .collapsed_filters{ @include columns(30,$total-cols); @include omega($total-cols);}
+  .open_filters{ @include columns(24,$total-cols); @include omega($total-cols); @include prefix(.5) }
   #results_wrapper{
-    @include omega;
-
     #bar_section:hover { background-color: #FAD290; }
 
     #bar_section{
-      @include columns(1);
+      @include columns(1,$total-cols);
       width: 1em;
       height: 100%;
       position: fixed;
       background-color: #eee;
-      display: inline-block;
       cursor: pointer;
 
       #arrow{
-        display: inline-block;
         position: relative;
         top: 50%;
-        margin-left: -2px;
         border:none;
       }
     }
 
     #results_container{
-      @include columns(30);
-      @include omega(30);
+      @include columns(29,$total-cols);
+      @include omega($total-cols);
       position: relative;
+      padding-top: 1em;
 
       #results_section{
-        @include border;
+        @include standard-border;
         overflow-x: scroll;
         background-color : #ffffff;
         margin-bottom: 5em;
@@ -76,7 +67,9 @@
     empty-cells: show;
     display: inline-block;
     thead {
+      background-color: $table_header_color;
       th {
+        background: transparent;
         text-align: center;
         @include standard-font;
         font-size: 120%;
@@ -129,5 +122,16 @@
   // Navigation Tab label div
   .header label { cursor:pointer; }
   .tab { background-color:#EEE; }
-
+  
+  // Save Request Section
+  #save_button{ float: right; }
+  #save_name{ max-width: 105px; }
+  
+  //Help section styles
+  .help_list{
+    color: #747170;
+    .head{
+      font-weight: bold;
+    }
+  }
 }

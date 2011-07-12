@@ -19,7 +19,6 @@
             = text_area_tag :query_string, params[:query_string]
           #table_select.partial-section
             = label_tag :blur_table, "Table:"
-            //= select_tag :blur_table, options_from_collection_for_select(@blur_tables.collect{ |tab| truncate(tab, :length => 25, :ommision => "...") }, :id, :table_name)
             = select("blur_table", :id, @blur_tables.collect{ |tab| [truncate(tab.table_name, :length => 25, :ommision => "..."), tab.id] })
           #families_select.partial-section
             .column-title

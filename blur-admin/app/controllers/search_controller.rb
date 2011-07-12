@@ -29,20 +29,19 @@ class SearchController < ApplicationController
     #if the search_id param is set than the user is trying to directly run a saved query
     if params[:search_id]
       buff = Search.find params[:search_id]
-      @blur_table = BlurTable.find params[:blur_table]
     #else build a new search to be used for this specific search
     else
-      buff = Search.new(:blur_table_id => params[:blur_table][:id],
+      buff = Search.new(:blur_table_id => params[:blur_table],
                         :super_query   => params[:super_query],
                         :columns       => params[:column_data].drop(1).to_json,
                         :fetch         => params[:result_count].to_i,
                         :offset        => params[:offset].to_i,
                         :user_id       => @current_user.id,
                         :query         => params[:query_string])
-      @blur_table = BlurTable.find params[:blur_table][:id]
     end
 
     #use the model to begin building the blurquery
+    @blur_table = BlurTable.find params[:blur_table]
     bq = buff.prepare_search
 
 
@@ -177,7 +176,7 @@ class SearchController < ApplicationController
   
   def save
     Search.create(:name          => params[:save_name],
-                  :blur_table_id => params[:blur_table][:id],
+                  :blur_table_id => params[:blur_table],
                   :super_query   => params[:super_query],
                   :columns       => params[:column_data].drop(1).to_json,
                   :fetch         => params[:result_count].to_i,
@@ -185,7 +184,7 @@ class SearchController < ApplicationController
                   :user_id       => @current_user.id,
                   :query         => params[:query_string])
     @searches = @current_user.searches.reverse
-    @blur_table = BlurTable.find params[:blur_table][:id]
+    @blur_table = BlurTable.find params[:blur_table]
 
     respond_to do |format|
       format.html {render :partial =>"saved.html.haml" }

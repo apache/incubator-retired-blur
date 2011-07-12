@@ -19,6 +19,7 @@
     background-color: #C4D9FF;
     @include full($total-cols);
     @include border-top-radius;
+    @include border_bottom;
     height: $row-height;
   }
 
@@ -26,7 +27,6 @@
     margin-bottom: 0px;
     @include border-top;
     @include border-bottom;
-    border-top-width: 2px;
     @include full($total-cols);
     height: $row-height;
     &:hover {
@@ -37,6 +37,7 @@
   div.blur_table {
     height: 42px;
     @include full($total-cols);
+    @include border-bottom;
     .location {
       margin-top: 10px;
       margin-bottom: 10px;

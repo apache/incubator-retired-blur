@@ -58,8 +58,8 @@ $(document).ready ->
       # time_since_refresh
 
       replace_table = super_query_filter != $('#super_query_on').val() or
-                      created_at_filter != $('#created_at_time').val() or
-                      blur_table_id != $('#blur_table_id').val()
+                      created_at_filter  != $('#created_at_time').val() or
+                      blur_table_id      != $('#blur_table_id').val()
       if replace_table
         # reset last filter options
         super_query_filter = $('#super_query_on').val()

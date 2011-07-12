@@ -6,11 +6,13 @@
     - else
       = empty_message
   - if can? :index, :blur_queries, :query_string
-    %td{:class => "query_string", :title => blur_query.query_string}<
-      - if blur_query.query_string
-        = truncate(blur_query.query_string, :length => 20, :ommision => "...")
-      - else
-        =empty_message
+    - if blur_query.query_string
+      - truncate_length = 20
+      %td.query_string{ :title => blur_query.query_string.length() > truncate_length ? blur_query.query_string : '' }<
+        = truncate(blur_query.query_string, :length => truncate_length, :ommision => "...")
+    - else
+      %td.query_string
+        = empty_message
   %td<
     - if blur_query.super_query_on
       On

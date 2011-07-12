@@ -2,11 +2,10 @@
 - content_for :javascript do
   = javascript_include_tag 'compiled/zookeepers'
 
-#zookeeper_wrapper
+#zookeepers_wrapper
+  %h2 Zookeepers
   - if @zookeepers
-    %ul
-    - @zookeepers.each do |zookeeper|
-      %li= zookeeper.name
+    = render 'zookeepers'
 
   - else
     No Zookeeper Instances Available

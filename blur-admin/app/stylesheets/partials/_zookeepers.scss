@@ -1,4 +1,4 @@
-#zookeepers_wrapper {
+#zookeeper_wrapper {
   margin-top: 2em;
   @include full;
 
@@ -29,9 +29,6 @@
       @include prefix(0.25);
       @include columns(29.5);
     }
-
-    .offline, .online { text-align:center; }
-    .online { background: transparent; }
   }
 
   #blur {
@@ -41,25 +38,36 @@
     .blur_container{ @include inner-container; @include prefix(0.25);}
     #controllers{ @include prefix(0.25); }
     #shards{ @include omega($total-cols); @include suffix(0.25);}
-
-    .warning { color: #b81900; font-weight: bold; }
   }
-
-  .offline, .online {
-    text-align:center;
-    padding: 5px;
-  }
-
-  .online { background: transparent; }
 
   h2 { @include prefix(0.25) }
   h3 { margin-top: 0.5em; }
 }
 
-#zookeeper_wrapper{
+#zookeepers_wrapper{
+  @include full;
+  @include standard-font;
   padding-top: 2em;
-  @include full($total-cols);
-  @include alpha;
-  color: #555;
-  font-weight: bold;
+
+  .zookeeper_info {
+    @include prefix(0.5);
+    @include columns(29.5,$total-cols);
+    @include omega($total-cols);
+    display: inline-block;
+  }
+  .zookeeper_nodes {
+    @include columns(7,$total-cols);
+    h4 { margin-bottom: 0.5em; }
+    .zookeeper_status_info { @include columns(7,7); display: inline-block;}
+  }
+  .zookeeper_controllers { @include prefix(1); }
 }
+
+.ui-state-highlight, .ui-state-error {
+  text-align:center;
+  margin: 5px;
+  width: 100px;
+}
+
+.warning { color: #b81900; font-weight: bold; }
+h4.name, .ui-state-highlight, .ui-state-error { display: inline-block; }

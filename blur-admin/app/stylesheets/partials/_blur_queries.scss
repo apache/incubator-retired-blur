@@ -51,6 +51,7 @@
     @include full;
     @include omega($total-cols);
     @include table-base;
+    margin-bottom: 95px;
     tr{
       height: 50px;
     }
@@ -62,6 +63,6 @@
 }
 
 #more-info-table {
-  td{ color: #555; }
+  td { color: #555; }
   .more-info-label { white-space:nowrap; font-weight: bold;}
 }

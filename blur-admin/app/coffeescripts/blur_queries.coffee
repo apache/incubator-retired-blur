@@ -1,26 +1,27 @@
 $(document).ready ->
 
+  add_color = '#95D169' #color to highlight added rows
+  update_color = '#E68F00'
+  remove_color = '#E01E00'
+
   # checks if the empty row is needed/not needed and inserts / removes
   # it accordingly
   empty_row = ->
     rows = $('#queries-table > tbody').children()
     console.log rows.length
     if rows.length is 0
-      row = $('#no-queries-row')
-      if row.length is 0
-        row = (
-          '''
-    <tr id='no-queries-row'>
-      <td colspan='9'>
-        <b>No Available Queries</b>
-      </td>
-    </tr>
-          '''
-        )
-      $('#queries-table > tbody').prepend(row)
-    else if $('#blur-queries > tbody').children().length > 1 and
-            $('#blur-queries > tbody > #no-queries-row').length is 1
-      $('#no-queries-row').detach()
+      $('#queries-table > tbody').prepend(
+        '''
+<tr id='no-queries-row'>
+  <td colspan='9'>
+    <b>No Available Queries</b>
+  </td>
+</tr>
+        '''
+      )
+    else if $('#queries-table > tbody').children().length > 1 and
+            $('#queries-table > tbody > #no-queries-row').length is 1
+      $('#no-queries-row').remove()
 
   # adds time to data-age of selected elements, and 
   # retires them if past retirment age
@@ -30,8 +31,9 @@ $(document).ready ->
       current_age = parseFloat($(row).attr('data-age')) + age
       if current_age > retirement_age
         #highlight row and remove
-        $(row).effect 'highlight', {color: 'red'}, 'slow', () ->
+        $(row).effect 'highlight', {color: remove_color}, 'slow', ->
             $(this).remove()
+            empty_row()
       else
         $(row).attr 'data-age', "#{current_age}"
 
@@ -95,11 +97,11 @@ $(document).ready ->
           if $("#queries-table > tbody > ##{id}").length is 0
             # add new row
             $("#queries-table > tbody").prepend(row)
-            $(row).effect 'highlight', {color: 'green'}, 'slow'
+            $(row).effect 'highlight', {color: add_color}, 'slow', ->
           else
             # replace existing row
             $("#queries-table > tbody > ##{id}").replaceWith(row)
-            $("#queries-table > tbody > ##{id}").effect 'highlight', {color: 'blue'}, 'slow'
+            $("#queries-table > tbody > ##{id}").effect 'highlight', {color: update_color}, 'slow'
 
       $('[title]').tooltip()
     .live 'ajax:error', (evt, xhr, status, error) ->

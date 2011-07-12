@@ -1,8 +1,9 @@
 package com.nearinfinity.agent.collectors;
 
-import java.util.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONValue;
@@ -24,46 +25,37 @@ public class QueryCollector {
 					
 					List<String> tables = client.tableList();
 					
-					
-					/**
-					 *  
-					    +--------------------------+--------------+------+-----+---------+----------------+
-						| Field                    | Type         | Null | Key | Default | Extra          |
-						+--------------------------+--------------+------+-----+---------+----------------+
-						| id                       | int(11)      | NO   | PRI | NULL    | auto_increment |
-						| query_string             | varchar(255) | YES  |     | NULL    |                |
-						| cpu_time                 | int(11)      | YES  |     | NULL    |                |
-						| real_time                | int(11)      | YES  |     | NULL    |                |
-						| complete                 | int(11)      | YES  |     | NULL    |                |
-						| interrupted              | tinyint(1)   | YES  |     | NULL    |                |
-						| running                  | tinyint(1)   | YES  |     | NULL    |                |
-						| uuid                     | varchar(255) | YES  |     | NULL    |                |
-						| created_at               | datetime     | YES  |     | NULL    |                |
-						| updated_at               | datetime     | YES  |     | NULL    |                |
-						| super_query_on           | tinyint(1)   | YES  |     | NULL    |                |
-						| facets                   | varchar(255) | YES  |     | NULL    |                |
-						| start                    | int(11)      | YES  |     | NULL    |                |
-						| fetch_num                | int(11)      | YES  |     | NULL    |                |
-						| pre_filters              | longtext     | YES  |     | NULL    |                |
-						| post_filters             | longtext     | YES  |     | NULL    |                |
-						| selector_column_families | text         | YES  |     | NULL    |                |
-						| selector_columns         | text         | YES  |     | NULL    |                |
-						| userid                   | varchar(255) | YES  |     | NULL    |                |
-						| blur_table_id            | int(11)      | YES  |     | NULL    |                |
-						+--------------------------+--------------+------+-----+---------+----------------+
-
-
-					 */
-					
 					for (String table : tables) {
 						List<BlurQueryStatus> currentQueries = client.currentQueries(table);
 						
 						for (BlurQueryStatus blurQueryStatus : currentQueries) {
 							//Check if query exists
 							List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete from blur_queries where blur_table_id=? and uuid=?", new Object[]{TableMap.get().get(table), blurQueryStatus.getUuid()});
+//							
+//							Calendar c = Calendar.getInstance();
+//						    System.out.println("current: "+c.getTime());
+//
+//						    TimeZone z = c.getTimeZone();
+//						    int offset = z.getRawOffset();
+//						    int offsetHrs = offset / 1000 / 60 / 60;
+//						    int offsetMins = offset / 1000 / 60 % 60;
+//
+//						    System.out.println("offset: " + offsetHrs);
+//						    System.out.println("offset: " + offsetMins);
+//
+//						    c.add(Calendar.HOUR_OF_DAY, (-offsetHrs));
+//						    c.add(Calendar.MINUTE, (-offsetMins));
+//
+//						    System.out.println("GMT Time: "+c.getTime());
+							
 							if (existingRow.isEmpty()) {
-//								System.out.println("Start time:" + blurQueryStatus.getQuery().get);
-								jdbc.update("insert into blur_queries (query_string, cpu_time, real_time, complete, interrupted, running, uuid, created_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
+								Calendar cal = Calendar.getInstance();
+								System.out.println(cal.get(Calendar.ZONE_OFFSET));
+								TimeZone z = cal.getTimeZone();
+								System.out.println(z.getDisplayName());
+								cal.add(Calendar.MILLISECOND, -(z.getRawOffset()+(1000*60*60)));
+								
+								jdbc.update("insert into blur_queries (query_string, cpu_time, real_time, complete, interrupted, running, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
 											new Object[]{blurQueryStatus.getQuery().getQueryStr(), 
 												blurQueryStatus.getCpuTime(),
 												blurQueryStatus.getRealTime(),
@@ -72,7 +64,8 @@ public class QueryCollector {
 												blurQueryStatus.isRunning(),
 												blurQueryStatus.getUuid(),
 //												new Date(blurQueryStatus.getQuery().getStartTime()),
-												new Date(),
+												cal.getTime(),
+												cal.getTime(),
 												TableMap.get().get(table),
 												blurQueryStatus.getQuery().isSuperQueryOn(),
 												StringUtils.join(blurQueryStatus.getQuery().getFacets(), ", "),
@@ -85,12 +78,17 @@ public class QueryCollector {
 												blurQueryStatus.getQuery().getUserId()
 											});
 							} else {
-								jdbc.update("update blur_queries set cpu_time=?, real_time=?, complete=?, interrupted=?, running=? where id=?", 
+								Calendar cal = Calendar.getInstance();
+								TimeZone z = cal.getTimeZone();
+								cal.add(Calendar.MILLISECOND, -(z.getRawOffset()+(1000*60*60)));
+								
+								jdbc.update("update blur_queries set cpu_time=?, real_time=?, complete=?, interrupted=?, running=?, updated_at=? where id=?", 
 											new Object[] {blurQueryStatus.getCpuTime(),
 												blurQueryStatus.getRealTime(),
 												blurQueryStatus.getComplete(),
 												blurQueryStatus.isInterrupted(),
 												blurQueryStatus.isRunning(),
+												cal.getTime(),
 												existingRow.get(0).get("ID")
 											});
 							}

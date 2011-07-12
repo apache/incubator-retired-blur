@@ -12,6 +12,7 @@ BlurAdmin::Application.routes.draw do
     get 'schema', :on => :member
   end
 
+  match 'blur_queries/refresh' => 'blur_queries#refresh', :via => :get, :as => :refresh
   resources :blur_queries do
     get 'more_info', :on => :member
   end

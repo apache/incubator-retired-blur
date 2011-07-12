@@ -33,6 +33,7 @@ class Ability
 
         # view more info on blur_queries on with everything but query_string
         can :more_info, :blur_queries, attributes
+        can :refresh, :blur_queries
 
         # View hosts and schema on blur_tables
         can :hosts, :blur_tables

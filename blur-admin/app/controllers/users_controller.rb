@@ -1,7 +1,6 @@
 class UsersController < ApplicationController
 
   load_and_authorize_resource
-
   before_filter :find_user, :only => [:show, :edit, :update, :destroy]
   skip_before_filter :current_zookeeper, :zookeepers
 
@@ -10,6 +9,7 @@ class UsersController < ApplicationController
   end
 
   def show
+    @tables = BlurTable.all
   end
 
   def new

@@ -1,7 +1,48 @@
 #admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{
+  @mixin info($color) {
+    @include border;
+    @include border-radius;
+    background-color: $color;
+  }
+  
+  @mixin pref-box{
+    @include info(white);
+    margin:10px 0px 10px 0px;
+    padding:10px 5px 10px 5px;
+  }
+   
   @include full;
   @include standard-font;
   margin-top: 1em;
-  table { @include columns(30,$total-cols); }
   #roles_wrapper {@include alpha; }
+  
+  .info-contain{ 
+    @include full($total-cols); 
+    @include clearfix;
+    }
+  
+  //user info box
+  #user-info{
+    @include info(#EEE);
+    padding:5px;
+    @include columns(5, $total-cols);
+    @include omega;
+    p{
+      margin-top:5px;
+      margin-bottom:5px;
+    }
+  }
+  
+  //pref-col box
+  #pref-col-info{
+    padding:5px;
+    @include info(#EEE);
+    @include columns(23, $total-cols);
+    @include alpha;
+  }
+  
+}
+
+body{
+    @include susy-grid-background;
 }

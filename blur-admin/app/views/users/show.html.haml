@@ -1,22 +1,32 @@
 - content_for :title, 'User'
+- content_for :javascript do
+  =javascript_include_tag 'compiled/users'
 
 #show_user_wrapper
-  %h2 User Info
-  %p
-    %strong Username:
-    = @user.username
-  %p
-    %strong Email:
-    = @user.email
-  %p
-    %strong
-      = @user.roles.to_a.join ', '
-  %p
-    - if can? :edit, @user
-      = link_to "Edit", edit_user_path(@user)
-    - if can? :destroy, @user
-      |
-      = link_to "Delete User", @user, :confirm => 'Are you sure?', :method => :delete
-    - if can? :index, :users
-      |
-      = link_to "View All Users", users_path
+  .info-contain
+    #pref-col-info
+      .header#pref-col 
+        My Saved Columns   
+      .header#opt-col 
+        Tables: Column Families
+          
+
+    #user-info
+      %p
+        %strong Username:
+        = @user.username
+      %p
+        %strong Email:
+        = @user.email
+      %p
+        %strong
+          = @user.roles.to_a.join ', '
+      %p
+        - if can? :edit, @user
+          = link_to "Edit", edit_user_path(@user)
+        - if can? :destroy, @user
+          |
+          = link_to "Delete User", @user, :confirm => 'Are you sure?', :method => :delete
+        - if can? :index, :users
+          |
+          = link_to "View All Users", users_path

@@ -129,10 +129,24 @@ describe BlurQueriesController do
     end
 
     it "filters blur queries by super query status if given a super_query_on parameter" do
-      BlurQuery.should_receive(:all).with(:conditions => {:super_query_on => 'true',
+      BlurQuery.should_receive(:all).with(:conditions => {:super_query_on => true,
                                                           :created_at => Time.now - 1.minutes .. Time.now},
                                           :order=>"created_at desc")
       get :refresh, :super_query_on => 'true', :time_since_refresh => ''
+    end
+
+    it "filters blur queries by running status if given a running parameter" do
+      BlurQuery.should_receive(:all).with(:conditions => {:running => true,
+                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                          :order=>"created_at desc")
+      get :refresh, :running => 'true', :time_since_refresh => ''
+    end
+
+    it "filters blur queries by interrupted status if given an interrupted parameter" do
+      BlurQuery.should_receive(:all).with(:conditions => {:interrupted => true,
+                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                          :order=>"created_at desc")
+      get :refresh, :interrupted => 'true', :time_since_refresh => ''
     end
 
     it "filters blur queries by table if given a blur_table_id parameter" do

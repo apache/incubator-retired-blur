@@ -11,33 +11,42 @@
         = link_to 'Filters', ''
       %div
         .query_filter
-          = label_tag :super_query_on, 'Super Query:'
-          = select_tag :super_query_on, options_for_select([['All Queries', nil], ['Super Query On', true], ['Super Query Off', false]])
+          = label_tag :created_at_time, 'Within past:'
+          = select_tag :created_at_time, options_for_select([['1 minute', 1],
+      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['5 minutes', 5],
+      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['15 minutes', 15],
+      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['30 minutes', 30],
+      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['1 hour', 60]])
         .query_filter
-          = label_tag :created_at_time, 'Time:'
-          = select_tag :created_at_time, options_for_select([['1 minute', 1], ['5 minutes', 5], ['15 minutes', 15], ['30 minutes', 30], ['1 hour', 60]])
+          = label_tag :super_query_on, 'Super Query:'
+          = select_tag :super_query_on, options_for_select([['All Queries', nil],
+         	                                                 	['Super Query On', true],
+                                                         	 	['Super Query Off', false]])
+        .query_filter
+          = label_tag :running, 'Running:'
+          = select_tag :running, options_for_select([['All Queries', nil],
+                                                     ['True', true],
+                                                     ['False', false]])
+        .query_filter
+          = label_tag :interrupted, 'Interrupted:'
+          = select_tag :interrupted, options_for_select([['All Queries', nil],
+                                                         ['True', true],
+                                                         ['False', false]])
         .query_filter
           = submit_tag 'filter'
+
         = hidden_field_tag :time_since_refresh
         = label_tag :refresh_period, 'Refresh every:'
-        = select_tag :refresh_period, options_for_select([['never', 'false'], ['continuously', 'continuous'], ['3 seconds', 3], ['10 seconds', 10], ['1 minute', 60], ['10 minutes', 600]])
-
+        = select_tag :refresh_period, options_for_select([['never', 'false'],
+                                                          ['continuously', 'continuous'],
+                                                          ['10 seconds', 10],
+                                                          ['1 minute', 60],
+                                                          ['10 minutes', 600]])
     #selector_wrapper
       = label_tag :blur_table_id, 'Blur Table:'
-      = select_tag :blur_table_id, options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
+      = select_tag :blur_table_id,
+          options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
 
     = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading...", :hidden => true
 
   = render 'query_table'
-
-#more-info-container
-
-#failure-message{:hidden => true}
-  #failed-info{:hidden => true}
-  #failed-buttons
-    %form
-      =label_tag :t, "The cancel was unsuccessful, would you like to try canceling again?", :id => "failed-label"
-      %button#confirm-resubmit.cancel{:type => "button"}
-        Cancel
-      %button#confirm-resubmit.resubmit{:type => "button"}
-        Re-Submit

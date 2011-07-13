@@ -55,8 +55,8 @@ Factory.define :blur_query do |t|
   t.cpu_time  { rand 10 * 10 ** 3 } #Between 0 and 10 seconds
   t.real_time { |blur_query| blur_query.cpu_time + rand( 10 * 10 ** 3) } #Between 0 and 10 additional seconds
   t.complete  { rand 2 }
-  t.interrupted { rand(5) == 0 } # 20% chance
-  t.running     { rand(5) == 0 } # 20% chance
+  t.interrupted { rand(2) == 1 ? true : false } # 50% chance
+  t.running      { rand(2) == 1 ? true : false } # 50% chance
   t.uuid        { rand 10 ** 8 }
   t.super_query_on { rand(4) != 0 } # 75% chance
   t.start { rand 10 ** 6 }

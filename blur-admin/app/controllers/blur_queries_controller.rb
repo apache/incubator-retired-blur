@@ -12,14 +12,18 @@ class BlurQueriesController < ApplicationController
 
     @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" )
     # below line introduces a ton of sql queries when filtering with @current_zookeeper
-    puts @blur_queries
     @blur_queries.keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
   end
 
   def refresh
     filters = {}
+    # convert string bools into real bools
+    [:super_query_on, :running, :interrupted].each do |category|
+      params[category] = true  if params[category] == 'true'
+      params[category] = false if params[category] == 'false'
+    end
     # filters for columns
-    [:blur_table_id, :super_query_on].each do |category|
+    [:blur_table_id, :super_query_on, :running, :interrupted].each do |category|
       filters[category] = params[category] unless params[category] == nil or params[category] == ''
     end
     # filter for time

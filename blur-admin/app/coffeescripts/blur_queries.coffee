@@ -25,6 +25,8 @@ $(document).ready ->
   # keeps track of previous filter options
   super_query_filter = ""
   created_at_filter = "1"
+  running_filter = ""
+  interrupted_filter = ""
   blur_table_id = ""
   last_refresh = new Date()
   replace_table = null
@@ -43,12 +45,16 @@ $(document).ready ->
 
       replace_table = super_query_filter != $('#super_query_on').val() or
                       created_at_filter  != $('#created_at_time').val() or
+                      running_filter     != $('#running').val() or
+                      interrupted_filter != $('#interrupted').val() or
                       blur_table_id      != $('#blur_table_id').val()
       if replace_table
         # reset last filter options
         super_query_filter = $('#super_query_on').val()
-        created_at_filter = $('#created_at_time').val()
-        blur_table_id = $('#blur_table_id').val()
+        created_at_filter  = $('#created_at_time').val()
+        interrupted_filter = $('#interrupted').val()
+        running_filter     = $('#running').val()
+        blur_table_id      = $('#blur_table_id').val()
         $('#time_since_refresh').val ''
       else
         # set time since last refresh

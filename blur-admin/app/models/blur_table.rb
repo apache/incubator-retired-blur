@@ -4,6 +4,7 @@ class BlurTable < ActiveRecord::Base
   belongs_to :cluster
   has_many :blur_queries
   has_many :searches
+  has_one :zookeeper, :through => :cluster
 
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts
@@ -63,10 +64,5 @@ class BlurTable < ActiveRecord::Base
     else
       return -1
     end
-  end
-
-  # rails 3.0 does not allow nested has_one :through relationships
-  def zookeeper
-    self.cluster.zookeeper
   end
 end

@@ -1,7 +1,7 @@
 #admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{
   @include full;
   @include standard-font;
-  margin-top: 1em;
+  padding-top: 2em;
   table { @include columns(30,$total-cols); }
   #roles_wrapper {@include alpha; }
 }

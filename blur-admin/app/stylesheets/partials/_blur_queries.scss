@@ -27,6 +27,7 @@
   @mixin table-base {
     @include standard-border;
     display: table;
+    tr:nth-child(even) { background-color: white; };
     tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
     thead { background-color: #C4D9FF; @include standard-border;}
@@ -50,7 +51,7 @@
     @include full;
     @include omega($total-cols);
     @include table-base;
-    margin-bottom: 190px;
+    margin-bottom: 165px;
     tr{
       height: 50px;
     }

@@ -33,6 +33,7 @@
 
   #blur {
     @include columns(30,$total-cols);
+    margin-bottom: 165px;
 
     #controllers, #shards{ @include columns(14.25, $total-cols); }
     .blur_container{ @include inner-container; @include prefix(0.25);}

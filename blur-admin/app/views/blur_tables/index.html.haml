@@ -13,3 +13,6 @@
     %span.schema Schema
 
   = render :partial => 'blur_table', :collection => @blur_tables
+
+  .blur_tables_footer
+    = "Total Tables: #{@blur_tables.length}"

@@ -10,7 +10,8 @@
     top: $nav-height + $header-height;
     display: inline-block;
     
-    .partial-section{ padding: 0.5em; }
+    .partial-section, .body{ padding: 0.5em; }
+    .filter { padding: 0.5em 0 0; }
 
     #query_string{ resize:vertical; }
     #query_string, #blur_table, { @include columns(5,5.5); }
@@ -128,10 +129,6 @@
   // Navigation Tab label div
   .header label { cursor:pointer; }
   .tab { background-color:#EEE; }
-  
-  // Save Request Section
-  #save_button{ float: right; }
-
   
   //Help section styles
   .help_list{

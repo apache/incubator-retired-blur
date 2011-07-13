@@ -47,7 +47,7 @@
             = label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
           .filter
-            %button{:disabled => true, :name => "save", :type => "button" }
+            %button{:disabled => true, :name => "save", :type => "button", :id => 'save_button'}
               Save
 
       #search_send.partial_section

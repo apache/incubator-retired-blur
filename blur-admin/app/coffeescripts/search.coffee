@@ -28,7 +28,7 @@ $(document).ready ->
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
-  setup_filter_tree()
+  $('#filter_columns').load('search/' + $('#blur_table').val() + '/filters', setup_filter_tree)
   $('[title]').tooltip()
 
   ########### PAGE ELEMENT LISTENERS ##############

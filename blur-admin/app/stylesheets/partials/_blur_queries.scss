@@ -2,15 +2,13 @@
   padding-top: 2em;
   padding-bottom: 2em;
   @include full;
+  @include standard-font;
 
   #filter_form{
     @include columns(30, $total-cols);
     #filter_wrapper{
       margin-bottom: 1em;
       @include columns(10, $total-cols);
-      h3{
-        @include standard-font;
-      }
       .query_filter{ margin-bottom: .75em; }
     }
 
@@ -30,14 +28,13 @@
     tr:nth-child(even) { background-color: white; };
     tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
-    thead { background-color: #C4D9FF; @include standard-border;}
+    thead { @include standard-border; background-color: #C4D9FF; }
     tr.error td{
       text-align: center;
     }
     th {
       @include standard-font;
-      font-size: 120%; 
-      
+      font-size: 120%;    
       text-align: center;
     }
     td {

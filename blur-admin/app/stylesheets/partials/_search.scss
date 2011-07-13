@@ -20,9 +20,13 @@
     #search_send{
       margin-top: 1em;
       #loading-spinner{ margin-left: 1em; }
-      #search_submit{
-        position: absolute;
-        right: 0;
+      #search_submit, #search_help{
+        float: right;
+        margin-left: 10px;
+      }
+      
+      #search_help {
+        cursor: help;
       }
     }
   }

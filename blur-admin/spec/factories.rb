@@ -15,7 +15,7 @@ end
 Factory.define :controller do |t|
   t.sequence (:node_name)     { |n| "Test Node ##{n}" }
   t.sequence (:node_location) { |n| "node#{n}.blur.example.com" }
-  t.status                    { rand 2 }
+  t.status                    { rand 3 }
   t.blur_version              { "1.#{rand 10}.#{rand 10}" }
 end
 
@@ -27,7 +27,7 @@ Factory.define :shard do |t|
   t.blur_version              { "1.#{rand 10}.#{rand 10}" }
   t.sequence (:node_name)     { |n| "Test Node ##{n}" }
   t.sequence (:node_location) { |n| "node#{n}.blur.example.com" }
-  t.status                    { rand 2 }
+  t.status                    { rand 3 }
 end
 
 Factory.define :blur_table do |t|

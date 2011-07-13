@@ -12,6 +12,7 @@ class BlurQueriesController < ApplicationController
 
     @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" )
     # below line introduces a ton of sql queries when filtering with @current_zookeeper
+    puts @blur_queries
     @blur_queries.keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
   end
 

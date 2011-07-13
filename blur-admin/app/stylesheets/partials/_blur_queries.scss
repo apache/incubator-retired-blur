@@ -52,6 +52,14 @@
     tr{
       height: 50px;
     }
+
+    // only display the no-queries-row if it is the first (only) row
+    tbody tr#no-queries-row {
+      display: none;
+    }
+    tbody tr:first-child#no-queries-row {
+      display: table-row;
+    }
   }
 
   .ui-tooltip { @include standard-font; }

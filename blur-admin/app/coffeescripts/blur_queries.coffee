@@ -62,8 +62,11 @@ $(document).ready ->
       # remove rows older than the filter time
       age_and_retire($('tr.blur_query'), time_since_refresh, created_at_filter * 60)
     .live 'ajax:complete', (evt, xhr, status) ->
-      $(this).find("input[type=submit]").removeAttr('disabled')
-      $('#filter_spinner').hide()
+      if $(this).find('#refresh_period').val() is 'continuous'
+        $('#filter_form').submit()
+      else
+        $(this).find("input[type=submit]").removeAttr('disabled')
+        $('#filter_spinner').hide()
     .live 'ajax:success', (evt, data, status, xhr) ->
       rows = $($.trim(data)) # rails renders whitespace if there are no rows
 
@@ -148,6 +151,8 @@ $(document).ready ->
   # Listener for auto refresh queries
   $('#refresh_period').live 'change', ->
     clearTimeout(timer)
-    unless $(this).val() is '-1'
+    if $(this).val() is 'continuous'
+      $('#filter_form').submit()
+    else if $(this).val() isnt 'false'
       period = $(this).val() * 1000
       set_timer()

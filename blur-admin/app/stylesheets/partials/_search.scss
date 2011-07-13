@@ -27,7 +27,9 @@
       }
       
       #search_help {
-        cursor: help;
+        a{
+          line-height:175%;
+        }
       }
     }
   }

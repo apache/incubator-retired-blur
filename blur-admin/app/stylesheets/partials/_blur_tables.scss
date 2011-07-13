@@ -21,6 +21,7 @@
 
   .blur_tables_header {
     @include border-top-radius;
+    @include border_bottom;
     height: $row-height;
   }
 
@@ -47,6 +48,7 @@
   div.blur_table {
     height: 42px;
     @include full($total-cols);
+    @include border-bottom;
     .location {
       margin-top: 10px;
       margin-bottom: 10px;

@@ -7,7 +7,6 @@ class ApplicationController < ActionController::Base
   before_filter :current_user_session, :current_user
 
   enable_authorization do |exception|
-    puts exception
     if current_user
       if can? :index, :zookeepers
         redirect_to root_url, :alert => "Unauthorized"

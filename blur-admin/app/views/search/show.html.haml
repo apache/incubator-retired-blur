@@ -43,8 +43,8 @@
         .header#store
           %label{:id => 'store'} Save Options
         .body#store
-          .filter
-            = label_tag :save_name, 'Name:'
+          .filter#save_name_wrap
+            #save_label= label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
           .filter
             %button{:disabled => true, :name => "save", :type => "button", :id => 'save_button'}

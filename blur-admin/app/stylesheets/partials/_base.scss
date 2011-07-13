@@ -13,7 +13,7 @@ $show-grid-backgrounds: true;
 body {
   margin:0 auto;
   @include container;
-
+  background-color: mix(#fff,#C4D9FF,85%);
 }
 
 h2 { font-size: 200%; }

@@ -18,7 +18,7 @@
             .query-label= label_tag :query_string, "Query:"
             = text_area_tag :query_string, params[:query_string]
           #table_select.partial-section
-            = label_tag :blur_table, "Table:"
+            .table-label= label_tag :blur_table, "Table:"
             = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
           #families_select.partial-section
             .column-title
@@ -44,51 +44,25 @@
         .header#store
           %label{:id => 'store'} Save Options
         .body#store
-          .partial-section
+          .partial-section.save-label
             = label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
+          .partial-section
             %button#save_button{:disabled => true, :name => "save", :type => "button"}
               Save
 
       #search_send.partial_section
-        %img{:id => "loading-spinner", :src => "/images/spinner.gif", :alt => "Loading...", :style => "display:none;" }
+        %img{:id => "loading-spinner", :src => "/images/loadinfo_24.gif", :alt => "Loading...", :style => "display:none;" }
+        %span#search_help
+          %a{:href=>'javascript:void(0)'} Help
         = submit_tag "Search", :disabled => true, :id => "search_submit"
-
   #results_wrapper.open_filters
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w
     #results_container
-      .help_list#saved_help
-        .head
-          Use the "Saved Searches" tab to load a previously saved query. 
-        .body  
-          %ul  
-            %li The green play button will execute the query and display the results. 
-            %li The pencil will load the save into the form. 
-            %li The red "x" will delete the saved query.
-
-      .help_list#search_help  
-        .head
-          Use the "Search" tab to begin building a query. Use the search button at the bottom to submit.
-        .body  
-          %ul  
-            %li IDK enough about queries to actually make a help list 
-      
-      .help_list#advanced_help
-        .head
-          Use the "Advanced Options" tab to further modify a query.
-        .body
-          %ul  
-            %li The "Super Query" option allows you to turn superQuery on/off.
-            %li The "Start" option allows you to choose the starting element to display.
-            %li The "Fetch" option allows you to limit the amount of rows that are returned.
-    
-      .help_list#store_help  
-        .head
-          Use the "Save Options" tab to save the current query.
-        .body  
-          %ul  
-            %li The "Name" field is used to name your saved searches.
+      = render :partial => 'help'
 
 #dialog-confirm{:title => "Delete this saved query?", :style => "display:none"} 
   %p This will permanently delete the selected saved query. Do you wish to continue?
+#dialog-help{:title => "Search Help", :style=> "display:none"}
+  = render :partial => 'help'

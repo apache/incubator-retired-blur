@@ -86,6 +86,10 @@ $(document).ready ->
       $('#bar_section').width('1em');
     $('[title]').tooltip()
 
+  toggle_all = () ->
+    list_length = $('#all').find("> ul > .jstree-checked").length
+    alert(list_length)
+
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
     name = '.'+$(this).attr('name')
@@ -95,7 +99,11 @@ $(document).ready ->
     curr_col_span = $(family).attr('colspan')
     max_col_span = $(family).attr('children')
 
-    if $(name).is(":visible")
+    if name == ".all"
+      toggle_all
+      list_length = $('#result_table').find('thead > .columnsets > th').length
+      alert(list_length)
+    else if $(name).is(":visible")
       if element == ".column"
         if curr_col_span <= 2
           name = '.family_'+name.split("_")[1]

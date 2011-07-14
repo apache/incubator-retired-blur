@@ -34,7 +34,7 @@ class SearchController < ApplicationController
       params[:super_query] ? sq=true : sq=false
       buff = Search.new(:blur_table_id => params[:blur_table],
                         :super_query   => sq,
-                        :columns       => params[:column_data].drop(1).to_json,
+                        :columns       => params[:column_data].to_json,
                         :fetch         => params[:result_count].to_i,
                         :offset        => params[:offset].to_i,
                         :user_id       => @current_user.id,
@@ -179,7 +179,7 @@ class SearchController < ApplicationController
     Search.create(:name          => params[:save_name],
                   :blur_table_id => params[:blur_table],
                   :super_query   => params[:super_query],
-                  :columns       => params[:column_data].drop(1).to_json,
+                  :columns       => params[:column_data].to_json,
                   :fetch         => params[:result_count].to_i,
                   :offset        => params[:offset].to_i,
                   :user_id       => @current_user.id,

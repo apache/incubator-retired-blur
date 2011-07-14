@@ -47,6 +47,6 @@
       = select_tag :blur_table_id,
           options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
 
-    = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading...", :hidden => true
+    = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading...", :style => "display:none;"
 
   = render 'query_table'

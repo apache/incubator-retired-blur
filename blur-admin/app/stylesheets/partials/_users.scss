@@ -44,8 +44,61 @@
     @include alpha;
   }
   
-}
-
-body{
-    @include susy-grid-background;
+  //pref col - holds your choices
+  #pref-col{
+    @include columns(4, 23);
+    @include alpha;
+    @include info(white);
+  }
+  
+  //opt-col - options to choose that will go into my list
+  #opt-col{
+    @include info(white);
+    @include columns(18, 23);
+  }
+  
+  //groups of columns
+  .cols{
+    padding:5px;
+    margin:5px;
+    //@include info(#C4D9FF);
+    display:inline-block;
+    @include columns(5.75, 18);
+  }
+  
+  ul{
+    padding:0px;
+    margin:0px;
+  }
+  
+  li{
+    padding: 2px;
+    margin:2px;
+    list-style: none;
+    @include info(#C4D9FF);
+  }
+  
+  .section-label{
+    text-align:center;
+  }
+  
+  .my-select{
+    background-color:#FAD08A;
+  }
+  
+  #no-saved{
+    text-align:center;
+    font-weight:200;
+  }
+  
+  .fam{
+    cursor:pointer;
+  }
+  
+  .sel-fam{
+    cursor:grab;
+    cursor:grab;
+    cursor:-moz-grab;
+    cursor:-webkit-grab;
+  }
 }

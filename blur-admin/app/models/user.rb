@@ -3,6 +3,7 @@ class User < ActiveRecord::Base
   acts_as_authentic
 
   has_many :searches
+  has_many :preferences
 
   include RoleModel
 
@@ -11,6 +12,15 @@ class User < ActiveRecord::Base
   # declare the valid roles -- do not change the order if you add more
   # roles later, always append them at the end!
   roles :editor, :admin, :reader, :auditor
+  
+  #returns the array of saved cols
+  def saved_cols
+    ret = []
+    self.preferences.find_all_by_pref_type(:column).each do |pref|
+      ret << JSON.parse(pref[:value])
+    end
+    ret.flatten
+  end
 
   # the roles are virtual attributes needed to use form helpers
   def admin=(admin)

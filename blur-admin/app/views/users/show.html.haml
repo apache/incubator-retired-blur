@@ -6,10 +6,25 @@
   .info-contain
     #pref-col-info
       .header#pref-col 
-        My Saved Columns   
-      .header#opt-col 
-        Tables: Column Families
-          
+        .section-label{:id => @current_user.id} My Saved Columns
+        %ul#my-cols
+          -if @preferences.size() == 0
+            #no-saved None Currently Saved
+          -else
+            -@preferences.each do |pref|
+              %li.sel-fam{:id => "columns_#{pref}"}
+                =pref
+      .header#opt-col
+        -@tables.each do |table|
+          %ul.cols{:id => table.id}
+            -table.schema["columnFamilies"].keys.each do |col_fam|
+              -if @preferences.include? col_fam
+                %li.my-select.fam{:id => "columns_#{col_fam}"}
+                  =col_fam
+              -else
+                %li.fam{:id => "columns_#{col_fam}"}  
+                  =col_fam
+                  
 
     #user-info
       %p

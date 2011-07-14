@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
 
   load_and_authorize_resource
-  before_filter :find_user, :only => [:show, :edit, :update, :destroy]
+  before_filter :find_user, :only => [:show, :edit, :update, :destroy, :save]
   skip_before_filter :current_zookeeper, :zookeepers
 
   def index
@@ -10,6 +10,7 @@ class UsersController < ApplicationController
 
   def show
     @tables = BlurTable.all
+    @preferences = @current_user.saved_cols
   end
 
   def new
@@ -40,6 +41,14 @@ class UsersController < ApplicationController
   def destroy
     @user.destroy
     redirect_to users_path, :notice => "Successfully destroyed user."
+  end
+  
+  def save 
+    buff = Preference.find_by_user_id(@current_user.id, :conditions => {:pref_type => :column})
+    buff.value = params['columns'].to_json
+    buff.save
+    
+    render :nothing => true
   end
 
   private

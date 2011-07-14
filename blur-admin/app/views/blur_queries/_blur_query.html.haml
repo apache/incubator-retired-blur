@@ -8,7 +8,7 @@
   - if can? :index, :blur_queries, :query_string
     - if blur_query.query_string
       - truncate_length = 20
-      %td.query_string{ :title => blur_query.query_string.length() > truncate_length ? blur_query.query_string : '' }<
+      %td.query_string{ :title => blur_query.query_string.length() > truncate_length ? blur_query.query_string.gsub(/ \+/) {'<br />+'} : '' }<
         = truncate(blur_query.query_string, :length => truncate_length, :ommision => "...")
     - else
       %td.query_string

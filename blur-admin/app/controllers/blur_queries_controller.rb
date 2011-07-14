@@ -17,8 +17,13 @@ class BlurQueriesController < ApplicationController
 
   def refresh
     filters = {}
+    # convert string bools into real bools
+    [:super_query_on, :running, :interrupted].each do |category|
+      params[category] = true  if params[category] == 'true'
+      params[category] = false if params[category] == 'false'
+    end
     # filters for columns
-    [:blur_table_id, :super_query_on].each do |category|
+    [:blur_table_id, :super_query_on, :running, :interrupted].each do |category|
       filters[category] = params[category] unless params[category] == nil or params[category] == ''
     end
     # filter for time

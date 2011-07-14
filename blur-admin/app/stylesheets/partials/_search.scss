@@ -10,12 +10,15 @@
     top: $nav-height + $header-height;
     display: inline-block;
     
-    .partial-section{ padding: 0.5em; }
+    .partial-section, .body{ padding: 0.5em; }
+    .filter { padding: 0.5em 0 0; }
 
     #query_string{ resize:vertical; }
-    #query_string, #blur_table, { @include columns(5,5.5); }
+    #query_string, #blur_table, #save_name_wrap { @include columns(5,5.5); }
     #offset { max-width: 40px; }
 
+    #save_label { @include columns(1, 5.5); }
+    #save_name { @include columns(4, 5.5); @include omega(5.5);}
 
     #search_send{
       margin-top: 1em;
@@ -70,6 +73,7 @@
   }
 
   table {
+    margin: 0;
     table-layout: strict;
     width: 100%;
     empty-cells: show;
@@ -130,10 +134,6 @@
   // Navigation Tab label div
   .header label { cursor:pointer; }
   .tab { background-color:#EEE; }
-  
-  // Save Request Section
-  #save_button{ float: right; }
-
   
   //Help section styles
   .help_list{

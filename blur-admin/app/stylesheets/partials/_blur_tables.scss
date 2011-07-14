@@ -5,29 +5,40 @@
   @include border-sides;
   @include border-top;
   @include border-radius;
+  @include standard-font;
 
   h3:nth-of-type(even)            {background-color: $shaded_row_color};
   div.blur_table:nth-of-type(odd) {background-color: $shaded_row_color};
+  h3:nth-of-type(odd)             {background-color: white};
+  div.blur_table:nth-of-type(even){background-color: white};
 
-  h3.blur_table, .blur_tables_header {
-    @include standard-font;
-    font-size: 1em;
-    text-align: right;
+  h3.blur_table, .blur_tables_header, .blur_tables_footer { font-size: 1em; }
+
+  .blur_tables_header, .blur_tables_footer {
+    background-color: #C4D9FF;
+    @include full($total-cols);
   }
 
   .blur_tables_header {
-    background-color: #C4D9FF;
-    @include full($total-cols);
     @include border-top-radius;
     @include border_bottom;
     height: $row-height;
   }
 
+  .blur_tables_footer {
+    @include border-top;
+    @include border-bottom;
+    @include border-bottom-radius;
+    height: $row-height/2;
+    text-align: center;
+    padding-top: 0.5em;
+  }
+
   h3.blur_table { 
-    margin-bottom: 0px;
     @include border-top;
     @include border-bottom;
     @include full($total-cols);
+    margin-bottom: 0px;
     height: $row-height;
     &:hover {
       cursor: pointer;
@@ -41,10 +52,10 @@
     .location {
       margin-top: 10px;
       margin-bottom: 10px;
-      @include columns($total-cols / 2, $total-cols);
+      @include prefix(0.25, $total-cols);
+      @include columns(14.5, $total-cols);
     }
     .actions {
-      @include standard-font;
       @include columns($total-cols / 2, $total-cols);
       @include omega($total-cols);
       margin-top: 10px;
@@ -61,15 +72,6 @@
     }
   }
 
-  h3.blur_table:last-of-type {
-    @include border-bottom-radius;
-  }
-
-  div.blur_table:last-of-type {
-    @include border-bottom;
-    @include border-bottom-radius;
-  }
-
   span {
     height: 100%;
     text-align: center;
@@ -80,10 +82,9 @@
   span.schema { @include omega($total-cols); }
 
   span.table_name {
-    @include columns(12, $total-cols);
+    @include prefix(0.25, $total-cols);
+    @include columns(11.75, $total-cols);
     text-align: left;
     font-size: 1.4em;
   }
-
-  .jstree a { @include standard-font; }
 }

@@ -17,27 +17,27 @@ $nav-height: 40px;
       height: $header-height;
       z-index: 2;
       #logo_box{
-        @include columns(18);
+        @include columns(18,$total-cols);
         #logo {
           margin-top: 1.25em;
-          @include columns(10);
+          @include columns(10,18);
         }
         .flash {
-          @include columns(8);
+          @include columns(7,18);
           @include border-bottom-radius;
           vertical-align: top;
           float: right;
-          margin: 0 auto;
-          padding: .5em 0;
+
           text-align: center;
           font-size: 1.2em;
           font-weight: bold;
         }
       }
       #user_nav {
-        @include columns(12);
+        @include columns(12,$total-cols);
+        @include omega($total-cols);
         text-align: right;
-        padding-top: 1em;
+        padding-top: 1.25em;
         font-size: 1.2em;
       }
     }
@@ -50,7 +50,7 @@ $nav-height: 40px;
       ul {
         @include inline-block-list(10px);
         @include text-shadow(0 1px 0 black);
-        @include full($total-cols);
+        @include full;
 
         li {
           margin: 6px .5em 0 .5em;

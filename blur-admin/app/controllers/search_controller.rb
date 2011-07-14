@@ -31,8 +31,9 @@ class SearchController < ApplicationController
       buff = Search.find params[:search_id]
     #else build a new search to be used for this specific search
     else
+      params[:super_query] ? sq=true : sq=false
       buff = Search.new(:blur_table_id => params[:blur_table],
-                        :super_query   => params[:super_query],
+                        :super_query   => sq,
                         :columns       => params[:column_data].drop(1).to_json,
                         :fetch         => params[:result_count].to_i,
                         :offset        => params[:offset].to_i,

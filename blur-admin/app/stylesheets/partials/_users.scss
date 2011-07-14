@@ -13,7 +13,10 @@
    
   @include full;
   @include standard-font;
+
   margin-top: 1em;
+  padding-top: 2em;
+
   #roles_wrapper {@include alpha; }
   
   .info-contain{ 

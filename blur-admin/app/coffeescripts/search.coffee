@@ -28,7 +28,7 @@ $(document).ready ->
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
-  setup_filter_tree()
+  $('#filter_columns').load('search/' + $('#blur_table').val() + '/filters', setup_filter_tree)
   $('[title]').tooltip()
 
   ########### PAGE ELEMENT LISTENERS ##############
@@ -159,7 +159,10 @@ $(document).ready ->
         $('#result_count').val(data.saved.search.fetch)
         $('#offset').val(data.saved.search.offset)
         $('#query_string').val(data.saved.search.query)
-        $('#super_query').val(data.saved.search.super_query)
+        if data.saved.search.super_query
+          $('#super_query').attr('checked', 'checked')
+        else
+          $('#super_query').removeAttr('checked')
         arr = eval(data.saved.search.columns)
         $.each arr, (index, value) ->
           $('.column_family_filter').jstree('check_node', "#" + value)

@@ -15,7 +15,7 @@ end
 Factory.define :controller do |t|
   t.sequence (:node_name)     { |n| "Test Node ##{n}" }
   t.sequence (:node_location) { |n| "node#{n}.blur.example.com" }
-  t.status                    { rand 2 }
+  t.status                    { rand 3 }
   t.blur_version              { "1.#{rand 10}.#{rand 10}" }
 end
 
@@ -27,7 +27,7 @@ Factory.define :shard do |t|
   t.blur_version              { "1.#{rand 10}.#{rand 10}" }
   t.sequence (:node_name)     { |n| "Test Node ##{n}" }
   t.sequence (:node_location) { |n| "node#{n}.blur.example.com" }
-  t.status                    { rand 2 }
+  t.status                    { rand 3 }
 end
 
 Factory.define :blur_table do |t|
@@ -55,8 +55,8 @@ Factory.define :blur_query do |t|
   t.cpu_time  { rand 10 * 10 ** 3 } #Between 0 and 10 seconds
   t.real_time { |blur_query| blur_query.cpu_time + rand( 10 * 10 ** 3) } #Between 0 and 10 additional seconds
   t.complete  { rand 2 }
-  t.interrupted { rand(5) == 0 } # 20% chance
-  t.running     { rand(5) == 0 } # 20% chance
+  t.interrupted { rand(2) == 1 ? true : false } # 50% chance
+  t.running      { rand(2) == 1 ? true : false } # 50% chance
   t.uuid        { rand 10 ** 8 }
   t.super_query_on { rand(4) != 0 } # 75% chance
   t.start { rand 10 ** 6 }

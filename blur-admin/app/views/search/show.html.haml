@@ -14,29 +14,28 @@
         .header#standard
           %label{:id => 'standard'} Search
         .body#standard
-          #query_input.partial-section
-            .query-label= label_tag :query_string, "Query:"
-            = text_area_tag :query_string, params[:query_string]
-          #table_select.partial-section
-            .table-label= label_tag :blur_table, "Table:"
-            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
-          #families_select.partial-section
-            .column-title
-              Column Families:
-            #filter_columns
-              = render 'filters'
+          .filter= label_tag :query_string, "Query:"
+          = text_area_tag :query_string, params[:query_string]
+          .filter= label_tag :blur_table, "Table:"
+          = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
+          .filter
+            Column Families:
+          #filter_columns
+            = render 'filters'
+          #search_help.filter
+            %a{:href=>'javascript:void(0)'} Help
 
       .tab#advanced
         .header#advanced
           %label{:id => 'advanced'} Advanced Options
         .body#advanced
-          #sq_select.partial-section
+          .filter
             = label_tag :super_query, "Super Query:"
             = check_box_tag :super_query, true, true
-          #start_offset.partial-section
+          .filter
             = label_tag :offset, 'Start:'
             = number_field_tag :offset, 0, :min => 0
-          #fetch_select.partial-section
+          .filter
             = label_tag :result_count, 'Fetch:'
             = select_tag :result_count, options_for_select([25, 50, 100])
 
@@ -44,17 +43,15 @@
         .header#store
           %label{:id => 'store'} Save Options
         .body#store
-          .partial-section.save-label
-            = label_tag :save_name, 'Name:'
+          .filter#save_name_wrap
+            #save_label= label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
-          .partial-section
-            %button#save_button{:disabled => true, :name => "save", :type => "button"}
+          .filter
+            %button{:disabled => true, :name => "save", :type => "button", :id => 'save_button'}
               Save
 
       #search_send.partial_section
         %img{:id => "loading-spinner", :src => "/images/loadinfo_24.gif", :alt => "Loading...", :style => "display:none;" }
-        %span#search_help
-          %a{:href=>'javascript:void(0)'} Help
         = submit_tag "Search", :disabled => true, :id => "search_submit"
   #results_wrapper.open_filters
     #bar_section

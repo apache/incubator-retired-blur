@@ -13,9 +13,7 @@
         %th Actions
       %th
   %tbody
-    -if @blur_queries.empty?
-      %tr#no-queries-row
-        %td{:colspan => 9}
-          %b No Available Queries
-    -else
-      = render :partial => 'blur_query', :collection => @blur_queries
+    = render :partial => 'blur_query', :collection => @blur_queries
+    %tr#no-queries-row
+      %td{:colspan => 9}
+        %b No Available Queries

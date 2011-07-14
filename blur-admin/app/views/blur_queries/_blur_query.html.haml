@@ -45,6 +45,6 @@
     %td
       - if blur_query.running
         = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do
-          = submit_tag 'Cancel', :name => 'cancel', :confirm => "Are you sure?"
+          = tag :input, :type => :button, :value => 'Cancel', :class => :cancel_query_button
   %td.info<
     = link_to "More Info", "/blur_queries/#{blur_query.id}/more_info", :class => 'more_info', :remote => true

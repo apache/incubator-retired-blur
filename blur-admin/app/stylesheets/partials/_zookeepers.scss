@@ -49,6 +49,7 @@
   @include full;
   @include standard-font;
   padding-top: 2em;
+  margin-bottom: 165px;
 
   .zookeeper_info {
     @include prefix(0.5);
@@ -57,13 +58,15 @@
     display: inline-block;
   }
   .zookeeper_nodes {
-    @include columns(7,$total-cols);
+    @include columns(8,$total-cols);
     margin-bottom: 1em;
     h4 { margin-bottom: 0.5em; }
-    .zookeeper_status_info { @include columns(7,7); display: inline-block;}
+    .zookeeper_status_info { @include columns(8,8); display: inline-block;}
   }
   .zookeeper_controllers { @include prefix(1); }
-  .zookeeper_shards { @include suffix(15); }
+  .zookeeper_shards { @include suffix(13); }
+
+  #old_queries { @include columns(30,$total-cols); margin-bottom: 165px; }
 }
 
 .ui-state-highlight, .ui-state-error, .ui-state-yellow {

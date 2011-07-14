@@ -57,12 +57,33 @@ $(document).ready ->
   $('.delete_blur_table_button').live 'click', ->
     form = $(this).closest 'form.delete'
     $("<div class='confirm_delete'>Do you want to delete the underlying table index?</div>").dialog
+      width: 400,
+      modal: true,
+      draggable: false,
+      resizable: false,
+      title: "Delete Table",
       buttons:
         "Delete Index": ->
           form.find('#delete_index').val 'true'
           form.submit()
           $(this).dialog 'close'
         "Preserve Index": ->
+          form.submit()
+          $(this).dialog 'close'
+        "Cancel": ->
+          $(this).dialog 'close'
+      close: ->
+        $(this).remove()
+
+  # Listener for enable/disable button (launches dialog box)
+  $('.enable_disable_table_button').live 'click', ->
+    form = $(this).closest 'form.update'
+    $("<div class='confirm_enable_disable'>Are you sure?</div>").dialog
+      modal: true,
+      draggable: false,
+      resizable: false,
+      buttons:
+        "Yes": ->
           form.submit()
           $(this).dialog 'close'
         "Cancel": ->

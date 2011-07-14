@@ -49,13 +49,3 @@
                   Offline
       - else
         No shards available
-
-  - if @old_queries.length > 0
-    %h2 Query Warning
-    .zookeeper_info
-      %h4.warning
-        - if @old_queries.length == 1
-          = "1 query has been running for more than a minute"
-        - else
-          = "#{@old_queries.length} queries have been running for more than a minute"
-

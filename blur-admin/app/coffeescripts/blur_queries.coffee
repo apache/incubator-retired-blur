@@ -162,3 +162,20 @@ $(document).ready ->
     else if $(this).val() isnt 'false'
       period = $(this).val() * 1000
       set_timer()
+
+  # Listener for cancel button (launches dialog box)
+  $('.cancel_query_button').live 'click', ->
+    form = $(this).closest 'form.cancel'
+    $("<div class='confirm_enable_disable'>Are you sure?</div>").dialog
+      modal: true,
+      draggable: false,
+      resizable: false,
+      title: "Cancel",
+      buttons:
+        "Yes": ->
+          form.submit()
+          $(this).dialog 'close'
+        "Cancel": ->
+          $(this).dialog 'close'
+      close: ->
+        $(this).remove()

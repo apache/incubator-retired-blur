@@ -21,6 +21,7 @@ class Ability
         can :show, [:search]
         can :show_current, :zookeepers
         can :make_current, :zookeepers
+        can :dashboard, :zookeepers
 
         # search
         can [:filters, :create, :load, :delete, :reload, :save], :search

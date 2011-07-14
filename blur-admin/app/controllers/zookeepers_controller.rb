@@ -26,4 +26,16 @@ class ZookeepersController < ApplicationController
     # Javascript redirect (has to be done in js)
     render :js => "window.location = '#{request.referer}'"
   end
+  
+  def dashboard
+    time = Time.zone.now - 1.minutes
+    data = {
+      :zookeepers => Zookeeper.includes(:controllers, :clusters=>[:shards]),
+      :long_queries => BlurQuery.where(['created_at < ? and running = 1', time])
+    }
+    
+    respond_to do |format|
+      format.json { render :json => data.to_json(:include=>[:controllers, :clusters, :shards]) }
+    end
+  end
 end

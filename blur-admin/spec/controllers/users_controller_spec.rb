@@ -31,6 +31,7 @@ describe UsersController do
 
     before do
       User.stub(:find).and_return(user)
+      user.stub(:saved_cols)
     end
 
     it "should find and assign user" do

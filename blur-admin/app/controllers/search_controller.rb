@@ -7,7 +7,7 @@ class SearchController < ApplicationController
     @blur_tables = @current_zookeeper.blur_tables.find(:all, :order => "table_name")
     @blur_table = @blur_tables.first
 	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
-    @searches = @current_user.searches.reverse
+    @searches = current_user.searches.reverse
 	end
 
 	#Filter action to help build the tree for column families
@@ -38,7 +38,7 @@ class SearchController < ApplicationController
                         :columns       => drop,
                         :fetch         => params[:result_count].to_i,
                         :offset        => params[:offset].to_i,
-                        :user_id       => @current_user.id,
+                        :user_id       => current_user.id,
                         :query         => params[:query_string])
     end
 
@@ -69,7 +69,7 @@ class SearchController < ApplicationController
     sel.columnFamiliesToFetch = families unless families.blank?
     sel.columnsToFetch = columns unless columns.blank?
     bq.selector = sel
-    bq.userId = @current_user.username
+    bq.userId = current_user.username
     blur_results = BlurThriftClient.client.query(@blur_table.table_name, bq)
 
     #build a mapping from families to their associated columns
@@ -161,7 +161,7 @@ class SearchController < ApplicationController
   #Delete action used for deleting a saved search from a user's saved searches
   def delete
     Search.find(params[:search_id]).delete
-    @searches = @current_user.searches.reverse
+    @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
       format.html {render :partial =>"saved.html.haml" }
@@ -169,7 +169,7 @@ class SearchController < ApplicationController
   end
 
   def reload
-    @searches = @current_user.searches.reverse
+    @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
       format.html {render :partial =>"saved.html.haml" }
@@ -184,9 +184,9 @@ class SearchController < ApplicationController
                   :columns       => drop,
                   :fetch         => params[:result_count].to_i,
                   :offset        => params[:offset].to_i,
-                  :user_id       => @current_user.id,
+                  :user_id       => current_user.id,
                   :query         => params[:query_string])
-    @searches = @current_user.searches.reverse
+    @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
 
     respond_to do |format|

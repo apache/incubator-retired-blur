@@ -17,6 +17,10 @@ class ApplicationController < ActionController::Base
       redirect_to login_path, :alert => "Please login"
     end
   end
+  
+  def current_user
+    @current_user ||= current_user_session && current_user_session.user
+  end
 
   private
 
@@ -42,9 +46,5 @@ class ApplicationController < ActionController::Base
 
     def current_user_session
       @current_user_session ||= UserSession.find
-    end
-
-    def current_user
-      @current_user ||= current_user_session && current_user_session.user
     end
 end

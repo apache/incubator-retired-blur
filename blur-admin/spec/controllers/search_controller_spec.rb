@@ -4,9 +4,11 @@ describe SearchController do
 
   before (:each) do
     @ability = Ability.new User.new
+    @user = User.new
     @ability.stub!(:can?).and_return(true)
     controller.stub!(:current_ability).and_return(@ability)
-    @current_user.stub(:searches).and_return [@search]
+    controller.stub!(:current_user).and_return(@user)
+    @user.stub(:searches).and_return [@search]
   end
 
   describe "show" do
@@ -111,7 +113,8 @@ describe SearchController do
                                                                                          "table2" => ["deptNo", "moreThanOneDepartment", "name"]}
                                                                }.to_json
       BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
-      @current_user.stub(:username).and_return("name")
+      @user.stub(:username).and_return("name")
+      @user.stub(:id).and_return(1)
     end
 
     def create_blur_result(options)
@@ -123,7 +126,6 @@ describe SearchController do
     
     it "renders the create template when column_family & record_count < count & families_include" do
       @client.should_receive(:query).and_return(@test1_query)
-      @current_user.stub(:id).and_return(1)
       BlurTable.stub(:find).and_return(@blur_table)
       get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => 17, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
@@ -131,7 +133,6 @@ describe SearchController do
     
     it "renders the create template when column_family & record_count < count & !families_include" do
       @client.should_receive(:query).and_return(@test2_query)
-      @current_user.stub(:id).and_return(1)
       BlurTable.stub(:find).and_return(@blur_table)
       get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => 17, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
@@ -141,7 +142,6 @@ describe SearchController do
       set2 = [@test2_cf2, @test2_cf1]
       test_result2 = create_blur_result(set2)
       test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
-      @current_user.stub(:id).and_return(1)
 
       @client.should_receive(:query).and_return(test_query)
       get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
@@ -152,7 +152,6 @@ describe SearchController do
       set2 = [@test1_cf2, @test1_cf1]
       test_result2 = create_blur_result(set2)
       test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
-      @current_user.stub(:id).and_return(1)
 
       @client.should_receive(:query).and_return(test_query)
       get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
@@ -162,17 +161,12 @@ describe SearchController do
     it "renders the create template when !column_family & families_include" do
       @client.should_receive(:query).and_return(@test2_query)
 
-      @current_user.stub(:id).and_return(1)
-
       get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
     end
 
     it "renders the create template when !column_family & !families_include" do
       @client.should_receive(:query).and_return(@test2_query)
-
-      @current_user.stub(:id).and_return(1)
-
 
       get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template "create"
@@ -181,15 +175,12 @@ describe SearchController do
     it "renders the create template when superQueryOn is false" do
       @client.should_receive(:query).and_return(@test1_query)
 
-      @current_user.stub(:id).and_return(1)
-
       get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :super_query => false
       response.should render_template "create"
     end
     
     it "renders the create template when the search id is set" do
       @client.should_receive(:query).and_return(@test1_query)
-      @current_user.stub(:id).and_return(1)
       Search.stub(:find).and_return(Factory.stub :search, :columns => ["family_table1", 
                                                                       "column_table1_deptNo",
                                                                       "column_table1_moreThanOneDepartment",
@@ -238,7 +229,7 @@ describe SearchController do
   describe "reload" do
     before(:each) do
       @search = Factory.stub :search
-      @current_user.stub(:searches).and_return [@search]
+      @user.stub(:searches).and_return [@search]
       Search.stub(:new).and_return(@search)
       Search.stub(:find).and_return(@search)
       BlurTable.stub(:find)
@@ -253,15 +244,15 @@ describe SearchController do
   describe "save" do
     before(:each) do
       @search = Factory.stub :search
-      @current_user.stub(:searches).and_return [@search]
+      @user.stub(:searches).and_return [@search]
       Search.stub(:find).and_return(@search)
       BlurTable.stub(:find)
     end
 
     it "saves and renders the saved partial" do
       @search = Factory.stub :search
-      @current_user.stub(:searches).and_return [@search]
-      @current_user.stub(:id).and_return [1]      
+      @user.stub(:searches).and_return [@search]
+      @user.stub(:id).and_return [1]      
       Search.stub(:create).and_return @search
       Search.should_receive(:create)
       get :save, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]

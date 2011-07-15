@@ -4,6 +4,8 @@ describe UsersController do
   before do
     @ability = Ability.new User.new
     @ability.stub!(:can?).and_return(true)
+    @user = User.new
+    controller.stub!(:current_user).and_return(@user)
     controller.stub!(:current_ability).and_return(@ability)
   end
 
@@ -27,17 +29,15 @@ describe UsersController do
   end
 
   describe "GET show" do
-    let(:user) { mock_model(User).as_null_object }
-
     before do
-      User.stub(:find).and_return(user)
-      user.stub(:saved_cols)
+      User.stub(:find).and_return(@user)
+      @user.stub(:saved_cols)
     end
 
     it "should find and assign user" do
-      User.should_receive(:find).with('id').and_return(user)
+      User.should_receive(:find).with('id').and_return(@user)
       get :show, :id => 'id'
-      assigns(:user).should == user
+      assigns(:user).should == @user
     end
 
     it "should render show template" do

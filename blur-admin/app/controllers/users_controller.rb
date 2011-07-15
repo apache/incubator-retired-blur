@@ -10,7 +10,7 @@ class UsersController < ApplicationController
 
   def show
     @tables = BlurTable.all
-    @preferences = @current_user.saved_cols
+    @preferences = current_user.saved_cols
   end
 
   def new
@@ -44,7 +44,7 @@ class UsersController < ApplicationController
   end
   
   def save 
-    buff = Preference.find_by_user_id(@current_user.id, :conditions => {:pref_type => :column})
+    buff = Preference.find_by_user_id(current_user.id, :conditions => {:pref_type => :column})
     buff.value = params['columns'].to_json
     buff.save
     

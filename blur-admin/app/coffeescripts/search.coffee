@@ -86,6 +86,18 @@ $(document).ready ->
       $('#bar_section').width('1em');
     $('[title]').tooltip()
 
+  toggle_all = () ->
+    list_num = $('#neighborhood').find("> ul").length
+    un_num = $('#neighborhood').find("> ul > .jstree-unchecked").length
+    $('#result_table').find('thead > .familysets > th').each( ->
+      if this.id
+        a_string = '.family_' + this.id
+        if list_num == un_num
+          $(a_string).hide()
+        else
+          $(a_string).show()
+    )
+
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
     name = '.'+$(this).attr('name')
@@ -95,7 +107,9 @@ $(document).ready ->
     curr_col_span = $(family).attr('colspan')
     max_col_span = $(family).attr('children')
 
-    if $(name).is(":visible")
+    if name == ".all"
+      toggle_all()
+    else if $(name).is(":visible")
       if element == ".column"
         if curr_col_span <= 2
           name = '.family_'+name.split("_")[1]

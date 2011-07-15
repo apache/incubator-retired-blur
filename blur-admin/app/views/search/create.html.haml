@@ -4,7 +4,7 @@
   #results_section
     %table#result_table.result_table
       %thead
-        %tr
+        %tr.familysets
           %th.rowId
           - @all_columns.each do |family, set|
             %th{:colspan => set.count, :class => "family_#{family}", :id => family, :children => set.count}

@@ -87,8 +87,16 @@ $(document).ready ->
     $('[title]').tooltip()
 
   toggle_all = () ->
-    list_length = $('#all').find("> ul > .jstree-checked").length
-    alert(list_length)
+    list_num = $('#neighborhood').find("> ul").length
+    un_num = $('#neighborhood').find("> ul > .jstree-unchecked").length
+    $('#result_table').find('thead > .familysets > th').each( ->
+      if this.id
+        a_string = '.family_' + this.id
+        if list_num == un_num
+          $(a_string).hide()
+        else
+          $(a_string).show()
+    )
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
@@ -100,9 +108,7 @@ $(document).ready ->
     max_col_span = $(family).attr('children')
 
     if name == ".all"
-      toggle_all
-      list_length = $('#result_table').find('thead > .columnsets > th').length
-      alert(list_length)
+      toggle_all()
     else if $(name).is(":visible")
       if element == ".column"
         if curr_col_span <= 2

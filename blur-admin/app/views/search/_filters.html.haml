@@ -1,6 +1,6 @@
 .column_family_filter
   %ul
-    %li#neighborhood{:class => 'jstree-checked', :id => "all"}
+    %li#neighborhood{:class => 'jstree-checked'}
       %a{:href=>'#', :class => 'check_filter', :name => "all"} All
       - if @columns
         - @columns.each do |family, cols|

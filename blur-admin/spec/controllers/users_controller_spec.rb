@@ -30,8 +30,10 @@ describe UsersController do
 
   describe "GET show" do
     before do
+      @table = Factory.stub :blur_table
       User.stub(:find).and_return(@user)
       @user.stub(:saved_cols)
+      BlurTable.stub(:all).and_return([@table])
     end
 
     it "should find and assign user" do

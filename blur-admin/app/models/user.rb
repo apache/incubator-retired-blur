@@ -17,7 +17,7 @@ class User < ActiveRecord::Base
   def saved_cols
     ret = []
     self.preferences.find_all_by_pref_type(:column).each do |pref|
-      ret = JSON.parse(pref[:value])
+      ret = JSON.parse(pref[:value]) unless pref[:value] == "null"
     end
     ret.flatten.uniq
   end

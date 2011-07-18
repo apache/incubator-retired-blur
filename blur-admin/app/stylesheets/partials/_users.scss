@@ -33,6 +33,17 @@
     }
   }
   
+  #pref-bin{
+    @include columns(3.9, 10);
+    @include pad(.01, .01, 30);
+    @include clearfix;
+  }
+  
+  #pref-trash{
+    @include pref-box;
+    margin-top:5px;
+  }
+  
   //pref-col box
   #pref-col-info{
     padding:5px;
@@ -42,11 +53,7 @@
   
   //pref col - holds your choices
   #pref-col{
-    @include columns(3.9, 10);
-    @include info(white);
     @include pref-box;
-    //@include pad(.01, .01, 10)
-    @include pad(.01, .01, 30)
   }
   
   //opt-col - options to choose that will go into my list
@@ -55,7 +62,7 @@
     @include columns(5.9, 10);
     @include pref-box;
     float: right;
-    @include pad(.01, .01, 30)
+    @include pad(.01, .01, 30);
   }
   
   //groups of columns
@@ -81,7 +88,7 @@
     background-color:#FAD08A;
   }
   
-  #no-saved{
+  #no-saved, #trash{
     text-align:center;
     font-weight:200;
   }

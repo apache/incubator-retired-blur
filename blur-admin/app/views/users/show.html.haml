@@ -5,15 +5,19 @@
 #show_user_wrapper
   .info-contain
     #pref-col-info
-      #pref-col 
-        .section-label{:id => @current_user.id} My Saved Columns
-        %ul#my-cols
-          -if @preferences.size() == 0
-            #no-saved None Currently Saved
-          -else
-            -@preferences.each do |pref|
-              .sel-fam{:id => "columns_#{pref}"}
-                =pref
+      #pref-bin
+        #pref-col 
+          .section-label{:id => @current_user.id} My Saved Columns
+          %ul#my-cols
+            -if @preferences.size() == 0
+              #no-saved None Currently Saved
+            -else
+              #no-saved{:style => "display:none;"} None Currently Saved
+              -@preferences.each do |pref|
+                .sel-fam{:id => "columns_#{pref}"}
+                  =pref
+        #pref-trash
+          #trash Drag a column here to remove from Preferences
       #opt-col
         .section-label Total Columns
         -@choices.each do |option|

@@ -10,4 +10,8 @@ class Search < ActiveRecord::Base
     end
     bq
   end
+  
+  def order_columns
+    
+  end
 end

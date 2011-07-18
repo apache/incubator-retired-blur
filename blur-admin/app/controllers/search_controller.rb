@@ -63,6 +63,10 @@ class SearchController < ApplicationController
         columns[parts[1]] << parts[2]
       end
     end
+    
+    #reorder the CFs to use the preference
+    preferences = current_user.saved_cols
+    families = (preferences & families) | families
 
     #add the selectors that were just built to the blur query and retrieve the results
     sel = Blur::Selector.new

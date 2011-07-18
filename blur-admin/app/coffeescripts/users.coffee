@@ -13,6 +13,9 @@ $(document).ready ->
       save_pref()
     )
     
+  #code for the trash can
+  $('#trash').droppable()
+    
   #click listener for the lists of column names
   $('.fam').live 'click', -> 
     $(this).toggleClass('my-select')

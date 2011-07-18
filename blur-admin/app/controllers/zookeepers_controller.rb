@@ -31,7 +31,7 @@ class ZookeepersController < ApplicationController
     time = Time.zone.now - 1.minutes
     data = {
       :zookeepers => Zookeeper.includes(:controllers, :clusters=>[:shards]),
-      :long_queries => BlurQuery.where(['created_at < ? and running = 1', time])
+      :long_queries => BlurQuery.where(['created_at < ? and running = 1', time]).length
     }
     
     respond_to do |format|

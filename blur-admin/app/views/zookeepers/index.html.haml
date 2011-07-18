@@ -4,18 +4,16 @@
 
 #zookeepers_wrapper
   %h2 Zookeepers
+
+  - if @old_queries.length > 0
+    %h4.warning#warning
+      .one_query{:style => "display:none;"}
+        = "1 query has been running for more than a minute"
+      .many_queries{:style => "display:none;"}
+        = "#{@old_queries.length} queries have been running for more than a minute"
+
   - if @zookeepers
     = render 'zookeepers'
 
   - else
     %h4 No Zookeeper Instances Available
-
-  - if @old_queries.length > 0
-    #old_queries{:number => @old_queries.length }
-      %h2 Query Warning
-      .zookeeper_info
-        %h4.warning
-          - if @old_queries.length == 1
-            = "1 query has been running for more than a minute"
-          - else
-            = "#{@old_queries.length} queries have been running for more than a minute"

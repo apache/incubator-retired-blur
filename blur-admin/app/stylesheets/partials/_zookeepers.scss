@@ -54,6 +54,7 @@
 }
 
 #zookeepers_wrapper{
+  display: none;
   @include full;
   @include standard-font;
   padding-top: 2em;
@@ -77,8 +78,10 @@
         td.shard { @include omega(14); }
       }
     }
-    
   }
+
+  h2 { @include columns(15, $total-cols); }
+  .warning { margin: 0; @include columns(13, $total-cols); @include omega($total-cols); text-align: right;}
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
   #old_queries { @include columns(30,$total-cols); margin-bottom: 165px; }

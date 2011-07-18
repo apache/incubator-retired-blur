@@ -1,13 +1,19 @@
 $(document).ready ->
   load_dashboard = () ->
-    long_queries_length = $('#zookeepers_wrapper').find("> #old_queries").attr('number')
-    if !long_queries_length
-      long_queries_length = '0'
-
-
     $.getJSON '/zookeepers/dashboard', (data) ->
       console.log(data)
       zookeepers = data.zookeepers
+      long_queries = parseInt ( data.long_queries )
+
+      if long_queries < 1
+        query_message = '<div></div>'
+      else if long_queries == 1
+        query_message = '<div>1 query has been running for more than a minute</div>'
+      else
+        query_message = '<div>' + data.long_queries + ' queries have been running for more than a minute</div>'
+      console.log(query_message)
+      $('#warning').html(query_message)
+
       $.each( zookeepers, ->
         table = $('#zookeepers').find("#" + this.zookeeper.id )[0]
         curr_zookeeper = $('#' + table.id).find("th")
@@ -73,13 +79,10 @@ $(document).ready ->
           bv_controllers.removeClass('ui-icon-green ui-icon-check')
           bv_controllers.find('.ui-state-error').show()
 
-
+        $('#zookeepers_wrapper').show()
       )
-      
-
-
-
-      setTimeout(load_dashboard, 60000)
+    setTimeout(load_dashboard, 60000)
 
   load_dashboard()
+  
   

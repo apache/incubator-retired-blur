@@ -76,10 +76,11 @@
     height: 100%;
     text-align: center;
     line-height: $row-height;
+    whitespace: normal;
   }
 
-  span.hosts, span.count, span.size, span.second, span.status, span.schema {@include columns(3,$total-cols)}
-  span.schema { @include omega($total-cols); }
+  span.hosts, span.count, span.size, span.second, span.status {@include columns(3,$total-cols)}
+  span.schema { @include omega($total-cols); @include columns(2.5,$total-cols)}
 
   span.table_name {
     @include prefix(0.25, $total-cols);

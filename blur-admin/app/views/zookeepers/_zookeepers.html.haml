@@ -1,51 +1,30 @@
 #zookeepers
   - @zookeepers.each do |zookeeper|
-    .zookeeper_info
-      %h4.name= "#{zookeeper.name}: "
-      - if zookeeper.status == 1
-        .ui-state-highlight.ui-corner-all
-          Online
-      - else
-        .ui-state-error.ui-corner-all
-          Offline
-
-    .zookeeper_nodes.zookeeper_controllers
-      %h4 Controllers
-      - if zookeeper.controllers and zookeeper.controllers.length > 0
-        - if zookeeper.controllers.collect { |controller| controller.blur_version }.flatten.uniq.length == 1
-          = "All controllers are running blur version #{zookeeper.controllers.first.blur_version}"
-        - else
-          .warning
-            All controllers are NOT running the same blur version
-        - zookeeper.controllers.each do |controller|
-          - if controller.status != 2
-            .zookeeper_status_info
-              = "Controller #{controller.node_name}: "
-              - if controller.status == 1
-                .ui-state-yellow.ui-corner-all
-                  Disabled
-              - else
-                .ui-state-error.ui-corner-all
-                  Offline
-      - else
-        No controllers available
-    .zookeeper_nodes.zookeeper_shards
-      %h4 Shards
-      - if zookeeper.shards and zookeeper.shards.length > 0
-        - if zookeeper.shards.collect { |shard| shard.blur_version }.flatten.uniq.length == 1
-          = "All shards are running blur version #{zookeeper.shards.first.blur_version}"
-        - else
-          .warning
-            All shards are NOT running the same blur version
-        - zookeeper.shards.each do |shard|
-          - if shard.status != 2
-            .zookeeper_status_info
-              = "Shard #{shard.node_name}: "
-              - if shard.status == 1
-                .ui-state-yellow.ui-corner-all
-                  Disabled
-              - else
-                .ui-state-error.ui-corner-all
-                  Offline
-      - else
-        No shards available
+    .a_zookeeper
+      .zookeeper_info
+        %table{:id => "#{zookeeper.id}" }
+          %thead
+            %tr
+              %th{:status => 1 }
+                %h4= zookeeper.name
+          %tbody
+            %tr
+              %td.index
+              %td.cont
+                Controllers
+              %td.shard
+                Shards
+            %tr.bv
+              %td.index
+                blur version
+              %td.cont{:status => 2 }
+                .ui-icon.ui-icon-check
+              %td.shard{:status => 2 }
+                .ui-icon.ui-icon-check
+            %tr.stat
+              %td.index
+                status
+              %td.cont
+                .stat-cont.ui-icon.ui-icon-check{:status => 2 }
+              %td.shard
+                .stat-shard.ui-icon.ui-icon-check{:status => 2 }

@@ -7,8 +7,7 @@
   
   @mixin pref-box{
     @include info(white);
-    margin:10px 0px 10px 0px;
-    padding:10px 5px 10px 5px;
+    margin:0px 0px 0px 0px;
   }
    
   @include full;
@@ -22,17 +21,15 @@
   .info-contain{ 
     @include full($total-cols); 
     @include clearfix;
-    }
+  }
   
   //user info box
   #user-info{
     @include info(#EEE);
-    padding:5px;
     @include columns(5, $total-cols);
-    @include omega;
+    float: right;
     p{
-      margin-top:5px;
-      margin-bottom:5px;
+      margin: 5px;
     }
   }
   
@@ -40,42 +37,40 @@
   #pref-col-info{
     padding:5px;
     @include info(#EEE);
-    @include columns(23, $total-cols);
-    @include alpha;
+    @include columns(10, $total-cols);
   }
   
   //pref col - holds your choices
   #pref-col{
-    @include columns(4, 23);
-    @include alpha;
+    @include columns(3.9, 10);
     @include info(white);
+    @include pref-box;
+    //@include pad(.01, .01, 10)
+    @include pad(.01, .01, 30)
   }
   
   //opt-col - options to choose that will go into my list
   #opt-col{
     @include info(white);
-    @include columns(18, 23);
+    @include columns(5.9, 10);
+    @include pref-box;
+    float: right;
+    @include pad(.01, .01, 30)
   }
   
   //groups of columns
-  .cols{
+  .fam{
     padding:5px;
     margin:5px;
-    //@include info(#C4D9FF);
-    display:inline-block;
-    @include columns(5.75, 18);
+    cursor:pointer;
+    padding: 2px;
+    margin:2px;
+    @include info(#C4D9FF);
   }
   
   ul{
     padding:0px;
     margin:0px;
-  }
-  
-  li{
-    padding: 2px;
-    margin:2px;
-    list-style: none;
-    @include info(#C4D9FF);
   }
   
   .section-label{
@@ -91,14 +86,18 @@
     font-weight:200;
   }
   
-  .fam{
-    cursor:pointer;
-  }
-  
   .sel-fam{
     cursor:grab;
     cursor:grab;
     cursor:-moz-grab;
     cursor:-webkit-grab;
+    
+    @include info(#C4D9FF);
+    padding:2px;
+    margin:2px;
   }
+}
+
+body{
+  //@include susy-grid-background;
 }

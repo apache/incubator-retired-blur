@@ -49,7 +49,9 @@ $(document).ready ->
     $('#dialog-help').dialog
       height: 550,
       width: 710,
-      modal: true
+      modal: true,
+      resizable: false,
+      draggable:false
       
   # listener that checks if the submit button should be enabled on click
   $('#filter_section').live "click", -> toggle_submit()

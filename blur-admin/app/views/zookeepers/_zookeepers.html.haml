@@ -6,7 +6,7 @@
           %thead
             %tr
               %th{:status => 1 }
-                %h4= zookeeper.name
+                = zookeeper.name
           %tbody
             %tr
               %td.index
@@ -14,17 +14,29 @@
                 Controllers
               %td.shard
                 Shards
-            %tr.bv
+            %tr
               %td.index
                 blur version
-              %td.cont{:status => 2 }
-                .ui-icon.ui-icon-check
-              %td.shard{:status => 2 }
-                .ui-icon.ui-icon-check
-            %tr.stat
+              %td.cont
+                .bv-cont.ui-icon-green.ui-icon-check
+                  .ui-state-error.ui-corner-all{:style => "display:none;"}
+                    Inconsistent Blur Versions
+              %td.shard
+                .bv-shard.ui-icon-green.ui-icon-check
+                  .ui-state-error.ui-corner-all{:style => "display:none;"}
+                    Inconsistent Blur Versions
+            %tr
               %td.index
                 status
               %td.cont
-                .stat-cont.ui-icon.ui-icon-check{:status => 2 }
+                .stat-cont.ui-icon-green.ui-icon-check
+                  .ui-state-yellow.ui-corner-all{:style => "display:none;"}
+                    Controllers Disabled
+                  .ui-state-error.ui-corner-all{:style => "display:none;"}
+                    Controllers Offline
               %td.shard
-                .stat-shard.ui-icon.ui-icon-check{:status => 2 }
+                .stat-shard.ui-icon-green.ui-icon-check
+                  .ui-state-yellow.ui-corner-all{:style => "display:none;"}
+                    Shards Disabled
+                  .ui-state-error.ui-corner-all{:style => "display:none;"}
+                    Shards Offline

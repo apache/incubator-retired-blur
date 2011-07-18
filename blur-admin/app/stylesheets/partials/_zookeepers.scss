@@ -66,11 +66,13 @@
       width: 100%;
       @include standard-border;
       display: inline-block;
-      h4 { margin: 0; }
-      table{
-        width: 100%;
-        .ui-icon { margin: 0 auto; }
 
+      table{
+        
+        width: 100%;
+        .ui-icon-green { margin: 0 auto; }
+        th { font-size: 1.2em; @include border-top-radius; border: none; }
+        td { @include standard-font; }
         td.index { @include columns(2.75, 14); }
         td.cont, td.shard { @include columns(5, 14); text-align: center; }
         td.shard { @include omega(14); }
@@ -81,6 +83,8 @@
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
   #old_queries { @include columns(30,$total-cols); margin-bottom: 165px; }
+
+  .ui-state-highlight, .ui-state-error, .ui-state-yellow { margin-bottom: 5px; }
 }
 
 .warning { color: #b81900; font-weight: bold; }

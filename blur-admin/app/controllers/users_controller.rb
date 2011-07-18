@@ -48,10 +48,12 @@ class UsersController < ApplicationController
     redirect_to users_path, :notice => "Successfully destroyed user."
   end
   
-  def save 
-    buff = Preference.find_by_user_id(current_user.id, :conditions => {:pref_type => :column})
-    buff.value = params['columns'].to_json
-    buff.save
+  def save_column 
+    col_save = Preference.find_by_user_id(current_user.id, :conditions => {:pref_type => :column})
+    col_save = Preference.create(:name => "column", :pref_type => "column", :user_id => current_user.id) unless col_save
+    
+    col_save.value = params['columns'].to_json
+    col_save.save
     
     render :nothing => true
   end

@@ -43,9 +43,9 @@ Factory.define :blur_table do |t|
       :setTable           => true,
       :setColumnFamilies  => true,
       :columnFamiliesSize => 3,
-      :columnFamilies     => { 'Column Family 1' => ['Column 1A', 'Column 1B', 'Column 1C'],
-                               'Column Family 2' => ['Column 2A', 'Column 2B', 'Column 2C'],
-                               'Column Family 3' => ['Column 3A', 'Column 3B', 'Column 3C'] }
+      :columnFamilies     => { 'ColumnFamily1' => ['Column1A', 'Column1B', 'Column1C'],
+                               'ColumnFamily2' => ['Column2A', 'Column2B', 'Column2C'],
+                               'ColumnFamily3' => ['Column3A', 'Column3B', 'Column3C'] }
     }.to_json
   end
 end
@@ -71,10 +71,10 @@ end
 #create a valid search
 Factory.define :search do |t|
   t.super_query{ rand(1) == 0 } # 50% chance
-  t.sequence (:columns){ |n| ["family_Column Family 1", 
-                              "column_Column Family 1_Column 1A",
-                              "column_Column Family 1_Column 1B",
-                              "column_Column Family 1_Column 1C"].to_json }
+  t.sequence (:columns){ |n| ["family_ColumnFamily1", 
+                              "column_ColumnFamily1_Column1A",
+                              "column_ColumnFamily1_Column1B",
+                              "column_ColumnFamily1_Column1C"].to_json }
   t.fetch { rand 10 ** 6 }
   t.offset { rand 1 ** 5 }
   t.sequence(:name) {|n| "Search #{n}"}

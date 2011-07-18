@@ -7,14 +7,17 @@ $(document).ready ->
       success: (data) ->
     
   #make this sortable
-  $('#my-cols').sortable(
+  $('#my-cols').sortable
+    connectWith: "#actual-trash",
     #when the order is changed
     stop: ->
       save_pref()
-    )
-    
-  #code for the trash can
-  $('#trash').droppable()
+  
+  $('#actual-trash').sortable
+    items: "div:not(#trash)"
+    receive: (event, ui)->
+      $(ui.item).remove()
+      $('#' + $(ui.item).attr('id')).removeClass('my-select')
     
   #click listener for the lists of column names
   $('.fam').live 'click', -> 

@@ -34,14 +34,19 @@
   }
   
   #pref-bin{
-    @include columns(3.9, 10);
-    @include pad(.01, .01, 30);
+    @include columns(4, 10);
     @include clearfix;
   }
   
   #pref-trash{
     @include pref-box;
     margin-top:5px;
+  }
+  
+  #actual-trash{
+    div:not(#trash){
+      display:none;
+    }
   }
   
   //pref-col box
@@ -62,7 +67,6 @@
     @include columns(5.9, 10);
     @include pref-box;
     float: right;
-    @include pad(.01, .01, 30);
   }
   
   //groups of columns

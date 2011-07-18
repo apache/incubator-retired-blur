@@ -7,8 +7,8 @@
     #pref-col-info
       #pref-bin
         #pref-col 
-          .section-label{:id => @current_user.id} My Saved Columns
-          %ul#my-cols
+          .section-label{:id => @current_user.id} My Saved Column Families
+          %ul#my-cols.sort
             -if @preferences.size() == 0
               #no-saved None Currently Saved
             -else
@@ -17,9 +17,10 @@
                 .sel-fam{:id => "columns_#{pref}"}
                   =pref
         #pref-trash
-          #trash Drag a column here to remove from Preferences
+          %ul#actual-trash.sort
+            #trash Drag a column here to remove it from your preferences
       #opt-col
-        .section-label Total Columns
+        .section-label All Column Families
         -@choices.each do |option|
           -if @preferences.include? option
             .my-select.fam{:id => "columns_#{option}"}

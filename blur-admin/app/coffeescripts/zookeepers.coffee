@@ -11,8 +11,7 @@ $(document).ready ->
         query_message = '<div>1 query has been running for more than a minute</div>'
       else
         query_message = '<div>' + data.long_queries + ' queries have been running for more than a minute</div>'
-      console.log(query_message)
-      $('#warning').html(query_message)
+      $('.warning').html(query_message)
 
       $.each( zookeepers, ->
         table = $('#zookeepers').find("#" + this.zookeeper.id )[0]

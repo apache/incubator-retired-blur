@@ -103,4 +103,11 @@ describe ZookeepersController do
       assigns(:zookeepers).should == [@zookeeper]
     end
   end
+
+  describe 'GET dashboard' do
+    it "gets all of the current zookeeper data" do
+      get :dashboard
+
+    end
+  end
 end

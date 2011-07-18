@@ -52,7 +52,7 @@
       .blur_container
         - if @zookeeper.shards
           %h3= "Shards(#{@zookeeper.shards.length})"
-          - if @shard_nodes <= 1
+          - if @shard_nodes == 1
             = "Shards (blur version #{@zookeeper.shards.first.blur_version}) :"
           - elsif @shard_nodes > 1
             .warning

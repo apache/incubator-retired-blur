@@ -35,7 +35,7 @@ class ZookeepersController < ApplicationController
     }
     
     respond_to do |format|
-      format.json { render :json => data.to_json(:include=>[:controllers, :clusters, :shards]) }
+      format.json { render :json => data.to_json(:include=>[ :controllers, :clusters, :shards ] ) }
     end
   end
 end

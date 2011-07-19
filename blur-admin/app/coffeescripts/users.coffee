@@ -12,12 +12,15 @@ $(document).ready ->
     #when the order is changed
     stop: ->
       save_pref()
+      
+  $('#my-cols').draggable()
   
-  $('#actual-trash').sortable
-    items: "div:not(#trash)"
-    receive: (event, ui)->
-      $(ui.item).remove()
-      $('#' + $(ui.item).attr('id')).removeClass('my-select')
+  $('#actual-trash').droppable
+    drop: (event, ui)->
+      $(ui.draggable).remove()
+      $('.sort#my-cols').sortable('refresh')
+      $('.fam#' + $(ui.draggable).attr('id')).toggleClass 'my-select'
+      save_pref()
     
   #click listener for the lists of column names
   $('.fam').live 'click', -> 

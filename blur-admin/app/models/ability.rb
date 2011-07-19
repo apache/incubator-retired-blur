@@ -6,7 +6,7 @@ class Ability
     if user # logged in
 
       # view, edit, and destroy own account
-      can [:show, :edit, :destroy, :save_column], :users, :id => user.id
+      can [:show, :edit, :destroy], :users, :id => user.id
 
       # edit own username, email, password
       can :update, :users, [:username, :email, :password, :password_confirmation], :id => user.id
@@ -22,6 +22,8 @@ class Ability
         can :show_current, :zookeepers
         can :make_current, :zookeepers
         can :dashboard, :zookeepers
+        
+        can :save, :preference
 
         # search
         can [:filters, :create, :load, :delete, :reload, :save], :search

@@ -1,7 +1,7 @@
 $(document).ready ->
   #method to persist the preference to the DB
   save_pref = () ->    
-    $.ajax '/preference/save/' + $('.section-label').attr('id'),
+    $.ajax '/preference/save/',
       type: 'POST',
       data: $('#my-cols').sortable('serialize'),
       success: (data) ->

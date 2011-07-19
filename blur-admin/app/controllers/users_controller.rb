@@ -35,7 +35,6 @@ class UsersController < ApplicationController
   end
 
   def update
-    puts params[:user]
     if @user.update_attributes(params[:user])
       redirect_to @user, :notice  => "Successfully updated user."
     else
@@ -46,16 +45,6 @@ class UsersController < ApplicationController
   def destroy
     @user.destroy
     redirect_to users_path, :notice => "Successfully destroyed user."
-  end
-  
-  def save_column 
-    col_save = Preference.find_by_user_id(current_user.id, :conditions => {:pref_type => :column})
-    col_save = Preference.create(:name => "column", :pref_type => "column", :user_id => current_user.id) unless col_save
-    
-    col_save.value = params['columns'].to_json
-    col_save.save
-    
-    render :nothing => true
   end
 
   private

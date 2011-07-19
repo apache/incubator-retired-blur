@@ -14,9 +14,6 @@ class ZookeepersController < ApplicationController
     end
   end
 
-  def index
-  end
-
   def make_current
     session[:current_zookeeper_id] = params[:id] if params[:id]
 

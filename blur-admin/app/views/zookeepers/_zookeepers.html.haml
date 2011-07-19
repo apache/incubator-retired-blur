@@ -5,7 +5,7 @@
         %table{:id => "#{zookeeper.id}" }
           %thead
             %tr
-              %th{:status => 1 }
+              %th
                 = zookeeper.name
           %tbody
             %tr
@@ -20,11 +20,15 @@
               %td.cont
                 .bv-cont
                   .ui-icon-green.ui-icon-check
+                  .no-controllers{:style => "display:none;"}
+                    No contollers available
                   .ui-state-error.ui-corner-all{:style => "display:none;"}
                     Inconsistent Blur Versions
               %td.shard
                 .bv-shard
                   .ui-icon-green.ui-icon-check
+                  .no-shards{:style => "display:none;"}
+                    No shards available
                   .ui-state-error.ui-corner-all{:style => "display:none;"}
                     Inconsistent Blur Versions
             %tr
@@ -33,6 +37,8 @@
               %td.cont
                 .stat-cont
                   .ui-icon-green.ui-icon-check
+                  .no-controllers{:style => "display:none;"}
+                    No contollers available
                   .ui-state-yellow.ui-corner-all{:style => "display:none;"}
                     Controllers Disabled
                   .ui-state-error.ui-corner-all{:style => "display:none;"}
@@ -40,6 +46,8 @@
               %td.shard
                 .stat-shard
                   .ui-icon-green.ui-icon-check
+                  .no-shards{:style => "display:none;"}
+                    No shards available
                   .ui-state-yellow.ui-corner-all{:style => "display:none;"}
                     Shards Disabled
                   .ui-state-error.ui-corner-all{:style => "display:none;"}

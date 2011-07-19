@@ -1,10 +1,11 @@
 $(document).ready ->
+  # Updates all fields on the dashboard
   load_dashboard = () ->
     $.getJSON '/zookeepers/dashboard', (data) ->
       console.log(data)
-      zookeepers = data.zookeepers
-      long_queries = parseInt ( data.long_queries )
 
+      # Displays a warning message if 1 or more queries have been running for over a minute
+      long_queries = parseInt ( data.long_queries )
       if long_queries < 1
         query_message = '<div></div>'
       else if long_queries == 1
@@ -13,79 +14,96 @@ $(document).ready ->
         query_message = '<div>' + data.long_queries + ' queries have been running for more than a minute</div>'
       $('.warning').html(query_message)
 
+      # Updates the fields for each zookeeper
+      zookeepers = data.zookeepers
       $.each( zookeepers, ->
-        table = $('#zookeepers').find("#" + this.zookeeper.id )[0]
-        curr_zookeeper = $('#' + table.id).find("th")
-        curr_controllers = $('#' + table.id).find(".stat-cont")
-        curr_shards = $('#' + table.id).find(".stat-shard")
-        bv_controllers = $('#' + table.id).find(".bv-cont")
-        bv_shards = $('#' + table.id).find(".bv-shard")
+        table = $('#zookeepers').find("#" + this.zookeeper.id )
 
-        s1 = true
-        s0 = true
-        c1 = true
-        c0 = true
+        # Updates the header showing the zookeeper status
+        current_zookeeper = $('#' + table[0].id).find("th")
+        if this.zookeeper.status == 1
+          current_zookeeper.removeClass('ui-state-error')
+        else
+          current_zookeeper.addClass('ui-state-error')
 
-        if this.zookeeper.status != parseInt( curr_zookeeper.attr('status') )
-          curr_zookeeper.addClass('ui-state-error')
+        # Updates the fields for the zookeeper's shards
+        curr_shards = $('#' + table[0].id).find(".stat-shard")
+        bv_shards = $('#' + table[0].id).find(".bv-shard")
+        if this.zookeeper.shards.length == 0
+          curr_shards.find('.ui-icon-green, .ui-state-yellow, .ui-state-error').hide()
+          bv_shards.find('.ui-icon-green, .ui-state-yellow, .ui-state-error').hide()
+          table.find('.no-shards').fadeIn('slow')
+        else
+          table.find('.no-shards').hide()
+          s1 = true
+          s0 = true
+          $.each(this.zookeeper.shards, ->
+            if this.status == 1
+              s1 = false
+              curr_shards.find('.ui-icon-green').hide()
+              curr_shards.find('.ui-state-yellow').fadeIn('slow')
+            if this.status == 0
+              s0 = false
+              curr_shards.find('.ui-icon-green').hide()
+              curr_shards.find('.ui-state-error').fadeIn('slow')
+          )
+          if s1
+            curr_shards.find('.ui-state-yellow').fadeOut('slow')
+          if s0
+            curr_shards.find('.ui-state-error').fadeOut('slow')
+          if s1 and s0
+            curr_shards.find('.ui-icon-green').delay(700).fadeIn('slow')
+          $shard_bv = []
+          $.each(this.zookeeper.shards, ->
+            $shard_bv.push(this.blur_version)
+          )
+          $.unique($shard_bv)
 
-        $.each(this.zookeeper.shards, ->
-          if this.status == 1
-            s1 = false
-            curr_shards.find('.ui-icon-green').hide()
-            curr_shards.find('.ui-state-yellow').fadeIn('slow')
-          if this.status == 0
-            s0 = false
-            curr_shards.find('.ui-icon-green').hide()
-            curr_shards.find('.ui-state-error').fadeIn('slow')
-        )
+          if $shard_bv.length > 1
+            bv_shards.find('.ui-icon-green').hide()
+            bv_shards.find('.ui-state-error').fadeIn('slow')
 
-        $.each(this.zookeeper.controllers, ->
-          if this.status == 1
-            c1 = false
-            curr_controllers.find('.ui-icon-green').hide()
-            curr_controllers.find('.ui-state-yellow').fadeIn('slow')
-          if this.status == 0
-            c0 = false
-            curr_controllers.find('.ui-icon-green').hide()
-            curr_controllers.find('.ui-state-error').fadeIn('slow')
-        )
+        # Updates the fields for the zookeeper's shards
+        curr_controllers = $('#' + table[0].id).find(".stat-cont")
+        bv_controllers = $('#' + table[0].id).find(".bv-cont")
+        if this.zookeeper.controllers.length == 0
+          curr_controllers.find('.ui-icon-green, .ui-state-yellow, .ui-state-error').hide()
+          bv_controllers.find('.ui-icon-green, .ui-state-yellow, .ui-state-error').hide()
+          table.find('.no-controllers').fadeIn('slow')
+        else
+          table.find('.no-controllers').hide()
+          c1 = true
+          c0 = true
+          $.each(this.zookeeper.controllers, ->
+            if this.status == 1
+              c1 = false
+              curr_controllers.find('.ui-icon-green').hide()
+              curr_controllers.find('.ui-state-yellow').fadeIn('slow')
+            if this.status == 0
+              c0 = false
+              curr_controllers.find('.ui-icon-green').hide()
+              curr_controllers.find('.ui-state-error').fadeIn('slow')
+          )
+          if c1
+            curr_controllers.find('.ui-state-yellow').fadeOut('slow')
+          if c0
+            curr_controllers.find('.ui-state-error').fadeOut('slow')
+          if c1 and c0
+            curr_controllers.find('.ui-icon-green').delay(700).fadeIn('slow')
+          $controller_bv = []
+          $.each(this.zookeeper.controllers, ->
+            $controller_bv.push(this.blur_version)
+          )
+          $.unique($controller_bv)
 
-        if s1
-          curr_shards.find('.ui-state-yellow').fadeOut('slow')
-        if s0
-          curr_shards.find('.ui-state-error').fadeOut('slow')
-        if s1 and s0
-          curr_shards.find('.ui-icon-green').delay(700).fadeIn('slow')
-        if c1
-          curr_controllers.find('.ui-state-yellow').fadeOut('slow')
-        if c0
-          curr_controllers.find('.ui-state-error').fadeOut('slow')
-        if c1 and c0
-          curr_controllers.find('.ui-icon-green').delay(700).fadeIn('slow')
-
-        $shard_bv = []
-        $.each(this.zookeeper.shards, ->
-          $shard_bv.push(this.blur_version)
-        )
-        $.unique($shard_bv)
-
-        if $shard_bv.length > 1
-          bv_shards.find('.ui-icon-green').hide()
-          bv_shards.find('.ui-state-error').fadeIn('slow')
-
-        $controller_bv = []
-        $.each(this.zookeeper.controllers, ->
-          $controller_bv.push(this.blur_version)
-        )
-        $.unique($controller_bv)
-
-        if $controller_bv.length > 1
-          bv_controllers.find('.ui-icon-green').hide()
-          bv_controllers.find('.ui-state-error').fadeIn('slow')
+          if $controller_bv.length > 1
+            bv_controllers.find('.ui-icon-green').hide()
+            bv_controllers.find('.ui-state-error').fadeIn('slow')
 
         $('#zookeepers_wrapper').show()
       )
-    setTimeout(load_dashboard, 60000)
+
+    # Sets auto updates to run every minute
+    setTimeout(load_dashboard, 5000)
 
   load_dashboard()

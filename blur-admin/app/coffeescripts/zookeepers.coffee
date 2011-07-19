@@ -32,22 +32,22 @@ $(document).ready ->
         $.each(this.zookeeper.shards, ->
           if this.status == 1
             s1 = false
-            curr_shards.removeClass('ui-icon-green ui-icon-check')
+            curr_shards.find('.ui-icon-green').hide()
             curr_shards.find('.ui-state-yellow').fadeIn('slow')
           if this.status == 0
             s0 = false
-            curr_shards.removeClass('ui-icon-green ui-icon-check')
+            curr_shards.find('.ui-icon-green').hide()
             curr_shards.find('.ui-state-error').fadeIn('slow')
         )
 
         $.each(this.zookeeper.controllers, ->
           if this.status == 1
             c1 = false
-            curr_controllers.removeClass('ui-icon-green ui-icon-check')
+            curr_controllers.find('.ui-icon-green').hide()
             curr_controllers.find('.ui-state-yellow').fadeIn('slow')
           if this.status == 0
             c0 = false
-            curr_controllers.removeClass('ui-icon-green ui-icon-check')
+            curr_controllers.find('.ui-icon-green').hide()
             curr_controllers.find('.ui-state-error').fadeIn('slow')
         )
 
@@ -56,13 +56,13 @@ $(document).ready ->
         if s0
           curr_shards.find('.ui-state-error').fadeOut('slow')
         if s1 and s0
-          curr_shards.addClass('ui-icon-green ui-icon-check')
+          curr_shards.find('.ui-icon-green').delay(700).fadeIn('slow')
         if c1
           curr_controllers.find('.ui-state-yellow').fadeOut('slow')
         if c0
           curr_controllers.find('.ui-state-error').fadeOut('slow')
         if c1 and c0
-          curr_controllers.addClass('ui-icon-green ui-icon-check')
+          curr_controllers.find('.ui-icon-green').delay(700).fadeIn('slow')
 
         $shard_bv = []
         $.each(this.zookeeper.shards, ->
@@ -71,7 +71,7 @@ $(document).ready ->
         $.unique($shard_bv)
 
         if $shard_bv.length > 1
-          bv_shards.removeClass('ui-icon-green ui-icon-check')
+          bv_shards.find('.ui-icon-green').hide()
           bv_shards.find('.ui-state-error').fadeIn('slow')
 
         $controller_bv = []
@@ -81,7 +81,7 @@ $(document).ready ->
         $.unique($controller_bv)
 
         if $controller_bv.length > 1
-          bv_controllers.removeClass('ui-icon-green ui-icon-check')
+          bv_controllers.find('.ui-icon-green').hide()
           bv_controllers.find('.ui-state-error').fadeIn('slow')
 
         $('#zookeepers_wrapper').show()
@@ -89,5 +89,3 @@ $(document).ready ->
     setTimeout(load_dashboard, 60000)
 
   load_dashboard()
-  
-  

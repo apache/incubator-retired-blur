@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110714160454) do
+ActiveRecord::Schema.define(:version => 20110719191147) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -26,8 +26,8 @@ ActiveRecord::Schema.define(:version => 20110714160454) do
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 16777215
-    t.text     "post_filters",             :limit => 16777215
+    t.text     "pre_filters",              :limit => 2147483647
+    t.text     "post_filters",             :limit => 2147483647
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"
@@ -84,7 +84,7 @@ ActiveRecord::Schema.define(:version => 20110714160454) do
 
   create_table "preferences", :force => true do |t|
     t.string   "name"
-    t.string   "pref_type"
+    t.string   "pref_type",  :limit => 250
     t.text     "value"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -112,6 +112,19 @@ ActiveRecord::Schema.define(:version => 20110714160454) do
     t.integer  "cluster_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "system_metrics", :force => true do |t|
+    t.string   "name",               :null => false
+    t.datetime "started_at",         :null => false
+    t.string   "transaction_id"
+    t.text     "payload"
+    t.float    "duration",           :null => false
+    t.float    "exclusive_duration", :null => false
+    t.integer  "request_id"
+    t.integer  "parent_id"
+    t.string   "action",             :null => false
+    t.string   "category",           :null => false
   end
 
   create_table "users", :force => true do |t|

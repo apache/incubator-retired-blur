@@ -14,7 +14,6 @@ gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
 gem 'role_model'
 gem 'compass-susy-plugin'
 gem "ganapati", "~> 0.0.5"
-
 gem 'capistrano'
 
 group :development, :test do
@@ -26,4 +25,5 @@ group :development, :test do
   gem 'nifty-generators'
   gem 'rails-erd'
   gem 'factory_girl_rails'
+  gem 'system-metrics'
 end

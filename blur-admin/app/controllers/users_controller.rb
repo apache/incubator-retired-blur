@@ -27,7 +27,7 @@ class UsersController < ApplicationController
     if @user.save
       redirect_to root_path, :notice => "Successfully Created User"
     else
-      render :action => 'new'
+      render 'new'
     end
   end
 

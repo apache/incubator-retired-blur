@@ -19,19 +19,19 @@
       			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['1 hour', 60]])
         .query_filter
           = label_tag :super_query_on, 'Super Query:'
-          = select_tag :super_query_on, options_for_select([['All Queries', nil],
-         	                                                 	['Super Query On', true],
-                                                         	 	['Super Query Off', false]])
+          = select_tag :super_query_on, options_for_select([['All', nil],
+         	                                                 	['On', true],
+                                                         	 	['Off', false]])
         .query_filter
           = label_tag :running, 'Running:'
           = select_tag :running, options_for_select([['All Queries', nil],
-                                                     ['True', true],
-                                                     ['False', false]])
+                                                     ['Yes', true],
+                                                     ['No', false]])
         .query_filter
           = label_tag :interrupted, 'Interrupted:'
           = select_tag :interrupted, options_for_select([['All Queries', nil],
-                                                         ['True', true],
-                                                         ['False', false]])
+                                                         ['Yes', true],
+                                                         ['No', false]])
         
           = submit_tag 'filter'
 

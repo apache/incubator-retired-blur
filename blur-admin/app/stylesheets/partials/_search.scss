@@ -9,7 +9,7 @@
     position:fixed;
     top: $nav-height + $header-height;
     display: inline-block;
-    overflow-y: scroll;
+    overflow-y: auto;
     max-height: 70%;
     
     .partial-section, .body{ padding: 0.5em; }

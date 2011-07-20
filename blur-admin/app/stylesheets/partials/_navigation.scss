@@ -101,18 +101,21 @@ $nav-height: 40px;
 }
 
 #notice {
-  $green: #DDFFD9;
   @include border;
-  border-color: darken($green, 40%);
-  background-color: $green;
+  @include border-bottom-radius;
+  border-color: darken($green-state-color, 10%);
+  background-color: $green-state-color;
   padding-top: .75em;
   font-size: 1.2em;
+  color: white;
 }
 
 #alert {
+  @include border;
+  @include border-bottom-radius;
   $yellow: #FFFFC8;
-  border-color: darken($yellow, 40%);
-  background-color: $yellow;
+  border-color: darken($yellow-state-color, 10%);
+  background-color: $yellow-state-color;
   padding-top: .75em;
   font-size: 1.2em;
 }

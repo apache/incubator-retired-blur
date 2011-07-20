@@ -16,29 +16,23 @@ $nav-height: 40px;
       @include full;
       height: $header-height;
       z-index: 2;
-      #logo_box{
-        @include columns(18,$total-cols);
-        #logo {
-          margin-top: 1.25em;
-          @include columns(10,18);
-        }
-        .flash {
-          @include columns(7,18);
-          @include border-bottom-radius;
-          vertical-align: top;
-          float: right;
-
-          text-align: center;
-          font-size: 1.2em;
-          font-weight: bold;
-        }
+      #logo{
+        margin-top: 1.25em;
+        @include columns(10,$total-cols);
+      }
+      #flash {
+        @include columns(10,$total-cols);
+        @include border-bottom-radius;
+        text-align: center;
+        font-size: 1.2em;
+        font-weight: bold;
       }
       #zookeeper_select {
-        @include columns(6, $total-cols);
+        @include columns(10, $total-cols);
         padding-top: 1.25em;
       }
       #user_nav {
-        @include columns(6,$total-cols);
+        @include columns(10,$total-cols);
         @include omega($total-cols);
         text-align: right;
         padding-top: 1.25em;
@@ -106,16 +100,22 @@ $nav-height: 40px;
   @include text-shadow(0 -1px 0 lighten($footer-color, 5%));
 }
 
-
-
 #notice {
-  $green: #DDFFD9;
-  border-color: darken($green, 40%);
-  background-color: $green;
+  @include border;
+  @include border-bottom-radius;
+  border-color: darken($green-state-color, 10%);
+  background-color: $green-state-color;
+  padding-top: .75em;
+  font-size: 1.2em;
+  color: white;
 }
 
 #alert {
+  @include border;
+  @include border-bottom-radius;
   $yellow: #FFFFC8;
-  border-color: darken($yellow, 40%);
-  background-color: $yellow;
+  border-color: darken($yellow-state-color, 10%);
+  background-color: $yellow-state-color;
+  padding-top: .75em;
+  font-size: 1.2em;
 }

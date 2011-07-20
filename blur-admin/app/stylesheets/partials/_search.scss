@@ -9,6 +9,8 @@
     position:fixed;
     top: $nav-height + $header-height;
     display: inline-block;
+    overflow-y: scroll;
+    max-height: 70%;
     
     .partial-section, .body{ padding: 0.5em; }
     .filter { padding: 0.5em 0 0; }

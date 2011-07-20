@@ -19,14 +19,15 @@
     #root
       #top
         #hd
-          #logo_box
-            #logo
-              = link_to image_tag('blur_logo.png'), root_path
-            - flash.each do |type, message|
-              .flash{ :id => "#{type}" }
-                = message
-          #zookeeper_select
-            - if @current_zookeeper && @zookeepers
+          #logo
+            = link_to image_tag('blur_logo.png'), root_path
+          - if flash
+            #flash
+              - flash.each do |type, message|
+                .flash{ :id => "#{type}" }
+                  = message
+          - if @current_zookeeper && @zookeepers
+            #zookeeper_select
               = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',  :method => :put, :remote => :true do
                 %b Current Zookeeper Instance:
                 = select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
@@ -69,3 +70,4 @@
       #bd
         = yield
     #ft
+      Developed by Near Infinity

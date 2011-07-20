@@ -69,6 +69,7 @@
     float: left;
     @include standard-border;
     display: inline-block;
+    background-color: white;
 
     table{
       width: 100%;
@@ -85,7 +86,7 @@
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
   #old_queries { @include columns(30,$total-cols); margin-bottom: 165px; }
 
-  .ui-state-highlight, .ui-state-error, .ui-state-yellow, .grey_div { margin-bottom: 5px; width: 160px !important; }
+  .ui-state-highlight, .ui-state-error, .ui-state-yellow, .grey_div { margin-bottom: 5px; width: 160px; }
 
   .number, .word {display: inline-block; }
   .number {width: 20px; text-align: right; }

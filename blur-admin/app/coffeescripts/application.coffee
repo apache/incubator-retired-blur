@@ -15,10 +15,8 @@ $(document).ready ->
     show:
       delay: 250
   $('html').live 'ajax:success', ->
-    console.log "success"
+    # remove old tooltips
+    $('.ui-tooltip').remove()
     $('[title]').tooltip
       show:
         delay: 250
-
-  $('html').live 'ajax:complete', ->
-    console.log "complete"

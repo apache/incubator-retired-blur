@@ -79,11 +79,13 @@
     empty-cells: show;
     display: inline-block;
     thead {
-      background-color: $table_header_color;
+      background-color: $table-hd-color;
+      
       th {
         background: transparent;
         text-align: center;
-        @include standard-font;
+        color: $table-hd-text;
+        font-weight: bold;
         font-size: 120%;
       }
       tr.columnsets th {
@@ -94,13 +96,13 @@
       tr.odd {
         td {
           background-color: #fff;
-          &.odd { background-color: mix(#fff, #C4d9ff, 80%); }
+          &.odd { background-color: mix(#fff, $table-hd-color, 70%); }
         }
       }
       tr.even {
         td {
           background-color: #eee;
-          &.odd { background-color: mix(#eee, #C4d9ff, 80%); }
+          &.odd { background-color: mix(#eee, $table-hd-color, 70%); }
         }
       }
     }

@@ -51,7 +51,6 @@ import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -59,6 +58,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
+import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
@@ -455,7 +455,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
 
     @Override
-    public void mutate(final String table, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(final String table, final Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
         try {
             final Map<String, List<RowMutation>> mutationsMap = getMutationMap(table, mutations);
             for (String hname : mutationsMap.keySet()) {
@@ -464,7 +464,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                 _client.execute(hostname, new BlurCommand<Void>() {
                     @Override
                     public Void call(Client client) throws Exception {
-                        client.mutate(table, mutationsLst);
+                        client.mutate(table, transaction, mutationsLst);
                         return null;
                     }
                 });
@@ -508,13 +508,23 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         return numberOfShards;
     }
 
+    public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
+        this._dynamicConfig = dynamicConfig;
+    }
+
     @Override
-    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
+    public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
         throw new RuntimeException("not impl");
     }
 
-    public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
-        this._dynamicConfig = dynamicConfig;
+    @Override
+    public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
+        throw new RuntimeException("not impl");
+    }
+
+    @Override
+    public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
+        throw new RuntimeException("not impl");
     }
 
 }

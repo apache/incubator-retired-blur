@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.lucene.search;
 
+import org.apache.lucene.index.FieldInvertState;
 import org.apache.lucene.search.Similarity;
 
 public class FairSimilarity extends Similarity {
@@ -33,11 +34,6 @@ public class FairSimilarity extends Similarity {
 	}
 
 	@Override
-	public float lengthNorm(String fieldName, int numTokens) {
-		return 1;
-	}
-
-	@Override
 	public float queryNorm(float sumOfSquaredWeights) {
 		return 1;
 	}
@@ -51,5 +47,10 @@ public class FairSimilarity extends Similarity {
 	public float tf(float freq) {
 		return 1;
 	}
+
+    @Override
+    public float computeNorm(String field, FieldInvertState state) {
+        return 1;
+    }
 
 }

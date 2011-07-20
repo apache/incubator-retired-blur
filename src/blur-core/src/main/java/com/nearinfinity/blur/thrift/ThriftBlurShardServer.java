@@ -68,8 +68,8 @@ public class ThriftBlurShardServer extends ThriftServer {
         BlurConfiguration configuration = new BlurConfiguration();
         SimpleExecutorsDynamicConfig dynamicConfig = new SimpleExecutorsDynamicConfig(10);
 
-        String nodeName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
-        nodeName = nodeName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
+        String nodeNameHostName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
+        String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
         String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES),BLUR_LOCAL_CACHE_PATHES);
         
@@ -151,25 +151,6 @@ public class ThriftBlurShardServer extends ThriftServer {
                 System.exit(0);
             }
         }, zooKeeper);
-        
-//        new Thread(new Runnable() {
-//            
-//            @Override
-//            public void run() {
-//                try {
-//                    Thread.sleep(30000);
-//                    System.out.println("Load Testing.");
-//                } catch (InterruptedException e) {
-//                    return;
-//                }
-//                try {
-//                    LoadData.loadTest(shardServer, 100000, 200);
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }).start();
-        
         server.start();
     }
 

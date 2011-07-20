@@ -15,7 +15,6 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -23,6 +22,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
+import com.nearinfinity.blur.thrift.generated.Transaction;
 
 public abstract class ExecutionContextIface extends TableAdmin implements IfaceExtended {
 
@@ -144,10 +144,10 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     }
 
     @Override
-    public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
         ExecutionContext context = getContext();
         try {
-            mutate(context, table, mutations);
+            mutate(context, table, transaction, mutations);
         } finally {
             record(context);
         }
@@ -158,16 +158,6 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
         ExecutionContext context = getContext();
         try {
             return query(context, table, blurQuery);
-        } finally {
-            record(context);
-        }
-    }
-
-    @Override
-    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
-        ExecutionContext context = getContext();
-        try {
-            return querySuggestions(context, table, blurQuery);
         } finally {
             record(context);
         }
@@ -230,6 +220,36 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
         ExecutionContext context = getContext();
         try {
             return terms(context, table, columnFamily, columnName, startWith, size);
+        } finally {
+            record(context);
+        }
+    }
+    
+    @Override
+    public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
+        ExecutionContext context = getContext();
+        try {
+            mutateAbort(context, table, transaction);
+        } finally {
+            record(context);
+        }
+    }
+
+    @Override
+    public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
+        ExecutionContext context = getContext();
+        try {
+            mutateCommit(context, table, transaction);
+        } finally {
+            record(context);
+        }
+    }
+
+    @Override
+    public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
+        ExecutionContext context = getContext();
+        try {
+            return mutateCreateTransaction(context, table);
         } finally {
             record(context);
         }

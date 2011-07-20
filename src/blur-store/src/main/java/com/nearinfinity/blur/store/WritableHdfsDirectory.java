@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FSDataOutputStream;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.store.BufferedIndexOutput;
@@ -105,7 +106,7 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         } catch (InterruptedException e) {
             throw new IOException(e);
         } catch (ExecutionException e) {
-            throw new IOException(e);
+            throw new IOException(e.getCause());
         }
     }
 
@@ -121,14 +122,17 @@ public class WritableHdfsDirectory extends HdfsDirectory {
         
         @Override
         public Boolean call() throws Exception {
+            if (isAlreadySynced()) {
+                return true;
+            }
             File file = _directory._localFileCache.getLocalFile(_directory._dirName, _name);
             int count = 0;
             while (true) {
                 Path dest = new Path(_directory._hdfsDirPath, _name + ".sync." + count);
+                InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
                 try {
                     LOG.info("Syncing local file [{0}] to [{1}]",file.getAbsolutePath(),_directory._hdfsDirPath);
                     FSDataOutputStream outputStream = _directory.getFileSystem().create(dest);
-                    InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
                     byte[] buffer = new byte[4096];
                     int num;
                     while ((num = inputStream.read(buffer)) != -1) {
@@ -165,6 +169,15 @@ public class WritableHdfsDirectory extends HdfsDirectory {
                     }
                 }
             }
+        }
+        
+        private boolean isAlreadySynced() throws IOException {
+            Path dest = new Path(_directory._hdfsDirPath, _name);
+            FileSystem fileSystem = _directory.getFileSystem();
+            if (fileSystem.exists(dest)) {
+                return true;
+            }
+            return false;
         }
     }
 

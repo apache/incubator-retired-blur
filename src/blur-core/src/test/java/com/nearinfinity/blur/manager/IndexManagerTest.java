@@ -59,6 +59,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class IndexManagerTest {
@@ -115,7 +116,9 @@ public class IndexManagerTest {
                                 newColumn("testcol1", "value1"),
                                 newColumn("testcol2", "value5"), 
                                 newColumn("testcol3", "value9"))));
-        indexManager.mutate(TABLE, mutations);
+        Transaction transaction = indexManager.mutateCreateTransaction(TABLE);
+        indexManager.mutate(TABLE, transaction, mutations);
+        indexManager.mutateCommit(TABLE, transaction);
     }
 
     @After
@@ -376,13 +379,16 @@ public class IndexManagerTest {
 
     @Test
     public void testMutationReplaceRow() throws Exception {
+        Transaction transaction = indexManager.mutateCreateTransaction(TABLE);
+        
         List<RowMutation> mutations = newRowMutations(
                 newRowMutation("row-4", 
                         newRecordMutation("test-family", "record-4", 
                                 newColumn("testcol1", "value2"),
                                 newColumn("testcol2", "value3"), 
                                 newColumn("testcol3", "value4"))));
-        indexManager.mutate(TABLE, mutations);
+        indexManager.mutate(TABLE, transaction, mutations);
+        indexManager.mutateCommit(TABLE, transaction);
         
         Selector selector = new Selector().setRowId("row-4");
         FetchResult fetchResult = new FetchResult();

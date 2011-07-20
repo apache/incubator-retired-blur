@@ -117,7 +117,7 @@ public class ReplicaHdfsDirectoryTest {
         assertFalse(new File(cache,dirName).exists());
         
         IndexReader reader = IndexReader.open(directory);
-        assertEquals(1,reader.numDocs());
+        assertEquals(1, reader.numDocs());
         reader.close();
         
         Thread.sleep(1000);
@@ -129,6 +129,10 @@ public class ReplicaHdfsDirectoryTest {
         
         Thread.sleep(1000);
         //validate the files are local now
+        
+        IndexReader reader2 = IndexReader.open(directory);
+        assertEquals(2, reader2.numDocs());
+        reader2.close();
         
         for (File f : new File(cache,dirName).listFiles()) {
             System.out.println(f.getName());

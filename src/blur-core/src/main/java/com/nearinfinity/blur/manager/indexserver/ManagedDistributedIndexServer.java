@@ -21,8 +21,8 @@ import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.g
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurOnlinePath;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurOnlineShardsPath;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurRegisteredShardsPath;
-import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodePath;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodeLockPath;
+import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodePath;
 import static com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants.getBlurSafemodeShutdownPath;
 
 import java.util.ArrayList;

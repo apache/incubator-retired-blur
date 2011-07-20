@@ -74,6 +74,11 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
     }
     
     @Override
+    public IndexInput openInput(String name) throws IOException {
+        return openInput(name, BUFFER_SIZE);
+    }
+    
+    @Override
     public IndexInput openInput(String name, int bufferSize) throws IOException {
         if (!fileExists(name)) {
             throw new FileNotFoundException(name);
@@ -283,7 +288,10 @@ public class ReplicaHdfsDirectory extends WritableHdfsDirectory {
         super.sync(name);
         if (!replicationStrategy.replicateLocally(table, name)) {
             File file = _localFileCache.getLocalFile(_dirName, name);
-            file.delete();
+            if (file.exists()) {
+                LOG.info("Delete local file [{0}], because local replica not allowed",file);
+                file.delete();
+            }
         }
     }
 }

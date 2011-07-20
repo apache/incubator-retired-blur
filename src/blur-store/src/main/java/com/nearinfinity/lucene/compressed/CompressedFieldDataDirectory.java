@@ -182,7 +182,7 @@ public class CompressedFieldDataDirectory extends Directory {
         return _directory.makeLock(name);
     }
 
-    public void setLockFactory(LockFactory lockFactory) {
+    public void setLockFactory(LockFactory lockFactory) throws IOException {
         _directory.setLockFactory(lockFactory);
     }
 

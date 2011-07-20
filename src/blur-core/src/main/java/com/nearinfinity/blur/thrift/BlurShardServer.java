@@ -21,12 +21,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermDocs;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.ExecutionContext;
@@ -40,7 +34,6 @@ import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -48,7 +41,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer extends ExecutionContextIface {
@@ -71,7 +64,7 @@ public class BlurShardServer extends ExecutionContextIface {
         DESCRIBE, 
         MUTATE, 
         QUERY_SUGGESTIONS,
-        GET_TABLE_STATS
+        GET_TABLE_STATS, MUTATE_ABORT, MUTATE_CREATE_TRANSACTION, MUTATE_COMMIT
     }
 
     @Override
@@ -330,13 +323,13 @@ public class BlurShardServer extends ExecutionContextIface {
     }
 
     @Override
-    public void mutate(ExecutionContext context, String table, List<RowMutation> mutations) throws BlurException,
+    public void mutate(ExecutionContext context, String table, Transaction transaction, List<RowMutation> mutations) throws BlurException,
             TException {
         long start = context.startTime();
         try {
             checkTableStatus(context, table);
             try {
-                indexManager.mutate(table, mutations);
+                indexManager.mutate(table, transaction, mutations);
             } catch (Exception e) {
                 LOG.error("Unknown error during processing of [table={0},mutations={1}]", e, table, mutations);
                 throw new BException(e.getMessage(), e);
@@ -347,13 +340,41 @@ public class BlurShardServer extends ExecutionContextIface {
     }
 
     @Override
-    public BlurQuerySuggestions querySuggestions(ExecutionContext context, String table, BlurQuery blurQuery)
-            throws BlurException, TException {
+    public void mutateAbort(ExecutionContext context, String table, Transaction transaction) throws BlurException, TException {
         long start = context.startTime();
         try {
-            throw new RuntimeException("not impl");
+            indexManager.mutateAbort(table,transaction);
+        } catch (Exception e) {
+            LOG.error("Unknown error during processing of [table={0},transaction={1}]", e, table, transaction);
+            throw new BException(e.getMessage(), e);
         } finally {
-            context.recordTime(Metrics.QUERY_SUGGESTIONS, start, table, blurQuery);
+            context.recordTime(Metrics.MUTATE_ABORT, start, table, transaction);
+        }
+    }
+
+    @Override
+    public void mutateCommit(ExecutionContext context, String table, Transaction transaction) throws BlurException, TException {
+        long start = context.startTime();
+        try {
+            indexManager.mutateCommit(table,transaction);
+        } catch (Exception e) {
+            LOG.error("Unknown error during processing of [table={0},transaction={1}]", e, table, transaction);
+            throw new BException(e.getMessage(), e);
+        } finally {
+            context.recordTime(Metrics.MUTATE_COMMIT, start, table, transaction);
+        }
+    }
+
+    @Override
+    public Transaction mutateCreateTransaction(ExecutionContext context, String table) throws BlurException, TException {
+        long start = context.startTime();
+        try {
+            return indexManager.mutateCreateTransaction(table);
+        } catch (Exception e) {
+            LOG.error("Unknown error during processing of [table={0}]", e, table);
+            throw new BException(e.getMessage(), e);
+        } finally {
+            context.recordTime(Metrics.MUTATE_CREATE_TRANSACTION, start, table);
         }
     }
 }

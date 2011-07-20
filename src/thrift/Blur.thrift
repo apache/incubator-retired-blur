@@ -6,6 +6,10 @@ exception BlurException {
   2:string stackTraceStr
 }
 
+struct Transaction {
+  1:i32 transactionId
+}
+
 struct AlternateColumnDefinition {
   1:string analyzerClassName
 }
@@ -40,7 +44,8 @@ struct Selector {
   3:string rowId,
   4:string recordId,
   5:set<string> columnFamiliesToFetch,
-  6:map<string,set<string>> columnsToFetch
+  6:map<string,set<string>> columnsToFetch,
+  7:Transaction transaction
 }
 
 struct Facet {
@@ -98,20 +103,6 @@ struct BlurQuery {
   13:list<Facet> facets,
   14:Selector selector,
   15:i64 startTime
-}
-
-struct BlurQuerySuggestion {
-  1:string queryStr,
-  2:i64 totalResults = 0,
-  3:map<string,i64> shardInfo,
-  4:list<BlurException> exceptions,
-  5:BlurQuery query,
-  6:i64 realTime,
-  7:i64 cpuTime
-}
-
-struct BlurQuerySuggestions {
-  1:list<BlurQuerySuggestion> querySuggestions
 }
 
 struct BlurResult {
@@ -212,8 +203,6 @@ service Blur {
   void cancelQuery(1:string table, 2:i64 uuid) throws (1:BlurException ex)
   list<BlurQueryStatus> currentQueries(1:string table) throws (1:BlurException ex)
 
-  BlurQuerySuggestions querySuggestions(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
-
   Schema schema(1:string table) throws (1:BlurException ex)
   TableStats getTableStats(1:string table) throws (1:BlurException ex)
   list<string> terms(1:string table, 2:string columnFamily, 3:string columnName, 4:string startWith, 5:i16 size) throws (1:BlurException ex)
@@ -221,7 +210,10 @@ service Blur {
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
-  void mutate(1:string table, 2:list<RowMutation> mutations) throws (1:BlurException ex)
+  Transaction mutateCreateTransaction(1:string table) throws (1:BlurException ex)
+  void mutate(1:string table, 2:Transaction transaction, 3:list<RowMutation> mutations) throws (1:BlurException ex)
+  void mutateCommit(1:string table, 2:Transaction transaction) throws (1:BlurException ex)
+  void mutateAbort(1:string table, 2:Transaction transaction) throws (1:BlurException ex)
 
   void createTable(1:string table, 2:TableDescriptor tableDescriptor) throws (1:BlurException ex)
   void enableTable(1:string table) throws (1:BlurException ex)

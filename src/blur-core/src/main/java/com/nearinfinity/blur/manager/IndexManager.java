@@ -26,9 +26,9 @@ import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -84,6 +84,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -122,14 +123,6 @@ public class IndexManager {
             executor.shutdownNow();
             indexServer.close();
         }
-    }
-
-    public void replaceRow(String table, Row row) throws BlurException {
-        throw new RuntimeException("not implemented");
-    }
-
-    public void removeRow(String table, String id) throws BlurException {
-        throw new RuntimeException("not implemented");
     }
 
     public void fetchRow(String table, Selector selector, FetchResult fetchResult) throws BlurException {
@@ -606,31 +599,43 @@ public class IndexManager {
         statusManager.setStatusCleanupTimerDelay(delay);
     }
 
-    public void mutate(String table, List<RowMutation> mutations) throws BlurException, IOException {
-        Map<String,List<Row>> rowMap = new HashMap<String, List<Row>>();
+    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, IOException {
+        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
         for (RowMutation mutation : mutations) {
             MutationHelper.validateMutation(mutation);
             String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), blurPartitioner);
-            List<Row> list = rowMap.get(shard);
-            if (list == null) {
-                list = new ArrayList<Row>();
-                rowMap.put(shard, list);
-            }
-            list.add(MutationHelper.toRow(mutation));
-        }
-        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-        for (String shard : rowMap.keySet()) {
             BlurIndex blurIndex = indexes.get(shard);
+            Row row = MutationHelper.toRow(mutation);
             if (blurIndex == null) {
                 throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",null);
             }
-            blurIndex.replaceRow(rowMap.get(shard));
+            blurIndex.replaceRow(transaction, row);
+        }
+    }
+    
+    public void mutateAbort(String table, Transaction transaction) throws IOException {
+        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
+        for (BlurIndex index : indexes.values()) {
+            index.abort(transaction);
         }
     }
 
+    public void mutateCommit(String table, Transaction transaction) throws IOException {
+        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
+        for (BlurIndex index : indexes.values()) {
+            index.commit(transaction);
+        }
+    }
+    
+    private Random random = new Random();
+
+    public Transaction mutateCreateTransaction(String table) {
+        //@TODO do something better here
+        return new Transaction(random.nextInt());
+    }
+
     private int getNumberOfShards(String table) {
-        List<String> list = indexServer.getShardList(table);
-        return list.size();
+        return indexServer.getShardCount(table);
     }
 
     public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {

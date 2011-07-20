@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.URIParameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -44,9 +43,7 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
-import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.lucene.compressed.CompressionCodec;
@@ -58,7 +55,6 @@ public class LocalIndexServer extends AbstractIndexServer {
 
     private Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
     private File _localDir;
-    private BlurIndexCommiter _commiter;
     private BlurIndexReaderCloser _closer;
     private int _blockSize = 65536;
     private CompressionCodec _compression = new DeflaterCompressionCodec();
@@ -66,8 +62,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     public LocalIndexServer(File file) {
         this._localDir = file;
         this._localDir.mkdirs();
-        this._commiter = new BlurIndexCommiter();
-        this._commiter.init();
         this._closer = new BlurIndexReaderCloser();
         this._closer.init();
     }
@@ -94,7 +88,7 @@ public class LocalIndexServer extends AbstractIndexServer {
 
     @Override
     public void close() {
-        _commiter.close();
+//        _commiter.close();
         _closer.stop();
         for (String table : _readersMap.keySet()) {
             close(_readersMap.get(table));
@@ -160,7 +154,6 @@ public class LocalIndexServer extends AbstractIndexServer {
         BlurIndexWriter writer = new BlurIndexWriter();
         writer.setDirectory(dir);
         writer.setAnalyzer(getAnalyzer(table));
-        writer.setCommiter(_commiter);
         writer.setCloser(_closer);
         writer.init();
         return writer;

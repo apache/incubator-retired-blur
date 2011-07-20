@@ -22,15 +22,15 @@
 			<artifactId>zookeeper</artifactId>
 			<version>3.3.1</version>
 		</dependency>
-		<dependency>
+		<!-- dependency>
 			<groupId>com.nearinfinity.apache.lucene</groupId>
 			<artifactId>lucene-core-high-scale</artifactId>
 			<version>3.0.2.1</version>
-		</dependency>
+		</dependency-->
 		<dependency>
-			<groupId>com.nearinfinity.lucene</groupId>
-			<artifactId>lucene-compression</artifactId>
-			<version>0.1</version>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>3.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -64,7 +64,7 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>

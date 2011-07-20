@@ -115,13 +115,6 @@
   #filter_columns{ display: none; }
   #hidden-help-container{ display:none; }
 
-  .action_icon{
-    cursor:pointer;
-    float:right;
-    padding-left: 2px;
-    padding-right: 2px;
-  }
-
   //Navigation Tab outer divs
   .tab { @include border; @include border-radius; }
   .tab#standard, .tab#advanced { @include search-margin; }
@@ -142,6 +135,19 @@
     color: #747170;
     .head{
       font-weight: bold;
+    }
+  }
+  
+  .action-icon{
+    cursor:pointer;
+    float:right;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: #F8F8F8;
+    
+    &:hover{
+      background-color: #FFE4A3;
+      background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
     }
   }
   

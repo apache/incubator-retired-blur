@@ -93,12 +93,12 @@
 ----------------------------------*/
 
 /* states and images */
-.ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_555555_256x240.png); }
+.ui-icon { width: 16px; height: 16px; background-image: url(images/ui-icons_888888_256x240.png); }
 .ui-icon-green { width: 16px; height: 16px; background-image: url(images/ui-icons_95d169_256x240.png); }
 .ui-widget-content .ui-icon {background-image: url(images/ui-icons_555555_256x240.png); }
 .ui-widget-header .ui-icon {background-image: url(images/ui-icons_e68f00_256x240.png); }
 .ui-state-default .ui-icon { background-image: url(images/ui-icons_e68f00_256x240.png); }
-.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(images/ui-icons_db8800_256x240.png); }
+.ui-state-hover .ui-icon, .ui-state-focus .ui-icon {background-image: url(images/ui-icons_555555_256x240.png); }
 .ui-state-active .ui-icon {background-image: url(images/ui-icons_e68f00_256x240.png); }
 .ui-state-highlight .ui-icon {background-image: url(images/ui-icons_555555_256x240.png); }
 .ui-state-error .ui-icon, .ui-state-error-text .ui-icon {background-image: url(images/ui-icons_ffffff_256x240.png); }

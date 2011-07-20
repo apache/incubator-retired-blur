@@ -6,7 +6,7 @@
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
       #search_help.filter
-        %a{:href=>'javascript:void(0)'} Help
+        %a#help-link{:href=>'javascript:void(0)'} Help
       .tab#saved
         .header#saved
           %label{:id => 'saved'} Saved Searches

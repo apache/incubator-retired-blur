@@ -44,7 +44,7 @@ $(document).ready ->
     $('#loading-spinner').show()
     
   # Initialize Help
-  $('#search_help').click ()->
+  $('#help-link').click ()->
     $('#dialog-help').dialog
       height: 550,
       width: 710,

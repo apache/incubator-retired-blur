@@ -33,8 +33,12 @@ $nav-height: 40px;
           font-weight: bold;
         }
       }
+      #zookeeper_select {
+        @include columns(6, $total-cols);
+        padding-top: 1.25em;
+      }
       #user_nav {
-        @include columns(12,$total-cols);
+        @include columns(6,$total-cols);
         @include omega($total-cols);
         text-align: right;
         padding-top: 1.25em;

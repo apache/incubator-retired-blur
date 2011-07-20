@@ -104,7 +104,6 @@ $(document).ready ->
         new_rows.prependTo($('#queries-table > tbody'))
           .effect 'highlight', {color: add_color}, 'slow'
 
-      $('[title]').tooltip()
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: Add error handling
 
@@ -140,9 +139,6 @@ $(document).ready ->
     autoHeight: false
     active: false
   
-  # Displays the full query string on hover
-  $('[title]').tooltip()
-
   # Listener for the table selector
   $('#blur_table_id').live 'change', ->
     $('#filter_form').submit()

@@ -29,7 +29,6 @@ $(document).ready ->
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
   $('#filter_columns').load('search/' + $('#blur_table').val() + '/filters', setup_filter_tree)
-  $('[title]').tooltip()
 
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
@@ -37,7 +36,7 @@ $(document).ready ->
     $('#filter_columns').hide()
     $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
     $('.body#saved').load('reload/' + $(this).val(), ->
-      $('[title]').tooltip()
+      $('html').trigger 'ajax:success'
     )
 
   # Show spinner when submit button is clicked
@@ -86,7 +85,6 @@ $(document).ready ->
       $('#results_wrapper').addClass('open_filters')
       $('#results_wrapper').removeClass('collapsed_filters')
       $('#bar_section').width('1em');
-    $('[title]').tooltip()
 
   toggle_all = () ->
     list_num = $('#neighborhood').find("> ul").length
@@ -162,7 +160,6 @@ $(document).ready ->
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'
         $('#results_container').html(error_content)
-      $('[title]').tooltip()
     .live 'ajax:error', (evt, xhr, status, error) ->
       console.log error
 
@@ -198,7 +195,8 @@ $(document).ready ->
           #hides number of results option if there are no results
           error_content = '<div>No results for your search.</div>'
           $('#results_container').html error_content
-        $('[title]').tooltip()
+        $('html').trigger 'ajax:success'
+
     $('#loading-spinner').show()
 
   #ajax listener for the delete action
@@ -232,7 +230,6 @@ $(document).ready ->
         if data
         #display the results from the save
           $('.body#saved').html(data)
-        $('[title]').tooltip()
     $('#loading-spinner').show()
 
       

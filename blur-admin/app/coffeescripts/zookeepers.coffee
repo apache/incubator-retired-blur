@@ -104,6 +104,6 @@ $(document).ready ->
       )
 
     # Sets auto updates to run every minute
-    setTimeout(load_dashboard, 5000)
+    setTimeout(load_dashboard, 60000)
 
   load_dashboard()

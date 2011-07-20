@@ -1,54 +1,57 @@
 #zookeepers
   - @zookeepers.each do |zookeeper|
-    .a_zookeeper
-      .zookeeper_info
-        %table{:id => "#{zookeeper.id}" }
-          %thead
-            %tr
-              %th
-                = zookeeper.name
-          %tbody
-            %tr
-              %td.index
-              %td.cont
-                Controllers
-              %td.shard
-                Shards
-            %tr
-              %td.index
-                blur version
-              %td.cont
-                .bv-cont
-                  .ui-icon-green.ui-icon-check
-                  .no-controllers{:style => "display:none;"}
-                    No contollers available
-                  .ui-state-error.ui-corner-all{:style => "display:none;"}
-                    Inconsistent Blur Versions
-              %td.shard
-                .bv-shard
-                  .ui-icon-green.ui-icon-check
-                  .no-shards{:style => "display:none;"}
-                    No shards available
-                  .ui-state-error.ui-corner-all{:style => "display:none;"}
-                    Inconsistent Blur Versions
-            %tr
-              %td.index
-                status
-              %td.cont
-                .stat-cont
-                  .ui-icon-green.ui-icon-check
-                  .no-controllers{:style => "display:none;"}
-                    No contollers available
-                  .ui-state-yellow.ui-corner-all{:style => "display:none;"}
-                    Controllers Disabled
-                  .ui-state-error.ui-corner-all{:style => "display:none;"}
-                    Controllers Offline
-              %td.shard
-                .stat-shard
-                  .ui-icon-green.ui-icon-check
-                  .no-shards{:style => "display:none;"}
-                    No shards available
-                  .ui-state-yellow.ui-corner-all{:style => "display:none;"}
-                    Shards Disabled
-                  .ui-state-error.ui-corner-all{:style => "display:none;"}
-                    Shards Offline
+    .zookeeper_info
+      %table{:id => "#{zookeeper.id}" }
+        %thead{:id => zookeeper.id}
+          %tr
+            %th{ :colspan => 3 }
+              = zookeeper.name
+        %tbody
+          %tr
+            %td.index
+            %td.cont
+              Controllers
+            %td.shard
+              Shards
+          %tr
+            %td.index
+              blur version
+            %td.cont
+              .bv-cont
+                .ui-state-highlight.ui-corner-all
+                  Consistent Blur Versions
+                .no-controllers.grey_div.ui-corner-all{:style => "display:none;"}
+                  No contollers available
+                .ui-state-error.ui-corner-all{:style => "display:none;"}
+                  Inconsistent Blur Versions
+            %td.shard
+              .bv-shard
+                .ui-state-highlight.ui-corner-all
+                  Consistent Blur Versions
+                .no-shards.grey_div.ui-corner-all{:style => "display:none;"}
+                  No shards available
+                .ui-state-error.ui-corner-all{:style => "display:none;"}
+                  Inconsistent Blur Versions
+          %tr
+            %td.index
+              status
+            %td.cont
+              .stat-cont
+                .ui-state-highlight.ui-corner-all
+                  Controllers Offline
+                .no-controllers.grey_div.ui-corner-all{:style => "display:none;"}
+                  No contollers available
+                .ui-state-yellow.ui-corner-all{:style => "display:none;"}
+                  Controllers Disabled
+                .ui-state-error.ui-corner-all{:style => "display:none;"}
+                  Controllers Offline
+            %td.shard
+              .stat-shard
+                .ui-state-highlight.ui-corner-all
+                  Shards Online
+                .no-shards.grey_div.ui-corner-all{:style => "display:none;"}
+                  No shards available
+                .ui-state-yellow.ui-corner-all{:style => "display:none;"}
+                  Shards Disabled
+                .ui-state-error.ui-corner-all{:style => "display:none;"}
+                  Shards Offline

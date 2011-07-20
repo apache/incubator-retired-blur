@@ -60,33 +60,32 @@
   padding-top: 2em;
   padding-bottom: 165px;
 
-  .a_zookeeper{
-    @include columns(14, $total-cols);
-    @include prefix(0.5, $total-cols);
-    .zookeeper_info {
-      width: 100%;
-      @include standard-border;
-      display: inline-block;
+  .zookeeper_info {
+    max-width: 500px;
+    min-width: 400px;
+    margin-left: 20px;
+    margin-right: 10px;
+    margin-bottom: 20px;
+    float: left;
+    @include standard-border;
+    display: inline-block;
 
-      table{
-        width: 100%;
-        .ui-icon-green { margin: 0 auto; }
-        th { font-size: 1.2em; @include border-top-radius; border: none; }
-        td { @include standard-font; }
-        td.index { @include columns(2.75, 14); }
-        td.cont, td.shard { @include columns(5, 14); text-align: center; }
-        td.shard { @include omega(14); }
-      }
+    table{
+      width: 100%;
+      th { width: 100%; font-size: 1.2em; @include border-top-radius; border: none; }
+      td { @include standard-font;}
+      td.cont, td.shard { text-align: center; }
     }
   }
 
   h2 { @include columns(15, $total-cols); }
   .warning { margin: 0; @include columns(13, $total-cols); @include omega($total-cols); text-align: right;}
+  .grey_div { background-color: $grey-color; @include border; }
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
   #old_queries { @include columns(30,$total-cols); margin-bottom: 165px; }
 
-  .ui-state-highlight, .ui-state-error, .ui-state-yellow { margin-bottom: 5px; }
+  .ui-state-highlight, .ui-state-error, .ui-state-yellow, .grey_div { margin-bottom: 5px; width: 160px; }
 }
 
 .warning { color: #b81900; font-weight: bold; }

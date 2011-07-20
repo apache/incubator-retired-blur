@@ -9,26 +9,31 @@
     #filter_wrapper{
       margin-bottom: 1em;
       @include columns(10, $total-cols);
-      .query_filter{ margin-bottom: .75em; }
+      .query_filter{ 
+        margin-bottom: .75em;
+        label{ @include columns(3, 10); }
+      }
+      input { float: right; }
     }
 
-    #selector_wrapper{
+    #selector_wrapper {
       @include columns(17, $total-cols);
       @include prefix(1);
       padding-top: 0.5em;
     }
+    #refresh_wrapper{ @include prefix(1); display:inline-block;}
     filter_spinner{
       @include columns(1, $total-cols);
     }
   }
 
   @mixin table-base {
-    @include standard-border;
     display: table;
+    border-collapse: separate;
+    @include standard-border;
     tr:nth-child(even) { background-color: white; };
     tr:nth-child(odd) { background-color: #F0F0F0; };
     text-align: center;
-    thead { @include standard-border; background-color: #C4D9FF; }
     tr.error td{
       text-align: center;
     }

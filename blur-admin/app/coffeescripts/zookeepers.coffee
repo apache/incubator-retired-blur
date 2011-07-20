@@ -2,7 +2,7 @@ $(document).ready ->
   # Updates all fields on the dashboard
   load_dashboard = () ->
     $.getJSON '/zookeepers/dashboard', (data) ->
-      console.log(data)
+      #console.log(data)
 
       # Displays a warning message if 1 or more queries have been running for over a minute
       long_queries = parseInt ( data.long_queries )
@@ -150,6 +150,6 @@ $(document).ready ->
       )
 
     # Sets auto updates to run every minute
-    setTimeout(load_dashboard, 60000)
+    setTimeout(load_dashboard, 5000)
 
   load_dashboard()

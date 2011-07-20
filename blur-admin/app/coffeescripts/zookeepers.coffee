@@ -2,7 +2,7 @@ $(document).ready ->
   # Updates all fields on the dashboard
   load_dashboard = () ->
     $.getJSON '/zookeepers/dashboard', (data) ->
-      console.log(data)
+      #console.log(data)
 
       # Displays a warning message if 1 or more queries have been running for over a minute
       long_queries = parseInt ( data.long_queries )
@@ -24,9 +24,11 @@ $(document).ready ->
         if this.status == "1"
           current_zookeeper.removeClass('ui-state-error')
           current_zookeeper.addClass('ui-state-highlight')
+          current_zookeeper.find('.zookeeper-status').html('<div> - Online</div>')
         else
           current_zookeeper.removeClass('ui-state-highlight')
           current_zookeeper.addClass('ui-state-error')
+          current_zookeeper.find('.zookeeper-status').html('<div> - Offline</div>')
 
         # Updates the fields for the zookeeper's shards
         status_shards = $('#' + zookeeper_table[0].id).find(".stat-shard")

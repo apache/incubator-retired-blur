@@ -92,7 +92,7 @@
   .ui-state-highlight { background:$green-state-color; color: white; }
   .ui-state-yellow { background: $yellow-state-color; }
 
-  .number, .word {display: inline-block; }
+  .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
   .number {width: 20px; text-align: right; }
   .word {width: 130px; text-align: left;}
 }

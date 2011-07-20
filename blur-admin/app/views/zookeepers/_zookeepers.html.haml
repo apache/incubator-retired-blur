@@ -18,40 +18,46 @@
               blur version
             %td.cont
               .bv-cont
-                .ui-state-highlight.ui-corner-all
-                  Consistent Blur Versions
-                .no-controllers.grey_div.ui-corner-all{:style => "display:none;"}
-                  No contollers available
-                .ui-state-error.ui-corner-all{:style => "display:none;"}
-                  Inconsistent Blur Versions
+                .controllers-bv.grey_div.ui-corner-all
+                  No Controllers Available
             %td.shard
               .bv-shard
-                .ui-state-highlight.ui-corner-all
-                  Consistent Blur Versions
-                .no-shards.grey_div.ui-corner-all{:style => "display:none;"}
-                  No shards available
-                .ui-state-error.ui-corner-all{:style => "display:none;"}
-                  Inconsistent Blur Versions
+                .shards-bv.grey_div.ui-corner-all
+                  No Shards Available
           %tr
             %td.index
               status
             %td.cont
               .stat-cont
-                .ui-state-highlight.ui-corner-all
-                  Controllers Offline
-                .no-controllers.grey_div.ui-corner-all{:style => "display:none;"}
-                  No contollers available
-                .ui-state-yellow.ui-corner-all{:style => "display:none;"}
-                  Controllers Disabled
-                .ui-state-error.ui-corner-all{:style => "display:none;"}
-                  Controllers Offline
+                .controllers-online.grey_div.ui-corner-all
+                  .number
+                    0
+                  .word
+                    Contollers Online
+                .controllers-disabled.grey_div.ui-corner-all
+                  .number
+                    0
+                  .word
+                    Controllers Disabled
+                .controllers-offline.grey_div.ui-corner-all
+                  .number
+                    0
+                  .word
+                    Controllers Offline
             %td.shard
               .stat-shard
-                .ui-state-highlight.ui-corner-all
-                  Shards Online
-                .no-shards.grey_div.ui-corner-all{:style => "display:none;"}
-                  No shards available
-                .ui-state-yellow.ui-corner-all{:style => "display:none;"}
-                  Shards Disabled
-                .ui-state-error.ui-corner-all{:style => "display:none;"}
-                  Shards Offline
+                .shards-online.grey_div.ui-corner-all
+                  .number
+                    0
+                  .word
+                    Shards Online
+                .shards-disabled.grey_div.ui-corner-all
+                  .number
+                    0
+                  .word
+                    Shards Disabled
+                .shards-offline.grey_div.ui-corner-all
+                  .number
+                    0
+                  .word
+                    Shards Offline

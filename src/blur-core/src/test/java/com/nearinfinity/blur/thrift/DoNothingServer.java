@@ -25,7 +25,6 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -33,6 +32,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
+import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class DoNothingServer implements Iface {
@@ -99,16 +99,6 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException {
-        
-    }
-
-    @Override
-    public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException, TException {
-        return null;
-    }
-
-    @Override
     public void createTable(String table, TableDescriptor tableDescriptor)
             throws BlurException, TException {
         
@@ -134,4 +124,24 @@ public class DoNothingServer implements Iface {
 			TException {
 		return null;
 	}
+
+    @Override
+    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+        
+    }
+
+    @Override
+    public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
+        
+    }
+
+    @Override
+    public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
+        
+    }
+
+    @Override
+    public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
+        return null;
+    }
 }

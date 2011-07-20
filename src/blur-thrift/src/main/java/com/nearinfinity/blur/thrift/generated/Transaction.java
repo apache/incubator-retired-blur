@@ -20,16 +20,16 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySuggestions, BlurQuerySuggestions._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQuerySuggestions");
+public class Transaction implements org.apache.thrift.TBase<Transaction, Transaction._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Transaction");
 
-  private static final org.apache.thrift.protocol.TField QUERY_SUGGESTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("querySuggestions", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField TRANSACTION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("transactionId", org.apache.thrift.protocol.TType.I32, (short)1);
 
-  public List<BlurQuerySuggestion> querySuggestions;
+  public int transactionId;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    QUERY_SUGGESTIONS((short)1, "querySuggestions");
+    TRANSACTION_ID((short)1, "transactionId");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -44,8 +44,8 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // QUERY_SUGGESTIONS
-          return QUERY_SUGGESTIONS;
+        case 1: // TRANSACTION_ID
+          return TRANSACTION_ID;
         default:
           return null;
       }
@@ -86,95 +86,78 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
   }
 
   // isset id assignments
+  private static final int __TRANSACTIONID_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.QUERY_SUGGESTIONS, new org.apache.thrift.meta_data.FieldMetaData("querySuggestions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurQuerySuggestion.class))));
+    tmpMap.put(_Fields.TRANSACTION_ID, new org.apache.thrift.meta_data.FieldMetaData("transactionId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuerySuggestions.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Transaction.class, metaDataMap);
   }
 
-  public BlurQuerySuggestions() {
+  public Transaction() {
   }
 
-  public BlurQuerySuggestions(
-    List<BlurQuerySuggestion> querySuggestions)
+  public Transaction(
+    int transactionId)
   {
     this();
-    this.querySuggestions = querySuggestions;
+    this.transactionId = transactionId;
+    setTransactionIdIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public BlurQuerySuggestions(BlurQuerySuggestions other) {
-    if (other.isSetQuerySuggestions()) {
-      List<BlurQuerySuggestion> __this__querySuggestions = new ArrayList<BlurQuerySuggestion>();
-      for (BlurQuerySuggestion other_element : other.querySuggestions) {
-        __this__querySuggestions.add(new BlurQuerySuggestion(other_element));
-      }
-      this.querySuggestions = __this__querySuggestions;
-    }
+  public Transaction(Transaction other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
+    this.transactionId = other.transactionId;
   }
 
-  public BlurQuerySuggestions deepCopy() {
-    return new BlurQuerySuggestions(this);
+  public Transaction deepCopy() {
+    return new Transaction(this);
   }
 
   @Override
   public void clear() {
-    this.querySuggestions = null;
+    setTransactionIdIsSet(false);
+    this.transactionId = 0;
   }
 
-  public int getQuerySuggestionsSize() {
-    return (this.querySuggestions == null) ? 0 : this.querySuggestions.size();
+  public int getTransactionId() {
+    return this.transactionId;
   }
 
-  public java.util.Iterator<BlurQuerySuggestion> getQuerySuggestionsIterator() {
-    return (this.querySuggestions == null) ? null : this.querySuggestions.iterator();
-  }
-
-  public void addToQuerySuggestions(BlurQuerySuggestion elem) {
-    if (this.querySuggestions == null) {
-      this.querySuggestions = new ArrayList<BlurQuerySuggestion>();
-    }
-    this.querySuggestions.add(elem);
-  }
-
-  public List<BlurQuerySuggestion> getQuerySuggestions() {
-    return this.querySuggestions;
-  }
-
-  public BlurQuerySuggestions setQuerySuggestions(List<BlurQuerySuggestion> querySuggestions) {
-    this.querySuggestions = querySuggestions;
+  public Transaction setTransactionId(int transactionId) {
+    this.transactionId = transactionId;
+    setTransactionIdIsSet(true);
     return this;
   }
 
-  public void unsetQuerySuggestions() {
-    this.querySuggestions = null;
+  public void unsetTransactionId() {
+    __isset_bit_vector.clear(__TRANSACTIONID_ISSET_ID);
   }
 
-  /** Returns true if field querySuggestions is set (has been assigned a value) and false otherwise */
-  public boolean isSetQuerySuggestions() {
-    return this.querySuggestions != null;
+  /** Returns true if field transactionId is set (has been assigned a value) and false otherwise */
+  public boolean isSetTransactionId() {
+    return __isset_bit_vector.get(__TRANSACTIONID_ISSET_ID);
   }
 
-  public void setQuerySuggestionsIsSet(boolean value) {
-    if (!value) {
-      this.querySuggestions = null;
-    }
+  public void setTransactionIdIsSet(boolean value) {
+    __isset_bit_vector.set(__TRANSACTIONID_ISSET_ID, value);
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case QUERY_SUGGESTIONS:
+    case TRANSACTION_ID:
       if (value == null) {
-        unsetQuerySuggestions();
+        unsetTransactionId();
       } else {
-        setQuerySuggestions((List<BlurQuerySuggestion>)value);
+        setTransactionId((Integer)value);
       }
       break;
 
@@ -183,8 +166,8 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case QUERY_SUGGESTIONS:
-      return getQuerySuggestions();
+    case TRANSACTION_ID:
+      return new Integer(getTransactionId());
 
     }
     throw new IllegalStateException();
@@ -197,8 +180,8 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
     }
 
     switch (field) {
-    case QUERY_SUGGESTIONS:
-      return isSetQuerySuggestions();
+    case TRANSACTION_ID:
+      return isSetTransactionId();
     }
     throw new IllegalStateException();
   }
@@ -207,21 +190,21 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof BlurQuerySuggestions)
-      return this.equals((BlurQuerySuggestions)that);
+    if (that instanceof Transaction)
+      return this.equals((Transaction)that);
     return false;
   }
 
-  public boolean equals(BlurQuerySuggestions that) {
+  public boolean equals(Transaction that) {
     if (that == null)
       return false;
 
-    boolean this_present_querySuggestions = true && this.isSetQuerySuggestions();
-    boolean that_present_querySuggestions = true && that.isSetQuerySuggestions();
-    if (this_present_querySuggestions || that_present_querySuggestions) {
-      if (!(this_present_querySuggestions && that_present_querySuggestions))
+    boolean this_present_transactionId = true;
+    boolean that_present_transactionId = true;
+    if (this_present_transactionId || that_present_transactionId) {
+      if (!(this_present_transactionId && that_present_transactionId))
         return false;
-      if (!this.querySuggestions.equals(that.querySuggestions))
+      if (this.transactionId != that.transactionId)
         return false;
     }
 
@@ -233,20 +216,20 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
     return 0;
   }
 
-  public int compareTo(BlurQuerySuggestions other) {
+  public int compareTo(Transaction other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    BlurQuerySuggestions typedOther = (BlurQuerySuggestions)other;
+    Transaction typedOther = (Transaction)other;
 
-    lastComparison = Boolean.valueOf(isSetQuerySuggestions()).compareTo(typedOther.isSetQuerySuggestions());
+    lastComparison = Boolean.valueOf(isSetTransactionId()).compareTo(typedOther.isSetTransactionId());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetQuerySuggestions()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.querySuggestions, typedOther.querySuggestions);
+    if (isSetTransactionId()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.transactionId, typedOther.transactionId);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -268,20 +251,10 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
         break;
       }
       switch (field.id) {
-        case 1: // QUERY_SUGGESTIONS
-          if (field.type == org.apache.thrift.protocol.TType.LIST) {
-            {
-              org.apache.thrift.protocol.TList _list62 = iprot.readListBegin();
-              this.querySuggestions = new ArrayList<BlurQuerySuggestion>(_list62.size);
-              for (int _i63 = 0; _i63 < _list62.size; ++_i63)
-              {
-                BlurQuerySuggestion _elem64;
-                _elem64 = new BlurQuerySuggestion();
-                _elem64.read(iprot);
-                this.querySuggestions.add(_elem64);
-              }
-              iprot.readListEnd();
-            }
+        case 1: // TRANSACTION_ID
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
+            this.transactionId = iprot.readI32();
+            setTransactionIdIsSet(true);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -301,33 +274,20 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
     validate();
 
     oprot.writeStructBegin(STRUCT_DESC);
-    if (this.querySuggestions != null) {
-      oprot.writeFieldBegin(QUERY_SUGGESTIONS_FIELD_DESC);
-      {
-        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.querySuggestions.size()));
-        for (BlurQuerySuggestion _iter65 : this.querySuggestions)
-        {
-          _iter65.write(oprot);
-        }
-        oprot.writeListEnd();
-      }
-      oprot.writeFieldEnd();
-    }
+    oprot.writeFieldBegin(TRANSACTION_ID_FIELD_DESC);
+    oprot.writeI32(this.transactionId);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("BlurQuerySuggestions(");
+    StringBuilder sb = new StringBuilder("Transaction(");
     boolean first = true;
 
-    sb.append("querySuggestions:");
-    if (this.querySuggestions == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.querySuggestions);
-    }
+    sb.append("transactionId:");
+    sb.append(this.transactionId);
     first = false;
     sb.append(")");
     return sb.toString();
@@ -347,6 +307,8 @@ public class BlurQuerySuggestions implements org.apache.thrift.TBase<BlurQuerySu
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);

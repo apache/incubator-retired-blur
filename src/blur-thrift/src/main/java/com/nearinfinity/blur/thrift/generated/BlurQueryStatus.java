@@ -648,16 +648,16 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
         case 2: // CPU_TIMES
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map83 = iprot.readMapBegin();
-              this.cpuTimes = new HashMap<String,CpuTime>(2*_map83.size);
-              for (int _i84 = 0; _i84 < _map83.size; ++_i84)
+              org.apache.thrift.protocol.TMap _map70 = iprot.readMapBegin();
+              this.cpuTimes = new HashMap<String,CpuTime>(2*_map70.size);
+              for (int _i71 = 0; _i71 < _map70.size; ++_i71)
               {
-                String _key85;
-                CpuTime _val86;
-                _key85 = iprot.readString();
-                _val86 = new CpuTime();
-                _val86.read(iprot);
-                this.cpuTimes.put(_key85, _val86);
+                String _key72;
+                CpuTime _val73;
+                _key72 = iprot.readString();
+                _val73 = new CpuTime();
+                _val73.read(iprot);
+                this.cpuTimes.put(_key72, _val73);
               }
               iprot.readMapEnd();
             }
@@ -720,10 +720,10 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
       oprot.writeFieldBegin(CPU_TIMES_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, this.cpuTimes.size()));
-        for (Map.Entry<String, CpuTime> _iter87 : this.cpuTimes.entrySet())
+        for (Map.Entry<String, CpuTime> _iter74 : this.cpuTimes.entrySet())
         {
-          oprot.writeString(_iter87.getKey());
-          _iter87.getValue().write(oprot);
+          oprot.writeString(_iter74.getKey());
+          _iter74.getValue().write(oprot);
         }
         oprot.writeMapEnd();
       }

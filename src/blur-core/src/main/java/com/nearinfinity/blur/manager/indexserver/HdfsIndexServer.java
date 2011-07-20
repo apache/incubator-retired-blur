@@ -41,10 +41,8 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
-import com.nearinfinity.blur.manager.writer.BlurWAL;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
@@ -63,21 +61,17 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private ReplicationStrategy _replicationStrategy;
     private Configuration _configuration = new Configuration();
     private BlurIndexReaderCloser _closer;
-    private BlurIndexCommiter _commiter;
     private ZooKeeper _zookeeper;
     
     @Override
     public void init() {
         super.init();
-        _commiter = new BlurIndexCommiter();
-        _commiter.init();
         _closer = new BlurIndexReaderCloser();
         _closer.init();
     }
     
     @Override
     public synchronized void close() {
-        _commiter.close();
         _closer.stop();
         if (!_closed) {
             _closed = true;
@@ -108,7 +102,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         
         BlurIndexWriter writer = new BlurIndexWriter();
         writer.setCloser(_closer);
-        writer.setCommiter(_commiter);
         writer.setAnalyzer(getAnalyzer(table));
         writer.setDirectory(compressedDirectory);
         writer.init();

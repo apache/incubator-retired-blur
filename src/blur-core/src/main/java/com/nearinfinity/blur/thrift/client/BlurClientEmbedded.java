@@ -27,13 +27,14 @@ import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.BlurQuerySuggestions;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
+import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
@@ -137,8 +138,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void mutate(String table, List<RowMutation> mutations) throws BlurException, TException {
-            face.mutate(table, mutations);
+        public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+            face.mutate(table, transaction, mutations);
         }
 
         @Override
@@ -274,7 +275,7 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void send_mutate(String table, List<RowMutation> mutations) throws TException {
+        public void send_mutate(String table, Transaction transaction, List<RowMutation> mutations) throws TException {
             throw new RuntimeException("not impl");
         }
 
@@ -283,21 +284,37 @@ public class BlurClientEmbedded extends BlurClient {
             throw new RuntimeException("not impl");
         }
 
-        public BlurQuerySuggestions querySuggestions(String table, BlurQuery blurQuery) throws BlurException,
-                TException {
-            return face.querySuggestions(table, blurQuery);
+        public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, TException {
+            face.createTable(table, tableDescriptor);
         }
 
-        @Override
-        public BlurQuerySuggestions recv_querySuggestions() throws BlurException, TException {
-            // TODO Auto-generated method stub
-            return super.recv_querySuggestions();
+        public void disableTable(String table) throws BlurException, TException {
+            face.disableTable(table);
         }
 
-        @Override
-        public void send_querySuggestions(String table, BlurQuery blurQuery) throws TException {
-            // TODO Auto-generated method stub
-            super.send_querySuggestions(table, blurQuery);
+        public void enableTable(String table) throws BlurException, TException {
+            face.enableTable(table);
         }
+
+        public TableStats getTableStats(String table) throws BlurException, TException {
+            return face.getTableStats(table);
+        }
+
+        public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
+            face.mutateAbort(table, transaction);
+        }
+
+        public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
+            face.mutateCommit(table, transaction);
+        }
+
+        public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
+            return face.mutateCreateTransaction(table);
+        }
+
+        public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
+            face.removeTable(table, deleteIndexFiles);
+        }
+
     }
 }

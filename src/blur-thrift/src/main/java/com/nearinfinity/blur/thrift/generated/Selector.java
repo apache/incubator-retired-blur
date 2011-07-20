@@ -29,6 +29,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   private static final org.apache.thrift.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("recordId", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamiliesToFetch", org.apache.thrift.protocol.TType.SET, (short)5);
   private static final org.apache.thrift.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnsToFetch", org.apache.thrift.protocol.TType.MAP, (short)6);
+  private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)7);
 
   public boolean recordOnly;
   public String locationId;
@@ -36,6 +37,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   public String recordId;
   public Set<String> columnFamiliesToFetch;
   public Map<String,Set<String>> columnsToFetch;
+  public Transaction transaction;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -44,7 +46,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     ROW_ID((short)3, "rowId"),
     RECORD_ID((short)4, "recordId"),
     COLUMN_FAMILIES_TO_FETCH((short)5, "columnFamiliesToFetch"),
-    COLUMNS_TO_FETCH((short)6, "columnsToFetch");
+    COLUMNS_TO_FETCH((short)6, "columnsToFetch"),
+    TRANSACTION((short)7, "transaction");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -71,6 +74,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
           return COLUMN_FAMILIES_TO_FETCH;
         case 6: // COLUMNS_TO_FETCH
           return COLUMNS_TO_FETCH;
+        case 7: // TRANSACTION
+          return TRANSACTION;
         default:
           return null;
       }
@@ -133,6 +138,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
                 new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
+    tmpMap.put(_Fields.TRANSACTION, new org.apache.thrift.meta_data.FieldMetaData("transaction", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Transaction.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
@@ -146,7 +153,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     String rowId,
     String recordId,
     Set<String> columnFamiliesToFetch,
-    Map<String,Set<String>> columnsToFetch)
+    Map<String,Set<String>> columnsToFetch,
+    Transaction transaction)
   {
     this();
     this.recordOnly = recordOnly;
@@ -156,6 +164,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.recordId = recordId;
     this.columnFamiliesToFetch = columnFamiliesToFetch;
     this.columnsToFetch = columnsToFetch;
+    this.transaction = transaction;
   }
 
   /**
@@ -199,6 +208,9 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       }
       this.columnsToFetch = __this__columnsToFetch;
     }
+    if (other.isSetTransaction()) {
+      this.transaction = new Transaction(other.transaction);
+    }
   }
 
   public Selector deepCopy() {
@@ -214,6 +226,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.recordId = null;
     this.columnFamiliesToFetch = null;
     this.columnsToFetch = null;
+    this.transaction = null;
   }
 
   public boolean isRecordOnly() {
@@ -385,6 +398,30 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
   }
 
+  public Transaction getTransaction() {
+    return this.transaction;
+  }
+
+  public Selector setTransaction(Transaction transaction) {
+    this.transaction = transaction;
+    return this;
+  }
+
+  public void unsetTransaction() {
+    this.transaction = null;
+  }
+
+  /** Returns true if field transaction is set (has been assigned a value) and false otherwise */
+  public boolean isSetTransaction() {
+    return this.transaction != null;
+  }
+
+  public void setTransactionIsSet(boolean value) {
+    if (!value) {
+      this.transaction = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RECORD_ONLY:
@@ -435,6 +472,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       }
       break;
 
+    case TRANSACTION:
+      if (value == null) {
+        unsetTransaction();
+      } else {
+        setTransaction((Transaction)value);
+      }
+      break;
+
     }
   }
 
@@ -457,6 +502,9 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
 
     case COLUMNS_TO_FETCH:
       return getColumnsToFetch();
+
+    case TRANSACTION:
+      return getTransaction();
 
     }
     throw new IllegalStateException();
@@ -481,6 +529,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return isSetColumnFamiliesToFetch();
     case COLUMNS_TO_FETCH:
       return isSetColumnsToFetch();
+    case TRANSACTION:
+      return isSetTransaction();
     }
     throw new IllegalStateException();
   }
@@ -549,6 +599,15 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (!(this_present_columnsToFetch && that_present_columnsToFetch))
         return false;
       if (!this.columnsToFetch.equals(that.columnsToFetch))
+        return false;
+    }
+
+    boolean this_present_transaction = true && this.isSetTransaction();
+    boolean that_present_transaction = true && that.isSetTransaction();
+    if (this_present_transaction || that_present_transaction) {
+      if (!(this_present_transaction && that_present_transaction))
+        return false;
+      if (!this.transaction.equals(that.transaction))
         return false;
     }
 
@@ -624,6 +683,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
     if (isSetColumnsToFetch()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnsToFetch, typedOther.columnsToFetch);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTransaction()).compareTo(typedOther.isSetTransaction());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTransaction()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.transaction, typedOther.transaction);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -720,6 +789,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 7: // TRANSACTION
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.transaction = new Transaction();
+            this.transaction.read(iprot);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -785,6 +862,11 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       }
       oprot.writeFieldEnd();
     }
+    if (this.transaction != null) {
+      oprot.writeFieldBegin(TRANSACTION_FIELD_DESC);
+      this.transaction.write(oprot);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -835,6 +917,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       sb.append("null");
     } else {
       sb.append(this.columnsToFetch);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("transaction:");
+    if (this.transaction == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.transaction);
     }
     first = false;
     sb.append(")");

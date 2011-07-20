@@ -5,9 +5,9 @@
       .search_element{:id => search.id}
         %label{:title => val ? search.name : "This is not a valid search for this schema"}
           =search.name
-        %img.action_icon{:id => "delete_icon", :src => "/images/delete.png", :title => "Delete This Saved Query", :alt => "Delete This Saved Query"}
-        %img.action_icon{:id => "edit_icon", :src => "/images/edit.png", :title => "Edit This Saved Query", :alt => "Edit This Saved Query" }
+        %img.ui-icon.ui-icon-close{:id => "delete_icon", :title => "Delete This Saved Query", :alt => "Delete This Saved Query"}
+        %img.ui-icon-pencil.ui-icon{:id => "edit_icon", :title => "Edit This Saved Query", :alt => "Edit This Saved Query" }
         -if val
-          %img.action_icon{:id => "run_icon", :src => "/images/play.png", :title => "Run This Saved Query", :alt => "Run This Saved Query" }
+          %img.ui-icon-play.ui-icon{:id => "run_icon", :title => "Run This Saved Query", :alt => "Run This Saved Query" }
   -else
     %label You do not have any saved searches.

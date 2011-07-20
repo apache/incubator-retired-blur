@@ -15,7 +15,8 @@
   h3.blur_table, .blur_tables_header, .blur_tables_footer { font-size: 1em; }
 
   .blur_tables_header, .blur_tables_footer {
-    background-color: #C4D9FF;
+    background-color: $table-hd-color;
+    color: $table-hd-text;
     @include full($total-cols);
   }
 

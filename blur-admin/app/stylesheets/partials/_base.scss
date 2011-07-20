@@ -4,10 +4,15 @@ $base-theme-background-color: #eeeeee;
 
 $red-color: #E01E00;
 $orange-color: #DB8800;
-$yellow-color: #FAFA2E;
-$green-color: #95D169;
-$blue-color: #C4D9FF;
-$light-blue-color: mix(#fff,#C4D9FF,85%);
+$yellow-state-color: #F6DD60;
+$green-state-color: #68B473;
+
+$old-blue-color: #C4D9FF;
+$blue-color: #E4EDFF;
+$table-hd-color: $blue-color;
+$table-hd-text: #667495;
+$light-blue-color: mix(#fff,$blue-color,85%);
+
 $grey-color: #EEEEEE;
 $light-grey-color: #F0F0F0;
 

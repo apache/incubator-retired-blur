@@ -49,10 +49,14 @@ $(document).ready ->
             status_shards.find('.shards-online').removeClass('grey_div')
             status_shards.find('.shards-online').addClass('ui-state-highlight')
             status_shards.find('.shards-online > .number').html('<div>' + number_shards_online + '</div>')
-            if number_shards_online == 1
-              status_shards.find('.shards-online > .word').html('<div>Shard Online</div>')
-            else
-              status_shards.find('.shards-online > .word').html('<div>Shards Online</div>')
+          else
+            status_shards.find('.shards-online').removeClass('ui-state-highlight')
+            status_shards.find('.shards-online').addClass('grey_div')
+            status_shards.find('.shards-online > .number').html('<div>0</div>')
+          if number_shards_online == 1
+            status_shards.find('.shards-online > .word').html('<div>Shard Online</div>')
+          else
+            status_shards.find('.shards-online > .word').html('<div>Shards Online</div>')
 
           if this.shard_disabled_node != "0"
             status_shards.find('.shards-disabled').removeClass('grey_div')
@@ -108,10 +112,14 @@ $(document).ready ->
             status_controllers.find('.controllers-online').removeClass('grey_div')
             status_controllers.find('.controllers-online').addClass('ui-state-highlight')
             status_controllers.find('.controllers-online > .number').html('<div>' + number_controllers_online + '</div>')
-            if number_controllers_online == 1
-              status_controllers.find('.controllers-online > .word').html('<div>Controller Online</div>')
-            else
-              status_controllers.find('.controllers-online > .word').html('<div>Controllers Online</div>')
+          else
+            status_controllers.find('.controllers-online').removeClass('ui-state-highlight')
+            status_controllers.find('.controllers-online').addClass('grey_div')
+            status_controllers.find('.controllers-online > .number').html('<div>0</div>')
+          if number_controllers_online == 1
+            status_controllers.find('.controllers-online > .word').html('<div>Controller Online</div>')
+          else
+            status_controllers.find('.controllers-online > .word').html('<div>Controllers Online</div>')
 
           if this.controller_disabled_node != "0"
             status_controllers.find('.controllers-disabled').removeClass('grey_div')

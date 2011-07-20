@@ -42,12 +42,12 @@
 
       #refresh_wrapper
         = hidden_field_tag :time_since_refresh
-        = label_tag :refresh_period, 'Refresh every:'
+        = label_tag :refresh_period, 'Refresh:'
         = select_tag :refresh_period, options_for_select([['never', 'false'],
                                                           ['continuously', 'continuous'],
-                                                          ['10 seconds', 10],
-                                                          ['1 minute', 60],
-                                                          ['10 minutes', 600]])
+                                                          ['every 10 seconds', 10],
+                                                          ['every 1 minute', 60],
+                                                          ['every 10 minutes', 600]])
 
     = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading...", :style => "display:none;"
 

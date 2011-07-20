@@ -10,3 +10,15 @@ $(document).ready ->
 
   # Listener to hide dialog on click
   $('.ui-widget-overlay').live "click", -> $(".ui-dialog-content").dialog "close"
+
+  $('[title]').tooltip
+    show:
+      delay: 250
+  $('html').live 'ajax:success', ->
+    console.log "success"
+    $('[title]').tooltip
+      show:
+        delay: 250
+
+  $('html').live 'ajax:complete', ->
+    console.log "complete"

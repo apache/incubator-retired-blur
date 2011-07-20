@@ -25,6 +25,11 @@
             - flash.each do |type, message|
               .flash{ :id => "#{type}" }
                 = message
+          #zookeeper_select
+            - if @current_zookeeper && @zookeepers
+              = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',  :method => :put, :remote => :true do
+                %b Current Zookeeper Instance:
+                = select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
           #user_nav
             - if @current_user
               = "Welcome, "
@@ -64,8 +69,3 @@
       #bd
         = yield
     #ft
-      - if @current_zookeeper && @zookeepers
-        .zookeeper_select
-          = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',  :method => :put, :remote => :true do
-            %b Current Zookeeper Instance:
-            = select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )

@@ -186,6 +186,7 @@ public class CompressedFieldDataDirectory extends Directory {
         _directory.setLockFactory(lockFactory);
     }
 
+    @SuppressWarnings("deprecation")
     public void sync(String name) throws IOException {
         if (compressedFileExists(name)) {
             _directory.sync(getCompressedName(name));

@@ -32,11 +32,15 @@ import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
+import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -169,10 +173,14 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
 
     protected void setupWriter(Context context) throws IOException {
-        _writer = new IndexWriter(nullCheck(_directory), nullCheck(_analyzer), MaxFieldLength.UNLIMITED);
-        _writer.setRAMBufferSizeMB(_blurTask.getRamBufferSizeMB());
-        _writer.setUseCompoundFile(false);
-        _writer.setSimilarity(new FairSimilarity());
+        nullCheck(_directory);
+        nullCheck(_analyzer);
+        IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
+        config.setSimilarity(new FairSimilarity());
+        config.setRAMBufferSizeMB(_blurTask.getRamBufferSizeMB());
+        TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();
+        mergePolicy.setUseCompoundFile(false);
+        _writer = new IndexWriter(_directory, config);
     }
 
     protected void setupAnalyzer(Context context) {

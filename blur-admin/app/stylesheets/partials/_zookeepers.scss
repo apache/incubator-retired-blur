@@ -77,20 +77,18 @@
       td { @include standard-font;}
       td.cont, td.shard { text-align: center; }
       .index { vertical-align: top; }
-      .bv {margin-bottom: 50px !important; }
     }
   }
 
   h2 { @include columns(15, $total-cols); }
   .warning { margin: 0; @include columns(13, $total-cols); @include omega($total-cols); text-align: right;}
-  .grey_div { background-color: $grey-color; @include border; }
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
-  #old_queries { @include columns(30,$total-cols); margin-bottom: 165px; }
 
-  .ui-state-highlight, .ui-state-error, .ui-state-yellow, .grey_div { margin-bottom: 5px; width: 160px; }
-  .ui-state-highlight { background:$green-state-color; color: white; }
-  .ui-state-yellow { background: $yellow-state-color; }
+  .green_box, .ui-state-error, .yellow_box, .grey_box { margin-bottom: 5px; width: 160px; }
+  .grey_box { background-color: $grey-color; @include border; }
+  .green_box { background: $green-state-color; color: white; border: $border_width $border_style $green-border-color; }
+  .yellow_box { background: $yellow-state-color; border: $border_width $border_style $yellow-border-color; }
 
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
   .number {width: 20px; text-align: right; }

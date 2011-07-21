@@ -4,7 +4,7 @@ class ZookeepersController < ApplicationController
   before_filter :zookeepers, :only => [:show_current, :index]
 
   QUERY = "
-    select 
+    select
       z.name,
     	z.status,
     	z.id,

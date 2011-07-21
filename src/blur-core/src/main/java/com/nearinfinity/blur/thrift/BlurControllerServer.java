@@ -35,7 +35,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
@@ -83,12 +82,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     private ClusterStatus _clusterStatus;
     private int _threadCount = 64;
     private boolean _closed;
-    private ExecutorsDynamicConfig _dynamicConfig;
     private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
     private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
 
     public void open() {
-        _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount, _dynamicConfig);
+        _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
         updateShardLayout();
         _shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
         _shardLayoutTimer.scheduleAtFixedRate(new TimerTask() {
@@ -506,10 +504,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             _tableShardCountMap.put(table, numberOfShards);
         }
         return numberOfShards;
-    }
-
-    public void setDynamicConfig(ExecutorsDynamicConfig dynamicConfig) {
-        this._dynamicConfig = dynamicConfig;
     }
 
     @Override

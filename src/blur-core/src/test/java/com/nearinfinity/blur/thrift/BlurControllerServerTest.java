@@ -34,8 +34,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
-import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
@@ -63,18 +61,15 @@ public class BlurControllerServerTest {
     private static final String TABLE = "test";
     private Map<String,Iface> shardServers = new HashMap<String, Iface>();
     private BlurControllerServer server;
-    private ExecutorsDynamicConfig dynamicConfig;
     
     @Before
     public void setup() {
-        dynamicConfig = new SimpleExecutorsDynamicConfig(10);
         addShardServer("shard-00000000");
         addShardServer("shard-00000001");
         addShardServer("shard-00000002");
         server = new BlurControllerServer();
         server.setClient(getClient());
         server.setClusterStatus(getClusterStatus());
-        server.setDynamicConfig(dynamicConfig);
         server.open();
     }
     

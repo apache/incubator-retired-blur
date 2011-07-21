@@ -38,7 +38,6 @@ import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
-import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -66,7 +65,6 @@ public class ThriftBlurShardServer extends ThriftServer {
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
         
         BlurConfiguration configuration = new BlurConfiguration();
-        SimpleExecutorsDynamicConfig dynamicConfig = new SimpleExecutorsDynamicConfig(10);
 
         String nodeNameHostName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
         String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
@@ -113,14 +111,12 @@ public class ThriftBlurShardServer extends ThriftServer {
         indexServer.setDistributedManager(dzk);
         indexServer.setReplicationDaemon(replicationDaemon);
         indexServer.setReplicationStrategy(replicationStrategy);
-        indexServer.setDynamicConfig(dynamicConfig);
         indexServer.init();
 
         localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));
 
         final IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
-        indexManager.setDynamicConfig(dynamicConfig);
         indexManager.init();
 
         final BlurShardServer shardServer = new BlurShardServer();
@@ -133,7 +129,6 @@ public class ThriftBlurShardServer extends ThriftServer {
         server.setNodeName(nodeName);
         server.setAddressPropertyName(BLUR_SHARD_BIND_ADDRESS);
         server.setPortPropertyName(BLUR_SHARD_BIND_PORT);
-        server.setDynamicConfig(dynamicConfig);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
             server.setIface(crazyMode(shardServer));

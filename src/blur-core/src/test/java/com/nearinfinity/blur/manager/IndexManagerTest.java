@@ -43,8 +43,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.BlurShardName;
-import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
-import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -68,19 +66,16 @@ public class IndexManagerTest {
     private static final String TABLE = "table";
     private IndexServer server;
     private IndexManager indexManager;
-    private ExecutorsDynamicConfig dynamicConfig;
 
     @Before
     public void setUp() throws BlurException, IOException {
         File file = new File("./tmp/indexer-manager-test");
         rm(file);
         new File(new File(file, TABLE), SHARD_NAME).mkdirs();
-        dynamicConfig = new SimpleExecutorsDynamicConfig(10);
         server = new LocalIndexServer(file);
         indexManager = new IndexManager();
         indexManager.setStatusCleanupTimerDelay(1000);
         indexManager.setIndexServer(server);
-        indexManager.setDynamicConfig(dynamicConfig);
         indexManager.init();
         setupData();
     }

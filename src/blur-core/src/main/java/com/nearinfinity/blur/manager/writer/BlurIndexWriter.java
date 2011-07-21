@@ -57,9 +57,9 @@ public class BlurIndexWriter extends BlurIndex {
     private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
     private Directory _sync;
     private BlurIndexReaderCloser _closer;
-    private Map<Integer, Trans> _trans = new ConcurrentHashMap<Integer, Trans>();
+    private Map<Integer, IndexTransaction> _trans = new ConcurrentHashMap<Integer, IndexTransaction>();
     
-    public static class Trans {
+    public static class IndexTransaction {
         InstantiatedIndex _index;
         InstantiatedIndexReader _reader;
         InstantiatedIndexWriter _writer;
@@ -68,6 +68,35 @@ public class BlurIndexWriter extends BlurIndex {
     
     public void init() throws IOException {
         setupWriter();
+    }
+    
+    @Override
+    public IndexReader getIndexReader() throws IOException {
+        IndexReader indexReader = _indexReaderRef.get();
+        indexReader.incRef();
+        return indexReader;
+    }
+    
+    @Override
+    public void abort(Transaction transaction) {
+        IndexTransaction trans = _trans.remove(transaction.transactionId);
+        trans._index = null;
+        trans._indexWriter = null;
+        trans._writer = null;
+    }
+    
+    @Override
+    public void close() throws IOException {
+        _writer.close();
+    }
+    
+    @Override
+    public boolean replaceRow(Transaction transaction, Row row) throws IOException {
+        IndexTransaction trans = getTrans(transaction);
+        synchronized (trans) {
+            trans._indexWriter.replace(row);
+            return true;
+        }
     }
     
     private void setupWriter() throws IOException {
@@ -80,23 +109,10 @@ public class BlurIndexWriter extends BlurIndex {
         _indexReaderRef.set(IndexReader.open(_writer, true));
     }
     
-    public void close() throws IOException {
-        _writer.close();
-    }
-    
-    @Override
-    public boolean replaceRow(Transaction transaction, Row row) throws IOException {
-        Trans trans = getTrans(transaction);
-        synchronized (trans) {
-            trans._indexWriter.replace(row);
-            return true;
-        }
-    }
-
-    private synchronized Trans getTrans(Transaction transaction) throws IOException {
-        Trans trans = _trans.get(transaction.transactionId);
+    private synchronized IndexTransaction getTrans(Transaction transaction) throws IOException {
+        IndexTransaction trans = _trans.get(transaction.transactionId);
         if (trans == null) {
-            trans = new Trans();
+            trans = new IndexTransaction();
             trans._index = new InstantiatedIndex();
             trans._reader = new InstantiatedIndexReader(trans._index);
             trans._writer = new InstantiatedIndexWriter(trans._index);
@@ -119,15 +135,8 @@ public class BlurIndexWriter extends BlurIndex {
         _analyzer = analyzer;
     }
 
-    @Override
-    public IndexReader getIndexReader() throws IOException {
-        IndexReader indexReader = _indexReaderRef.get();
-        indexReader.incRef();
-        return indexReader;
-    }
-
     public void setDirectory(Directory directory) {
-        this._directory = directory;
+        _directory = directory;
     }
     
     private Directory watchSync(Directory dir) {
@@ -140,7 +149,7 @@ public class BlurIndexWriter extends BlurIndex {
 
     @Override
     public void commit(Transaction transaction) throws IOException {
-        Trans trans = _trans.remove(transaction.transactionId);
+        IndexTransaction trans = _trans.remove(transaction.transactionId);
         if (trans == null) {
             throw new IOException("Transaction [" + transaction + "] was not found.");
         }
@@ -161,20 +170,11 @@ public class BlurIndexWriter extends BlurIndex {
             if (!term.field().equals(rowIdTerm.field())) {
                 return;
             }
-            System.out.println("deleting " + term);
             _writer.deleteDocuments(term);
         }
         while (termEnum.next());
     }
 
-    @Override
-    public void abort(Transaction transaction) {
-        Trans trans = _trans.remove(transaction.transactionId);
-        trans._index = null;
-        trans._indexWriter = null;
-        trans._writer = null;
-    }
-    
     private static class SyncWatcher extends Directory {
         
         private Directory _dir;

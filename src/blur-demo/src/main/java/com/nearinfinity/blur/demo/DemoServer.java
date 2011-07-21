@@ -9,7 +9,6 @@ import java.io.IOException;
 import org.apache.thrift.transport.TTransportException;
 
 import com.nearinfinity.blur.BlurConfiguration;
-import com.nearinfinity.blur.concurrent.ExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
@@ -26,11 +25,8 @@ public class DemoServer {
         BlurConfiguration configuration = new BlurConfiguration();
         IndexServer indexServer = new LocalIndexServer(new File(args[0]));
         
-        ExecutorsDynamicConfig dynamicConfig = getDynamicConfig();
-        
         IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
-        indexManager.setDynamicConfig(dynamicConfig);
         indexManager.init();
         
         final BlurShardServer shardServer = new BlurShardServer();
@@ -38,7 +34,6 @@ public class DemoServer {
         shardServer.setIndexManager(indexManager);
 
         final ThriftBlurShardServer server = new ThriftBlurShardServer();
-        server.setDynamicConfig(dynamicConfig);
         server.setNodeName("demo-server");
         server.setAddressPropertyName(BLUR_SHARD_BIND_ADDRESS);
         server.setPortPropertyName(BLUR_SHARD_BIND_PORT);
@@ -46,26 +41,6 @@ public class DemoServer {
         server.setConfiguration(configuration);
         server.start();
 
-    }
-
-    private static ExecutorsDynamicConfig getDynamicConfig() {
-        return new ExecutorsDynamicConfig() {
-            
-            @Override
-            public int getMaximumPoolSize(String name) {
-                return 10;
-            }
-            
-            @Override
-            public long getKeepAliveTimeSeconds(String name) {
-                return 600;
-            }
-            
-            @Override
-            public int getCorePoolSize(String name) {
-                return 10;
-            }
-        };
     }
 
 }

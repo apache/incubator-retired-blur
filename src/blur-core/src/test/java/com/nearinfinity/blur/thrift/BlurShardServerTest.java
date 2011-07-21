@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.concurrent.SimpleExecutorsDynamicConfig;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
@@ -41,7 +40,6 @@ public class BlurShardServerTest {
         IndexServer indexServer = getIndexServer();
         IndexManager indexManager = getIndexManager();
         indexManager.setIndexServer(indexServer);
-        indexManager.setDynamicConfig(new SimpleExecutorsDynamicConfig(10));
         indexManager.init();
         blurShardServer = new BlurShardServer();
         blurShardServer.setIndexManager(indexManager);

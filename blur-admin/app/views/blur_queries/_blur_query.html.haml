@@ -1,50 +1,21 @@
-- empty_message = 'Not Available'
 %tr[blur_query]{'data-age' => Time.now - blur_query.created_at }>
-  %td.userid<
-    - if blur_query.userid
-      = blur_query.userid
-    - else
-      = empty_message
+  %td.userid= print_value(blur_query.userid)
   - if can? :index, :blur_queries, :query_string
     - if blur_query.query_string
-      - truncate_length = 20
-      %td.query_string{ :title => blur_query.query_string.length() > truncate_length ? blur_query.query_string.gsub(/ \+/) {'<br />+'} : '' }<
-        = truncate(blur_query.query_string, :length => truncate_length, :ommision => "...")
+      %td.query_string{:title => format_title(blur_query.query_string)}
+        = truncate(blur_query.query_string, :length => 20, :ommision => "...")
     - else
       %td.query_string
-        = empty_message
-  %td<
-    - if blur_query.super_query_on
-      On
-    - elsif blur_query.super_query_on == false
-      Off
-    - else
-      = empty_message
-  %td.start<
-    - if blur_query.start
-      = blur_query.start
-    - else
-      =empty_message
-  %td.fetch_num<
-    - if blur_query.fetch_num
-      = blur_query.fetch_num
-    - else
-      = empty_message
-  %td<
-    - if blur_query.cpu_time and blur_query.real_time
-      = blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s
-    - else
-      = empty_message
-  %td<
-    - if blur_query.blur_table.schema and blur_query.complete
-      - num_shards = blur_query.blur_table.schema.values.flatten.count
-      = number_to_percentage 100 * blur_query.complete / num_shards, :precision => 0
-    - else
-      = empty_message
+        = 'Not Available'
+  %td= print_value(!blur_query.super_query_on.nil?) { blur_query.super_query_on ? "On" : "Off" }
+  %td.start= print_value(blur_query.start)
+  %td.fetch_num= print_value(blur_query.fetch_num)
+  %td= print_value((blur_query.cpu_time and blur_query.real_time)) {blur_query.cpu_time.to_s + ' / ' + blur_query.real_time.to_s}
+  %td= print_value((blur_query.blur_table.num_shards and blur_query.complete)) {number_to_percentage(100 * blur_query.complete / blur_query.blur_table.num_shards, :precision => 0)}
   - if can? :update, :blur_queries
     %td
       - if blur_query.running
         = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do
           = tag :input, :type => :button, :value => 'Cancel', :class => :cancel_query_button
-  %td.info<
+  %td.info
     = link_to "More Info", more_info_blur_query_path(blur_query), :class => 'more_info', :remote => true

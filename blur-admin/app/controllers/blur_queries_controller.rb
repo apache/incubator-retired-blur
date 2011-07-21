@@ -7,6 +7,7 @@ class BlurQueriesController < ApplicationController
 
     filters = {}
     filters[:created_at] = (Time.now - 1.minutes)..Time.now
+    filters[:running] = true
 
     @blur_tables = @current_zookeeper.blur_tables
 

@@ -26,7 +26,7 @@
           = label_tag :running, 'Running:'
           = select_tag :running, options_for_select([['All Queries', nil],
                                                      ['Yes', true],
-                                                     ['No', false]])
+                                                     ['No', false]], true)
         .query_filter
           = label_tag :interrupted, 'Interrupted:'
           = select_tag :interrupted, options_for_select([['All Queries', nil],

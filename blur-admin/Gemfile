@@ -24,5 +24,6 @@ group :development, :test do
   gem 'cover_me'
   gem 'rails-erd'
   gem 'factory_girl_rails'
+  gem 'nifty-generators'
   # gem 'system-metrics'
 end

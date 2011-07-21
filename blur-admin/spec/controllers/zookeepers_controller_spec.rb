@@ -14,6 +14,7 @@ describe ZookeepersController do
     Zookeeper.stub(:first).and_return @zookeeper
     # ApplicationController.zookeepers
     Zookeeper.stub(:all).and_return [@zookeeper]
+    Zookeeper.stub(:select).and_return [@zookeeper]
   end
 
   describe 'GET show_current' do
@@ -99,7 +100,7 @@ describe ZookeepersController do
 
   describe 'GET index' do
     it "assigns the collection all zookeepers to @zookeepers" do
-      get :show_current
+      get :index
       assigns(:zookeepers).should == [@zookeeper]
     end
   end
@@ -107,7 +108,6 @@ describe ZookeepersController do
   describe 'GET dashboard' do
     it "gets all of the current zookeeper data" do
       get :dashboard
-
     end
   end
 end

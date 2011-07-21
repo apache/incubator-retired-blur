@@ -26,7 +26,7 @@ class ApplicationController < ActionController::Base
 
     def current_zookeeper
       # Load zookeeper from session. if that doesn't work, then delete id in session
-      @current_zookeeper = Zookeeper.find_by_id(session[:current_zookeeper_id]) or session.delete :current_zookeeper_id
+      @current_zookeeper = Zookeeper.find(session[:current_zookeeper_id]) or session.delete :current_zookeeper_id
 
       #if that doesn't work, get first.  If that works, then set id in session
       @current_zookeeper ||= Zookeeper.first and session[:current_zookeeper_id] = @current_zookeeper.id

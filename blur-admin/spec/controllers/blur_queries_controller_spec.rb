@@ -23,11 +23,10 @@ describe BlurQueriesController do
       @blur_query = Factory.stub :blur_query, :created_at => mock_time
 
       @zookeeper.stub(:blur_tables).and_return([@blur_table])
-      BlurQuery.stub(:all).and_return([@blur_query])
-      @blur_query.stub(:zookeeper).and_return(@zookeeper)
+      BlurQuery.stub_chain(:joins, :where, :where, :includes, :order).and_return([@blur_query])
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:find).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
@@ -50,14 +49,12 @@ describe BlurQueriesController do
     end
 
     it "should assign @blur_queries to be the collection of blur queries" do
-      BlurQuery.should_receive(:all)
       get :index
       assigns(:blur_queries).should == [@blur_query]
     end
 
     it "filters blur queries to within the past minute" do
-      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes .. Time.now},
-                                          :order=>"created_at desc")
+      BlurQuery.should_receive(:where).with(:created_at => Time.now - 1.minutes .. Time.now)
       get :index
     end
 
@@ -93,7 +90,7 @@ describe BlurQueriesController do
       @blur_query.stub(:zookeeper).and_return(@zookeeper)
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:find).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
 
     end

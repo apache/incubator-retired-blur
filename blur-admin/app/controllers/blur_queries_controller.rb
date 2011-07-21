@@ -10,9 +10,12 @@ class BlurQueriesController < ApplicationController
 
     @blur_tables = @current_zookeeper.blur_tables
 
-    @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" )
-    # below line introduces a ton of sql queries when filtering with @current_zookeeper
-    @blur_queries.keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
+    @blur_queries = BlurQuery.joins(:blur_table => :cluster)
+                             .where(:blur_table =>
+                                    {:clusters => {:zookeeper_id => @current_zookeeper.id}})
+                             .where(filters)
+                             .includes(:blur_table)
+                             .order("created_at DESC")
   end
 
   def refresh
@@ -37,9 +40,13 @@ class BlurQueriesController < ApplicationController
       filters[:updated_at] = previous_filter_time .. now
     end
 
-    @blur_queries = BlurQuery.all( :conditions => filters, :order => "created_at desc" )
-    # below line introduces a ton of sql queries when filtering with @current_zookeeper
-    @blur_queries.keep_if { |blur_query| blur_query.zookeeper == @current_zookeeper }
+    # filter by zookeeper
+    @blur_queries = BlurQuery.joins(:blur_table => :cluster)
+                             .where(:blur_table =>
+                                    {:clusters => {:zookeeper_id => @current_zookeeper.id}})
+                             .where(filters)
+                             .includes(:blur_table)
+                             .order("created_at DESC")
     respond_to do |format|
       format.html {render @blur_queries}
     end
@@ -57,6 +64,7 @@ class BlurQueriesController < ApplicationController
 
   def more_info
     @blur_query = BlurQuery.find(params[:id])
+                           .includes(:blur_table)
     respond_to do |format|
       format.html {render :partial => 'more_info', :locals => {:blur_query => @blur_query}}
     end

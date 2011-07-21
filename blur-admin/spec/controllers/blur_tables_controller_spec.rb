@@ -21,7 +21,7 @@ describe BlurTablesController do
       @blur_table.stub(:zookeeper).and_return @zookeeper
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:find).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]

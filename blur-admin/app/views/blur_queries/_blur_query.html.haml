@@ -47,4 +47,4 @@
         = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do
           = tag :input, :type => :button, :value => 'Cancel', :class => :cancel_query_button
   %td.info<
-    = link_to "More Info", "/blur_queries/#{blur_query.id}/more_info", :class => 'more_info', :remote => true
+    = link_to "More Info", more_info_blur_query_path(blur_query), :class => 'more_info', :remote => true

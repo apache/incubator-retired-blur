@@ -70,12 +70,4 @@ public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
         return s1;
     }
 
-    private double avg(double... ds) {
-        double result = 0.0;
-        for (int i = 0; i < ds.length; i++) {
-            result += ds[i];
-        }
-        return result / (double) ds.length;
-    }
-
 }

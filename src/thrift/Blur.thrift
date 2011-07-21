@@ -102,7 +102,8 @@ struct BlurQuery {
   12:bool resolveIds,
   13:list<Facet> facets,
   14:Selector selector,
-  15:i64 startTime
+  15:i64 startTime,
+  16:bool cacheOnly = 0
 }
 
 struct BlurResult {

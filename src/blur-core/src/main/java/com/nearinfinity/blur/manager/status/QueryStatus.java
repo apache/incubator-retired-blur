@@ -128,14 +128,6 @@ public class QueryStatus implements Comparable<QueryStatus> {
         return cpuTimes;
     }
 
-    private double getCompleteStatus() {
-        int size = threads.size();
-        if (size == 0) {
-            return 1.0d;
-        }
-        return (totalThreads - size) / size;
-    }
-
     public String getTable() {
         return table;
     }

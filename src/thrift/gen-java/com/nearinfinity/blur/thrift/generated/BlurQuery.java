@@ -38,6 +38,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final org.apache.thrift.protocol.TField FACETS_FIELD_DESC = new org.apache.thrift.protocol.TField("facets", org.apache.thrift.protocol.TType.LIST, (short)13);
   private static final org.apache.thrift.protocol.TField SELECTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("selector", org.apache.thrift.protocol.TType.STRUCT, (short)14);
   private static final org.apache.thrift.protocol.TField START_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startTime", org.apache.thrift.protocol.TType.I64, (short)15);
+  private static final org.apache.thrift.protocol.TField CACHE_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("cacheOnly", org.apache.thrift.protocol.TType.BOOL, (short)16);
 
   public String queryStr;
   public boolean superQueryOn;
@@ -58,6 +59,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   public List<Facet> facets;
   public Selector selector;
   public long startTime;
+  public boolean cacheOnly;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -79,7 +81,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     RESOLVE_IDS((short)12, "resolveIds"),
     FACETS((short)13, "facets"),
     SELECTOR((short)14, "selector"),
-    START_TIME((short)15, "startTime");
+    START_TIME((short)15, "startTime"),
+    CACHE_ONLY((short)16, "cacheOnly");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -124,6 +127,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
           return SELECTOR;
         case 15: // START_TIME
           return START_TIME;
+        case 16: // CACHE_ONLY
+          return CACHE_ONLY;
         default:
           return null;
       }
@@ -172,7 +177,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final int __UUID_ISSET_ID = 5;
   private static final int __RESOLVEIDS_ISSET_ID = 6;
   private static final int __STARTTIME_ISSET_ID = 7;
-  private BitSet __isset_bit_vector = new BitSet(8);
+  private static final int __CACHEONLY_ISSET_ID = 8;
+  private BitSet __isset_bit_vector = new BitSet(9);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -208,6 +214,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Selector.class)));
     tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.CACHE_ONLY, new org.apache.thrift.meta_data.FieldMetaData("cacheOnly", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
@@ -224,6 +232,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.minimumNumberOfResults = 9223372036854775807L;
 
     this.maxQueryTime = 9223372036854775807L;
+
+    this.cacheOnly = false;
 
   }
 
@@ -242,7 +252,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     boolean resolveIds,
     List<Facet> facets,
     Selector selector,
-    long startTime)
+    long startTime,
+    boolean cacheOnly)
   {
     this();
     this.queryStr = queryStr;
@@ -268,6 +279,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.selector = selector;
     this.startTime = startTime;
     setStartTimeIsSet(true);
+    this.cacheOnly = cacheOnly;
+    setCacheOnlyIsSet(true);
   }
 
   /**
@@ -309,6 +322,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       this.selector = new Selector(other.selector);
     }
     this.startTime = other.startTime;
+    this.cacheOnly = other.cacheOnly;
   }
 
   public BlurQuery deepCopy() {
@@ -341,6 +355,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.selector = null;
     setStartTimeIsSet(false);
     this.startTime = 0;
+    this.cacheOnly = false;
+
   }
 
   public String getQueryStr() {
@@ -718,6 +734,29 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     __isset_bit_vector.set(__STARTTIME_ISSET_ID, value);
   }
 
+  public boolean isCacheOnly() {
+    return this.cacheOnly;
+  }
+
+  public BlurQuery setCacheOnly(boolean cacheOnly) {
+    this.cacheOnly = cacheOnly;
+    setCacheOnlyIsSet(true);
+    return this;
+  }
+
+  public void unsetCacheOnly() {
+    __isset_bit_vector.clear(__CACHEONLY_ISSET_ID);
+  }
+
+  /** Returns true if field cacheOnly is set (has been assigned a value) and false otherwise */
+  public boolean isSetCacheOnly() {
+    return __isset_bit_vector.get(__CACHEONLY_ISSET_ID);
+  }
+
+  public void setCacheOnlyIsSet(boolean value) {
+    __isset_bit_vector.set(__CACHEONLY_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY_STR:
@@ -840,6 +879,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       }
       break;
 
+    case CACHE_ONLY:
+      if (value == null) {
+        unsetCacheOnly();
+      } else {
+        setCacheOnly((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -890,6 +937,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     case START_TIME:
       return new Long(getStartTime());
 
+    case CACHE_ONLY:
+      return new Boolean(isCacheOnly());
+
     }
     throw new IllegalStateException();
   }
@@ -931,6 +981,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return isSetSelector();
     case START_TIME:
       return isSetStartTime();
+    case CACHE_ONLY:
+      return isSetCacheOnly();
     }
     throw new IllegalStateException();
   }
@@ -1080,6 +1132,15 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       if (!(this_present_startTime && that_present_startTime))
         return false;
       if (this.startTime != that.startTime)
+        return false;
+    }
+
+    boolean this_present_cacheOnly = true;
+    boolean that_present_cacheOnly = true;
+    if (this_present_cacheOnly || that_present_cacheOnly) {
+      if (!(this_present_cacheOnly && that_present_cacheOnly))
+        return false;
+      if (this.cacheOnly != that.cacheOnly)
         return false;
     }
 
@@ -1249,6 +1310,16 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetCacheOnly()).compareTo(typedOther.isSetCacheOnly());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCacheOnly()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cacheOnly, typedOther.cacheOnly);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1391,6 +1462,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 16: // CACHE_ONLY
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.cacheOnly = iprot.readBool();
+            setCacheOnlyIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1471,6 +1550,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
     oprot.writeFieldBegin(START_TIME_FIELD_DESC);
     oprot.writeI64(this.startTime);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(CACHE_ONLY_FIELD_DESC);
+    oprot.writeBool(this.cacheOnly);
     oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -1567,6 +1649,10 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     if (!first) sb.append(", ");
     sb.append("startTime:");
     sb.append(this.startTime);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("cacheOnly:");
+    sb.append(this.cacheOnly);
     first = false;
     sb.append(")");
     return sb.toString();

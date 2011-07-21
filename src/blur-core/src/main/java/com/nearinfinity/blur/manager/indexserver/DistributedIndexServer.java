@@ -33,8 +33,9 @@ import java.util.concurrent.TimeUnit;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -51,7 +52,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     static {
         RAMDirectory directory = new RAMDirectory();
         try {
-            new IndexWriter(directory,new KeywordAnalyzer(),MaxFieldLength.UNLIMITED).close();
+            new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer())).close();
             EMPTY_INDEXREADER = IndexReader.open(directory);
             EMPTY_BLURINDEX = new BlurIndexReader(EMPTY_INDEXREADER);
         } catch (IOException e) {

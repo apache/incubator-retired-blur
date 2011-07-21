@@ -38,12 +38,13 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.search.IterablePaging;
@@ -88,7 +89,7 @@ public class TestingPagingCollector {
 
 	private static IndexReader getReaderFlatScore(int length) throws Exception {
 		RAMDirectory directory = new RAMDirectory();
-		IndexWriter indexWriter = new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED);
+		IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer()));
 		for (int i = 0; i < length; i++) {
 			Document document = new Document();
 			document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));

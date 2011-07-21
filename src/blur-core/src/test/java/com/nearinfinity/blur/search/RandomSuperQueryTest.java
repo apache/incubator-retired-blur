@@ -30,7 +30,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.MatchAllDocsQuery;
@@ -101,7 +101,7 @@ public class RandomSuperQueryTest {
 			columns.put(columnFamilies[i], genWords(random,MIN_NUM_COLS,MAX_NUM_COLS,"col"));
 		}
 		
-		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
+		IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33)));
 		RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30)));
 		int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
 		for (int i = 0; i < numberOfDocs; i++) {

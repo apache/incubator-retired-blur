@@ -31,9 +31,9 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
@@ -150,7 +150,7 @@ public class SuperQueryTest {
 
 	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
 		Directory directory = new RAMDirectory();
-		IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30), MaxFieldLength.UNLIMITED);
+		IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33)));
 		BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
 		RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
 		indexWriter.replace(newRow("1", 

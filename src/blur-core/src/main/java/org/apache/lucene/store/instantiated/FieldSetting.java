@@ -22,6 +22,7 @@ import java.io.Serializable;
 /**
  * For non package access see {@link org.apache.lucene.index.IndexReader#getFieldNames(org.apache.lucene.index.IndexReader.FieldOption)} 
  */
+@SuppressWarnings("serial")
 class FieldSetting implements Serializable {
   String fieldName;
 

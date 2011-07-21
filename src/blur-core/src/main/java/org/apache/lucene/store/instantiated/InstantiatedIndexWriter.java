@@ -61,6 +61,7 @@ import org.apache.lucene.util.BitVector;
  *
  * @see org.apache.lucene.index.IndexWriter 
  */
+@SuppressWarnings("deprecation")
 public class InstantiatedIndexWriter implements Closeable {
 
   private PrintStream infoStream = null;
@@ -695,7 +696,8 @@ public class InstantiatedIndexWriter implements Closeable {
   }
 
 
-  static class FieldSetting extends org.apache.lucene.store.instantiated.FieldSetting {
+  @SuppressWarnings("serial")
+static class FieldSetting extends org.apache.lucene.store.instantiated.FieldSetting {
 
     float boost = 1;
     int position = 0;

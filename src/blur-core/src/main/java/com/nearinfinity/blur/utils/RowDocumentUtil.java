@@ -100,9 +100,9 @@ public class RowDocumentUtil {
 
 	public static ColumnFamily convertToColumnFamily(Row row, Document document) {
 	    if (row.id == null) {
-	        row.id = document.getField(ROW_ID).stringValue();
+	        row.id = document.getFieldable(ROW_ID).stringValue();
 	    }
-		String superColumnId = document.getField(RECORD_ID).stringValue();
+		String superColumnId = document.getFieldable(RECORD_ID).stringValue();
 		Map<String, Column> columns = new HashMap<String, Column>();
 		String superColumnFamily = null;
 		boolean empty = true;

@@ -25,6 +25,7 @@ import java.io.Serializable;
 /**
  * Essentially a Map<FieldName, {@link org.apache.lucene.store.instantiated.FieldSetting}> 
  */
+@SuppressWarnings("serial")
 class FieldSettings implements Serializable {
 
 

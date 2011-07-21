@@ -21,8 +21,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -152,14 +150,6 @@ public class BlurAnalyzerTest {
         assertFalse(analyzer.isFullTextField("a.d"));
     }
 
-    private File newFile(String s) throws IOException {
-        File file = File.createTempFile("test", ".js");
-        FileOutputStream outputStream = new FileOutputStream(file);
-        outputStream.write(s.getBytes());
-        outputStream.close();
-        return file;
-    }
-    
     private AnalyzerDefinition getDef() {
         
         AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().

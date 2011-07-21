@@ -30,9 +30,9 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.Before;
@@ -80,7 +80,7 @@ public class TermDocIterableTest {
         FSDirectory directory = FSDirectory.open(new File("./tmp/termdociterable"));
         if (!IndexReader.indexExists(directory)) {
             rm(new File("./tmp/termdociterable"));
-            IndexWriter writer = new IndexWriter(directory, new StandardAnalyzer(Version.LUCENE_30),MaxFieldLength.UNLIMITED);
+            IndexWriter writer = new IndexWriter(directory,new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33)));
             for (int i = 0; i < BLOCKS; i++) {
                 addDocumentBlock(i, COUNT_PER_BLOCK, writer);
             }

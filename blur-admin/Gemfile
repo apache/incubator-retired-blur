@@ -17,12 +17,12 @@ gem "ganapati", "~> 0.0.5"
 gem 'capistrano'
 
 group :development, :test do
-	gem 'autotest'
-	gem 'rspec-rails'
-	gem 'ci_reporter'
-	gem 'metric_fu'
-	gem 'cover_me'
+  gem 'autotest'
+  gem 'rspec-rails'
+  gem 'ci_reporter'
+  gem 'metric_fu'
+  gem 'cover_me'
   gem 'rails-erd'
   gem 'factory_girl_rails'
-  gem 'system-metrics'
+  # gem 'system-metrics'
 end

@@ -475,12 +475,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
     private Map<String, List<RowMutation>> getMutationMap(String table, List<RowMutation> mutations) throws BlurException, TException {
         int numberOfShards = getShardCount(table);
-        
         Map<String, String> tableLayout = _shardServerLayout.get().get(table);
         if (tableLayout.size() != numberOfShards) {
             throw new BlurException("Cannot update data while shard is missing",null);
         }
-        
         Map<String, List<RowMutation>> mutationsMap = new HashMap<String, List<RowMutation>>();
         for (RowMutation mutation : mutations) {
             MutationHelper.validateMutation(mutation);

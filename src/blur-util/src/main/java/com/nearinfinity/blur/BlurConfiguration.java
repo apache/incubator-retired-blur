@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.json.repackage.JSONException;
+import org.json.repackage.JSONObject;
 
 public class BlurConfiguration {
     

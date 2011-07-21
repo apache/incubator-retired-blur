@@ -119,7 +119,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                     return new BlurResultIterableClient(client, table, blurQuery, facetCounts);
                 }
             }, new MergerBlurResultIterable(blurQuery));
-            return BlurBaseServer.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table);
+            return BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table);
         } catch (Exception e) {
             LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
             throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);

@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.manager.writer;
 
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,12 +25,12 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.index.ConcurrentMergeScheduler;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
@@ -37,14 +39,13 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.instantiated.InstantiatedIndex;
 import org.apache.lucene.store.instantiated.InstantiatedIndexReader;
 import org.apache.lucene.store.instantiated.InstantiatedIndexWriter;
+import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.Transaction;
-import com.nearinfinity.blur.utils.RowIndexWriter;
 import com.nearinfinity.blur.utils.RowInstantiatedIndexWriter;
-import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
 public class BlurIndexWriter extends BlurIndex {
     
@@ -53,11 +54,8 @@ public class BlurIndexWriter extends BlurIndex {
     private Directory _directory;
     private IndexWriter _writer;
     private BlurAnalyzer _analyzer;
-    private int _maxThreadCountForMerger = 2;
     private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
-    private RowIndexWriter _rowIndexWriter;
     private Directory _sync;
-    private String _name;
     private BlurIndexReaderCloser _closer;
     private Map<Integer, Trans> _trans = new ConcurrentHashMap<Integer, Trans>();
     
@@ -74,16 +72,12 @@ public class BlurIndexWriter extends BlurIndex {
     
     private void setupWriter() throws IOException {
         _sync = watchSync(_directory);
-        _name = _sync.toString();
-        _writer = new IndexWriter(_sync, _analyzer, MaxFieldLength.UNLIMITED);
-        _writer.setSimilarity(new FairSimilarity());
-        _writer.setUseCompoundFile(false);
-        ConcurrentMergeScheduler mergeScheduler = new ConcurrentMergeScheduler();
-        mergeScheduler.setMaxThreadCount(_maxThreadCountForMerger);
-        _writer.setMergeScheduler(mergeScheduler);
-        _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
-
-        _indexReaderRef.set(_writer.getReader());
+        IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
+        conf.setSimilarity(new FairSimilarity());
+        TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
+        mergePolicy.setUseCompoundFile(false);
+        _writer = new IndexWriter(_sync, conf);
+        _indexReaderRef.set(IndexReader.open(_writer, true));
     }
     
     public void close() throws IOException {
@@ -112,10 +106,13 @@ public class BlurIndexWriter extends BlurIndex {
         return trans;
     }
 
-    private synchronized void rollOutNewReader(IndexReader reader) throws IOException {
+    private synchronized void rollOutNewReader() throws IOException {
         IndexReader oldReader = _indexReaderRef.get();
-        _indexReaderRef.set(reader);
-        _closer.close(oldReader);
+        IndexReader reader = oldReader.reopen(_writer, true);
+        if (oldReader != reader) {
+            _indexReaderRef.set(reader);
+            _closer.close(oldReader);
+        }
     }
 
     public void setAnalyzer(BlurAnalyzer analyzer) {
@@ -152,7 +149,7 @@ public class BlurIndexWriter extends BlurIndex {
             deleteAll(trans._reader);
             _writer.addIndexes(trans._reader);
             _writer.commit();
-            rollOutNewReader(_writer.getReader());
+            rollOutNewReader();
         }
     }
 
@@ -250,6 +247,7 @@ public class BlurIndexWriter extends BlurIndex {
             _dir.setLockFactory(lockFactory);
         }
 
+        @SuppressWarnings("deprecation")
         public void sync(String name) throws IOException {
             long start = System.nanoTime();
             _dir.sync(name);
@@ -261,9 +259,9 @@ public class BlurIndexWriter extends BlurIndex {
             return _dir.toString();
         }
 
+        @SuppressWarnings("deprecation")
         public void touchFile(String arg0) throws IOException {
             _dir.touchFile(arg0);
         }
-        
     }
 }

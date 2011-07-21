@@ -26,6 +26,7 @@ import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Weight;
 
+@SuppressWarnings("deprecation")
 public class FacetQuery extends AbstractWrapperQuery {
 
     private static final long serialVersionUID = -9131606859383383004L;

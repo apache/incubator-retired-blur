@@ -21,9 +21,9 @@ import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.Searcher;
 
 /**
  * The {@link IterablePaging} class allows for easy paging through lucene hits.
@@ -32,7 +32,7 @@ import org.apache.lucene.search.Searcher;
 public class IterablePaging implements Iterable<ScoreDoc> {
 
 	private static int DEFAULT_NUMBER_OF_HITS_TO_COLLECT = 1000;
-	private Searcher searcher;
+    private IndexSearcher searcher;
 	private Query query;
 	private TotalHitsRef totalHitsRef = new TotalHitsRef();
 	private ProgressRef progressRef = new ProgressRef();
@@ -40,15 +40,15 @@ public class IterablePaging implements Iterable<ScoreDoc> {
 	private int numHitsToCollect = DEFAULT_NUMBER_OF_HITS_TO_COLLECT;
 	private int gather = -1;
 
-	public IterablePaging(Searcher searcher, Query query) throws IOException {
+	public IterablePaging(IndexSearcher searcher, Query query) throws IOException {
 		this(searcher,query,DEFAULT_NUMBER_OF_HITS_TO_COLLECT,null,null);
 	}
 	
-	public IterablePaging(Searcher searcher, Query query, int numHitsToCollect) throws IOException {
+	public IterablePaging(IndexSearcher searcher, Query query, int numHitsToCollect) throws IOException {
 		this(searcher,query,numHitsToCollect,null,null);
 	}
 	
-	public IterablePaging(Searcher searcher, Query query, int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
+	public IterablePaging(IndexSearcher searcher, Query query, int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
 		this.query = searcher.rewrite(query);
 		this.searcher = searcher;
 		this.numHitsToCollect = numHitsToCollect;

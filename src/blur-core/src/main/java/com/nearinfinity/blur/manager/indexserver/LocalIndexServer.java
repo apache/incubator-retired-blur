@@ -32,7 +32,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
@@ -114,7 +114,7 @@ public class LocalIndexServer extends AbstractIndexServer {
                     // Directory directory = FSDirectory.open(f);
                     MMapDirectory directory = new MMapDirectory(f);
                     if (!IndexReader.indexExists(directory)) {
-                        new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED).close();
+                        new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer())).close();
                     }
                     warmUp(directory);
                     String shardName = f.getName();

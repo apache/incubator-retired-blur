@@ -26,6 +26,7 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Weight;
 
+@SuppressWarnings("deprecation")
 public abstract class AbstractWrapperQuery extends Query {
 	private static final long serialVersionUID = -4512813621542220044L;
 	protected Query query;
@@ -46,7 +47,7 @@ public abstract class AbstractWrapperQuery extends Query {
 		return query.combine(queries);
 	}
 
-	public abstract Weight createWeight(Searcher searcher) throws IOException;
+    public abstract Weight createWeight(Searcher searcher) throws IOException;
 
 	public boolean equals(Object obj) {
 		return query.equals(obj);

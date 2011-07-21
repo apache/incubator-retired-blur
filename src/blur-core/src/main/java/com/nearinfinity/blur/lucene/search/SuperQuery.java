@@ -32,6 +32,7 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache.IndexReaderCache;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
+@SuppressWarnings("deprecation")
 public class SuperQuery extends AbstractWrapperQuery {
 
     private static final long serialVersionUID = -5901574044714034398L;

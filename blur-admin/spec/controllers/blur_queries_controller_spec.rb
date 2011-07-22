@@ -26,7 +26,7 @@ describe BlurQueriesController do
       BlurQuery.stub_chain(:joins, :where, :where, :includes, :order).and_return([@blur_query])
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:find).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
@@ -55,7 +55,7 @@ describe BlurQueriesController do
 
     it "filters blur queries to running queries within the past minute" do
       pending "Test active relations"
-      BlurQuery.should_receive(:where).with(:created_at => Time.now - 1.minutes .. Time.now, :running => :true)
+      BlurQuery.should_receive(:where).with(:created_at => Time.now - 1.minutes..Time.now, :running => :true)
       get :index
     end
 
@@ -91,7 +91,7 @@ describe BlurQueriesController do
       @blur_query.stub(:zookeeper).and_return(@zookeeper)
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:find).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
 
     end
@@ -107,22 +107,22 @@ describe BlurQueriesController do
 
     it "filters blur queries to within the past minute if no time params given" do
       pending "Test active relations"
-      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes .. Time.now},
+      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes..Time.now},
                                           :order=>"created_at desc")
       get :refresh, :time_since_refresh => ''
     end
 
     it "filters blur queries to within a specified time if given a time parameter" do
       pending "Test active relations"
-      BlurQuery.should_receive(:all).with :conditions => {:created_at => Time.now - 60.minutes .. Time.now },
+      BlurQuery.should_receive(:all).with :conditions => {:created_at => Time.now - 60.minutes..Time.now },
                                           :order=>"created_at desc"
       get :refresh, :created_at_time => '60', :time_since_refresh => ''
     end
 
     it "filters blur queries to within a specified updated_at if given the parameter" do
       pending "Test active relations"
-      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes .. Time.now,
-                                                          :updated_at => Time.now - 14.seconds .. Time.now},
+      BlurQuery.should_receive(:all).with(:conditions => {:created_at => Time.now - 1.minutes..Time.now,
+                                                          :updated_at => Time.now - 14.seconds..Time.now},
                                           :order=>"created_at desc")
       get :refresh, :time_since_refresh => '14'
 
@@ -131,7 +131,7 @@ describe BlurQueriesController do
     it "filters blur queries by super query status if given a super_query_on parameter" do
       pending "Test active relations"
       BlurQuery.should_receive(:all).with(:conditions => {:super_query_on => true,
-                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                                          :created_at => Time.now - 1.minutes..Time.now},
                                           :order=>"created_at desc")
       get :refresh, :super_query_on => 'true', :time_since_refresh => ''
     end
@@ -139,7 +139,7 @@ describe BlurQueriesController do
     it "filters blur queries by running status if given a running parameter" do
       pending "Test active relations"
       BlurQuery.should_receive(:all).with(:conditions => {:running => true,
-                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                                          :created_at => Time.now - 1.minutes..Time.now},
                                           :order=>"created_at desc")
       get :refresh, :running => 'true', :time_since_refresh => ''
     end
@@ -147,7 +147,7 @@ describe BlurQueriesController do
     it "filters blur queries by interrupted status if given an interrupted parameter" do
       pending "Test active relations"
       BlurQuery.should_receive(:all).with(:conditions => {:interrupted => true,
-                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                                          :created_at => Time.now - 1.minutes..Time.now},
                                           :order=>"created_at desc")
       get :refresh, :interrupted => 'true', :time_since_refresh => ''
     end
@@ -155,7 +155,7 @@ describe BlurQueriesController do
     it "filters blur queries by table if given a blur_table_id parameter" do
       pending "Test active relations"
       BlurQuery.should_receive(:all).with(:conditions => {:blur_table_id => '1',
-                                                          :created_at => Time.now - 1.minutes .. Time.now},
+                                                          :created_at => Time.now - 1.minutes..Time.now},
                                           :order=>"created_at desc")
       get :refresh, :blur_table_id => '1', :time_since_refresh => ''
     end

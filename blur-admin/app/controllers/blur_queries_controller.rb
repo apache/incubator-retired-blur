@@ -38,7 +38,7 @@ class BlurQueriesController < ApplicationController
     # filter for refresh period
     unless params[:time_since_refresh].empty?
       previous_filter_time = now - params[:time_since_refresh].to_i.seconds
-      filters[:updated_at] = previous_filter_time .. now
+      filters[:updated_at] = previous_filter_time..now
     end
 
     # filter by zookeeper

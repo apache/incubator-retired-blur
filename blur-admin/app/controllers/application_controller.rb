@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
     end
 
     def zookeepers
-      @zookeepers ||= Zookeeper.all(:order => 'name')
+      @zookeepers ||= Zookeeper.order 'name'
     end
 
     def current_user_session

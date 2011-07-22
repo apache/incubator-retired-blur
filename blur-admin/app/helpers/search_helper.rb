@@ -4,12 +4,10 @@ module SearchHelper
     schema = JSON.parse(@blur_table.table_schema)["columnFamilies"]
 
     #get the array of the checked columns from the search
-    raw_column = JSON.parse search.columns
-
     search_columns = {}
 
     #get all of the columns from the search and convert them to ruby objects
-    raw_column.each do |value|
+    search.raw_columns.each do |value|
       parts = value.split('_')
       if parts[0] == 'column'
         search_columns[parts[1]] ||= []

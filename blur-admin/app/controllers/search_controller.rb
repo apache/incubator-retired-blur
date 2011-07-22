@@ -31,53 +31,29 @@ class SearchController < ApplicationController
     #Otherwise perform a search
     #if the search_id param is set than the user is trying to directly run a saved query
     if params[:search_id]
-      buff = Search.find params[:search_id]
+      search = Search.find params[:search_id]
     #else build a new search to be used for this specific search
     else
-      drop = params[:column_data].first == "neighborhood_all" ? params[:column_data].drop(1).to_json : params[:column_data].to_json
-      params[:super_query] ? sq=true : sq=false
-      buff = Search.new(:blur_table_id => params[:blur_table],
-                        :super_query   => sq,
-                        :columns       => drop,
-                        :fetch         => params[:result_count].to_i,
-                        :offset        => params[:offset].to_i,
-                        :user_id       => current_user.id,
-                        :query         => params[:query_string])
+      params[:column_data].delete( "neighborhood_all")
+      search = Search.new(:blur_table_id => params[:blur_table],
+                          :super_query   =>!params[:super_query].nil?,
+                          :columns       => params[:column_data],
+                          :fetch         => params[:result_count].to_i,
+                          :offset        => params[:offset].to_i,
+                          :user_id       => @current_user.id,
+                          :query         => params[:query_string])
     end
 
     #use the model to begin building the blurquery
     @blur_table = BlurTable.find params[:blur_table]
-    bq = buff.prepare_search
-
-
-    # Parse out column family names from requested column families and columns
-    column_data_val = JSON.parse buff.columns
-    families = column_data_val.collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact
-    columns = {}
-    column_data_val.each do |value|
-      parts = value.split('_')
-      if parts[0] == 'column' and !families.include?(parts[1])
-        parts = value.split('_')
-        # possible TODO: block below can be replaced with: columns[parts[1]] ||= ['recordId']
-        if (!columns.has_key?(parts[1]))
-          columns[parts[1]] = []
-          columns[parts[1]] << 'recordId'
-        end
-        columns[parts[1]] << parts[2]
-      end
-    end
-    
+    families = search.column_families
+    columns = search.columns
+   
     #reorder the CFs to use the preference
     preferences = current_user.saved_cols
     families = (preferences & families) | families
 
-    #add the selectors that were just built to the blur query and retrieve the results
-    sel = Blur::Selector.new
-    sel.columnFamiliesToFetch = families unless families.blank?
-    sel.columnsToFetch = columns unless columns.blank?
-    bq.selector = sel
-    bq.userId = current_user.username
-    blur_results = BlurThriftClient.client.query(@blur_table.table_name, bq)
+    blur_results = search.fetch_results(@blur_table.table_name)
 
     #build a mapping from families to their associated columns
     families_with_columns = {}
@@ -162,7 +138,9 @@ class SearchController < ApplicationController
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
     @search = Search.find params['search_id']
-    render :json => {:saved => @search, :success => true }
+    search = JSON.parse @search.to_json
+    search["search"]["columns"] = @search.raw_columns
+    render :json => {:saved => search, :success => true }
   end
 
   #Delete action used for deleting a saved search from a user's saved searches
@@ -171,7 +149,7 @@ class SearchController < ApplicationController
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
-      format.html {render :partial =>"saved.html.haml" }
+      format.html {render :partial =>"saved" }
     end
   end
 
@@ -179,12 +157,12 @@ class SearchController < ApplicationController
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
-      format.html {render :partial =>"saved.html.haml" }
+      format.html {render :partial =>"saved"}
     end
   end
   
   def save
-    drop = params[:column_data].first == "neighborhood_all"? params[:column_data].drop(1).to_json : params[:column_data].to_json
+    drop = params[:column_data].first == "neighborhood_all"? params[:column_data].drop(1) : params[:column_data]
     Search.create(:name          => params[:save_name],
                   :blur_table_id => params[:blur_table],
                   :super_query   => params[:super_query],
@@ -197,7 +175,7 @@ class SearchController < ApplicationController
     @blur_table = BlurTable.find params[:blur_table]
 
     respond_to do |format|
-      format.html {render :partial =>"saved.html.haml" }
+      format.html {render :partial =>"saved"}
     end
   end
 end

@@ -28,17 +28,15 @@ $(document).ready ->
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
-  # $('#filter_columns').load('search/' + $('#blur_table').val() + '/filters', setup_filter_tree)
   setup_filter_tree()
 
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
   $('#blur_table').change ->
     $('#filter_columns').hide()
-    $('#filter_columns').load('search/' + $(this).val() + '/filters', setup_filter_tree)
-    $('.body#saved').load('reload/' + $(this).val(), ->
+    $('#filter_columns').load 'search/' + $(this).val() + '/filters', setup_filter_tree
+    $('.body#saved').load 'reload/' + $(this).val(), ->
       $('html').trigger 'ajax:success'
-    )
 
   # Show spinner when submit button is clicked
   $('#search_submit').live 'click', ->

@@ -11,12 +11,11 @@ class BlurQueriesController < ApplicationController
 
     @blur_tables = @current_zookeeper.blur_tables
 
-    @blur_queries = BlurQuery.joins(:blur_table => :cluster)
-                             .where(:blur_table =>
-                                    {:clusters => {:zookeeper_id => @current_zookeeper.id}})
-                             .where(filters)
-                             .includes(:blur_table)
-                             .order("created_at DESC")
+    @blur_queries = BlurQuery.joins(:blur_table => :cluster).
+                             where(:blur_table =>{:clusters => {:zookeeper_id => @current_zookeeper.id}}).
+                             where(filters).
+                             includes(:blur_table).
+                             order("created_at DESC")
   end
 
   def refresh
@@ -42,12 +41,11 @@ class BlurQueriesController < ApplicationController
     end
 
     # filter by zookeeper
-    @blur_queries = BlurQuery.joins(:blur_table => :cluster)
-                             .where(:blur_table =>
-                                    {:clusters => {:zookeeper_id => @current_zookeeper.id}})
-                             .where(filters)
-                             .includes(:blur_table)
-                             .order("created_at DESC")
+    @blur_queries = BlurQuery.joins(:blur_table => :cluster).
+                             where(:blur_table =>{:clusters => {:zookeeper_id => @current_zookeeper.id}}).
+                             where(filters).
+                             includes(:blur_table).
+                             order("created_at DESC")
     respond_to do |format|
       format.html {render @blur_queries}
     end
@@ -64,8 +62,7 @@ class BlurQueriesController < ApplicationController
   end
 
   def more_info
-    @blur_query = BlurQuery.find(params[:id])
-                           .includes(:blur_table)
+    @blur_query = BlurQuery.find(params[:id]).includes(:blur_table)
     respond_to do |format|
       format.html {render :partial => 'more_info', :locals => {:blur_query => @blur_query}}
     end

@@ -1,8 +1,8 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
-	require 'thrift/blur'
-	require 'blur_thrift_client'
+  require 'thrift/blur'
+  require 'blur_thrift_client'
 
   before_filter :current_user_session, :current_user
 
@@ -17,7 +17,7 @@ class ApplicationController < ActionController::Base
       redirect_to login_path, :alert => "Please login"
     end
   end
-  
+
   def current_user
     @current_user ||= current_user_session && current_user_session.user
   end

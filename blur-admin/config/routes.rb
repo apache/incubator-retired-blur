@@ -1,7 +1,7 @@
 BlurAdmin::Application.routes.draw do
   resources :users, :user_sessions
 
-	resource :search, :controller => 'search'
+  resource :search, :controller => 'search'
 
   resources :zookeepers, :only => :index
   match 'zookeeper' => 'zookeepers#show_current', :as => :zookeeper

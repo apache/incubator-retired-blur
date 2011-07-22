@@ -23,7 +23,7 @@ class Ability
         can :make_current, :zookeepers
         can :dashboard, :zookeepers
         can :files, :hdfs
-        
+
         can :save, :preference
 
         # search

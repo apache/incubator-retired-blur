@@ -2,7 +2,7 @@ class SearchController < ApplicationController
   before_filter :current_zookeeper, :only => :show
   before_filter :zookeepers, :only => :show
 
-	#Show action that sets instance variables used to build the filter column
+  #Show action that sets instance variables used to build the filter column
   def show
     @blur_tables = @current_zookeeper.blur_tables.find(:all, :order => "table_name")
     @blur_table = @blur_tables.first
@@ -63,7 +63,7 @@ class SearchController < ApplicationController
         columns[parts[1]] << parts[2]
       end
     end
-    
+
     #reorder the CFs to use the preference
     preferences = current_user.saved_cols
     families = (preferences & families) | families

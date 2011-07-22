@@ -13,7 +13,7 @@
           %td.label Status:
           %td.value
             - if @zookeeper.status == 1
-              .ui-state-highlight.ui-corner-all
+              .green_box.ui-corner-all
                 Online
             - else
               .ui-state-error.ui-corner-all
@@ -37,10 +37,10 @@
                 - if @controller_nodes > 1
                   = "(blur version #{controller.blur_version})"
                 - if controller.status == 2
-                  .ui-state-highlight.ui-corner-all
+                  .green_box.ui-corner-all
                     Online
                 - elsif controller.status == 1
-                  .ui-state-yellow.ui-corner-all
+                  .yellow_box.ui-corner-all
                     Disabled
                 - else
                   .ui-state-error.ui-corner-all
@@ -64,10 +64,10 @@
                 - if @shard_nodes > 1
                   = "(blur version #{shard.blur_version})"
                 - if shard.status == 2
-                  .ui-state-highlight.ui-corner-all
+                  .green_box.ui-corner-all
                     Online
                 - elsif shard.status == 1
-                  .ui-state-yellow.ui-corner-all
+                  .yellow_box.ui-corner-all
                     Disabled
                 - else
                   .ui-state-error.ui-corner-all

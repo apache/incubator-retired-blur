@@ -44,13 +44,13 @@
   h2 { @include prefix(0.25) }
   h3 { margin-top: 0.5em; }
 
-  .ui-state-highlight, .ui-state-error, .ui-state-yellow {
+  .green_box, .ui-state-error, .yellow_box {
     text-align:center;
     margin: 5px;
     width: 100px;
   }
 
-  h4.name, .ui-state-highlight, .ui-state-error, .ui-state-yellow { display: inline-block; }
+  h4.name, .green_box, .ui-state-error, .yellow_box { display: inline-block; }
 }
 
 #zookeepers_wrapper{
@@ -86,13 +86,14 @@
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
 
   .green_box, .ui-state-error, .yellow_box, .grey_box { margin-bottom: 5px; width: 160px; }
-  .grey_box { background-color: $grey-color; @include border; }
-  .green_box { background: $green-state-color; color: white; border: $border_width $border_style $green-border-color; }
-  .yellow_box { background: $yellow-state-color; border: $border_width $border_style $yellow-border-color; }
 
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
   .number {width: 20px; text-align: right; }
   .word {width: 130px; text-align: left;}
 }
+
+.grey_box { background-color: $grey-color; @include border; }
+.green_box { background: $green-state-color; color: white; border: $border_width $border_style $green-border-color; }
+.yellow_box { background: $yellow-state-color; border: $border_width $border_style $yellow-border-color; }
 
 .warning { color: $red-state-color; font-weight: bold; }

@@ -16,6 +16,8 @@
   margin-top: 1em;
   padding-top: 2em;
 
+  #users_table { @include columns(15,$total-cols); @include suffix(15); }
+
   #roles_wrapper {@include alpha; }
   
   .info-contain{ 

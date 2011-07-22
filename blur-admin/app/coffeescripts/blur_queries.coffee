@@ -5,7 +5,7 @@ $(document).ready ->
   remove_color = '#E01E00'
 
   # adds time to data-age of selected elements, and 
-  # retires them if past retirment age
+  # retires them if past retirement age
   age_and_retire = (selector, age, retirement_age) ->
     # increment created-ago time
     retired_rows = []
@@ -42,12 +42,22 @@ $(document).ready ->
       # means that the request should completely replace
       # the table with new rows, and not include a 
       # time_since_refresh
+      #
+      # The table must also be replaced if filtering for a
+      # transient state, i.e. a non-complete query
+      # or a non-interrupted query,
+      # because otherwise when the query leaves this state
+      # it will not be updated because the results will not
+      # include it.
 
       replace_table = super_query_filter != $('#super_query_on').val() or
                       created_at_filter  != $('#created_at_time').val() or
                       running_filter     != $('#running').val() or
                       interrupted_filter != $('#interrupted').val() or
-                      blur_table_id      != $('#blur_table_id').val()
+                      blur_table_id      != $('#blur_table_id').val() or
+                      'true'             == $('#running').val() or
+                      'false'            == $('#interrupted').val()
+
       if replace_table
         # reset last filter options
         super_query_filter = $('#super_query_on').val()
@@ -76,33 +86,33 @@ $(document).ready ->
     .live 'ajax:success', (evt, data, status, xhr) ->
       rows = $($.trim(data)) # rails renders whitespace if there are no rows
 
-      if replace_table
-        $('#queries-table > tbody > .blur_query').remove() #delete all rows
-        $('#queries-table > tbody').prepend(rows) #insert new rows
-        # new rows must be prepended to the table, because the no-tables-row shows
-        # up only if it is the first row, thus real rows should never be inserted
-        # after it
-      else
+      existing_rows = $("#queries-table > tbody > tr.blur_query")
+      if existing_rows.length isnt 0
+        # if completely replacing the table, check for stale rows
+        if replace_table
+          stale_rows = []
+          for existing_row in existing_rows
+            if rows.filter('#' + $(existing_row).attr('id')).length is 0
+              stale_rows.push(existing_row)
+          $(stale_rows).effect 'highlight', {color: remove_color}, 'slow', ->
+              $(this).remove()
 
-        existing_rows = $("#queries-table > tbody > tr.blur_query")
         # if there are existing rows, then check for updates
-        if existing_rows.length isnt 0
-          updated_rows = $.map rows, (row) ->
-            if existing_rows.filter('#' + $(row).attr('id')).length isnt 0
-              # update existing row
-              existing_rows.filter('#' + $(row).attr('id')).replaceWith(row)
-              row
-            else
-              null
-          if updated_rows.length isnt 0
-            $(updated_rows).effect 'highlight', {color: update_color}, 'slow'
-            new_rows = rows.not updated_rows
+        updated_rows = $.map rows, (row) ->
+          if existing_rows.filter('#' + $(row).attr('id')).length isnt 0
+            # update existing row
+            existing_rows.filter('#' + $(row).attr('id')).replaceWith(row)
+            row
+          else
+            null
+        if updated_rows.length isnt 0
+          $(updated_rows).effect 'highlight', {color: update_color}, 'slow'
+          new_rows = rows.not updated_rows
 
-        # if not already filtered of updated rows, every row is a new row
-        new_rows ?= rows
-
-        new_rows.prependTo($('#queries-table > tbody'))
-          .effect 'highlight', {color: add_color}, 'slow'
+      # if not already filtered of updated rows, every row is a new row
+      new_rows ?= rows
+      new_rows.prependTo($('#queries-table > tbody'))
+        .effect 'highlight', {color: add_color}, 'slow'
 
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: Add error handling

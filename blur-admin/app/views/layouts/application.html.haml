@@ -24,7 +24,7 @@
           - if flash
             #flash
               - flash.each do |type, message|
-                .flash{ :id => "#{type}" }
+                .flash{:id => type}
                   = message
           - if @current_zookeeper && @zookeepers
             #zookeeper_select
@@ -34,7 +34,7 @@
           #user_nav
             - if @current_user
               = "Welcome, "
-              = link_to "#{@current_user.username}", @current_user
+              = link_to @current_user.username, @current_user
               |
               = link_to "Log Out", logout_path
 
@@ -73,4 +73,4 @@
       #bd
         = yield
     #ft
-      Developed by Near Infinity
+      %p Developed by Near Infinity

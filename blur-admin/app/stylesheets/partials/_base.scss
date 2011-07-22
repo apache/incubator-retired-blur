@@ -67,3 +67,10 @@ h2 { font-size: 200%; }
 
 .ui-dialog { min-width: 300px; }
 .ui-tooltip { max-width: 600px; }
+
+.jstree-icon{ cursor: pointer; }
+.jstree a { 
+  &:hover{
+    color: #06C;
+  }
+}

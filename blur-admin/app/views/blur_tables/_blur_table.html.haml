@@ -13,12 +13,11 @@
     - else
       = nil_message
 
-  %span.count= blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
-  %span.size= blur_table.current_size ? number_to_human_size(blur_table.current_size, :precision => 4) : nil_message
-  %span.second= blur_table.query_usage ? number_with_delimiter(blur_table.query_usage, :delimiter => ',') : nil_message
-  %span.status= blur_table.is_enabled? ? "Enabled" : "Disabled"
+  %span.count=  blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
+  %span.size=   blur_table.current_size ? number_to_human_size(blur_table.current_size, :precision => 4)    : nil_message
+  %span.second= blur_table.query_usage  ? number_with_delimiter(blur_table.query_usage, :delimiter => ',')  : nil_message
+  %span.status= blur_table.is_enabled?  ? "Enabled" : "Disabled"
   %span.schema= link_to "view", schema_blur_table_path(blur_table), :remote => true, :id => 'schema'
-
 
 .blur_table{:id => "blur_table_#{blur_table.id}"}
   .location
@@ -27,14 +26,20 @@
 
   .actions
     - if can? :update, :blur_tables
-      = form_tag "/blur_tables/#{blur_table.id}", :class => 'update', :id => "blur_table_#{blur_table.id}", :method => :put, :remote => true do
-        - if !blur_table.is_enabled?
+      = form_tag "/blur_tables/#{blur_table.id}", :class  => 'update',
+                                                  :id     => "blur_table_#{blur_table.id}",
+                                                  :method => :put,
+                                                  :remote => true do
+        - unless blur_table.is_enabled?
           = hidden_field_tag 'enable', true
           = tag :input, :type => :button, :value => 'Enable Table', :class => :enable_disable_table_button
         - else
           = hidden_field_tag 'disable', true
           = tag :input, :type => :button, :value => 'Disable Table', :class => :enable_disable_table_button
     - if can? :delete, :blur_tables and  !blur_table.is_enabled?
-      = form_tag "/blur_tables/#{blur_table.id}", :class => 'delete', :id => "blur_table_#{blur_table.id}", :method => :delete, :remote => true do
+      = form_tag "/blur_tables/#{blur_table.id}", :class  => 'delete',
+                                                  :id     => "blur_table_#{blur_table.id}",
+                                                  :method => :delete,
+                                                  :remote => true do
         = hidden_field_tag :delete_index, false
         = tag :input, :type => :button, :value => 'Delete Table', :class => :delete_blur_table_button

@@ -4,6 +4,7 @@ ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
 require 'authlogic/test_case'
+require 'stub_arel'
 
 include Authlogic::TestCase
 

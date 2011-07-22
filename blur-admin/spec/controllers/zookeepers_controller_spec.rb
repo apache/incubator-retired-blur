@@ -10,7 +10,7 @@ describe ZookeepersController do
     @zookeeper  = Factory.stub :zookeeper
 
     # ApplicationController.current_zookeeper
-    Zookeeper.stub(:find).and_return(nil)
+    Zookeeper.stub(:find_by_id).and_return(nil)
     Zookeeper.stub(:first).and_return @zookeeper
     # ApplicationController.zookeepers
     Zookeeper.stub(:all).and_return [@zookeeper]
@@ -48,7 +48,7 @@ describe ZookeepersController do
       describe "with a valid pre-existing current_zookeeper" do
         it "should set the previous zookeeper to be the current_zookeeper" do
           old_zookeeper = Factory.stub :zookeeper
-          Zookeeper.should_receive(:find).with(old_zookeeper.id).and_return(old_zookeeper)
+          Zookeeper.should_receive(:find_by_id).with(old_zookeeper.id).and_return(old_zookeeper)
           get :show_current, nil, :current_zookeeper_id => old_zookeeper.id
           assigns(:current_zookeeper).should == old_zookeeper
           session[:current_zookeeper_id].should == old_zookeeper.id
@@ -56,7 +56,7 @@ describe ZookeepersController do
       end
       describe "with an invalid pre-existing current_zookeeper" do
         it "sets current_zookeeper to the first zookeeper, and resets the session" do
-          Zookeeper.should_receive(:find).with(1).and_return(nil)
+          Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)
           Zookeeper.should_receive(:first).and_return(@zookeeper)
           get :show_current, nil, :current_zookeeper_id => 1
           assigns(:current_zookeeper).should == @zookeeper
@@ -67,7 +67,7 @@ describe ZookeepersController do
     describe "with no persisted zookeepers" do
       describe "with no previous zookeeper" do
         it "redirects to the root path, with no current_zookeeper_id in session" do
-          Zookeeper.should_receive(:find).with(1).and_return(nil)
+          Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)
           Zookeeper.should_receive(:first).and_return(nil)
           get :show_current, nil, :current_zookeeper_id => 1
           session[:current_zookeeper_id].should be nil
@@ -76,7 +76,7 @@ describe ZookeepersController do
       end
       describe "with a previous current zookeeper" do
         it "redirects to the root path, with no current_zookeeper_id in session" do
-          Zookeeper.should_receive(:find).with(1).and_return(nil)
+          Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)
           Zookeeper.should_receive(:first).and_return(nil)
           get :show_current, nil, :current_zookeeper_id => 1
           session[:current_zookeeper_id].should be nil

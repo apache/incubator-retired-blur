@@ -111,7 +111,12 @@
   }
 
   .jstree-icon{ cursor: pointer; }
-  .jstree a { @include standard-font; }
+  .jstree a { 
+    @include standard-font;
+    &:hover{
+      color: #06C;
+    }
+  }
   .id_cell { vertical-align: top; }
 
   #filter_columns{ display: none; }

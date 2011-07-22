@@ -61,20 +61,21 @@
   padding-bottom: 165px;
 
   .zookeeper_info {
+    @include standard-border;
     max-width: 500px;
     min-width: 400px;
     margin-left: 20px;
     margin-right: 10px;
     margin-bottom: 20px;
     float: left;
-    @include standard-border;
     display: inline-block;
     background-color: white;
 
     table{
       width: 100%;
-      th { width: 100%; font-size: 1.2em; @include border-top-radius; border: none; }
-      td { @include standard-font;}
+      margin: 0;
+      th { width: 100%; font-size: 1.2em; @include border-top-radius(4px); border: none; }
+      td { @include standard-font; padding-bottom: 1em;}
       td.cont, td.shard { text-align: center; }
       .index { vertical-align: top; }
     }

@@ -54,7 +54,7 @@ $nav-height: 40px;
         li {
           margin: 6px .5em 0 .5em;
           padding: 0;
-          color: #C4D9FF;
+          color: $nav-blue-color;
           cursor: pointer;
           &:hover {
             color: #eee;

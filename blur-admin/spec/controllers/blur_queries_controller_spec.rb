@@ -26,7 +26,7 @@ describe BlurQueriesController do
       BlurQuery.stub_chain(:joins, :where, :where, :includes, :order).and_return([@blur_query])
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find).and_return(nil)
+      Zookeeper.stub(:find_by_id).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
@@ -91,7 +91,7 @@ describe BlurQueriesController do
       @blur_query.stub(:zookeeper).and_return(@zookeeper)
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find).and_return(nil)
+      Zookeeper.stub(:find_by_id).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
 
     end

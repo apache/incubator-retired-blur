@@ -20,7 +20,7 @@ describe SearchController do
       @zookeeper.stub_chain(:blur_tables, :find).and_return [@blur_table]
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find).and_return(nil)
+      Zookeeper.stub(:find_by_id).and_return(nil)
       Zookeeper.stub(:first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]

@@ -30,6 +30,7 @@ $nav-height: 40px;
       #zookeeper_select {
         @include columns(10, $total-cols);
         padding-top: 1.25em;
+        text-align: center;
       }
       #user_nav {
         @include columns(10,$total-cols);

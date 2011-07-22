@@ -28,7 +28,8 @@ $(document).ready ->
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
-  $('#filter_columns').load('search/' + $('#blur_table').val() + '/filters', setup_filter_tree)
+  # $('#filter_columns').load('search/' + $('#blur_table').val() + '/filters', setup_filter_tree)
+  setup_filter_tree()
 
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed

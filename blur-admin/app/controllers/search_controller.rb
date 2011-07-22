@@ -4,10 +4,13 @@ class SearchController < ApplicationController
 
 	#Show action that sets instance variables used to build the filter column
   def show
-    @blur_tables = @current_zookeeper.blur_tables.find(:all, :order => "table_name")
+    # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
+    # required because of the lazy loading (in this case where a few more variables 
+    # depend on the result)
+    @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
     @blur_table = @blur_tables.first
-	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
-    @searches = current_user.searches.reverse
+	  @columns = @blur_table.schema["columnFamilies"] if @blur_table
+    @searches = @current_user.searches.order("name")
 	end
 
 	#Filter action to help build the tree for column families
@@ -19,7 +22,7 @@ class SearchController < ApplicationController
       @columns = []
     end
     #TODO render the new saved list
-	  render '_filters.html.haml', :layout=>false
+	  render :partial => 'filters'
   end
 
 	#Create action is a large action that handles all of the filter data
@@ -31,7 +34,7 @@ class SearchController < ApplicationController
       buff = Search.find params[:search_id]
     #else build a new search to be used for this specific search
     else
-      drop = params[:column_data].first == "neighborhood_all"? params[:column_data].drop(1).to_json : params[:column_data].to_json
+      drop = params[:column_data].first == "neighborhood_all" ? params[:column_data].drop(1).to_json : params[:column_data].to_json
       params[:super_query] ? sq=true : sq=false
       buff = Search.new(:blur_table_id => params[:blur_table],
                         :super_query   => sq,

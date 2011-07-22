@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
     end
 
     def zookeepers
-      @zookeepers ||= Zookeeper.all
+      @zookeepers ||= Zookeeper.find(:all, :order => 'name')
     end
 
     def current_user_session

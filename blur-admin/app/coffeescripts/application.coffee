@@ -20,3 +20,6 @@ $(document).ready ->
     $('[title]').tooltip
       show:
         delay: 250
+        
+  #fade out flash messages for logging in and out
+  $("#flash").delay(5000).fadeOut("slow")

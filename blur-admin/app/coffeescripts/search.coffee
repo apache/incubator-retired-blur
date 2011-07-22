@@ -13,7 +13,7 @@ $(document).ready ->
         real_checkboxes_names: (n)->
           ['column_data[]', n[0].id]
     $('.column_family_filter').bind "loaded.jstree", ->
-      $('#filter_columns').show()
+      #$('#filter_columns').show()
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->

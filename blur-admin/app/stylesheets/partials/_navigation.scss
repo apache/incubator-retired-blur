@@ -103,11 +103,11 @@ $nav-height: 40px;
 #notice {
   @include border;
   @include border-bottom-radius;
-  border-color: darken($green-state-color, 10%);
-  background-color: $green-state-color;
+  border-color: darken(#DFD, 20%);
+  background-color: #DFD;
   padding-top: .75em;
   font-size: 1.2em;
-  color: white;
+  color: #555;
 }
 
 #alert {

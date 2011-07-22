@@ -34,7 +34,9 @@ $(document).ready ->
         close: (event, ui) ->
           $(this).remove()
         open: ->
+          $(data).hide()
           setup_filter_tree $(this)
+          $(data).show()
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: improve error handling
       console.log "Error in ajax call"

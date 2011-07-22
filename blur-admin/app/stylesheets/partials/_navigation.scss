@@ -95,9 +95,15 @@ $nav-height: 40px;
   height: $footer-height;
   line-height: $footer-height - 1;
   border-top: 1px solid darken($footer-color, 10%);
-  color: darken($footer-color, 40%);
   @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
   @include text-shadow(0 -1px 0 lighten($footer-color, 5%));
+  text-align: right;
+  
+  p{
+    color: darken($footer-color, 40%);
+    text-decoration: none;
+    margin-right: 50px;
+  }
 }
 
 #notice {

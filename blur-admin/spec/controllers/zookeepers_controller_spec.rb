@@ -14,7 +14,7 @@ describe ZookeepersController do
     Zookeeper.stub(:first).and_return @zookeeper
     # ApplicationController.zookeepers
     Zookeeper.stub(:all).and_return [@zookeeper]
-    Zookeeper.stub(:select).and_return [@zookeeper]
+    Zookeeper.stub_chain(:select, :order).and_return [@zookeeper]
   end
 
   describe 'GET show_current' do

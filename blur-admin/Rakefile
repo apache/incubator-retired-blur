@@ -24,6 +24,7 @@ if Rails.env == 'development' or Rails.env == 'test'
     config.flog    = { :dirs_to_flog => ['app'] }
     config.reek    = { :dirs_to_reek => ['app'] }
     config.roodi   = { :dirs_to_roodi => ['app'] }
+    config.verbose = true
   end
 
   CoverMe.config do |c|

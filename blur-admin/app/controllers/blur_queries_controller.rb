@@ -11,12 +11,11 @@ class BlurQueriesController < ApplicationController
 
     @blur_tables = @current_zookeeper.blur_tables
 
-    @blur_queries = BlurQuery.joins(:blur_table => :cluster)
-                             .where(:blur_table =>
-                                    {:clusters => {:zookeeper_id => @current_zookeeper.id}})
-                             .where(filters)
-                             .includes(:blur_table)
-                             .order("created_at DESC")
+    @blur_queries = BlurQuery.joins(:blur_table => :cluster).
+                             where(:blur_table =>{:clusters => {:zookeeper_id => @current_zookeeper.id}}).
+                             where(filters).
+                             includes(:blur_table).
+                             order("created_at DESC")
   end
 
   def refresh
@@ -38,16 +37,15 @@ class BlurQueriesController < ApplicationController
     # filter for refresh period
     unless params[:time_since_refresh].empty?
       previous_filter_time = now - params[:time_since_refresh].to_i.seconds
-      filters[:updated_at] = previous_filter_time .. now
+      filters[:updated_at] = previous_filter_time..now
     end
 
     # filter by zookeeper
-    @blur_queries = BlurQuery.joins(:blur_table => :cluster)
-                             .where(:blur_table =>
-                                    {:clusters => {:zookeeper_id => @current_zookeeper.id}})
-                             .where(filters)
-                             .includes(:blur_table)
-                             .order("created_at DESC")
+    @blur_queries = BlurQuery.joins(:blur_table => :cluster).
+                             where(:blur_table =>{:clusters => {:zookeeper_id => @current_zookeeper.id}}).
+                             where(filters).
+                             includes(:blur_table).
+                             order("created_at DESC")
     respond_to do |format|
       format.html {render @blur_queries}
     end
@@ -64,8 +62,7 @@ class BlurQueriesController < ApplicationController
   end
 
   def more_info
-    @blur_query = BlurQuery.find(params[:id])
-                           .includes(:blur_table)
+    @blur_query = BlurQuery.find(params[:id]).includes(:blur_table)
     respond_to do |format|
       format.html {render :partial => 'more_info', :locals => {:blur_query => @blur_query}}
     end

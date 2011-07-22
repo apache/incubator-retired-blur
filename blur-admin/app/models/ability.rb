@@ -17,11 +17,12 @@ class Ability
       if user.has_role? :reader
 
         # view pages
-        can :index, [:zookeepers, :blur_tables, :search]
+        can :index, [:zookeepers, :blur_tables, :search, :hdfs]
         can :show, [:search]
         can :show_current, :zookeepers
         can :make_current, :zookeepers
         can :dashboard, :zookeepers
+        can :files, :hdfs
         
         can :save, :preference
 

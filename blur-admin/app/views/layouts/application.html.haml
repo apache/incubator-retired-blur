@@ -63,6 +63,9 @@
             %li{:class => controller == 'search' && 'active', :id => "left"}
               = link_to 'Search', search_path
 
+            %li{:class => controller == 'hdfs' && 'active'}
+              = link_to 'HDFS', hdfs_path
+
             - if can? :index, :users
               %li{:class => controller == 'users' && action == 'index' && 'active', :id=> "left"}
                 = link_to 'Admin', users_path

@@ -30,7 +30,7 @@ class ZookeepersController < ApplicationController
   "
   
   def index
-    @zookeepers = Zookeeper.select('id, name')
+    @zookeepers = Zookeeper.select('name, id').order('name')
   end
   
   def show_current

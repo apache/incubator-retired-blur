@@ -76,7 +76,7 @@
     cursor:pointer;
     padding: 2px;
     margin:2px;
-    @include info($blue-color);
+    @include info($table-hd-color);
   }
   
   ul{
@@ -103,7 +103,7 @@
     cursor:-moz-grab;
     cursor:-webkit-grab;
     
-    @include info($blue-color);
+    @include info($table-hd-color);
     padding:2px;
     margin:2px;
   }

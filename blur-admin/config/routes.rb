@@ -31,6 +31,8 @@ BlurAdmin::Application.routes.draw do
   match 'reload/:blur_table' => 'search#reload'
   match 'preference/save' => 'preference#save', :via => :post
 
+  resources :hdfs
+  match 'hdfs/:file' => 'hdfs#files', :via => :post
 
   root :to => 'zookeepers#index'
 

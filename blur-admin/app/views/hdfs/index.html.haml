@@ -1,0 +1,21 @@
+- content_for :title, 'HDFS'
+- content_for :javascript do
+  =javascript_include_tag 'jquery.jstree','compiled/hdfs'
+
+#hdfs_wrapper
+  #hdfs_files_layout
+    HDFS Files
+    #hdfs_files
+      = render 'file_layout'
+  #hdfs_bar
+  #data_container
+    %span#toolbar.ui-widget-header.ui-corner-all
+      %span#view_options
+        = radio_button_tag 'view_options', 'view1', true
+        = label_tag 'view_options_view1', 'View1'
+        = radio_button_tag 'view_options', 'view2'
+        = label_tag 'view_options_view2', 'View2'
+      %button{:type => "button", :id => 'view_button'}
+        Other Options
+    #data_container_display
+    

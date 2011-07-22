@@ -1,0 +1,10 @@
+.file_layout
+  - if @files
+    - @files.each do |parent, children|
+      %ul
+        %li
+          %a{:href=>'',:id => parent}= parent
+          %ul{:class => parent}
+            - children.each do |child|
+              %li
+                %a{:href=>'', :id => "#{parent}_#{child}"}= child

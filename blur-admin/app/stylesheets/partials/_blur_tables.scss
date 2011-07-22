@@ -43,7 +43,7 @@
     height: $row-height;
     &:hover {
       cursor: pointer;
-      background: #FFE4A3;
+      background: $row-hover;
     }
   }
 

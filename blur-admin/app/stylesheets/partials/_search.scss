@@ -41,7 +41,7 @@
   .collapsed_filters{ @include columns(30,$total-cols); @include omega($total-cols);}
   .open_filters{ @include columns(24,$total-cols); @include omega($total-cols); @include prefix(.5) }
   #results_wrapper{
-    #bar_section:hover { background-color: #FAD290; }
+    #bar_section:hover { background-color: $bar-hover; }
 
     #bar_section{
       @include columns(1,$total-cols);
@@ -153,7 +153,7 @@
     background-color: #F8F8F8;
     
     &:hover{
-      background-color: #FFE4A3;
+      background-color: $row-hover;
       background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
     }
   }

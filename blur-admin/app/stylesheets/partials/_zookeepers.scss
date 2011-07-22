@@ -6,7 +6,7 @@
     @include border;
     @include border-radius;
     margin-bottom: 2em;
-    background-color: $light-grey-color;
+    background-color: $grey-div-color;
   }
 
   @mixin inner-container {
@@ -95,4 +95,4 @@
   .word {width: 130px; text-align: left;}
 }
 
-.warning { color: #b81900; font-weight: bold; }
+.warning { color: $red-state-color; font-weight: bold; }

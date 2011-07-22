@@ -5,6 +5,6 @@ BLUR_THRIFT = {
 }
 
 HDFS_THRIFT = {
-  :host => 'nic-blurtop03.nearinfinity.com',
-  :port => 50075
+  :host => 'nic-blurtop01.nearinfinity.com', #'nic-blurtop03.nearinfinity.com'
+  :port => 50077 #50075
 }

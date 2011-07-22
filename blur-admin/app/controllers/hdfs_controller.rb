@@ -1,5 +1,7 @@
 class HdfsController < ApplicationController
 
+  require 'hdfs_thrift_client'
+
   def index
     temp_files
   end

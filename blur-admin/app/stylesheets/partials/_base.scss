@@ -2,18 +2,17 @@
 $base-theme-color: #f6a828;
 $base-theme-background-color: #eeeeee;
 
-$red-color: #E01E00;
-$orange-color: #DB8800;
+$red-state-color: #B81900;
+$red-border-color: #CD0A0A;
 $yellow-state-color: #F6DD60;
 $yellow-border-color: #D0D00B;
 $green-state-color: #68B473;
 $green-border-color: #62A630;
 
 $old-blue-color: #C4D9FF;
-$blue-color: #E4EDFF;
-$table-hd-color: $blue-color;
+$table-hd-color: #E4EDFF;
 $table-hd-text: #667495;
-$light-blue-color: mix(#fff,$blue-color,85%);
+$bg-blue-color: mix(#fff,$table-hd-color,85%);
 
 $grey-color: #EEEEEE;
 $light-grey-color: #F0F0F0;
@@ -59,8 +58,7 @@ $show-grid-backgrounds: true;
 body {
   @include container;
   margin:0 auto;
-  background-color: $light-blue-color;
-
+  background-color: $bg-blue-color;
 }
 
 h2 { font-size: 200%; }

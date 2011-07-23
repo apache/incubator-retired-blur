@@ -278,27 +278,10 @@ public class IndexManager {
             Query userQuery = parseQuery(blurQuery.queryStr, blurQuery.superQueryOn, 
                     analyzer, postFilter, preFilter, getScoreType(blurQuery.type));
             final Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
-            return ForkJoin.execute(executor, blurIndexes.entrySet(),
-                new ParallelCall<Entry<String, BlurIndex>, BlurResultIterable>() {
-                    @Override
-                    public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
-                        status.attachThread();
-                        BlurIndex index = entry.getValue();
-                        IndexReader reader = index.getIndexReader();
-                        try {
-                            String shard = entry.getKey();
-                            BlurSearcher searcher = new BlurSearcher(reader, 
-                                    PrimeDocCache.getTableCache().getShardCache(table).
-                                    getIndexReaderCache(shard));
-                            searcher.setSimilarity(indexServer.getSimilarity(table));
-                            return new BlurResultIterableSearcher((Query) facetedQuery.clone(), table, shard, searcher, blurQuery.selector);
-                        } finally {
-                            //this will allow for closing of index
-                            reader.decRef();
-                            status.deattachThread();
-                        }
-                    }
-                }).merge(new MergerBlurResultIterable(blurQuery));
+            
+            QueryParallelCall call = new QueryParallelCall(table, status, indexServer, facetedQuery, blurQuery.selector);
+            MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
+            return ForkJoin.execute(executor, blurIndexes.entrySet(), call).merge(merger);
         } finally {
             status.deattachThread();
             statusManager.removeStatus(status);
@@ -634,5 +617,41 @@ public class IndexManager {
 
     private int getNumberOfShards(String table) {
         return indexServer.getShardCount(table);
+    }
+    
+    public static class QueryParallelCall implements ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> {
+        
+        private String _table;
+        private QueryStatus _status;
+        private IndexServer _indexServer;
+        private Query _query;
+        private Selector _selector;
+        
+        public QueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector) {
+            _table = table;
+            _status = status;
+            _indexServer = indexServer;
+            _query = query;
+            _selector = selector;
+        }
+
+        @Override
+        public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
+            _status.attachThread();
+            BlurIndex index = entry.getValue();
+            IndexReader reader = index.getIndexReader();
+            try {
+                String shard = entry.getKey();
+                BlurSearcher searcher = new BlurSearcher(reader, 
+                        PrimeDocCache.getTableCache().getShardCache(_table).
+                        getIndexReaderCache(shard));
+                searcher.setSimilarity(_indexServer.getSimilarity(_table));
+                return new BlurResultIterableSearcher((Query) _query.clone(), _table, shard, searcher, _selector);
+            } finally {
+                //this will allow for closing of index
+                reader.decRef();
+                _status.deattachThread();
+            }
+        }
     }
 }

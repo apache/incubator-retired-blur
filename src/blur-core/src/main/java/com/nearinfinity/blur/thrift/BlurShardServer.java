@@ -64,7 +64,10 @@ public class BlurShardServer extends ExecutionContextIface {
         DESCRIBE, 
         MUTATE, 
         QUERY_SUGGESTIONS,
-        GET_TABLE_STATS, MUTATE_ABORT, MUTATE_CREATE_TRANSACTION, MUTATE_COMMIT
+        GET_TABLE_STATS, 
+        MUTATE_ABORT, 
+        MUTATE_CREATE_TRANSACTION, 
+        MUTATE_COMMIT
     }
 
     @Override

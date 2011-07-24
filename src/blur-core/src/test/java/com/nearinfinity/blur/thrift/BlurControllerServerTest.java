@@ -142,7 +142,7 @@ public class BlurControllerServerTest {
         recMut.setRecordId("5678");
         recMut.addToRecord(new Column("name",Arrays.asList("value")));
         mutation.addToRecordMutations(recMut);
-        server.mutate(TABLE, null, Arrays.asList(mutation));
+        server.mutate(null, Arrays.asList(mutation));
         
         Selector selector = new Selector();
         selector.rowId = "1234";
@@ -300,8 +300,9 @@ public class BlurControllerServerTest {
 			}
 
             @Override
-            public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException,
+            public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException,
                     TException {
+                String table = transaction.table;
                 Map<String, Row> map = rows.get(table);
                 if (map == null) {
                     map = new HashMap<String, Row>();
@@ -314,12 +315,12 @@ public class BlurControllerServerTest {
             }
 
             @Override
-            public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
+            public void mutateAbort(Transaction transaction) throws BlurException, TException {
                 throw new RuntimeException("not impl");
             }
 
             @Override
-            public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
+            public void mutateCommit(Transaction transaction) throws BlurException, TException {
                 throw new RuntimeException("not impl");                
             }
 

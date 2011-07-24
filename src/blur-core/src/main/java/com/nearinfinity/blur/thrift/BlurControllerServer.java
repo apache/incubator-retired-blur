@@ -39,6 +39,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.manager.TransactionManager;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
@@ -69,7 +70,6 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 public class BlurControllerServer extends TableAdmin implements Iface {
 
     private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
-
     private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
 
     private ExecutorService _executor;
@@ -84,6 +84,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     private boolean _closed;
     private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
     private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
+    private TransactionManager _transactionManager = new TransactionManager();
 
     public void open() {
         _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
@@ -453,8 +454,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
 
     @Override
-    public void mutate(final String table, final Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(final Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
         try {
+            String table = transaction.getTable();
             final Map<String, List<RowMutation>> mutationsMap = getMutationMap(table, mutations);
             for (String hname : mutationsMap.keySet()) {
                 final String hostname = hname;
@@ -462,14 +464,14 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                 _client.execute(hostname, new BlurCommand<Void>() {
                     @Override
                     public Void call(Client client) throws Exception {
-                        client.mutate(table, transaction, mutationsLst);
+                        client.mutate(transaction, mutationsLst);
                         return null;
                     }
                 });
             }
         } catch (Exception e) {
-            LOG.error("Unknown error during mutate of table [{0}]", e, table);
-            throw new BException("Unknown error during mutate of table [{0}]", e, table);
+            LOG.error("Unknown error during mutate of transaction [{0}]", e, transaction);
+            throw new BException("Unknown error during mutate of transaction [{0}]", e, transaction);
         }
     }
 
@@ -505,18 +507,34 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
 
     @Override
-    public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
-        throw new RuntimeException("not impl");
+    public void mutateAbort(Transaction transaction) throws BlurException, TException {
+        try {
+            _transactionManager.abort(transaction);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to abort a transaction.", e);
+            throw new BException("Unknown error while trying to abort a transaction.", e);
+        }
     }
 
     @Override
-    public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
-        throw new RuntimeException("not impl");
+    public void mutateCommit(Transaction transaction) throws BlurException, TException {
+        try {
+            _transactionManager.commit(transaction);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to commit a transaction.", e);
+            throw new BException("Unknown error while trying to commit a transaction.", e);
+        }
     }
 
     @Override
     public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
-        throw new RuntimeException("not impl");
+        int numberOfShards = getShardCount(table);
+        try {
+            return _transactionManager.create(table,numberOfShards);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to create a transaction.", e);
+            throw new BException("Unknown error while trying to create a transaction.", e);
+        }
     }
 
 }

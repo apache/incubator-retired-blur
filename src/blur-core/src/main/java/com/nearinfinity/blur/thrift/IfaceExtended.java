@@ -33,7 +33,7 @@ public interface IfaceExtended extends Iface {
 
     FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException, TException;
 
-    void mutate(ExecutionContext context, String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException;
+    void mutate(ExecutionContext context, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException;
 
     BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException, TException;
 
@@ -53,8 +53,8 @@ public interface IfaceExtended extends Iface {
     
     Transaction mutateCreateTransaction(ExecutionContext context, String table) throws BlurException, org.apache.thrift.TException;
 
-    void mutateCommit(ExecutionContext context, String table, Transaction transaction) throws BlurException, org.apache.thrift.TException;
+    void mutateCommit(ExecutionContext context, Transaction transaction) throws BlurException, org.apache.thrift.TException;
 
-    void mutateAbort(ExecutionContext context, String table, Transaction transaction) throws BlurException, org.apache.thrift.TException;
+    void mutateAbort(ExecutionContext context, Transaction transaction) throws BlurException, org.apache.thrift.TException;
 
 }

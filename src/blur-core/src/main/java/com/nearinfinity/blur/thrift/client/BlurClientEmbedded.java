@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.thrift.TException;
-import org.apache.thrift.protocol.TProtocol;
 
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -138,150 +137,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
-            face.mutate(table, transaction, mutations);
-        }
-
-        @Override
-        public TProtocol getInputProtocol() {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public TProtocol getOutputProtocol() {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public List<String> recv_controllerServerList() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public TableDescriptor recv_describe() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public FetchResult recv_fetchRow() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public long recv_recordFrequency() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public Schema recv_schema() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public Map<String, String> recv_shardServerLayout() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public List<String> recv_shardServerList() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public List<String> recv_tableList() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public List<String> recv_terms() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_controllerServerList() throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_describe(String table) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_fetchRow(String table, Selector selector) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_recordFrequency(String table, String columnFamily, String columnName, String value)
-                throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_schema(String table) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_shardServerLayout(String table) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_shardServerList() throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_tableList() throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_terms(String table, String columnFamily, String columnName, String startWith, short size)
-                throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void recv_cancelQuery() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public List<BlurQueryStatus> recv_currentQueries() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void recv_mutate() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public BlurResults recv_query() throws BlurException, TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_cancelQuery(String table, long uuid) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_currentQueries(String table) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_mutate(String table, Transaction transaction, List<RowMutation> mutations) throws TException {
-            throw new RuntimeException("not impl");
-        }
-
-        @Override
-        public void send_query(String table, BlurQuery blurQuery) throws TException {
-            throw new RuntimeException("not impl");
+        public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+            face.mutate(transaction, mutations);
         }
 
         public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, TException {
@@ -301,11 +158,11 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
-            face.mutateAbort(table, transaction);
+            face.mutateAbort(transaction);
         }
 
         public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
-            face.mutateCommit(table, transaction);
+            face.mutateCommit(transaction);
         }
 
         public Transaction mutateCreateTransaction(String table) throws BlurException, TException {

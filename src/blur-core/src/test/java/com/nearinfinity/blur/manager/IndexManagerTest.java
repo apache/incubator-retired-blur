@@ -112,8 +112,8 @@ public class IndexManagerTest {
                                 newColumn("testcol2", "value5"), 
                                 newColumn("testcol3", "value9"))));
         Transaction transaction = indexManager.mutateCreateTransaction(TABLE);
-        indexManager.mutate(TABLE, transaction, mutations);
-        indexManager.mutateCommit(TABLE, transaction);
+        indexManager.mutate(transaction, mutations);
+        indexManager.mutateCommit(transaction);
     }
 
     @After
@@ -382,8 +382,8 @@ public class IndexManagerTest {
                                 newColumn("testcol1", "value2"),
                                 newColumn("testcol2", "value3"), 
                                 newColumn("testcol3", "value4"))));
-        indexManager.mutate(TABLE, transaction, mutations);
-        indexManager.mutateCommit(TABLE, transaction);
+        indexManager.mutate(transaction, mutations);
+        indexManager.mutateCommit(transaction);
         
         Selector selector = new Selector().setRowId("row-4");
         FetchResult fetchResult = new FetchResult();

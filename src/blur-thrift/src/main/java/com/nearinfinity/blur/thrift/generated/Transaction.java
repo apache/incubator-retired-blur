@@ -24,12 +24,15 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Transaction");
 
   private static final org.apache.thrift.protocol.TField TRANSACTION_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("transactionId", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   public int transactionId;
+  public String table;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    TRANSACTION_ID((short)1, "transactionId");
+    TRANSACTION_ID((short)1, "transactionId"),
+    TABLE((short)2, "table");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -46,6 +49,8 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
       switch(fieldId) {
         case 1: // TRANSACTION_ID
           return TRANSACTION_ID;
+        case 2: // TABLE
+          return TABLE;
         default:
           return null;
       }
@@ -94,6 +99,8 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TRANSACTION_ID, new org.apache.thrift.meta_data.FieldMetaData("transactionId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+    tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Transaction.class, metaDataMap);
   }
@@ -102,11 +109,13 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
   }
 
   public Transaction(
-    int transactionId)
+    int transactionId,
+    String table)
   {
     this();
     this.transactionId = transactionId;
     setTransactionIdIsSet(true);
+    this.table = table;
   }
 
   /**
@@ -116,6 +125,9 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
     __isset_bit_vector.clear();
     __isset_bit_vector.or(other.__isset_bit_vector);
     this.transactionId = other.transactionId;
+    if (other.isSetTable()) {
+      this.table = other.table;
+    }
   }
 
   public Transaction deepCopy() {
@@ -126,6 +138,7 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
   public void clear() {
     setTransactionIdIsSet(false);
     this.transactionId = 0;
+    this.table = null;
   }
 
   public int getTransactionId() {
@@ -151,6 +164,30 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
     __isset_bit_vector.set(__TRANSACTIONID_ISSET_ID, value);
   }
 
+  public String getTable() {
+    return this.table;
+  }
+
+  public Transaction setTable(String table) {
+    this.table = table;
+    return this;
+  }
+
+  public void unsetTable() {
+    this.table = null;
+  }
+
+  /** Returns true if field table is set (has been assigned a value) and false otherwise */
+  public boolean isSetTable() {
+    return this.table != null;
+  }
+
+  public void setTableIsSet(boolean value) {
+    if (!value) {
+      this.table = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TRANSACTION_ID:
@@ -161,6 +198,14 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
       }
       break;
 
+    case TABLE:
+      if (value == null) {
+        unsetTable();
+      } else {
+        setTable((String)value);
+      }
+      break;
+
     }
   }
 
@@ -168,6 +213,9 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
     switch (field) {
     case TRANSACTION_ID:
       return new Integer(getTransactionId());
+
+    case TABLE:
+      return getTable();
 
     }
     throw new IllegalStateException();
@@ -182,6 +230,8 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
     switch (field) {
     case TRANSACTION_ID:
       return isSetTransactionId();
+    case TABLE:
+      return isSetTable();
     }
     throw new IllegalStateException();
   }
@@ -205,6 +255,15 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
       if (!(this_present_transactionId && that_present_transactionId))
         return false;
       if (this.transactionId != that.transactionId)
+        return false;
+    }
+
+    boolean this_present_table = true && this.isSetTable();
+    boolean that_present_table = true && that.isSetTable();
+    if (this_present_table || that_present_table) {
+      if (!(this_present_table && that_present_table))
+        return false;
+      if (!this.table.equals(that.table))
         return false;
     }
 
@@ -234,6 +293,16 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTable()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -259,6 +328,13 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 2: // TABLE
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.table = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -277,6 +353,11 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
     oprot.writeFieldBegin(TRANSACTION_ID_FIELD_DESC);
     oprot.writeI32(this.transactionId);
     oprot.writeFieldEnd();
+    if (this.table != null) {
+      oprot.writeFieldBegin(TABLE_FIELD_DESC);
+      oprot.writeString(this.table);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -288,6 +369,14 @@ public class Transaction implements org.apache.thrift.TBase<Transaction, Transac
 
     sb.append("transactionId:");
     sb.append(this.transactionId);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("table:");
+    if (this.table == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.table);
+    }
     first = false;
     sb.append(")");
     return sb.toString();

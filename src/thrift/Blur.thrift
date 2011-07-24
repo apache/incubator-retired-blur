@@ -7,7 +7,8 @@ exception BlurException {
 }
 
 struct Transaction {
-  1:i32 transactionId
+  1:i32 transactionId,
+  2:string table
 }
 
 struct AlternateColumnDefinition {
@@ -212,9 +213,9 @@ service Blur {
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
   Transaction mutateCreateTransaction(1:string table) throws (1:BlurException ex)
-  void mutate(1:string table, 2:Transaction transaction, 3:list<RowMutation> mutations) throws (1:BlurException ex)
-  void mutateCommit(1:string table, 2:Transaction transaction) throws (1:BlurException ex)
-  void mutateAbort(1:string table, 2:Transaction transaction) throws (1:BlurException ex)
+  void mutate(1:Transaction transaction, 3:list<RowMutation> mutations) throws (1:BlurException ex)
+  void mutateCommit(1:Transaction transaction) throws (1:BlurException ex)
+  void mutateAbort(1:Transaction transaction) throws (1:BlurException ex)
 
   void createTable(1:string table, 2:TableDescriptor tableDescriptor) throws (1:BlurException ex)
   void enableTable(1:string table) throws (1:BlurException ex)

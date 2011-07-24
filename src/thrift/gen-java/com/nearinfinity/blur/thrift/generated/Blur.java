@@ -52,11 +52,11 @@ public class Blur {
 
     public Transaction mutateCreateTransaction(String table) throws BlurException, org.apache.thrift.TException;
 
-    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException;
+    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException;
 
-    public void mutateCommit(String table, Transaction transaction) throws BlurException, org.apache.thrift.TException;
+    public void mutateCommit(Transaction transaction) throws BlurException, org.apache.thrift.TException;
 
-    public void mutateAbort(String table, Transaction transaction) throws BlurException, org.apache.thrift.TException;
+    public void mutateAbort(Transaction transaction) throws BlurException, org.apache.thrift.TException;
 
     public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException;
 
@@ -98,11 +98,11 @@ public class Blur {
 
     public void mutateCreateTransaction(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutateCreateTransaction_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void mutate(String table, Transaction transaction, List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutate_call> resultHandler) throws org.apache.thrift.TException;
+    public void mutate(Transaction transaction, List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutate_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void mutateCommit(String table, Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutateCommit_call> resultHandler) throws org.apache.thrift.TException;
+    public void mutateCommit(Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutateCommit_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void mutateAbort(String table, Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutateAbort_call> resultHandler) throws org.apache.thrift.TException;
+    public void mutateAbort(Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutateAbort_call> resultHandler) throws org.apache.thrift.TException;
 
     public void createTable(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createTable_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -701,17 +701,16 @@ public class Blur {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "mutateCreateTransaction failed: unknown result");
     }
 
-    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException
+    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException
     {
-      send_mutate(table, transaction, mutations);
+      send_mutate(transaction, mutations);
       recv_mutate();
     }
 
-    public void send_mutate(String table, Transaction transaction, List<RowMutation> mutations) throws org.apache.thrift.TException
+    public void send_mutate(Transaction transaction, List<RowMutation> mutations) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutate", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       mutate_args args = new mutate_args();
-      args.setTable(table);
       args.setTransaction(transaction);
       args.setMutations(mutations);
       args.write(oprot_);
@@ -739,17 +738,16 @@ public class Blur {
       return;
     }
 
-    public void mutateCommit(String table, Transaction transaction) throws BlurException, org.apache.thrift.TException
+    public void mutateCommit(Transaction transaction) throws BlurException, org.apache.thrift.TException
     {
-      send_mutateCommit(table, transaction);
+      send_mutateCommit(transaction);
       recv_mutateCommit();
     }
 
-    public void send_mutateCommit(String table, Transaction transaction) throws org.apache.thrift.TException
+    public void send_mutateCommit(Transaction transaction) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateCommit", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       mutateCommit_args args = new mutateCommit_args();
-      args.setTable(table);
       args.setTransaction(transaction);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -776,17 +774,16 @@ public class Blur {
       return;
     }
 
-    public void mutateAbort(String table, Transaction transaction) throws BlurException, org.apache.thrift.TException
+    public void mutateAbort(Transaction transaction) throws BlurException, org.apache.thrift.TException
     {
-      send_mutateAbort(table, transaction);
+      send_mutateAbort(transaction);
       recv_mutateAbort();
     }
 
-    public void send_mutateAbort(String table, Transaction transaction) throws org.apache.thrift.TException
+    public void send_mutateAbort(Transaction transaction) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateAbort", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       mutateAbort_args args = new mutateAbort_args();
-      args.setTable(table);
       args.setTransaction(transaction);
       args.write(oprot_);
       oprot_.writeMessageEnd();
@@ -1446,20 +1443,18 @@ public class Blur {
       }
     }
 
-    public void mutate(String table, Transaction transaction, List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<mutate_call> resultHandler) throws org.apache.thrift.TException {
+    public void mutate(Transaction transaction, List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<mutate_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      mutate_call method_call = new mutate_call(table, transaction, mutations, resultHandler, this, protocolFactory, transport);
+      mutate_call method_call = new mutate_call(transaction, mutations, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class mutate_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
       private Transaction transaction;
       private List<RowMutation> mutations;
-      public mutate_call(String table, Transaction transaction, List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<mutate_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public mutate_call(Transaction transaction, List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<mutate_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.transaction = transaction;
         this.mutations = mutations;
       }
@@ -1467,7 +1462,6 @@ public class Blur {
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutate", org.apache.thrift.protocol.TMessageType.CALL, 0));
         mutate_args args = new mutate_args();
-        args.setTable(table);
         args.setTransaction(transaction);
         args.setMutations(mutations);
         args.write(prot);
@@ -1484,26 +1478,23 @@ public class Blur {
       }
     }
 
-    public void mutateCommit(String table, Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateCommit_call> resultHandler) throws org.apache.thrift.TException {
+    public void mutateCommit(Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateCommit_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      mutateCommit_call method_call = new mutateCommit_call(table, transaction, resultHandler, this, protocolFactory, transport);
+      mutateCommit_call method_call = new mutateCommit_call(transaction, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class mutateCommit_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
       private Transaction transaction;
-      public mutateCommit_call(String table, Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateCommit_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public mutateCommit_call(Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateCommit_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.transaction = transaction;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateCommit", org.apache.thrift.protocol.TMessageType.CALL, 0));
         mutateCommit_args args = new mutateCommit_args();
-        args.setTable(table);
         args.setTransaction(transaction);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1519,26 +1510,23 @@ public class Blur {
       }
     }
 
-    public void mutateAbort(String table, Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateAbort_call> resultHandler) throws org.apache.thrift.TException {
+    public void mutateAbort(Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateAbort_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      mutateAbort_call method_call = new mutateAbort_call(table, transaction, resultHandler, this, protocolFactory, transport);
+      mutateAbort_call method_call = new mutateAbort_call(transaction, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class mutateAbort_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
       private Transaction transaction;
-      public mutateAbort_call(String table, Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateAbort_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public mutateAbort_call(Transaction transaction, org.apache.thrift.async.AsyncMethodCallback<mutateAbort_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.transaction = transaction;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateAbort", org.apache.thrift.protocol.TMessageType.CALL, 0));
         mutateAbort_args args = new mutateAbort_args();
-        args.setTable(table);
         args.setTransaction(transaction);
         args.write(prot);
         prot.writeMessageEnd();
@@ -2294,7 +2282,7 @@ public class Blur {
         iprot.readMessageEnd();
         mutate_result result = new mutate_result();
         try {
-          iface_.mutate(args.table, args.transaction, args.mutations);
+          iface_.mutate(args.transaction, args.mutations);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -2332,7 +2320,7 @@ public class Blur {
         iprot.readMessageEnd();
         mutateCommit_result result = new mutateCommit_result();
         try {
-          iface_.mutateCommit(args.table, args.transaction);
+          iface_.mutateCommit(args.transaction);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -2370,7 +2358,7 @@ public class Blur {
         iprot.readMessageEnd();
         mutateAbort_result result = new mutateAbort_result();
         try {
-          iface_.mutateAbort(args.table, args.transaction);
+          iface_.mutateAbort(args.transaction);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -12851,18 +12839,15 @@ public class Blur {
   public static class mutate_args implements org.apache.thrift.TBase<mutate_args, mutate_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mutate_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)1);
     private static final org.apache.thrift.protocol.TField MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("mutations", org.apache.thrift.protocol.TType.LIST, (short)3);
 
-    public String table;
     public Transaction transaction;
     public List<RowMutation> mutations;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      TRANSACTION((short)2, "transaction"),
+      TRANSACTION((short)1, "transaction"),
       MUTATIONS((short)3, "mutations");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -12878,9 +12863,7 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // TRANSACTION
+          case 1: // TRANSACTION
             return TRANSACTION;
           case 3: // MUTATIONS
             return MUTATIONS;
@@ -12928,8 +12911,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.TRANSACTION, new org.apache.thrift.meta_data.FieldMetaData("transaction", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Transaction.class)));
       tmpMap.put(_Fields.MUTATIONS, new org.apache.thrift.meta_data.FieldMetaData("mutations", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -12943,12 +12924,10 @@ public class Blur {
     }
 
     public mutate_args(
-      String table,
       Transaction transaction,
       List<RowMutation> mutations)
     {
       this();
-      this.table = table;
       this.transaction = transaction;
       this.mutations = mutations;
     }
@@ -12957,9 +12936,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public mutate_args(mutate_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetTransaction()) {
         this.transaction = new Transaction(other.transaction);
       }
@@ -12978,33 +12954,8 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.transaction = null;
       this.mutations = null;
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public mutate_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     public Transaction getTransaction() {
@@ -13072,14 +13023,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case TRANSACTION:
         if (value == null) {
           unsetTransaction();
@@ -13101,9 +13044,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case TRANSACTION:
         return getTransaction();
 
@@ -13121,8 +13061,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case TRANSACTION:
         return isSetTransaction();
       case MUTATIONS:
@@ -13143,15 +13081,6 @@ public class Blur {
     public boolean equals(mutate_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_transaction = true && this.isSetTransaction();
       boolean that_present_transaction = true && that.isSetTransaction();
@@ -13187,16 +13116,6 @@ public class Blur {
       int lastComparison = 0;
       mutate_args typedOther = (mutate_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetTransaction()).compareTo(typedOther.isSetTransaction());
       if (lastComparison != 0) {
         return lastComparison;
@@ -13234,14 +13153,7 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 2: // TRANSACTION
+          case 1: // TRANSACTION
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.transaction = new Transaction();
               this.transaction.read(iprot);
@@ -13282,11 +13194,6 @@ public class Blur {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
-        oprot.writeFieldEnd();
-      }
       if (this.transaction != null) {
         oprot.writeFieldBegin(TRANSACTION_FIELD_DESC);
         this.transaction.write(oprot);
@@ -13313,14 +13220,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("mutate_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("transaction:");
       if (this.transaction == null) {
         sb.append("null");
@@ -13662,16 +13561,13 @@ public class Blur {
   public static class mutateCommit_args implements org.apache.thrift.TBase<mutateCommit_args, mutateCommit_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mutateCommit_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public String table;
     public Transaction transaction;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      TRANSACTION((short)2, "transaction");
+      TRANSACTION((short)1, "transaction");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -13686,9 +13582,7 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // TRANSACTION
+          case 1: // TRANSACTION
             return TRANSACTION;
           default:
             return null;
@@ -13734,8 +13628,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.TRANSACTION, new org.apache.thrift.meta_data.FieldMetaData("transaction", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Transaction.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -13746,11 +13638,9 @@ public class Blur {
     }
 
     public mutateCommit_args(
-      String table,
       Transaction transaction)
     {
       this();
-      this.table = table;
       this.transaction = transaction;
     }
 
@@ -13758,9 +13648,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public mutateCommit_args(mutateCommit_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetTransaction()) {
         this.transaction = new Transaction(other.transaction);
       }
@@ -13772,32 +13659,7 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.transaction = null;
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public mutateCommit_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     public Transaction getTransaction() {
@@ -13826,14 +13688,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case TRANSACTION:
         if (value == null) {
           unsetTransaction();
@@ -13847,9 +13701,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case TRANSACTION:
         return getTransaction();
 
@@ -13864,8 +13715,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case TRANSACTION:
         return isSetTransaction();
       }
@@ -13884,15 +13733,6 @@ public class Blur {
     public boolean equals(mutateCommit_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_transaction = true && this.isSetTransaction();
       boolean that_present_transaction = true && that.isSetTransaction();
@@ -13919,16 +13759,6 @@ public class Blur {
       int lastComparison = 0;
       mutateCommit_args typedOther = (mutateCommit_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetTransaction()).compareTo(typedOther.isSetTransaction());
       if (lastComparison != 0) {
         return lastComparison;
@@ -13956,14 +13786,7 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 2: // TRANSACTION
+          case 1: // TRANSACTION
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.transaction = new Transaction();
               this.transaction.read(iprot);
@@ -13986,11 +13809,6 @@ public class Blur {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
-        oprot.writeFieldEnd();
-      }
       if (this.transaction != null) {
         oprot.writeFieldBegin(TRANSACTION_FIELD_DESC);
         this.transaction.write(oprot);
@@ -14005,14 +13823,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("mutateCommit_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("transaction:");
       if (this.transaction == null) {
         sb.append("null");
@@ -14346,16 +14156,13 @@ public class Blur {
   public static class mutateAbort_args implements org.apache.thrift.TBase<mutateAbort_args, mutateAbort_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mutateAbort_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public String table;
     public Transaction transaction;
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      TRANSACTION((short)2, "transaction");
+      TRANSACTION((short)1, "transaction");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -14370,9 +14177,7 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // TRANSACTION
+          case 1: // TRANSACTION
             return TRANSACTION;
           default:
             return null;
@@ -14418,8 +14223,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.TRANSACTION, new org.apache.thrift.meta_data.FieldMetaData("transaction", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Transaction.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -14430,11 +14233,9 @@ public class Blur {
     }
 
     public mutateAbort_args(
-      String table,
       Transaction transaction)
     {
       this();
-      this.table = table;
       this.transaction = transaction;
     }
 
@@ -14442,9 +14243,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public mutateAbort_args(mutateAbort_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetTransaction()) {
         this.transaction = new Transaction(other.transaction);
       }
@@ -14456,32 +14254,7 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.transaction = null;
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public mutateAbort_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     public Transaction getTransaction() {
@@ -14510,14 +14283,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case TRANSACTION:
         if (value == null) {
           unsetTransaction();
@@ -14531,9 +14296,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case TRANSACTION:
         return getTransaction();
 
@@ -14548,8 +14310,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case TRANSACTION:
         return isSetTransaction();
       }
@@ -14568,15 +14328,6 @@ public class Blur {
     public boolean equals(mutateAbort_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_transaction = true && this.isSetTransaction();
       boolean that_present_transaction = true && that.isSetTransaction();
@@ -14603,16 +14354,6 @@ public class Blur {
       int lastComparison = 0;
       mutateAbort_args typedOther = (mutateAbort_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetTransaction()).compareTo(typedOther.isSetTransaction());
       if (lastComparison != 0) {
         return lastComparison;
@@ -14640,14 +14381,7 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 2: // TRANSACTION
+          case 1: // TRANSACTION
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.transaction = new Transaction();
               this.transaction.read(iprot);
@@ -14670,11 +14404,6 @@ public class Blur {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
-        oprot.writeFieldEnd();
-      }
       if (this.transaction != null) {
         oprot.writeFieldBegin(TRANSACTION_FIELD_DESC);
         this.transaction.write(oprot);
@@ -14689,14 +14418,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("mutateAbort_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("transaction:");
       if (this.transaction == null) {
         sb.append("null");

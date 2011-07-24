@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -580,7 +579,8 @@ public class IndexManager {
         statusManager.setStatusCleanupTimerDelay(delay);
     }
 
-    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, IOException {
+    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, IOException {
+        String table = transaction.table;
         Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
         for (RowMutation mutation : mutations) {
             MutationHelper.validateMutation(mutation);
@@ -594,25 +594,26 @@ public class IndexManager {
         }
     }
     
-    public void mutateAbort(String table, Transaction transaction) throws IOException {
-        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-        for (BlurIndex index : indexes.values()) {
-            index.abort(transaction);
-        }
+    public void mutateAbort(Transaction transaction) throws IOException {
+        throw new RuntimeException("not impl");
+//        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
+//        for (BlurIndex index : indexes.values()) {
+//            index.abort(transaction);
+//        }
     }
 
-    public void mutateCommit(String table, Transaction transaction) throws IOException {
-        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-        for (BlurIndex index : indexes.values()) {
-            index.commit(transaction);
-        }
+    public void mutateCommit(Transaction transaction) throws IOException {
+        throw new RuntimeException("not impl");
+//        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
+//        for (BlurIndex index : indexes.values()) {
+//            index.commit(transaction);
+//        }
     }
     
-    private Random random = new Random();
-
     public Transaction mutateCreateTransaction(String table) {
         //@TODO do something better here
-        return new Transaction(random.nextInt());
+        throw new RuntimeException("not impl");
+//        return new Transaction(random.nextInt());
     }
 
     private int getNumberOfShards(String table) {

@@ -144,10 +144,10 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     }
 
     @Override
-    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
         ExecutionContext context = getContext();
         try {
-            mutate(context, table, transaction, mutations);
+            mutate(context, transaction, mutations);
         } finally {
             record(context);
         }
@@ -226,20 +226,20 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     }
     
     @Override
-    public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
+    public void mutateAbort(Transaction transaction) throws BlurException, TException {
         ExecutionContext context = getContext();
         try {
-            mutateAbort(context, table, transaction);
+            mutateAbort(context, transaction);
         } finally {
             record(context);
         }
     }
 
     @Override
-    public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
+    public void mutateCommit(Transaction transaction) throws BlurException, TException {
         ExecutionContext context = getContext();
         try {
-            mutateCommit(context, table, transaction);
+            mutateCommit(context, transaction);
         } finally {
             record(context);
         }

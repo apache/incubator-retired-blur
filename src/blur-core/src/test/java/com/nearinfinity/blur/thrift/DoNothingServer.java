@@ -126,17 +126,17 @@ public class DoNothingServer implements Iface {
 	}
 
     @Override
-    public void mutate(String table, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
         
     }
 
     @Override
-    public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
+    public void mutateAbort(Transaction transaction) throws BlurException, TException {
         
     }
 
     @Override
-    public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
+    public void mutateCommit(Transaction transaction) throws BlurException, TException {
         
     }
 

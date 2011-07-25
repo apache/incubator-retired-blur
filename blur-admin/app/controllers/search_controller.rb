@@ -34,7 +34,7 @@ class SearchController < ApplicationController
       search = Search.find params[:search_id]
     #else build a new search to be used for this specific search
     else
-      params[:column_data].delete( "neighborhood_all")
+      params[:column_data].delete( "neighborhood")
       search = Search.new(:blur_table_id => params[:blur_table],
                           :super_query   =>!params[:super_query].nil?,
                           :columns       => params[:column_data],
@@ -64,55 +64,53 @@ class SearchController < ApplicationController
       end
     end
 
-    ####Dear lord this is scary####
     #this parses up the response object from blur and prepares it as a table
+    # Definitions:
+    #   Result: consists  of one or more rows.  Each result has an
+    #           identifying rowId (I know, confusing...)
+    #   Row: A row consisting of one record for each column family it spans.
+    #   Record: A partial row spanning a column family.  Has an identifying recordId.
+    #           A result can have multiple records within a single column family.
+
     visible_families = (families + columns.keys).uniq
     @results = []
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime
-    blur_results.results.each do |result|
-      row = result.fetchResult.rowResult.row
-      max_record_count = row.columnFamilies.collect {|cf| cf.records.keys.count }.max
+    blur_results.results.each do |result_container|
+      # drill down through the result object cruft to get the real result
+      result = result_container.fetchResult.rowResult.row 
+      # number of rows the result will span
+      row_count = result.columnFamilies.collect {|cf| cf.records.keys.count }.max
 
       # organize into multidimensional array of rows and columns
-      table_rows = Array.new(max_record_count) { [] }
-      (0...max_record_count).each do |record_count|
-        visible_families.each do |column_family_name|
-          column_family = row.columnFamilies.find { |cf| cf.family == column_family_name }
-          table_rows[record_count] << cfspan = []
+      rows = Array.new(row_count) { [] }
+      (0...row_count).each do |row| # for each row in the result, row here is really just the row number
+        visible_families.each do |column_family_name| # for each column family in the row
+          column_family = result.columnFamilies.find { |cf| cf.family == column_family_name }
+          rows[row] << cfspan = []
 
           families_include = families.include? column_family_name
-          if column_family
+          if column_family # If the results include the column family
             count = column_family.records.values.count
-            if record_count < count
-              if families_include
+            if row < count # if this row has entries
+              if families_include # if displaying entire columns family
                 families_with_columns[column_family_name].each do |column|
-                  found_set = column_family.records.values[record_count].find { |col| column == col.name }
-                    if !(column == 'recordId')
-                      cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
-                    else
-                      cfspan << column_family.records.keys[record_count]
-                    end
+                  cfspan << row_column_value(row, column_family, column)
                 end
-              else
+              else # if displaying a subset of the column family
                 columns[column_family_name].each do |column|
-                  found_set = column_family.records.values[record_count].find { |col| column == col.name }
-                    if !(column == 'recordId')
-                      cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
-                    else
-                      cfspan << column_family.records.keys[record_count]
-                    end
+                  cfspan << row_column_value(row, column_family, column)
                 end
               end
-            else
-              if families_include
+            else # if an empty row
+              if families_include # if displaying entire columns family
                 families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
               else
                 columns[column_family_name].count.times { |count_time| cfspan << ' ' }
               end
             end
-          else
-            if families_include
+          else # otherwise pad with blank space
+            if families_include # if displaying entire columns family
               families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
             else
               columns[column_family_name].count.times { |count_time| cfspan << ' ' }
@@ -121,9 +119,9 @@ class SearchController < ApplicationController
         end
       end
 
-      record = {:id => row.id, :max_record_count => max_record_count, :row => row, :table_rows => table_rows}
+      result_rows  = {:id => result.id, :max_record_count => row_count, :row => result, :table_rows => rows}
 
-      @results << record
+      @results << result_rows
     end
 
     @all_columns = families_with_columns.merge columns
@@ -178,4 +176,16 @@ class SearchController < ApplicationController
       format.html {render :partial =>"saved"}
     end
   end
+
+  private
+
+    #find the value of a row and column in a column family
+    def row_column_value(row, column_family, column)
+      found_set = column_family.records.values[row].find { |col| column == col.name }
+      if !(column == 'recordId')
+        found_set.nil? ? ' ' : found_set.values.join(', ')
+      else
+        column_family.records.keys[row]
+      end
+    end
 end

@@ -1,6 +1,6 @@
 class ZookeepersController < ApplicationController
 
-  before_filter :current_zookeeper, :only => :show_current
+  before_filter :current_zookeeper, :only => [:show_current, :show]
   before_filter :zookeepers, :only => [:show_current, :index]
 
   QUERY = "
@@ -31,6 +31,11 @@ class ZookeepersController < ApplicationController
 
   def index
     @zookeepers = Zookeeper.select('name, id').order('name')
+  end
+  
+  def show
+    session[:current_zookeeper_id] = params[:id] if params[:id]
+    redirect_to :zookeeper
   end
   
   def show_current

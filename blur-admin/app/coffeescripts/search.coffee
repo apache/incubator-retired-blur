@@ -206,10 +206,10 @@ $(document).ready ->
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
     parent = $(this)
-    $( "#dialog-confirm" ).dialog {
+    $( "#dialog-confirm" ).dialog
     			resizable: false,
     			modal: true,
-    			buttons: {
+    			buttons:
     				"Delete Query": ->
     				  $( this ).dialog "close"
     				  answer = true
@@ -221,9 +221,7 @@ $(document).ready ->
               $('#loading-spinner').show()
     				Cancel: ->
     					$( this ).dialog "close"
-    			}
-    		}
-    		
+
   #ajax listener for the save action
   $('#save_button').live 'click', (evt) ->
     $.ajax '/search/save/',
@@ -256,15 +254,12 @@ $(document).ready ->
         success: (data) ->
           $('#loading-spinner').hide()
     else
-      $( "#update-conflict" ).dialog {
+      $( "#update-conflict" ).dialog
       			resizable: false,
       			modal: true,
-      			buttons: {
+      			buttons:
       				"Ok": ->
       				  $(this).dialog "close"
-      			}
-      		}
-    
 
       
 

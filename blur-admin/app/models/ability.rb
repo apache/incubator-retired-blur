@@ -18,7 +18,7 @@ class Ability
 
         # view pages
         can :index, [:zookeepers, :blur_tables, :search, :hdfs]
-        can :show, [:search]
+        can :show, [:search, :zookeepers]
         can :show_current, :zookeepers
         can :make_current, :zookeepers
         can :dashboard, :zookeepers

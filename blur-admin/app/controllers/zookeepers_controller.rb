@@ -61,9 +61,8 @@ class ZookeepersController < ApplicationController
 
     zookeeper_results = []
     connection.execute(QUERY).each_hash { |row| zookeeper_results << row }
-    
-    puts zookeeper_results.inspect
 
+    puts zookeeper_results.inspect
     time = Time.zone.now - 1.minutes
 
     long_running_queries = {}

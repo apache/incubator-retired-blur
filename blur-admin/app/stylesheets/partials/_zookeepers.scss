@@ -86,8 +86,7 @@
     }
   }
 
-  h2 { @include columns(15, $total-cols); }
-  .warning { height: 18px; }
+  .warning { height: 18px; text-align: center; }
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
 

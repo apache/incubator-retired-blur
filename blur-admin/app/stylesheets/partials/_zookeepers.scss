@@ -79,6 +79,11 @@
       td.cont, td.shard { text-align: center; }
       .index { vertical-align: top; }
     }
+    
+    &:hover {
+      cursor: pointer;
+      background: mix(white, $row-hover, 50%);
+    }
   }
 
   h2 { @include columns(15, $total-cols); }
@@ -91,6 +96,7 @@
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
   .number {width: 20px; text-align: right; }
   .word {width: 130px; text-align: left;}
+
 }
 
 .grey_box { background-color: $grey-color; @include border; }

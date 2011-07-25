@@ -2,7 +2,6 @@ $(document).ready ->
   # Updates all fields on the dashboard
   load_dashboard = () ->
     $.getJSON '/zookeepers/dashboard', (data) ->
-      console.log(data)
 
       # Updates the fields for each zookeeper
       zookeepers = data.zookeepers
@@ -147,7 +146,10 @@ $(document).ready ->
         $('#zookeepers_wrapper').show()
       )
 
-    # Sets auto updates to run every minute
+    # Sets auto updates to run every 5 secs
     setTimeout(load_dashboard, 5000)
 
   load_dashboard()
+  
+  $('.zookeeper_info').live 'click', ->
+    window.location = "/zookeepers/" + $(this).children('table').attr('id')

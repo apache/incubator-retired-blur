@@ -46,11 +46,11 @@ $(document).ready ->
   # Initialize Help
   $('#help-link').click ()->
     $('#dialog-help').dialog
-      height: 550,
+      height: "auto",
       width: 710,
-      modal: true,
+      modal: false,
       resizable: false,
-      draggable:false
+      draggable: true
       
   # listener that checks if the submit button should be enabled on click
   $('#filter_section').live "click", -> toggle_submit()
@@ -182,8 +182,6 @@ $(document).ready ->
         #check everything in the tree
         $.each arr, (index, value) ->
           $('.column_family_filter').jstree('check_node', "#" + value)
-        #populate a hidden name field so that user can choose to overwrite or name a new one
-        $('#save_name').attr('save', $('#edit_icon').siblings('label').text())
         $('#search_submit').removeAttr('disabled')
         
 
@@ -245,6 +243,9 @@ $(document).ready ->
     #if the name in the "name" field matches a search then we can update
     $('.search_element').each (index, value) ->
       if $(value).children('label').attr('title') == $('#save_name').val()
+        if send_request == true
+          send_request = false
+          return false
         send_request = true
         search_id = $(value).attr('id')
     if send_request
@@ -255,7 +256,14 @@ $(document).ready ->
         success: (data) ->
           $('#loading-spinner').hide()
     else
-      alert "No Saved Search was found with that name."
+      $( "#update-conflict" ).dialog {
+      			resizable: false,
+      			modal: true,
+      			buttons: {
+      				"Ok": ->
+      				  $(this).dialog "close"
+      			}
+      		}
     
 
       

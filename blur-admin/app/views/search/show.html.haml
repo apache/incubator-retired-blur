@@ -64,3 +64,9 @@
   %p This will permanently delete the selected saved query. Do you wish to continue?
 #dialog-help{:title => "Search Help", :style=> "display:none"}
   = render :partial => 'help'
+#update-conflict{:title => "Update Error", :style=> "display:none"}
+  %ul
+    An error occurred while trying to update the saved search, either:
+    %li There are multiple saves with the same name.
+    %li There are no saved searches with that name.
+    To fix this error try changing the name.

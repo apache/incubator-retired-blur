@@ -31,7 +31,7 @@ class SearchController < ApplicationController
       buff = Search.find params[:search_id]
     #else build a new search to be used for this specific search
     else
-      drop = params[:column_data].first == "neighborhood_all"? params[:column_data].drop(1).to_json : params[:column_data].to_json
+      drop = params[:column_data].first == "neighborhood"? params[:column_data].drop(1).to_json : params[:column_data].to_json
       params[:super_query] ? sq=true : sq=false
       buff = Search.new(:blur_table_id => params[:blur_table],
                         :super_query   => sq,
@@ -181,7 +181,7 @@ class SearchController < ApplicationController
   end
   
   def save
-    drop = params[:column_data].first == "neighborhood_all"? params[:column_data].drop(1).to_json : params[:column_data].to_json
+    drop = params[:column_data].first == "neighborhood"? params[:column_data].drop(1).to_json : params[:column_data].to_json
     Search.create(:name          => params[:save_name],
                   :blur_table_id => params[:blur_table],
                   :super_query   => params[:super_query],

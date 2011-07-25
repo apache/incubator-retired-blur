@@ -177,8 +177,13 @@ $(document).ready ->
         else
           $('#super_query').removeAttr('checked')
         arr = eval(data.saved.search.columns)
+        #uncheck everything so we only check what we saved
+        $('.column_family_filter').jstree('uncheck_all')
+        #check everything in the tree
         $.each arr, (index, value) ->
           $('.column_family_filter').jstree('check_node', "#" + value)
+        #populate a hidden name field so that user can choose to overwrite or name a new one
+        $('#save_name').attr('save', $('#edit_icon').siblings('label').text())
         $('#search_submit').removeAttr('disabled')
 
   #ajax listener for the run action

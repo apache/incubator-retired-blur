@@ -6,27 +6,30 @@
       %thead
         %tr.familysets
           %th.rowId
-          - @all_columns.each do |family, set|
-            %th{:colspan => set.count, :class => "family_#{family}", :id => family, :children => set.count}
+          - @schema.each do |family, columns|
+            %th{:colspan => columns.count,
+                :class => "family_#{family}",
+                :id => family,
+                :children => columns.count}
               = family
         %tr.columnsets
           %th.rowId rowId
-          - @all_columns.each do |family, set|
-            - set.each do |s|
-              %th{:class => "column_#{family}_#{s} family_#{family}"}
-                = s.gsub(/([A-Z])/, '&shy;\1').html_safe
+          - @schema.each do |family, columns|
+            - columns.each do |column|
+              %th{:class => "column_#{family}_#{column} family_#{family}"}
+                = column.gsub(/([A-Z])/, '&shy;\1').html_safe
         %tbody
           - @results.each do |result|
             - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
-            - result[:table_rows].each_with_index do |table_row, i|
+            - result[:rows].each_with_index do |table_row, i|
               %tr{:class => stripe_class}
                 - if i == 0
-                  %td.rowId.id_cell{:rowspan => result[:max_record_count], :title => "rowId"}
+                  %td.rowId.id_cell{:rowspan => result[:row_count], :title => "rowId"}
                     = result[:id]
                 - reset_cycle('column-cycle')
                 - table_row.each_with_index do |cfs, j|
                   - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
                   - cfs.each_with_index do |column, k|
-                    %td{:class => "#{cf_stripe} family_#{@family_names[j]} column_#{@family_names[j]}_#{@column_names[j][k]}", :title => "#{@family_names[j]}: #{@column_names[j][k]}"}
+                    %td{:class => "#{cf_stripe} family_#{@schema.keys[j]} column_#{@schema.keys[j]}_#{@schema.values[j][k]}",
+                        :title => "#{@schema.keys[j]}: #{@schema.values[j][k]}"}
                       = column
-

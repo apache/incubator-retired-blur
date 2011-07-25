@@ -21,9 +21,11 @@ class Search < ActiveRecord::Base
     JSON.parse(read_attribute(:columns))
   end
   def column_families
+    # complete column families
     self.raw_columns.collect{|value| value.split('_')[1] if value.starts_with?('family')}.compact
   end
   def columns
+    # hash with key = column_family and value = array of columns
     # just columns without column families, and with 'recordId' added in
     families = self.column_families
     columns = {}

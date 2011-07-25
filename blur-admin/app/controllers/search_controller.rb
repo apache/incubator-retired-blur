@@ -46,23 +46,23 @@ class SearchController < ApplicationController
 
     #use the model to begin building the blurquery
     @blur_table = BlurTable.find params[:blur_table]
-    families = search.column_families
-    columns = search.columns
-   
+
+    # create a schema hash which contains the column_family => columns which the search is over
+    # initialize to be set of incomplete column families
+    schema = search.columns
+    # add complete column families / columns
+    search.column_families.each do |family|
+      schema[family] = ['recordId']
+      schema[family] << @blur_table.schema['columnFamilies'][family]
+      schema[family].flatten!
+    end
+
     #reorder the CFs to use the preference
-    preferences = current_user.saved_cols
-    families = (preferences & families) | families
+    # TODO: Fix this to work with all column families, not just complete ones
+    #preferences = current_user.saved_cols
+    #families = (preferences & families) | families
 
     blur_results = search.fetch_results(@blur_table.table_name)
-
-    #build a mapping from families to their associated columns
-    families_with_columns = {}
-    families.each do |family|
-      families_with_columns[family] = ['recordId']
-      @blur_table.schema['columnFamilies'][family].each do |column|
-        families_with_columns[family] << column
-      end
-    end
 
     #this parses up the response object from blur and prepares it as a table
     # Definitions:
@@ -72,7 +72,6 @@ class SearchController < ApplicationController
     #   Record: A partial row spanning a column family.  Has an identifying recordId.
     #           A result can have multiple records within a single column family.
 
-    visible_families = (families + columns.keys).uniq
     @results = []
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime
@@ -85,36 +84,16 @@ class SearchController < ApplicationController
       # organize into multidimensional array of rows and columns
       rows = Array.new(row_count) { [] }
       (0...row_count).each do |row| # for each row in the result, row here is really just the row number
-        visible_families.each do |column_family_name| # for each column family in the row
+        schema.keys.each do |column_family_name| # for each column family in the row
           column_family = result.columnFamilies.find { |cf| cf.family == column_family_name }
           rows[row] << cfspan = []
 
-          families_include = families.include? column_family_name
-          if column_family # If the results include the column family
-            count = column_family.records.values.count
-            if row < count # if this row has entries
-              if families_include # if displaying entire columns family
-                families_with_columns[column_family_name].each do |column|
-                  cfspan << row_column_value(row, column_family, column)
-                end
-              else # if displaying a subset of the column family
-                columns[column_family_name].each do |column|
-                  cfspan << row_column_value(row, column_family, column)
-                end
-              end
-            else # if an empty row
-              if families_include # if displaying entire columns family
-                families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
-              else
-                columns[column_family_name].count.times { |count_time| cfspan << ' ' }
-              end
+          if column_family and row < column_family.records.values.count
+            schema[column_family_name].each do |column|
+              cfspan << row_column_value(row, column_family, column)
             end
           else # otherwise pad with blank space
-            if families_include # if displaying entire columns family
-              families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
-            else
-              columns[column_family_name].count.times { |count_time| cfspan << ' ' }
-            end
+            schema[column_family_name].count.times { |count_time| cfspan << ' ' }
           end
         end
       end
@@ -124,7 +103,7 @@ class SearchController < ApplicationController
       @results << result_rows
     end
 
-    @all_columns = families_with_columns.merge columns
+    @all_columns = schema
     @column_names = @all_columns.values
     @family_names = @all_columns.keys
 

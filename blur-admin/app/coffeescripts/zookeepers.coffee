@@ -151,3 +151,4 @@ $(document).ready ->
     setTimeout(load_dashboard, 5000)
 
   load_dashboard()
+

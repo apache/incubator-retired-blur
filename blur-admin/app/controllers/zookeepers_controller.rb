@@ -60,9 +60,18 @@ class ZookeepersController < ApplicationController
     puts zookeeper_results.inspect
 
     time = Time.zone.now - 1.minutes
+
+    long_running_queries = {}
+    long_query = BlurQuery.where(['created_at < ? and running = 1', time]).select('blur_table_id')
+    long_query.each do |q|
+      zk = Cluster.find(BlurTable.find(q.blur_table_id).cluster_id).zookeeper_id
+      long_running_queries[zk] = 0 if !long_running_queries.has_key?(zk)
+      long_running_queries[zk] += 1
+    end
+ 
     data = {
       :zookeepers => zookeeper_results, #Zookeeper.includes(:controllers, :clusters=>[:shards]),
-      :long_queries => BlurQuery.where(['created_at < ? and running = 1', time]).count
+      :long_queries => long_running_queries
     }
     
     respond_to do |format|

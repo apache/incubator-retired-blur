@@ -82,7 +82,7 @@
   }
 
   h2 { @include columns(15, $total-cols); }
-  .warning { margin: 0; @include columns(13, $total-cols); @include omega($total-cols); text-align: right;}
+  .warning { height: 18px; }
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
 

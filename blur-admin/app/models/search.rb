@@ -10,7 +10,6 @@ class Search < ActiveRecord::Base
                         :superQueryOn => self.super_query?,
                         :selector     => self.selector,
                         :userId       => User.find(self.user_id).username
-
   end
 
   def columns=(columns)

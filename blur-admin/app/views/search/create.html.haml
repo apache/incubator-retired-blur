@@ -21,15 +21,15 @@
         %tbody
           - @results.each do |result|
             - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
-            - result[:rows].each_with_index do |table_row, i|
+            - result[:rows].each_with_index do |row, i|
               %tr{:class => stripe_class}
                 - if i == 0
                   %td.rowId.id_cell{:rowspan => result[:row_count], :title => "rowId"}
                     = result[:id]
                 - reset_cycle('column-cycle')
-                - table_row.each_with_index do |cfs, j|
+                - row.each_with_index do |family, j|
                   - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-                  - cfs.each_with_index do |column, k|
+                  - family.each_with_index do |column, k|
                     %td{:class => "#{cf_stripe} family_#{@schema.keys[j]} column_#{@schema.keys[j]}_#{@schema.values[j][k]}",
                         :title => "#{@schema.keys[j]}: #{@schema.values[j][k]}"}
                       = column

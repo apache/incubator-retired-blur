@@ -28,7 +28,6 @@ class SearchController < ApplicationController
 	#Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
-    #Otherwise perform a search
     #if the search_id param is set than the user is trying to directly run a saved query
     if params[:search_id]
       search = Search.find params[:search_id]
@@ -45,7 +44,7 @@ class SearchController < ApplicationController
     end
 
     #use the model to begin building the blurquery
-    @blur_table = BlurTable.find params[:blur_table]
+    blur_table = BlurTable.find params[:blur_table]
 
     # create a schema hash which contains the column_family => columns which the search is over
     # initialize to be set of incomplete column families
@@ -53,7 +52,7 @@ class SearchController < ApplicationController
     # add complete column families / columns
     search.column_families.each do |family|
       @schema[family] = ['recordId']
-      @schema[family] << @blur_table.schema['columnFamilies'][family]
+      @schema[family] << blur_table.schema['columnFamilies'][family]
       @schema[family].flatten!
     end
 
@@ -62,7 +61,7 @@ class SearchController < ApplicationController
     #preferences = current_user.saved_cols
     #families = (preferences & families) | families
 
-    blur_results = search.fetch_results(@blur_table.table_name)
+    blur_results = search.fetch_results(blur_table.table_name)
 
     # parse up the response object from blur and prepares it as a table
     # Definitions:
@@ -88,7 +87,12 @@ class SearchController < ApplicationController
 
           if column_family and row < column_family.records.values.count
             @schema[column_family_name].each do |column|
-              cfspan << row_column_value(row, column_family, column)
+              found_set = column_family.records.values[row].find { |col| column == col.name }
+              if !(column == 'recordId')
+                cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
+              else
+                cfspan << column_family.records.keys[row]
+              end
             end
           else # otherwise pad with blank space
             @schema[column_family_name].count.times { |count_time| cfspan << ' ' }
@@ -149,16 +153,4 @@ class SearchController < ApplicationController
       format.html {render :partial =>"saved"}
     end
   end
-
-  private
-
-    #find the value of a row and column in a column family
-    def row_column_value(row, column_family, column)
-      found_set = column_family.records.values[row].find { |col| column == col.name }
-      if !(column == 'recordId')
-        found_set.nil? ? ' ' : found_set.values.join(', ')
-      else
-        column_family.records.keys[row]
-      end
-    end
 end

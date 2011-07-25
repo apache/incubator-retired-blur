@@ -46,9 +46,11 @@
           .filter#save_name_wrap
             #save_label= label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
-          .filter
+          .filter#buttons
             %button{:disabled => true, :name => "save", :type => "button", :id => 'save_button'}
-              Save
+              Save as New Search
+            %button{:disabled => true, :name => "update", :type => "button", :id => 'update_button'}
+              Update Search
 
       #search_send.partial_section
         %img{:id => "loading-spinner", :src => "/images/loadinfo_24.gif", :alt => "Loading...", :style => "display:none;" }

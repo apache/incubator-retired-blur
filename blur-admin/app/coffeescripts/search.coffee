@@ -20,9 +20,9 @@ $(document).ready ->
     if $('.jstree-checked').length > 0 and $('#query_string').val() isnt  ''
       $('#search_submit').removeAttr('disabled')
       if $('#save_name').val() isnt ''
-        $('#save_button').removeAttr('disabled')
+        $('#save_button, #update_button').removeAttr('disabled')
       else
-        $('#save_button').attr('disabled', 'disabled')
+        $('#save_button, #update_button').attr('disabled', 'disabled')
     else
       $(':submit').attr('disabled', 'disabled')
 
@@ -185,6 +185,7 @@ $(document).ready ->
         #populate a hidden name field so that user can choose to overwrite or name a new one
         $('#save_name').attr('save', $('#edit_icon').siblings('label').text())
         $('#search_submit').removeAttr('disabled')
+        
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->
@@ -236,6 +237,26 @@ $(document).ready ->
         #display the results from the save
           $('.body#saved').html(data)
     $('#loading-spinner').show()
+    
+  #ajax listener for the save action
+  $('#update_button').live 'click', (evt) ->
+    send_request = false
+    search_id = ""
+    #if the name in the "name" field matches a search then we can update
+    $('.search_element').each (index, value) ->
+      if $(value).children('label').attr('title') == $('#save_name').val()
+        send_request = true
+        search_id = $(value).attr('id')
+    if send_request
+      $('#loading-spinner').show()
+      $.ajax '/search/' + search_id,
+        type: 'PUT',
+        data: $('#search_form').serialize(),
+        success: (data) ->
+          $('#loading-spinner').hide()
+    else
+      alert "No Saved Search was found with that name."
+    
 
       
 

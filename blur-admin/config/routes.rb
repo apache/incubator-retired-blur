@@ -28,6 +28,7 @@ BlurAdmin::Application.routes.draw do
   match 'search/delete/:search_id/:blur_table' => 'search#delete', :via => :delete
   match 'search/:search_id/:blur_table' => 'search#create'
   match 'search/save/' => 'search#save', :via => :post
+  match 'search/:search_id' => 'search#update', :via => :put
   match 'reload/:blur_table' => 'search#reload'
   match 'preference/save' => 'preference#save', :via => :post
 

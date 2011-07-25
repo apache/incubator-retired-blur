@@ -197,4 +197,20 @@ class SearchController < ApplicationController
       format.html {render :partial =>"saved.html.haml" }
     end
   end
+  
+  def update
+    params[:column_data].delete 'neighborhood'
+    update_search = Search.find params[:search_id]
+    update_search.update_attributes(
+                  :name          => params[:save_name],
+                  :blur_table_id => params[:blur_table],
+                  :super_query   => params[:super_query],
+                  :columns       => params[:column_data].to_json,
+                  :fetch         => params[:result_count].to_i,
+                  :offset        => params[:offset].to_i,
+                  :user_id       => current_user.id,
+                  :query         => params[:query_string])
+
+    render :nothing => true
+  end
 end

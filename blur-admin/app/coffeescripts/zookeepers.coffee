@@ -4,18 +4,9 @@ $(document).ready ->
     $.getJSON '/zookeepers/dashboard', (data) ->
       console.log(data)
 
-      # Displays a warning message if 1 or more queries have been running for over a minute
-      long_queries = parseInt ( data.long_queries )
-      if long_queries < 1
-        query_message = '<div></div>'
-      else if long_queries == 1
-        query_message = '<div>1 query has been running for more than a minute</div>'
-      else
-        query_message = '<div>' + data.long_queries + ' queries have been running for more than a minute</div>'
-      $('.warning').html(query_message)
-
       # Updates the fields for each zookeeper
       zookeepers = data.zookeepers
+      long_queries = data.long_queries
       $.each( zookeepers, ->
         zookeeper_table = $('#zookeepers').find("#" + this.id )
 
@@ -29,6 +20,15 @@ $(document).ready ->
           current_zookeeper.removeClass('green_box')
           current_zookeeper.addClass('ui-state-error')
           current_zookeeper.find('.zookeeper-status').html('<div> - Offline</div>')
+
+        # Updates the warning for long queries
+        query_message = '<div></div>'
+        if long_queries[this.id]
+          if long_queries[this.id] == 1
+            query_message = '<div>1 query has been running for more than a minute</div>'
+          else if long_queries[this.id] > 1
+            query_message = '<div>' + long_queries[this.id] + ' queries have been running for more than a minute</div>'
+        zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards
         status_shards = $('#' + zookeeper_table[0].id).find(".stat-shard")

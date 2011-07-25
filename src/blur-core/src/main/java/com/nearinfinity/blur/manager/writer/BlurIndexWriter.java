@@ -16,11 +16,7 @@
 
 package com.nearinfinity.blur.manager.writer;
 
-import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
-
 import java.io.IOException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
@@ -28,24 +24,19 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
-import org.apache.lucene.store.instantiated.InstantiatedIndex;
-import org.apache.lucene.store.instantiated.InstantiatedIndexReader;
-import org.apache.lucene.store.instantiated.InstantiatedIndexWriter;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.Transaction;
-import com.nearinfinity.blur.utils.RowInstantiatedIndexWriter;
+import com.nearinfinity.blur.utils.RowIndexWriter;
 
 public class BlurIndexWriter extends BlurIndex {
     
@@ -56,47 +47,51 @@ public class BlurIndexWriter extends BlurIndex {
     private BlurAnalyzer _analyzer;
     private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
     private Directory _sync;
-    private BlurIndexReaderCloser _closer;
-    private Map<Integer, IndexTransaction> _trans = new ConcurrentHashMap<Integer, IndexTransaction>();
-    
-    public static class IndexTransaction {
-        InstantiatedIndex _index;
-        InstantiatedIndexReader _reader;
-        InstantiatedIndexWriter _writer;
-        RowInstantiatedIndexWriter _indexWriter;
-    }
+    private BlurIndexCloser _closer;
+    private BlurIndexRefresher _refresher;
+    private RowIndexWriter _rowIndexWriter;
     
     public void init() throws IOException {
         setupWriter();
     }
     
     @Override
+    public void refresh() throws IOException {
+        IndexReader oldReader = _indexReaderRef.get();
+        if (oldReader.isCurrent()) {
+            return;
+        }
+        synchronized (_writer) {
+            try {
+                IndexReader reader = oldReader.reopen(_writer, true);
+                if (oldReader != reader) {
+                    _indexReaderRef.set(reader);
+                    _closer.close(oldReader);
+                }
+            } catch (AlreadyClosedException e) {
+                LOG.warn("Writer was already closed, this can happen during closing of a writer.",e);
+            }
+        }
+    }
+    
+    @Override
     public IndexReader getIndexReader() throws IOException {
+        refresh();
         IndexReader indexReader = _indexReaderRef.get();
         indexReader.incRef();
         return indexReader;
     }
     
     @Override
-    public void abort(Transaction transaction) {
-        IndexTransaction trans = _trans.remove(transaction.transactionId);
-        trans._index = null;
-        trans._indexWriter = null;
-        trans._writer = null;
-    }
-    
-    @Override
     public void close() throws IOException {
+        _refresher.unregister(this);
         _writer.close();
     }
     
     @Override
-    public boolean replaceRow(Transaction transaction, Row row) throws IOException {
-        IndexTransaction trans = getTrans(transaction);
-        synchronized (trans) {
-            trans._indexWriter.replace(row);
-            return true;
-        }
+    public synchronized boolean replaceRow(Row row) throws IOException {
+        _rowIndexWriter.replace(row);
+        return true;
     }
     
     private void setupWriter() throws IOException {
@@ -107,28 +102,8 @@ public class BlurIndexWriter extends BlurIndex {
         mergePolicy.setUseCompoundFile(false);
         _writer = new IndexWriter(_sync, conf);
         _indexReaderRef.set(IndexReader.open(_writer, true));
-    }
-    
-    private synchronized IndexTransaction getTrans(Transaction transaction) throws IOException {
-        IndexTransaction trans = _trans.get(transaction.transactionId);
-        if (trans == null) {
-            trans = new IndexTransaction();
-            trans._index = new InstantiatedIndex();
-            trans._reader = new InstantiatedIndexReader(trans._index);
-            trans._writer = new InstantiatedIndexWriter(trans._index);
-            trans._indexWriter = new RowInstantiatedIndexWriter(trans._writer, _analyzer);
-            _trans.put(transaction.transactionId, trans);
-        }
-        return trans;
-    }
-
-    private synchronized void rollOutNewReader() throws IOException {
-        IndexReader oldReader = _indexReaderRef.get();
-        IndexReader reader = oldReader.reopen(_writer, true);
-        if (oldReader != reader) {
-            _indexReaderRef.set(reader);
-            _closer.close(oldReader);
-        }
+        _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
+        _refresher.register(this);
     }
 
     public void setAnalyzer(BlurAnalyzer analyzer) {
@@ -143,36 +118,8 @@ public class BlurIndexWriter extends BlurIndex {
         return new SyncWatcher(dir);
     }
     
-    public void setCloser(BlurIndexReaderCloser closer) {
+    public void setCloser(BlurIndexCloser closer) {
         _closer = closer;
-    }
-
-    @Override
-    public void commit(Transaction transaction) throws IOException {
-        IndexTransaction trans = _trans.remove(transaction.transactionId);
-        if (trans == null) {
-            throw new IOException("Transaction [" + transaction + "] was not found.");
-        }
-        trans._writer.commit();
-        synchronized (_writer) {
-            deleteAll(trans._reader);
-            _writer.addIndexes(trans._reader);
-            _writer.commit();
-            rollOutNewReader();
-        }
-    }
-
-    private void deleteAll(InstantiatedIndexReader reader) throws IOException {
-        Term rowIdTerm = new Term(ROW_ID);
-        TermEnum termEnum = reader.terms(rowIdTerm);
-        do {
-            Term term = termEnum.term();
-            if (!term.field().equals(rowIdTerm.field())) {
-                return;
-            }
-            _writer.deleteDocuments(term);
-        }
-        while (termEnum.next());
     }
 
     private static class SyncWatcher extends Directory {
@@ -252,7 +199,7 @@ public class BlurIndexWriter extends BlurIndex {
             long start = System.nanoTime();
             _dir.sync(name);
             long end = System.nanoTime();
-            LOG.info("Sync of [" + name +"] took [" + (end-start) / 1000000.0 + " ms]");
+            LOG.debug("Sync of [" + name +"] took [" + (end-start) / 1000000.0 + " ms]");
         }
 
         public String toString() {
@@ -264,4 +211,9 @@ public class BlurIndexWriter extends BlurIndex {
             _dir.touchFile(arg0);
         }
     }
+
+    public void setRefresher(BlurIndexRefresher refresher) {
+        _refresher = refresher;
+    }
+
 }

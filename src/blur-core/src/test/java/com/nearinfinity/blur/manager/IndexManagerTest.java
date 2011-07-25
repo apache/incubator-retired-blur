@@ -21,7 +21,6 @@ import static com.nearinfinity.blur.utils.BlurUtil.newColumnFamily;
 import static com.nearinfinity.blur.utils.BlurUtil.newRecordMutation;
 import static com.nearinfinity.blur.utils.BlurUtil.newRow;
 import static com.nearinfinity.blur.utils.BlurUtil.newRowMutation;
-import static com.nearinfinity.blur.utils.BlurUtil.newRowMutations;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -45,6 +44,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
+import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
@@ -57,26 +57,31 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class IndexManagerTest {
 
     private static final String SHARD_NAME = BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, 0);
     private static final String TABLE = "table";
-    private IndexServer server;
+    private LocalIndexServer server;
     private IndexManager indexManager;
+    private BlurIndexRefresher refresher;
 
     @Before
     public void setUp() throws BlurException, IOException {
         File file = new File("./tmp/indexer-manager-test");
         rm(file);
         new File(new File(file, TABLE), SHARD_NAME).mkdirs();
+        refresher = new BlurIndexRefresher();
+        refresher.init();
         server = new LocalIndexServer(file);
+        server.setRefresher(refresher);
+        
         indexManager = new IndexManager();
         indexManager.setStatusCleanupTimerDelay(1000);
         indexManager.setIndexServer(server);
         indexManager.init();
+        
         setupData();
     }
 
@@ -90,30 +95,30 @@ public class IndexManagerTest {
     }
 
     private void setupData() throws BlurException, IOException {
-        List<RowMutation> mutations = newRowMutations(
-                newRowMutation("row-1", 
-                        newRecordMutation("test-family", "record-1", 
-                                newColumn("testcol1", "value1"), 
-                                newColumn("testcol2", "value2"), 
-                                newColumn("testcol3", "value3"))), 
-                newRowMutation("row-2", 
-                        newRecordMutation("test-family", "record-2", 
-                                newColumn("testcol1", "value4"), 
-                                newColumn("testcol2", "value5"), 
-                                newColumn("testcol3", "value6"))),
-                newRowMutation("row-3", 
-                        newRecordMutation("test-family", "record-3", 
-                                newColumn("testcol1", "value7"),
-                                newColumn("testcol2", "value8"), 
-                                newColumn("testcol3", "value9"))),
-                newRowMutation("row-4", 
-                        newRecordMutation("test-family", "record-4", 
-                                newColumn("testcol1", "value1"),
-                                newColumn("testcol2", "value5"), 
-                                newColumn("testcol3", "value9"))));
-        Transaction transaction = indexManager.mutateCreateTransaction(TABLE);
-        indexManager.mutate(transaction, mutations);
-        indexManager.mutateCommit(transaction);
+        RowMutation mutation1 = newRowMutation(TABLE,"row-1", 
+                newRecordMutation("test-family", "record-1", 
+                        newColumn("testcol1", "value1"), 
+                        newColumn("testcol2", "value2"), 
+                        newColumn("testcol3", "value3"))); 
+        RowMutation mutation2 = newRowMutation(TABLE,"row-2", 
+                newRecordMutation("test-family", "record-2", 
+                        newColumn("testcol1", "value4"), 
+                        newColumn("testcol2", "value5"), 
+                        newColumn("testcol3", "value6")));
+        RowMutation mutation3 = newRowMutation(TABLE,"row-3", 
+                newRecordMutation("test-family", "record-3", 
+                        newColumn("testcol1", "value7"),
+                        newColumn("testcol2", "value8"), 
+                        newColumn("testcol3", "value9")));
+        RowMutation mutation4 = newRowMutation(TABLE,"row-4", 
+                newRecordMutation("test-family", "record-4", 
+                        newColumn("testcol1", "value1"),
+                        newColumn("testcol2", "value5"), 
+                        newColumn("testcol3", "value9")));
+        indexManager.mutate(mutation1);
+        indexManager.mutate(mutation2);
+        indexManager.mutate(mutation3);
+        indexManager.mutate(mutation4);
     }
 
     @After
@@ -374,16 +379,12 @@ public class IndexManagerTest {
 
     @Test
     public void testMutationReplaceRow() throws Exception {
-        Transaction transaction = indexManager.mutateCreateTransaction(TABLE);
-        
-        List<RowMutation> mutations = newRowMutations(
-                newRowMutation("row-4", 
-                        newRecordMutation("test-family", "record-4", 
-                                newColumn("testcol1", "value2"),
-                                newColumn("testcol2", "value3"), 
-                                newColumn("testcol3", "value4"))));
-        indexManager.mutate(transaction, mutations);
-        indexManager.mutateCommit(transaction);
+        RowMutation mutation = newRowMutation(TABLE,"row-4", 
+                newRecordMutation("test-family", "record-4", 
+                        newColumn("testcol1", "value2"),
+                        newColumn("testcol2", "value3"), 
+                        newColumn("testcol3", "value4")));
+        indexManager.mutate(mutation);
         
         Selector selector = new Selector().setRowId("row-4");
         FetchResult fetchResult = new FetchResult();

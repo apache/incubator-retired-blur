@@ -53,7 +53,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurControllerServerTest {
@@ -142,7 +141,7 @@ public class BlurControllerServerTest {
         recMut.setRecordId("5678");
         recMut.addToRecord(new Column("name",Arrays.asList("value")));
         mutation.addToRecordMutations(recMut);
-        server.mutate(null, Arrays.asList(mutation));
+        server.mutate(mutation);
         
         Selector selector = new Selector();
         selector.rowId = "1234";
@@ -300,33 +299,16 @@ public class BlurControllerServerTest {
 			}
 
             @Override
-            public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException,
+            public void mutate(RowMutation mutation) throws BlurException,
                     TException {
-                String table = transaction.table;
+                String table = mutation.table;
                 Map<String, Row> map = rows.get(table);
                 if (map == null) {
                     map = new HashMap<String, Row>();
                     rows.put(table, map);
                 }
-                for (RowMutation mutation : mutations) {
-                    Row row = toRow(mutation);
-                    map.put(row.id, row);
-                }
-            }
-
-            @Override
-            public void mutateAbort(Transaction transaction) throws BlurException, TException {
-                throw new RuntimeException("not impl");
-            }
-
-            @Override
-            public void mutateCommit(Transaction transaction) throws BlurException, TException {
-                throw new RuntimeException("not impl");                
-            }
-
-            @Override
-            public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
-                throw new RuntimeException("not impl");
+                Row row = toRow(mutation);
+                map.put(row.id, row);
             }
         };
     }

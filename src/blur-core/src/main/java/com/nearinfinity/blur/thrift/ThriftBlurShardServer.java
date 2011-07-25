@@ -48,6 +48,7 @@ import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
@@ -103,6 +104,9 @@ public class ThriftBlurShardServer extends ThriftServer {
             }
         };
         
+        final BlurIndexRefresher refresher = new BlurIndexRefresher();
+        refresher.init();
+        
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
@@ -111,6 +115,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         indexServer.setDistributedManager(dzk);
         indexServer.setReplicationDaemon(replicationDaemon);
         indexServer.setReplicationStrategy(replicationStrategy);
+        indexServer.setRefresher(refresher);
         indexServer.init();
 
         localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));
@@ -142,7 +147,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         new BlurServerShutDown().register(new BlurShutdown() {
             @Override
             public void shutdown() {
-                quietClose(replicationDaemon, server, shardServer, indexManager, indexServer, localFileCache);
+                quietClose(refresher,replicationDaemon, server, shardServer, indexManager, indexServer, localFileCache);
                 System.exit(0);
             }
         }, zooKeeper);

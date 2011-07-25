@@ -22,7 +22,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 
 public abstract class ExecutionContextIface extends TableAdmin implements IfaceExtended {
 
@@ -144,10 +143,10 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     }
 
     @Override
-    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(RowMutation mutation) throws BlurException, TException {
         ExecutionContext context = getContext();
         try {
-            mutate(context, transaction, mutations);
+            mutate(context, mutation);
         } finally {
             record(context);
         }
@@ -224,35 +223,4 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
             record(context);
         }
     }
-    
-    @Override
-    public void mutateAbort(Transaction transaction) throws BlurException, TException {
-        ExecutionContext context = getContext();
-        try {
-            mutateAbort(context, transaction);
-        } finally {
-            record(context);
-        }
-    }
-
-    @Override
-    public void mutateCommit(Transaction transaction) throws BlurException, TException {
-        ExecutionContext context = getContext();
-        try {
-            mutateCommit(context, transaction);
-        } finally {
-            record(context);
-        }
-    }
-
-    @Override
-    public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
-        ExecutionContext context = getContext();
-        try {
-            return mutateCreateTransaction(context, table);
-        } finally {
-            record(context);
-        }
-    }
-
 }

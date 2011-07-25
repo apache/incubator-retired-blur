@@ -32,7 +32,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class DoNothingServer implements Iface {
@@ -126,22 +125,7 @@ public class DoNothingServer implements Iface {
 	}
 
     @Override
-    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(RowMutation mutation) throws BlurException, TException {
         
-    }
-
-    @Override
-    public void mutateAbort(Transaction transaction) throws BlurException, TException {
-        
-    }
-
-    @Override
-    public void mutateCommit(Transaction transaction) throws BlurException, TException {
-        
-    }
-
-    @Override
-    public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
-        return null;
     }
 }

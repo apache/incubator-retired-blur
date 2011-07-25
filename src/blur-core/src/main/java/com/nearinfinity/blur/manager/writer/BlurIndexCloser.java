@@ -11,9 +11,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 
-public class BlurIndexReaderCloser implements Runnable {
+public class BlurIndexCloser implements Runnable {
     
-    private static final Log LOG = LogFactory.getLog(BlurIndexReaderCloser.class);
+    private static final Log LOG = LogFactory.getLog(BlurIndexCloser.class);
     private static final long PAUSE_TIME = TimeUnit.SECONDS.toMillis(2);
     private Thread daemon;
     private Collection<IndexReader> readers = new LinkedBlockingQueue<IndexReader>();
@@ -27,7 +27,7 @@ public class BlurIndexReaderCloser implements Runnable {
         daemon.start();
     }
 
-    public void stop() {
+    public void close() {
         running.set(false);
         daemon.interrupt();
     }

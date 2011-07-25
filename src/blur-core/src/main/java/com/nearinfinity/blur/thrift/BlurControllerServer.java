@@ -39,7 +39,6 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.manager.IndexManager;
-import com.nearinfinity.blur.manager.TransactionManager;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
@@ -58,7 +57,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
@@ -84,7 +82,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     private boolean _closed;
     private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
     private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
-    private TransactionManager _transactionManager = new TransactionManager();
 
     public void open() {
         _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
@@ -454,46 +451,30 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
 
     @Override
-    public void mutate(final Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
+    public void mutate(final RowMutation mutation) throws BlurException, TException {
         try {
-            String table = transaction.getTable();
-            final Map<String, List<RowMutation>> mutationsMap = getMutationMap(table, mutations);
-            for (String hname : mutationsMap.keySet()) {
-                final String hostname = hname;
-                final List<RowMutation> mutationsLst = mutationsMap.get(hostname);
-                _client.execute(hostname, new BlurCommand<Void>() {
-                    @Override
-                    public Void call(Client client) throws Exception {
-                        client.mutate(transaction, mutationsLst);
-                        return null;
-                    }
-                });
-            }
-        } catch (Exception e) {
-            LOG.error("Unknown error during mutate of transaction [{0}]", e, transaction);
-            throw new BException("Unknown error during mutate of transaction [{0}]", e, transaction);
-        }
-    }
-
-    private Map<String, List<RowMutation>> getMutationMap(String table, List<RowMutation> mutations) throws BlurException, TException {
-        int numberOfShards = getShardCount(table);
-        Map<String, String> tableLayout = _shardServerLayout.get().get(table);
-        if (tableLayout.size() != numberOfShards) {
-            throw new BlurException("Cannot update data while shard is missing",null);
-        }
-        Map<String, List<RowMutation>> mutationsMap = new HashMap<String, List<RowMutation>>();
-        for (RowMutation mutation : mutations) {
+            String table = mutation.getTable();
             MutationHelper.validateMutation(mutation);
+            
+            int numberOfShards = getShardCount(table);
+            Map<String, String> tableLayout = _shardServerLayout.get().get(table);
+            if (tableLayout.size() != numberOfShards) {
+                throw new BlurException("Cannot update data while shard is missing",null);
+            }
+            
             String shardName = MutationHelper.getShardName(table, mutation.rowId, numberOfShards, _blurPartitioner);
             String node = tableLayout.get(shardName);
-            List<RowMutation> list = mutationsMap.get(node);
-            if (list == null) {
-                list = new ArrayList<RowMutation>();
-                mutationsMap.put(node, list);
-            }
-            list.add(mutation);
+            _client.execute(node, new BlurCommand<Void>() {
+                @Override
+                public Void call(Client client) throws Exception {
+                    client.mutate(mutation);
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            LOG.error("Unknown error during mutation of [{0}]", e, mutation);
+            throw new BException("Unknown error during mutation of [{0}]", e, mutation);
         }
-        return mutationsMap;
     }
 
     private int getShardCount(String table) throws BlurException, TException {
@@ -505,36 +486,4 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
         return numberOfShards;
     }
-
-    @Override
-    public void mutateAbort(Transaction transaction) throws BlurException, TException {
-        try {
-            _transactionManager.abort(transaction);
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to abort a transaction.", e);
-            throw new BException("Unknown error while trying to abort a transaction.", e);
-        }
-    }
-
-    @Override
-    public void mutateCommit(Transaction transaction) throws BlurException, TException {
-        try {
-            _transactionManager.commit(transaction);
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to commit a transaction.", e);
-            throw new BException("Unknown error while trying to commit a transaction.", e);
-        }
-    }
-
-    @Override
-    public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
-        int numberOfShards = getShardCount(table);
-        try {
-            return _transactionManager.create(table,numberOfShards);
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to create a transaction.", e);
-            throw new BException("Unknown error while trying to create a transaction.", e);
-        }
-    }
-
 }

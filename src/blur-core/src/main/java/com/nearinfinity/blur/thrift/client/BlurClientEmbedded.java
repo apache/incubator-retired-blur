@@ -33,7 +33,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
@@ -137,8 +136,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, TException {
-            face.mutate(transaction, mutations);
+        public void mutate(RowMutation mutation) throws BlurException, TException {
+            face.mutate(mutation);
         }
 
         public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, TException {
@@ -155,18 +154,6 @@ public class BlurClientEmbedded extends BlurClient {
 
         public TableStats getTableStats(String table) throws BlurException, TException {
             return face.getTableStats(table);
-        }
-
-        public void mutateAbort(String table, Transaction transaction) throws BlurException, TException {
-            face.mutateAbort(transaction);
-        }
-
-        public void mutateCommit(String table, Transaction transaction) throws BlurException, TException {
-            face.mutateCommit(transaction);
-        }
-
-        public Transaction mutateCreateTransaction(String table) throws BlurException, TException {
-            return face.mutateCreateTransaction(table);
         }
 
         public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {

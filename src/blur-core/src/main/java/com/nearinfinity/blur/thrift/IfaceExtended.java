@@ -16,7 +16,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public interface IfaceExtended extends Iface {
@@ -33,7 +32,7 @@ public interface IfaceExtended extends Iface {
 
     FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException, TException;
 
-    void mutate(ExecutionContext context, Transaction transaction, List<RowMutation> mutations) throws BlurException, TException;
+    void mutate(ExecutionContext context, RowMutation mutation) throws BlurException, TException;
 
     BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException, TException;
 
@@ -50,11 +49,5 @@ public interface IfaceExtended extends Iface {
 
     List<String> terms(ExecutionContext context, String table, String columnFamily, String columnName,
             String startWith, short size) throws BlurException, TException;
-    
-    Transaction mutateCreateTransaction(ExecutionContext context, String table) throws BlurException, org.apache.thrift.TException;
-
-    void mutateCommit(ExecutionContext context, Transaction transaction) throws BlurException, org.apache.thrift.TException;
-
-    void mutateAbort(ExecutionContext context, Transaction transaction) throws BlurException, org.apache.thrift.TException;
 
 }

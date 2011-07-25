@@ -180,9 +180,10 @@ enum RowMutationType {
 }
 
 struct RowMutation {
-  1:RowMutationType rowMutationType,
+  1:string table,
   2:string rowId,
-  3:list<RecordMutation> recordMutations
+  3:RowMutationType rowMutationType,
+  4:list<RecordMutation> recordMutations
 }
 
 struct TableStats {
@@ -212,10 +213,7 @@ service Blur {
 
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
-  Transaction mutateCreateTransaction(1:string table) throws (1:BlurException ex)
-  void mutate(1:Transaction transaction, 3:list<RowMutation> mutations) throws (1:BlurException ex)
-  void mutateCommit(1:Transaction transaction) throws (1:BlurException ex)
-  void mutateAbort(1:Transaction transaction) throws (1:BlurException ex)
+  void mutate(1:RowMutation mutation) throws (1:BlurException ex)
 
   void createTable(1:string table, 2:TableDescriptor tableDescriptor) throws (1:BlurException ex)
   void enableTable(1:string table) throws (1:BlurException ex)

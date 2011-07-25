@@ -44,7 +44,8 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.lucene.compressed.CompressionCodec;
 import com.nearinfinity.lucene.compressed.DeflaterCompressionCodec;
@@ -55,15 +56,17 @@ public class LocalIndexServer extends AbstractIndexServer {
 
     private Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
     private File _localDir;
-    private BlurIndexReaderCloser _closer;
+    private BlurIndexCloser _closer;
     private int _blockSize = 65536;
     private CompressionCodec _compression = new DeflaterCompressionCodec();
 
+    private BlurIndexRefresher _refresher;
+
     public LocalIndexServer(File file) {
-        this._localDir = file;
-        this._localDir.mkdirs();
-        this._closer = new BlurIndexReaderCloser();
-        this._closer.init();
+        _localDir = file;
+        _localDir.mkdirs();
+        _closer = new BlurIndexCloser();
+        _closer.init();
     }
 
     @Override
@@ -88,8 +91,7 @@ public class LocalIndexServer extends AbstractIndexServer {
 
     @Override
     public void close() {
-//        _commiter.close();
-        _closer.stop();
+        _closer.close();
         for (String table : _readersMap.keySet()) {
             close(_readersMap.get(table));
         }
@@ -155,6 +157,7 @@ public class LocalIndexServer extends AbstractIndexServer {
         writer.setDirectory(dir);
         writer.setAnalyzer(getAnalyzer(table));
         writer.setCloser(_closer);
+        writer.setRefresher(_refresher);
         writer.init();
         return writer;
     }
@@ -253,4 +256,8 @@ public class LocalIndexServer extends AbstractIndexServer {
 		}
 		return size;
 	}
+	
+	public void setRefresher(BlurIndexRefresher refresher) {
+        _refresher = refresher;
+    }
 }

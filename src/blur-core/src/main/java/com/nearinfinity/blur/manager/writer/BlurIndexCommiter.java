@@ -14,33 +14,33 @@ public class BlurIndexCommiter {
     
     private static final Log LOG = LogFactory.getLog(BlurIndexCommiter.class);
 
-    private Thread commitDaemon;
-    private Map<String,IndexWriter> writers = new ConcurrentHashMap<String, IndexWriter>();
-    private AtomicBoolean running = new AtomicBoolean();
+    private Thread _commitDaemon;
+    private Map<String,IndexWriter> _writers = new ConcurrentHashMap<String, IndexWriter>();
+    private AtomicBoolean _running = new AtomicBoolean();
     
     public void init() {
-        running.set(true);
-        commitDaemon = new Thread(new Runnable() {
+        _running.set(true);
+        _commitDaemon = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (running.get()) {
+                while (_running.get()) {
                     commit();
                     try {
-                        Thread.sleep(TimeUnit.MINUTES.toMillis(5));
+                        Thread.sleep(TimeUnit.SECONDS.toMillis(10));
                     } catch (InterruptedException e) {
                         return;
                     }
                 }
             }
         });
-        commitDaemon.setDaemon(true);
-        commitDaemon.setName("Commit Thread");
-        commitDaemon.start();
+        _commitDaemon.setDaemon(true);
+        _commitDaemon.setName("Commit Thread");
+        _commitDaemon.start();
     }
 
     public void commit() {
-        for (String name : writers.keySet()) {
-            IndexWriter writer = writers.get(name);
+        for (String name : _writers.keySet()) {
+            IndexWriter writer = _writers.get(name);
             if (writer != null) {
                 commitIndex(name, writer);
             }
@@ -60,22 +60,22 @@ public class BlurIndexCommiter {
     }
 
     public void addWriter(String name, IndexWriter writer) {
-        writers.put(name, writer);
+        _writers.put(name, writer);
     }
 
     public void close() {
-        running.set(false);
-        commitDaemon.interrupt();
+        _running.set(false);
+        _commitDaemon.interrupt();
         commit();
         try {
-            commitDaemon.join();
+            _commitDaemon.join();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
     public void remove(String name) {
-        IndexWriter writer = writers.remove(name);
+        IndexWriter writer = _writers.remove(name);
         commitIndex(name, writer);
     }
 

@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.lucene.index.IndexReader;
 
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 
 public class BlurIndexReader extends BlurIndex {
     
@@ -27,18 +26,12 @@ public class BlurIndexReader extends BlurIndex {
     }
 
     @Override
-    public boolean replaceRow(Transaction transaction, Row row) {
+    public boolean replaceRow(Row row) {
         return false;
     }
 
     @Override
-    public void commit(Transaction transaction) throws IOException {
+    public void refresh() throws IOException {
         
     }
-
-    @Override
-    public void abort(Transaction transaction) {
-        
-    }
-
 }

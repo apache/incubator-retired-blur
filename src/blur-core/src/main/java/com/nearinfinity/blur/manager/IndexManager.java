@@ -82,7 +82,6 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -579,43 +578,19 @@ public class IndexManager {
         statusManager.setStatusCleanupTimerDelay(delay);
     }
 
-    public void mutate(Transaction transaction, List<RowMutation> mutations) throws BlurException, IOException {
-        String table = transaction.table;
+    public void mutate(RowMutation mutation) throws BlurException, IOException {
+        String table = mutation.table;
         Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-        for (RowMutation mutation : mutations) {
-            MutationHelper.validateMutation(mutation);
-            String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), blurPartitioner);
-            BlurIndex blurIndex = indexes.get(shard);
-            Row row = MutationHelper.toRow(mutation);
-            if (blurIndex == null) {
-                throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",null);
-            }
-            blurIndex.replaceRow(transaction, row);
+        MutationHelper.validateMutation(mutation);
+        String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), blurPartitioner);
+        BlurIndex blurIndex = indexes.get(shard);
+        Row row = MutationHelper.toRow(mutation);
+        if (blurIndex == null) {
+            throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",null);
         }
+        blurIndex.replaceRow(row);
     }
     
-    public void mutateAbort(Transaction transaction) throws IOException {
-        throw new RuntimeException("not impl");
-//        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-//        for (BlurIndex index : indexes.values()) {
-//            index.abort(transaction);
-//        }
-    }
-
-    public void mutateCommit(Transaction transaction) throws IOException {
-        throw new RuntimeException("not impl");
-//        Map<String, BlurIndex> indexes = indexServer.getIndexes(table);
-//        for (BlurIndex index : indexes.values()) {
-//            index.commit(transaction);
-//        }
-    }
-    
-    public Transaction mutateCreateTransaction(String table) {
-        //@TODO do something better here
-        throw new RuntimeException("not impl");
-//        return new Transaction(random.nextInt());
-    }
-
     private int getNumberOfShards(String table) {
         return indexServer.getShardCount(table);
     }

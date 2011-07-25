@@ -112,9 +112,10 @@ public class BlurUtil {
         return mutation;
     }
     
-    public static RowMutation newRowMutation(String rowId, RecordMutation... mutations) {
+    public static RowMutation newRowMutation(String table, String rowId, RecordMutation... mutations) {
         RowMutation mutation = new RowMutation();
         mutation.setRowId(rowId);
+        mutation.setTable(table);
         mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
         for (RecordMutation recordMutation : mutations) {
             mutation.addToRecordMutations(recordMutation);
@@ -122,10 +123,6 @@ public class BlurUtil {
         return mutation;
     }
     
-    public static List<RowMutation> newRowMutations(RowMutation... mutations) {
-        return Arrays.asList(mutations);
-    }
-
     public static Row newRow(String rowId, ColumnFamily... columnFamilies) {
         Row row = new Row().setId(rowId);
         for (ColumnFamily columnFamily : columnFamilies) {

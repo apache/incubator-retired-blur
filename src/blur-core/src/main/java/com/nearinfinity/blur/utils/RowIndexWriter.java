@@ -16,13 +16,15 @@
 
 package com.nearinfinity.blur.utils;
 
-import static com.nearinfinity.blur.utils.BlurConstants.*;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.SEP;
+import static com.nearinfinity.blur.utils.BlurConstants.SUPER;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -35,108 +37,78 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.log.Log;
-import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Row;
 
 public class RowIndexWriter {
     
-    private static final Log LOG = LogFactory.getLog(RowIndexWriter.class);
+//    private static final Log LOG = LogFactory.getLog(RowIndexWriter.class);
 
     private static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.NOT_ANALYZED_NO_NORMS);
-    private Field rowIdField = new Field(ROW_ID,"",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
-    private Field recordIdField = new Field(RECORD_ID,"",Store.YES,Index.NOT_ANALYZED_NO_NORMS);
-    private Document document = new Document();
-    private BlurAnalyzer analyzer;
-    private IndexWriter indexWriter;
+    private BlurAnalyzer _analyzer;
+    private IndexWriter _indexWriter;
     private boolean primeDocSet;
     private StringBuilder builder = new StringBuilder();
     
     public RowIndexWriter(IndexWriter indexWriter, BlurAnalyzer analyzer) {
-        this.indexWriter = indexWriter;
-        this.analyzer = analyzer;
+        _indexWriter = indexWriter;
+        _analyzer = analyzer;
     }
     
-    public synchronized boolean add(Row row) throws IOException {
+    public synchronized void add(Row row) throws IOException {
         if (row == null || row.id == null) {
             throw new NullPointerException();
         }
-        setupAdd(row,false);  //append only operation, only used during bulk adds
-        if (!addInternal(row)) {
-            setupAdd(row,true);  //need to remove the previous incomplete row
-            if (!addInternal(row)) {
-                return false;
-            }
-        }
-        return true;
+        append(row,false);
     }
     
-    public synchronized boolean replace(Row row) throws IOException {
+    public synchronized void replace(Row row) throws IOException {
         if (row == null || row.id == null) {
             throw new NullPointerException();
         }
-        setupAdd(row,true);
-        if (!addInternal(row)) {
-            setupAdd(row,true);
-            if (!addInternal(row)) {
-                return false;
-            }
-        }
-        return true;
+        append(row,true);
     }
 
-    private void setupAdd(Row row, boolean replace) throws IOException {
-        rowIdField.setValue(row.id);
+    private void append(Row row, boolean replace) throws IOException {
         primeDocSet = false;
-        if (replace) {
-            indexWriter.deleteDocuments(new Term(ROW_ID,row.id));
-        }
-    }
-
-    private boolean addInternal(Row row) throws IOException {
+        List<Document> documents = new ArrayList<Document>();
         for (ColumnFamily columnFamily : row.getColumnFamilies()) {
-            if (!replace(columnFamily)) {
-                return false;
+            convert(row.id,columnFamily,documents);
+        }
+        synchronized (_indexWriter) {
+            if (replace) {
+                _indexWriter.updateDocuments(new Term(ROW_ID,row.id),documents,_analyzer);
+            } else {
+                _indexWriter.addDocuments(documents,_analyzer);
             }
         }
-        return true;
     }
 
-    private boolean replace(ColumnFamily columnFamily) throws IOException {
+    private void convert(String rowId, ColumnFamily columnFamily, List<Document> documents) throws IOException {
         Map<String, Set<Column>> columns = columnFamily.records;
         if (columns == null) {
-            return true;
+            return;
         }
         String family = columnFamily.getFamily();
         if (family == null) {
             throw new NullPointerException();
         }
-        long oldRamSize = indexWriter.ramSizeInBytes();
         for (String recordId : columns.keySet()) {
             if (recordId == null) {
                 continue;
             }
-            recordIdField.setValue(recordId);
-            document.getFields().clear();
-            document.add(rowIdField);
-            document.add(recordIdField);
-            if (addColumns(document, analyzer, builder, family, columns.get(recordId))) {
+            Document document = new Document();
+            document.add(new Field(ROW_ID,rowId,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+            document.add(new Field(RECORD_ID,recordId,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+            if (addColumns(document, _analyzer, builder, family, columns.get(recordId))) {
                 if (!primeDocSet) {
                     document.add(PRIME_DOC_FIELD);
                     primeDocSet = true;
                 }
-                long newRamSize = indexWriter.ramSizeInBytes();
-                if (newRamSize < oldRamSize) {
-                    LOG.info("Flush occur during writing of row, start over.");
-                    return false;
-                }
-                oldRamSize = newRamSize;
-                indexWriter.addDocument(document,analyzer);
+                documents.add(document);
             }
         }
-        return true;
     }
 
     public static boolean addColumns(Document document, BlurAnalyzer analyzer, StringBuilder builder, String columnFamily, Iterable<Column> set) {

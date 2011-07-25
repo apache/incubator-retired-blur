@@ -41,7 +41,8 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.blur.manager.writer.BlurIndexReaderCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
@@ -60,19 +61,20 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private boolean _closed;
     private ReplicationStrategy _replicationStrategy;
     private Configuration _configuration = new Configuration();
-    private BlurIndexReaderCloser _closer;
+    private BlurIndexCloser _closer;
     private ZooKeeper _zookeeper;
+    private BlurIndexRefresher _refresher;
     
     @Override
     public void init() {
         super.init();
-        _closer = new BlurIndexReaderCloser();
+        _closer = new BlurIndexCloser();
         _closer.init();
     }
     
     @Override
     public synchronized void close() {
-        _closer.stop();
+        _closer.close();
         if (!_closed) {
             _closed = true;
             super.close();
@@ -104,6 +106,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         writer.setCloser(_closer);
         writer.setAnalyzer(getAnalyzer(table));
         writer.setDirectory(compressedDirectory);
+        writer.setRefresher(_refresher);
         writer.init();
         return warmUp(writer);
     }
@@ -194,5 +197,9 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 		FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
 		return fileSystem.getFileStatus(tablePath).getLen();
 	}
+
+    public void setRefresher(BlurIndexRefresher refresher) {
+        _refresher = refresher;
+    }
 
 }

@@ -41,7 +41,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Transaction;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer extends ExecutionContextIface {
@@ -63,10 +62,7 @@ public class BlurShardServer extends ExecutionContextIface {
         TERMS, 
         DESCRIBE, 
         MUTATE, 
-        GET_TABLE_STATS, 
-        MUTATE_ABORT, 
-        MUTATE_CREATE_TRANSACTION, 
-        MUTATE_COMMIT
+        GET_TABLE_STATS
     }
 
     @Override
@@ -325,58 +321,19 @@ public class BlurShardServer extends ExecutionContextIface {
     }
 
     @Override
-    public void mutate(ExecutionContext context, Transaction transaction, List<RowMutation> mutations) throws BlurException,
+    public void mutate(ExecutionContext context, RowMutation mutation) throws BlurException,
             TException {
         long start = context.startTime();
         try {
-            checkTableStatus(context, transaction.table);
+            checkTableStatus(context, mutation.table);
             try {
-                indexManager.mutate(transaction, mutations);
+                indexManager.mutate(mutation);
             } catch (Exception e) {
-                LOG.error("Unknown error during processing of [mutations={0}]", e, mutations);
+                LOG.error("Unknown error during processing of [mutation={0}]", e, mutation);
                 throw new BException(e.getMessage(), e);
             }
         } finally {
-            context.recordTime(Metrics.MUTATE, start, mutations);
-        }
-    }
-
-    @Override
-    public void mutateAbort(ExecutionContext context, Transaction transaction) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            indexManager.mutateAbort(transaction);
-        } catch (Exception e) {
-            LOG.error("Unknown error during processing of [transaction={0}]", e, transaction);
-            throw new BException(e.getMessage(), e);
-        } finally {
-            context.recordTime(Metrics.MUTATE_ABORT, start, transaction);
-        }
-    }
-
-    @Override
-    public void mutateCommit(ExecutionContext context, Transaction transaction) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            indexManager.mutateCommit(transaction);
-        } catch (Exception e) {
-            LOG.error("Unknown error during processing of [transaction={0}]", e, transaction);
-            throw new BException(e.getMessage(), e);
-        } finally {
-            context.recordTime(Metrics.MUTATE_COMMIT, start, transaction);
-        }
-    }
-
-    @Override
-    public Transaction mutateCreateTransaction(ExecutionContext context, String table) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            return indexManager.mutateCreateTransaction(table);
-        } catch (Exception e) {
-            LOG.error("Unknown error during processing of [table={0}]", e, table);
-            throw new BException(e.getMessage(), e);
-        } finally {
-            context.recordTime(Metrics.MUTATE_CREATE_TRANSACTION, start, table);
+            context.recordTime(Metrics.MUTATE, start, mutation);
         }
     }
 }

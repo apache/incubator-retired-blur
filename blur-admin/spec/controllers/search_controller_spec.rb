@@ -12,16 +12,14 @@ describe SearchController do
 
   describe "show" do
     before :each do
-
-      @blur_table = Factory.stub :blur_table
-      @blur_tables = [@blur_table]
+      @blur_tables = [Factory.stub(:blur_table), Factory.stub(:blur_table)]
+      @blur_table = @blur_tables[0]
       # Set up association chain
       @zookeeper  = Factory.stub :zookeeper
-      @zookeeper.stub_chain(:blur_tables, :order, :all).and_return [@blur_table]
 
       # ApplicationController.current_zookeeper
       Zookeeper.stub(:find_by_id).and_return(nil)
-      Zookeeper.stub(:first).and_return @zookeeper
+      Zookeeper.stub_arel.and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
 
@@ -35,17 +33,21 @@ describe SearchController do
     end
     
     it "find and assign tables, and columns" do
-      @zookeeper.should_receive(:blur_tables)
+      @zookeeper.stub_arel(:blur_tables, BlurTable).and_return(@blur_tables)
       get :show
-      assigns(:blur_tables).should == [@blur_table]
-      assigns(:columns).should == @blur_table.schema["columnFamilies"]
+      assigns(:blur_tables).should == @blur_tables
+      assigns(:blur_table).should == @blur_table
+      assigns(:columns).should == @blur_table.schema
     end
 
-    it "find and assign tables and columns when no tables are available" do
-      @zookeeper.blur_tables.should_receive(:find).and_return []
-      get :show
-      assigns(:blur_tables).should == []
-      assigns(:columns).should be nil
+    describe "when no tables are available" do
+      it "find and assign tables and columns" do
+        @zookeeper.stub_arel(:blur_tables, BlurTable).and_return []
+        get :show
+        assigns(:blur_tables).should == []
+        assigns(:blur_table).should be nil
+        assigns(:columns).should be nil
+      end
     end
   end
   
@@ -63,17 +65,54 @@ describe SearchController do
     it "should assign columns" do
       BlurTable.should_receive(:find).with(@blur_table.id)
       get :filters, :blur_table_id => @blur_table.id
-      assigns(:columns).should == @blur_table.schema["columnFamilies"]
+      assigns(:columns).should == @blur_table.schema
     end
     
-    it "rescues a no method error and returns an empty array of columns" do
-      @blur_table.stub(:schema).and_raise(NoMethodError)
+    it "should return an empty array to columns when no blur table is selected" do
+      BlurTable.should_receive(:find).and_return(nil)
       get :filters, :blur_table_id => @blur_table.id
       response.should render_template "filters"
     end
   end
 
-  describe "create" do
+  describe "GET create" do
+    before :each do
+      
+    end
+
+    describe "when creating a new search" do
+      it "renders the create partial" do
+        @search     = Factory.stub :search
+        @blur_table = Factory.stub :blur_table
+        @user       = Factory.stub :user
+        @preference = Factory.stub :preference
+        @client = mock(Blur::Blur::Client)
+        Preference.stub(:find_or_create_by_user_id_and_pref_type).and_return(@preference)
+        BlurTable.stub(:find).and_return(@blur_table)
+        Search.stub(:new).and_return(@search)
+        User.stub(:find).and_return(@user)
+        BlurThriftClient.stub!(:client).and_return(@client)
+        controller.stub(:current_user).and_return(@user)
+        @client.stub(:query).and_return nil
+
+        get :create, :super_query  => @search.super_query,
+                     :result_count => @search.fetch,
+                     :offset       => @search.offset,
+                     :query_string => @search.query,
+                     :column_data  => ["neighborhood", @search.raw_columns].flatten
+
+        response.should render_template "create"
+      end
+    end
+
+    describe "when running an existing search" do
+
+    end
+
+
+  end
+
+  describe "create OLD" do
     before (:each) do
       @client = mock(Blur::Blur::Client)
       BlurThriftClient.stub!(:client).and_return(@client)
@@ -108,7 +147,7 @@ describe SearchController do
                                                                 "setTable"           => true,
                                                                 "setColumnFamilies"  => true,
                                                                 "columnFamiliesSize" => 2,
-                                                                "columnFamilies"     => {"table1"=> ["deptNo", "moreThanOneDepartment", "name"], 
+                                                                "columnFamilies"     => {"table1"=> ["deptNo", "moreThanOneDepartment", "name"],
                                                                                          "table2" => ["deptNo", "moreThanOneDepartment", "name"]}
                                                                }.to_json
       BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
@@ -127,7 +166,17 @@ describe SearchController do
     it "renders the create template when column_family & record_count < count & families_include" do
       @client.should_receive(:query).and_return(@test1_query)
       BlurTable.stub(:find).and_return(@blur_table)
-      get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => 17, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
+      get :create, :super_query  => true,
+                   :result_count => 25,
+                   :offset       => 5,
+                   :query_string => "employee.name:bob",
+                   :blur_table   => 17,
+                   :column_data  => ["neighborhood",
+                                    "family_table1",
+                                    "column_table1_deptNo",
+                                    "column_table1_moreThanOneDepartment",
+                                    "column_table1_name"]
+
       response.should render_template "create"
     end
     
@@ -243,16 +292,14 @@ describe SearchController do
   
   describe "save" do
     before(:each) do
-      @search = Factory.stub :search
-      @user.stub(:searches).and_return [@search]
-      Search.stub(:find).and_return(@search)
-      BlurTable.stub(:find)
     end
 
     it "saves and renders the saved partial" do
+      BlurTable.stub(:find)
       @search = Factory.stub :search
       @user.stub(:searches).and_return [@search]
       @user.stub(:id).and_return [1]      
+      Search.stub(:find).and_return(@search)
       Search.stub(:create).and_return @search
       Search.should_receive(:create)
       get :save, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]

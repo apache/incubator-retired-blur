@@ -83,12 +83,20 @@ Factory.define :search do |t|
   t.user_id { rand 10 ** 6 }
 end
 
+#create a valid user
+Factory.define :user do |t|
+  t.sequence (:username)  {|n| "User ##{n}"}
+  t.sequence (:email)     {|n| "user#{n}@example.com"}
+  t.password              "password"
+  t.password_confirmation "password"
+  t.roles [:editor, :admin, :reader, :auditor]
+end
+
 #create a valid preference
 Factory.define :preference do |t|
-  t.name {'columns'}
-  t.pref_type {'columns'}
-  t.value { ['col1', 'col2', 'col3'].to_json }
-  t.user_id { rand 10 ** 6 }  
+  t.name      'columns'
+  t.pref_type 'columns'
+  t.value     ['Column2B'].to_json
 end
 
 # Create models with association chains already created. These real objects and

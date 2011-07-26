@@ -8,7 +8,7 @@ class SearchController < ApplicationController
     # required because of the lazy loading (in this case where a few more variables 
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
-    @blur_table = @blur_tables.first
+    @blur_table = @blur_tables[0]
 	  @columns = @blur_table.schema &preference_sort if @blur_table
     @searches = current_user.searches.order("name")
 	end
@@ -16,12 +16,7 @@ class SearchController < ApplicationController
 	#Filter action to help build the tree for column families
   def filters
     @blur_table = BlurTable.find params[:blur_table_id]
-    begin
-      @columns = @blur_table.schema &preference_sort
-    rescue NoMethodError
-      @columns = []
-    end
-    #TODO render the new saved list
+    @columns = (@blur_table ? (@blur_table.schema &preference_sort) : [])
 	  render :partial => 'filters'
   end
 
@@ -34,13 +29,12 @@ class SearchController < ApplicationController
     #else build a new search to be used for this specific search
     else
       params[:column_data].delete( "neighborhood")
-      search = Search.new(:blur_table_id => params[:blur_table],
-                          :super_query   =>!params[:super_query].nil?,
-                          :columns       => params[:column_data],
-                          :fetch         => params[:result_count].to_i,
-                          :offset        => params[:offset].to_i,
-                          :user_id       => @current_user.id,
-                          :query         => params[:query_string])
+      search = Search.new(:super_query  =>!params[:super_query].nil?,
+                          :columns      => params[:column_data],
+                          :fetch        => params[:result_count].to_i,
+                          :offset       => params[:offset].to_i,
+                          :user_id      => current_user.id,
+                          :query        => params[:query_string])
     end
 
     #use the model to begin building the blurquery
@@ -67,12 +61,16 @@ class SearchController < ApplicationController
     #           identifying rowId (I know, confusing...)
     #   Row: A row consisting of one record for each column family it spans.
 
-!    @results = []
+    @results = []
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime
     blur_results.results.each do |result_container|
       # drill down through the result object cruft to get the real result
       result = result_container.fetchResult.rowResult.row 
+
+      # continue next result if there is no returned data
+      next if result.columnFamilies.empty?
+
       # number of rows the result will span
       row_count = result.columnFamilies.collect {|cf| cf.records.keys.count }.max
 
@@ -138,15 +136,14 @@ class SearchController < ApplicationController
   end
   
   def save
-    drop = params[:column_data].first == "neighborhood"? params[:column_data].drop(1).to_json : params[:column_data].to_json
-    Search.create(:name          => params[:save_name],
-                  :blur_table_id => params[:blur_table],
-                  :super_query   => params[:super_query],
-                  :columns       => drop,
-                  :fetch         => params[:result_count].to_i,
-                  :offset        => params[:offset].to_i,
-                  :user_id       => current_user.id,
-                  :query         => params[:query_string])
+    params[:column_data].delete 'neighborhood'
+    Search.create(:name         => params[:save_name],
+                  :super_query  =>!params[:super_query].nil?,
+                  :columns      => params[:column_data],
+                  :fetch        => params[:result_count].to_i,
+                  :offset       => params[:offset].to_i,
+                  :user_id      => current_user.id,
+                  :query        => params[:query_string])
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
 
@@ -157,25 +154,23 @@ class SearchController < ApplicationController
   
   def update
     params[:column_data].delete 'neighborhood'
-    update_search = Search.find params[:search_id]
-    update_search.update_attributes(
-                  :name          => params[:save_name],
-                  :blur_table_id => params[:blur_table],
-                  :super_query   => params[:super_query],
-                  :columns       => params[:column_data].to_json,
-                  :fetch         => params[:result_count].to_i,
-                  :offset        => params[:offset].to_i,
-                  :user_id       => current_user.id,
-                  :query         => params[:query_string])
+    search = Search.find params[:search_id]
+    search.update_attributes(:name        => params[:save_name],
+                             :super_query =>!params[:super_query].nil?,
+                             :columns     => params[:column_data],
+                             :fetch       => params[:result_count].to_i,
+                             :offset      => params[:offset].to_i,
+                             :user_id     => current_user.id,
+                             :query       => params[:query_string])
 
     render :nothing => true
   end
   private
     def preference_sort
       lambda do |a, b|
-        if @current_user.saved_cols.include? a[0] and !@current_user.saved_cols.include? b[0]
+        if current_user.saved_cols.include? a[0] and !current_user.saved_cols.include? b[0]
           -1
-        elsif @current_user.saved_cols.include? b[0] and !@current_user.saved_cols.include? a[0]
+        elsif current_user.saved_cols.include? b[0] and !current_user.saved_cols.include? a[0]
           1
         else
           a[0] <=> b[0]

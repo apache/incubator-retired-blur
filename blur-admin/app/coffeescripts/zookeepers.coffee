@@ -6,7 +6,7 @@ $(document).ready ->
       # Updates the fields for each zookeeper
       zookeepers = data.zookeepers
       long_queries = data.long_queries
-      $.each( zookeepers, ->
+      $.each( data, ->
         zookeeper_table = $('#zookeepers').find("#" + this.id )
 
         # Updates the header showing the zookeeper status
@@ -22,11 +22,11 @@ $(document).ready ->
 
         # Updates the warning for long queries
         query_message = '<div></div>'
-        if long_queries[this.id]
-          if long_queries[this.id] == 1
+        if parseInt(this.long_running_queries) > 0
+          if this.long_running_queries == "1"
             query_message = '<div>1 query has been running for more than a minute</div>'
-          else if long_queries[this.id] > 1
-            query_message = '<div>' + long_queries[this.id] + ' queries have been running for more than a minute</div>'
+          else
+            query_message = '<div>' + this.long_running_queries + ' queries have been running for more than a minute</div>'
         zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards

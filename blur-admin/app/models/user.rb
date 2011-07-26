@@ -19,7 +19,7 @@ class User < ActiveRecord::Base
       Preference.find_or_create_by_user_id_and_pref_type( self.id, 
                                                           :pref_type => :columns,
                                                           :name => :filters,
-                                                          :value => []).value)
+                                                          :value => [].to_json).value)
     ret.uniq
   end
   

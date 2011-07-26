@@ -15,11 +15,8 @@ class User < ActiveRecord::Base
 
   #returns the array of saved cols
   def saved_cols
-    ret = []
-    self.preferences.find_all_by_pref_type(:column).each do |pref|
-      ret = JSON.parse(pref[:value]) unless pref[:value] == "null"
-    end
-    ret.flatten.uniq
+    ret = JSON.parse (Preference.find_all_by_user_id_and_pref_type(self.id, :columns)[0].value)
+    ret.uniq
   end
 
   # the roles are virtual attributes needed to use form helpers

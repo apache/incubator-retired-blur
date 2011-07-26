@@ -10,7 +10,17 @@ class UsersController < ApplicationController
 
   def show
     @tables = BlurTable.all
-    @preferences = current_user.saved_cols
+    @preferences = JSON.parse(
+      Preference.find_or_create_by_user_id_and_pref_type_and_name( current_user.id, 
+                                                                    :pref_type => :columns, 
+                                                                    :name => :columns, 
+                                                                    :value => [].to_json).value)
+    @filters = JSON.parse(
+      Preference.find_or_create_by_user_id_and_pref_type_and_name(current_user.id, 
+                                                                  :pref_type => :filters, 
+                                                                  :name => :filters, 
+                                                                  :value => [1, nil, nil, nil].to_json).value)
+    
     @choices = []
     BlurTable.all.each do |table|
       @choices << table.schema["columnFamilies"].keys

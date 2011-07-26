@@ -24,7 +24,7 @@ class Ability
         can :dashboard, :zookeepers
         can :files, :hdfs
 
-        can :save, :preference
+        can [:save, :save_filters], :preference
 
         # search
         can [:filters, :create, :load, :delete, :reload, :save, :update], :search

@@ -5,18 +5,18 @@ $(document).ready ->
       console.log(data)
 
       # Displays a warning message if 1 or more queries have been running for over a minute
-      long_queries = parseInt ( data.long_queries )
-      if long_queries < 1
-        query_message = '<div></div>'
-      else if long_queries == 1
-        query_message = '<div>1 query has been running for more than a minute</div>'
-      else
-        query_message = '<div>' + data.long_queries + ' queries have been running for more than a minute</div>'
-      $('.warning').html(query_message)
+      # long_queries = parseInt ( data.long_queries )
+      #       if long_queries < 1
+      #         query_message = '<div></div>'
+      #       else if long_queries == 1
+      #         query_message = '<div>1 query has been running for more than a minute</div>'
+      #       else
+      #         query_message = '<div>' + data.long_queries + ' queries have been running for more than a minute</div>'
+      #       $('.warning').html(query_message)
 
       # Updates the fields for each zookeeper
-      zookeepers = data.zookeepers
-      $.each( zookeepers, ->
+      # zookeepers = data.zookeepers
+      $.each( data, ->
         zookeeper_table = $('#zookeepers').find("#" + this.id )
 
         # Updates the header showing the zookeeper status

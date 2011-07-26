@@ -120,12 +120,13 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     }
 
     private BlurIndex warmUp(BlurIndex index) throws IOException {
-        IndexReader reader = index.getIndexReader();
+        IndexReader reader = index.getIndexReader(true);
         try {
             int maxDoc = reader.maxDoc();
             int numDocs = reader.numDocs();
             Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
             int primeDocCount = reader.docFreq(new Term(PRIME_DOC,PRIME_DOC_VALUE));
+            //@TODO warm up position files.
             LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fields [" + fieldNames + "]");
         } finally {
             //this will allow for closing of index

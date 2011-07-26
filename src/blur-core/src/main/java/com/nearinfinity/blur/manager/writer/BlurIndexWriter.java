@@ -17,6 +17,7 @@
 package com.nearinfinity.blur.manager.writer;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
@@ -50,13 +51,26 @@ public class BlurIndexWriter extends BlurIndex {
     private BlurIndexCloser _closer;
     private BlurIndexRefresher _refresher;
     private RowIndexWriter _rowIndexWriter;
+    private AtomicBoolean _open = new AtomicBoolean();
     
     public void init() throws IOException {
-        setupWriter();
+        _sync = watchSync(_directory);
+        IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
+        conf.setSimilarity(new FairSimilarity());
+        TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
+        mergePolicy.setUseCompoundFile(false);
+        _writer = new IndexWriter(_sync, conf);
+        _indexReaderRef.set(IndexReader.open(_writer, true));
+        _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
+        _open.set(true);
+        _refresher.register(this);
     }
     
     @Override
     public void refresh() throws IOException {
+        if (!_open.get()) {
+            return;
+        }
         IndexReader oldReader = _indexReaderRef.get();
         if (oldReader.isCurrent()) {
             return;
@@ -75,8 +89,10 @@ public class BlurIndexWriter extends BlurIndex {
     }
     
     @Override
-    public IndexReader getIndexReader() throws IOException {
-        refresh();
+    public IndexReader getIndexReader(boolean forceRefresh) throws IOException {
+        if (forceRefresh) {
+            refresh();
+        }
         IndexReader indexReader = _indexReaderRef.get();
         indexReader.incRef();
         return indexReader;
@@ -84,6 +100,7 @@ public class BlurIndexWriter extends BlurIndex {
     
     @Override
     public void close() throws IOException {
+        _open.set(false);
         _refresher.unregister(this);
         _writer.close();
     }
@@ -94,18 +111,6 @@ public class BlurIndexWriter extends BlurIndex {
         return true;
     }
     
-    private void setupWriter() throws IOException {
-        _sync = watchSync(_directory);
-        IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
-        conf.setSimilarity(new FairSimilarity());
-        TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
-        mergePolicy.setUseCompoundFile(false);
-        _writer = new IndexWriter(_sync, conf);
-        _indexReaderRef.set(IndexReader.open(_writer, true));
-        _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
-        _refresher.register(this);
-    }
-
     public void setAnalyzer(BlurAnalyzer analyzer) {
         _analyzer = analyzer;
     }

@@ -24,9 +24,14 @@ public class MutationHelper {
     }
     
     public static void validateMutation(RowMutation mutation) {
-        String rowId = mutation.rowId;
-        if (rowId == null) {
+        if (mutation == null) {
+            throw new NullPointerException("Mutation can not be null.");
+        }
+        if (mutation.rowId == null) {
             throw new NullPointerException("Rowid can not be null in mutation.");
+        }
+        if (mutation.table == null) {
+            throw new NullPointerException("Table can not be null in mutation.");
         }
     }
     

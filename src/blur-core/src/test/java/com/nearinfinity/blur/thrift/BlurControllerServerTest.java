@@ -141,6 +141,7 @@ public class BlurControllerServerTest {
         recMut.setRecordId("5678");
         recMut.addToRecord(new Column("name",Arrays.asList("value")));
         mutation.addToRecordMutations(recMut);
+        mutation.table = TABLE;
         server.mutate(mutation);
         
         Selector selector = new Selector();

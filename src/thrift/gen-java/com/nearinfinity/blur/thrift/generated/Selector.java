@@ -30,6 +30,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   private static final org.apache.thrift.protocol.TField COLUMN_FAMILIES_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamiliesToFetch", org.apache.thrift.protocol.TType.SET, (short)5);
   private static final org.apache.thrift.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnsToFetch", org.apache.thrift.protocol.TType.MAP, (short)6);
   private static final org.apache.thrift.protocol.TField TRANSACTION_FIELD_DESC = new org.apache.thrift.protocol.TField("transaction", org.apache.thrift.protocol.TType.STRUCT, (short)7);
+  private static final org.apache.thrift.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("allowStaleData", org.apache.thrift.protocol.TType.BOOL, (short)8);
 
   public boolean recordOnly;
   public String locationId;
@@ -38,6 +39,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   public Set<String> columnFamiliesToFetch;
   public Map<String,Set<String>> columnsToFetch;
   public Transaction transaction;
+  public boolean allowStaleData;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -47,7 +49,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     RECORD_ID((short)4, "recordId"),
     COLUMN_FAMILIES_TO_FETCH((short)5, "columnFamiliesToFetch"),
     COLUMNS_TO_FETCH((short)6, "columnsToFetch"),
-    TRANSACTION((short)7, "transaction");
+    TRANSACTION((short)7, "transaction"),
+    ALLOW_STALE_DATA((short)8, "allowStaleData");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -76,6 +79,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
           return COLUMNS_TO_FETCH;
         case 7: // TRANSACTION
           return TRANSACTION;
+        case 8: // ALLOW_STALE_DATA
+          return ALLOW_STALE_DATA;
         default:
           return null;
       }
@@ -117,7 +122,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
 
   // isset id assignments
   private static final int __RECORDONLY_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
+  private static final int __ALLOWSTALEDATA_ISSET_ID = 1;
+  private BitSet __isset_bit_vector = new BitSet(2);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -140,6 +146,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
                 new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)))));
     tmpMap.put(_Fields.TRANSACTION, new org.apache.thrift.meta_data.FieldMetaData("transaction", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Transaction.class)));
+    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.thrift.meta_data.FieldMetaData("allowStaleData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Selector.class, metaDataMap);
   }
@@ -154,7 +162,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     String recordId,
     Set<String> columnFamiliesToFetch,
     Map<String,Set<String>> columnsToFetch,
-    Transaction transaction)
+    Transaction transaction,
+    boolean allowStaleData)
   {
     this();
     this.recordOnly = recordOnly;
@@ -165,6 +174,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.columnFamiliesToFetch = columnFamiliesToFetch;
     this.columnsToFetch = columnsToFetch;
     this.transaction = transaction;
+    this.allowStaleData = allowStaleData;
+    setAllowStaleDataIsSet(true);
   }
 
   /**
@@ -211,6 +222,7 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     if (other.isSetTransaction()) {
       this.transaction = new Transaction(other.transaction);
     }
+    this.allowStaleData = other.allowStaleData;
   }
 
   public Selector deepCopy() {
@@ -227,6 +239,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.columnFamiliesToFetch = null;
     this.columnsToFetch = null;
     this.transaction = null;
+    setAllowStaleDataIsSet(false);
+    this.allowStaleData = false;
   }
 
   public boolean isRecordOnly() {
@@ -422,6 +436,29 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
   }
 
+  public boolean isAllowStaleData() {
+    return this.allowStaleData;
+  }
+
+  public Selector setAllowStaleData(boolean allowStaleData) {
+    this.allowStaleData = allowStaleData;
+    setAllowStaleDataIsSet(true);
+    return this;
+  }
+
+  public void unsetAllowStaleData() {
+    __isset_bit_vector.clear(__ALLOWSTALEDATA_ISSET_ID);
+  }
+
+  /** Returns true if field allowStaleData is set (has been assigned a value) and false otherwise */
+  public boolean isSetAllowStaleData() {
+    return __isset_bit_vector.get(__ALLOWSTALEDATA_ISSET_ID);
+  }
+
+  public void setAllowStaleDataIsSet(boolean value) {
+    __isset_bit_vector.set(__ALLOWSTALEDATA_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case RECORD_ONLY:
@@ -480,6 +517,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       }
       break;
 
+    case ALLOW_STALE_DATA:
+      if (value == null) {
+        unsetAllowStaleData();
+      } else {
+        setAllowStaleData((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -506,6 +551,9 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     case TRANSACTION:
       return getTransaction();
 
+    case ALLOW_STALE_DATA:
+      return new Boolean(isAllowStaleData());
+
     }
     throw new IllegalStateException();
   }
@@ -531,6 +579,8 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       return isSetColumnsToFetch();
     case TRANSACTION:
       return isSetTransaction();
+    case ALLOW_STALE_DATA:
+      return isSetAllowStaleData();
     }
     throw new IllegalStateException();
   }
@@ -608,6 +658,15 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       if (!(this_present_transaction && that_present_transaction))
         return false;
       if (!this.transaction.equals(that.transaction))
+        return false;
+    }
+
+    boolean this_present_allowStaleData = true;
+    boolean that_present_allowStaleData = true;
+    if (this_present_allowStaleData || that_present_allowStaleData) {
+      if (!(this_present_allowStaleData && that_present_allowStaleData))
+        return false;
+      if (this.allowStaleData != that.allowStaleData)
         return false;
     }
 
@@ -693,6 +752,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
     if (isSetTransaction()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.transaction, typedOther.transaction);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetAllowStaleData()).compareTo(typedOther.isSetAllowStaleData());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAllowStaleData()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -797,6 +866,14 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 8: // ALLOW_STALE_DATA
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.allowStaleData = iprot.readBool();
+            setAllowStaleDataIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -867,6 +944,9 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
       this.transaction.write(oprot);
       oprot.writeFieldEnd();
     }
+    oprot.writeFieldBegin(ALLOW_STALE_DATA_FIELD_DESC);
+    oprot.writeBool(this.allowStaleData);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -926,6 +1006,10 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     } else {
       sb.append(this.transaction);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("allowStaleData:");
+    sb.append(this.allowStaleData);
     first = false;
     sb.append(")");
     return sb.toString();

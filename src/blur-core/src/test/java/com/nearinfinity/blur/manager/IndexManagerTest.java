@@ -84,6 +84,12 @@ public class IndexManagerTest {
         
         setupData();
     }
+    
+    @After
+    public void teardown() {
+        indexManager.close();
+        refresher.close();
+    }
 
     private void rm(File file) {
         if (file.isDirectory()) {

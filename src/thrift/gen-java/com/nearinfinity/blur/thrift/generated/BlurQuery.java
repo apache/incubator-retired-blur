@@ -39,6 +39,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final org.apache.thrift.protocol.TField SELECTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("selector", org.apache.thrift.protocol.TType.STRUCT, (short)14);
   private static final org.apache.thrift.protocol.TField START_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startTime", org.apache.thrift.protocol.TType.I64, (short)15);
   private static final org.apache.thrift.protocol.TField CACHE_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("cacheOnly", org.apache.thrift.protocol.TType.BOOL, (short)16);
+  private static final org.apache.thrift.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("allowStaleData", org.apache.thrift.protocol.TType.BOOL, (short)17);
 
   public String queryStr;
   public boolean superQueryOn;
@@ -60,6 +61,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   public Selector selector;
   public long startTime;
   public boolean cacheOnly;
+  public boolean allowStaleData;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -82,7 +84,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     FACETS((short)13, "facets"),
     SELECTOR((short)14, "selector"),
     START_TIME((short)15, "startTime"),
-    CACHE_ONLY((short)16, "cacheOnly");
+    CACHE_ONLY((short)16, "cacheOnly"),
+    ALLOW_STALE_DATA((short)17, "allowStaleData");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -129,6 +132,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
           return START_TIME;
         case 16: // CACHE_ONLY
           return CACHE_ONLY;
+        case 17: // ALLOW_STALE_DATA
+          return ALLOW_STALE_DATA;
         default:
           return null;
       }
@@ -178,7 +183,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final int __RESOLVEIDS_ISSET_ID = 6;
   private static final int __STARTTIME_ISSET_ID = 7;
   private static final int __CACHEONLY_ISSET_ID = 8;
-  private BitSet __isset_bit_vector = new BitSet(9);
+  private static final int __ALLOWSTALEDATA_ISSET_ID = 9;
+  private BitSet __isset_bit_vector = new BitSet(10);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -215,6 +221,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
     tmpMap.put(_Fields.CACHE_ONLY, new org.apache.thrift.meta_data.FieldMetaData("cacheOnly", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.ALLOW_STALE_DATA, new org.apache.thrift.meta_data.FieldMetaData("allowStaleData", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
@@ -253,7 +261,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     List<Facet> facets,
     Selector selector,
     long startTime,
-    boolean cacheOnly)
+    boolean cacheOnly,
+    boolean allowStaleData)
   {
     this();
     this.queryStr = queryStr;
@@ -281,6 +290,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     setStartTimeIsSet(true);
     this.cacheOnly = cacheOnly;
     setCacheOnlyIsSet(true);
+    this.allowStaleData = allowStaleData;
+    setAllowStaleDataIsSet(true);
   }
 
   /**
@@ -323,6 +334,7 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
     this.startTime = other.startTime;
     this.cacheOnly = other.cacheOnly;
+    this.allowStaleData = other.allowStaleData;
   }
 
   public BlurQuery deepCopy() {
@@ -357,6 +369,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.startTime = 0;
     this.cacheOnly = false;
 
+    setAllowStaleDataIsSet(false);
+    this.allowStaleData = false;
   }
 
   public String getQueryStr() {
@@ -757,6 +771,29 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     __isset_bit_vector.set(__CACHEONLY_ISSET_ID, value);
   }
 
+  public boolean isAllowStaleData() {
+    return this.allowStaleData;
+  }
+
+  public BlurQuery setAllowStaleData(boolean allowStaleData) {
+    this.allowStaleData = allowStaleData;
+    setAllowStaleDataIsSet(true);
+    return this;
+  }
+
+  public void unsetAllowStaleData() {
+    __isset_bit_vector.clear(__ALLOWSTALEDATA_ISSET_ID);
+  }
+
+  /** Returns true if field allowStaleData is set (has been assigned a value) and false otherwise */
+  public boolean isSetAllowStaleData() {
+    return __isset_bit_vector.get(__ALLOWSTALEDATA_ISSET_ID);
+  }
+
+  public void setAllowStaleDataIsSet(boolean value) {
+    __isset_bit_vector.set(__ALLOWSTALEDATA_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY_STR:
@@ -887,6 +924,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       }
       break;
 
+    case ALLOW_STALE_DATA:
+      if (value == null) {
+        unsetAllowStaleData();
+      } else {
+        setAllowStaleData((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -940,6 +985,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     case CACHE_ONLY:
       return new Boolean(isCacheOnly());
 
+    case ALLOW_STALE_DATA:
+      return new Boolean(isAllowStaleData());
+
     }
     throw new IllegalStateException();
   }
@@ -983,6 +1031,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return isSetStartTime();
     case CACHE_ONLY:
       return isSetCacheOnly();
+    case ALLOW_STALE_DATA:
+      return isSetAllowStaleData();
     }
     throw new IllegalStateException();
   }
@@ -1141,6 +1191,15 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       if (!(this_present_cacheOnly && that_present_cacheOnly))
         return false;
       if (this.cacheOnly != that.cacheOnly)
+        return false;
+    }
+
+    boolean this_present_allowStaleData = true;
+    boolean that_present_allowStaleData = true;
+    if (this_present_allowStaleData || that_present_allowStaleData) {
+      if (!(this_present_allowStaleData && that_present_allowStaleData))
+        return false;
+      if (this.allowStaleData != that.allowStaleData)
         return false;
     }
 
@@ -1320,6 +1379,16 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetAllowStaleData()).compareTo(typedOther.isSetAllowStaleData());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetAllowStaleData()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.allowStaleData, typedOther.allowStaleData);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1470,6 +1539,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 17: // ALLOW_STALE_DATA
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.allowStaleData = iprot.readBool();
+            setAllowStaleDataIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1553,6 +1630,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     oprot.writeFieldEnd();
     oprot.writeFieldBegin(CACHE_ONLY_FIELD_DESC);
     oprot.writeBool(this.cacheOnly);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(ALLOW_STALE_DATA_FIELD_DESC);
+    oprot.writeBool(this.allowStaleData);
     oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -1653,6 +1733,10 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     if (!first) sb.append(", ");
     sb.append("cacheOnly:");
     sb.append(this.cacheOnly);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("allowStaleData:");
+    sb.append(this.allowStaleData);
     first = false;
     sb.append(")");
     return sb.toString();

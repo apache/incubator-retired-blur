@@ -46,7 +46,8 @@ struct Selector {
   4:string recordId,
   5:set<string> columnFamiliesToFetch,
   6:map<string,set<string>> columnsToFetch,
-  7:Transaction transaction
+  7:Transaction transaction,
+  8:bool allowStaleData
 }
 
 struct Facet {
@@ -104,7 +105,8 @@ struct BlurQuery {
   13:list<Facet> facets,
   14:Selector selector,
   15:i64 startTime,
-  16:bool cacheOnly = 0
+  16:bool cacheOnly = 0,
+  17:bool allowStaleData
 }
 
 struct BlurResult {

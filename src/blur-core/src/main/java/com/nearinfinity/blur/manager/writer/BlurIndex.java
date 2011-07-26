@@ -10,7 +10,7 @@ public abstract class BlurIndex {
     
     public abstract boolean replaceRow(Row row) throws IOException;
     
-    public abstract IndexReader getIndexReader() throws IOException;
+    public abstract IndexReader getIndexReader(boolean forceRefresh) throws IOException;
 
     public abstract void close() throws IOException;
 

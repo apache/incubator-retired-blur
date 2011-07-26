@@ -155,7 +155,7 @@ public class IndexManager {
         }
         IndexReader reader = null;
         try {
-            reader = index.getIndexReader();
+            reader = index.getIndexReader(!selector.allowStaleData);
             fetchRow(reader, table, selector, fetchResult);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to fetch row.", e);
@@ -181,7 +181,7 @@ public class IndexManager {
         if (blurIndex == null) {
             throw new BlurException("Shard [" + shardName + "] is not being servered by this shardserver.",null);
         }
-        IndexReader reader = blurIndex.getIndexReader();
+        IndexReader reader = blurIndex.getIndexReader(!selector.allowStaleData);
         try {
             IndexSearcher searcher = new IndexSearcher(reader);
             BooleanQuery query = new BooleanQuery();
@@ -277,7 +277,7 @@ public class IndexManager {
                     analyzer, postFilter, preFilter, getScoreType(blurQuery.type));
             final Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
             
-            QueryParallelCall call = new QueryParallelCall(table, status, indexServer, facetedQuery, blurQuery.selector);
+            QueryParallelCall call = new QueryParallelCall(table, status, indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
             MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
             return ForkJoin.execute(executor, blurIndexes.entrySet(), call).merge(merger);
         } finally {
@@ -453,7 +453,7 @@ public class IndexManager {
                 @Override
                 public Long call(Entry<String, BlurIndex> input) throws Exception {
                     BlurIndex index = input.getValue();
-                    IndexReader reader = index.getIndexReader();
+                    IndexReader reader = index.getIndexReader(true);
                     try {
                         return recordFrequency(reader,columnFamily,columnName,value);
                     } finally {
@@ -486,7 +486,7 @@ public class IndexManager {
                 @Override
                 public List<String> call(Entry<String, BlurIndex> input) throws Exception {
                     BlurIndex index = input.getValue();
-                    IndexReader reader = index.getIndexReader();
+                    IndexReader reader = index.getIndexReader(true);
                     try {
                         return terms(reader,columnFamily,columnName,startWith,size);
                     } finally {
@@ -550,7 +550,7 @@ public class IndexManager {
         schema.columnFamilies = new TreeMap<String, Set<String>>();
         Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
         for (BlurIndex blurIndex : blurIndexes.values()) {
-            IndexReader reader = blurIndex.getIndexReader();
+            IndexReader reader = blurIndex.getIndexReader(true);
             try {
                 Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
                 for (String fieldName : fieldNames) {
@@ -602,20 +602,22 @@ public class IndexManager {
         private IndexServer _indexServer;
         private Query _query;
         private Selector _selector;
+        private boolean _forceRefresh;
         
-        public QueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector) {
+        public QueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh) {
             _table = table;
             _status = status;
             _indexServer = indexServer;
             _query = query;
             _selector = selector;
+            _forceRefresh = forceRefresh;
         }
 
         @Override
         public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
             _status.attachThread();
             BlurIndex index = entry.getValue();
-            IndexReader reader = index.getIndexReader();
+            IndexReader reader = index.getIndexReader(_forceRefresh);
             try {
                 String shard = entry.getKey();
                 BlurSearcher searcher = new BlurSearcher(reader, 

@@ -1,7 +1,7 @@
 class PreferenceController < ApplicationController
 
   def save 
-    col_save = Preference.find_or_create_by_user_id_and_pref_type_and_name(current_user.id, :pref_type => :column, :name => :column)
+    col_save = Preference.find_or_create_by_user_id_and_pref_type_and_name(current_user.id, :pref_type => :columns, :name => :columns)
     col_save.value = params['columns'].to_json
     col_save.save
     

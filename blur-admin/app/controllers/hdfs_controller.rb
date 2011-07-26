@@ -10,33 +10,7 @@ class HdfsController < ApplicationController
     @file_name = params[:file]
     @file_names = params[:files].split(',') if params[:files]
 
-
    render :template=>'hdfs/files.html.haml', :layout => false
-  end
-
-  def jstree
-    data =  {
-              :data => { :title =>'root', :attr => {:id => 'root'} },
-              :children => [
-                {
-                  :data => { :title =>'file1', :attr => {:id => 'file1'} },
-                  :children => ['element1']
-                },
-                {
-                  :data => { :title =>'file2', :attr => {:id => 'file2'} },
-                  :children => ['element1','element2','element3']
-                },
-                {
-                  :data => { :title =>'file3', :attr => {:id => 'file3'} },
-                  :children => ['element1','element2']
-                }
-              ]
-            }
-    puts data.to_json().inspect()
-
-    respond_to do |format|
-      format.json { render :json => data.to_json() }
-    end
   end
 
   def temp_files

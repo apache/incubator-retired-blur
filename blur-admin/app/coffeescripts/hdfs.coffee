@@ -15,10 +15,10 @@ $(document).ready ->
 
   change_view = () ->
     view = $('input:radio:checked').val()
-    if view == 'view1'
+    if view == 'list'
       $('#file_tiles').hide()
       $('#file_list').show()
-    else
+    else if view == 'icon'
       $('#file_list').hide()
       $('#file_tiles').show()
 

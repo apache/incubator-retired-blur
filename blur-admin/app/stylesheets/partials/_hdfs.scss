@@ -39,5 +39,6 @@
     }
   }
 
-  .ui-button, a { cursor: pointer; }
+  .ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
+  a:hover { color: #06C; }
 }

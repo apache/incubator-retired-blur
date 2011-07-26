@@ -9,7 +9,7 @@ class SearchController < ApplicationController
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
     @blur_table = @blur_tables.first
-	  @columns = @blur_table.schema if @blur_table
+	  @columns = @blur_table.schema &preference_sort if @blur_table
     @searches = @current_user.searches.order("name")
 	end
 
@@ -17,7 +17,7 @@ class SearchController < ApplicationController
   def filters
     @blur_table = BlurTable.find params[:blur_table_id]
     begin
-      @columns = @blur_table.schema
+      @columns = @blur_table.schema &preference_sort
     rescue NoMethodError
       @columns = []
     end
@@ -57,15 +57,7 @@ class SearchController < ApplicationController
     end
 
     # sort column families by user preferences, then by alphabetical order
-    @schema = Hash[@schema.sort do |a, b|
-      if current_user.saved_cols.include? a[0] and !current_user.saved_cols.include? b[0]
-        -1
-      elsif current_user.saved_cols.include? b[0] and !current_user.saved_cols.include? a[0]
-        1
-      else
-        a[0] <=> b[0]
-      end
-    end]
+    @schema = Hash[@schema.sort &preference_sort]
 
     blur_results = search.fetch_results(blur_table.table_name)
 
@@ -162,4 +154,17 @@ class SearchController < ApplicationController
       format.html {render :partial =>"saved"}
     end
   end
+
+  private
+    def preference_sort
+      lambda do |a, b|
+        if @current_user.saved_cols.include? a[0] and !@current_user.saved_cols.include? b[0]
+          -1
+        elsif @current_user.saved_cols.include? b[0] and !@current_user.saved_cols.include? a[0]
+          1
+        else
+          a[0] <=> b[0]
+        end
+      end
+    end
 end

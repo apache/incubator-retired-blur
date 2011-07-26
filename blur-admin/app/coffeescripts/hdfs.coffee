@@ -9,12 +9,12 @@ $(document).ready ->
       $('#hdfs_files').show()
 
   setup_file_tree()
-  view = 'view1'
 
   $('#hdfs_files a').live 'click', ->
     new_data(this.id)
 
   change_view = () ->
+    view = $('input:radio:checked').val()
     if view == 'view1'
       $('#file_tiles').hide()
       $('#file_list').show()
@@ -41,6 +41,8 @@ $(document).ready ->
     change_view()
 
   $('#file_tiles > .ui-button').live 'click', ->
+    new_data(this.id)
+  $('#file_list a').live 'click', ->
     new_data(this.id)
 
   $('#view_options').buttonset()

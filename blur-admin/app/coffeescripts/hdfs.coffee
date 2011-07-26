@@ -23,7 +23,11 @@ $(document).ready ->
       $('#file_tiles').show()
 
   new_data = (id) ->
-    $.ajax '/hdfs/'+ id ,
+    children = $('li #' + id).siblings('ul').children()
+    info = []
+    $.each children, ->
+      info.push this.id
+    $.ajax '/hdfs/'+ id + '/' + info ,
       type: 'POST',
       success: (data) ->
         $('#data_container_display').html data
@@ -44,8 +48,19 @@ $(document).ready ->
     $('#toolbar #' + this.id).button()
   )
 
+  # make jstree with json
+  setup_file2_tree = () ->
+    #alert 'file2'
+    $('#hdfs_files_json').jstree
+      json_data:
+          ajax:
+            url: 'hdfs/make/jstree/',
+            type: 'POST',
+            dataType: "json",
+          
+      plugins: ["themes", "json_data", "sort", "ui"],
+      themes:
+        theme: 'apple',
 
 
-
-
-  
+  #setup_file2_tree()

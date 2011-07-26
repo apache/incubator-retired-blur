@@ -23,6 +23,7 @@ class Ability
         can :make_current, :zookeepers
         can :dashboard, :zookeepers
         can :files, :hdfs
+        can :jstree, :hdfs
 
         can [:save, :save_filters], :preference
 

@@ -36,6 +36,7 @@ BlurAdmin::Application.routes.draw do
 
   resources :hdfs
   match 'hdfs/:file' => 'hdfs#files', :via => :post
+  match 'hdfs/:file/:files' => 'hdfs#files', :via => :post
 
   root :to => 'zookeepers#index'
 

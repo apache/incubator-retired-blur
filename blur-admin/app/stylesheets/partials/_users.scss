@@ -40,7 +40,7 @@
     @include clearfix;
   }
   
-  #pref-trash{
+  #pref-trash, #pref-key{
     @include pref-box;
     margin-top:5px;
   }

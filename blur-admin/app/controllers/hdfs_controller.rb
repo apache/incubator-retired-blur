@@ -4,6 +4,7 @@ class HdfsController < ApplicationController
 
   def index
     temp_files
+    #@hdfs_options = Hdfs.select('name, id').order('name')
   end
 
   def files

@@ -5,19 +5,19 @@ describe SearchController do
   before (:each) do
     @ability = Ability.new User.new
     @user = User.new
-    @ability.stub!(:can?).and_return(true)
-    controller.stub!(:current_ability).and_return(@ability)
-    controller.stub!(:current_user).and_return(@user)
-    @user.stub(:searches).and_return [@search]
+    @ability.stub(:can?).and_return(true)
+    controller.stub(:current_ability).and_return(@ability)
+    controller.stub(:current_user).and_return(@user)
   end
 
   describe "show" do
     before :each do
 
       @blur_table = Factory.stub :blur_table
+      @blur_tables = [@blur_table]
       # Set up association chain
       @zookeeper  = Factory.stub :zookeeper
-      @zookeeper.stub_chain(:blur_tables, :find).and_return [@blur_table]
+      @zookeeper.stub_chain(:blur_tables, :order, :all).and_return [@blur_table]
 
       # ApplicationController.current_zookeeper
       Zookeeper.stub(:find_by_id).and_return(nil)
@@ -25,14 +25,13 @@ describe SearchController do
       # ApplicationController.zookeepers
       Zookeeper.stub(:all).and_return [@zookeeper]
 
-      @search = Search.new(:super_query => true, :columns => JSON.generate(["neighborhood", "family_Column Family #1", "column_Column Family #1_Column #1", "column_Column Family #1_Column #2, ", "column_Column Family #1_Column #3"]), fetch: 25, offset: 5, name: "default", query: "employee.name:bob", blur_table_id: 17, user_id: 1)
-      Search.stub(:new).and_return(@search)
+      @search = Factory.stub :search
+      @user.stub_chain(:searches, :order).and_return [@search]
     end
 
     it "renders the show template" do
       get :show
       response.should render_template 'show'
-
     end
     
     it "find and assign tables, and columns" do

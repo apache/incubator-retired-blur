@@ -10,7 +10,7 @@ class SearchController < ApplicationController
     @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
     @blur_table = @blur_tables.first
 	  @columns = @blur_table.schema &preference_sort if @blur_table
-    @searches = @current_user.searches.order("name")
+    @searches = current_user.searches.order("name")
 	end
 
 	#Filter action to help build the tree for column families

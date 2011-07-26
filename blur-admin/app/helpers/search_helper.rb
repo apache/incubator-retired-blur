@@ -1,7 +1,7 @@
 module SearchHelper
   def is_valid_search?(search)
     #get the table schema for the current table
-    schema = JSON.parse(@blur_table.table_schema)["columnFamilies"]
+    schema = @blur_table.schema
 
     #get the array of the checked columns from the search
     search_columns = {}
@@ -16,9 +16,9 @@ module SearchHelper
     end
 
     #Set difference of search columns from schema columns
-    search_columns.each do |family, children|
+    search_columns.each do |family, columns|
       schema[family] ||= []
-      test_arr = children - schema[family]
+      test_arr = columns - schema[family]
       if test_arr.length > 0
         return false
       end

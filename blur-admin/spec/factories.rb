@@ -71,10 +71,10 @@ end
 #create a valid search
 Factory.define :search do |t|
   t.super_query{ rand(1) == 0 } # 50% chance
-  t.sequence (:columns){ |n| ["family_ColumnFamily1", 
-                              "column_ColumnFamily1_Column1A",
-                              "column_ColumnFamily1_Column1B",
-                              "column_ColumnFamily1_Column1C"].to_json }
+  t.columns { ["family_ColumnFamily1", 
+               "column_ColumnFamily2_Column2A",
+               "column_ColumnFamily2_Column2B",
+               "column_ColumnFamily3_Column3C"] }
   t.fetch { rand 10 ** 6 }
   t.offset { rand 1 ** 5 }
   t.sequence(:name) {|n| "Search #{n}"}

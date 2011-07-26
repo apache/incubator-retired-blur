@@ -18,7 +18,8 @@ class BlurTable < ActiveRecord::Base
 
   def schema
     if self.table_schema
-      JSON.parse self.table_schema
+      # sort columns, and then sort column families
+      Hash[(JSON.parse self.table_schema)['columnFamilies'].each {|k, v| v.sort!}.sort]
     else
       return nil
     end

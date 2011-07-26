@@ -9,7 +9,7 @@ class SearchController < ApplicationController
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
     @blur_table = @blur_tables.first
-	  @columns = @blur_table.schema["columnFamilies"] if @blur_table
+	  @columns = @blur_table.schema if @blur_table
     @searches = @current_user.searches.order("name")
 	end
 
@@ -17,7 +17,7 @@ class SearchController < ApplicationController
   def filters
     @blur_table = BlurTable.find params[:blur_table_id]
     begin
-      @columns = @blur_table.schema["columnFamilies"]
+      @columns = @blur_table.schema
     rescue NoMethodError
       @columns = []
     end
@@ -52,14 +52,20 @@ class SearchController < ApplicationController
     # add complete column families / columns
     search.column_families.each do |family|
       @schema[family] = ['recordId']
-      @schema[family] << blur_table.schema['columnFamilies'][family]
+      @schema[family] << blur_table.schema[family]
       @schema[family].flatten!
     end
 
-    #reorder the CFs to use the preference
-    # TODO: Fix this to work with all column families, not just complete ones
-    #preferences = current_user.saved_cols
-    #families = (preferences & families) | families
+    # sort column families by user preferences, then by alphabetical order
+    @schema = Hash[@schema.sort do |a, b|
+      if current_user.saved_cols.include? a[0] and !current_user.saved_cols.include? b[0]
+        -1
+      elsif current_user.saved_cols.include? b[0] and !current_user.saved_cols.include? a[0]
+        1
+      else
+        a[0] <=> b[0]
+      end
+    end]
 
     blur_results = search.fetch_results(blur_table.table_name)
 
@@ -104,6 +110,9 @@ class SearchController < ApplicationController
 
       @results << result_rows
     end
+
+    #reorder the CFs to use the preference
+    @family_order = (current_user.saved_cols & @schema.keys) | @schema.keys
 
     render :template=>'search/create.html.haml', :layout => false
   end

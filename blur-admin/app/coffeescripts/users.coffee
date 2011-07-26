@@ -5,6 +5,9 @@ $(document).ready ->
       type: 'POST',
       data: $('#my-cols').sortable('serialize'),
       success: (data) ->
+        
+  save_filters = () ->
+    #logic for saving to the DB
     
   #make this sortable
   $('#my-cols').sortable
@@ -39,3 +42,10 @@ $(document).ready ->
         if $('#my-cols').children().length == 1
           $('#no-saved').fadeIn('fast')
         save_pref()
+        
+  #state change for the filter selectors
+  $('.query_filter select').live 'change', ->
+    $('form').submit()
+    
+    
+    

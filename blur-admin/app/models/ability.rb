@@ -25,7 +25,7 @@ class Ability
         can :files, :hdfs
         can :jstree, :hdfs
 
-        can :save, :preference
+        can [:save, :save_filters], :preference
 
         # search
         can [:filters, :create, :load, :delete, :reload, :save, :update], :search

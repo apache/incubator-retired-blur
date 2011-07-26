@@ -23,6 +23,7 @@
   .info-contain{ 
     @include full($total-cols); 
     @include clearfix;
+    min-width: 528px;
   }
   
   //user info box
@@ -30,6 +31,8 @@
     @include info(#EEE);
     @include columns(5, $total-cols);
     float: right;
+    min-width: 175px;
+    margin-top:2px;
     p{
       margin: 5px;
     }
@@ -56,6 +59,23 @@
     padding:5px;
     @include info(#EEE);
     @include columns(10, $total-cols);
+    min-width: 300px;
+  }
+  
+  //pref-filter box
+  #pref-filter-info{
+    padding:5px;
+    @include info(#EEE);
+    @include columns(5, $total-cols);
+    min-width: 200px;
+    
+    h3{
+      text-align: center;
+    }
+    
+    .query_filter label{
+      @include columns(2, 5);
+    }
   }
   
   //pref col - holds your choices

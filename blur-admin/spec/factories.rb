@@ -83,6 +83,14 @@ Factory.define :search do |t|
   t.user_id { rand 10 ** 6 }
 end
 
+#create a valid preference
+Factory.define :preference do |t|
+  t.name {'columns'}
+  t.pref_type {'columns'}
+  t.value { ['col1', 'col2', 'col3'].to_json }
+  t.user_id { rand 10 ** 6 }  
+end
+
 # Create models with association chains already created. These real objects and
 # persist them in the database
 

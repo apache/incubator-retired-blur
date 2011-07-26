@@ -2,7 +2,7 @@ class SearchController < ApplicationController
   before_filter :current_zookeeper, :only => :show
   before_filter :zookeepers, :only => :show
 
-	#Show action that sets instance variables used to build the filter column
+  #Show action that sets instance variables used to build the filter column
   def show
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
     # required because of the lazy loading (in this case where a few more variables 
@@ -67,7 +67,7 @@ class SearchController < ApplicationController
     #           identifying rowId (I know, confusing...)
     #   Row: A row consisting of one record for each column family it spans.
 
-    @results = []
+!    @results = []
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime
     blur_results.results.each do |result_container|
@@ -138,7 +138,7 @@ class SearchController < ApplicationController
   end
   
   def save
-    drop = params[:column_data].first == "neighborhood_all"? params[:column_data].drop(1) : params[:column_data]
+    drop = params[:column_data].first == "neighborhood"? params[:column_data].drop(1).to_json : params[:column_data].to_json
     Search.create(:name          => params[:save_name],
                   :blur_table_id => params[:blur_table],
                   :super_query   => params[:super_query],
@@ -154,7 +154,22 @@ class SearchController < ApplicationController
       format.html {render :partial =>"saved"}
     end
   end
+  
+  def update
+    params[:column_data].delete 'neighborhood'
+    update_search = Search.find params[:search_id]
+    update_search.update_attributes(
+                  :name          => params[:save_name],
+                  :blur_table_id => params[:blur_table],
+                  :super_query   => params[:super_query],
+                  :columns       => params[:column_data].to_json,
+                  :fetch         => params[:result_count].to_i,
+                  :offset        => params[:offset].to_i,
+                  :user_id       => current_user.id,
+                  :query         => params[:query_string])
 
+    render :nothing => true
+  end
   private
     def preference_sort
       lambda do |a, b|

@@ -16,23 +16,23 @@
       			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['5 minutes', 5],
       			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['15 minutes', 15],
       			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['30 minutes', 30],
-      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['1 hour', 60]])
+      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['1 hour', 60]], @filters[0])
         .query_filter
           = label_tag :super_query_on, 'Super Query:'
           = select_tag :super_query_on, options_for_select([['All', nil],
          	                                                 	['On', true],
-                                                         	 	['Off', false]])
+                                                         	 	['Off', false]], @filters[1])
         .query_filter
           = label_tag :running, 'Running:'
           = select_tag :running, options_for_select([['All Queries', nil],
                                                      ['Yes', true],
-                                                     ['No', false]], true)
+                                                     ['No', false]], @filters[2])
         .query_filter
           = label_tag :interrupted, 'Interrupted:'
           = select_tag :interrupted, options_for_select([['All Queries', nil],
                                                          ['Yes', true],
-                                                         ['No', false]])
-        
+                                                         ['No', false]], @filters[3])
+
           = submit_tag 'filter'
 
     #selector_wrapper

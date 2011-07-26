@@ -11,11 +11,10 @@
   #data_container
     %span#toolbar.ui-widget-header.ui-corner-all
       %span#view_options
-        = radio_button_tag 'view_options', 'view1', true
-        = label_tag 'view_options_view1', 'View1'
-        = radio_button_tag 'view_options', 'view2'
-        = label_tag 'view_options_view2', 'View2'
+        = radio_button_tag 'view_options', 'list', true
+        = label_tag 'view_options_list', 'List View'
+        = radio_button_tag 'view_options', 'icon'
+        = label_tag 'view_options_icon', 'Icon View'
       %button{:type => "button", :id => 'view_button'}
-        Other Options
+        Placeholder Button
     #data_container_display
-    

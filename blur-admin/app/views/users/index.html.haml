@@ -2,19 +2,20 @@
 
 #admin_wrapper
   %h2 Users
-  %table
-    %tr
-      %th Username
-      %th Email
-      %th Roles
-      %th
-      %th
-    - for user in @users
+  #users_table
+    %table
       %tr
-        %td= user.username
-        %td= user.email
-        %td= user.roles.to_a.join ', '
-        %td= link_to 'Edit', edit_user_path(user)
-        %td= link_to 'Delete', user, :confirm => 'Are you sure?', :method => :delete
+        %th Username
+        %th Email
+        %th Roles
+        %th
+        %th
+      - for user in @users
+        %tr
+          %td= user.username
+          %td= user.email
+          %td= user.roles.to_a.join ', '
+          %td= link_to 'Edit', edit_user_path(user)
+          %td= link_to 'Delete', user, :confirm => 'Are you sure?', :method => :delete
 
   %p= link_to "New User", new_user_path

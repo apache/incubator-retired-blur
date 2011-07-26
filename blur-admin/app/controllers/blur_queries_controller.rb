@@ -16,6 +16,7 @@ class BlurQueriesController < ApplicationController
                              where(filters).
                              includes(:blur_table).
                              order("created_at DESC")
+    @filters = current_user.saved_filters
   end
 
   def refresh

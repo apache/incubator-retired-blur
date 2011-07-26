@@ -20,9 +20,9 @@ $(document).ready ->
     if $('.jstree-checked').length > 0 and $('#query_string').val() isnt  ''
       $('#search_submit').removeAttr('disabled')
       if $('#save_name').val() isnt ''
-        $('#save_button').removeAttr('disabled')
+        $('#save_button, #update_button').removeAttr('disabled')
       else
-        $('#save_button').attr('disabled', 'disabled')
+        $('#save_button, #update_button').attr('disabled', 'disabled')
     else
       $(':submit').attr('disabled', 'disabled')
 
@@ -45,11 +45,11 @@ $(document).ready ->
   # Initialize Help
   $('#help-link').click ()->
     $('#dialog-help').dialog
-      height: 550,
+      height: "auto",
       width: 710,
-      modal: true,
+      modal: false,
       resizable: false,
-      draggable:false
+      draggable: true
       
   # listener that checks if the submit button should be enabled on click
   $('#filter_section').live "click", -> toggle_submit()
@@ -176,9 +176,13 @@ $(document).ready ->
         else
           $('#super_query').removeAttr('checked')
         arr = eval(data.saved.search.columns)
+        #uncheck everything so we only check what we saved
+        $('.column_family_filter').jstree('uncheck_all')
+        #check everything in the tree
         $.each arr, (index, value) ->
           $('.column_family_filter').jstree('check_node', "#" + value)
         $('#search_submit').removeAttr('disabled')
+        
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->
@@ -201,10 +205,10 @@ $(document).ready ->
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
     parent = $(this)
-    $( "#dialog-confirm" ).dialog {
+    $( "#dialog-confirm" ).dialog
     			resizable: false,
     			modal: true,
-    			buttons: {
+    			buttons:
     				"Delete Query": ->
     				  $( this ).dialog "close"
     				  answer = true
@@ -216,9 +220,7 @@ $(document).ready ->
               $('#loading-spinner').show()
     				Cancel: ->
     					$( this ).dialog "close"
-    			}
-    		}
-    		
+
   #ajax listener for the save action
   $('#save_button').live 'click', (evt) ->
     $.ajax '/search/save/',
@@ -230,6 +232,33 @@ $(document).ready ->
         #display the results from the save
           $('.body#saved').html(data)
     $('#loading-spinner').show()
+    
+  #ajax listener for the save action
+  $('#update_button').live 'click', (evt) ->
+    send_request = false
+    search_id = ""
+    #if the name in the "name" field matches a search then we can update
+    $('.search_element').each (index, value) ->
+      if $(value).children('label').attr('title') == $('#save_name').val()
+        if send_request == true
+          send_request = false
+          return false
+        send_request = true
+        search_id = $(value).attr('id')
+    if send_request
+      $('#loading-spinner').show()
+      $.ajax '/search/' + search_id,
+        type: 'PUT',
+        data: $('#search_form').serialize(),
+        success: (data) ->
+          $('#loading-spinner').hide()
+    else
+      $( "#update-conflict" ).dialog
+      			resizable: false,
+      			modal: true,
+      			buttons:
+      				"Ok": ->
+      				  $(this).dialog "close"
 
       
 

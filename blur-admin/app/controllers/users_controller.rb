@@ -11,11 +11,15 @@ class UsersController < ApplicationController
   def show
     @tables = BlurTable.all
     @preferences = current_user.saved_cols
+    @filters = current_user.saved_filters
+    
     @choices = []
     BlurTable.all.each do |table|
       @choices << table.schema["columnFamilies"].keys
     end
     @choices.flatten!.uniq!
+    
+    puts @preferences.inspect
   end
 
   def new

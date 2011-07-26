@@ -114,6 +114,7 @@ describe SearchController do
       BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
       @user.stub(:username).and_return("name")
       @user.stub(:id).and_return(1)
+      @user.stub(:saved_cols).and_return(JSON.parse (Factory.stub :preference ).value)
     end
 
     def create_blur_result(options)

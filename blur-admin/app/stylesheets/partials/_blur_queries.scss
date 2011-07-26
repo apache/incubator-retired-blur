@@ -32,7 +32,7 @@
     
     @include standard-border;
     tr:nth-child(even) { background-color: white; };
-    tr:nth-child(odd) { background-color: $light-grey-color; };
+    tr:nth-child(odd) { background-color: $grey-div-color; };
     text-align: center;
     tr.error td{
       text-align: center;

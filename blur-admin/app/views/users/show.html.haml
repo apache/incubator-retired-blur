@@ -6,7 +6,7 @@
   .info-contain
     #pref-col-info
       #pref-bin
-        #pref-col 
+        #pref-col
           .section-label{:id => @current_user.id} My Saved Column Families
           %ul#my-cols.sort
             -if @preferences.size() == 0
@@ -29,6 +29,35 @@
             .fam{:id => "columns_#{option}"}  
               =option
                   
+    #pref-filter-info
+      #filter_wrapper
+        %h3
+          Filter Preferences
+        %filter_form
+          =form_tag('/preference/filter', :method => :post, :id => 'filters', :remote => true)
+          .query_filter
+            = label_tag :created_at_time, 'Within past:'
+            = select_tag :created_at_time, options_for_select([['1 minute', 1],
+        			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['5 minutes', 5],
+        			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['15 minutes', 15],
+        			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['30 minutes', 30],
+        			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['1 hour', 60]], @filters[0])
+          .query_filter
+            = label_tag :super_query_on, 'Super Query:'
+            = select_tag :super_query_on, options_for_select([['All', nil],
+           	                                                 	['On', true],
+                                                           	 	['Off', false]], @filters[1])
+          .query_filter
+            = label_tag :running, 'Running:'
+            = select_tag :running, options_for_select([['All Queries', nil],
+                                                       ['Yes', true],
+                                                       ['No', false]], @filters[2])
+          .query_filter
+            = label_tag :interrupted, 'Interrupted:'
+            = select_tag :interrupted, options_for_select([['All Queries', nil],
+                                                           ['Yes', true],
+                                                           ['No', false]], @filters[3])
+      
 
     #user-info
       %p

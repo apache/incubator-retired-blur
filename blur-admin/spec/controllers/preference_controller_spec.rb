@@ -15,16 +15,14 @@ describe PreferenceController do
     end
     
     it "should render a blank response when given the correct variables" do
-      Preference.stub(:find_by_user_id).and_return(@preference)
+      Preference.stub(:find_or_create_by_user_id_and_pref_type_and_name).and_return(@preference)
       post :save, :columns => ["column1", "column2"]
       response.body.should be_blank
     end
     
     it "should create a new preference when one does not exist" do
+      Preference.stub(:find_or_create_by_user_id_and_pref_type_and_name).and_return(@preference)
       controller.stub!(:current_user).and_return @user
-      Preference.stub(:find_by_user_id).and_return nil
-      Preference.stub(:create).and_return @preference
-      Preference.should_receive(:create).with(:name => "column", :pref_type => "column", :user_id => @user.id)
       @preference.should_receive(:value=).with(["column1", "column2"].to_json())
       post :save, :columns => ["column1", "column2"]
       response.body.should be_blank

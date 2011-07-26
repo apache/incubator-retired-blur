@@ -12,14 +12,24 @@ class User < ActiveRecord::Base
   # declare the valid roles -- do not change the order if you add more
   # roles later, always append them at the end!
   roles :editor, :admin, :reader, :auditor
-  
+
   #returns the array of saved cols
   def saved_cols
-    ret = []
-    self.preferences.find_all_by_pref_type(:column).each do |pref|
-      ret = JSON.parse(pref[:value]) unless pref[:value] == "null"
-    end
-    ret.flatten.uniq
+    ret = JSON.parse(
+      Preference.find_or_create_by_user_id_and_pref_type( self.id, 
+                                                          :pref_type => :columns,
+                                                          :name => :filters,
+                                                          :value => []).value)
+    ret.uniq
+  end
+  
+  #returns the array of saved cols
+  def saved_filters
+    JSON.parse (
+      Preference.find_or_create_by_user_id_and_pref_type( self.id, 
+                                                          :pref_type => :filters, 
+                                                          :name => :filters, 
+                                                          :value => [1, nil, nil, nil].to_json).value)
   end
 
   # the roles are virtual attributes needed to use form helpers

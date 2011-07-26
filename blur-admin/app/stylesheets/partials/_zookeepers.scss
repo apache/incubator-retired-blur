@@ -6,7 +6,7 @@
     @include border;
     @include border-radius;
     margin-bottom: 2em;
-    background-color: $light-grey-color;
+    background-color: $grey-div-color;
   }
 
   @mixin inner-container {
@@ -44,13 +44,13 @@
   h2 { @include prefix(0.25) }
   h3 { margin-top: 0.5em; }
 
-  .ui-state-highlight, .ui-state-error, .ui-state-yellow {
+  .green_box, .ui-state-error, .yellow_box {
     text-align:center;
     margin: 5px;
     width: 100px;
   }
 
-  h4.name, .ui-state-highlight, .ui-state-error, .ui-state-yellow { display: inline-block; }
+  h4.name, .green_box, .ui-state-error, .yellow_box { display: inline-block; }
 }
 
 #zookeepers_wrapper{
@@ -61,38 +61,45 @@
   padding-bottom: 165px;
 
   .zookeeper_info {
+    @include standard-border;
     max-width: 500px;
     min-width: 400px;
     margin-left: 20px;
     margin-right: 10px;
     margin-bottom: 20px;
     float: left;
-    @include standard-border;
     display: inline-block;
     background-color: white;
 
     table{
       width: 100%;
-      th { width: 100%; font-size: 1.2em; @include border-top-radius; border: none; }
-      td { @include standard-font;}
+      margin: 0;
+      th { width: 100%; font-size: 1.2em; @include border-top-radius(4px); border: none; }
+      td { @include standard-font; padding-bottom: 1em;}
       td.cont, td.shard { text-align: center; }
       .index { vertical-align: top; }
     }
+    
+    &:hover {
+      cursor: pointer;
+      background: mix(white, $row-hover, 50%);
+    }
   }
 
-  h2 { @include columns(15, $total-cols); }
-  .warning { margin: 0; @include columns(13, $total-cols); @include omega($total-cols); text-align: right;}
+  .warning { height: 18px; text-align: center; }
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
 
   .green_box, .ui-state-error, .yellow_box, .grey_box { margin-bottom: 5px; width: 160px; }
-  .grey_box { background-color: $grey-color; @include border; }
-  .green_box { background: $green-state-color; color: white; border: $border_width $border_style $green-border-color; }
-  .yellow_box { background: $yellow-state-color; border: $border_width $border_style $yellow-border-color; }
 
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
   .number {width: 20px; text-align: right; }
   .word {width: 130px; text-align: left;}
+
 }
 
-.warning { color: #b81900; font-weight: bold; }
+.grey_box { background-color: $grey-color; @include border; }
+.green_box { background: $green-state-color; color: white; border: $border_width $border_style $green-border-color; }
+.yellow_box { background: $yellow-state-color; border: $border_width $border_style $yellow-border-color; }
+
+.warning { color: $red-state-color; font-weight: bold; }

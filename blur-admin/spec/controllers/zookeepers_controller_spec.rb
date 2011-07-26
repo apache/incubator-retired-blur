@@ -103,10 +103,15 @@ describe ZookeepersController do
       get :index
       assigns(:zookeepers).should == [@zookeeper]
     end
+    it "renders the index template" do
+      get :index
+      response.should render_template 'index'
+    end
   end
 
   describe 'GET dashboard' do
-    it "gets all of the current zookeeper data" do
+    it "renders a json object"
+    it "collects the long queries data" do
       get :dashboard
     end
   end

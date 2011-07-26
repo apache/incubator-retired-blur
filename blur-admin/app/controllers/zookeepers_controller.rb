@@ -1,6 +1,6 @@
 class ZookeepersController < ApplicationController
 
-  before_filter :current_zookeeper, :only => :show_current
+  before_filter :current_zookeeper, :only => [:show_current, :show]
   before_filter :zookeepers, :only => [:show_current, :index]
 
   QUERY = "
@@ -36,6 +36,11 @@ class ZookeepersController < ApplicationController
     @zookeepers = Zookeeper.select('name, id').order('name')
   end
   
+  def show
+    session[:current_zookeeper_id] = params[:id] if params[:id]
+    redirect_to :zookeeper
+  end
+  
   def show_current
     @zookeeper = @current_zookeeper
 
@@ -60,7 +65,6 @@ class ZookeepersController < ApplicationController
     connection.execute(QUERY).each_hash { |row| zookeeper_results << row }
 
     @zookeeper_status = zookeeper_results
-
     respond_to do |format|
       format.json { render :json => @zookeeper_status.to_json() }
     end

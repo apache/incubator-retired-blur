@@ -7,6 +7,7 @@ BlurAdmin::Application.routes.draw do
   match 'zookeeper' => 'zookeepers#show_current', :as => :zookeeper
   match 'zookeepers/make_current' => 'zookeepers#make_current', :via => :put, :as => :make_current_zookeeper
   match 'zookeepers/dashboard' => 'zookeepers#dashboard', :via => :get, :as => :dashboard
+  match 'zookeepers/:id' => 'zookeepers#show', :via => :get
 
   resources :blur_tables do
     get 'hosts', :on => :member
@@ -28,11 +29,14 @@ BlurAdmin::Application.routes.draw do
   match 'search/delete/:search_id/:blur_table' => 'search#delete', :via => :delete
   match 'search/:search_id/:blur_table' => 'search#create'
   match 'search/save/' => 'search#save', :via => :post
+  match 'search/:search_id' => 'search#update', :via => :put
   match 'reload/:blur_table' => 'search#reload'
   match 'preference/save' => 'preference#save', :via => :post
+  match 'preference/filter' => 'preference#save_filters', :via => :post
 
   resources :hdfs
   match 'hdfs/:file' => 'hdfs#files', :via => :post
+  match 'hdfs/:file/:files' => 'hdfs#files', :via => :post
 
   root :to => 'zookeepers#index'
 

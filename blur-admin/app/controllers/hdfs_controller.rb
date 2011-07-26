@@ -8,18 +8,23 @@ class HdfsController < ApplicationController
 
   def files
     @file_name = params[:file]
-    @file_names = []
-    if temp_files.has_key?(@file_name)
-      @file_names = temp_files[@file_name]
-    end
+    @file_names = params[:files].split(',') if params[:files]
 
    render :template=>'hdfs/files.html.haml', :layout => false
   end
 
   def temp_files
-    @files = {'file1' => ['element1'],
-      'file2' => ['element1', 'element2', 'element3'],
-      'file3' => ['element1', 'element2']}
+    @files = {
+      'root1' => {
+        'file1' => {'element1' => {}},
+        'file2' => {'element2' => {}, 'element3' => {}, 'element4' => {}},
+        'file3' => {'element5' => {}, 'element6' => {}} },
+      'root2' => {
+        'file4' => {'element7' => {'element8' => {'element9' => {'element10' => {}}}}},
+        'file5' => {'element11' => {}, 'element12' => {}, 'element13' => {}},
+        'file6' => {'element14' => {}, 'element15' => {}}
+        }
+      }
   end
 
 end

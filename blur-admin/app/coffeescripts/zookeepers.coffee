@@ -2,20 +2,10 @@ $(document).ready ->
   # Updates all fields on the dashboard
   load_dashboard = () ->
     $.getJSON '/zookeepers/dashboard', (data) ->
-      console.log(data)
-
-      # Displays a warning message if 1 or more queries have been running for over a minute
-      # long_queries = parseInt ( data.long_queries )
-      #       if long_queries < 1
-      #         query_message = '<div></div>'
-      #       else if long_queries == 1
-      #         query_message = '<div>1 query has been running for more than a minute</div>'
-      #       else
-      #         query_message = '<div>' + data.long_queries + ' queries have been running for more than a minute</div>'
-      #       $('.warning').html(query_message)
 
       # Updates the fields for each zookeeper
-      # zookeepers = data.zookeepers
+      zookeepers = data.zookeepers
+      long_queries = data.long_queries
       $.each( data, ->
         zookeeper_table = $('#zookeepers').find("#" + this.id )
 
@@ -29,6 +19,15 @@ $(document).ready ->
           current_zookeeper.removeClass('green_box')
           current_zookeeper.addClass('ui-state-error')
           current_zookeeper.find('.zookeeper-status').html('<div> - Offline</div>')
+
+        # Updates the warning for long queries
+        query_message = '<div></div>'
+        if parseInt(this.long_running_queries) > 0
+          if this.long_running_queries == "1"
+            query_message = '<div>1 query has been running for more than a minute</div>'
+          else
+            query_message = '<div>' + this.long_running_queries + ' queries have been running for more than a minute</div>'
+        zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards
         status_shards = $('#' + zookeeper_table[0].id).find(".stat-shard")
@@ -147,7 +146,11 @@ $(document).ready ->
         $('#zookeepers_wrapper').show()
       )
 
-    # Sets auto updates to run every minute
+    # Sets auto updates to run every 5 secs
     setTimeout(load_dashboard, 5000)
 
   load_dashboard()
+
+  $('.zookeeper_info').live 'click', ->
+    window.location = "/zookeepers/" + $(this).children('table').attr('id')
+

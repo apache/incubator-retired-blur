@@ -79,10 +79,14 @@
       td.cont, td.shard { text-align: center; }
       .index { vertical-align: top; }
     }
+    
+    &:hover {
+      cursor: pointer;
+      background: #FFFCD6;
+    }
   }
 
-  h2 { @include columns(15, $total-cols); }
-  .warning { margin: 0; @include columns(13, $total-cols); @include omega($total-cols); text-align: right;}
+  .warning { height: 18px; text-align: center; }
 
   #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
 
@@ -91,6 +95,7 @@
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
   .number {width: 20px; text-align: right; }
   .word {width: 130px; text-align: left;}
+
 }
 
 .grey_box { background-color: $grey-color; @include border; }

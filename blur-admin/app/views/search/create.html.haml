@@ -1,4 +1,27 @@
+= debug @results
 - if @results and not @results.empty?
+  %table
+
+    - @results.each do |result|
+      - result_stripe = cycle('odd', 'even', :name => 'row-cycle')
+      - max_record_count = result[:max_record_count]
+
+      - max_record_count.times do |i|                                   # rows
+        %tr{:class => result_stripe}
+
+        - @schema.each_with_index do |column_family, j|
+          - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
+          - if i == 0 and j == 0
+            %td.rowId.id_cell{:rowspan => max_record_count, :title => "rowId"}
+              = result[:id]
+          - record = result[:column_families][column_family][i]
+
+          - @schema[column_family].each do |column|
+            %td{:class => cf_stripe}
+              = record[:columns][:column]
+
+
+
   #results_info
     = "#{@result_count} results found in #{@result_time} ms"
   #results_section
@@ -26,6 +49,7 @@
                 - if i == 0
                   %td.rowId.id_cell{:rowspan => result[:row_count], :title => "rowId"}
                     = result[:id]
+                    = result[:rows].class
                 - reset_cycle('column-cycle')
                 - row.each_with_index do |family, j|
                   - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')

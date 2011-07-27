@@ -10,16 +10,30 @@ $(document).ready ->
 
   # Listener to hide dialog on click
   $('.ui-widget-overlay').live "click", -> $(".ui-dialog-content").dialog "close"
-
-  $('[title]').tooltip
+  
+  #faster tooltip for the search table
+  $('[title]:not(.action-icon)').tooltip
     show:
       delay: 250
+  
+  #slower tooltip for the saved buttons  
+  $('.action-icon').tooltip
+    show:
+      delay: 1000
+          
   $('html').live 'ajax:success', ->
     # remove old tooltips
     $('.ui-tooltip').remove()
-    $('[title]').tooltip
+    
+    #faster tooltip for the search table
+    $('[title]:not(.action-icon)').tooltip
       show:
         delay: 250
+        
+    #slower tooltip for the saved buttons    
+    $('.action-icon').tooltip
+      show:
+        delay: 1000
         
   #fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow")

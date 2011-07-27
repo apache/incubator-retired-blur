@@ -83,25 +83,25 @@ public class Agent {
 		List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
 		for (String zkInstance : zooKeeperInstances) {
 			String zkUrl = props.getProperty("zk."+zkInstance+".url");
-			new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc)).start();
+			new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props)).start();
 		}
 		
 		List<String> activeCollectors = new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|")));
 		
-		Map<String, String> hdfsInstances = loadHdfsInstances(props);
+		Map<String, Map<String, String>> hdfsInstances = loadHdfsInstances(props);
 		Map<String, String> blurInstances = loadBlurInstances(props);
 		
-		for (Map.Entry<String, String> hdfsEntry : hdfsInstances.entrySet()) {
-			HDFSCollector.initializeHdfs(hdfsEntry.getKey(), hdfsEntry.getValue(), jdbc);
+		for (Map.Entry<String, Map<String, String>> hdfsEntry : hdfsInstances.entrySet()) {
+			HDFSCollector.initializeHdfs(hdfsEntry.getKey(), hdfsEntry.getValue().get("thrift"), jdbc);
 		}
 		
 		//Start polling
 		while(true) {
 			//Pull HDFS information
 			if (activeCollectors.contains("hdfs")) {
-				for (String uri : hdfsInstances.values()) {
+				for (Map<String, String> instance : hdfsInstances.values()) {
 					try {
-						HDFSCollector.startCollecting(uri, jdbc);
+						//HDFSCollector.startCollecting(instance.get("default"), jdbc);
 					} catch (Exception e) {
 						System.out.println("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
 					}
@@ -153,14 +153,17 @@ public class Agent {
 		return instances;
 	}
 
-	private Map<String, String> loadHdfsInstances(Properties props) {
-		Map<String, String> instances = new HashMap<String, String>();
+	private Map<String, Map<String, String>> loadHdfsInstances(Properties props) {
+		Map<String, Map<String, String>> instances = new HashMap<String, Map<String, String>>();
 		
 		if (props.containsKey("hdfs.instances")) {
 			String[] hdfsNames = props.getProperty("hdfs.instances").split("\\|");
 			
 			for (String hdfs : hdfsNames) {
-				instances.put(hdfs, props.getProperty("hdfs." + hdfs + ".url"));
+				Map<String, String> instanceInfo = new HashMap<String, String>();
+				instanceInfo.put("thrift", props.getProperty("hdfs.thrift." + hdfs + ".url"));
+				instanceInfo.put("default", props.getProperty("hdfs." + hdfs + ".url"));
+				instances.put(hdfs, instanceInfo);
 			}
 		}
 		

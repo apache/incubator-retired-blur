@@ -14,37 +14,46 @@ import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class HDFSCollector {
-	public static void startCollecting(String uriString, JdbcTemplate jdbc) {
+	public static void startCollecting(final String uriString, final JdbcTemplate jdbc) {
 		try {
 			System.out.println("HDFS Collector");
-			URI uri = new URI(uriString);
-			FileSystem fileSystem = FileSystem.get(uri, new Configuration());
-
-			System.out.println(fileSystem.getClass());
-			if (fileSystem instanceof DistributedFileSystem) {
-				DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
-
-				DiskStatus ds = dfs.getDiskStatus();
-				long capacity = ds.getCapacity();
-				long used = ds.getDfsUsed();
-				long remaining = ds.getRemaining();
-				long presentCapacity = used + remaining;
-
-				System.out.println("Configured Capacity: " + capacity);
-				System.out.println("Present Capacity: " + presentCapacity);
-				System.out.println("DFS Remaining: " + remaining);
-				System.out.println("DFS Used: " + used);
-				System.out.println("DFS Used%: " + (((1.0 * used) / presentCapacity) * 100) + "%");
-				System.out.println("Under replicated blocks: " + dfs.getUnderReplicatedBlocksCount());
-				System.out.println("Blocks with corrupt replicas: " + dfs.getCorruptBlocksCount());
-				System.out.println("Missing blocks: " + dfs.getMissingBlocksCount());
-				System.out.println();
-				System.out.println("-------------------------------------------------");
-
-				DatanodeInfo[] live = dfs.getClient().datanodeReport(DatanodeReportType.LIVE);
-				DatanodeInfo[] dead = dfs.getClient().datanodeReport(DatanodeReportType.DEAD);
-				System.out.println("Datanodes available: " + live.length + " ("	+ (live.length + dead.length) + " total, " + dead.length + " dead)\n");
-			}
+			new Thread(new Runnable(){
+				@Override
+				public void run() {
+					try {
+						URI uri = new URI(uriString);
+						FileSystem fileSystem = FileSystem.get(uri, new Configuration());
+	
+						System.out.println(fileSystem.getClass());
+						if (fileSystem instanceof DistributedFileSystem) {
+							DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
+	
+							DiskStatus ds = dfs.getDiskStatus();
+							long capacity = ds.getCapacity();
+							long used = ds.getDfsUsed();
+							long remaining = ds.getRemaining();
+							long presentCapacity = used + remaining;
+	
+							System.out.println("Configured Capacity: " + capacity);
+							System.out.println("Present Capacity: " + presentCapacity);
+							System.out.println("DFS Remaining: " + remaining);
+							System.out.println("DFS Used: " + used);
+							System.out.println("DFS Used%: " + (((1.0 * used) / presentCapacity) * 100) + "%");
+							System.out.println("Under replicated blocks: " + dfs.getUnderReplicatedBlocksCount());
+							System.out.println("Blocks with corrupt replicas: " + dfs.getCorruptBlocksCount());
+							System.out.println("Missing blocks: " + dfs.getMissingBlocksCount());
+							System.out.println();
+							System.out.println("-------------------------------------------------");
+	
+							DatanodeInfo[] live = dfs.getClient().datanodeReport(DatanodeReportType.LIVE);
+							DatanodeInfo[] dead = dfs.getClient().datanodeReport(DatanodeReportType.DEAD);
+							System.out.println("Datanodes available: " + live.length + " ("	+ (live.length + dead.length) + " total, " + dead.length + " dead)\n");
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}).start();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

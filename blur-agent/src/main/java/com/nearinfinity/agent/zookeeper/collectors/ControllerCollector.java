@@ -3,6 +3,7 @@ package com.nearinfinity.agent.zookeeper.collectors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
@@ -10,16 +11,21 @@ import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.zookeeper.InstanceManager;
+import com.nearinfinity.agent.zookeeper.ZookeeperInstance;
 
 public class ControllerCollector {
 	private ZooKeeper zk;
 	private int instanceId;
 	private JdbcTemplate jdbc;
+	private Properties props;
+	private ZookeeperInstance zki;
 	
-	private ControllerCollector(InstanceManager manager, JdbcTemplate jdbc) {
+	private ControllerCollector(InstanceManager manager, JdbcTemplate jdbc, Properties props, ZookeeperInstance zki) {
 		this.zk = manager.getInstance();
 		this.instanceId = manager.getInstanceId();
 		this.jdbc = jdbc;
+		this.props = props;
+		this.zki = zki;
 		
 		updateControllers();
 	}
@@ -53,8 +59,12 @@ public class ControllerCollector {
 	
 	private List<String> getControllers() {
 		try {
-			// TODO: This will be changed when controller won't be under the cluster
-			return zk.getChildren("/blur/default/online/controller-nodes", false);
+			if ("old".equals(props.getProperty("zk." + zki.getName() + ".version"))) {
+				// TODO: This will be changed when controller won't be under the cluster
+				return zk.getChildren("/blur/default/online/controller-nodes", false);
+			} else {
+				return zk.getChildren("/blur/whos/online/controller-nodes", false);
+			}
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -63,7 +73,7 @@ public class ControllerCollector {
 		return new ArrayList<String>();
 	}
 
-	public static void collect(InstanceManager manager, JdbcTemplate jdbc) {
-		new ControllerCollector(manager, jdbc);
+	public static void collect(InstanceManager manager, JdbcTemplate jdbc, Properties props, ZookeeperInstance zki) {
+		new ControllerCollector(manager, jdbc, props, zki);
 	}
 }

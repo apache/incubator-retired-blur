@@ -2,7 +2,7 @@ $(document).ready ->
   # Updates all fields on the dashboard
   load_dashboard = () ->
     $.getJSON '/zookeepers/dashboard', (data) ->
-
+      console.log(data)
       # Updates the fields for each zookeeper
       zookeepers = data.zookeepers
       long_queries = data.long_queries

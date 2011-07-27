@@ -1,10 +1,14 @@
 class HdfsController < ApplicationController
 
-  require 'hdfs_thrift_client'
+  #require 'hdfs_thrift_client'
 
   def index
     temp_files
-    #@hdfs_options = Hdfs.select('name, id').order('name')
+    @hdfs_ids = HdfsStats.select 'id'
+    puts '***********************************'
+    puts @hdfs_ids.inspect
+    puts HdfsThriftClient.client
+    #puts HdfsThriftClient.client(@hdfs_ids.first.id)
   end
 
   def files

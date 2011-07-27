@@ -171,6 +171,7 @@ $(document).ready ->
         $('#result_count').val(data.saved.search.fetch)
         $('#offset').val(data.saved.search.offset)
         $('#query_string').val(data.saved.search.query)
+        $('#save_name').val(data.saved.search.name)
         if data.saved.search.super_query
           $('#super_query').attr('checked', 'checked')
         else

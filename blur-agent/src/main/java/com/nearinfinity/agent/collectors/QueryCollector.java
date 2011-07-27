@@ -30,23 +30,7 @@ public class QueryCollector {
 						
 						for (BlurQueryStatus blurQueryStatus : currentQueries) {
 							//Check if query exists
-							List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete from blur_queries where blur_table_id=? and uuid=?", new Object[]{TableMap.get().get(table), blurQueryStatus.getUuid()});
-//							
-//							Calendar c = Calendar.getInstance();
-//						    System.out.println("current: "+c.getTime());
-//
-//						    TimeZone z = c.getTimeZone();
-//						    int offset = z.getRawOffset();
-//						    int offsetHrs = offset / 1000 / 60 / 60;
-//						    int offsetMins = offset / 1000 / 60 % 60;
-//
-//						    System.out.println("offset: " + offsetHrs);
-//						    System.out.println("offset: " + offsetMins);
-//
-//						    c.add(Calendar.HOUR_OF_DAY, (-offsetHrs));
-//						    c.add(Calendar.MINUTE, (-offsetMins));
-//
-//						    System.out.println("GMT Time: "+c.getTime());
+							List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete, cpu_time, real_time, interrupted, running from blur_queries where blur_table_id=? and uuid=?", new Object[]{TableMap.get().get(table), blurQueryStatus.getUuid()});
 							
 							if (existingRow.isEmpty()) {
 								Calendar cal = Calendar.getInstance();
@@ -75,7 +59,7 @@ public class QueryCollector {
 												blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnsToFetch()),
 												blurQueryStatus.getQuery().getUserId()
 											});
-							} else {
+							} else if (queryHasChanged(blurQueryStatus, existingRow.get(0))){
 								Calendar cal = Calendar.getInstance();
 								TimeZone z = cal.getTimeZone();
 								cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
@@ -94,6 +78,14 @@ public class QueryCollector {
 						
 					}
 					return null;
+				}
+
+				private boolean queryHasChanged(BlurQueryStatus blurQueryStatus, Map<String, Object> map) {
+					return !(blurQueryStatus.getRealTime() == (Integer)map.get("REAL_TIME") && 
+							blurQueryStatus.getCpuTime() == (Integer)map.get("CPU_TIME") &&
+							blurQueryStatus.isInterrupted() == (Boolean)map.get("INTERRUPTED") &&
+							blurQueryStatus.isRunning() == (Boolean)map.get("RUNNING") &&
+							blurQueryStatus.getComplete() == (Integer)map.get("COMPLETE"));
 				}
 			});
 		} catch (Exception e) {

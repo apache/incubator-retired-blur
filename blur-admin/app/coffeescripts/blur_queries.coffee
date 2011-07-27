@@ -3,6 +3,14 @@ $(document).ready ->
   add_color = '#95D169' #color to highlight added rows
   update_color = '#E68F00'
   remove_color = '#E01E00'
+  
+  #grabs the current filter values and shows them in the header
+  show_filter_choices = () ->
+    info = 'Current Filters: '
+    info += $('#created_at_time :selected').text() + " | "
+    info += $('#super_query_on :selected').text() + " | "
+    info += $('#running :selected').text() + " | "
+    info += $('#interrupted :selected').text()
 
   # adds time to data-age of selected elements, and 
   # retires them if past retirement age
@@ -144,10 +152,18 @@ $(document).ready ->
           $('.ui-widget-overlay').bind 'click', -> 
             $('#more-info-table').dialog('close')
 
+  #when the page loads show the currently selected filters
+  $('#current').text(show_filter_choices())
+  
+  $('#filter_form').live 'change', ->
+    $('#current').text(show_filter_choices())
+  
   $('#filter_wrapper').accordion
     collapsible: true
     autoHeight: false
     active: false
+    change: ->
+      $('#current').text(show_filter_choices())
   
   # Listener for the table selector
   $('#blur_table_id').live 'change', ->
@@ -165,9 +181,23 @@ $(document).ready ->
     clearTimeout(timer)
     if $(this).val() is 'continuous'
       $('#filter_form').submit()
+      $('#pause').show()
     else if $(this).val() isnt 'false'
       period = $(this).val() * 1000
       set_timer()
+    if $(this).val() isnt 'continuous'
+      $('#pause').hide()
+      $('#pause').removeClass 'ui-icon-play'
+      $('#pause').addClass 'ui-icon-pause'
+
+  # Listener for pause/play button
+  $('#pause').live 'click', ->
+    if $(this).hasClass 'ui-icon-pause'
+      $(this).removeClass 'ui-icon-pause'
+      $(this).addClass 'ui-icon-play'
+    else
+      $(this).removeClass 'ui-icon-play'
+      $(this).addClass 'ui-icon-pause'
 
   # Listener for cancel button (launches dialog box)
   $('.cancel_query_button').live 'click', ->

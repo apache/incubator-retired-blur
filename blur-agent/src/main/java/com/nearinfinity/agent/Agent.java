@@ -9,7 +9,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.ParseException;
@@ -79,40 +81,50 @@ public class Agent {
 		
 		//Initialize ZooKeeper watchers
 		List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
-		System.out.println(zooKeeperInstances);
 		for (String zkInstance : zooKeeperInstances) {
 			String zkUrl = props.getProperty("zk."+zkInstance+".url");
-			System.out.println(zkUrl);
 			new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc)).start();
 		}
 		
 		List<String> activeCollectors = new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|")));
 		
+		Map<String, String> hdfsInstances = loadHdfsInstances(props);
+		Map<String, String> blurInstances = loadBlurInstances(props);
+		
+		for (Map.Entry<String, String> hdfsEntry : hdfsInstances.entrySet()) {
+			HDFSCollector.initializeHdfs(hdfsEntry.getKey(), hdfsEntry.getValue(), jdbc);
+		}
+		
 		//Start polling
 		while(true) {
 			//Pull HDFS information
 			if (activeCollectors.contains("hdfs")) {
-				try {
-					HDFSCollector.startCollecting(props.getProperty("hdfs.url"), jdbc);
-				} catch (Exception e) {
-					System.out.println("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
+				for (String uri : hdfsInstances.values()) {
+					try {
+						HDFSCollector.startCollecting(uri, jdbc);
+					} catch (Exception e) {
+						System.out.println("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
+					}
 				}
-//				HDFSCollector.startCollecting("hdfs://192.168.64.130:8020/");
 			}
 			//Pull Query information
 			if (activeCollectors.contains("queries")) {
-				try {
-					QueryCollector.startCollecting(props.getProperty("blur.url"), jdbc);
-				} catch (Exception e) {
-					System.out.println("Unable to collect Query status, will try again next pass: " + e.getMessage());
+				for (String uri : blurInstances.values()) {
+					try {
+						QueryCollector.startCollecting(uri, jdbc);
+					} catch (Exception e) {
+						System.out.println("Unable to collect Query status, will try again next pass: " + e.getMessage());
+					}
 				}
 			}
 			//Pull Table information
 			if (activeCollectors.contains("tables")) {
-				try {
-					TableCollector.startCollecting(props.getProperty("blur.url"), jdbc);
-				} catch (Exception e) {
-					System.out.println("Unable to collect Table information, will try again next pass: " + e.getMessage());
+				for (String uri : blurInstances.values()) {
+					try {
+						TableCollector.startCollecting(uri, jdbc);
+					} catch (Exception e) {
+						System.out.println("Unable to collect Table information, will try again next pass: " + e.getMessage());
+					}
 				}
 			}
 			
@@ -125,5 +137,33 @@ public class Agent {
 		}
 		
 		System.out.println("Exiting polling agent");
+	}
+
+	private Map<String, String> loadBlurInstances(Properties props) {
+		Map<String, String> instances = new HashMap<String, String>();
+		
+		if (props.containsKey("blur.instances")) {
+			String[] blurNames = props.getProperty("blur.instances").split("\\|");
+			
+			for (String blur : blurNames) {
+				instances.put(blur, props.getProperty("blur." + blur + ".url"));
+			}
+		}
+		
+		return instances;
+	}
+
+	private Map<String, String> loadHdfsInstances(Properties props) {
+		Map<String, String> instances = new HashMap<String, String>();
+		
+		if (props.containsKey("hdfs.instances")) {
+			String[] hdfsNames = props.getProperty("hdfs.instances").split("\\|");
+			
+			for (String hdfs : hdfsNames) {
+				instances.put(hdfs, props.getProperty("hdfs." + hdfs + ".url"));
+			}
+		}
+		
+		return instances;
 	}
 }

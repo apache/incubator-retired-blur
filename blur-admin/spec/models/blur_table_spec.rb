@@ -41,24 +41,25 @@ describe BlurTable do
 
   describe "sort" do
     before(:each) do
-      @disabled = BlurTable.new :status => "1"
-      @enabled = BlurTable.new :status => "2"
+      @disabled = BlurTable.new :status => "1", :table_name => 'a'
+      @enabled = BlurTable.new :status => "2", :table_name => 'blah'
+      @enabled_diff_name = BlurTable.new :status => "2", :table_name => 'zoo'
     end
 
-    it "returns 0 when two tables have the same status" do
+    it "returns 0 when two tables have the same status and name" do
       (@table <=> @enabled).should == 0
     end
 
-    it "returns 1 when a table is enabled" do
-      (@table <=> @enabled).should == 0
+    it "returns -1 when both tables are enabled but @table is first alphabetically" do
+      (@table <=> @enabled_diff_name).should == -1
     end
 
-    it "returns 1 when a table is enabled and the other is not" do
-      (@table <=> @disabled).should == 1
+    it "returns -1 when a table is enabled and the other is not" do
+      (@table <=> @disabled).should == -1
     end
 
-    it "returns -1 when a table is diasbled and the other is not" do
-      (@disabled <=> @enabled).should == -1
+    it "returns 1 when a table is diasbled and the other is not" do
+      (@disabled <=> @enabled).should == 1
     end
   end
 end

@@ -8,7 +8,7 @@
 
     #filter_wrapper
       %h3
-        = link_to 'Filters', ''
+        = link_to 'Filters', '', :id => :filter_header
       %div
         .query_filter
           = label_tag :created_at_time, 'Within past:'
@@ -38,7 +38,7 @@
     #selector_wrapper
       = label_tag :blur_table_id, 'Blur Table:'
       = select_tag :blur_table_id,
-          options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
+          options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")   
 
       #refresh_wrapper
         = hidden_field_tag :time_since_refresh
@@ -48,6 +48,10 @@
                                                           ['every 10 seconds', 10],
                                                           ['every 1 minute', 60],
                                                           ['every 10 minutes', 600]])
+      #current                                                     
+
+      #pause_button
+        #pause.ui-icon.ui-icon-pause{:value => 'pause', :style => 'display:none;'}
 
     = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading...", :style => "display:none;"
 

@@ -78,7 +78,7 @@ $(document).ready ->
         $(this).remove()
 
   # Listener for enable/disable button (launches dialog box)
-  $('.enable_disable_table_button').live 'click', ->
+  $('.disable_table_button').live 'click', ->
     #array of buttons, so that they are dynamic
     btns = {}
     btns[$(this).val()] = -> 
@@ -88,7 +88,26 @@ $(document).ready ->
       $(this).dialog 'close'
       
     form = $(this).closest 'form.update'
-    $("<div class='confirm_enable_disable'>Are you sure you want to enable/disable this table?</div>").dialog
+    $("<div class='confirm_enable_disable'>Are you sure you want to disable this table?</div>").dialog
+      modal: true,
+      draggable: false,
+      resizable: false,
+      buttons: btns,        
+      close: ->
+        $(this).remove()
+        
+  # Listener for enable/disable button (launches dialog box)
+  $('.enable_table_button').live 'click', ->
+    #array of buttons, so that they are dynamic
+    btns = {}
+    btns[$(this).val()] = -> 
+      form.submit()
+      $(this).dialog 'close'
+    btns["cancel"] = -> 
+      $(this).dialog 'close'
+
+    form = $(this).closest 'form.update'
+    $("<div class='confirm_enable_disable'>Are you sure you want to enable this table?</div>").dialog
       modal: true,
       draggable: false,
       resizable: false,

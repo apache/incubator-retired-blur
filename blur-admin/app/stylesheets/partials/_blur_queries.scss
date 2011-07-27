@@ -23,6 +23,7 @@
     }
     #refresh_wrapper, #pause_button{ @include prefix(1); display:inline-block;}
     #pause{
+      margin: 2px;
       @include border;
       cursor:pointer;
       &:hover{

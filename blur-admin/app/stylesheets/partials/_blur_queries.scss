@@ -77,6 +77,10 @@
       display: table-row;
     }
   }
+  
+  #current{
+    @include omega;
+  }
 
   .ui-tooltip { @include standard-font; }
   @include standard-font;

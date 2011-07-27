@@ -77,7 +77,7 @@ $(document).ready ->
       close: ->
         $(this).remove()
 
-  # Listener for enable/disable button (launches dialog box)
+  # Listener for disable button (launches dialog box)
   $('.disable_table_button').live 'click', ->
     #array of buttons, so that they are dynamic
     btns = {}
@@ -96,7 +96,7 @@ $(document).ready ->
       close: ->
         $(this).remove()
         
-  # Listener for enable/disable button (launches dialog box)
+  # Listener for enable button (launches dialog box)
   $('.enable_table_button').live 'click', ->
     #array of buttons, so that they are dynamic
     btns = {}

@@ -6,7 +6,7 @@ $(document).ready ->
   
   #grabs the current filter values and shows them in the header
   show_filter_choices = () ->
-    info = 'Filters: '
+    info = 'Current Filters: '
     info += $('#created_at_time :selected').text() + " | "
     info += $('#super_query_on :selected').text() + " | "
     info += $('#running :selected').text() + " | "
@@ -28,8 +28,6 @@ $(document).ready ->
     if retired_rows.length isnt 0
       $(retired_rows).effect 'highlight', {color: remove_color}, 'slow', ->
           $(this).remove()
-
-  $('#filter_header').text(show_filter_choices())
 
   # set default filter options
   # keeps track of previous filter options
@@ -154,15 +152,18 @@ $(document).ready ->
           $('.ui-widget-overlay').bind 'click', -> 
             $('#more-info-table').dialog('close')
 
+  #when the page loads show the currently selected filters
+  $('#current').text(show_filter_choices())
+  
+  $('#filter_form').live 'change', ->
+    $('#current').text(show_filter_choices())
+  
   $('#filter_wrapper').accordion
     collapsible: true
     autoHeight: false
     active: false
     change: ->
-      if $('#filter_header').text().length > 15
-        $('#filter_header').text('Filters:')
-      else 
-        $('#filter_header').text(show_filter_choices())
+      $('#current').text(show_filter_choices())
   
   # Listener for the table selector
   $('#blur_table_id').live 'change', ->

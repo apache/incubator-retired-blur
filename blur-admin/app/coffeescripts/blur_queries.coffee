@@ -3,6 +3,14 @@ $(document).ready ->
   add_color = '#95D169' #color to highlight added rows
   update_color = '#E68F00'
   remove_color = '#E01E00'
+  
+  #grabs the current filter values and shows them in the header
+  show_filter_choices = () ->
+    info = 'Filters: '
+    info += $('#created_at_time :selected').text() + " | "
+    info += $('#super_query_on :selected').text() + " | "
+    info += $('#running :selected').text() + " | "
+    info += $('#interrupted :selected').text()
 
   # adds time to data-age of selected elements, and 
   # retires them if past retirement age
@@ -20,6 +28,8 @@ $(document).ready ->
     if retired_rows.length isnt 0
       $(retired_rows).effect 'highlight', {color: remove_color}, 'slow', ->
           $(this).remove()
+
+  $('#filter_header').text(show_filter_choices())
 
   # set default filter options
   # keeps track of previous filter options
@@ -148,6 +158,11 @@ $(document).ready ->
     collapsible: true
     autoHeight: false
     active: false
+    change: ->
+      if $('#filter_header').text().length > 15
+        $('#filter_header').text('Filters:')
+      else 
+        $('#filter_header').text(show_filter_choices())
   
   # Listener for the table selector
   $('#blur_table_id').live 'change', ->

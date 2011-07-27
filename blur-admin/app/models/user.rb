@@ -15,17 +15,17 @@ class User < ActiveRecord::Base
 
   #returns the array of saved cols
   def saved_cols
-    ret = JSON.parse(
+    @ret ||= JSON.parse(
       Preference.find_or_create_by_user_id_and_pref_type( self.id, 
                                                           :pref_type => :columns,
                                                           :name => :filters,
                                                           :value => [].to_json).value)
-    ret.uniq
+    @ret.uniq
   end
   
   #returns the array of saved cols
   def saved_filters
-    JSON.parse (
+    @ret ||= JSON.parse (
       Preference.find_or_create_by_user_id_and_pref_type( self.id, 
                                                           :pref_type => :filters, 
                                                           :name => :filters, 
@@ -74,14 +74,16 @@ class User < ActiveRecord::Base
     return true if self.has_role? :editor
     false
   end
+  
+  def reader
+    return true if self.has_role? :reader
+    false
+  end
+
+  def auditor
+    return true if self.has_role? :auditor
+    false
+  end
 end
 
-def reader
-  return true if self.has_role? :reader
-  false
-end
 
-def auditor
-  return true if self.has_role? :auditor
-  false
-end

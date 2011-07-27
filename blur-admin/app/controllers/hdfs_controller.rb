@@ -8,7 +8,8 @@ class HdfsController < ApplicationController
     if Hdfs.all.length > 0
       @hdfs_ids = Hdfs.select 'id'
       puts '******************'
-      puts HdfsThriftClient.client(@hdfs_ids.first.id)
+      #puts HdfsThriftClient.client(@hdfs_ids.first.id)
+      puts HdfsThriftClient.client
     end
   end
 

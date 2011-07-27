@@ -49,6 +49,9 @@
                                                           ['every 1 minute', 60],
                                                           ['every 10 minutes', 600]])
 
+      #pause_button
+        #pause.ui-icon.ui-icon-pause{:value => 'pause', :style => 'display:none;'}
+
     = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading...", :style => "display:none;"
 
   = render 'query_table'

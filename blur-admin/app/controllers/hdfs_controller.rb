@@ -4,11 +4,12 @@ class HdfsController < ApplicationController
 
   def index
     temp_files
-    @hdfs_ids = Hdfs.select 'id'
-    puts '***********************************'
-    puts @hdfs_ids.inspect
-    puts HdfsThriftClient.client
-    #puts HdfsThriftClient.client(@hdfs_ids.first.id)
+
+    if Hdfs.all.length > 0
+      @hdfs_ids = Hdfs.select 'id'
+      puts '******************'
+      puts HdfsThriftClient.client(@hdfs_ids.first.id)
+    end
   end
 
   def files

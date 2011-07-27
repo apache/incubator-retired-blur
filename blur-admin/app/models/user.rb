@@ -18,14 +18,14 @@ class User < ActiveRecord::Base
     @ret ||= JSON.parse(
       Preference.find_or_create_by_user_id_and_pref_type( self.id, 
                                                           :pref_type => :columns,
-                                                          :name => :filters,
+                                                          :name => :columns,
                                                           :value => [].to_json).value)
     @ret.uniq
   end
   
   #returns the array of saved cols
   def saved_filters
-    @ret ||= JSON.parse (
+    @filter_ret ||= JSON.parse (
       Preference.find_or_create_by_user_id_and_pref_type( self.id, 
                                                           :pref_type => :filters, 
                                                           :name => :filters, 

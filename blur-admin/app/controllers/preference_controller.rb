@@ -12,7 +12,8 @@ class PreferenceController < ApplicationController
     filters = [ params[:created_at_time],
                 params[:super_query_on],
                 params[:running],
-                params[:interrupted]]
+                params[:interrupted],
+                params[:refresh_period]]
     filter_save = Preference.find_or_create_by_user_id_and_pref_type_and_name(current_user.id, :pref_type => :filters, :name => :filters, :value => filters.to_json)
     filter_save.value = filters.to_json
     filter_save.save

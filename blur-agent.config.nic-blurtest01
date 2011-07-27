@@ -4,15 +4,21 @@ store.user=blurtools
 store.password=blurtools
 
 # ZooKeeper Instances
-zk.instances=blur04
+zk.instances=blur04|nic-blurtop
 
 zk.blur04.url=blur04.nearinfinity.com
+zk.nic-blurtop.url=nic-blurtop01.nearinfinity.com
 
 # Active Collectors
-active.collectors=queries|tables
+active.collectors=hdfs|queries|tables
 
 # HDFS Collector properties
-hdfs.url=hdfs://192.168.64.130:8020
+hdfs.instances=blurtop
+
+hdfs.blurtop.url=hdfs://nic-blurtop01.nearinfinity.com:50070
 
 # Blur properties
-blur.url=blur04.nearinfinity.com:40020
+blur.instances=blur04|nic-blurtop
+
+blur.blur04.url=blur04.nearinfinity.com:40020
+blur.nic-blurtop.url=nic-blurtop01.nearinfinity.com:40010

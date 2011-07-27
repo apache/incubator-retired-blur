@@ -21,7 +21,7 @@ describe SearchController do
       Zookeeper.stub(:find_by_id).and_return(nil)
       Zookeeper.stub_arel.and_return @zookeeper
       # ApplicationController.zookeepers
-      Zookeeper.stub(:all).and_return [@zookeeper]
+      Zookeeper.stub(:order).and_return [@zookeeper]
 
       @search = Factory.stub :search
       @user.stub_chain(:searches, :order).and_return [@search]
@@ -95,7 +95,7 @@ describe SearchController do
     end
 
     def create_blur_result(search)
-      ###### Hierarchy of Blur::BlurResults object ######
+      ###### Hierarchy of Blur::BlurResults ######
       #blur_results     = mock 'results'          # Blur::BlurResults
       #blur_result      = mock 'result'           # Blur::BlurResult
       #fetch_result     = mock 'fetch_result'     # Blur::FetchResult
@@ -114,7 +114,7 @@ describe SearchController do
 
         columns = Set.new
         schema[column_family].each do |column|
-          column = mock 'column', :name => column, :values => ['a', 'b', 'c']
+          column = mock 'column', :name => column, :values => %w[value_1 value_2 value_3]
           columns << column
         end
         records = {rand(100000).to_s => columns}
@@ -140,164 +140,30 @@ describe SearchController do
         response.should render_template "create"
       end
     end
-
     describe "when running an existing search" do
       it "fetches the saved search object" do
         Search.should_receive(:find).with(@search.id)
         get :create, :search_id  => @search.id
       end
-
-
     end
-
     it "assigns the @schema variable to hold the sorted column families and columns of the search" do
       get :create, :search_id  => @search.id
-
       assigns(:schema).keys.should == %w[ColumnFamily2 ColumnFamily1 ColumnFamily3]
     end
-
     it "assigns the @result_count and @result_time instance variables" do
       get :create, :search_id  => @search.id
-
       assigns(:result_count).should == @search.fetch
       assigns(:result_time).should == 10
     end
-
-    it "correctly parse a result from blur" do
+    it "correctly parses a result from blur" do
+      pending "Is there a better way to do this?"
       get :create, :search_id  => @search.id
-
-
-
+      assigns(:results).should == ""
     end
-
-
-  end
-
-  describe "create OLD" do
-    before (:each) do
-      @client = mock(Blur::Blur::Client)
-      BlurThriftClient.stub!(:client).and_return(@client)
-
-      column_families = ['deptNo', 'moreThanOneDepartment', 'name']
-      @schema1 = {:columnFamilies => {'table1'=> column_families}}
-      @schema2 = {:columnFamilies => {'table1'=> column_families, 'table2' => column_families}}
-
-      test1_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
-      test1_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => ['val1', 'val2', 'val3']
-      test1_col3 = Blur::Column.new :name => 'name', :values => ['val1', 'val2', 'val3']
-      @test1_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test1_col1, test1_col2, test1_col3]}, :family => 'table1'
-      @test1_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test1_col1], 'key2' => [test1_col1, test1_col2, test1_col3]}, :family => 'table2'
-
-      test1_set1 = [@test1_cf1]
-      test1_result1 = create_blur_result(test1_set1)
-      @test1_query = Blur::BlurResults.new :results => [test1_result1], :totalResults => 1
-
-      test2_col1 = Blur::Column.new :name => 'deptNo', :values => ['val1', 'val2', 'val3']
-      test2_col2 = Blur::Column.new :name => 'moreThanOneDepartment', :values => []
-      test2_col3 = Blur::Column.new :name => 'name', :values => ['val1']
-      @test2_cf1 = Blur::ColumnFamily.new :records => {'key1' => [test2_col1, test2_col2, test2_col3]}, :family => 'table1'
-      @test2_cf2 = Blur::ColumnFamily.new :records => {'key1' => [test2_col1], 'key2' => [test2_col1, test2_col2, test2_col3]}, :family => 'table2'
-
-      test2_set1 = [@test2_cf1]
-      test2_set2 = [@test2_cf2]
-      test2_result1 = create_blur_result(test2_set1)
-      test2_result2 = create_blur_result(test2_set2)
-      @test2_query = Blur::BlurResults.new :results => [test2_result1, test2_result2], :totalResults => 2
- 
-      @blur_table = Factory.stub :blur_table, :table_schema => {"table"              => "TestBlur",
-                                                                "setTable"           => true,
-                                                                "setColumnFamilies"  => true,
-                                                                "columnFamiliesSize" => 2,
-                                                                "columnFamilies"     => {"table1"=> ["deptNo", "moreThanOneDepartment", "name"],
-                                                                                         "table2" => ["deptNo", "moreThanOneDepartment", "name"]}
-                                                               }.to_json
-      BlurTable.stub(:find).with(@blur_table.id).and_return(@blur_table)
-      @user.stub(:username).and_return("name")
-      @user.stub(:id).and_return(1)
-      @user.stub(:saved_cols).and_return(JSON.parse (Factory.stub :preference ).value)
-    end
-
-    def create_blur_result(options)
-      row =         Blur::Row.new            :id          => 'string', :columnFamilies => options
-      rowresult =   Blur::FetchRowResult.new :row         => row
-      fetchresult = Blur::FetchResult.new    :rowResult   => rowresult
-      result =      Blur::BlurResult.new     :fetchResult => fetchresult
-    end
-    
-    it "renders the create template when column_family & record_count < count & families_include" do
-      @client.should_receive(:query).and_return(@test1_query)
-      BlurTable.stub(:find).and_return(@blur_table)
-      get :create, :super_query  => true,
-                   :result_count => 25,
-                   :offset       => 5,
-                   :query_string => "employee.name:bob",
-                   :blur_table   => 17,
-                   :column_data  => ["neighborhood",
-                                    "family_table1",
-                                    "column_table1_deptNo",
-                                    "column_table1_moreThanOneDepartment",
-                                    "column_table1_name"]
-
-      response.should render_template "create"
-    end
-    
-    it "renders the create template when column_family & record_count < count & !families_include" do
-      @client.should_receive(:query).and_return(@test2_query)
-      BlurTable.stub(:find).and_return(@blur_table)
-      get :create, :super_query => true, :result_count => 25, offset: 5, :query_string => "employee.name:bob", :blur_table => 17, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
-      response.should render_template "create"
-    end
-
-    it "renders the create template when column_family & !record_count < count & families_include" do
-      set2 = [@test2_cf2, @test2_cf1]
-      test_result2 = create_blur_result(set2)
-      test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
-
-      @client.should_receive(:query).and_return(test_query)
-      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "family_table2", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
-      response.should render_template "create"
-    end
-
-    it "renders the create template when column_family & !record_count < count & !families_include" do
-      set2 = [@test1_cf2, @test1_cf1]
-      test_result2 = create_blur_result(set2)
-      test_query = Blur::BlurResults.new :results => [test_result2], :totalResults => 1
-
-      @client.should_receive(:query).and_return(test_query)
-      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name", "column_table2_deptNo", "column_table2_moreThanOneDepartment", "column_table2_name"]
-      response.should render_template "create"
-    end
-
-    it "renders the create template when !column_family & families_include" do
-      @client.should_receive(:query).and_return(@test2_query)
-
-      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
-      response.should render_template "create"
-    end
-
-    it "renders the create template when !column_family & !families_include" do
-      @client.should_receive(:query).and_return(@test2_query)
-
-      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["neighborhood", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
-      response.should render_template "create"
-    end
-
-    it "renders the create template when superQueryOn is false" do
-      @client.should_receive(:query).and_return(@test1_query)
-
-      get :create, :blur_table => @blur_table.id, :query_string => "query", :result_count => 25, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"], :super_query => false
-      response.should render_template "create"
-    end
-    
-    it "renders the create template when the search id is set" do
-      @client.should_receive(:query).and_return(@test1_query)
-      Search.stub(:find).and_return(Factory.stub :search, :columns => ["family_table1", 
-                                                                      "column_table1_deptNo",
-                                                                      "column_table1_moreThanOneDepartment",
-                                                                      "column_table1_name"].to_json)
-
-      get :create, :search_id => "1", :blur_table => @blur_table.id
-      response.should render_template "create"
+    it "correctly sets the schema variable" do
+      pending "Is there a better way to do this?"
+      get :create, :search_id  => @search.id
+      assigns(:schema).should == "" 
     end
   end
 
@@ -311,7 +177,9 @@ describe SearchController do
       Search.stub(:find).and_return(@search)
       get :load, :search_id => 1
       @return = {:saved => @search, :success => true}
-      response.body.should == @return.to_json
+      search = JSON.parse @search.to_json
+      search["search"]["columns"] = @search.raw_columns
+      response.body.should == {:saved => search, :success => true}.to_json
     end
   end
 

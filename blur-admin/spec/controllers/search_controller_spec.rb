@@ -77,23 +77,59 @@ describe SearchController do
 
   describe "GET create" do
     before :each do
-      
+      @search     = Factory.stub :search
+      @blur_table = Factory.stub :blur_table
+      @user       = Factory.stub :user
+      @preference = Factory.stub :preference
+      @client = mock(Blur::Blur::Client)
+      Preference.stub(:find_or_create_by_user_id_and_pref_type).and_return(@preference)
+      BlurTable.stub(:find).and_return(@blur_table)
+      Search.stub(:new).and_return(@search)
+      Search.stub(:find).and_return(@search)
+      User.stub(:find).and_return(@user)
+      controller.stub(:current_user).and_return(@user)
+      results = mock 'blur_results', :totalResults => @search.fetch,
+                                     :realTime => 10,
+                                     :results => [create_blur_result(@search)]
+      @search.stub(:fetch_results).and_return(results)
+    end
+
+    def create_blur_result(search)
+      ###### Hierarchy of Blur::BlurResults object ######
+      #blur_results     = mock 'results'          # Blur::BlurResults
+      #blur_result      = mock 'result'           # Blur::BlurResult
+      #fetch_result     = mock 'fetch_result'     # Blur::FetchResult
+      #fetch_row_result = mock 'fetch_row_result' # Blur::FetchRowResult
+      #row              = mock 'row'              # Blur::Row
+      #column_families  = Set.new                 # Set
+      #column_family    = mock 'column_family'    # Blur::ColumnFamily
+      #records          = {}                      # Hash
+      #columns          = Set.new                 # Set
+      #column           = mock 'column'           # Blur::Column
+      #values           = []                      # Array
+
+      schema = search.columns
+      column_families = Set.new
+      schema.each_key do |column_family|
+
+        columns = Set.new
+        schema[column_family].each do |column|
+          column = mock 'column', :name => column, :values => ['a', 'b', 'c']
+          columns << column
+        end
+        records = {rand(100000).to_s => columns}
+        column_family =  mock 'column_family', :records => records, :family => column_family 
+        column_families << column_family
+      end
+
+      row = mock 'row', :columnFamilies => column_families, :id => rand(10000)
+      fetch_row_result = mock 'fetch_row_result', :row => row
+      fetch_result     = mock 'fetch_result', :rowResult => fetch_row_result
+      blur_result      = mock 'result', :fetchResult => fetch_result
     end
 
     describe "when creating a new search" do
       it "renders the create partial" do
-        @search     = Factory.stub :search
-        @blur_table = Factory.stub :blur_table
-        @user       = Factory.stub :user
-        @preference = Factory.stub :preference
-        @client = mock(Blur::Blur::Client)
-        Preference.stub(:find_or_create_by_user_id_and_pref_type).and_return(@preference)
-        BlurTable.stub(:find).and_return(@blur_table)
-        Search.stub(:new).and_return(@search)
-        User.stub(:find).and_return(@user)
-        BlurThriftClient.stub!(:client).and_return(@client)
-        controller.stub(:current_user).and_return(@user)
-        @client.stub(:query).and_return nil
 
         get :create, :super_query  => @search.super_query,
                      :result_count => @search.fetch,
@@ -106,6 +142,31 @@ describe SearchController do
     end
 
     describe "when running an existing search" do
+      it "fetches the saved search object" do
+        Search.should_receive(:find).with(@search.id)
+        get :create, :search_id  => @search.id
+      end
+
+
+    end
+
+    it "assigns the @schema variable to hold the sorted column families and columns of the search" do
+      get :create, :search_id  => @search.id
+
+      assigns(:schema).keys.should == %w[ColumnFamily2 ColumnFamily1 ColumnFamily3]
+    end
+
+    it "assigns the @result_count and @result_time instance variables" do
+      get :create, :search_id  => @search.id
+
+      assigns(:result_count).should == @search.fetch
+      assigns(:result_time).should == 10
+    end
+
+    it "correctly parse a result from blur" do
+      get :create, :search_id  => @search.id
+
+
 
     end
 

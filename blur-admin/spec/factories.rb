@@ -96,7 +96,7 @@ end
 Factory.define :preference do |t|
   t.name      'columns'
   t.pref_type 'columns'
-  t.value     ['Column2B'].to_json
+  t.value     ['ColumnFamily2'].to_json
 end
 
 # Create models with association chains already created. These real objects and

@@ -68,7 +68,7 @@ class SearchController < ApplicationController
       # drill down through the result object cruft to get the real result
       result = result_container.fetchResult.rowResult.row 
 
-      # continue next result if there is no returned data
+      # continue to next result if there is no returned data
       next if result.columnFamilies.empty?
 
       # number of rows the result will span

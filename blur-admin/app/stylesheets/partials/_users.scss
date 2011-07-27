@@ -13,6 +13,8 @@
   @include full;
   @include standard-font;
 
+  $select-color: #FAD08A;
+
   margin-top: 1em;
   padding-top: 2em;
 
@@ -46,6 +48,17 @@
   #pref-trash, #pref-key{
     @include pref-box;
     margin-top:5px;
+  }
+
+  #pref-key {
+    padding: 5px;
+    #orange_color, #blue_color {
+      height: 10px;
+      width: 10px;
+      display: inline-block;
+    }
+    #orange_color { @include info($select-color); }
+    #blue_color { @include info($table-hd-color); }
   }
   
   #actual-trash{
@@ -111,7 +124,7 @@
   }
   
   .my-select{
-    background-color:#FAD08A;
+    background-color:$select-color;
   }
   
   #no-saved, #trash{
@@ -125,7 +138,7 @@
     cursor:-moz-grab;
     cursor:-webkit-grab;
     
-    @include info($table-hd-color);
+    @include info($select-color);
     padding:2px;
     margin:2px;
   }

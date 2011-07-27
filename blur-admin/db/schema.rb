@@ -26,8 +26,8 @@ ActiveRecord::Schema.define(:version => 20110727013041) do
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 16777215
-    t.text     "post_filters",             :limit => 16777215
+    t.text     "pre_filters",              :limit => 2147483647
+    t.text     "post_filters",             :limit => 2147483647
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"
@@ -94,7 +94,7 @@ ActiveRecord::Schema.define(:version => 20110727013041) do
 
   create_table "preferences", :force => true do |t|
     t.string   "name"
-    t.string   "pref_type"
+    t.string   "pref_type",  :limit => 250
     t.text     "value"
     t.datetime "created_at"
     t.datetime "updated_at"

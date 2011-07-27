@@ -1,5 +1,5 @@
 require 'spec_helper'
 
-describe HdfsStats do
+describe HdfsStat do
   pending "add some examples to (or delete) #{__FILE__}"
 end

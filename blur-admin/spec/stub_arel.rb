@@ -15,6 +15,14 @@ class MockArel
 		self
 	end
 
+  def all
+    @value
+  end
+
+  def first
+    @value
+  end
+
 	def method_missing(symbol, *args, &block)
 		return self if @scopes.include?(symbol)
 		if /^find_by/ === symbol.to_s

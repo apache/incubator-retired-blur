@@ -1,14 +1,14 @@
 .schema
   %b Schema:
-  - if blur_table.schema
+  - if @blur_table.schema
     %ul
-      -blur_table.schema["columnFamilies"].each do |family, columns|
-        %li#family{:id=>"#{blur_table.table_name}.#{family}", :class => "family-node"}
+      - @blur_table.schema.each do |family, columns|
+        %li#family{:id=>"#{@blur_table.table_name}.#{family}", :class => "family-node"}
           %a{:href=>'#'}
-            = "#{family} (#{blur_table.table_analyzer})"
+            = "#{family} (#{@blur_table.table_analyzer})"
           %ul
-            -columns.each do |column|
-              %li#column{:id=>"#{blur_table.table_name}.#{family}.#{column}"}
+            - columns.each do |column|
+              %li#column{:id=>"#{@blur_table.table_name}.#{family}.#{column}"}
                 %a{:href=>'#'}= column
   - else
     Not Available

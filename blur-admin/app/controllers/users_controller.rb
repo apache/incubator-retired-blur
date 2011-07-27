@@ -15,7 +15,7 @@ class UsersController < ApplicationController
     
     @choices = []
     BlurTable.all.each do |table|
-      @choices << table.schema["columnFamilies"].keys
+      @choices << table.schema.keys
     end
     @choices.flatten!.uniq!
     

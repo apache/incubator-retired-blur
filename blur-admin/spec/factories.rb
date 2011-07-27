@@ -71,10 +71,10 @@ end
 #create a valid search
 Factory.define :search do |t|
   t.super_query{ rand(1) == 0 } # 50% chance
-  t.sequence (:columns){ |n| ["family_ColumnFamily1", 
-                              "column_ColumnFamily1_Column1A",
-                              "column_ColumnFamily1_Column1B",
-                              "column_ColumnFamily1_Column1C"].to_json }
+  t.columns { ["family_ColumnFamily1", 
+               "column_ColumnFamily2_Column2A",
+               "column_ColumnFamily2_Column2B",
+               "column_ColumnFamily3_Column3C"] }
   t.fetch { rand 10 ** 6 }
   t.offset { rand 1 ** 5 }
   t.sequence(:name) {|n| "Search #{n}"}
@@ -83,12 +83,20 @@ Factory.define :search do |t|
   t.user_id { rand 10 ** 6 }
 end
 
+#create a valid user
+Factory.define :user do |t|
+  t.sequence (:username)  {|n| "User ##{n}"}
+  t.sequence (:email)     {|n| "user#{n}@example.com"}
+  t.password              "password"
+  t.password_confirmation "password"
+  t.roles [:editor, :admin, :reader, :auditor]
+end
+
 #create a valid preference
 Factory.define :preference do |t|
-  t.name {'columns'}
-  t.pref_type {'columns'}
-  t.value { ['col1', 'col2', 'col3'].to_json }
-  t.user_id { rand 10 ** 6 }  
+  t.name      'columns'
+  t.pref_type 'columns'
+  t.value     ['ColumnFamily2'].to_json
 end
 
 # Create models with association chains already created. These real objects and

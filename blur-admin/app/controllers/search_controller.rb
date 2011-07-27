@@ -4,152 +4,105 @@ class SearchController < ApplicationController
 
   #Show action that sets instance variables used to build the filter column
   def show
-    @blur_tables = @current_zookeeper.blur_tables.find(:all, :order => "table_name")
-    @blur_table = @blur_tables.first
-	  @columns = @blur_tables.first.schema["columnFamilies"] unless @blur_tables.empty?
-    @searches = current_user.searches.reverse
+    # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
+    # required because of the lazy loading (in this case where a few more variables 
+    # depend on the result)
+    @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
+    @blur_table = @blur_tables[0]
+	  @columns = @blur_table.schema &preference_sort if @blur_table
+    @searches = current_user.searches.order("name")
 	end
 
 	#Filter action to help build the tree for column families
   def filters
     @blur_table = BlurTable.find params[:blur_table_id]
-    begin
-      @columns = @blur_table.schema["columnFamilies"]
-    rescue NoMethodError
-      @columns = []
-    end
-    #TODO render the new saved list
-	  render '_filters.html.haml', :layout=>false
+    @columns = (@blur_table ? (@blur_table.schema &preference_sort) : [])
+	  render :partial => 'filters'
   end
 
 	#Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
-    #Otherwise perform a search
     #if the search_id param is set than the user is trying to directly run a saved query
     if params[:search_id]
-      buff = Search.find params[:search_id]
+      search = Search.find params[:search_id]
     #else build a new search to be used for this specific search
     else
-      drop = params[:column_data].first == "neighborhood"? params[:column_data].drop(1).to_json : params[:column_data].to_json
-      params[:super_query] ? sq=true : sq=false
-      buff = Search.new(:blur_table_id => params[:blur_table],
-                        :super_query   => sq,
-                        :columns       => drop,
-                        :fetch         => params[:result_count].to_i,
-                        :offset        => params[:offset].to_i,
-                        :user_id       => current_user.id,
-                        :query         => params[:query_string])
+      params[:column_data].delete( "neighborhood")
+      search = Search.new(:super_query  =>!params[:super_query].nil?,
+                          :columns      => params[:column_data],
+                          :fetch        => params[:result_count].to_i,
+                          :offset       => params[:offset].to_i,
+                          :user_id      => current_user.id,
+                          :query        => params[:query_string])
     end
 
     #use the model to begin building the blurquery
-    @blur_table = BlurTable.find params[:blur_table]
-    bq = buff.prepare_search
+    blur_table = BlurTable.find params[:blur_table]
 
-
-    # Parse out column family names from requested column families and columns
-    column_data_val = JSON.parse buff.columns
-    families = column_data_val.collect{|value|  value.split('_')[1] if value.starts_with?('family') }.compact
-    columns = {}
-    column_data_val.each do |value|
-      parts = value.split('_')
-      if parts[0] == 'column' and !families.include?(parts[1])
-        parts = value.split('_')
-        # possible TODO: block below can be replaced with: columns[parts[1]] ||= ['recordId']
-        if (!columns.has_key?(parts[1]))
-          columns[parts[1]] = []
-          columns[parts[1]] << 'recordId'
-        end
-        columns[parts[1]] << parts[2]
-      end
+    # create a schema hash which contains the column_family => columns which the search is over
+    # initialize to be set of incomplete column families
+    @schema = search.columns
+    # add complete column families / columns
+    search.column_families.each do |family|
+      @schema[family] = ['recordId']
+      @schema[family] << blur_table.schema[family]
+      @schema[family].flatten!
     end
 
-    #reorder the CFs to use the preference
-    preferences = current_user.saved_cols
-    families = (preferences & families) | families
+    # sort column families by user preferences, then by alphabetical order
+    @schema = Hash[@schema.sort &preference_sort]
 
-    #add the selectors that were just built to the blur query and retrieve the results
-    sel = Blur::Selector.new
-    sel.columnFamiliesToFetch = families unless families.blank?
-    sel.columnsToFetch = columns unless columns.blank?
-    bq.selector = sel
-    bq.userId = current_user.username
-    blur_results = BlurThriftClient.client.query(@blur_table.table_name, bq)
+    blur_results = search.fetch_results(blur_table.table_name)
 
-    #build a mapping from families to their associated columns
-    families_with_columns = {}
-    families.each do |family|
-      families_with_columns[family] = ['recordId']
-      @blur_table.schema['columnFamilies'][family].each do |column|
-        families_with_columns[family] << column
-      end
-    end
+    # parse up the response object from blur and prepares it as a table
+    # Definitions:
+    #   Result: consists  of one or more rows.  Each result has an
+    #           identifying rowId (I know, confusing...)
+    #   Row: A row consisting of one record for each column family it spans.
 
-    ####Dear lord this is scary####
-    #this parses up the response object from blur and prepares it as a table
-    visible_families = (families + columns.keys).uniq
     @results = []
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime
-    blur_results.results.each do |result|
-      row = result.fetchResult.rowResult.row
-      max_record_count = row.columnFamilies.collect {|cf| cf.records.keys.count }.max
+    blur_results.results.each do |result_container|
+      # drill down through the result object cruft to get the real result
+      result = result_container.fetchResult.rowResult.row 
+
+      # continue to next result if there is no returned data
+      next if result.columnFamilies.empty?
+
+      # number of rows the result will span
+      row_count = result.columnFamilies.collect {|cf| cf.records.keys.count }.max
 
       # organize into multidimensional array of rows and columns
-      table_rows = Array.new(max_record_count) { [] }
-      (0...max_record_count).each do |record_count|
-        visible_families.each do |column_family_name|
-          column_family = row.columnFamilies.find { |cf| cf.family == column_family_name }
-          table_rows[record_count] << cfspan = []
+      rows = Array.new(row_count) { [] }
+      (0...row_count).each do |row| # for each row in the result, row here is really just the row number
+        @schema.keys.each do |column_family_name| # for each column family in the row
+          column_family = result.columnFamilies.find { |cf| cf.family == column_family_name }
+          rows[row] << cfspan = []
 
-          families_include = families.include? column_family_name
-          if column_family
-            count = column_family.records.values.count
-            if record_count < count
-              if families_include
-                families_with_columns[column_family_name].each do |column|
-                  found_set = column_family.records.values[record_count].find { |col| column == col.name }
-                    if !(column == 'recordId')
-                      cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
-                    else
-                      cfspan << column_family.records.keys[record_count]
-                    end
-                end
+          if column_family and row < column_family.records.values.count
+            @schema[column_family_name].each do |column|
+              found_set = column_family.records.values[row].find { |col| column == col.name }
+              if !(column == 'recordId')
+                cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
               else
-                columns[column_family_name].each do |column|
-                  found_set = column_family.records.values[record_count].find { |col| column == col.name }
-                    if !(column == 'recordId')
-                      cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
-                    else
-                      cfspan << column_family.records.keys[record_count]
-                    end
-                end
-              end
-            else
-              if families_include
-                families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
-              else
-                columns[column_family_name].count.times { |count_time| cfspan << ' ' }
+                cfspan << column_family.records.keys[row]
               end
             end
-          else
-            if families_include
-              families_with_columns[column_family_name].count.times { |count_time| cfspan << ' ' }
-            else
-              columns[column_family_name].count.times { |count_time| cfspan << ' ' }
-            end
+          else # otherwise pad with blank space
+            @schema[column_family_name].count.times { |count_time| cfspan << ' ' }
           end
         end
       end
 
-      record = {:id => row.id, :max_record_count => max_record_count, :row => row, :table_rows => table_rows}
+      result_rows  = {:id => result.id, :row_count => row_count, :rows => rows}
 
-      @results << record
+      @results << result_rows
     end
 
-    @all_columns = families_with_columns.merge columns
-    @column_names = @all_columns.values
-    @family_names = @all_columns.keys
+    #reorder the CFs to use the preference
+    @family_order = (current_user.saved_cols & @schema.keys) | @schema.keys
 
     render :template=>'search/create.html.haml', :layout => false
   end
@@ -159,7 +112,9 @@ class SearchController < ApplicationController
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
     @search = Search.find params['search_id']
-    render :json => {:saved => @search, :success => true }
+    search = JSON.parse @search.to_json
+    search["search"]["columns"] = @search.raw_columns
+    render :json => {:saved => search, :success => true }
   end
 
   #Delete action used for deleting a saved search from a user's saved searches
@@ -168,7 +123,7 @@ class SearchController < ApplicationController
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
-      format.html {render :partial =>"saved.html.haml" }
+      format.html {render :partial =>"saved" }
     end
   end
 
@@ -176,41 +131,50 @@ class SearchController < ApplicationController
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
-      format.html {render :partial =>"saved.html.haml" }
+      format.html {render :partial =>"saved"}
     end
   end
   
   def save
-    drop = params[:column_data].first == "neighborhood"? params[:column_data].drop(1).to_json : params[:column_data].to_json
-    Search.create(:name          => params[:save_name],
-                  :blur_table_id => params[:blur_table],
-                  :super_query   => params[:super_query],
-                  :columns       => drop,
-                  :fetch         => params[:result_count].to_i,
-                  :offset        => params[:offset].to_i,
-                  :user_id       => current_user.id,
-                  :query         => params[:query_string])
+    params[:column_data].delete 'neighborhood'
+    Search.create(:name         => params[:save_name],
+                  :super_query  =>!params[:super_query].nil?,
+                  :columns      => params[:column_data],
+                  :fetch        => params[:result_count].to_i,
+                  :offset       => params[:offset].to_i,
+                  :user_id      => current_user.id,
+                  :query        => params[:query_string])
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
 
     respond_to do |format|
-      format.html {render :partial =>"saved.html.haml" }
+      format.html {render :partial =>"saved"}
     end
   end
   
   def update
     params[:column_data].delete 'neighborhood'
-    update_search = Search.find params[:search_id]
-    update_search.update_attributes(
-                  :name          => params[:save_name],
-                  :blur_table_id => params[:blur_table],
-                  :super_query   => params[:super_query],
-                  :columns       => params[:column_data].to_json,
-                  :fetch         => params[:result_count].to_i,
-                  :offset        => params[:offset].to_i,
-                  :user_id       => current_user.id,
-                  :query         => params[:query_string])
+    search = Search.find params[:search_id]
+    search.update_attributes(:name        => params[:save_name],
+                             :super_query =>!params[:super_query].nil?,
+                             :columns     => params[:column_data],
+                             :fetch       => params[:result_count].to_i,
+                             :offset      => params[:offset].to_i,
+                             :user_id     => current_user.id,
+                             :query       => params[:query_string])
 
     render :nothing => true
   end
+  private
+    def preference_sort
+      lambda do |a, b|
+        if current_user.saved_cols.include? a[0] and !current_user.saved_cols.include? b[0]
+          -1
+        elsif current_user.saved_cols.include? b[0] and !current_user.saved_cols.include? a[0]
+          1
+        else
+          a[0] <=> b[0]
+        end
+      end
+    end
 end

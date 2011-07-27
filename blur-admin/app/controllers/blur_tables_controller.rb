@@ -35,7 +35,7 @@ class BlurTablesController < ApplicationController
     @blur_table = BlurTable.find(params[:id])
 
     respond_to do |format|
-      format.html {render :partial => 'schema', :locals => {:blur_table => @blur_table}}
+      format.html {render :partial => 'schema'}
     end
   end
 

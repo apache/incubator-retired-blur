@@ -1,2 +1,2 @@
-class HdfsStats < ActiveRecord::Base
+class HdfsStat < ActiveRecord::Base
 end

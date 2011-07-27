@@ -66,10 +66,11 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 					return;
 				}
 			} else {
+				//TODO: Probably want to check what actually changed and just update that, but this will work for now
 				updateZookeeperStatus(true);
 				if (needsInitialPath) {
 					runInitialRegistration();
-					needsInitialPath = false;
+//					needsInitialPath = false;
 				}
 				try {
 					synchronized (watcher) {

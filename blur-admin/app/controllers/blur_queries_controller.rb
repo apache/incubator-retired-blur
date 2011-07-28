@@ -63,7 +63,7 @@ class BlurQueriesController < ApplicationController
   end
 
   def more_info
-    @blur_query = BlurQuery.find(params[:id]).includes(:blur_table)
+    @blur_query = BlurQuery.includes(:blur_table).find(params[:id])
     respond_to do |format|
       format.html {render :partial => 'more_info', :locals => {:blur_query => @blur_query}}
     end

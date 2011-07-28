@@ -214,7 +214,7 @@ describe BlurQueriesController do
 
   describe "GET more_info" do
     it "should render the more_info partial" do
-      BlurQuery.stub_chain(:find, :includes)
+      BlurQuery.stub_chain(:includes, :find)
       get :more_info, :id => '1'
       response.should render_template(:partial => '_more_info')
     end

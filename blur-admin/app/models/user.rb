@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
 
   # declare the valid roles -- do not change the order if you add more
   # roles later, always append them at the end!
-  roles :editor, :admin, :reader, :auditor
+  roles :editor, :admin, :reader, :auditor, :searcher
 
   #returns the array of saved cols
   def saved_cols
@@ -65,6 +65,14 @@ class User < ActiveRecord::Base
     end
   end
 
+  def searcher=(searcher)
+    if searcher == "1"
+      self.roles << :searcher unless self.has_role? :searcher
+    elsif searcher == "0"
+      self.roles.delete :searcher if self.has_role? :searcher
+    end
+  end
+
   def admin
     return true if self.has_role? :admin
     false
@@ -82,6 +90,11 @@ class User < ActiveRecord::Base
 
   def auditor
     return true if self.has_role? :auditor
+    false
+  end
+  
+  def searcher
+    return true if self.has_role? :searcher
     false
   end
 end

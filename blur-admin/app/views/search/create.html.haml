@@ -24,7 +24,6 @@
             %tr{:class => result_stripe}
 
               - @schema.each_with_index do |(column_family, columns), j|
-                - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
                 - if i == 0 and j == 0
                   %td{:title => "rowId"}= result[:id]
                 - if i == 1 and j == 0
@@ -33,10 +32,10 @@
 
                 - if record # then insert the record
                   - columns.each do |column|
-                    %td{:class => cf_stripe, :title => column}= record[column]
+                    %td{:class => ((j % 2) == 1 ? 'even' : 'odd' ), :title => column}= record[column]
 
                 - elsif i == result[column_family].length # fill in the remaining space with a big cell
-                  %td{:class => cf_stripe,
+                  %td{:class => ((j % 2) == 1 ? 'even' : 'odd' ),
                       :colspan => columns.length,
                       :rowspan => max_record_count - result[column_family].length}
                   - next

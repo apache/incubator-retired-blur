@@ -22,6 +22,7 @@
       padding-top: 0.5em;
     }
     #refresh_wrapper, #pause_button{ @include prefix(1); display:inline-block;}
+    #pause_button { vertical-align: middle; }
     #pause{
       @include border;
       cursor:pointer;
@@ -37,7 +38,6 @@
 
   @mixin table-base {
     display: table;
-    
     @include standard-border;
     tr:nth-child(even) { background-color: white; };
     tr:nth-child(odd) { background-color: $grey-div-color; };

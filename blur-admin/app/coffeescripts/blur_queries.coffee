@@ -83,44 +83,49 @@ $(document).ready ->
     .live 'ajax:beforeSend', (evt, xhr, settings) ->
       $(this).find("input[type=submit]").attr('disabled', 'disabled')
       $('#filter_spinner').show()
-      # remove rows older than the filter time
-      age_and_retire($('tr.blur_query'), time_since_refresh, created_at_filter * 60)
+      # remove rows older than the filter time ***if pause is not pressed
+      if $('#pause').hasClass 'ui-icon-pause'
+        age_and_retire($('tr.blur_query'), time_since_refresh, created_at_filter * 60)
     .live 'ajax:complete', (evt, xhr, status) ->
-      if $(this).find('#refresh_period').val() is 'continuous'
+      # resubmit if continuous and pause is not pressed***
+      if $(this).find('#refresh_period').val() is 'continuous' and $('#pause').hasClass 'ui-icon-pause'
         $('#filter_form').submit()
       else
-        $(this).find("input[type=submit]").removeAttr('disabled')
+        if $('#pause').hasClass 'ui-icon-pause'
+          $(this).find("input[type=submit]").removeAttr('disabled')
         $('#filter_spinner').hide()
     .live 'ajax:success', (evt, data, status, xhr) ->
       rows = $($.trim(data)) # rails renders whitespace if there are no rows
 
-      existing_rows = $("#queries-table > tbody > tr.blur_query")
-      if existing_rows.length isnt 0
-        # if completely replacing the table, check for stale rows
-        if replace_table
-          stale_rows = []
-          for existing_row in existing_rows
-            if rows.filter('#' + $(existing_row).attr('id')).length is 0
-              stale_rows.push(existing_row)
-          $(stale_rows).effect 'highlight', {color: remove_color}, 'slow', ->
-              $(this).remove()
+      # Updates rows if pause button is not pressed***
+      if $('#pause').hasClass 'ui-icon-pause'
+        existing_rows = $("#queries-table > tbody > tr.blur_query")
+        if existing_rows.length isnt 0
+          # if completely replacing the table, check for stale rows
+          if replace_table
+            stale_rows = []
+            for existing_row in existing_rows
+              if rows.filter('#' + $(existing_row).attr('id')).length is 0
+                stale_rows.push(existing_row)
+            $(stale_rows).effect 'highlight', {color: remove_color}, 'slow', ->
+                $(this).remove()
 
-        # if there are existing rows, then check for updates
-        updated_rows = $.map rows, (row) ->
-          if existing_rows.filter('#' + $(row).attr('id')).length isnt 0
-            # update existing row
-            existing_rows.filter('#' + $(row).attr('id')).replaceWith(row)
-            row
-          else
-            null
-        if updated_rows.length isnt 0
-          $(updated_rows).effect 'highlight', {color: update_color}, 'slow'
-          new_rows = rows.not updated_rows
+          # if there are existing rows, then check for updates
+          updated_rows = $.map rows, (row) ->
+            if existing_rows.filter('#' + $(row).attr('id')).length isnt 0
+              # update existing row
+              existing_rows.filter('#' + $(row).attr('id')).replaceWith(row)
+              row
+            else
+              null
+          if updated_rows.length isnt 0
+            $(updated_rows).effect 'highlight', {color: update_color}, 'slow'
+            new_rows = rows.not updated_rows
 
-      # if not already filtered of updated rows, every row is a new row
-      new_rows ?= rows
-      new_rows.prependTo($('#queries-table > tbody'))
-        .effect 'highlight', {color: add_color}, 'slow'
+        # if not already filtered of updated rows, every row is a new row
+        new_rows ?= rows
+        new_rows.prependTo($('#queries-table > tbody'))
+          .effect 'highlight', {color: add_color}, 'slow'
 
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: Add error handling
@@ -186,6 +191,7 @@ $(document).ready ->
       period = $(this).val() * 1000
       set_timer()
     if $(this).val() isnt 'continuous'
+      $('#filter_wrapper').find("input[type=submit]").removeAttr('disabled')
       $('#pause').hide()
       $('#pause').removeClass 'ui-icon-play'
       $('#pause').addClass 'ui-icon-pause'
@@ -198,6 +204,8 @@ $(document).ready ->
     else
       $(this).removeClass 'ui-icon-play'
       $(this).addClass 'ui-icon-pause'
+      if $('#refresh_period').val() is 'continuous' and $('#pause').hasClass 'ui-icon-pause'
+        $('#filter_form').submit()
 
   # Listener for cancel button (launches dialog box)
   $('.cancel_query_button').live 'click', ->
@@ -215,3 +223,8 @@ $(document).ready ->
           $(this).dialog 'close'
       close: ->
         $(this).remove()
+
+  $('#filter_form').submit()
+
+  if $('#refresh_period').val() == 'continuous'
+    $('#pause').show()

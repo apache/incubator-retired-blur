@@ -45,10 +45,10 @@ class SearchController < ApplicationController
 
     # parse up the response object and reformat it to be a @results
     # Results Object:
-    #   @results is an array of results. Each result is a 3-dimension nested hash with the following:
+    #   @results is an array of results. Each result is a 3-dimension nested hash/array with the following:
     #     result = {:id, :max_record_count, :column_families => column_families}
     #     column_families = {:column_family => [record]}
-    #     record = {:id, :columns => {:column => value}}
+    #     record = {:column => value, :recordId => recordId}
 
     @results = []
     blur_results.results.each do |blur_result_container|
@@ -58,16 +58,19 @@ class SearchController < ApplicationController
       next if blur_result.columnFamilies.empty?
 
       max_record_count = blur_result.columnFamilies.collect {|cf| cf.records.keys.count }.max
-      result = {:max_record_count => max_record_count}
+
+      result = {:max_record_count => max_record_count, :id => blur_result.id}
 
       blur_result.columnFamilies.each do |blur_column_family|
-        column_family = blur_column_family.family.to_sym
+        column_family = blur_column_family.family
         records = []
         blur_column_family.records.each do |record_id, blur_columns|
-          record = {:id => record_id, :columns => {}}
+          record = {'recordId' => record_id}
           blur_columns.each do |blur_column|
-            column = blur_column.name.to_sym
-            record[:columns][column] = blur_column.values.join ', '
+            unless blur_column == 'recordId'
+              column = blur_column.name
+              record[column] = blur_column.values.join ', '
+            end
           end
           records << record
         end
@@ -75,9 +78,6 @@ class SearchController < ApplicationController
       end
       @results << result
     end
-
-    puts "*"*80
-    puts @results
 
     # create a schema hash which contains the column_family => columns which the search is over
     # initialize to be set of incomplete column families

@@ -1,27 +1,4 @@
-= debug @results
 - if @results and not @results.empty?
-  %table
-
-    - @results.each do |result|
-      - result_stripe = cycle('odd', 'even', :name => 'row-cycle')
-      - max_record_count = result[:max_record_count]
-
-      - max_record_count.times do |i|                                   # rows
-        %tr{:class => result_stripe}
-
-        - @schema.each_with_index do |column_family, j|
-          - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-          - if i == 0 and j == 0
-            %td.rowId.id_cell{:rowspan => max_record_count, :title => "rowId"}
-              = result[:id]
-          - record = result[:column_families][column_family][i]
-
-          - @schema[column_family].each do |column|
-            %td{:class => cf_stripe}
-              = record[:columns][:column]
-
-
-
   #results_info
     = "#{@result_count} results found in #{@result_time} ms"
   #results_section
@@ -41,19 +18,29 @@
             - columns.each do |column|
               %th{:class => "column_#{family}_#{column} family_#{family}"}
                 = column.gsub(/([A-Z])/, '&shy;\1').html_safe
-        %tbody
-          - @results.each do |result|
-            - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
-            - result[:rows].each_with_index do |row, i|
-              %tr{:class => stripe_class}
-                - if i == 0
-                  %td.rowId.id_cell{:rowspan => result[:row_count], :title => "rowId"}
+        
+      %tbody
+        - @results.each do |result|
+          - result_stripe = cycle('odd', 'even', :name => 'row-cycle')
+          - max_record_count = result[:max_record_count]
+
+          - max_record_count.times do |i|
+            %tr{:class => result_stripe}
+
+              - @schema.each_with_index do |(column_family, columns), j|
+                - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
+                - if i == 0 and j == 0
+                  %td{:title => "rowId"}<
                     = result[:id]
-                    = result[:rows].class
-                - reset_cycle('column-cycle')
-                - row.each_with_index do |family, j|
-                  - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-                  - family.each_with_index do |column, k|
-                    %td{:class => "#{cf_stripe} family_#{@schema.keys[j]} column_#{@schema.keys[j]}_#{@schema.values[j][k]}",
-                        :title => "#{@schema.keys[j]}: #{@schema.values[j][k]}"}
-                      = column
+                - if i == 1 and j == 0
+                  %td{:rowspan => max_record_count - 1, :title => "rowId"}
+                - record = result[column_family][i]
+
+                - if record # then insert the record
+                  - columns.each do |column|
+                    %td{:class => cf_stripe}<
+                      = record[column]
+
+                - elsif i == result[column_family].length # fill in the remaining space with a block cell
+                  %td{:class => cf_stripe, :colspan => columns.length, :rowspan => max_record_count - result[column_family].length}<
+                  - next

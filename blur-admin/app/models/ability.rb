@@ -17,8 +17,8 @@ class Ability
       if user.has_role? :reader
 
         # view pages
-        can :index, [:zookeepers, :blur_tables, :search, :hdfs]
-        can :show, [:search, :zookeepers]
+        can :index, [:zookeepers, :blur_tables, :hdfs]
+        can :show, :zookeepers
         can :show_current, :zookeepers
         can :make_current, :zookeepers
         can :dashboard, :zookeepers
@@ -27,16 +27,13 @@ class Ability
 
         can [:save, :save_filters], :preference
 
-        # search
-        can [:filters, :create, :load, :delete, :reload, :save, :update], :search
-
         # can view everything but query_string on blur_tables:
         attributes = BlurQuery.new.attribute_names
         attributes.delete "query_string"
         attributes.collect! {|attribute| attribute.to_sym}
         can :index, :blur_queries, attributes
 
-        # view more info on blur_queries on with everything but query_string
+        # view more info o[M `Dr_queries on with everything but query_string
         can :more_info, :blur_queries, attributes
         can :refresh, :blur_queries
 
@@ -58,7 +55,12 @@ class Ability
 
       if user.has_role? :admin
         can [:show, :index, :edit, :destroy, :create, :new], :users
-        can :update, :users, [:admin, :editor, :reader, :auditor]
+        can :update, :users, User.valid_roles
+      end
+
+      if user.has_role? :searcher
+        # search
+        can [:show, :filters, :create, :load, :delete, :reload, :save, :update], :search
       end
 
     else  # not logged in

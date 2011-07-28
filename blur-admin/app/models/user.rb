@@ -1,5 +1,6 @@
 class User < ActiveRecord::Base
-  attr_accessible :username, :email, :password, :password_confirmation, :admin, :editor, :auditor, :reader
+  attr_accessible :username, :email, :password, :password_confirmation,
+                  :admin, :editor, :auditor, :reader, :searcher
   acts_as_authentic
 
   has_many :searches
@@ -33,70 +34,15 @@ class User < ActiveRecord::Base
   end
 
   # the roles are virtual attributes needed to use form helpers
-  def admin=(admin)
-    if admin == "1"
-      self.roles << :admin unless self.has_role? :admin
-    elsif admin == "0"
-      self.roles.delete :admin if self.has_role? :admin
+  User.valid_roles.each do |role|
+    define_method role do
+      return true if self.has_role? role
+      false
     end
-  end
 
-  def editor=(editor)
-    if editor == "1"
-      self.roles << :editor unless self.has_role? :editor
-    elsif editor == "0"
-      self.roles.delete :editor if self.has_role? :editor
+    define_method role.to_s+"=" do |flag|
+      self.roles << role     if flag == '1' and !self.has_role? role
+      self.roles.delete role if flag == '0' and  self.has_role? role
     end
-  end
-
-  def reader=(reader)
-    if reader == "1"
-      self.roles << :reader unless self.has_role? :reader
-    elsif reader == "0"
-      self.roles.delete :reader if self.has_role? :reader
-    end
-  end
-
-  def auditor=(auditor)
-    if auditor == "1"
-      self.roles << :auditor unless self.has_role? :auditor
-    elsif auditor == "0"
-      self.roles.delete :auditor if self.has_role? :auditor
-    end
-  end
-
-  def searcher=(searcher)
-    if searcher == "1"
-      self.roles << :searcher unless self.has_role? :searcher
-    elsif searcher == "0"
-      self.roles.delete :searcher if self.has_role? :searcher
-    end
-  end
-
-  def admin
-    return true if self.has_role? :admin
-    false
-  end
-
-  def editor
-    return true if self.has_role? :editor
-    false
-  end
-  
-  def reader
-    return true if self.has_role? :reader
-    false
-  end
-
-  def auditor
-    return true if self.has_role? :auditor
-    false
-  end
-  
-  def searcher
-    return true if self.has_role? :searcher
-    false
   end
 end
-
-

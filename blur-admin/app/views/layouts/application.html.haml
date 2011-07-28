@@ -60,8 +60,9 @@
             %li{:class => controller == 'blur_queries' && 'active'}
               = link_to 'Blur Queries', blur_queries_path
 
-            %li{:class => controller == 'search' && 'active', :id => "left"}
-              = link_to 'Search', search_path
+            - if can? :show, :search
+              %li{:class => controller == 'search' && 'active', :id => "left"}
+                = link_to 'Search', search_path
 
             %li{:class => controller == 'hdfs' && 'active'}
               = link_to 'HDFS', hdfs_path

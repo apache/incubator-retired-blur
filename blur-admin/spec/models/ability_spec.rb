@@ -8,7 +8,7 @@ describe Ability do
     end
 
     it "can create a user (register) with username, email, password" do
-      @ability.should be_able_to :new, :users
+      @ability.should be_able_to :new,    :users
       @ability.should be_able_to :create, :users, :username
       @ability.should be_able_to :create, :users, :email
       @ability.should be_able_to :create, :users, :password
@@ -28,7 +28,6 @@ describe Ability do
     it "can not view pages" do
       @ability.should_not be_able_to :access, :blur_tables
       @ability.should_not be_able_to :access, :zookeepers
-      @ability.should_not be_able_to :access, :search
       @ability.should_not be_able_to :access, :blur_queries
     end
   end
@@ -41,6 +40,7 @@ describe Ability do
       @user.stub(:has_role?).with(:admin).and_return(false)
       @user.stub(:has_role?).with(:auditor).and_return(false)
       @user.stub(:has_role?).with(:reader).and_return(false)
+      @user.stub(:has_role?).with(:searcher).and_return(false)
       @ability = Ability.new @user
     end
 
@@ -103,7 +103,12 @@ describe Ability do
 
     it "can not perform queries" do
       @ability.should_not be_able_to :filters, :search
-      @ability.should_not be_able_to :create, :search
+      @ability.should_not be_able_to :create,  :search
+      @ability.should_not be_able_to :load,    :search
+      @ability.should_not be_able_to :delete,  :search
+      @ability.should_not be_able_to :reload,  :search
+      @ability.should_not be_able_to :save,    :search
+      @ability.should_not be_able_to :update,  :search
     end
 
   end
@@ -116,6 +121,7 @@ describe Ability do
       @user.stub(:has_role?).with(:admin).and_return(false)
       @user.stub(:has_role?).with(:auditor).and_return(false)
       @user.stub(:has_role?).with(:reader).and_return(true)
+      @user.stub(:has_role?).with(:searcher).and_return(false)
       @ability = Ability.new @user
     end
 
@@ -126,7 +132,6 @@ describe Ability do
       @ability.should be_able_to :show_current, :zookeepers
       @ability.should be_able_to :make_current, :zookeepers
       @ability.should be_able_to :index, :zookeepers
-      @ability.should be_able_to :show, :search
       @ability.should be_able_to :index, :blur_queries
       @ability.should be_able_to :more_info, :blur_queries
     end
@@ -134,11 +139,6 @@ describe Ability do
     it "can not view query strings" do
       @ability.should_not be_able_to :more_info, :blur_queries, :query_string
       @ability.should_not be_able_to :index, :blur_queries, :query_string
-    end
-
-    it "can search" do
-      @ability.should be_able_to :filters, :search
-      @ability.should be_able_to :create, :search
     end
   end
 
@@ -150,6 +150,7 @@ describe Ability do
       @user.stub(:has_role?).with(:admin).and_return(false)
       @user.stub(:has_role?).with(:auditor).and_return(false)
       @user.stub(:has_role?).with(:reader).and_return(true)
+      @user.stub(:has_role?).with(:searcher).and_return(false)
       @ability = Ability.new @user
     end
   
@@ -171,6 +172,7 @@ describe Ability do
       @user.stub(:has_role?).with(:admin).and_return(false)
       @user.stub(:has_role?).with(:auditor).and_return(true)
       @user.stub(:has_role?).with(:reader).and_return(true)
+      @user.stub(:has_role?).with(:searcher).and_return(false)
       @ability = Ability.new(@user)
     end
   
@@ -188,6 +190,7 @@ describe Ability do
       @user.stub(:has_role?).with(:admin).and_return(true)
       @user.stub(:has_role?).with(:auditor).and_return(false)
       @user.stub(:has_role?).with(:reader).and_return(true)
+      @user.stub(:has_role?).with(:searcher).and_return(false)
       @ability = Ability.new @user
       @other_user = User.new
     end
@@ -213,6 +216,23 @@ describe Ability do
     it "can create users with roles" do
       @ability.should be_able_to :create, :users, :admin
       @ability.should be_able_to :create, :users, :editor
+    end
+  end
+
+  describe "when a searcher" do
+    before do
+      @user = User.new
+      @user.stub(:id).and_return(123)
+      @user.stub(:has_role?).with(:editor).and_return(false)
+      @user.stub(:has_role?).with(:admin).and_return(false)
+      @user.stub(:has_role?).with(:auditor).and_return(false)
+      @user.stub(:has_role?).with(:reader).and_return(false)
+      @user.stub(:has_role?).with(:searcher).and_return(true)
+      @ability = Ability.new @user
+    end
+
+    it "can view and use the search page" do
+      @ability.should_not be_able_to :access, :search
     end
   end
 end

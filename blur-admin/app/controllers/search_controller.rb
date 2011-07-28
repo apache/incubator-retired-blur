@@ -43,12 +43,12 @@ class SearchController < ApplicationController
 
     blur_results = search.fetch_results(blur_table.table_name)
 
-    # parse up the response object and reformat it to be a @results
+    # parse up the response object and reformat it to be @results
     # Results Object:
-    #   @results is an array of results. Each result is a 3-dimension nested hash/array with the following:
+    #   @results is an array of results. Each result is a series of nested hashes/arrays:
     #     result = {:id, :max_record_count, :column_families => column_families}
-    #     column_families = {:column_family => [record]}
-    #     record = {:column => value, :recordId => recordId}
+    #     column_families = {:column_family_name => [record]}
+    #     record = {:recordId => recordId, :column_name => value}
 
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime

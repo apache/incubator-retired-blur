@@ -22,7 +22,7 @@
           = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
           .filter
             Column Families:
-          #filter_columns
+          #filter_columns{:style => 'display: none;' }
             = render 'filters'
 
       .tab#advanced
@@ -37,7 +37,7 @@
             = number_field_tag :offset, 0, :min => 0
           .filter
             = label_tag :result_count, 'Fetch:'
-            = select_tag :result_count, options_for_select([25, 50, 100])
+            = number_field_tag :result_count, 10, :min => 0
 
       .tab#store
         .header#store

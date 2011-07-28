@@ -5,16 +5,17 @@
 #hdfs_wrapper
   #hdfs_files_layout
     HDFS Files
-    #hdfs_files
+    #hdfs_files{:style => 'display: none;' }
       = render 'file_layout'
-  #hdfs_bar
-  #data_container
-    %span#toolbar.ui-widget-header.ui-corner-all
-      %span#view_options
-        = radio_button_tag 'view_options', 'list', true
-        = label_tag 'view_options_list', 'List View'
-        = radio_button_tag 'view_options', 'icon'
-        = label_tag 'view_options_icon', 'Icon View'
-      %button{:type => "button", :id => 'view_button'}
-        Placeholder Button
-    #data_container_display
+  #data_wrapper
+    #hdfs_bar
+    #data_container
+      %span#toolbar.ui-widget-header.ui-corner-all
+        %span#view_options
+          = radio_button_tag 'view_options', 'list', true
+          = label_tag 'view_options_list', 'List View'
+          = radio_button_tag 'view_options', 'icon'
+          = label_tag 'view_options_icon', 'Icon View'
+        %button{:type => "button", :id => 'view_button'}
+          Placeholder Button
+      #data_container_display

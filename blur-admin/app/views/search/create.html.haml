@@ -7,29 +7,36 @@
         %tr.familysets
           %th.rowId
           - @schema.each do |family, columns|
-            %th{:colspan => columns.count,
-                :class => "family_#{family}",
-                :id => family,
-                :children => columns.count}
-              = family
+            %th{:colspan => columns.count, :children => columns.count}= family
         %tr.columnsets
           %th.rowId rowId
           - @schema.each do |family, columns|
             - columns.each do |column|
               %th{:class => "column_#{family}_#{column} family_#{family}"}
                 = column.gsub(/([A-Z])/, '&shy;\1').html_safe
-        %tbody
-          - @results.each do |result|
-            - stripe_class = cycle('odd', 'even', :name => 'row-cycle')
-            - result[:rows].each_with_index do |row, i|
-              %tr{:class => stripe_class}
-                - if i == 0
-                  %td.rowId.id_cell{:rowspan => result[:row_count], :title => "rowId"}
-                    = result[:id]
-                - reset_cycle('column-cycle')
-                - row.each_with_index do |family, j|
-                  - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
-                  - family.each_with_index do |column, k|
-                    %td{:class => "#{cf_stripe} family_#{@schema.keys[j]} column_#{@schema.keys[j]}_#{@schema.values[j][k]}",
-                        :title => "#{@schema.keys[j]}: #{@schema.values[j][k]}"}
-                      = column
+        
+      %tbody
+        - @results.each do |result|
+          - result_stripe = cycle('odd', 'even', :name => 'row-cycle')
+          - max_record_count = result[:max_record_count]
+
+          - max_record_count.times do |i|
+            %tr{:class => result_stripe}
+
+              - @schema.each_with_index do |(column_family, columns), j|
+                - cf_stripe = cycle('odd', 'even', :name => 'column-cycle')
+                - if i == 0 and j == 0
+                  %td{:title => "rowId"}= result[:id]
+                - if i == 1 and j == 0
+                  %td{:rowspan => max_record_count - 1}
+                - record = result[column_family][i]
+
+                - if record # then insert the record
+                  - columns.each do |column|
+                    %td{:class => cf_stripe, :title => column}= record[column]
+
+                - elsif i == result[column_family].length # fill in the remaining space with a big cell
+                  %td{:class => cf_stripe,
+                      :colspan => columns.length,
+                      :rowspan => max_record_count - result[column_family].length}
+                  - next

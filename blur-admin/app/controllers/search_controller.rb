@@ -40,6 +40,47 @@ class SearchController < ApplicationController
     #use the model to begin building the blurquery
     blur_table = BlurTable.find params[:blur_table]
 
+
+    blur_results = search.fetch_results(blur_table.table_name)
+
+    # parse up the response object and reformat it to be a @results
+    # Results Object:
+    #   @results is an array of results. Each result is a 3-dimension nested hash/array with the following:
+    #     result = {:id, :max_record_count, :column_families => column_families}
+    #     column_families = {:column_family => [record]}
+    #     record = {:column => value, :recordId => recordId}
+
+    @result_count = blur_results.totalResults
+    @result_time = blur_results.realTime
+    @results = []
+    blur_results.results.each do |blur_result_container|
+      # drill down through the result object cruft to get the real result
+      blur_result = blur_result_container.fetchResult.rowResult.row 
+      # continue to next result if there is no returned data
+      next if blur_result.columnFamilies.empty?
+
+      max_record_count = blur_result.columnFamilies.collect {|cf| cf.records.keys.count }.max
+
+      result = {:max_record_count => max_record_count, :id => blur_result.id}
+
+      blur_result.columnFamilies.each do |blur_column_family|
+        column_family = blur_column_family.family
+        records = []
+        blur_column_family.records.each do |record_id, blur_columns|
+          record = {'recordId' => record_id}
+          blur_columns.each do |blur_column|
+            unless blur_column == 'recordId'
+              column = blur_column.name
+              record[column] = blur_column.values.join ', '
+            end
+          end
+          records << record
+        end
+        result[column_family] = records
+      end
+      @results << result
+    end
+
     # create a schema hash which contains the column_family => columns which the search is over
     # initialize to be set of incomplete column families
     @schema = search.columns
@@ -49,60 +90,8 @@ class SearchController < ApplicationController
       @schema[family] << blur_table.schema[family]
       @schema[family].flatten!
     end
-
-    # sort column families by user preferences, then by alphabetical order
+    # finally, sort column families by user preferences, then by alphabetical order
     @schema = Hash[@schema.sort &preference_sort]
-
-    blur_results = search.fetch_results(blur_table.table_name)
-
-    # parse up the response object from blur and prepares it as a table
-    # Definitions:
-    #   Result: consists  of one or more rows.  Each result has an
-    #           identifying rowId (I know, confusing...)
-    #   Row: A row consisting of one record for each column family it spans.
-
-    @results = []
-    @result_count = blur_results.totalResults
-    @result_time = blur_results.realTime
-    blur_results.results.each do |result_container|
-      # drill down through the result object cruft to get the real result
-      result = result_container.fetchResult.rowResult.row 
-
-      # continue to next result if there is no returned data
-      next if result.columnFamilies.empty?
-
-      # number of rows the result will span
-      row_count = result.columnFamilies.collect {|cf| cf.records.keys.count }.max
-
-      # organize into multidimensional array of rows and columns
-      rows = Array.new(row_count) { [] }
-      (0...row_count).each do |row| # for each row in the result, row here is really just the row number
-        @schema.keys.each do |column_family_name| # for each column family in the row
-          column_family = result.columnFamilies.find { |cf| cf.family == column_family_name }
-          rows[row] << cfspan = []
-
-          if column_family and row < column_family.records.values.count
-            @schema[column_family_name].each do |column|
-              found_set = column_family.records.values[row].find { |col| column == col.name }
-              if !(column == 'recordId')
-                cfspan << (found_set.nil? ? ' ' : found_set.values.join(', '))
-              else
-                cfspan << column_family.records.keys[row]
-              end
-            end
-          else # otherwise pad with blank space
-            @schema[column_family_name].count.times { |count_time| cfspan << ' ' }
-          end
-        end
-      end
-
-      result_rows  = {:id => result.id, :row_count => row_count, :rows => rows}
-
-      @results << result_rows
-    end
-
-    #reorder the CFs to use the preference
-    @family_order = (current_user.saved_cols & @schema.keys) | @schema.keys
 
     render :template=>'search/create.html.haml', :layout => false
   end

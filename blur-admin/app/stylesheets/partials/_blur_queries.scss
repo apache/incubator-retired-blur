@@ -20,21 +20,24 @@
       @include columns(17, $total-cols);
       @include prefix(1);
       padding-top: 0.5em;
-    }
-    #refresh_wrapper, #pause_button{ @include prefix(1); display:inline-block;}
-    #pause_button { vertical-align: middle; }
-    #pause{
-      @include border;
-      cursor:pointer;
-      &:hover{
-        background-color: $row-hover;
-        background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
+
+      #refresh_wrapper, #pause_button{ @include prefix(1); display:inline-block;}
+      #pause_button {
+        vertical-align: middle;
+        #pause{
+          @include border;
+          cursor:pointer;
+          &:hover{
+            background-color: $row-hover;
+            background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
+          }
+        }
       }
     }
-    filter_spinner{
-      @include columns(1, $total-cols);
-    }
+    filter_spinner{ @include columns(1, $total-cols); }
   }
+
+  #current{ @include omega; }
 
   @mixin table-base {
     display: table;
@@ -77,13 +80,8 @@
       display: table-row;
     }
   }
-  
-  #current{
-    @include omega;
-  }
 
   .ui-tooltip { @include standard-font; }
-  @include standard-font;
   #blur_table_id{ margin-bottom: 15px; }
 }
 

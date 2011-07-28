@@ -1,33 +1,34 @@
 #hdfs_wrapper{
   margin-top: 2em;
-  margin-bottom: 2em;
+  padding-bottom: 165px;
   @include full;
   @include standard-font;
 
   #hdfs_files_layout {
     @include columns(4,$total-cols);
     overflow: auto;
-    #hdfs_files {
-      display: none;
-    }
   }
 
-  #hdfs_bar{
-    @include columns(1,$total-cols);
-    width: 1em;
-    height: 100%;
-    background-color: #eee;
-    position: fixed;
-  }
-
-  #data_container{
-    @include columns(25,$total-cols);
+  #data_wrapper {
+    @include columns(26,$total-cols);
     @include omega($total-cols);
-    #data_container_display {padding-top: 1em; }
-    #toolbar {
-      display: inline-block;
-      padding: 0 5px;
-      .ui-widget{ font-size: 0.9em; }
+    #hdfs_bar{
+      @include columns(1,26);
+      width: 1em;
+      height: 100%;
+      background-color: #eee;
+      position: fixed;
+    }
+
+    #data_container{
+      @include columns(25,26);
+      @include omega(26);
+      #data_container_display {padding-top: 1em; }
+      #toolbar {
+        display: inline-block;
+        padding: 0 5px;
+        .ui-widget{ font-size: 0.9em; }
+      }
     }
   }
 

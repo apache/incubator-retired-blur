@@ -22,7 +22,7 @@
           = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
           .filter
             Column Families:
-          #filter_columns
+          #filter_columns{:style => 'display: none;' }
             = render 'filters'
 
       .tab#advanced

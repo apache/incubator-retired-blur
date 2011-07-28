@@ -92,10 +92,15 @@ NEEDS TO BE WRITTEN ONCE IT IS IMPLEMENTED FULLY
 @@@@@@@@ Users Page: @@@@@@@@
 
   The "Column Preferences" allows the user to choose what column families they want to display first on the search page.
+  
   - "My Saved Column Families" is the list of your chosen preferred column families.
   -- This list is sortable, simply drag a column to the spot in the list. The list is in order of top to bottom.
   -- To add columns to this list simply click on a blue column on the right and it will be added to your preferred list.
   -- To remove a column from your preferred list a user can either drag the column out of the list into the trash can or click on the column on the right list.
+  
+  The "Filter Preferences" section allows the user to choose their Blur Query filter defaults.
+  
+  - These values are automatically populated into their respective selectors on the Blur Queries page. 
 
 
 

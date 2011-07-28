@@ -91,7 +91,8 @@ $(document).ready ->
       if $(this).find('#refresh_period').val() is 'continuous' and $('#pause').hasClass 'ui-icon-pause'
         $('#filter_form').submit()
       else
-        $(this).find("input[type=submit]").removeAttr('disabled')
+        if $('#pause').hasClass 'ui-icon-pause'
+          $(this).find("input[type=submit]").removeAttr('disabled')
         $('#filter_spinner').hide()
     .live 'ajax:success', (evt, data, status, xhr) ->
       rows = $($.trim(data)) # rails renders whitespace if there are no rows
@@ -190,6 +191,7 @@ $(document).ready ->
       period = $(this).val() * 1000
       set_timer()
     if $(this).val() isnt 'continuous'
+      $('#filter_wrapper').find("input[type=submit]").removeAttr('disabled')
       $('#pause').hide()
       $('#pause').removeClass 'ui-icon-play'
       $('#pause').addClass 'ui-icon-pause'
@@ -221,3 +223,8 @@ $(document).ready ->
           $(this).dialog 'close'
       close: ->
         $(this).remove()
+
+  $('#filter_form').submit()
+
+  if $('#refresh_period').val() == 'continuous'
+    $('#pause').show()

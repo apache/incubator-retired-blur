@@ -96,6 +96,11 @@
     @include pref-box;
   }
   
+  //style for pref title
+  #pref-title{
+    text-align: center;
+  }
+  
   //opt-col - options to choose that will go into my list
   #opt-col{
     @include info(white);

@@ -1,38 +1,115 @@
 ########## BlurTools User's Guide (Draft) ########## 
 
-Navigation Bar Guide:
+@@@@@@@@ Navigation Bar Guide: @@@@@@@@
 
-The navigation bar has three major functions:
-  1) a means to traverse the application 
-  2) Gives the user the ability to change the context of the application
+The navigation bar has three major functionalities:
+
+  1) A means to traverse the application
+  2) It gives the user the ability to change the "zookeeper" context of the application:
     - The context can be switched by using the "Current Zookeeper Instance" selector located at the center of the navigation bar.
-    - This selector is present on every page except for the "dashboard" page (dashboard does not have a context)
-    - The selector is a list of all the zookeepers that your application is tracking.
-    - By selecting a new zookeeper the current page will reload with the new context
-  3) The header also allows you to navigate to your "User" page. This can be done by clicking on your username, next to the "logout" button.
+    - The selector is a list of all the zookeepers that your application is currently tracking.
+    - This selector is present on every page except for the "dashboard" page (dashboard does not have a context).
+    - By selecting a new zookeeper the current page will reload using the new zookeeper.
+  3) The header also contains a link to your "User" page, it is located nest to the "logout" button in the top right.
 
-Dashboard Page:
+@@@@@@@@ Dashboard Page: @@@@@@@@
 
-  The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a collection of data associated with a different zookeeper (Blur instance). Within each particular box is a set of warnings and statuses for the different pieces of that particular Blur instance.
-  The header of each zookeeper box will display green if the system is online otherwise the header will be red. The first row of each section alerts the user to any problems associated with inconsistent blur versions. If the system detects that any of the controllers or shards are using inconsistent versions of Blur then the warning will display a warning of "Inconsistent Blur Versions" and the background will change to red. 
-  The next three rows of the status section are an aggregation of all the states of the controllers and shards. The "online", "disabled", and "offline" bars display the number of shards/controllers that are currently online, disabled, and offline respectively.
-  Each Zookeeper box can be clicked and it will take the user to the Environment page for that particular Zookeeper.
-  The last warning given in the zookeeper boxes is the number of "long running" queries. A "long running" query is a query that is currently still in the "running" state and has been in this state for more than a minute.
+  The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a different zookeeper (Blur instance) and the data inside represents its current state. Within each particular box is a set of warnings and statuses for the different pieces of that particular Blur instance.
+
+  - The header of each zookeeper box will display whether the system is online or not. 
+  -The first row is a warning as to any problems associated with inconsistent blur versions. 
+  -- If the system detects that any of the controllers or shards are using inconsistent versions of Blur then the warning will read "Inconsistent Blur Versions" and the background will change to red. 
+  - The next three rows of the status section are an aggregation of all the different states of all the controllers and shards. 
+  -- The "online", "disabled", and "offline" bars display the number of shards/controllers that are currently online, disabled, and offline respectively.
+  - Each Zookeeper box is clickable, when the user clicks on a zookeeper it will take the user to the Environment page for that particular blur instance.
+  - The final warning given is the number of "long running" queries.
+  -- A "long running" query is one that is currently still in the "running" state and has been in this state for more than a minute.
   
-Environment Status Page:
+@@@@@@@@ Environment Status Page: @@@@@@@@
 
-  The "Environment" page is a more detailed dashboard page that focuses on a particular zookeeper instance. The top most section displays some of the specifics about the current zookeeper such as the name, the connection (URL), and its current status. The "controllers" box lists out each controller node giving the name, blur version, and status of each controller. The "shards" box lists out each shard node giving the name, blur version, and status of each shard.
+  The "Environment" page is a zookeeper specific dashboard page.
+
+  - The top section displays some of the details about the current zookeeper; such as the name, the connection (URL), and its current status. 
+  - The "controllers" box lists out each controller giving its name, blur version, and status.
+  - The "shards" box lists out each shard giving its name, blur version, and status of each shard.
   
-BlurTables Page:
+@@@@@@@@ BlurTables Page: @@@@@@@@
 
-  The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row in the table represents a different table and its associated information. The "Hosts/Shards" column is a clickable link that displays an overlay with a list of the hosts and the shards for each host. "Record Count" is the number of records in that particular table. "Size" is the total size of the table on disk. "Queries/Second" is a calculated metric for the overall throughput of that table. "Status" indicates whether the table is enabled or disabled. "Schema" is a clickable link that displays an overlay with a list of Column families and their columns, each entry also displays the name of its analyzer. 
-  In addition to this information the table row can be clicked and this will display the location of the table on disk. This additional row also houses the "enable/disable/delete" table buttons, these are only displayed to the "editor" role and perform the actions implied by their names. The "delete" table button displays a confirmation dialog asking whether the user would like to also delete the underlying index of the selected table, or to just delete the table.
-  The bottom of the table has a count of the total tables in this zookeeper.
+  The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row in the table represents a different table and its associated information.
   
-BlurQueries Page:
+  - The "Hosts/Shards" column is a link that displays a dialog with a list of all the hosts and shards for each table.
+  - "Record Count" is the number of records in that particular table.
+  - "Size" is the total size of the table on disk.
+  - "Queries/Second" is a calculated metric for the overall throughput of that table.
+  - "Status" indicates whether the table is enabled or disabled.
+  - "Schema" is a link that displays a dialog with a list of Column families and their columns.
+  -- Each entry also displays the name of its analyzer. 
+  
+  In addition to this information the table row is clickable. Clicking a row will display the location of the table on disk. This row also houses the "enable/disable/delete" table buttons; each one performs the action implied by their name. The "delete" table button displays a confirmation dialog asking whether the user would like to also delete the underlying index of the selected table, or to just delete the table. The bottom of the table has a count of the total tables in this zookeeper.
+  
+@@@@@@@@ BlurQueries Page: @@@@@@@@
 
-  The "Blur Queries" page is a list of the most recently executed Blur Queries. The "Filters" section is a series of options for modifying what queries will populate the list. The "Within past" selector allows you to limit the list of queries to a certain time frame. The default value is queries that were executed in the past minute. The "Super Query" option allows to show or hide queries based on whether they were run with super query on or off. The default value is "all" and this means that it shows all queries, with either super query on or off. The "Running" option allows users to filter the queries by their running state. The default "running" value is yes and it will only show queries that are currently running. The "Interrupted" option allows users to filter the queries by whether they have been interrupted or not. The default "Interrupted" value is "All queries" and it will show all queries. 
+  The "Blur Queries" page is a list of the most recently executed Blur Queries.
+  
+  - The "Filters" section is a set of options for modifying what queries will populate the list.
+  -- The "Within past" selector allows you to limit the list of queries to a certain time frame.
+  -- The "Super Query" option allows to show or hide queries based on whether they were run with super query on or off.
+  -- The "Running" option allows users to filter the queries by their running state.
+  -- The "Interrupted" option allows users to filter the queries by whether they have been interrupted or not.
+  - The "Blur Table" selector filters the queries list by what table the query was run against.
+  - The "Refresh" selector allows the user to choose how often the table is refreshed and repopulated.
+  -- When the table is being refreshed, queries are automatically added, updated, and deleted.
+  --- When a query is added, it will flash green.
+  --- When a query is updated, it will flash yellow.
+  --- When a query is deleted, it will flash red before it is removed.
+  
+  Blow these selectors is the queries table.
+  
+  - The top right of the table is a list of the currently selected filters.
+  - The "User Id" column shows the ID of the user that submitted that query.
+  - The "Query" column is the text of the executed query, this is only displayed for the auditor role.
+  -- If the query text is long than it is shortened and the full text can be seen by hovering your mouse over the query column.
+  - The "Super Query" column shows whether super query was used to execute the query.
+  - The "Start" column shows the starting offset for the executed query.
+  - The "Fetch" column shows the amount of records fetched for the executed query.
+  - The "CPU time / Real time (ms)" column is a calculated metric for the total life span of the executed query.
+  - The "Status" column shows the percent of shards that have completed the query.
+  - The "Actions" column gives users the ability to cancel queries taht are still in the running state, this is only displayed for the editor user and can only be performed on running queries.
+  - The "More Info" link displays a dialog box with a complete list of all the details associated with the executed query, this can only be seen by the auditor role. 
+  
+@@@@@@@@ Search Page: @@@@@@@@
 
+STEAL FROM THE VIEW
 
+@@@@@@@@ HDFS Page: @@@@@@@@
     
-    
+NEEDS TO BE WRITTEN ONCE IT IS IMPLEMENTED FULLY
+
+@@@@@@@@ Admin Page: @@@@@@@@
+
+  The "Admin Page" is a list of all the current users registered in the system. This can only be seen by a user with the "admin" role. It allows the admin to edit the roles and information for all the users.
+
+@@@@@@@@ Users Page: @@@@@@@@
+
+  The "Column Preferences" allows the user to choose what column families they want to display first on the search page.
+  
+  - "My Saved Column Families" is the list of your chosen preferred column families.
+  -- This list is sortable, simply drag a column to the spot in the list. The list is in order of top to bottom.
+  -- To add columns to this list simply click on a blue column on the right and it will be added to your preferred list.
+  -- To remove a column from your preferred list a user can either drag the column out of the list into the trash can or click on the column on the right list.
+  
+  The "Filter Preferences" section allows the user to choose their Blur Query filter defaults.
+  
+  - These values are automatically populated into their respective selectors on the Blur Queries page. 
+
+
+
+
+
+
+
+
+
+
+
+

@@ -3,7 +3,9 @@ package com.nearinfinity.agent.zookeeper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,11 +20,13 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	private JdbcTemplate jdbc;
 	private ZooKeeper zk;
 	private Watcher watcher;
+	private Properties props;
 	
-	public ZookeeperInstance(String name, String url, JdbcTemplate jdbc) {
+	public ZookeeperInstance(String name, String url, JdbcTemplate jdbc, Properties props) {
 		this.name = name;
 		this.url = url;
 		this.jdbc = jdbc;
+		this.props = props;
 		
 		initializeZkInstanceModel();
 		resetConnection();
@@ -99,8 +103,12 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 		return instanceId;
 	}
 	
+	public String getName() {
+		return name;
+	}
+	
 	private void runInitialRegistration() {
-		ControllerCollector.collect(this, jdbc);
+		ControllerCollector.collect(this, jdbc, props, this);
 		ClusterCollector.collect(this, jdbc);
 	}
 

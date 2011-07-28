@@ -13,6 +13,8 @@ class UsersController < ApplicationController
     @preferences = current_user.saved_cols
     @filters = current_user.saved_filters
     
+    puts @filters.inspect
+    
     @choices = []
     BlurTable.all.each do |table|
       @choices << table.schema.keys

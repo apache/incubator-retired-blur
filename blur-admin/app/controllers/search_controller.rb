@@ -50,6 +50,8 @@ class SearchController < ApplicationController
     #     column_families = {:column_family => [record]}
     #     record = {:column => value, :recordId => recordId}
 
+    @result_count = blur_results.totalResults
+    @result_time = blur_results.realTime
     @results = []
     blur_results.results.each do |blur_result_container|
       # drill down through the result object cruft to get the real result

@@ -36,9 +36,10 @@
           = submit_tag 'filter'
 
     #selector_wrapper
-      = label_tag :blur_table_id, 'Blur Table:'
-      = select_tag :blur_table_id,
-          options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")   
+      #table_wrapper
+        = label_tag :blur_table_id, 'Blur Table:'
+        = select_tag :blur_table_id,
+            options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")   
 
       #refresh_wrapper
         = hidden_field_tag :time_since_refresh
@@ -49,10 +50,13 @@
                                                           ['every 1 minute', 60],
                                                           ['every 10 minutes', 600]], @filters[4])
         #pause_button
-          #pause.ui-icon.ui-icon-pause{:style => 'display:none;'}
+          #pause.ui-icon.ui-icon-pause
 
-    = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading...", :style => "display:none;"
+      #spinner_wrapper
+        = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading..."
 
   #current
-
+    %span
+      %b Current Filters:
+    %span#filters 
   = render 'query_table'

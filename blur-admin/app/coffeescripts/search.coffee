@@ -86,12 +86,12 @@ $(document).ready ->
       $('#bar_section').width('1em');
 
   toggle_all = () ->
-    list_num = $('#neighborhood').find("> ul").length
-    un_num = $('#neighborhood').find("> ul > .jstree-unchecked").length
+    #list_num = $('#neighborhood').find("> ul").length
+    num_unchecked = $('#neighborhood').find("> ul > .jstree-unchecked").length
     $('#result_table').find('thead > .familysets > th').each( ->
       if this.id
         a_string = '.family_' + this.id
-        if list_num == un_num
+        if num_unchecked != 0
           $(a_string).hide()
         else
           $(a_string).show()
@@ -107,9 +107,13 @@ $(document).ready ->
     curr_col_span = $(family_header).attr('colspan')
     max_col_span = $(family_header).attr('children')
 
+    # hide/show all of the columns if 'All' is checked/unchecked
     if name == ".all"
       toggle_all()
+
+    # hide the clicked filter element if the corresponding column is visible
     else if $(name).is(":visible")
+      # hide a column
       if element == ".column"
         if curr_col_span <= 2
           name = family_name
@@ -117,26 +121,35 @@ $(document).ready ->
           $(family_header).attr('colspan', curr_col_span-1)
           $(family_name + '_empty').attr('colspan', curr_col_span-1)
         $(name).hide()
+      # hide/show column family
       else
         list_length = $('#'+$(this).attr('name')).find("> ul > .jstree-checked").length + 1
+        # show column family if some of it's children are unchecked
         if curr_col_span < max_col_span || curr_col_span < list_length
           $(family_header).attr('colspan', max_col_span)
           $(family_name + '_empty').attr('colspan', max_col_span)
-          $(name).show() #show whole fam
+          $(name).show()
+        # hide column family otherwise
         else
           $(name).hide()
+
+    # show the clicked filter element if the corresponding column is hidden
     else
+      # show a column
       if element == ".column"
+        # show column when column family is already visible
         if $(family_header).is(":visible")
           if $('#result_table').find('thead > tr > ' + name).length > 0
             $(family_header).attr('colspan', 1 + parseInt(curr_col_span))
             $(family_name + '_empty').attr('colspan', 1 + parseInt(curr_col_span))
+        # show column and column family when column family is not visible
         else
           $(family_header).attr('colspan', 2)
           $(family_name + '_empty').attr('colspan', 2)
           $(family_header).show()
           $(recordId_name).show()
           $(family_name + '_empty').show()
+      # show a family
       else
         $(family_header).attr('colspan', max_col_span)
         $(family_name + '_empty').attr('colspan', max_col_span)

@@ -2,7 +2,10 @@
 %html
   %head
     =csrf_meta_tag
-    = javascript_include_tag 'raphael-min','g.raphael-min','g.pie-min','g.bar-min','g.line-min','jquery', 'jquery-ui', 'rails', 'compiled/application'
+    = javascript_include_tag 'jquery',
+                             'jquery-ui',
+                             'rails',
+                             'compiled/application'
 
     -# Use this syntax in haml templates to add page specific javascript
     -# - content_for :javascript do
@@ -28,9 +31,13 @@
                   = message
           - if @current_zookeeper && @zookeepers
             #zookeeper_select
-              = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',  :method => :put, :remote => :true do
+              = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper', 
+                                                      :method => :put,
+                                                      :remote => :true do
                 %b Current Zookeeper Instance:
-                = select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
+                = select_tag( :id,
+                  options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ),
+                  :id => 'zookeeper_id' )
           #user_nav
             - if @current_user
               = "Welcome, "

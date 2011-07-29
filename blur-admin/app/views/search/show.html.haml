@@ -53,7 +53,10 @@
               Update Search
 
       #search_send.partial_section
-        %img{:id => "loading-spinner", :src => "/images/loadinfo_24.gif", :alt => "Loading...", :style => "display:none;" }
+        %img{:id => "loading-spinner",
+             :src => "/images/loadinfo_24.gif",
+             :alt => "Loading...",
+             :style => "display:none;" }
         = submit_tag "Search", :disabled => true, :id => "search_submit"
   #results_wrapper.open_filters
     #bar_section

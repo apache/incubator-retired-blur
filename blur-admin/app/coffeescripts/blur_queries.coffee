@@ -214,10 +214,6 @@ $(document).ready ->
       if $('#refresh_period').val() is 'continuous' and $('#pause').hasClass 'ui-icon-pause'
         $('#filter_form').submit()
 
-  # Shows the pause button onload if refresh is continuous
-  if $('#refresh_period').val() == 'continuous'
-    $('#pause').show()
-
   # Listener for cancel button (launches dialog box)
   $('.cancel_query_button').live 'click', ->
     form = $(this).closest 'form.cancel'
@@ -235,5 +231,5 @@ $(document).ready ->
       close: ->
         $(this).remove()
 
-  # Submit form onload (populates table)
-  $('#filter_form').submit()
+  # set off change event on refresh period to get auto refresh started
+  $('#refresh_period').trigger('change')

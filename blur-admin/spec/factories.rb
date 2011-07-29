@@ -99,6 +99,12 @@ Factory.define :preference do |t|
   t.value     ['ColumnFamily2'].to_json
 end
 
+Factory.define :filter_preference, :parent => :preference do |t|
+  t.name 'filters'
+  t.pref_type 'filters'
+  t.value {{'created_at_time' =>  1, 'super_query_on' => '', 'running' => true, 'interrupted' => '', 'refresh_period' => 'false'}.to_json}
+end
+
 # Create models with association chains already created. These real objects and
 # persist them in the database
 

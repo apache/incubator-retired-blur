@@ -4,10 +4,18 @@ class BlurQueriesController < ApplicationController
   before_filter :zookeepers, :only => :index
 
   def index
-
+    @filters = current_user.saved_filters
     filters = {}
-    filters[:created_at] = (Time.now - 1.minutes)..Time.now
-    filters[:running] = true
+    filters['created_at'] = (Time.now - @filters['created_at_time'].to_i.minutes)..Time.now
+    @filters.each {|k, v| filters[k] = v unless v == '' or k == 'created_at_time' or k == 'refresh_period'}
+    # convert string bools into real bools
+    ['super_query_on', 'running', 'interrupted'].each do |category|
+      filters[category] = true  if filters[category] == 'true'
+      filters[category] = false if filters[category] == 'false'
+    end
+    filters.delete('refresh_period')
+    filters.delete('created_at_time')
+
 
     @blur_tables = @current_zookeeper.blur_tables
 
@@ -16,7 +24,6 @@ class BlurQueriesController < ApplicationController
                              where(filters).
                              includes(:blur_table).
                              order("created_at DESC")
-    @filters = current_user.saved_filters
   end
 
   def refresh

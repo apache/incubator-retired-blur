@@ -17,7 +17,7 @@ describe BlurQueriesController do
     controller.stub!(:current_ability).and_return(@ability)
     controller.stub!(:current_user).and_return(@user)
     
-    @user.stub(:saved_filters).and_return(Factory.stub :preference, :pref_type => 'filters', :name => 'filters')
+    @user.stub(:saved_filters).and_return(JSON.parse (Factory.stub :filter_preference).value)
   end
 
   describe "GET index" do

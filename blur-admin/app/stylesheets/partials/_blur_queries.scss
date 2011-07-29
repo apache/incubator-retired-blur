@@ -44,6 +44,7 @@
       #spinner_wrapper {
         @include columns(2, 18);
         @include omega($total-cols);
+        #filter_spinner { display: none; }
       }
     }
   }

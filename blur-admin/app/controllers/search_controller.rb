@@ -16,7 +16,7 @@ class SearchController < ApplicationController
 	#Filter action to help build the tree for column families
   def filters
     @blur_table = BlurTable.find params[:blur_table_id]
-    @columns = (@blur_table ? (@blur_table.schema &preference_sort) : [])
+    @columns = @blur_table ? (@blur_table.schema &preference_sort) : []
 	  render :partial => 'filters'
   end
 

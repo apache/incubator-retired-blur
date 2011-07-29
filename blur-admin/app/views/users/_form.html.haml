@@ -5,10 +5,14 @@
       %ul
         - @user.errors.full_messages.each do |msg|
           %li= msg
-  - fields = {:username => :text_field, :email => :email_field, :password => :password_field, :password_confirmation => :password_field}
+  - fields = {:username              => :text_field,
+              :email                 => :email_field,
+              :password              => :password_field,
+              :password_confirmation => :password_field}
   - fields.each_pair do |field_name, field_type|
     %p
-      - if (!@user.new_record? and can? :update, @user, field_name) or (@user.new_record? and can? :create, @user, field_name)
+      - if (!@user.new_record? and can? :update, @user, field_name) |
+        or ( @user.new_record? and can? :create, @user, field_name) |
         = f.label field_name
         %br
         = f.send field_type, field_name
@@ -19,7 +23,8 @@
   %strong Roles:
   #roles_wrapper
     - User.valid_roles.each do |role|
-      - if (!@user.new_record? and can? :update, @user, role) or  (@user.new_record? and can? :create, @user, role)
+      - if (!@user.new_record? and can? :update, @user, role) |
+        or ( @user.new_record? and can? :create, @user, role) |
         .role
           = f.label role, role.capitalize
           = f.check_box role

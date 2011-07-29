@@ -7,7 +7,7 @@
         %tr.familysets
           %th.rowId
           - @schema.each do |family, columns|
-            %th{:colspan => columns.count, :children => columns.count}= family
+            %th{:colspan => columns.count, :children => columns.count, :class => "family_#{family}", :id => family }= family
         %tr.columnsets
           %th.rowId rowId
           - @schema.each do |family, columns|
@@ -32,10 +32,10 @@
 
                 - if record # then insert the record
                   - columns.each do |column|
-                    %td{:class => ((j % 2) == 1 ? 'even' : 'odd' ), :title => column}= record[column]
+                    %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} column_#{column_family}_#{column} family_#{column_family}", :title => column}= record[column]
 
                 - elsif i == result[column_family].length # fill in the remaining space with a big cell
-                  %td{:class => ((j % 2) == 1 ? 'even' : 'odd' ),
+                  %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} family_#{column_family} family_#{column_family}_empty",
                       :colspan => columns.length,
                       :rowspan => max_record_count - result[column_family].length}
                   - next

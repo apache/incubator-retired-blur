@@ -101,38 +101,45 @@ $(document).ready ->
   $('.check_filter').live 'click', ->
     name = '.'+$(this).attr('name')
     element = name.split("_")[0]
-    family = '#'+name.split("_")[1]
+    family_header = '#'+name.split("_")[1]
+    family_name = '.family_'+name.split("_")[1]
     recordId_name = '.column_'+name.split("_")[1]+'_recordId'
-    curr_col_span = $(family).attr('colspan')
-    max_col_span = $(family).attr('children')
+    curr_col_span = $(family_header).attr('colspan')
+    max_col_span = $(family_header).attr('children')
 
     if name == ".all"
       toggle_all()
     else if $(name).is(":visible")
       if element == ".column"
         if curr_col_span <= 2
-          name = '.family_'+name.split("_")[1]
+          name = family_name
         else
-          $(family).attr('colspan', curr_col_span-1)
+          $(family_header).attr('colspan', curr_col_span-1)
+          $(family_name + '_empty').attr('colspan', curr_col_span-1)
         $(name).hide()
       else
         list_length = $('#'+$(this).attr('name')).find("> ul > .jstree-checked").length + 1
         if curr_col_span < max_col_span || curr_col_span < list_length
-          $(family).attr('colspan', max_col_span)
+          $(family_header).attr('colspan', max_col_span)
+          $(family_name + '_empty').attr('colspan', max_col_span)
           $(name).show() #show whole fam
         else
           $(name).hide()
     else
       if element == ".column"
-        if $(family).is(":visible")
+        if $(family_header).is(":visible")
           if $('#result_table').find('thead > tr > ' + name).length > 0
-            $(family).attr('colspan', 1 + parseInt(curr_col_span))
+            $(family_header).attr('colspan', 1 + parseInt(curr_col_span))
+            $(family_name + '_empty').attr('colspan', 1 + parseInt(curr_col_span))
         else
-          $(family).attr('colspan', 2)
-          $(family).show()
+          $(family_header).attr('colspan', 2)
+          $(family_name + '_empty').attr('colspan', 2)
+          $(family_header).show()
           $(recordId_name).show()
+          $(family_name + '_empty').show()
       else
-        $(family).attr('colspan', max_col_span)
+        $(family_header).attr('colspan', max_col_span)
+        $(family_name + '_empty').attr('colspan', max_col_span)
       $(name).show()
 
   #listener that accordions the tabs

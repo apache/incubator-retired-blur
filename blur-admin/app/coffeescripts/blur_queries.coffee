@@ -236,4 +236,4 @@ $(document).ready ->
         $(this).remove()
 
   # Submit form onload (populates table)
-  $('#filter_form').submit()
+  #$('#filter_form').submit()

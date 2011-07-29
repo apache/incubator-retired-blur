@@ -194,7 +194,8 @@ $(document).ready ->
         $.each arr, (index, value) ->
           $('.column_family_filter').jstree('check_node', "#" + value)
         $('#search_submit').removeAttr('disabled')
-        
+        $('#save_button').removeAttr('disabled')
+        $('#update_button').removeAttr('disabled')
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->

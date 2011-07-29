@@ -5,12 +5,21 @@ $(document).ready ->
   remove_color = '#E01E00'
   
   #grabs the current filter values and shows them in the header
-  show_filter_choices = () ->
-    info = 'Current Filters: '
-    info += $('#created_at_time :selected').text() + " | "
-    info += $('#super_query_on :selected').text() + " | "
-    info += $('#running :selected').text() + " | "
-    info += $('#interrupted :selected').text()
+  update_filter_choices = () ->
+    filters = "within past #{$('#created_at_time :selected').text()}"
+    if $('#super_query_on').val() == 'true'
+      filters += " | super query on"
+    else if $('#super_query_on').val() == 'false'
+      filters += " | super query off"
+    if $('#running').val() == 'true'
+      filters += " | running"
+    else if $('#running').val() == 'false'
+      filters += " | not running"
+    if $('#interrupted').val() == 'true'
+      filters += " | interrupted"
+    else if $('#interrupted').val() == 'false'
+      filters += " | not interrupted"
+    $('#current #filters').html(filters)
 
   # adds time to data-age of selected elements, and 
   # retires them if past retirement age
@@ -87,6 +96,8 @@ $(document).ready ->
       if $('#pause').hasClass 'ui-icon-pause'
         age_and_retire($('tr.blur_query'), time_since_refresh, created_at_filter * 60)
     .live 'ajax:complete', (evt, xhr, status) ->
+      # update current filters
+      update_filter_choices()
       # resubmit if continuous and pause is not pressed***
       if $(this).find('#refresh_period').val() is 'continuous' and $('#pause').hasClass 'ui-icon-pause'
         $('#filter_form').submit()
@@ -158,17 +169,12 @@ $(document).ready ->
             $('#more-info-table').dialog('close')
 
   #when the page loads show the currently selected filters
-  $('#current').text(show_filter_choices())
-  
-  $('#filter_form').live 'change', ->
-    $('#current').text(show_filter_choices())
+  update_filter_choices()
   
   $('#filter_wrapper').accordion
     collapsible: true
     autoHeight: false
     active: false
-    change: ->
-      $('#current').text(show_filter_choices())
   
   # Listener for the table selector
   $('#blur_table_id').live 'change', ->
@@ -201,6 +207,7 @@ $(document).ready ->
     if $(this).hasClass 'ui-icon-pause'
       $(this).removeClass 'ui-icon-pause'
       $(this).addClass 'ui-icon-play'
+      $('#filter_spinner').hide()
     else
       $(this).removeClass 'ui-icon-play'
       $(this).addClass 'ui-icon-pause'

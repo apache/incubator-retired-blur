@@ -3,6 +3,7 @@
   padding-bottom: 2em;
   @include full;
   @include standard-font;
+  @include clearfix;
 
   #filter_form{
     @include columns(30, $total-cols);
@@ -10,6 +11,7 @@
       margin-bottom: 1em;
       @include columns(10, $total-cols);
       .query_filter{ 
+        @include full(10);
         margin-bottom: .75em;
         label{ @include columns(3, 10); }
       }
@@ -17,27 +19,40 @@
     }
 
     #selector_wrapper {
-      @include columns(17, $total-cols);
-      @include prefix(1);
+      @include columns(18, $total-cols);
       padding-top: 0.5em;
 
-      #refresh_wrapper, #pause_button{ @include prefix(1); display:inline-block;}
+      #table_wrapper, #refresh_wrapper {
+        @include columns(7, 18);
+        @include prefix(1);
+      }
+
       #pause_button {
         vertical-align: middle;
+        display: inline-block;
+        margin-bottom: 4px;
         #pause{
           @include border;
-          cursor:pointer;
+          cursor: pointer;
+          display: none;
           &:hover{
             background-color: $row-hover;
             background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
           }
         }
       }
+      #spinner_wrapper {
+        @include columns(2, 18);
+        @include omega($total-cols);
+      }
     }
-    filter_spinner{ @include columns(1, $total-cols); }
   }
 
-  #current{ @include omega; }
+  #current{
+    @include full($total-cols);
+    @include omega;
+    #filters { font-weight: normal; }
+  }
 
   @mixin table-base {
     display: table;

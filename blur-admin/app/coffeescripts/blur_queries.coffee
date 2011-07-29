@@ -207,6 +207,7 @@ $(document).ready ->
     if $(this).hasClass 'ui-icon-pause'
       $(this).removeClass 'ui-icon-pause'
       $(this).addClass 'ui-icon-play'
+      $('#filter_spinner').hide()
     else
       $(this).removeClass 'ui-icon-play'
       $(this).addClass 'ui-icon-pause'

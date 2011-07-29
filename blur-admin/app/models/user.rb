@@ -27,10 +27,14 @@ class User < ActiveRecord::Base
   #returns the array of saved cols
   def saved_filters
     @filter_ret ||= JSON.parse (
-      Preference.find_or_create_by_user_id_and_pref_type( self.id, 
-                                                          :pref_type => :filters, 
-                                                          :name => :filters, 
-                                                          :value => [1, nil, nil, nil].to_json).value)
+      Preference.find_or_create_by_user_id_and_pref_type(self.id, 
+                                                         :pref_type => :filters, 
+                                                         :name => :filters, 
+                                                         :value => { :created_at_time => 1,
+                                                                     :super_query_on  => '',
+                                                                     :running         => 'true',
+                                                                     :interrupted     => '',
+                                                                     :refresh_period  => 'false'}.to_json).value)
   end
 
   # the roles are virtual attributes needed to use form helpers

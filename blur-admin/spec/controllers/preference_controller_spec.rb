@@ -45,11 +45,16 @@ describe PreferenceController do
     end
     
     it "should set the new values on the found or created preference" do
-      @filters = ['5',true,true,false,60]
+      @filters =  {:created_at_time => 5,
+                   :super_query_on  => true,
+                   :running         => true,
+                   :interrupted     => false,
+                   :refresh_period  => 60}
+
       Preference.stub(:find_or_create_by_user_id_and_pref_type_and_name).and_return(@preference)
       controller.stub!(:current_user).and_return @user
       @preference.should_receive(:value=).with(@filters.to_json())
-      post :save_filters, :created_at_time => '5',
+      post :save_filters, :created_at_time => 5,
                           :super_query_on => true,
                           :running => true, 
                           :interrupted => false, 

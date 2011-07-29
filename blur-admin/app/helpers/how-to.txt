@@ -4,84 +4,83 @@
 
 The navigation bar has three major functionalities:
 
-  1) It is a means to traverse the application //A means to traverse the application:
+  1) It is a means to traverse the application
   2) It gives the user the ability to change the "zookeeper" context of the application:
     - The context can be switched by using the "Current Zookeeper Instance" selector located at the center of the navigation bar.
     - This selector is a list of all zookeepers that your application is currently tracking.
-    - This selector is present on every page excluding the "dashboard" page (the dashboard does not have a context).
-    - Selecting a new zookeeper will refresh the content of the current page using the new zookeeper. //By selecting a new zookeeper the current page will refresh the content of the page using the new zookeeper.
-  3) It has a link to your "User" page: //A link to your "User" page:
+    - This selector is present on every page that displays zookeeper relevant information.
+    - Selecting a new zookeeper will refresh the content of the current page using the new zookeeper.
+  3) It has a link to your "User" page:
     - This is located in the top right, next to the "logout" button.
 
 @@@@@@@@ Dashboard Page: @@@@@@@@
 
-  The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a different zookeeper and displays information for that zookeeper. //within each these boxes is***(are, not is) a set of warnings and statuses for the different pieces of the Blur instance.
+  The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a different zookeeper and displays information for that zookeeper.
 
   - The header of each zookeeper box displays whether or not the system is online. 
   - The first row gives the user a warning about inconsistent blur versions.
-  -- If the system detects that any of the controllers or shards are using inconsistent versions of Blur,** then the status changes to "Inconsistent Blur Versions" and the background changes to red.
+  -- If the system detects that any of the controllers or shards are using inconsistent versions of Blur, then the status changes to "Inconsistent Blur Versions".
   - The next three rows of the box are an aggregation of all the different states of all the controllers and shards respectively. 
   -- The "online", "disabled", and "offline" bars display the number of shards/controllers that are currently online, disabled, and offline.
-  - Clicking on a Zookeeper box will take the user to the Environment page of that particular blur instance. //Each Zookeeper box is clickable, when clicked it will take the user to the Environment page for that particular blur instance.
-  - A warning will appear at the bottom of the box if there are any "long running" queries. //The bottom of the box is reserved for the "long running" queries warning.
-  -- This warning is a count of the number queries that have been running for more than a minute. //in the running state for more than a minute.
+  - Clicking on a Zookeeper box will take the user to the Environment page of that particular blur instance.
+  - A warning will appear at the bottom of the box if there are any "long running" queries.
+  -- This warning is a count of the number queries that have been running for more than a minute.
   
 @@@@@@@@ Environment Status Page: @@@@@@@@
 
   The "Environment" page is a zookeeper specific status page.
 
-  - The top section lists some of the details about the current zookeeper
-  -- Detail such as the name, the connection (URL), and its current status. 
-  - The "controllers" box lists each controller with its name, blur version, and status. //out each controller giving its name, blur version, and status.
-  - The "shards" box lists each shard with its name, blur version, and status. //out each shard giving its name, blur version, and status of each shard.
+  - The top section lists some of the details about the current zookeeper such as the name, the connection (URL), and its current status. 
+  - The "controllers" box lists each controller with its name, blur version, and status.
+  - The "shards" box lists each shard with its name, blur version, and status.
   
 @@@@@@@@ BlurTables Page: @@@@@@@@
 
-  The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row contains information describing a BlurTable.//in the table represents a different table and  its associated information.
+  The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row contains information describing a BlurTable.
   
-  - The "Hosts/Shards" column is a link that displays //a dialog with// a list of all the hosts and shards for that BlurTable when clicked// each table.
+  - The "Hosts/Shards" column is a link that displays a dialog with a list of all the hosts and shards for that BlurTable when clicked.
   - "Record Count" is the number of records in that particular table.
   - "Size" is the total size of the table on disk.
   - "Queries/Second" is a calculated metric for the overall throughput of that table.
   - "Status" indicates whether the table is enabled or disabled.
-  - "Schema" is a link that displays //a dialog with// a list of Column families and their columns **when clicked. --> capitalize/dont col fam & col
-  -- Each entry //in this display// also shows the name of its analyzer.
+  - "Schema" is a link that displays a list of Column families and their columns when clicked.
+  -- Each entry also shows the name of its analyzer.
   
-  In addition to this information,** the table row is clickable. Clicking a row will display an additional row containing the location of the table on disk and the "enable/disable/delete" table buttons; each button performs the action implied by their name. The "delete" table button displays a confirmation dialog asking whether the user would like to also delete the underlying index of the selected table, or to just delete the table. The bottom of the table has a count of the total number of tables in this zookeeper instance.
+  In addition to this information, the table row is clickable. Clicking a row will display an additional row containing the location of the table on disk and the "enable/disable/delete" table buttons; each button performs the action implied by their name. The "delete" table button displays a confirmation dialog asking whether the user would like to also delete the underlying index of the selected table, or to just delete the table. The bottom of the table has a count of the total number of tables in this zookeeper instance.
   
 @@@@@@@@ BlurQueries Page: @@@@@@@@
 
-  The "Blur Queries" page is a list of //the most// recently executed Blur Queries.
+  The "Blur Queries" page is a list of recently executed Blur Queries.
   
   - The "Filters" section is a set of options for limiting what queries are displayed in the list.
   -- The "Within past" selector allows you to limit the queries based on how long ago the query was submitted.
   -- The "Super Query" option allows to show or hide queries based on whether they were run with super query on or off.
   -- The "Running" option allows users to filter the queries by their running state.
   -- The "Interrupted" option allows users to filter the queries by whether or not they have been interrupted.
-  - The "Blur Table" selector filters the queries list //by// what table the query was //run// ran against.
-  - The "Refresh" selector allows the user to choose how often the table information is refreshed. //is refreshed and repopulated.
-  -- When the table is //being// refreshed, queries are automatically added, updated, and deleted.
-  --- When a query is added, it flashes green. //will flash green.
-  --- When a query is updated, it flases yellow. //will flash yellow. ***actually, it flased orange. do you think we should change the color to yellow tho?
-  --- When a query is deleted, it flashes red before it is removed from the table. //will flash red and then be removed.
+  - The "Blur Table" selector filters the queries list what table the query was ran against.
+  - The "Refresh" selector allows the user to choose how often the table information is refreshed.
+  -- When the table is refreshed, queries are automatically added, updated, and deleted.
+  --- When a query is added, it flashes green.
+  --- When a query is updated, it flashes orange.
+  --- When a query is deleted, it flashes red before it is removed from the table.
   
   Underneath the filters section is the queries table.
   
-  - To the top right of the table is a list of current filters. //The top right of the table is a list of the current filters.
+  - To the top right of the table is a list of current filters.
   - The "User Id" column shows the ID of the user that submitted that query.
-  - The "Query" column is the text of the executed query. This is only visible to users with the auditor role. //, this is only displayed for the auditor role.
-  -- Only the first 20 characters of the query text are displayed on the table. The full text can be seen by hovering your mouse over the query column. //If the query text is longer than 20 characters then it is shortened and the full text can be seen by hovering your mouse over the query column.
+  - The "Query" column is the text of the executed query. This is only visible to users with the auditor role.
+  -- Only the first 20 characters of the query text are displayed on the table. The full text can be seen by hovering your mouse over the query column.
   - The "Super Query" column shows whether super query was used to execute the query.
   - The "Start" column shows the starting offset for the executed query.
   - The "Fetch" column shows the amount of records fetched for the executed query.
   - The "CPU time / Real time (ms)" column is a calculated metric for the total life span of the executed query.
   - The "Status" column shows the percent of shards that have completed the query.
-  - The "Actions" column gives users the ability to cancel queries //taht//that are still in the running state. This is only visible for users with the editor role. //, this is only displayed for the editor user and can only be performed on running queries.
-  - The "More Info" link displays //a dialog box with a complete list of all the// details associated with the executed query. This is only visible to users with the auditor role. //, this can only be seen by the auditor role.
+  - The "Actions" column gives users the ability to cancel queries that are still in the running state. This is only visible for users with the editor role.
+  - The "More Info" link displays details associated with the executed query. This is only visible to users with the auditor role.
   
 @@@@@@@@ Search Page: @@@@@@@@
 
-  The "Search" page is only visible to users with the searcher role. //can only be seen if the user has the "searcher" role.
+  The "Search" page is only visible to users with the searcher role.
 
 STEAL FROM THE VIEW
 
@@ -91,15 +90,15 @@ NEEDS TO BE WRITTEN ONCE IT IS IMPLEMENTED FULLY
 
 @@@@@@@@ Admin Page: @@@@@@@@
 
-  The "Admin Page" //is// contains a list of all the current users registered in the system. Users with the admin role may edit the roles and information for users on this page. It is only visible to users with the admin role. // This can only be seen by a user with the "admin" role. It allows the admin to edit the roles and information for all the users.
+  The "Admin Page" contains a list of all the current users registered in the system. Users with the admin role may edit the roles and information for users on this page. It is only visible to users with the admin role.
 
 @@@@@@@@ Users Page: @@@@@@@@
 
-  The "Column Preferences" **section** allows the user to choose what column families they want to display first **in the results table** when they execute a search on the search page.
+  The "Column Preferences" section allows the user to choose what column families they want to display first **in the results table** when they execute a search on the search page.
   
-  - "My Saved Column Families" is a list of //your//the user's chosen preferred column families, this list is in sorted order from top to bottom.
-  -- This list is sortable. To change the order of the column families, simply drag a column family to the desired spot in the list.//, simply drag a column to the spot in the list.
-  -- To add columns to //this list//your preferred list, click on a blue column **from the list** on the right and it will be added to your preferred list.
+  - "My Saved Column Families" is a list of the user's chosen preferred column families, this list is in sorted order from top to bottom.
+  -- This list is sortable. To change the order of the column families, simply drag a column family to the desired spot in the list.
+  -- To add columns to your preferred list, click on a blue column from the list on the right and it will be added to your preferred list.
   -- To remove a column from your preferred list,** a user can either drag the column into the trash can from their preferred list or click on the corresponding column on the right.
   
   The "Filter Preferences" section allows the user to choose their Blur Query filter defaults.

@@ -46,7 +46,10 @@ The navigation bar has three major functionalities:
   - "Schema" is a link that displays a list of Column families and their columns when clicked.
   -- Each entry also shows the name of its analyzer.
   
-  In addition to this information, the table row is clickable. Clicking a row will display an additional row containing the location of the table on disk and the "enable/disable/delete" table buttons; each button performs the action implied by their name. The "delete" table button displays a confirmation dialog asking whether the user would like to also delete the underlying index of the selected table, or to just delete the table. The bottom of the table has a count of the total number of tables in this zookeeper instance.
+  Clicking a row displays additional information, including the location of the table on disk.
+  - If the user has the editor role, then 'enable', 'disable', and 'delete' buttons will be available depending on the current state of the table.
+  
+  The bottom of the table displays the total number of BlurTables in this Zookeeper instance.
   
 @@@@@@@@ BlurQueries Page: @@@@@@@@
 

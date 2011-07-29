@@ -41,8 +41,12 @@ $(document).ready ->
   # Initialize Help
   $('#page-help').click ()->
     $('#help-menu').dialog
+      title: "Help Menu",
       height: "auto",
       width: 710,
       modal: false,
       resizable: false,
       draggable: true
+      
+  $('.help-section').live 'click', ->
+    $(this).children('.help-content').toggle('fast')

@@ -64,8 +64,21 @@ body {
   background-color: $bg-blue-color;
 }
 
+//help dialog styles
 #page-help{
   text-decoration: none;
+}
+
+.help-section{
+  cursor: pointer;
+  margin: 2px;
+  padding: 5px;
+  background: #EEE;
+  @include border-radius;
+  @include border;
+  h3{
+    margin: 0px
+  }
 }
 
 h2 { font-size: 200%; }

@@ -3,19 +3,19 @@
   .help-content{:style => 'display: none'}
 .help-section#dashboard
   %h3 Dashboard Page Help 
-  .help-content{:style => 'display: none'}
+  .help-content{ :style =>  params[:controller] != 'zookeepers' && 'display: none' }
 .help-section#environment
   %h3 Environment Page Help 
-  .help-content{:style => 'display: none'}
+  .help-content{ :style =>  params[:controller] != 'zookeeper' && 'display: none' }
 .help-section#blur_table
   %h3 BlurTables Page Help 
-  .help-content{:style => 'display: none'}
+  .help-content{ :style =>  params[:controller] != 'blur_tables' && 'display: none' }
 .help-section#blur_query
   %h3 BlurQuery Page Help 
-  .help-content{:style => 'display: none'}
+  .help-content{ :style =>  params[:controller] != 'blur_queries' && 'display: none' }
 .help-section#search
   %h3 Search Page Help 
-  .help-content{:style => 'display: none'}  
+  .help-content{ :style =>  params[:controller] != 'search' && 'display: none' }
     .help_list#saved_help
       .head
         Use the "Saved Searches" tab to load a previously saved query.
@@ -61,11 +61,11 @@
   
 .help-section#hdfs
   %h3 HDFS Page help 
-  .help-content
+  .help-content{ :style =>  params[:controller] != 'hdfs' && 'display: none' }
 
 .help-section#admin
   %h3 Admin Page help 
-  .help-content
+  .help-content{ :style =>  params[:controller] != 'users' && 'display: none' }
 .help-section#user
   %h3 Users Page help 
-  .help-content  
+  .help-content{ :style =>  params[:controller] != 'users' && 'display: none' } 

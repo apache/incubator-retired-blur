@@ -17,7 +17,7 @@
 
     #query_string{ resize:vertical; }
     #query_string, #blur_table, #save_name_wrap { @include columns(5,5.5); }
-    #offset { max-width: 40px; }
+    #offset, #result_count { max-width: 40px; }
 
     #save_label { @include columns(1, 5.5); }
     #save_name { @include columns(4, 5.5); @include omega(5.5);}
@@ -65,7 +65,7 @@
       padding-top: 1em;
 
       #results_section{
-        @include standard-border;
+        @include border;
         overflow-x: scroll;
         background-color : #ffffff;
         margin-bottom: 5em;

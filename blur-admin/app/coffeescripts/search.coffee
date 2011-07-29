@@ -43,7 +43,7 @@ $(document).ready ->
     $('#loading-spinner').show()
     
   # Initialize Help
-  $('#help-link').click ()->
+  $('#page-help').click ()->
     $('#dialog-help').dialog
       height: "auto",
       width: 710,

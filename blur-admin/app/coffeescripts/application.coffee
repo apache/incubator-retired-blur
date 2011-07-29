@@ -37,3 +37,12 @@ $(document).ready ->
         
   #fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow")
+  
+  # Initialize Help
+  $('#page-help').click ()->
+    $('#help-menu').dialog
+      height: "auto",
+      width: 710,
+      modal: false,
+      resizable: false,
+      draggable: true

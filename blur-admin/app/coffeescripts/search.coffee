@@ -41,15 +41,6 @@ $(document).ready ->
   # Show spinner when submit button is clicked
   $('#search_submit').live 'click', ->
     $('#loading-spinner').show()
-    
-  # Initialize Help
-  $('#page-help').click ()->
-    $('#dialog-help').dialog
-      height: "auto",
-      width: 710,
-      modal: false,
-      resizable: false,
-      draggable: true
       
   # listener that checks if the submit button should be enabled on click
   $('#filter_section').live "click", -> toggle_submit()

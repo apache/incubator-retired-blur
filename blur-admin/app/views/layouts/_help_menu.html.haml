@@ -1,0 +1,40 @@
+.help_list#saved_help
+  .head
+    Use the "Saved Searches" tab to load a previously saved query.
+  .body
+    %ul
+      %li The green play button will execute the query and display the results.
+      %li The pencil will load the save into the form.
+      %li The red "x" will delete the saved query.
+
+.help_list#search_help
+  .head
+    Use the "Search" tab to begin building a query. Use the search button at the bottom to submit.
+  .body
+    %ul
+      %li Basic field searches are in the format column_family.column:value
+      %li Fields can be grouped with parenthesis. Eg. (employee.name:bob employee.gender:male)
+      %li
+        Special characters:
+        %ul
+          %li + - Indicates that the field or grouping must exist in the result set (+employee.name:bob)
+          %li - - Indicates that the field or grouping can NOT exist in the result set (-employee.name:bob)
+          %li ? - Wildcard for a single character (employee.birthdate:197001??)
+          %li * - Wildcard for 0 to many characters (employee.name:b*b)
+          %li ~ - Fuzzy criteria to be followed by a number between 0 and 1 (employee.name:bob~0.7)
+
+.help_list#advanced_help
+  .head
+    Use the "Advanced Options" tab to further modify a query.
+  .body
+    %ul
+      %li The "Super Query" option allows you to turn superQuery on/off.
+      %li The "Start" option allows you to choose the starting element to display.
+      %li The "Fetch" option allows you to limit the amount of rows that are returned.
+
+.help_list#store_help
+  .head
+    Use the "Save Options" tab to save the current query.
+  .body
+    %ul
+      %li The "Name" field is used to name your saved searches.

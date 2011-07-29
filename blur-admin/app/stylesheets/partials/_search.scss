@@ -1,44 +1,42 @@
-#search_page_wrapper{
+#search_page_wrapper {
   @include full;
   @mixin search-margin { margin: .25em 0em .25em; }
 
-  #filter_section{
+  // styles for filters
+  #filter_section {
     @include columns(5.5,$total-cols);
     @include standard-font;
     padding-top: 1em;
-    position:fixed;
+    position: fixed;
     top: $nav-height + $header-height;
     display: inline-block;
     overflow-y: auto;
     max-height: 70%;
     
-    .partial-section, .body{ padding: 0.5em; }
+    .partial-section, .body { padding: 0.5em; }
     .filter { padding: 0.5em 0 0; }
+    .filter#buttons { text-align: right; }
 
-    #query_string{ resize:vertical; }
+    // style for the help link
+    #search_help { text-align:right; }
+
+    // styles for text boxes & selectors
+    #query_string { resize:vertical; }
     #query_string, #blur_table, #save_name_wrap { @include columns(5,5.5); }
-    #offset { max-width: 40px; }
-
+    #offset, #result_count { max-width: 40px; }
     #save_label { @include columns(1, 5.5); }
     #save_name { @include columns(4, 5.5); @include omega(5.5);}
 
-    #search_send{
+    // styles for elements below the filter tabs
+    #search_send {
       margin-top: 1em;
-      #loading-spinner{ margin-left: 1em; }
-      #search_submit, #search_help{
-        float: right;
-        margin-left: 10px;
-      }
-      
-      #search_help {
-        a{
-          line-height:175%;
-        }
-      }
+      #loading-spinner { margin-left: 1em; }
+      #search_submit { float: right; }
     }
   }
 
-  .collapsed_filters{ @include columns(30,$total-cols); @include omega($total-cols);}
+  // styles for the collapse bar & results section
+  .collapsed_filters{ @include columns(30,$total-cols); @include omega($total-cols); }
   .open_filters{ @include columns(24,$total-cols); @include omega($total-cols); @include prefix(.5) }
   #results_wrapper{
     #bar_section:hover { background-color: $bar-hover; }
@@ -65,15 +63,16 @@
       padding-top: 1em;
 
       #results_section{
-        @include standard-border;
+        @include border;
         overflow-x: scroll;
-        background-color : #ffffff;
+        background-color : white;
         margin-bottom: 5em;
         width: auto;
       }
     }
   }
 
+  // styles for results table
   table {
     margin: 0;
     table-layout: strict;
@@ -110,16 +109,12 @@
     }
   }
 
-  .jstree-icon{ cursor: pointer; }
+  // jstree styles
+  .jstree-icon { cursor: pointer; }
   .jstree a { 
     @include standard-font;
-    &:hover{
-      color: #06C;
-    }
+    &:hover{ color: #06C; }
   }
-  .id_cell { vertical-align: top; }
-
-  #hidden-help-container{ display:none; }
 
   //Navigation Tab outer divs
   .tab { @include border; @include border-radius; }
@@ -156,14 +151,6 @@
       background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
     }
   }
-  
-  //style for the help link
-  #search_help{
-    text-align:right;
-  }
-  
-  .filter#buttons{
-    text-align: right;
-  }
-  
+
+  #hidden-help-container{ display:none; }
 }

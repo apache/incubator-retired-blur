@@ -6,11 +6,6 @@ exception BlurException {
   2:string stackTraceStr
 }
 
-struct Transaction {
-  1:i32 transactionId,
-  2:string table
-}
-
 struct AlternateColumnDefinition {
   1:string analyzerClassName
 }
@@ -46,8 +41,7 @@ struct Selector {
   4:string recordId,
   5:set<string> columnFamiliesToFetch,
   6:map<string,set<string>> columnsToFetch,
-  7:Transaction transaction,
-  8:bool allowStaleData
+  7:bool allowStaleData
 }
 
 struct Facet {

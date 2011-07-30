@@ -1,20 +1,13 @@
 package com.nearinfinity.blur;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import org.json.repackage.JSONException;
-import org.json.repackage.JSONObject;
+import java.util.Properties;
 
 public class BlurConfiguration {
     
-    private Map<String,String> properties = new HashMap<String,String>();
+    private Properties _properties = new Properties();
     
     public static void main(String[] args) throws IOException {
         BlurConfiguration configuration = new BlurConfiguration();
@@ -28,80 +21,42 @@ public class BlurConfiguration {
     }
     
     private void init() throws IOException {
-        try {
-            putValues(load("/blur-default.json"));
-            putValues(load("/blur-site.json"));
-        } catch (JSONException e) {
-            throw new IOException(e);
-        }
+        _properties.putAll(load("/blur-default.properties"));
+        _properties.putAll(load("/blur-site.properties"));
     }
 
-    @SuppressWarnings("unchecked")
-    private void putValues(JSONObject jsonNode) throws JSONException {
-        Iterator<String> fieldNames = jsonNode.keys();
-        while (fieldNames.hasNext()) {
-            String name = fieldNames.next();
-            String value = jsonNode.getString(name);
-            properties.put(name, value);
-        }
-    }
-
-    private JSONObject load(String path) throws IOException, JSONException {
+    private Properties load(String path) throws IOException {
         InputStream inputStream = getClass().getResourceAsStream(path);
         if (inputStream == null) {
             throw new FileNotFoundException(path);
         }
-        return new JSONObject(getString(inputStream));
-    }
-
-    private String getString(InputStream inputStream) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line).append(' ');
-        }
-        return builder.toString();
+        Properties properties = new Properties();
+        properties.load(inputStream);
+        return properties;
     }
 
     public String get(String name) {
-        return properties.get(name);
+        return get(name,null);
     }
     
     public String get(String name, String defaultValue) {
-        String value = get(name);
-        if (value == null) {
-            return defaultValue;
-        }
-        return value;
+        return _properties.getProperty(name, defaultValue);
     }
     
     public int getInt(String name, int defaultValue) {
-        String value = get(name);
-        if (value == null) {
-            return defaultValue;
-        }
-        return Integer.parseInt(value);
+        return Integer.parseInt(get(name,Integer.toString(defaultValue)));
     }
     
     public long getLong(String name, long defaultValue) {
-        String value = get(name);
-        if (value == null) {
-            return defaultValue;
-        }
-        return Long.parseLong(value);
+        return Long.parseLong(get(name,Long.toString(defaultValue)));
     }
     
     public short getShort(String name, short defaultValue) {
-        String value = get(name);
-        if (value == null) {
-            return defaultValue;
-        }
-        return Short.parseShort(value);
+        return Short.parseShort(get(name,Short.toString(defaultValue)));
     }
     
     public void set(String name, String value) {
-        properties.put(name, value);
+        _properties.setProperty(name, value);
     }
     
     public void setInt(String name, int value) {

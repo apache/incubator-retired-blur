@@ -16,15 +16,9 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
-import java.io.IOException;
-
-import com.nearinfinity.blur.BlurConfiguration;
+import com.nearinfinity.blur.utils.BlurConstants;
 
 public class ZookeeperPathConstants {
-    
-    private static final String DEFAULT                            = "default";
-    private static final String BLUR_CLUSTER_NAME                  = "blur.cluster.name";
-    private static final String BLUR_BASE_PATH                     = "/blur/" + getClusterName();
     
     private static final String BLUR_TABLES_ENABLED                = "enabled";
     // /blur/tables/<name>/enabled will indicate that the table is enabled
@@ -34,30 +28,20 @@ public class ZookeeperPathConstants {
     private static final String BLUR_TABLES_COMPRESSION_BLOCK_SIZE = "compression-blocksize";
     
     
-    private static final String BLUR_ONLINE_PATH                = BLUR_BASE_PATH + "/online";
-    private static final String BLUR_ONLINE_SHARDS_PATH         = BLUR_BASE_PATH + "/online/shard-nodes";
-    private static final String BLUR_ONLINE_CONTROLLERS_PATH    = BLUR_BASE_PATH + "/online/controller-nodes";
-    private static final String BLUR_TABLES                     = BLUR_BASE_PATH + "/tables";
-    private static final String BLUR_TABLES_LOCKS               = BLUR_BASE_PATH + "/tables-locks";
+    private static final String BLUR_ONLINE_PATH                = getBlurBasePath() + "/online";
+    private static final String BLUR_ONLINE_SHARDS_PATH         = getBlurBasePath() + "/online/shard-nodes";
+    private static final String BLUR_ONLINE_CONTROLLERS_PATH    = getBlurBasePath() + "/online/controller-nodes";
+    private static final String BLUR_TABLES                     = getBlurBasePath() + "/tables";
+    private static final String BLUR_TABLES_LOCKS               = getBlurBasePath() + "/tables-locks";
     
-    private static final String BLUR_SAFEMODE                   = BLUR_BASE_PATH + "/safemode";
-    private static final String BLUR_SAFEMODE_LOCK              = BLUR_BASE_PATH + "/safemode/lock";
-    private static final String BLUR_SAFEMODE_SHUTDOWN          = BLUR_BASE_PATH + "/safemode/shutdown";
-    private static final String BLUR_REGISTERED_SHARDS_PATH     = BLUR_BASE_PATH + "/shard-nodes";
-    
-    public static String getClusterName() {
-        try {
-            BlurConfiguration configuration = new BlurConfiguration();
-            return configuration.get(BLUR_CLUSTER_NAME, DEFAULT);
-        } catch (IOException e) {
-            throw new RuntimeException("Unknown error parsing configuration.",e);
-        }
-    }
+    private static final String BLUR_SAFEMODE                   = getBlurBasePath() + "/safemode";
+    private static final String BLUR_SAFEMODE_LOCK              = getBlurBasePath() + "/safemode/lock";
+    private static final String BLUR_SAFEMODE_SHUTDOWN          = getBlurBasePath() + "/safemode/shutdown";
+    private static final String BLUR_REGISTERED_SHARDS_PATH     = getBlurBasePath() + "/shard-nodes";
     
     public static String getBlurBasePath() {
-        return BLUR_BASE_PATH;
+        return "/blur/" + BlurConstants.BLUR_CLUSTER;
     }
-
     public static String getBlurTablesEnabled() {
         return BLUR_TABLES_ENABLED;
     }

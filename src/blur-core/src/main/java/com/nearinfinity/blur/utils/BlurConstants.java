@@ -16,8 +16,10 @@
 
 package com.nearinfinity.blur.utils;
 
+import java.io.IOException;
 import java.util.Comparator;
 
+import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.manager.results.BlurResultComparator;
 import com.nearinfinity.blur.manager.results.BlurResultPeekableIteratorComparator;
 import com.nearinfinity.blur.manager.results.PeekableIterator;
@@ -39,8 +41,6 @@ public class BlurConstants {
     public static final String SUPER = "super";
     public static final String SEP = ".";
     
-    
-    
     public static final String BLUR_LOCAL_CACHE_PATHES = "blur.local.cache.pathes";
     public static final String BLUR_TABLE_PATH = "blur.table.path";
     public static final String BLUR_ZOOKEEPER_CONNECTION = "blur.zookeeper.connection";
@@ -51,4 +51,17 @@ public class BlurConstants {
     public static final String BLUR_CONTROLLER_BIND_PORT = "blur.controller.bind.port";
     public static final String BLUR_CONTROLLER_BIND_ADDRESS = "blur.controller.bind.address";
     public static final String CRAZY = "CRAZY";
+    
+    public static final String DEFAULT                            = "default";
+    public static final String BLUR_CLUSTER_NAME                  = "blur.cluster.name";
+    public static final String BLUR_CLUSTER;
+    
+    static {
+        try {
+            BlurConfiguration configuration = new BlurConfiguration();
+            BLUR_CLUSTER = configuration.get(BLUR_CLUSTER_NAME, DEFAULT);
+        } catch (IOException e) {
+            throw new RuntimeException("Unknown error parsing configuration.",e);
+        }
+    }
 }

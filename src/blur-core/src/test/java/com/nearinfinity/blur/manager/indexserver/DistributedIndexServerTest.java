@@ -81,6 +81,8 @@ public class DistributedIndexServerTest {
         final List<String> toBeClosed = new ArrayList<String>();
         toBeClosed.add("g");
         toBeClosed.add("h");
+        DistributedManager dm = new ZkInMemory();
+        dm.createPath("blur","default","tables",TEST,"enabled");
         DistributedIndexServer indexServer = new MockDistributedIndexServer(nodes, SHARD_LIST) {
             @Override
             protected void beforeClose(String shard, BlurIndex index) {
@@ -88,6 +90,7 @@ public class DistributedIndexServerTest {
                 toBeClosed.remove(shard);
             }
         };
+        indexServer.setDistributedManager(dm);
         indexServer.setNodeName("node2");
         indexServer.setDelay(5000);
         indexServer.init();

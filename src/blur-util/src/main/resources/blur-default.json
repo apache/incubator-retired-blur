@@ -1,8 +1,0 @@
-{
-	"blur.shard.hostname":"",
-	"blur.shard.bind.address":"0.0.0.0",
-	"blur.shard.bind.port":"40020",
-	"blur.controller.hostname":"",
-	"blur.controller.bind.address":"0.0.0.0",
-	"blur.controller.bind.port":"40010"
-}

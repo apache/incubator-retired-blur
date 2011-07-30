@@ -24,15 +24,15 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Column");
 
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField VALUES_FIELD_DESC = new org.apache.thrift.protocol.TField("values", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   public String name;
-  public List<String> values;
+  public String value;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
-    VALUES((short)2, "values");
+    VALUE((short)2, "value");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -49,8 +49,8 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
       switch(fieldId) {
         case 1: // NAME
           return NAME;
-        case 2: // VALUES
-          return VALUES;
+        case 2: // VALUE
+          return VALUE;
         default:
           return null;
       }
@@ -97,9 +97,8 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.VALUES, new org.apache.thrift.meta_data.FieldMetaData("values", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.VALUE, new org.apache.thrift.meta_data.FieldMetaData("value", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Column.class, metaDataMap);
   }
@@ -109,11 +108,11 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
 
   public Column(
     String name,
-    List<String> values)
+    String value)
   {
     this();
     this.name = name;
-    this.values = values;
+    this.value = value;
   }
 
   /**
@@ -123,12 +122,8 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     if (other.isSetName()) {
       this.name = other.name;
     }
-    if (other.isSetValues()) {
-      List<String> __this__values = new ArrayList<String>();
-      for (String other_element : other.values) {
-        __this__values.add(other_element);
-      }
-      this.values = __this__values;
+    if (other.isSetValue()) {
+      this.value = other.value;
     }
   }
 
@@ -139,7 +134,7 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
   @Override
   public void clear() {
     this.name = null;
-    this.values = null;
+    this.value = null;
   }
 
   public String getName() {
@@ -166,42 +161,27 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     }
   }
 
-  public int getValuesSize() {
-    return (this.values == null) ? 0 : this.values.size();
+  public String getValue() {
+    return this.value;
   }
 
-  public java.util.Iterator<String> getValuesIterator() {
-    return (this.values == null) ? null : this.values.iterator();
-  }
-
-  public void addToValues(String elem) {
-    if (this.values == null) {
-      this.values = new ArrayList<String>();
-    }
-    this.values.add(elem);
-  }
-
-  public List<String> getValues() {
-    return this.values;
-  }
-
-  public Column setValues(List<String> values) {
-    this.values = values;
+  public Column setValue(String value) {
+    this.value = value;
     return this;
   }
 
-  public void unsetValues() {
-    this.values = null;
+  public void unsetValue() {
+    this.value = null;
   }
 
-  /** Returns true if field values is set (has been assigned a value) and false otherwise */
-  public boolean isSetValues() {
-    return this.values != null;
+  /** Returns true if field value is set (has been assigned a value) and false otherwise */
+  public boolean isSetValue() {
+    return this.value != null;
   }
 
-  public void setValuesIsSet(boolean value) {
+  public void setValueIsSet(boolean value) {
     if (!value) {
-      this.values = null;
+      this.value = null;
     }
   }
 
@@ -215,11 +195,11 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
       }
       break;
 
-    case VALUES:
+    case VALUE:
       if (value == null) {
-        unsetValues();
+        unsetValue();
       } else {
-        setValues((List<String>)value);
+        setValue((String)value);
       }
       break;
 
@@ -231,8 +211,8 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     case NAME:
       return getName();
 
-    case VALUES:
-      return getValues();
+    case VALUE:
+      return getValue();
 
     }
     throw new IllegalStateException();
@@ -247,8 +227,8 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     switch (field) {
     case NAME:
       return isSetName();
-    case VALUES:
-      return isSetValues();
+    case VALUE:
+      return isSetValue();
     }
     throw new IllegalStateException();
   }
@@ -275,12 +255,12 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
         return false;
     }
 
-    boolean this_present_values = true && this.isSetValues();
-    boolean that_present_values = true && that.isSetValues();
-    if (this_present_values || that_present_values) {
-      if (!(this_present_values && that_present_values))
+    boolean this_present_value = true && this.isSetValue();
+    boolean that_present_value = true && that.isSetValue();
+    if (this_present_value || that_present_value) {
+      if (!(this_present_value && that_present_value))
         return false;
-      if (!this.values.equals(that.values))
+      if (!this.value.equals(that.value))
         return false;
     }
 
@@ -310,12 +290,12 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetValues()).compareTo(typedOther.isSetValues());
+    lastComparison = Boolean.valueOf(isSetValue()).compareTo(typedOther.isSetValue());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetValues()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.values, typedOther.values);
+    if (isSetValue()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.value, typedOther.value);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -344,19 +324,9 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // VALUES
-          if (field.type == org.apache.thrift.protocol.TType.LIST) {
-            {
-              org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-              this.values = new ArrayList<String>(_list28.size);
-              for (int _i29 = 0; _i29 < _list28.size; ++_i29)
-              {
-                String _elem30;
-                _elem30 = iprot.readString();
-                this.values.add(_elem30);
-              }
-              iprot.readListEnd();
-            }
+        case 2: // VALUE
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.value = iprot.readString();
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -381,16 +351,9 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
       oprot.writeString(this.name);
       oprot.writeFieldEnd();
     }
-    if (this.values != null) {
-      oprot.writeFieldBegin(VALUES_FIELD_DESC);
-      {
-        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.values.size()));
-        for (String _iter31 : this.values)
-        {
-          oprot.writeString(_iter31);
-        }
-        oprot.writeListEnd();
-      }
+    if (this.value != null) {
+      oprot.writeFieldBegin(VALUE_FIELD_DESC);
+      oprot.writeString(this.value);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -410,11 +373,11 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("values:");
-    if (this.values == null) {
+    sb.append("value:");
+    if (this.value == null) {
       sb.append("null");
     } else {
-      sb.append(this.values);
+      sb.append(this.value);
     }
     first = false;
     sb.append(")");

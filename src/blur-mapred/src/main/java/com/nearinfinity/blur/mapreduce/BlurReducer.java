@@ -22,7 +22,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapreduce.Counter;
@@ -33,10 +32,8 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.MergePolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
-import org.apache.lucene.index.IndexWriter.MaxFieldLength;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.store.NoLockFactory;
@@ -155,7 +152,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
 
     protected void setupLockFactory(Context context) throws IOException {
-        // need to use zookeeper lock factory
+        //@TODO need to use zookeeper lock factory
         _lockFactory = new NoLockFactory();
     }
 
@@ -201,9 +198,8 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
                 record.getColumns(), new Converter<BlurColumn, Column>() {
                     @Override
                     public Column convert(BlurColumn from) throws Exception {
-                        List<String> values = from.getValues();
-                        _fieldCounter.increment(values.size());
-                        return new Column(from.getName(),values);
+                        _fieldCounter.increment(1);
+                        return new Column(from.getName(),from.getValue());
                     }
                 }));
         return document;

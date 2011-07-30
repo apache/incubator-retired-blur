@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -47,7 +46,7 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.ColumnFamily;
+import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -125,19 +124,15 @@ public class RandomSuperQueryTest {
 		StringBuilder builder = new StringBuilder();
 		for (String colFam : columns.keySet()) {
 			String[] cols = columns.get(colFam);
-			ColumnFamily columnFamily = new ColumnFamily().setFamily(colFam);
-			row.addToColumnFamilies(columnFamily);
 			for (int i = 0; i < random.nextInt(MAX_NUM_DOCS_PER_COL_FAM); i++) {
-				String superKey = Long.toString(random.nextLong());
-				Set<Column> colSet = new HashSet<Column>();
-                columnFamily.putToRecords(superKey, colSet);
+			    Record record = new Record();
+			    record.setFamily(colFam);
+			    record.setRecordId(Long.toString(random.nextLong()));
 				int staringLength = builder.length();
 				for (String column : cols) {
 					if (random.nextInt() % MOD_COLS_USED_FOR_SKIPPING == 0) {
 						String word = genWord(random,"word");
-						Column c = new Column().setName(column);
-						c.addToValues(word);
-						colSet.add(c);
+						record.addToColumns(new Column(column,word));
 						if (random.nextInt() % MOD_USED_FOR_SAMPLING == 0) {
 							builder.append(" +" + colFam + "." + column + ":" + word);
 						}
@@ -146,6 +141,7 @@ public class RandomSuperQueryTest {
 				if (builder.length() != staringLength) {
 				    builder.append(" nojoin.nojoin ");
 				}
+				row.addToRecords(record);
 			}
 		}
 		String string = builder.toString().trim();

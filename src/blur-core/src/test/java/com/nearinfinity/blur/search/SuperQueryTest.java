@@ -20,7 +20,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
-import static com.nearinfinity.blur.utils.BlurUtil.newColumnFamily;
+import static com.nearinfinity.blur.utils.BlurUtil.newRecord;
 import static com.nearinfinity.blur.utils.BlurUtil.newRow;
 import static junit.framework.Assert.assertEquals;
 
@@ -154,15 +154,15 @@ public class SuperQueryTest {
 		BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
 		RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
 		indexWriter.replace(newRow("1", 
-		        newColumnFamily("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
-		        newColumnFamily("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
-		        newColumnFamily("address", UUID.randomUUID().toString(), newColumn("street","sulgrave"))));
+		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
+		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
+		        newRecord("address", UUID.randomUUID().toString(), newColumn("street","sulgrave"))));
 		indexWriter.replace(newRow("2", 
-                newColumnFamily("person", UUID.randomUUID().toString(), newColumn("name","hannah")),
-                newColumnFamily("address", UUID.randomUUID().toString(), newColumn("street","sulgrave"))));
+		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","hannah")),
+		        newRecord("address", UUID.randomUUID().toString(), newColumn("street","sulgrave"))));
 		indexWriter.replace(newRow("3", 
-                newColumnFamily("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
-                newColumnFamily("address", UUID.randomUUID().toString(), newColumn("street","sulgrave court"))));;
+		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
+		        newRecord("address", UUID.randomUUID().toString(), newColumn("street","sulgrave court"))));;
 		writer.close();
 		return directory;
 	}

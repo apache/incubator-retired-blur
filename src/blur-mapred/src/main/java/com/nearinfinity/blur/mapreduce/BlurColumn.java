@@ -19,8 +19,6 @@ package com.nearinfinity.blur.mapreduce;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.hadoop.io.Writable;
 
@@ -29,10 +27,10 @@ import org.apache.hadoop.io.Writable;
 public class BlurColumn implements Writable {
     
     private String name;
-    private List<String> values;
+    private String value;
     
     public boolean hasNull() {
-        if (name == null || values == null) {
+        if (name == null || value == null) {
             return true;
         }
         return false;
@@ -45,32 +43,25 @@ public class BlurColumn implements Writable {
     public void setName(String name) {
         this.name = name;
     }
-
+    
     @Override
     public void readFields(DataInput in) throws IOException {
         name = IOUtil.readString(in);
-        int length = IOUtil.readVInt(in);
-        values = new ArrayList<String>(length);
-        for (int i = 0; i < length; i++) {
-            values.add(IOUtil.readString(in));
-        }
+        value = IOUtil.readString(in);
     }
 
     @Override
     public void write(DataOutput out) throws IOException {
         IOUtil.writeString(out, name);
-        int length = values.size();
-        IOUtil.writeVInt(out, length);
-        for (int i = 0; i < length; i++) {
-            IOUtil.writeString(out, values.get(i));
-        }
+        IOUtil.writeString(out, value);
     }
 
-    public List<String> getValues() {
-        return values;
+    public String getValue() {
+        return value;
     }
 
-    public void setValues(List<String> values) {
-        this.values = values;
+    public void setValue(String value) {
+        this.value = value;
     }
+
 }

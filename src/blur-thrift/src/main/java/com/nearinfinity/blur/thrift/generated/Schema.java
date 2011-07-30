@@ -356,25 +356,25 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
         case 2: // COLUMN_FAMILIES
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map75 = iprot.readMapBegin();
-              this.columnFamilies = new HashMap<String,Set<String>>(2*_map75.size);
-              for (int _i76 = 0; _i76 < _map75.size; ++_i76)
+              org.apache.thrift.protocol.TMap _map62 = iprot.readMapBegin();
+              this.columnFamilies = new HashMap<String,Set<String>>(2*_map62.size);
+              for (int _i63 = 0; _i63 < _map62.size; ++_i63)
               {
-                String _key77;
-                Set<String> _val78;
-                _key77 = iprot.readString();
+                String _key64;
+                Set<String> _val65;
+                _key64 = iprot.readString();
                 {
-                  org.apache.thrift.protocol.TSet _set79 = iprot.readSetBegin();
-                  _val78 = new HashSet<String>(2*_set79.size);
-                  for (int _i80 = 0; _i80 < _set79.size; ++_i80)
+                  org.apache.thrift.protocol.TSet _set66 = iprot.readSetBegin();
+                  _val65 = new HashSet<String>(2*_set66.size);
+                  for (int _i67 = 0; _i67 < _set66.size; ++_i67)
                   {
-                    String _elem81;
-                    _elem81 = iprot.readString();
-                    _val78.add(_elem81);
+                    String _elem68;
+                    _elem68 = iprot.readString();
+                    _val65.add(_elem68);
                   }
                   iprot.readSetEnd();
                 }
-                this.columnFamilies.put(_key77, _val78);
+                this.columnFamilies.put(_key64, _val65);
               }
               iprot.readMapEnd();
             }
@@ -406,14 +406,14 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
       oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.SET, this.columnFamilies.size()));
-        for (Map.Entry<String, Set<String>> _iter82 : this.columnFamilies.entrySet())
+        for (Map.Entry<String, Set<String>> _iter69 : this.columnFamilies.entrySet())
         {
-          oprot.writeString(_iter82.getKey());
+          oprot.writeString(_iter69.getKey());
           {
-            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, _iter82.getValue().size()));
-            for (String _iter83 : _iter82.getValue())
+            oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, _iter69.getValue().size()));
+            for (String _iter70 : _iter69.getValue())
             {
-              oprot.writeString(_iter83);
+              oprot.writeString(_iter70);
             }
             oprot.writeSetEnd();
           }

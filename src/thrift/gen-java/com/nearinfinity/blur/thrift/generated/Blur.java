@@ -2714,13 +2714,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list92 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list92.size);
-                for (int _i93 = 0; _i93 < _list92.size; ++_i93)
+                org.apache.thrift.protocol.TList _list75 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list75.size);
+                for (int _i76 = 0; _i76 < _list75.size; ++_i76)
                 {
-                  String _elem94;
-                  _elem94 = iprot.readString();
-                  this.success.add(_elem94);
+                  String _elem77;
+                  _elem77 = iprot.readString();
+                  this.success.add(_elem77);
                 }
                 iprot.readListEnd();
               }
@@ -2754,9 +2754,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter95 : this.success)
+          for (String _iter78 : this.success)
           {
-            oprot.writeString(_iter95);
+            oprot.writeString(_iter78);
           }
           oprot.writeListEnd();
         }
@@ -3338,13 +3338,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list96.size);
-                for (int _i97 = 0; _i97 < _list96.size; ++_i97)
+                org.apache.thrift.protocol.TList _list79 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list79.size);
+                for (int _i80 = 0; _i80 < _list79.size; ++_i80)
                 {
-                  String _elem98;
-                  _elem98 = iprot.readString();
-                  this.success.add(_elem98);
+                  String _elem81;
+                  _elem81 = iprot.readString();
+                  this.success.add(_elem81);
                 }
                 iprot.readListEnd();
               }
@@ -3378,9 +3378,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter99 : this.success)
+          for (String _iter82 : this.success)
           {
-            oprot.writeString(_iter99);
+            oprot.writeString(_iter82);
           }
           oprot.writeListEnd();
         }
@@ -4062,15 +4062,15 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map100 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map100.size);
-                for (int _i101 = 0; _i101 < _map100.size; ++_i101)
+                org.apache.thrift.protocol.TMap _map83 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map83.size);
+                for (int _i84 = 0; _i84 < _map83.size; ++_i84)
                 {
-                  String _key102;
-                  String _val103;
-                  _key102 = iprot.readString();
-                  _val103 = iprot.readString();
-                  this.success.put(_key102, _val103);
+                  String _key85;
+                  String _val86;
+                  _key85 = iprot.readString();
+                  _val86 = iprot.readString();
+                  this.success.put(_key85, _val86);
                 }
                 iprot.readMapEnd();
               }
@@ -4104,10 +4104,10 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter104 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter87 : this.success.entrySet())
           {
-            oprot.writeString(_iter104.getKey());
-            oprot.writeString(_iter104.getValue());
+            oprot.writeString(_iter87.getKey());
+            oprot.writeString(_iter87.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -4689,13 +4689,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list105 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list105.size);
-                for (int _i106 = 0; _i106 < _list105.size; ++_i106)
+                org.apache.thrift.protocol.TList _list88 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list88.size);
+                for (int _i89 = 0; _i89 < _list88.size; ++_i89)
                 {
-                  String _elem107;
-                  _elem107 = iprot.readString();
-                  this.success.add(_elem107);
+                  String _elem90;
+                  _elem90 = iprot.readString();
+                  this.success.add(_elem90);
                 }
                 iprot.readListEnd();
               }
@@ -4729,9 +4729,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter108 : this.success)
+          for (String _iter91 : this.success)
           {
-            oprot.writeString(_iter108);
+            oprot.writeString(_iter91);
           }
           oprot.writeListEnd();
         }
@@ -7547,14 +7547,14 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list109 = iprot.readListBegin();
-                this.success = new ArrayList<BlurQueryStatus>(_list109.size);
-                for (int _i110 = 0; _i110 < _list109.size; ++_i110)
+                org.apache.thrift.protocol.TList _list92 = iprot.readListBegin();
+                this.success = new ArrayList<BlurQueryStatus>(_list92.size);
+                for (int _i93 = 0; _i93 < _list92.size; ++_i93)
                 {
-                  BlurQueryStatus _elem111;
-                  _elem111 = new BlurQueryStatus();
-                  _elem111.read(iprot);
-                  this.success.add(_elem111);
+                  BlurQueryStatus _elem94;
+                  _elem94 = new BlurQueryStatus();
+                  _elem94.read(iprot);
+                  this.success.add(_elem94);
                 }
                 iprot.readListEnd();
               }
@@ -7588,9 +7588,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (BlurQueryStatus _iter112 : this.success)
+          for (BlurQueryStatus _iter95 : this.success)
           {
-            _iter112.write(oprot);
+            _iter95.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -9989,13 +9989,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list113 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list113.size);
-                for (int _i114 = 0; _i114 < _list113.size; ++_i114)
+                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list96.size);
+                for (int _i97 = 0; _i97 < _list96.size; ++_i97)
                 {
-                  String _elem115;
-                  _elem115 = iprot.readString();
-                  this.success.add(_elem115);
+                  String _elem98;
+                  _elem98 = iprot.readString();
+                  this.success.add(_elem98);
                 }
                 iprot.readListEnd();
               }
@@ -10029,9 +10029,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter116 : this.success)
+          for (String _iter99 : this.success)
           {
-            oprot.writeString(_iter116);
+            oprot.writeString(_iter99);
           }
           oprot.writeListEnd();
         }

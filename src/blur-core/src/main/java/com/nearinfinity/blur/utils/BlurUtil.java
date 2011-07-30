@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -42,8 +40,8 @@ import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.RecordMutationType;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -102,13 +100,16 @@ public class BlurUtil {
     }
     
     public static RecordMutation newRecordMutation(String family, String recordId, Column... columns) {
-        RecordMutation mutation = new RecordMutation();
-        mutation.setFamily(family);
-        mutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
-        mutation.setRecordId(recordId);
+        Record record = new Record();
+        record.setRecordId(recordId);
+        record.setFamily(family);
         for (Column column : columns) {
-            mutation.addToRecord(column);
+            record.addToColumns(column);
         }
+        
+        RecordMutation mutation = new RecordMutation();
+        mutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+        mutation.setRecord(record);
         return mutation;
     }
     
@@ -123,32 +124,24 @@ public class BlurUtil {
         return mutation;
     }
     
-    public static Row newRow(String rowId, ColumnFamily... columnFamilies) {
+    public static Record newRecord(String family, String recordId, Column... columns) {
+        Record record = new Record();
+        record.setRecordId(recordId);
+        record.setFamily(family);
+        record.setColumns(Arrays.asList(columns));
+        return record;
+    }
+    
+    public static Row newRow(String rowId, Record... records) {
         Row row = new Row().setId(rowId);
-        for (ColumnFamily columnFamily : columnFamilies) {
-            row.addToColumnFamilies(columnFamily);
+        for (Record record : records) {
+            row.addToRecords(record);
         }
         return row;
     }
     
-    public static ColumnFamily newColumnFamily(String family, String recordId, Column... columns) {
-        ColumnFamily columnFamily = new ColumnFamily().setFamily(family);
-        columnFamily.putToRecords(recordId, newColumnSet(columns));
-        return columnFamily;
-    }
-    
-    public static Column newColumn(String name, String... values) {
-        Column col = new Column().setName(name);
-        for (String value : values) {
-            col.addToValues(value);
-        }
-        return col;
-    }
-    
-    public static Set<Column> newColumnSet(Column... columns) {
-        TreeSet<Column> treeSet = new TreeSet<Column>(BlurConstants.COLUMN_COMPARATOR);
-        treeSet.addAll(Arrays.asList(columns));
-        return treeSet;
+    public static Column newColumn(String name, String value) {
+        return new Column().setName(name).setValue(value);
     }
     
     public static byte[] toBytes(Serializable serializable) {

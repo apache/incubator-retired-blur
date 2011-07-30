@@ -17,7 +17,7 @@
 package com.nearinfinity.blur.manager;
 
 import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
-import static com.nearinfinity.blur.utils.BlurUtil.newColumnFamily;
+import static com.nearinfinity.blur.utils.BlurUtil.newRecord;
 import static com.nearinfinity.blur.utils.BlurUtil.newRecordMutation;
 import static com.nearinfinity.blur.utils.BlurUtil.newRow;
 import static com.nearinfinity.blur.utils.BlurUtil.newRowMutation;
@@ -48,10 +48,10 @@ import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
-import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchRecordResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
+import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
@@ -87,8 +87,8 @@ public class IndexManagerTest {
     
     @After
     public void teardown() {
-        indexManager.close();
         refresher.close();
+        indexManager.close();
     }
 
     private void rm(File file) {
@@ -138,7 +138,7 @@ public class IndexManagerTest {
         FetchResult fetchResult = new FetchResult();
         indexManager.fetchRow(TABLE, selector, fetchResult);
         assertNotNull(fetchResult.rowResult.row);
-        Row row = newRow("row-1", newColumnFamily("test-family", "record-1", newColumn("testcol1", "value1"),
+        Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
                 newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
         assertEquals(row, fetchResult.rowResult.row);
     }
@@ -163,11 +163,12 @@ public class IndexManagerTest {
         assertNotNull(fetchResult.recordResult.record);
 
         assertEquals("row-1", fetchResult.recordResult.rowid);
-        assertEquals("record-1", fetchResult.recordResult.recordid);
-        assertEquals("test-family", fetchResult.recordResult.columnFamily);
+        assertEquals("record-1", fetchResult.recordResult.record.recordId);
+        assertEquals("test-family", fetchResult.recordResult.record.family);
 
-        assertEquals(new TreeSet<Column>(Arrays.asList(newColumn("testcol1", "value1"),
-                newColumn("testcol2", "value2"), newColumn("testcol3", "value3"))), fetchResult.recordResult.record);
+        Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
+                newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+        assertEquals(record, fetchResult.recordResult.record);
     }
 
     @Test
@@ -176,7 +177,7 @@ public class IndexManagerTest {
         FetchResult fetchResult = new FetchResult();
         indexManager.fetchRow(TABLE, selector, fetchResult);
         assertNotNull(fetchResult.rowResult.row);
-        Row row = newRow("row-1", newColumnFamily("test-family", "record-1", newColumn("testcol1", "value1"),
+        Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
                 newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
         assertEquals(row, fetchResult.rowResult.row);
     }
@@ -222,12 +223,13 @@ public class IndexManagerTest {
         assertNull(fetchResult.rowResult);
         assertNotNull(fetchResult.recordResult);
         FetchRecordResult recordResult = fetchResult.recordResult;
-        assertEquals("test-family", recordResult.columnFamily);
-        assertEquals("record-1", recordResult.recordid);
+        assertEquals("test-family", recordResult.record.family);
+        assertEquals("record-1", recordResult.record.recordId);
         assertEquals("row-1", recordResult.rowid);
 
-        assertEquals(new TreeSet<Column>(Arrays.asList(newColumn("testcol1", "value1"),
-                newColumn("testcol2", "value2"), newColumn("testcol3", "value3"))), recordResult.record);
+        Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
+                newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+        assertEquals(record, recordResult.record);
 
     }
 
@@ -397,7 +399,7 @@ public class IndexManagerTest {
         indexManager.fetchRow(TABLE, selector, fetchResult);
         assertNotNull(fetchResult.rowResult.row);
         Row row = newRow("row-4", 
-                    newColumnFamily("test-family", "record-4", 
+                newRecord("test-family", "record-4", 
                             newColumn("testcol1", "value2"),
                             newColumn("testcol2", "value3"), 
                             newColumn("testcol3", "value4")));

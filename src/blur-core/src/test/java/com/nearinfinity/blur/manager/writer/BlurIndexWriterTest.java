@@ -1,15 +1,10 @@
 package com.nearinfinity.blur.manager.writer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
@@ -20,7 +15,7 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.ColumnFamily;
+import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 
 public class BlurIndexWriterTest {
@@ -55,8 +50,8 @@ public class BlurIndexWriterTest {
     
     @After
     public void tearDown() throws IOException {
-        writer.close();
         refresher.close();
+        writer.close();
         closer.close();
         rm(dir);
     }
@@ -92,16 +87,13 @@ public class BlurIndexWriterTest {
     private Row genRow() {
         Row row = new Row();
         row.setId(Long.toString(random.nextLong()));
-        ColumnFamily cf = new ColumnFamily();
-        cf.setFamily("testing");
-        Map<String, Set<Column>> records = new HashMap<String, Set<Column>>();
-        Set<Column> values = new HashSet<Column>();
+        Record record = new Record();
+        record.setFamily("testing");
+        record.setRecordId(Long.toString(random.nextLong()));
         for (int i = 0; i < 10; i++) {
-            values.add(new Column("col" + i, Arrays.asList(Long.toString(random.nextLong()))));
+            record.addToColumns(new Column("col" + i, Long.toString(random.nextLong())));
         }
-        records.put(Long.toString(random.nextLong()), values);
-        cf.setRecords(records);
-        row.addToColumnFamilies(cf);
+        row.addToRecords(record);
         return row;
     }
 

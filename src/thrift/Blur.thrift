@@ -51,17 +51,18 @@ struct Facet {
 
 struct Column {
   1:string name,
-  2:list<string> values
+  2:string value
 }
 
-struct ColumnFamily {
-  1:string family,
-  2:map<string,set<Column>> records
+struct Record {
+  1:string recordId,
+  2:string family,
+  3:list<Column> columns
 }
 
 struct Row {
   1:string id,
-  2:set<ColumnFamily> columnFamilies
+  2:list<Record> records
 }
 
 struct FetchRowResult {
@@ -70,9 +71,7 @@ struct FetchRowResult {
 
 struct FetchRecordResult {
   1:string rowid,
-  2:string recordid,
-  3:string columnFamily,
-  4:set<Column> record
+  2:Record record
 }
 
 struct FetchResult {
@@ -164,9 +163,7 @@ enum RecordMutationType {
 
 struct RecordMutation {
   1:RecordMutationType recordMutationType,
-  2:string family,
-  3:string recordId,
-  4:set<Column> record
+  2:Record record
 }
 
 enum RowMutationType {

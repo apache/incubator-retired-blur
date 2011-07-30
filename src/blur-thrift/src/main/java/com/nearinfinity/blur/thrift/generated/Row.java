@@ -24,15 +24,15 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Row");
 
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRING, (short)1);
-  private static final org.apache.thrift.protocol.TField COLUMN_FAMILIES_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamilies", org.apache.thrift.protocol.TType.SET, (short)2);
+  private static final org.apache.thrift.protocol.TField RECORDS_FIELD_DESC = new org.apache.thrift.protocol.TField("records", org.apache.thrift.protocol.TType.LIST, (short)2);
 
   public String id;
-  public Set<ColumnFamily> columnFamilies;
+  public List<Record> records;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     ID((short)1, "id"),
-    COLUMN_FAMILIES((short)2, "columnFamilies");
+    RECORDS((short)2, "records");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -49,8 +49,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       switch(fieldId) {
         case 1: // ID
           return ID;
-        case 2: // COLUMN_FAMILIES
-          return COLUMN_FAMILIES;
+        case 2: // RECORDS
+          return RECORDS;
         default:
           return null;
       }
@@ -97,9 +97,9 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.ID, new org.apache.thrift.meta_data.FieldMetaData("id", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.COLUMN_FAMILIES, new org.apache.thrift.meta_data.FieldMetaData("columnFamilies", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnFamily.class))));
+    tmpMap.put(_Fields.RECORDS, new org.apache.thrift.meta_data.FieldMetaData("records", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Record.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
@@ -109,11 +109,11 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
 
   public Row(
     String id,
-    Set<ColumnFamily> columnFamilies)
+    List<Record> records)
   {
     this();
     this.id = id;
-    this.columnFamilies = columnFamilies;
+    this.records = records;
   }
 
   /**
@@ -123,12 +123,12 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     if (other.isSetId()) {
       this.id = other.id;
     }
-    if (other.isSetColumnFamilies()) {
-      Set<ColumnFamily> __this__columnFamilies = new HashSet<ColumnFamily>();
-      for (ColumnFamily other_element : other.columnFamilies) {
-        __this__columnFamilies.add(new ColumnFamily(other_element));
+    if (other.isSetRecords()) {
+      List<Record> __this__records = new ArrayList<Record>();
+      for (Record other_element : other.records) {
+        __this__records.add(new Record(other_element));
       }
-      this.columnFamilies = __this__columnFamilies;
+      this.records = __this__records;
     }
   }
 
@@ -139,7 +139,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
   @Override
   public void clear() {
     this.id = null;
-    this.columnFamilies = null;
+    this.records = null;
   }
 
   public String getId() {
@@ -166,42 +166,42 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     }
   }
 
-  public int getColumnFamiliesSize() {
-    return (this.columnFamilies == null) ? 0 : this.columnFamilies.size();
+  public int getRecordsSize() {
+    return (this.records == null) ? 0 : this.records.size();
   }
 
-  public java.util.Iterator<ColumnFamily> getColumnFamiliesIterator() {
-    return (this.columnFamilies == null) ? null : this.columnFamilies.iterator();
+  public java.util.Iterator<Record> getRecordsIterator() {
+    return (this.records == null) ? null : this.records.iterator();
   }
 
-  public void addToColumnFamilies(ColumnFamily elem) {
-    if (this.columnFamilies == null) {
-      this.columnFamilies = new HashSet<ColumnFamily>();
+  public void addToRecords(Record elem) {
+    if (this.records == null) {
+      this.records = new ArrayList<Record>();
     }
-    this.columnFamilies.add(elem);
+    this.records.add(elem);
   }
 
-  public Set<ColumnFamily> getColumnFamilies() {
-    return this.columnFamilies;
+  public List<Record> getRecords() {
+    return this.records;
   }
 
-  public Row setColumnFamilies(Set<ColumnFamily> columnFamilies) {
-    this.columnFamilies = columnFamilies;
+  public Row setRecords(List<Record> records) {
+    this.records = records;
     return this;
   }
 
-  public void unsetColumnFamilies() {
-    this.columnFamilies = null;
+  public void unsetRecords() {
+    this.records = null;
   }
 
-  /** Returns true if field columnFamilies is set (has been assigned a value) and false otherwise */
-  public boolean isSetColumnFamilies() {
-    return this.columnFamilies != null;
+  /** Returns true if field records is set (has been assigned a value) and false otherwise */
+  public boolean isSetRecords() {
+    return this.records != null;
   }
 
-  public void setColumnFamiliesIsSet(boolean value) {
+  public void setRecordsIsSet(boolean value) {
     if (!value) {
-      this.columnFamilies = null;
+      this.records = null;
     }
   }
 
@@ -215,11 +215,11 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       }
       break;
 
-    case COLUMN_FAMILIES:
+    case RECORDS:
       if (value == null) {
-        unsetColumnFamilies();
+        unsetRecords();
       } else {
-        setColumnFamilies((Set<ColumnFamily>)value);
+        setRecords((List<Record>)value);
       }
       break;
 
@@ -231,8 +231,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     case ID:
       return getId();
 
-    case COLUMN_FAMILIES:
-      return getColumnFamilies();
+    case RECORDS:
+      return getRecords();
 
     }
     throw new IllegalStateException();
@@ -247,8 +247,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     switch (field) {
     case ID:
       return isSetId();
-    case COLUMN_FAMILIES:
-      return isSetColumnFamilies();
+    case RECORDS:
+      return isSetRecords();
     }
     throw new IllegalStateException();
   }
@@ -275,12 +275,12 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
         return false;
     }
 
-    boolean this_present_columnFamilies = true && this.isSetColumnFamilies();
-    boolean that_present_columnFamilies = true && that.isSetColumnFamilies();
-    if (this_present_columnFamilies || that_present_columnFamilies) {
-      if (!(this_present_columnFamilies && that_present_columnFamilies))
+    boolean this_present_records = true && this.isSetRecords();
+    boolean that_present_records = true && that.isSetRecords();
+    if (this_present_records || that_present_records) {
+      if (!(this_present_records && that_present_records))
         return false;
-      if (!this.columnFamilies.equals(that.columnFamilies))
+      if (!this.records.equals(that.records))
         return false;
     }
 
@@ -310,12 +310,12 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetColumnFamilies()).compareTo(typedOther.isSetColumnFamilies());
+    lastComparison = Boolean.valueOf(isSetRecords()).compareTo(typedOther.isSetRecords());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetColumnFamilies()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnFamilies, typedOther.columnFamilies);
+    if (isSetRecords()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.records, typedOther.records);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -344,19 +344,19 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // COLUMN_FAMILIES
-          if (field.type == org.apache.thrift.protocol.TType.SET) {
+        case 2: // RECORDS
+          if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TSet _set41 = iprot.readSetBegin();
-              this.columnFamilies = new HashSet<ColumnFamily>(2*_set41.size);
-              for (int _i42 = 0; _i42 < _set41.size; ++_i42)
+              org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
+              this.records = new ArrayList<Record>(_list32.size);
+              for (int _i33 = 0; _i33 < _list32.size; ++_i33)
               {
-                ColumnFamily _elem43;
-                _elem43 = new ColumnFamily();
-                _elem43.read(iprot);
-                this.columnFamilies.add(_elem43);
+                Record _elem34;
+                _elem34 = new Record();
+                _elem34.read(iprot);
+                this.records.add(_elem34);
               }
-              iprot.readSetEnd();
+              iprot.readListEnd();
             }
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
@@ -382,15 +382,15 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       oprot.writeString(this.id);
       oprot.writeFieldEnd();
     }
-    if (this.columnFamilies != null) {
-      oprot.writeFieldBegin(COLUMN_FAMILIES_FIELD_DESC);
+    if (this.records != null) {
+      oprot.writeFieldBegin(RECORDS_FIELD_DESC);
       {
-        oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, this.columnFamilies.size()));
-        for (ColumnFamily _iter44 : this.columnFamilies)
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.records.size()));
+        for (Record _iter35 : this.records)
         {
-          _iter44.write(oprot);
+          _iter35.write(oprot);
         }
-        oprot.writeSetEnd();
+        oprot.writeListEnd();
       }
       oprot.writeFieldEnd();
     }
@@ -411,11 +411,11 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("columnFamilies:");
-    if (this.columnFamilies == null) {
+    sb.append("records:");
+    if (this.records == null) {
       sb.append("null");
     } else {
-      sb.append(this.columnFamilies);
+      sb.append(this.records);
     }
     first = false;
     sb.append(")");

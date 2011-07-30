@@ -140,6 +140,7 @@ module Blur
       RECORDID = 4
       COLUMNFAMILIESTOFETCH = 5
       COLUMNSTOFETCH = 6
+      ALLOWSTALEDATA = 7
 
       FIELDS = {
         RECORDONLY => {:type => ::Thrift::Types::BOOL, :name => 'recordOnly'},
@@ -147,7 +148,8 @@ module Blur
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
         RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
         COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::SET, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
-        COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}}
+        COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}},
+        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'}
       }
 
       def struct_fields; FIELDS; end
@@ -179,11 +181,11 @@ module Blur
     class Column
       include ::Thrift::Struct, ::Thrift::Struct_Union
       NAME = 1
-      VALUES = 2
+      VALUE = 2
 
       FIELDS = {
         NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
-        VALUES => {:type => ::Thrift::Types::LIST, :name => 'values', :element => {:type => ::Thrift::Types::STRING}}
+        VALUE => {:type => ::Thrift::Types::STRING, :name => 'value'}
       }
 
       def struct_fields; FIELDS; end
@@ -194,14 +196,16 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    class ColumnFamily
+    class Record
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      FAMILY = 1
-      RECORDS = 2
+      RECORDID = 1
+      FAMILY = 2
+      COLUMNS = 3
 
       FIELDS = {
+        RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
         FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
-        RECORDS => {:type => ::Thrift::Types::MAP, :name => 'records', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Column}}}
+        COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Column}}
       }
 
       def struct_fields; FIELDS; end
@@ -215,11 +219,11 @@ module Blur
     class Row
       include ::Thrift::Struct, ::Thrift::Struct_Union
       ID = 1
-      COLUMNFAMILIES = 2
+      RECORDS = 2
 
       FIELDS = {
         ID => {:type => ::Thrift::Types::STRING, :name => 'id'},
-        COLUMNFAMILIES => {:type => ::Thrift::Types::SET, :name => 'columnFamilies', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::ColumnFamily}}
+        RECORDS => {:type => ::Thrift::Types::LIST, :name => 'records', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Record}}
       }
 
       def struct_fields; FIELDS; end
@@ -249,15 +253,11 @@ module Blur
     class FetchRecordResult
       include ::Thrift::Struct, ::Thrift::Struct_Union
       ROWID = 1
-      RECORDID = 2
-      COLUMNFAMILY = 3
-      RECORD = 4
+      RECORD = 2
 
       FIELDS = {
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowid'},
-        RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordid'},
-        COLUMNFAMILY => {:type => ::Thrift::Types::STRING, :name => 'columnFamily'},
-        RECORD => {:type => ::Thrift::Types::SET, :name => 'record', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Column}}
+        RECORD => {:type => ::Thrift::Types::STRUCT, :name => 'record', :class => Blur::Record}
       }
 
       def struct_fields; FIELDS; end
@@ -309,6 +309,8 @@ module Blur
       FACETS = 13
       SELECTOR = 14
       STARTTIME = 15
+      CACHEONLY = 16
+      ALLOWSTALEDATA = 17
 
       FIELDS = {
         QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
@@ -325,7 +327,9 @@ module Blur
         RESOLVEIDS => {:type => ::Thrift::Types::BOOL, :name => 'resolveIds'},
         FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Facet}},
         SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => Blur::Selector},
-        STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'}
+        STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'},
+        CACHEONLY => {:type => ::Thrift::Types::BOOL, :name => 'cacheOnly', :default => false},
+        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'}
       }
 
       def struct_fields; FIELDS; end
@@ -334,50 +338,6 @@ module Blur
         unless @type.nil? || Blur::ScoreType::VALID_VALUES.include?(@type)
           raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
         end
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class BlurQuerySuggestion
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      QUERYSTR = 1
-      TOTALRESULTS = 2
-      SHARDINFO = 3
-      EXCEPTIONS = 4
-      QUERY = 5
-      REALTIME = 6
-      CPUTIME = 7
-
-      FIELDS = {
-        QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
-        TOTALRESULTS => {:type => ::Thrift::Types::I64, :name => 'totalResults', :default => 0},
-        SHARDINFO => {:type => ::Thrift::Types::MAP, :name => 'shardInfo', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
-        EXCEPTIONS => {:type => ::Thrift::Types::LIST, :name => 'exceptions', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::BlurException}},
-        QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => Blur::BlurQuery},
-        REALTIME => {:type => ::Thrift::Types::I64, :name => 'realTime'},
-        CPUTIME => {:type => ::Thrift::Types::I64, :name => 'cpuTime'}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class BlurQuerySuggestions
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      QUERYSUGGESTIONS = 1
-
-      FIELDS = {
-        QUERYSUGGESTIONS => {:type => ::Thrift::Types::LIST, :name => 'querySuggestions', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::BlurQuerySuggestion}}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
       end
 
       ::Thrift::Struct.generate_accessors self
@@ -529,15 +489,11 @@ module Blur
     class RecordMutation
       include ::Thrift::Struct, ::Thrift::Struct_Union
       RECORDMUTATIONTYPE = 1
-      FAMILY = 2
-      RECORDID = 3
-      RECORD = 4
+      RECORD = 2
 
       FIELDS = {
         RECORDMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'recordMutationType', :enum_class => Blur::RecordMutationType},
-        FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
-        RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
-        RECORD => {:type => ::Thrift::Types::SET, :name => 'record', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Column}}
+        RECORD => {:type => ::Thrift::Types::STRUCT, :name => 'record', :class => Blur::Record}
       }
 
       def struct_fields; FIELDS; end
@@ -553,13 +509,15 @@ module Blur
 
     class RowMutation
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      ROWMUTATIONTYPE = 1
+      TABLE = 1
       ROWID = 2
-      RECORDMUTATIONS = 3
+      ROWMUTATIONTYPE = 3
+      RECORDMUTATIONS = 4
 
       FIELDS = {
-        ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
+        ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
         RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}}
       }
 

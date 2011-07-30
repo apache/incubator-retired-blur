@@ -29,13 +29,13 @@ public class BlurIndexRefresher extends TimerTask {
     }
 
     public void close() {
-        _timer.cancel();
         _timer.purge();
+        _timer.cancel();
     }
 
     public void init() {
         _timer = new Timer("IndexReader-Refresher", true);
-        _timer.scheduleAtFixedRate(this, _delay, _period);
+        _timer.schedule(this, _delay, _period);
     }
 
     @Override

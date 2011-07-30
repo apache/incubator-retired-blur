@@ -1,14 +1,12 @@
 package com.nearinfinity.blur.thrift;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.hadoop.io.BytesWritable;
 
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.manager.BlurPartitioner;
-import com.nearinfinity.blur.thrift.generated.ColumnFamily;
+import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -51,24 +49,15 @@ public class MutationHelper {
 
     private static Row getRowFromMutations(String id, List<RecordMutation> recordMutations) {
         Row row = new Row().setId(id);
-        Map<String,ColumnFamily> columnFamily = new HashMap<String, ColumnFamily>();
         for (RecordMutation mutation : recordMutations) {
-            ColumnFamily family = columnFamily.get(mutation.family);
-            if (family == null) {
-                family = new ColumnFamily();
-                family.setFamily(mutation.family);
-                columnFamily.put(mutation.family, family);
-            }
+            Record record = mutation.getRecord();
             switch (mutation.recordMutationType) {
             case REPLACE_ENTIRE_RECORD:
-                family.putToRecords(mutation.recordId, mutation.record);
+                row.addToRecords(record);
                 break;
             default:
                 throw new RuntimeException("Not supported [" + mutation.recordMutationType + "]");
             }
-        }
-        for (ColumnFamily family : columnFamily.values()) {
-            row.addToColumnFamilies(family);
         }
         return row;
     }

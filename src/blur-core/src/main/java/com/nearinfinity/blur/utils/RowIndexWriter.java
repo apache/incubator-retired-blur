@@ -26,7 +26,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.SUPER;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.lucene.document.Document;
@@ -38,7 +37,7 @@ import org.apache.lucene.index.Term;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.ColumnFamily;
+import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 
 public class RowIndexWriter {
@@ -73,8 +72,8 @@ public class RowIndexWriter {
     private void append(Row row, boolean replace) throws IOException {
         primeDocSet = false;
         List<Document> documents = new ArrayList<Document>();
-        for (ColumnFamily columnFamily : row.getColumnFamilies()) {
-            convert(row.id,columnFamily,documents);
+        for (Record record : row.records) {
+            convert(row.id,record,documents);
         }
         synchronized (_indexWriter) {
             if (replace) {
@@ -85,29 +84,27 @@ public class RowIndexWriter {
         }
     }
 
-    private void convert(String rowId, ColumnFamily columnFamily, List<Document> documents) throws IOException {
-        Map<String, Set<Column>> columns = columnFamily.records;
-        if (columns == null) {
+    private void convert(String rowId, Record record, List<Document> documents) throws IOException {
+        if (record == null) {
             return;
         }
-        String family = columnFamily.getFamily();
-        if (family == null) {
-            throw new NullPointerException();
+        String recordId = record.recordId;
+        if (recordId == null) {
+            throw new NullPointerException("Record id is null.");
         }
-        for (String recordId : columns.keySet()) {
-            if (recordId == null) {
-                continue;
+        String family = record.getFamily();
+        if (family == null) {
+            throw new NullPointerException("Family is null.");
+        }
+        Document document = new Document();
+        document.add(new Field(ROW_ID,rowId,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+        document.add(new Field(RECORD_ID,recordId,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
+        if (addColumns(document, _analyzer, builder, family, record.columns)) {
+            if (!primeDocSet) {
+                document.add(PRIME_DOC_FIELD);
+                primeDocSet = true;
             }
-            Document document = new Document();
-            document.add(new Field(ROW_ID,rowId,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
-            document.add(new Field(RECORD_ID,recordId,Store.YES,Index.NOT_ANALYZED_NO_NORMS));
-            if (addColumns(document, _analyzer, builder, family, columns.get(recordId))) {
-                if (!primeDocSet) {
-                    document.add(PRIME_DOC_FIELD);
-                    primeDocSet = true;
-                }
-                documents.add(document);
-            }
+            documents.add(document);
         }
     }
 
@@ -119,30 +116,22 @@ public class RowIndexWriter {
         OUTER:
         for (Column column : set) {
             String name = column.getName();
-            List<String> values = column.values;
-            if (values == null || name == null) {
+            String value = column.value;
+            if (value == null || name == null) {
                 continue OUTER;
             }
-            int size = values.size();
             String fieldName = getFieldName(columnFamily,name);
             Store store = analyzer.getStore(fieldName);
             Index index = analyzer.getIndex(fieldName);
             boolean fullText = analyzer.isFullTextField(fieldName);
             Set<String> subFieldNames = analyzer.getSubIndexNames(fieldName);
-            INNER:
-            for (int i = 0; i < size; i++) {
-                String value = values.get(i);
-                if (value == null) {
-                    continue INNER;
-                }
-                document.add(new Field(fieldName,value,store,index));
-                if (fullText) {
-                    builder.append(value).append(' ');
-                }
-                if (subFieldNames != null) {
-                    for (String subFieldName : subFieldNames) {
-                        document.add(new Field(subFieldName,value,Store.NO,index));
-                    }
+            document.add(new Field(fieldName,value,store,index));
+            if (fullText) {
+                builder.append(value).append(' ');
+            }
+            if (subFieldNames != null) {
+                for (String subFieldName : subFieldNames) {
+                    document.add(new Field(subFieldName,value,Store.NO,index));
                 }
             }
         }

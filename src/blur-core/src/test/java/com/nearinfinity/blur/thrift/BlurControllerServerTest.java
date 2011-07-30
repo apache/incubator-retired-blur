@@ -20,13 +20,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
@@ -42,10 +39,10 @@ import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.FetchRowResult;
+import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
@@ -137,9 +134,10 @@ public class BlurControllerServerTest {
         RowMutation mutation = new RowMutation();
         mutation.setRowId("1234");
         RecordMutation recMut = new RecordMutation();
-        recMut.setFamily("test");
-        recMut.setRecordId("5678");
-        recMut.addToRecord(new Column("name",Arrays.asList("value")));
+        Record record = new Record();
+        record.setFamily("test");
+        record.setRecordId("5678");
+        record.addToColumns(new Column("name","value"));
         mutation.addToRecordMutations(recMut);
         mutation.table = TABLE;
         server.mutate(mutation);
@@ -255,22 +253,16 @@ public class BlurControllerServerTest {
             private Row toRow(RowMutation mutation) {
                 Row row = new Row();
                 row.id = mutation.rowId;
-                row.columnFamilies = toColumnFamilies(mutation.recordMutations);
+                row.records = toRecords(mutation.recordMutations);
                 return row;
             }
 
-            private Set<ColumnFamily> toColumnFamilies(List<RecordMutation> recordMutations) {
-                Map<String,ColumnFamily> cfs = new HashMap<String, ColumnFamily>();
+            private List<Record> toRecords(List<RecordMutation> recordMutations) {
+                List<Record> records = new ArrayList<Record>();
                 for (RecordMutation mutation : recordMutations) {
-                    String family = mutation.family;
-                    ColumnFamily columnFamily = cfs.get(family);
-                    if (columnFamily == null) {
-                        columnFamily = new ColumnFamily();
-                        cfs.put(family, columnFamily);
-                    }
-                    columnFamily.putToRecords(mutation.recordId, mutation.record);
+                    records.add(mutation.record);
                 }
-                return new HashSet<ColumnFamily>(cfs.values());
+                return records;
             }
 
             @Override

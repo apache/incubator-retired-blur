@@ -22,8 +22,6 @@ import com.nearinfinity.blur.manager.results.BlurResultComparator;
 import com.nearinfinity.blur.manager.results.BlurResultPeekableIteratorComparator;
 import com.nearinfinity.blur.manager.results.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
-import com.nearinfinity.blur.thrift.generated.Column;
-import com.nearinfinity.blur.thrift.generated.ColumnFamily;
 
 
 public class BlurConstants {
@@ -31,8 +29,6 @@ public class BlurConstants {
 	public static final String CONTROLLER = "controller";
 	public static final String SHARD = "shard";
 	public static final String SHARD_PREFIX = "shard-";
-	public static final Comparator<? super ColumnFamily> COLUMN_FAMILY_COMPARATOR = new ColumnFamilyComparator();
-	public static final Comparator<? super Column> COLUMN_COMPARATOR = new ColumnComparator();
     public static final Comparator<? super PeekableIterator<BlurResult>> HITS_PEEKABLE_ITERATOR_COMPARATOR = new BlurResultPeekableIteratorComparator();
     public static final Comparator<? super BlurResult> HITS_COMPARATOR = new BlurResultComparator();
 

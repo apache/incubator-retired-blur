@@ -24,18 +24,14 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RecordMutation");
 
   private static final org.apache.thrift.protocol.TField RECORD_MUTATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutationType", org.apache.thrift.protocol.TType.I32, (short)1);
-  private static final org.apache.thrift.protocol.TField FAMILY_FIELD_DESC = new org.apache.thrift.protocol.TField("family", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField RECORD_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("recordId", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("record", org.apache.thrift.protocol.TType.SET, (short)4);
+  private static final org.apache.thrift.protocol.TField RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("record", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
   /**
    * 
    * @see RecordMutationType
    */
   public RecordMutationType recordMutationType;
-  public String family;
-  public String recordId;
-  public Set<Column> record;
+  public Record record;
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -44,9 +40,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
      * @see RecordMutationType
      */
     RECORD_MUTATION_TYPE((short)1, "recordMutationType"),
-    FAMILY((short)2, "family"),
-    RECORD_ID((short)3, "recordId"),
-    RECORD((short)4, "record");
+    RECORD((short)2, "record");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -63,11 +57,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       switch(fieldId) {
         case 1: // RECORD_MUTATION_TYPE
           return RECORD_MUTATION_TYPE;
-        case 2: // FAMILY
-          return FAMILY;
-        case 3: // RECORD_ID
-          return RECORD_ID;
-        case 4: // RECORD
+        case 2: // RECORD
           return RECORD;
         default:
           return null;
@@ -115,13 +105,8 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.RECORD_MUTATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("recordMutationType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, RecordMutationType.class)));
-    tmpMap.put(_Fields.FAMILY, new org.apache.thrift.meta_data.FieldMetaData("family", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.RECORD_ID, new org.apache.thrift.meta_data.FieldMetaData("recordId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.RECORD, new org.apache.thrift.meta_data.FieldMetaData("record", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
-            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Column.class))));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Record.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RecordMutation.class, metaDataMap);
   }
@@ -131,14 +116,10 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
 
   public RecordMutation(
     RecordMutationType recordMutationType,
-    String family,
-    String recordId,
-    Set<Column> record)
+    Record record)
   {
     this();
     this.recordMutationType = recordMutationType;
-    this.family = family;
-    this.recordId = recordId;
     this.record = record;
   }
 
@@ -149,18 +130,8 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     if (other.isSetRecordMutationType()) {
       this.recordMutationType = other.recordMutationType;
     }
-    if (other.isSetFamily()) {
-      this.family = other.family;
-    }
-    if (other.isSetRecordId()) {
-      this.recordId = other.recordId;
-    }
     if (other.isSetRecord()) {
-      Set<Column> __this__record = new HashSet<Column>();
-      for (Column other_element : other.record) {
-        __this__record.add(new Column(other_element));
-      }
-      this.record = __this__record;
+      this.record = new Record(other.record);
     }
   }
 
@@ -171,8 +142,6 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
   @Override
   public void clear() {
     this.recordMutationType = null;
-    this.family = null;
-    this.recordId = null;
     this.record = null;
   }
 
@@ -208,74 +177,11 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     }
   }
 
-  public String getFamily() {
-    return this.family;
-  }
-
-  public RecordMutation setFamily(String family) {
-    this.family = family;
-    return this;
-  }
-
-  public void unsetFamily() {
-    this.family = null;
-  }
-
-  /** Returns true if field family is set (has been assigned a value) and false otherwise */
-  public boolean isSetFamily() {
-    return this.family != null;
-  }
-
-  public void setFamilyIsSet(boolean value) {
-    if (!value) {
-      this.family = null;
-    }
-  }
-
-  public String getRecordId() {
-    return this.recordId;
-  }
-
-  public RecordMutation setRecordId(String recordId) {
-    this.recordId = recordId;
-    return this;
-  }
-
-  public void unsetRecordId() {
-    this.recordId = null;
-  }
-
-  /** Returns true if field recordId is set (has been assigned a value) and false otherwise */
-  public boolean isSetRecordId() {
-    return this.recordId != null;
-  }
-
-  public void setRecordIdIsSet(boolean value) {
-    if (!value) {
-      this.recordId = null;
-    }
-  }
-
-  public int getRecordSize() {
-    return (this.record == null) ? 0 : this.record.size();
-  }
-
-  public java.util.Iterator<Column> getRecordIterator() {
-    return (this.record == null) ? null : this.record.iterator();
-  }
-
-  public void addToRecord(Column elem) {
-    if (this.record == null) {
-      this.record = new HashSet<Column>();
-    }
-    this.record.add(elem);
-  }
-
-  public Set<Column> getRecord() {
+  public Record getRecord() {
     return this.record;
   }
 
-  public RecordMutation setRecord(Set<Column> record) {
+  public RecordMutation setRecord(Record record) {
     this.record = record;
     return this;
   }
@@ -305,27 +211,11 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       }
       break;
 
-    case FAMILY:
-      if (value == null) {
-        unsetFamily();
-      } else {
-        setFamily((String)value);
-      }
-      break;
-
-    case RECORD_ID:
-      if (value == null) {
-        unsetRecordId();
-      } else {
-        setRecordId((String)value);
-      }
-      break;
-
     case RECORD:
       if (value == null) {
         unsetRecord();
       } else {
-        setRecord((Set<Column>)value);
+        setRecord((Record)value);
       }
       break;
 
@@ -336,12 +226,6 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     switch (field) {
     case RECORD_MUTATION_TYPE:
       return getRecordMutationType();
-
-    case FAMILY:
-      return getFamily();
-
-    case RECORD_ID:
-      return getRecordId();
 
     case RECORD:
       return getRecord();
@@ -359,10 +243,6 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     switch (field) {
     case RECORD_MUTATION_TYPE:
       return isSetRecordMutationType();
-    case FAMILY:
-      return isSetFamily();
-    case RECORD_ID:
-      return isSetRecordId();
     case RECORD:
       return isSetRecord();
     }
@@ -388,24 +268,6 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       if (!(this_present_recordMutationType && that_present_recordMutationType))
         return false;
       if (!this.recordMutationType.equals(that.recordMutationType))
-        return false;
-    }
-
-    boolean this_present_family = true && this.isSetFamily();
-    boolean that_present_family = true && that.isSetFamily();
-    if (this_present_family || that_present_family) {
-      if (!(this_present_family && that_present_family))
-        return false;
-      if (!this.family.equals(that.family))
-        return false;
-    }
-
-    boolean this_present_recordId = true && this.isSetRecordId();
-    boolean that_present_recordId = true && that.isSetRecordId();
-    if (this_present_recordId || that_present_recordId) {
-      if (!(this_present_recordId && that_present_recordId))
-        return false;
-      if (!this.recordId.equals(that.recordId))
         return false;
     }
 
@@ -444,26 +306,6 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetFamily()).compareTo(typedOther.isSetFamily());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetFamily()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.family, typedOther.family);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetRecordId()).compareTo(typedOther.isSetRecordId());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetRecordId()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordId, typedOther.recordId);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     lastComparison = Boolean.valueOf(isSetRecord()).compareTo(typedOther.isSetRecord());
     if (lastComparison != 0) {
       return lastComparison;
@@ -498,34 +340,10 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 2: // FAMILY
-          if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.family = iprot.readString();
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 3: // RECORD_ID
-          if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.recordId = iprot.readString();
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 4: // RECORD
-          if (field.type == org.apache.thrift.protocol.TType.SET) {
-            {
-              org.apache.thrift.protocol.TSet _set84 = iprot.readSetBegin();
-              this.record = new HashSet<Column>(2*_set84.size);
-              for (int _i85 = 0; _i85 < _set84.size; ++_i85)
-              {
-                Column _elem86;
-                _elem86 = new Column();
-                _elem86.read(iprot);
-                this.record.add(_elem86);
-              }
-              iprot.readSetEnd();
-            }
+        case 2: // RECORD
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.record = new Record();
+            this.record.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -550,26 +368,9 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       oprot.writeI32(this.recordMutationType.getValue());
       oprot.writeFieldEnd();
     }
-    if (this.family != null) {
-      oprot.writeFieldBegin(FAMILY_FIELD_DESC);
-      oprot.writeString(this.family);
-      oprot.writeFieldEnd();
-    }
-    if (this.recordId != null) {
-      oprot.writeFieldBegin(RECORD_ID_FIELD_DESC);
-      oprot.writeString(this.recordId);
-      oprot.writeFieldEnd();
-    }
     if (this.record != null) {
       oprot.writeFieldBegin(RECORD_FIELD_DESC);
-      {
-        oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRUCT, this.record.size()));
-        for (Column _iter87 : this.record)
-        {
-          _iter87.write(oprot);
-        }
-        oprot.writeSetEnd();
-      }
+      this.record.write(oprot);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -586,22 +387,6 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
       sb.append("null");
     } else {
       sb.append(this.recordMutationType);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("family:");
-    if (this.family == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.family);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("recordId:");
-    if (this.recordId == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.recordId);
     }
     first = false;
     if (!first) sb.append(", ");

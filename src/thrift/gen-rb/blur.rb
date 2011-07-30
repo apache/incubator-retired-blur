@@ -139,22 +139,6 @@ require 'blur_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'currentQueries failed: unknown result')
           end
 
-          def querySuggestions(table, blurQuery)
-            send_querySuggestions(table, blurQuery)
-            return recv_querySuggestions()
-          end
-
-          def send_querySuggestions(table, blurQuery)
-            send_message('querySuggestions', QuerySuggestions_args, :table => table, :blurQuery => blurQuery)
-          end
-
-          def recv_querySuggestions()
-            result = receive_message(QuerySuggestions_result)
-            return result.success unless result.success.nil?
-            raise result.ex unless result.ex.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'querySuggestions failed: unknown result')
-          end
-
           def schema(table)
             send_schema(table)
             return recv_schema()
@@ -235,13 +219,13 @@ require 'blur_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'fetchRow failed: unknown result')
           end
 
-          def mutate(table, mutations)
-            send_mutate(table, mutations)
+          def mutate(mutation)
+            send_mutate(mutation)
             recv_mutate()
           end
 
-          def send_mutate(table, mutations)
-            send_message('mutate', Mutate_args, :table => table, :mutations => mutations)
+          def send_mutate(mutation)
+            send_message('mutate', Mutate_args, :mutation => mutation)
           end
 
           def recv_mutate()
@@ -403,17 +387,6 @@ require 'blur_types'
             write_result(result, oprot, 'currentQueries', seqid)
           end
 
-          def process_querySuggestions(seqid, iprot, oprot)
-            args = read_args(iprot, QuerySuggestions_args)
-            result = QuerySuggestions_result.new()
-            begin
-              result.success = @handler.querySuggestions(args.table, args.blurQuery)
-            rescue Blur::BlurException => ex
-              result.ex = ex
-            end
-            write_result(result, oprot, 'querySuggestions', seqid)
-          end
-
           def process_schema(seqid, iprot, oprot)
             args = read_args(iprot, Schema_args)
             result = Schema_result.new()
@@ -473,7 +446,7 @@ require 'blur_types'
             args = read_args(iprot, Mutate_args)
             result = Mutate_result.new()
             begin
-              @handler.mutate(args.table, args.mutations)
+              @handler.mutate(args.mutation)
             rescue Blur::BlurException => ex
               result.ex = ex
             end
@@ -799,42 +772,6 @@ require 'blur_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class QuerySuggestions_args
-          include ::Thrift::Struct, ::Thrift::Struct_Union
-          TABLE = 1
-          BLURQUERY = 2
-
-          FIELDS = {
-            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
-            BLURQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'blurQuery', :class => Blur::BlurQuery}
-          }
-
-          def struct_fields; FIELDS; end
-
-          def validate
-          end
-
-          ::Thrift::Struct.generate_accessors self
-        end
-
-        class QuerySuggestions_result
-          include ::Thrift::Struct, ::Thrift::Struct_Union
-          SUCCESS = 0
-          EX = 1
-
-          FIELDS = {
-            SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => Blur::BlurQuerySuggestions},
-            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
-          }
-
-          def struct_fields; FIELDS; end
-
-          def validate
-          end
-
-          ::Thrift::Struct.generate_accessors self
-        end
-
         class Schema_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           TABLE = 1
@@ -1023,12 +960,10 @@ require 'blur_types'
 
         class Mutate_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
-          TABLE = 1
-          MUTATIONS = 2
+          MUTATION = 1
 
           FIELDS = {
-            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
-            MUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'mutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RowMutation}}
+            MUTATION => {:type => ::Thrift::Types::STRUCT, :name => 'mutation', :class => Blur::RowMutation}
           }
 
           def struct_fields; FIELDS; end

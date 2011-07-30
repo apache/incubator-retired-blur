@@ -26,6 +26,7 @@ import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -75,10 +76,14 @@ import com.nearinfinity.blur.thrift.MutationHelper;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.FetchRowResult;
+import com.nearinfinity.blur.thrift.generated.Record;
+import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
+import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -584,13 +589,93 @@ public class IndexManager {
         MutationHelper.validateMutation(mutation);
         String shard = MutationHelper.getShardName(table, mutation.rowId, getNumberOfShards(table), blurPartitioner);
         BlurIndex blurIndex = indexes.get(shard);
-        Row row = MutationHelper.toRow(mutation);
         if (blurIndex == null) {
             throw new BlurException("Shard [" + shard + "] in table [" + table + "] is not being served by this server.",null);
         }
-        blurIndex.replaceRow(row);
+        
+        RowMutationType type = mutation.rowMutationType;
+        switch (type) {
+        case REPLACE_ROW:
+            Row row = MutationHelper.getRowFromMutations(mutation.rowId,mutation.recordMutations);
+            blurIndex.replaceRow(row);
+            break;
+        case UPDATE_ROW:
+            doUpdateRowMutation(mutation,blurIndex);
+            break;
+        case DELETE_ROW:
+            blurIndex.deleteRow(mutation.rowId);
+            break;
+        default:
+            throw new RuntimeException("Not supported [" + type + "]");
+        }
     }
     
+    private void doUpdateRowMutation(RowMutation mutation, BlurIndex blurIndex) throws BlurException, IOException {
+        FetchResult fetchResult = new FetchResult();
+        Selector selector = new Selector();
+        selector.setAllowStaleDataIsSet(false);
+        selector.setRowId(mutation.rowId);
+        fetchRow(mutation.table, selector, fetchResult);
+        if (fetchResult.exists) {
+            Row existingRow = fetchResult.rowResult.row;
+            Row newRow = new Row().setId(existingRow.id);
+            for (Record existingRecord : existingRow.records) {
+                for (RecordMutation recordMutation : mutation.recordMutations) {
+                    if (isSameRecord(existingRecord,recordMutation.record)) {
+                        doUpdateRecordMutation(recordMutation,existingRecord,newRow);
+                    }
+                }
+            }
+        } else {
+            Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
+            blurIndex.replaceRow(row);
+        }
+    }
+
+    private void doUpdateRecordMutation(RecordMutation recordMutation, Record existingRecord, Row newRow) {
+        Record mutationRecord = recordMutation.record;
+        switch (recordMutation.recordMutationType) {
+        case DELETE_ENTIRE_RECORD:
+            return;
+        case APPEND_COLUMN_VALUES:
+            for (Column column : mutationRecord.columns) {
+                existingRecord.addToColumns(column);
+            }
+            newRow.addToRecords(existingRecord);
+            break;
+        case REPLACE_ENTIRE_RECORD:
+            newRow.addToRecords(mutationRecord);
+            break;
+        case REPLACE_COLUMNS:
+            Set<String> columnNames = new HashSet<String>();
+            for (Column column : mutationRecord.columns) {
+                columnNames.add(column.name);
+            }
+            
+            LOOP:
+            for (Column column : existingRecord.columns) {
+              //skip columns in existing record that are contained in the mutation record
+                if (columnNames.contains(column.name)) {
+                    continue LOOP; 
+                }
+                mutationRecord.addToColumns(column);
+            }
+            newRow.addToRecords(mutationRecord);
+            break;
+        default:
+            break;
+        }
+    }
+
+    private boolean isSameRecord(Record existingRecord, Record mutationRecord) {
+        if (existingRecord.recordId.equals(mutationRecord.recordId)) {
+            if (existingRecord.family.equals(mutationRecord.family)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private int getNumberOfShards(String table) {
         return indexServer.getShardCount(table);
     }

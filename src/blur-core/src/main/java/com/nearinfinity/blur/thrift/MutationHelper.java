@@ -10,7 +10,6 @@ import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
-import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class MutationHelper {
@@ -36,18 +35,8 @@ public class MutationHelper {
     public static BytesWritable getKey(String rowId) {
         return new BytesWritable(rowId.getBytes());
     }
-    
-    public static Row toRow(RowMutation mutation) {
-        RowMutationType type = mutation.rowMutationType;
-        switch (type) {
-        case REPLACE_ROW:
-            return getRowFromMutations(mutation.rowId,mutation.recordMutations);
-        default:
-            throw new RuntimeException("Not supported [" + type + "]");
-        }
-    }
 
-    private static Row getRowFromMutations(String id, List<RecordMutation> recordMutations) {
+    public static Row getRowFromMutations(String id, List<RecordMutation> recordMutations) {
         Row row = new Row().setId(id);
         for (RecordMutation mutation : recordMutations) {
             Record record = mutation.getRecord();

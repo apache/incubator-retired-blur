@@ -16,4 +16,6 @@ public abstract class BlurIndex {
 
     public abstract void refresh() throws IOException;
 
+    public abstract void deleteRow(String rowId) throws IOException;
+
 }

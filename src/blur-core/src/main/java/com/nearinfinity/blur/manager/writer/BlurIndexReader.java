@@ -34,4 +34,9 @@ public class BlurIndexReader extends BlurIndex {
     public void refresh() throws IOException {
         
     }
+
+    @Override
+    public void deleteRow(String rowId) {
+        
+    }
 }

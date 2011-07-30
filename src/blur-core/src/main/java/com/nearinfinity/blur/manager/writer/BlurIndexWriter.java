@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.manager.writer;
 
+import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
@@ -83,7 +86,7 @@ public class BlurIndexWriter extends BlurIndex {
                     _closer.close(oldReader);
                 }
             } catch (AlreadyClosedException e) {
-                LOG.warn("Writer was already closed, this can happen during closing of a writer.",e);
+                LOG.warn("Writer was already closed, this can happen during closing of a writer.");
             }
         }
     }
@@ -109,6 +112,13 @@ public class BlurIndexWriter extends BlurIndex {
     public synchronized boolean replaceRow(Row row) throws IOException {
         _rowIndexWriter.replace(row);
         return true;
+    }
+    
+    @Override
+    public void deleteRow(String rowId) throws IOException {
+        synchronized (_writer) {
+            _writer.deleteDocuments(new Term(ROW_ID,rowId));
+        }
     }
     
     public void setAnalyzer(BlurAnalyzer analyzer) {

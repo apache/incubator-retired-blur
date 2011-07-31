@@ -58,20 +58,20 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurShardServer extends ThriftServer {
-    
+
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
-    
+
     public static void main(String[] args) throws TTransportException, IOException {
         LOG.info("Setting up Shard Server");
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
-        
+
         BlurConfiguration configuration = new BlurConfiguration();
 
-        String nodeNameHostName = getNodeName(configuration,BLUR_SHARD_HOSTNAME);
+        String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
         String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
-        String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION),BLUR_ZOOKEEPER_CONNECTION);
-        String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES),BLUR_LOCAL_CACHE_PATHES);
-        
+        String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
+        String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES), BLUR_LOCAL_CACHE_PATHES);
+
         List<File> localFileCaches = new ArrayList<File>();
         for (String cachePath : localCacheDirs.split(",")) {
             localFileCaches.add(new File(cachePath));
@@ -103,10 +103,10 @@ public class ThriftBlurShardServer extends ThriftServer {
                 return true;
             }
         };
-        
+
         final BlurIndexRefresher refresher = new BlurIndexRefresher();
         refresher.init();
-        
+
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setType(NODE_TYPE.SHARD);
         indexServer.setLocalFileCache(localFileCache);
@@ -122,6 +122,8 @@ public class ThriftBlurShardServer extends ThriftServer {
 
         final IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
+        indexManager.setMaxClauseCount(configuration.getInt("blur.max.clause.count", 1024));
+        indexManager.setThreadCount(configuration.getInt("blur.indexmanager.search.thread.count", 32));
         indexManager.init();
 
         final BlurShardServer shardServer = new BlurShardServer();
@@ -130,15 +132,17 @@ public class ThriftBlurShardServer extends ThriftServer {
         shardServer.setDistributedManager(dzk);
         shardServer.init();
 
+        int threadCount = configuration.getInt("blur.shard.server.thrift.thread.count", 32);
+        
         final ThriftBlurShardServer server = new ThriftBlurShardServer();
         server.setNodeName(nodeName);
         server.setAddressPropertyName(BLUR_SHARD_BIND_ADDRESS);
         server.setPortPropertyName(BLUR_SHARD_BIND_PORT);
+        server.setThreadCount(threadCount);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
             server.setIface(crazyMode(shardServer));
-        }
-        else {
+        } else {
             server.setIface(shardServer);
         }
         server.setConfiguration(configuration);
@@ -147,7 +151,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         new BlurServerShutDown().register(new BlurShutdown() {
             @Override
             public void shutdown() {
-                quietClose(refresher,replicationDaemon, server, shardServer, indexManager, indexServer, localFileCache);
+                quietClose(refresher, replicationDaemon, server, shardServer, indexManager, indexServer, localFileCache);
                 System.exit(0);
             }
         }, zooKeeper);
@@ -175,20 +179,21 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     public static Iface crazyMode(final Iface iface) {
         return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class },
-            new InvocationHandler() {
-                private Random random = new Random();
-                private long strikeTime = System.currentTimeMillis() + 100;
-                @Override
-                public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    long now = System.currentTimeMillis();
-                    if (strikeTime < now) {
-                        strikeTime = now + random.nextInt(2000);
-                        System.err.println("Crazy Monkey Strikes!!! Next strike [" + strikeTime + "]");
-                        throw new RuntimeException("Crazy Monkey Strikes!!!");
+                new InvocationHandler() {
+                    private Random random = new Random();
+                    private long strikeTime = System.currentTimeMillis() + 100;
+
+                    @Override
+                    public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        long now = System.currentTimeMillis();
+                        if (strikeTime < now) {
+                            strikeTime = now + random.nextInt(2000);
+                            System.err.println("Crazy Monkey Strikes!!! Next strike [" + strikeTime + "]");
+                            throw new RuntimeException("Crazy Monkey Strikes!!!");
+                        }
+                        return method.invoke(iface, args);
                     }
-                    return method.invoke(iface, args);
-                }
-            });
+                });
     }
 
 }

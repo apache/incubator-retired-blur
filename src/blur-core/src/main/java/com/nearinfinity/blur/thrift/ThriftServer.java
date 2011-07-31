@@ -28,6 +28,7 @@ public class ThriftServer {
     private THsHaServer server;
     private boolean closed;
     private BlurConfiguration configuration;
+    private int threadCount;
     
     public synchronized void close() {
         if (!closed) {
@@ -42,7 +43,7 @@ public class ThriftServer {
         
         Args args = new Args(serverTransport);
         args.processor(processor);
-        args.executorService(Executors.newThreadPool("thrift-processors", 32));
+        args.executorService(Executors.newThreadPool("thrift-processors", threadCount));
         
         server = new THsHaServer(args);
         LOG.info("Starting server [{0}]",nodeName);
@@ -100,5 +101,9 @@ public class ThriftServer {
             return InetAddress.getLocalHost().getHostName();
         }
         return hostName;
+    }
+
+    public void setThreadCount(int threadCount) {
+        this.threadCount = threadCount;
     }
 }

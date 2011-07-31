@@ -76,11 +76,14 @@ public class ThriftBlurControllerServer extends ThriftServer {
         controllerServer.setDistributedManager(dzk);
         controllerServer.open();
 
+        int threadCount = configuration.getInt("blur.controller.server.thrift.thread.count", 32);
+        
         final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
         server.setNodeName(nodeName);
         server.setConfiguration(configuration);
         server.setAddressPropertyName(BLUR_CONTROLLER_BIND_ADDRESS);
         server.setPortPropertyName(BLUR_CONTROLLER_BIND_PORT);
+        server.setThreadCount(threadCount);
         if (crazyMode) {
             System.err.println("Crazy mode!!!!!");
             server.setIface(ThriftBlurShardServer.crazyMode(controllerServer));

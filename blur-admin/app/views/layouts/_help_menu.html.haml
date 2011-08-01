@@ -24,7 +24,7 @@
     .head
       The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a different zookeeper and displays information for that zookeeper.
     .body
-      %ul
+      %ol
         %li The header of each zookeeper box displays whether or not the system is online.
         %li 
           The first row gives the user a warning about inconsistent blur versions.
@@ -46,7 +46,7 @@
     .head
       The "Environment" page is a zookeeper specific status page.
     .body
-      %ul
+      %ol
         %li The top section lists some of the details about the current zookeeper such as the name, the connection (URL), and its current status. 
         %li The "controllers" box lists each controller with its name, blur version, and status.
         %li The "shards" box lists each shard with its name, blur version, and status.
@@ -57,7 +57,7 @@
     .head
       The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row contains information describing a BlurTable.
     .body
-      %ul
+      %ol
         %li The "Hosts/Shards" column is a link that displays a dialog with a list of all the hosts and shards for that BlurTable when clicked.
         %li "Record Count" is the number of records in that particular table.
         %li "Size" is the total size of the table on disk.
@@ -81,7 +81,7 @@
     .head
       The "Blur Queries" page is a list of recently executed Blur Queries.
     .body
-      %ul
+      %ol
         %li 
           The "Filters" section is a set of options for limiting what queries are displayed in the list.
           %ul
@@ -102,7 +102,7 @@
     .head
       Underneath the filters section is the queries table.
     .body
-      %ul
+      %ol
         %li To the top right of the table is a list of current filters.
         %li The "User Id" column shows the ID of the user that submitted that query.
         %li 
@@ -176,7 +176,7 @@
     .head
       The "Column Preferences" section allows the user to choose what column families they want to display first in the results table when they execute a search on the search page.
     .body
-      %ul
+      %ol
         %li
           "My Saved Column Families" is a list of the user's chosen preferred column families, this list is in sorted order from top to bottom.
           %ul
@@ -186,5 +186,5 @@
     .head
       The "Filter Preferences" section allows the user to choose their Blur Query filter defaults.
     .body
-      %ul
+      %ol
         %li These values are automatically populated into their respective selectors on the Blur Queries page.

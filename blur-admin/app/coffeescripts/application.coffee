@@ -59,7 +59,7 @@ $(document).ready ->
     #after the help menu is built show the dialog
     $('#help-menu').dialog
       title: "Help Menu",
-      height: 'auto',
+      maxHeight: 1000,
       width: 710,
       modal: false,
       resizable: false,

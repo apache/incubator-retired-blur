@@ -24,6 +24,7 @@ class Ability
         can :dashboard, :zookeepers
         can :files, :hdfs
         can :jstree, :hdfs
+        can :help, :application
 
         can [:save, :save_filters], :preference
 

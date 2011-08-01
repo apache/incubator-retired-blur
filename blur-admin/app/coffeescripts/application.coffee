@@ -40,9 +40,11 @@ $(document).ready ->
   
   # Initialize Help
   $('#page-help').click ()->
+    #ajax request
+    #load dialog
     $('#help-menu').dialog
       title: "Help Menu",
-      height: "auto",
+      height: 'auto',
       width: 710,
       modal: false,
       resizable: false,

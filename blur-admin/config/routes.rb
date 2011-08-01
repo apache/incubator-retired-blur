@@ -35,8 +35,7 @@ BlurAdmin::Application.routes.draw do
   match 'preference/filter' => 'preference#save_filters', :via => :post
 
   resources :hdfs
-  match 'hdfs/:file' => 'hdfs#files', :via => :post
-  match 'hdfs/:file/:files' => 'hdfs#files', :via => :post
+  match 'hdfs/:files' => 'hdfs#files', :via => :post
 
   root :to => 'zookeepers#index'
 

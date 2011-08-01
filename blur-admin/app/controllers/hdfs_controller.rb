@@ -14,8 +14,8 @@ class HdfsController < ApplicationController
   end
 
   def files
-    @file_name = params[:file]
-    @file_names = params[:files].split(',') if params[:files]
+    #@file_name = params[:file]
+    @file_names = params[:files].split(',') if params[:files] != 'none'
 
    render :template=>'hdfs/files.html.haml', :layout => false
   end

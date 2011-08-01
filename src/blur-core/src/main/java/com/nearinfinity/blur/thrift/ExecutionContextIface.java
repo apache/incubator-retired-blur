@@ -194,10 +194,10 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     }
 
     @Override
-    public List<String> shardServerList() throws BlurException, TException {
+    public List<String> shardServerList(String cluster) throws BlurException, TException {
         ExecutionContext context = getContext();
         try {
-            return shardServerList(context);
+            return shardServerList(context, cluster);
         } finally {
             record(context);
         }
@@ -223,4 +223,26 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
             record(context);
         }
     }
+
+    @Override
+    public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+        ExecutionContext context = getContext();
+        try {
+            mutateBatch(context, mutations);
+        } finally {
+            record(context);
+        }
+    }
+
+    @Override
+    public List<String> shardClusterList() throws BlurException, TException {
+        ExecutionContext context = getContext();
+        try {
+            return shardClusterList(context);
+        } finally {
+            record(context);
+        }
+    }
+    
+    
 }

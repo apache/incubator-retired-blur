@@ -17,6 +17,7 @@
 package com.nearinfinity.blur.thrift;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -433,13 +435,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
 
     @Override
-    public List<String> shardServerList() throws BlurException, TException {
-        try {
-            return _clusterStatus.shardServerList();
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to get a shard list.", e);
-            throw new BException("Unknown error while trying to get a shard list.", e);
+    public List<String> shardServerList(String cluster) throws BlurException, TException {
+        if (cluster.equals(BlurConstants.BLUR_CLUSTER)) {
+            try {
+                return _clusterStatus.shardServerList();
+            } catch (Exception e) {
+                LOG.error("Unknown error while trying to get a shard list.", e);
+                throw new BException("Unknown error while trying to get a shard list.", e);
+            }
         }
+        throw new BException("Cluster [" + cluster + "] is not valid.");
     }
 
     public ClusterStatus getClusterStatus() {
@@ -486,4 +491,20 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
         return numberOfShards;
     }
+
+    @Override
+    public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+        for (RowMutation mutation : mutations) {
+            MutationHelper.validateMutation(mutation);
+        }
+        for (RowMutation mutation : mutations) {
+            mutate(mutation);
+        }
+    }
+
+    @Override
+    public List<String> shardClusterList() throws BlurException, TException {
+        return Arrays.asList(BlurConstants.BLUR_CLUSTER);
+    }
+
 }

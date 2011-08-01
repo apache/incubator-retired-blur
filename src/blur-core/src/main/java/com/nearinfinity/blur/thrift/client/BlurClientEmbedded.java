@@ -72,7 +72,7 @@ public class BlurClientEmbedded extends BlurClient {
             super(null);
             this.face = face;
         }
-
+        
         @Override
         public void cancelQuery(String table, long uuid) throws BlurException, TException {
             face.cancelQuery(table, uuid);
@@ -120,8 +120,8 @@ public class BlurClientEmbedded extends BlurClient {
         }
 
         @Override
-        public List<String> shardServerList() throws BlurException, TException {
-            return face.shardServerList();
+        public List<String> shardServerList(String cluster) throws BlurException, TException {
+            return face.shardServerList(cluster);
         }
 
         @Override
@@ -158,6 +158,18 @@ public class BlurClientEmbedded extends BlurClient {
 
         public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
             face.removeTable(table, deleteIndexFiles);
+        }
+
+
+
+        public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+            face.mutateBatch(mutations);
+        }
+
+
+
+        public List<String> shardClusterList() throws BlurException, TException {
+            return face.shardClusterList();
         }
 
     }

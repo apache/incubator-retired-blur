@@ -126,7 +126,8 @@ struct TableDescriptor {
   3:i32 shardCount,
   4:string tableUri,
   5:string compressionClass,
-  6:i32 compressionBlockSize
+  6:i32 compressionBlockSize,
+  7:string cluster
 }
 
 enum QueryState {
@@ -188,7 +189,9 @@ struct TableStats {
 }
 
 service Blur {
-  list<string> shardServerList() throws (1:BlurException ex)
+
+  list<string> shardClusterList() throws (1:BlurException ex)
+  list<string> shardServerList(1:string cluster) throws (1:BlurException ex)
   list<string> controllerServerList() throws (1:BlurException ex)
   map<string,string> shardServerLayout(1:string table) throws (1:BlurException ex)
 
@@ -207,6 +210,7 @@ service Blur {
   FetchResult fetchRow(1:string table, 2:Selector selector) throws (1:BlurException ex)
 
   void mutate(1:RowMutation mutation) throws (1:BlurException ex)
+  void mutateBatch(1:list<RowMutation> mutations) throws (1:BlurException ex)
 
   void createTable(1:string table, 2:TableDescriptor tableDescriptor) throws (1:BlurException ex)
   void enableTable(1:string table) throws (1:BlurException ex)

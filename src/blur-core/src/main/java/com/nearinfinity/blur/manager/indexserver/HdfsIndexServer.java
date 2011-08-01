@@ -42,6 +42,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.store.cache.HdfsUtil;
@@ -64,6 +65,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private BlurIndexCloser _closer;
     private ZooKeeper _zookeeper;
     private BlurIndexRefresher _refresher;
+    private BlurIndexCommiter _commiter;
     
     @Override
     public void init() {
@@ -104,6 +106,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         
         BlurIndexWriter writer = new BlurIndexWriter();
         writer.setCloser(_closer);
+        writer.setCommiter(_commiter);
         writer.setAnalyzer(getAnalyzer(table));
         writer.setDirectory(compressedDirectory);
         writer.setRefresher(_refresher);
@@ -201,6 +204,10 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
     public void setRefresher(BlurIndexRefresher refresher) {
         _refresher = refresher;
+    }
+
+    public void setCommiter(BlurIndexCommiter commiter) {
+        _commiter = commiter;
     }
 
 }

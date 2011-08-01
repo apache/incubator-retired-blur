@@ -33,6 +33,8 @@ public interface IfaceExtended extends Iface {
     FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException, TException;
 
     void mutate(ExecutionContext context, RowMutation mutation) throws BlurException, TException;
+    
+    void mutateBatch(ExecutionContext context, List<RowMutation> mutations) throws BlurException, TException;
 
     BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException, TException;
 
@@ -43,11 +45,15 @@ public interface IfaceExtended extends Iface {
 
     Map<String, String> shardServerLayout(ExecutionContext context, String table) throws BlurException, TException;
 
-    List<String> shardServerList(ExecutionContext context) throws BlurException, TException;
+    List<String> shardServerList(ExecutionContext context, String cluster) throws BlurException, TException;
 
     List<String> tableList(ExecutionContext context) throws BlurException, TException;
 
     List<String> terms(ExecutionContext context, String table, String columnFamily, String columnName,
             String startWith, short size) throws BlurException, TException;
+    
+    List<String> shardClusterList(ExecutionContext context) throws BlurException, org.apache.thrift.TException;
+    
+    
 
 }

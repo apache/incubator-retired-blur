@@ -52,7 +52,7 @@ public class DoNothingServer implements Iface {
     }
 
     @Override
-    public List<String> shardServerList() throws BlurException, TException {
+    public List<String> shardServerList(String cluster) throws BlurException, TException {
         return null;
     }
 
@@ -127,5 +127,15 @@ public class DoNothingServer implements Iface {
     @Override
     public void mutate(RowMutation mutation) throws BlurException, TException {
         
+    }
+
+    @Override
+    public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+        
+    }
+
+    @Override
+    public List<String> shardClusterList() throws BlurException, TException {
+        return null;
     }
 }

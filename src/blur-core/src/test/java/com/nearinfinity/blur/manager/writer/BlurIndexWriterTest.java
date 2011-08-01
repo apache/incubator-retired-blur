@@ -26,6 +26,7 @@ public class BlurIndexWriterTest {
     private Random random = new Random();
     private BlurIndexRefresher refresher;
     private File dir;
+    private BlurIndexCommiter commiter;
 
     @Before
     public void setup() throws IOException {
@@ -40,16 +41,21 @@ public class BlurIndexWriterTest {
         refresher = new BlurIndexRefresher();
         refresher.init();
         
+        commiter = new BlurIndexCommiter();
+        commiter.init();
+        
         writer = new BlurIndexWriter();
         writer.setDirectory(FSDirectory.open(dir));
         writer.setCloser(closer);
         writer.setAnalyzer(analyzer);
         writer.setRefresher(refresher);
+        writer.setCommiter(commiter);
         writer.init();   
     }
     
     @After
     public void tearDown() throws IOException {
+        commiter.close();
         refresher.close();
         writer.close();
         closer.close();

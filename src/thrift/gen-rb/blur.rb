@@ -12,13 +12,29 @@ require 'blur_types'
         class Client
           include ::Thrift::Client
 
-          def shardServerList()
-            send_shardServerList()
+          def shardClusterList()
+            send_shardClusterList()
+            return recv_shardClusterList()
+          end
+
+          def send_shardClusterList()
+            send_message('shardClusterList', ShardClusterList_args)
+          end
+
+          def recv_shardClusterList()
+            result = receive_message(ShardClusterList_result)
+            return result.success unless result.success.nil?
+            raise result.ex unless result.ex.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'shardClusterList failed: unknown result')
+          end
+
+          def shardServerList(cluster)
+            send_shardServerList(cluster)
             return recv_shardServerList()
           end
 
-          def send_shardServerList()
-            send_message('shardServerList', ShardServerList_args)
+          def send_shardServerList(cluster)
+            send_message('shardServerList', ShardServerList_args, :cluster => cluster)
           end
 
           def recv_shardServerList()
@@ -234,6 +250,21 @@ require 'blur_types'
             return
           end
 
+          def mutateBatch(mutations)
+            send_mutateBatch(mutations)
+            recv_mutateBatch()
+          end
+
+          def send_mutateBatch(mutations)
+            send_message('mutateBatch', MutateBatch_args, :mutations => mutations)
+          end
+
+          def recv_mutateBatch()
+            result = receive_message(MutateBatch_result)
+            raise result.ex unless result.ex.nil?
+            return
+          end
+
           def createTable(table, tableDescriptor)
             send_createTable(table, tableDescriptor)
             recv_createTable()
@@ -299,11 +330,22 @@ require 'blur_types'
         class Processor
           include ::Thrift::Processor
 
+          def process_shardClusterList(seqid, iprot, oprot)
+            args = read_args(iprot, ShardClusterList_args)
+            result = ShardClusterList_result.new()
+            begin
+              result.success = @handler.shardClusterList()
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'shardClusterList', seqid)
+          end
+
           def process_shardServerList(seqid, iprot, oprot)
             args = read_args(iprot, ShardServerList_args)
             result = ShardServerList_result.new()
             begin
-              result.success = @handler.shardServerList()
+              result.success = @handler.shardServerList(args.cluster)
             rescue Blur::BlurException => ex
               result.ex = ex
             end
@@ -453,6 +495,17 @@ require 'blur_types'
             write_result(result, oprot, 'mutate', seqid)
           end
 
+          def process_mutateBatch(seqid, iprot, oprot)
+            args = read_args(iprot, MutateBatch_args)
+            result = MutateBatch_result.new()
+            begin
+              @handler.mutateBatch(args.mutations)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'mutateBatch', seqid)
+          end
+
           def process_createTable(seqid, iprot, oprot)
             args = read_args(iprot, CreateTable_args)
             result = CreateTable_result.new()
@@ -501,11 +554,45 @@ require 'blur_types'
 
         # HELPER FUNCTIONS AND STRUCTURES
 
-        class ShardServerList_args
+        class ShardClusterList_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
 
           FIELDS = {
 
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class ShardClusterList_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          EX = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class ShardServerList_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          CLUSTER = 1
+
+          FIELDS = {
+            CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
           }
 
           def struct_fields; FIELDS; end
@@ -975,6 +1062,38 @@ require 'blur_types'
         end
 
         class Mutate_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          EX = 1
+
+          FIELDS = {
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class MutateBatch_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          MUTATIONS = 1
+
+          FIELDS = {
+            MUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'mutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RowMutation}}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class MutateBatch_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           EX = 1
 

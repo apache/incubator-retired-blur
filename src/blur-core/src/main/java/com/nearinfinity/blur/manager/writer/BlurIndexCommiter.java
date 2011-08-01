@@ -17,6 +17,7 @@ public class BlurIndexCommiter {
     private Thread _commitDaemon;
     private Map<String,IndexWriter> _writers = new ConcurrentHashMap<String, IndexWriter>();
     private AtomicBoolean _running = new AtomicBoolean();
+    private long _delay = TimeUnit.MINUTES.toMillis(1);
     
     public void init() {
         _running.set(true);
@@ -26,7 +27,7 @@ public class BlurIndexCommiter {
                 while (_running.get()) {
                     commit();
                     try {
-                        Thread.sleep(TimeUnit.SECONDS.toMillis(10));
+                        Thread.sleep(_delay);
                     } catch (InterruptedException e) {
                         return;
                     }

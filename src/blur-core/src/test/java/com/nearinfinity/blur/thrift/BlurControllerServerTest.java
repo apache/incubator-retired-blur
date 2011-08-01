@@ -177,7 +177,7 @@ public class BlurControllerServerTest {
             }
             
             @Override
-            public List<String> shardServerList() throws BlurException, TException {
+            public List<String> shardServerList(String cluster) throws BlurException, TException {
                 throw new RuntimeException("no impl");
             }
             
@@ -302,6 +302,21 @@ public class BlurControllerServerTest {
                 }
                 Row row = toRow(mutation);
                 map.put(row.id, row);
+            }
+
+            @Override
+            public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+                for (RowMutation mutation : mutations) {
+                    MutationHelper.validateMutation(mutation);
+                }
+                for (RowMutation mutation : mutations) {
+                    mutate(mutation);
+                }                
+            }
+
+            @Override
+            public List<String> shardClusterList() throws BlurException, TException {
+                throw new RuntimeException("no impl");
             }
         };
     }

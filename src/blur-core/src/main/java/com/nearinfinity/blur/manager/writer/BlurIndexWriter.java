@@ -19,6 +19,7 @@ package com.nearinfinity.blur.manager.writer;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
 import java.io.IOException;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -54,7 +55,9 @@ public class BlurIndexWriter extends BlurIndex {
     private BlurIndexCloser _closer;
     private BlurIndexRefresher _refresher;
     private RowIndexWriter _rowIndexWriter;
+    private BlurIndexCommiter _commiter;
     private AtomicBoolean _open = new AtomicBoolean();
+    private String _id = UUID.randomUUID().toString();
     
     public void init() throws IOException {
         _sync = watchSync(_directory);
@@ -67,6 +70,7 @@ public class BlurIndexWriter extends BlurIndex {
         _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
         _open.set(true);
         _refresher.register(this);
+        _commiter.addWriter(_id, _writer);
     }
     
     @Override
@@ -103,6 +107,7 @@ public class BlurIndexWriter extends BlurIndex {
     
     @Override
     public void close() throws IOException {
+        _commiter.remove(_id);
         _open.set(false);
         _refresher.unregister(this);
         _writer.close();
@@ -229,6 +234,10 @@ public class BlurIndexWriter extends BlurIndex {
 
     public void setRefresher(BlurIndexRefresher refresher) {
         _refresher = refresher;
+    }
+
+    public void setCommiter(BlurIndexCommiter commiter) {
+        _commiter = commiter;
     }
 
 }

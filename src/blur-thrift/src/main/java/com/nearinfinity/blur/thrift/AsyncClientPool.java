@@ -28,7 +28,7 @@ public class AsyncClientPool {
     public static final Log LOG = LogFactory.getLog(AsyncClientPool.class);
     
     public static final int DEFAULT_MAX_CONNECTIONS_PER_HOST = 5;
-    public static final int DEFAULT_CONNECTION_TIMEOUT = 0;
+    public static final int DEFAULT_CONNECTION_TIMEOUT = 60000;
     
     private int _maxConnectionsPerHost;
     private long _timeout;
@@ -41,7 +41,7 @@ public class AsyncClientPool {
     private TAsyncClientManager _clientManager;
     
     public AsyncClientPool() throws IOException {
-        this(DEFAULT_MAX_CONNECTIONS_PER_HOST, DEFAULT_MAX_CONNECTIONS_PER_HOST);
+        this(DEFAULT_MAX_CONNECTIONS_PER_HOST, DEFAULT_CONNECTION_TIMEOUT);
     }
     
     public AsyncClientPool(int maxConnectionsPerHost, int connectionTimeout) throws IOException {

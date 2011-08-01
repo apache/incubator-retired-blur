@@ -44,6 +44,7 @@ import org.junit.Test;
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
+import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
@@ -66,6 +67,7 @@ public class IndexManagerTest {
     private LocalIndexServer server;
     private IndexManager indexManager;
     private BlurIndexRefresher refresher;
+    private BlurIndexCommiter commiter;
 
     @Before
     public void setUp() throws BlurException, IOException {
@@ -74,12 +76,16 @@ public class IndexManagerTest {
         new File(new File(file, TABLE), SHARD_NAME).mkdirs();
         refresher = new BlurIndexRefresher();
         refresher.init();
+        commiter = new BlurIndexCommiter();
+        commiter.init();
         server = new LocalIndexServer(file);
         server.setRefresher(refresher);
+        server.setCommiter(commiter);
         
         indexManager = new IndexManager();
         indexManager.setStatusCleanupTimerDelay(1000);
         indexManager.setIndexServer(server);
+        indexManager.setThreadCount(1);
         indexManager.init();
         
         setupData();
@@ -87,6 +93,7 @@ public class IndexManagerTest {
     
     @After
     public void teardown() {
+        commiter.close();
         refresher.close();
         indexManager.close();
     }

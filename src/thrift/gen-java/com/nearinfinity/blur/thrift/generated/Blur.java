@@ -24,7 +24,9 @@ public class Blur {
 
   public interface Iface {
 
-    public List<String> shardServerList() throws BlurException, org.apache.thrift.TException;
+    public List<String> shardClusterList() throws BlurException, org.apache.thrift.TException;
+
+    public List<String> shardServerList(String cluster) throws BlurException, org.apache.thrift.TException;
 
     public List<String> controllerServerList() throws BlurException, org.apache.thrift.TException;
 
@@ -52,6 +54,8 @@ public class Blur {
 
     public void mutate(RowMutation mutation) throws BlurException, org.apache.thrift.TException;
 
+    public void mutateBatch(List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException;
+
     public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException;
 
     public void enableTable(String table) throws BlurException, org.apache.thrift.TException;
@@ -64,7 +68,9 @@ public class Blur {
 
   public interface AsyncIface {
 
-    public void shardServerList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.shardServerList_call> resultHandler) throws org.apache.thrift.TException;
+    public void shardClusterList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.shardClusterList_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void shardServerList(String cluster, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.shardServerList_call> resultHandler) throws org.apache.thrift.TException;
 
     public void controllerServerList(org.apache.thrift.async.AsyncMethodCallback<AsyncClient.controllerServerList_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -91,6 +97,8 @@ public class Blur {
     public void fetchRow(String table, Selector selector, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.fetchRow_call> resultHandler) throws org.apache.thrift.TException;
 
     public void mutate(RowMutation mutation, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutate_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void mutateBatch(List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutateBatch_call> resultHandler) throws org.apache.thrift.TException;
 
     public void createTable(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createTable_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -139,16 +147,55 @@ public class Blur {
       return this.oprot_;
     }
 
-    public List<String> shardServerList() throws BlurException, org.apache.thrift.TException
+    public List<String> shardClusterList() throws BlurException, org.apache.thrift.TException
     {
-      send_shardServerList();
+      send_shardClusterList();
+      return recv_shardClusterList();
+    }
+
+    public void send_shardClusterList() throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardClusterList", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      shardClusterList_args args = new shardClusterList_args();
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public List<String> recv_shardClusterList() throws BlurException, org.apache.thrift.TException
+    {
+      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
+        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "shardClusterList failed: out of sequence response");
+      }
+      shardClusterList_result result = new shardClusterList_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "shardClusterList failed: unknown result");
+    }
+
+    public List<String> shardServerList(String cluster) throws BlurException, org.apache.thrift.TException
+    {
+      send_shardServerList(cluster);
       return recv_shardServerList();
     }
 
-    public void send_shardServerList() throws org.apache.thrift.TException
+    public void send_shardServerList(String cluster) throws org.apache.thrift.TException
     {
       oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardServerList", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
       shardServerList_args args = new shardServerList_args();
+      args.setCluster(cluster);
       args.write(oprot_);
       oprot_.writeMessageEnd();
       oprot_.getTransport().flush();
@@ -686,6 +733,42 @@ public class Blur {
       return;
     }
 
+    public void mutateBatch(List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException
+    {
+      send_mutateBatch(mutations);
+      recv_mutateBatch();
+    }
+
+    public void send_mutateBatch(List<RowMutation> mutations) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateBatch", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      mutateBatch_args args = new mutateBatch_args();
+      args.setMutations(mutations);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_mutateBatch() throws BlurException, org.apache.thrift.TException
+    {
+      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
+        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "mutateBatch failed: out of sequence response");
+      }
+      mutateBatch_result result = new mutateBatch_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      return;
+    }
+
     public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException
     {
       send_createTable(table, tableDescriptor);
@@ -850,21 +933,53 @@ public class Blur {
       super(protocolFactory, clientManager, transport);
     }
 
-    public void shardServerList(org.apache.thrift.async.AsyncMethodCallback<shardServerList_call> resultHandler) throws org.apache.thrift.TException {
+    public void shardClusterList(org.apache.thrift.async.AsyncMethodCallback<shardClusterList_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      shardServerList_call method_call = new shardServerList_call(resultHandler, this, protocolFactory, transport);
+      shardClusterList_call method_call = new shardClusterList_call(resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class shardClusterList_call extends org.apache.thrift.async.TAsyncMethodCall {
+      public shardClusterList_call(org.apache.thrift.async.AsyncMethodCallback<shardClusterList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardClusterList", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        shardClusterList_args args = new shardClusterList_args();
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<String> getResult() throws BlurException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_shardClusterList();
+      }
+    }
+
+    public void shardServerList(String cluster, org.apache.thrift.async.AsyncMethodCallback<shardServerList_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      shardServerList_call method_call = new shardServerList_call(cluster, resultHandler, this, protocolFactory, transport);
       this.currentMethod = method_call;
       manager.call(method_call);
     }
 
     public static class shardServerList_call extends org.apache.thrift.async.TAsyncMethodCall {
-      public shardServerList_call(org.apache.thrift.async.AsyncMethodCallback<shardServerList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      private String cluster;
+      public shardServerList_call(String cluster, org.apache.thrift.async.AsyncMethodCallback<shardServerList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
+        this.cluster = cluster;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardServerList", org.apache.thrift.protocol.TMessageType.CALL, 0));
         shardServerList_args args = new shardServerList_args();
+        args.setCluster(cluster);
         args.write(prot);
         prot.writeMessageEnd();
       }
@@ -1319,6 +1434,38 @@ public class Blur {
       }
     }
 
+    public void mutateBatch(List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<mutateBatch_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      mutateBatch_call method_call = new mutateBatch_call(mutations, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class mutateBatch_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private List<RowMutation> mutations;
+      public mutateBatch_call(List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<mutateBatch_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.mutations = mutations;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateBatch", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        mutateBatch_args args = new mutateBatch_args();
+        args.setMutations(mutations);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_mutateBatch();
+      }
+    }
+
     public void createTable(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       createTable_call method_call = new createTable_call(table, tableDescriptor, resultHandler, this, protocolFactory, transport);
@@ -1460,6 +1607,7 @@ public class Blur {
     public Processor(Iface iface)
     {
       iface_ = iface;
+      processMap_.put("shardClusterList", new shardClusterList());
       processMap_.put("shardServerList", new shardServerList());
       processMap_.put("controllerServerList", new controllerServerList());
       processMap_.put("shardServerLayout", new shardServerLayout());
@@ -1474,6 +1622,7 @@ public class Blur {
       processMap_.put("recordFrequency", new recordFrequency());
       processMap_.put("fetchRow", new fetchRow());
       processMap_.put("mutate", new mutate());
+      processMap_.put("mutateBatch", new mutateBatch());
       processMap_.put("createTable", new createTable());
       processMap_.put("enableTable", new enableTable());
       processMap_.put("disableTable", new disableTable());
@@ -1505,6 +1654,44 @@ public class Blur {
       return true;
     }
 
+    private class shardClusterList implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        shardClusterList_args args = new shardClusterList_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardClusterList", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        shardClusterList_result result = new shardClusterList_result();
+        try {
+          result.success = iface_.shardClusterList();
+        } catch (BlurException ex) {
+          result.ex = ex;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing shardClusterList", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing shardClusterList");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardClusterList", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("shardClusterList", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class shardServerList implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
@@ -1523,7 +1710,7 @@ public class Blur {
         iprot.readMessageEnd();
         shardServerList_result result = new shardServerList_result();
         try {
-          result.success = iface_.shardServerList();
+          result.success = iface_.shardServerList(args.cluster);
         } catch (BlurException ex) {
           result.ex = ex;
         } catch (Throwable th) {
@@ -2038,6 +2225,44 @@ public class Blur {
 
     }
 
+    private class mutateBatch implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        mutateBatch_args args = new mutateBatch_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateBatch", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        mutateBatch_result result = new mutateBatch_result();
+        try {
+          iface_.mutateBatch(args.mutations);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        } catch (Throwable th) {
+          LOGGER.error("Internal error processing mutateBatch", th);
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, "Internal error processing mutateBatch");
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateBatch", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("mutateBatch", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
     private class createTable implements ProcessFunction {
       public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
       {
@@ -2192,8 +2417,8 @@ public class Blur {
 
   }
 
-  public static class shardServerList_args implements org.apache.thrift.TBase<shardServerList_args, shardServerList_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("shardServerList_args");
+  public static class shardClusterList_args implements org.apache.thrift.TBase<shardClusterList_args, shardClusterList_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("shardClusterList_args");
 
 
 
@@ -2256,20 +2481,20 @@ public class Blur {
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(shardServerList_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(shardClusterList_args.class, metaDataMap);
     }
 
-    public shardServerList_args() {
+    public shardClusterList_args() {
     }
 
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public shardServerList_args(shardServerList_args other) {
+    public shardClusterList_args(shardClusterList_args other) {
     }
 
-    public shardServerList_args deepCopy() {
-      return new shardServerList_args(this);
+    public shardClusterList_args deepCopy() {
+      return new shardClusterList_args(this);
     }
 
     @Override
@@ -2302,12 +2527,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof shardServerList_args)
-        return this.equals((shardServerList_args)that);
+      if (that instanceof shardClusterList_args)
+        return this.equals((shardClusterList_args)that);
       return false;
     }
 
-    public boolean equals(shardServerList_args that) {
+    public boolean equals(shardClusterList_args that) {
       if (that == null)
         return false;
 
@@ -2319,13 +2544,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(shardServerList_args other) {
+    public int compareTo(shardClusterList_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      shardServerList_args typedOther = (shardServerList_args)other;
+      shardClusterList_args typedOther = (shardClusterList_args)other;
 
       return 0;
     }
@@ -2365,9 +2590,728 @@ public class Blur {
 
     @Override
     public String toString() {
+      StringBuilder sb = new StringBuilder("shardClusterList_args(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class shardClusterList_result implements org.apache.thrift.TBase<shardClusterList_result, shardClusterList_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("shardClusterList_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public List<String> success;
+    public BlurException ex;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(shardClusterList_result.class, metaDataMap);
+    }
+
+    public shardClusterList_result() {
+    }
+
+    public shardClusterList_result(
+      List<String> success,
+      BlurException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shardClusterList_result(shardClusterList_result other) {
+      if (other.isSetSuccess()) {
+        List<String> __this__success = new ArrayList<String>();
+        for (String other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public shardClusterList_result deepCopy() {
+      return new shardClusterList_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<String> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(String elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<String>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<String> getSuccess() {
+      return this.success;
+    }
+
+    public shardClusterList_result setSuccess(List<String> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public shardClusterList_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<String>)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shardClusterList_result)
+        return this.equals((shardClusterList_result)that);
+      return false;
+    }
+
+    public boolean equals(shardClusterList_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shardClusterList_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shardClusterList_result typedOther = (shardClusterList_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list75 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list75.size);
+                for (int _i76 = 0; _i76 < _list75.size; ++_i76)
+                {
+                  String _elem77;
+                  _elem77 = iprot.readString();
+                  this.success.add(_elem77);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // EX
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.ex = new BlurException();
+              this.ex.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
+          for (String _iter78 : this.success)
+          {
+            oprot.writeString(_iter78);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("shardClusterList_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class shardServerList_args implements org.apache.thrift.TBase<shardServerList_args, shardServerList_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("shardServerList_args");
+
+    private static final org.apache.thrift.protocol.TField CLUSTER_FIELD_DESC = new org.apache.thrift.protocol.TField("cluster", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    public String cluster;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      CLUSTER((short)1, "cluster");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // CLUSTER
+            return CLUSTER;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.CLUSTER, new org.apache.thrift.meta_data.FieldMetaData("cluster", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(shardServerList_args.class, metaDataMap);
+    }
+
+    public shardServerList_args() {
+    }
+
+    public shardServerList_args(
+      String cluster)
+    {
+      this();
+      this.cluster = cluster;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public shardServerList_args(shardServerList_args other) {
+      if (other.isSetCluster()) {
+        this.cluster = other.cluster;
+      }
+    }
+
+    public shardServerList_args deepCopy() {
+      return new shardServerList_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.cluster = null;
+    }
+
+    public String getCluster() {
+      return this.cluster;
+    }
+
+    public shardServerList_args setCluster(String cluster) {
+      this.cluster = cluster;
+      return this;
+    }
+
+    public void unsetCluster() {
+      this.cluster = null;
+    }
+
+    /** Returns true if field cluster is set (has been assigned a value) and false otherwise */
+    public boolean isSetCluster() {
+      return this.cluster != null;
+    }
+
+    public void setClusterIsSet(boolean value) {
+      if (!value) {
+        this.cluster = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case CLUSTER:
+        if (value == null) {
+          unsetCluster();
+        } else {
+          setCluster((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case CLUSTER:
+        return getCluster();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case CLUSTER:
+        return isSetCluster();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof shardServerList_args)
+        return this.equals((shardServerList_args)that);
+      return false;
+    }
+
+    public boolean equals(shardServerList_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_cluster = true && this.isSetCluster();
+      boolean that_present_cluster = true && that.isSetCluster();
+      if (this_present_cluster || that_present_cluster) {
+        if (!(this_present_cluster && that_present_cluster))
+          return false;
+        if (!this.cluster.equals(that.cluster))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(shardServerList_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      shardServerList_args typedOther = (shardServerList_args)other;
+
+      lastComparison = Boolean.valueOf(isSetCluster()).compareTo(typedOther.isSetCluster());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetCluster()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cluster, typedOther.cluster);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // CLUSTER
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.cluster = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.cluster != null) {
+        oprot.writeFieldBegin(CLUSTER_FIELD_DESC);
+        oprot.writeString(this.cluster);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
       StringBuilder sb = new StringBuilder("shardServerList_args(");
       boolean first = true;
 
+      sb.append("cluster:");
+      if (this.cluster == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.cluster);
+      }
+      first = false;
       sb.append(")");
       return sb.toString();
     }
@@ -2714,13 +3658,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list75 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list75.size);
-                for (int _i76 = 0; _i76 < _list75.size; ++_i76)
+                org.apache.thrift.protocol.TList _list79 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list79.size);
+                for (int _i80 = 0; _i80 < _list79.size; ++_i80)
                 {
-                  String _elem77;
-                  _elem77 = iprot.readString();
-                  this.success.add(_elem77);
+                  String _elem81;
+                  _elem81 = iprot.readString();
+                  this.success.add(_elem81);
                 }
                 iprot.readListEnd();
               }
@@ -2754,9 +3698,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter78 : this.success)
+          for (String _iter82 : this.success)
           {
-            oprot.writeString(_iter78);
+            oprot.writeString(_iter82);
           }
           oprot.writeListEnd();
         }
@@ -3338,13 +4282,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list79 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list79.size);
-                for (int _i80 = 0; _i80 < _list79.size; ++_i80)
+                org.apache.thrift.protocol.TList _list83 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list83.size);
+                for (int _i84 = 0; _i84 < _list83.size; ++_i84)
                 {
-                  String _elem81;
-                  _elem81 = iprot.readString();
-                  this.success.add(_elem81);
+                  String _elem85;
+                  _elem85 = iprot.readString();
+                  this.success.add(_elem85);
                 }
                 iprot.readListEnd();
               }
@@ -3378,9 +4322,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter82 : this.success)
+          for (String _iter86 : this.success)
           {
-            oprot.writeString(_iter82);
+            oprot.writeString(_iter86);
           }
           oprot.writeListEnd();
         }
@@ -4062,15 +5006,15 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map83 = iprot.readMapBegin();
-                this.success = new HashMap<String,String>(2*_map83.size);
-                for (int _i84 = 0; _i84 < _map83.size; ++_i84)
+                org.apache.thrift.protocol.TMap _map87 = iprot.readMapBegin();
+                this.success = new HashMap<String,String>(2*_map87.size);
+                for (int _i88 = 0; _i88 < _map87.size; ++_i88)
                 {
-                  String _key85;
-                  String _val86;
-                  _key85 = iprot.readString();
-                  _val86 = iprot.readString();
-                  this.success.put(_key85, _val86);
+                  String _key89;
+                  String _val90;
+                  _key89 = iprot.readString();
+                  _val90 = iprot.readString();
+                  this.success.put(_key89, _val90);
                 }
                 iprot.readMapEnd();
               }
@@ -4104,10 +5048,10 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (Map.Entry<String, String> _iter87 : this.success.entrySet())
+          for (Map.Entry<String, String> _iter91 : this.success.entrySet())
           {
-            oprot.writeString(_iter87.getKey());
-            oprot.writeString(_iter87.getValue());
+            oprot.writeString(_iter91.getKey());
+            oprot.writeString(_iter91.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -4689,13 +5633,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list88 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list88.size);
-                for (int _i89 = 0; _i89 < _list88.size; ++_i89)
+                org.apache.thrift.protocol.TList _list92 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list92.size);
+                for (int _i93 = 0; _i93 < _list92.size; ++_i93)
                 {
-                  String _elem90;
-                  _elem90 = iprot.readString();
-                  this.success.add(_elem90);
+                  String _elem94;
+                  _elem94 = iprot.readString();
+                  this.success.add(_elem94);
                 }
                 iprot.readListEnd();
               }
@@ -4729,9 +5673,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter91 : this.success)
+          for (String _iter95 : this.success)
           {
-            oprot.writeString(_iter91);
+            oprot.writeString(_iter95);
           }
           oprot.writeListEnd();
         }
@@ -7547,14 +8491,14 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list92 = iprot.readListBegin();
-                this.success = new ArrayList<BlurQueryStatus>(_list92.size);
-                for (int _i93 = 0; _i93 < _list92.size; ++_i93)
+                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
+                this.success = new ArrayList<BlurQueryStatus>(_list96.size);
+                for (int _i97 = 0; _i97 < _list96.size; ++_i97)
                 {
-                  BlurQueryStatus _elem94;
-                  _elem94 = new BlurQueryStatus();
-                  _elem94.read(iprot);
-                  this.success.add(_elem94);
+                  BlurQueryStatus _elem98;
+                  _elem98 = new BlurQueryStatus();
+                  _elem98.read(iprot);
+                  this.success.add(_elem98);
                 }
                 iprot.readListEnd();
               }
@@ -7588,9 +8532,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.success.size()));
-          for (BlurQueryStatus _iter95 : this.success)
+          for (BlurQueryStatus _iter99 : this.success)
           {
-            _iter95.write(oprot);
+            _iter99.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -9989,13 +10933,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list96 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list96.size);
-                for (int _i97 = 0; _i97 < _list96.size; ++_i97)
+                org.apache.thrift.protocol.TList _list100 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list100.size);
+                for (int _i101 = 0; _i101 < _list100.size; ++_i101)
                 {
-                  String _elem98;
-                  _elem98 = iprot.readString();
-                  this.success.add(_elem98);
+                  String _elem102;
+                  _elem102 = iprot.readString();
+                  this.success.add(_elem102);
                 }
                 iprot.readListEnd();
               }
@@ -10029,9 +10973,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter99 : this.success)
+          for (String _iter103 : this.success)
           {
-            oprot.writeString(_iter99);
+            oprot.writeString(_iter103);
           }
           oprot.writeListEnd();
         }
@@ -12373,6 +13317,638 @@ public class Blur {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("mutate_result(");
+      boolean first = true;
+
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class mutateBatch_args implements org.apache.thrift.TBase<mutateBatch_args, mutateBatch_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mutateBatch_args");
+
+    private static final org.apache.thrift.protocol.TField MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("mutations", org.apache.thrift.protocol.TType.LIST, (short)1);
+
+    public List<RowMutation> mutations;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      MUTATIONS((short)1, "mutations");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // MUTATIONS
+            return MUTATIONS;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.MUTATIONS, new org.apache.thrift.meta_data.FieldMetaData("mutations", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RowMutation.class))));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mutateBatch_args.class, metaDataMap);
+    }
+
+    public mutateBatch_args() {
+    }
+
+    public mutateBatch_args(
+      List<RowMutation> mutations)
+    {
+      this();
+      this.mutations = mutations;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public mutateBatch_args(mutateBatch_args other) {
+      if (other.isSetMutations()) {
+        List<RowMutation> __this__mutations = new ArrayList<RowMutation>();
+        for (RowMutation other_element : other.mutations) {
+          __this__mutations.add(new RowMutation(other_element));
+        }
+        this.mutations = __this__mutations;
+      }
+    }
+
+    public mutateBatch_args deepCopy() {
+      return new mutateBatch_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.mutations = null;
+    }
+
+    public int getMutationsSize() {
+      return (this.mutations == null) ? 0 : this.mutations.size();
+    }
+
+    public java.util.Iterator<RowMutation> getMutationsIterator() {
+      return (this.mutations == null) ? null : this.mutations.iterator();
+    }
+
+    public void addToMutations(RowMutation elem) {
+      if (this.mutations == null) {
+        this.mutations = new ArrayList<RowMutation>();
+      }
+      this.mutations.add(elem);
+    }
+
+    public List<RowMutation> getMutations() {
+      return this.mutations;
+    }
+
+    public mutateBatch_args setMutations(List<RowMutation> mutations) {
+      this.mutations = mutations;
+      return this;
+    }
+
+    public void unsetMutations() {
+      this.mutations = null;
+    }
+
+    /** Returns true if field mutations is set (has been assigned a value) and false otherwise */
+    public boolean isSetMutations() {
+      return this.mutations != null;
+    }
+
+    public void setMutationsIsSet(boolean value) {
+      if (!value) {
+        this.mutations = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case MUTATIONS:
+        if (value == null) {
+          unsetMutations();
+        } else {
+          setMutations((List<RowMutation>)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case MUTATIONS:
+        return getMutations();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case MUTATIONS:
+        return isSetMutations();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof mutateBatch_args)
+        return this.equals((mutateBatch_args)that);
+      return false;
+    }
+
+    public boolean equals(mutateBatch_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_mutations = true && this.isSetMutations();
+      boolean that_present_mutations = true && that.isSetMutations();
+      if (this_present_mutations || that_present_mutations) {
+        if (!(this_present_mutations && that_present_mutations))
+          return false;
+        if (!this.mutations.equals(that.mutations))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(mutateBatch_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      mutateBatch_args typedOther = (mutateBatch_args)other;
+
+      lastComparison = Boolean.valueOf(isSetMutations()).compareTo(typedOther.isSetMutations());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetMutations()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.mutations, typedOther.mutations);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // MUTATIONS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list104 = iprot.readListBegin();
+                this.mutations = new ArrayList<RowMutation>(_list104.size);
+                for (int _i105 = 0; _i105 < _list104.size; ++_i105)
+                {
+                  RowMutation _elem106;
+                  _elem106 = new RowMutation();
+                  _elem106.read(iprot);
+                  this.mutations.add(_elem106);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.mutations != null) {
+        oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.mutations.size()));
+          for (RowMutation _iter107 : this.mutations)
+          {
+            _iter107.write(oprot);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("mutateBatch_args(");
+      boolean first = true;
+
+      sb.append("mutations:");
+      if (this.mutations == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.mutations);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class mutateBatch_result implements org.apache.thrift.TBase<mutateBatch_result, mutateBatch_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("mutateBatch_result");
+
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public BlurException ex;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(mutateBatch_result.class, metaDataMap);
+    }
+
+    public mutateBatch_result() {
+    }
+
+    public mutateBatch_result(
+      BlurException ex)
+    {
+      this();
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public mutateBatch_result(mutateBatch_result other) {
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public mutateBatch_result deepCopy() {
+      return new mutateBatch_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.ex = null;
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public mutateBatch_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof mutateBatch_result)
+        return this.equals((mutateBatch_result)that);
+      return false;
+    }
+
+    public boolean equals(mutateBatch_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(mutateBatch_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      mutateBatch_result typedOther = (mutateBatch_result)other;
+
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // EX
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.ex = new BlurException();
+              this.ex.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("mutateBatch_result(");
       boolean first = true;
 
       sb.append("ex:");

@@ -40,6 +40,7 @@ public class BlurShardServerTest {
         IndexServer indexServer = getIndexServer();
         IndexManager indexManager = getIndexManager();
         indexManager.setIndexServer(indexServer);
+        indexManager.setThreadCount(1);
         indexManager.init();
         blurShardServer = new BlurShardServer();
         blurShardServer.setIndexManager(indexManager);

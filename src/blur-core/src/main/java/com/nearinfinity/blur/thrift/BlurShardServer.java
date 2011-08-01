@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.thrift;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -41,6 +42,7 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurShardServer extends ExecutionContextIface {
@@ -316,8 +318,11 @@ public class BlurShardServer extends ExecutionContextIface {
     }
 
     @Override
-    public List<String> shardServerList(ExecutionContext context) throws BlurException, TException {
-        return indexServer.getOnlineShardServers();
+    public List<String> shardServerList(ExecutionContext context, String cluster) throws BlurException, TException {
+        if (cluster.equals(BlurConstants.BLUR_CLUSTER)) {
+            return indexServer.getOnlineShardServers();
+        }
+        throw new BException("Cluster [" + cluster + "] is not valid.");
     }
 
     @Override
@@ -335,5 +340,20 @@ public class BlurShardServer extends ExecutionContextIface {
         } finally {
             context.recordTime(Metrics.MUTATE, start, mutation);
         }
+    }
+
+    @Override
+    public void mutateBatch(ExecutionContext context, List<RowMutation> mutations) throws BlurException, TException {
+        for (RowMutation mutation : mutations) {
+            MutationHelper.validateMutation(mutation);
+        }
+        for (RowMutation mutation : mutations) {
+            mutate(mutation);
+        }
+    }
+
+    @Override
+    public List<String> shardClusterList(ExecutionContext context) throws BlurException, TException {
+        return Arrays.asList(BlurConstants.BLUR_CLUSTER);
     }
 }

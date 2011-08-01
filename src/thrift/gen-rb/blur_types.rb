@@ -403,6 +403,7 @@ module Blur
       TABLEURI = 4
       COMPRESSIONCLASS = 5
       COMPRESSIONBLOCKSIZE = 6
+      CLUSTER = 7
 
       FIELDS = {
         ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled'},
@@ -410,7 +411,8 @@ module Blur
         SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount'},
         TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'},
         COMPRESSIONCLASS => {:type => ::Thrift::Types::STRING, :name => 'compressionClass'},
-        COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize'}
+        COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize'},
+        CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
       }
 
       def struct_fields; FIELDS; end

@@ -45,6 +45,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
+import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.lucene.compressed.CompressionCodec;
@@ -59,8 +60,8 @@ public class LocalIndexServer extends AbstractIndexServer {
     private BlurIndexCloser _closer;
     private int _blockSize = 65536;
     private CompressionCodec _compression = new DeflaterCompressionCodec();
-
     private BlurIndexRefresher _refresher;
+    private BlurIndexCommiter _commiter;
 
     public LocalIndexServer(File file) {
         _localDir = file;
@@ -158,6 +159,7 @@ public class LocalIndexServer extends AbstractIndexServer {
         writer.setAnalyzer(getAnalyzer(table));
         writer.setCloser(_closer);
         writer.setRefresher(_refresher);
+        writer.setCommiter(_commiter);
         writer.init();
         return writer;
     }
@@ -259,5 +261,9 @@ public class LocalIndexServer extends AbstractIndexServer {
 	
 	public void setRefresher(BlurIndexRefresher refresher) {
         _refresher = refresher;
+    }
+
+    public void setCommiter(BlurIndexCommiter commiter) {
+        _commiter = commiter;
     }
 }

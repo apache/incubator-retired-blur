@@ -1,5 +1,9 @@
 BlurAdmin::Application.routes.draw do
-  resources :users, :user_sessions
+  resources :user_sessions
+
+  resources :users do
+    match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference
+  end
 
   resource :search, :controller => 'search'
 
@@ -31,8 +35,6 @@ BlurAdmin::Application.routes.draw do
   match 'search/save/' => 'search#save', :via => :post
   match 'search/:search_id' => 'search#update', :via => :put
   match 'reload/:blur_table' => 'search#reload'
-  match 'preference/save' => 'preference#save', :via => :post
-  match 'preference/filter' => 'preference#save_filters', :via => :post
 
   resources :hdfs
   match 'hdfs/:file' => 'hdfs#files', :via => :post

@@ -1,8 +1,9 @@
 $(document).ready ->
   #method to persist the preference to the DB
   save_pref = () ->    
-    $.ajax '/preference/save/',
-      type: 'POST',
+    user_id = $('#show_user_wrapper').attr('data-user-id')
+    $.ajax "/users/#{user_id}/preferences/column",
+      type: 'PUT',
       data: $('#my-cols').sortable('serialize'),
       success: (data) ->
         

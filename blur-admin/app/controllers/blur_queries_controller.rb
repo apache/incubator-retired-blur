@@ -4,7 +4,7 @@ class BlurQueriesController < ApplicationController
   before_filter :zookeepers, :only => :index
 
   def index
-    @filters = current_user.saved_filters
+    @filters = current_user.filter_preference.value
     filters = {}
     filters['created_at'] = (Time.now - @filters['created_at_time'].to_i.minutes)..Time.now
     @filters.each {|k, v| filters[k] = v unless v == '' or k == 'created_at_time' or k == 'refresh_period'}

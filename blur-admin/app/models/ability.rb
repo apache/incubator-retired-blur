@@ -2,6 +2,7 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
+    can :update, :preferences
 
     if user # logged in
 
@@ -25,7 +26,7 @@ class Ability
         can :files, :hdfs
         can :jstree, :hdfs
 
-        can [:save, :save_filters], :preference
+
 
         # can view everything but query_string on blur_tables:
         attributes = BlurQuery.new.attribute_names

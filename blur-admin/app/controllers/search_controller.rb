@@ -9,14 +9,14 @@ class SearchController < ApplicationController
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
     @blur_table = @blur_tables[0]
-	  @columns = @blur_table.schema &preference_sort if @blur_table
+	  @columns = @blur_table.schema &preference_sort(current_user.column_preference.value) if @blur_table
     @searches = current_user.searches.order("name")
 	end
 
 	#Filter action to help build the tree for column families
   def filters
     @blur_table = BlurTable.find params[:blur_table_id]
-    @columns = @blur_table ? (@blur_table.schema &preference_sort) : []
+    @columns = @blur_table ? (@blur_table.schema &preference_sort(current_user.column_preference.value)) : []
 	  render :partial => 'filters'
   end
 
@@ -91,7 +91,7 @@ class SearchController < ApplicationController
       @schema[family].flatten!
     end
     # finally, sort column families by user preferences, then by alphabetical order
-    @schema = Hash[@schema.sort &preference_sort]
+    @schema = Hash[@schema.sort &preference_sort(current_user.column_preference.value)]
 
     render :template=>'search/create.html.haml', :layout => false
   end
@@ -155,11 +155,11 @@ class SearchController < ApplicationController
     render :nothing => true
   end
   private
-    def preference_sort
+    def preference_sort(preferred_columns)
       lambda do |a, b|
-        if current_user.saved_cols.include? a[0] and !current_user.saved_cols.include? b[0]
+        if preferred_columns.include? a[0] and !preferred_columns.include? b[0]
           -1
-        elsif current_user.saved_cols.include? b[0] and !current_user.saved_cols.include? a[0]
+        elsif preferred_columns.include? b[0] and !preferred_columns.include? a[0]
           1
         else
           a[0] <=> b[0]

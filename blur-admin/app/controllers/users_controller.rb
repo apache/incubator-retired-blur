@@ -10,18 +10,19 @@ class UsersController < ApplicationController
 
   def show
     @tables = BlurTable.all
-    @preferences = current_user.saved_cols
-    @filters = current_user.saved_filters
+    @columns = @user.column_preference.value
+    @filters = @user.filter_preference.value
+
+    puts "*"*80
+    puts @columns
+    puts @filters
     
-    puts @filters.inspect
-    
+    #@choices = BlurTable.all.collect {|table| table.schema.keys}.flatten.uniq 
     @choices = []
     BlurTable.all.each do |table|
       @choices << table.schema.keys
     end
     @choices.flatten!.uniq!
-    
-    puts @preferences.inspect
   end
 
   def new
@@ -56,6 +57,6 @@ class UsersController < ApplicationController
   private
 
   def find_user
-    @user = User.find(params[:id])
+    @user = User.find params[:id]
   end
 end

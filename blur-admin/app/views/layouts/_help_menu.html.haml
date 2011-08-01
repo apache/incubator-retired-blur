@@ -18,8 +18,8 @@
           %ul
             %li This is located in the top right, next to the "logout" button.
             
-.help-section#dashboard
-  %h3 Dashboard Page Help 
+.help-section#zookeepers
+  %h3 Dashboard Help 
   .help-content{ :style =>  !(params[:controller] == 'zookeepers' && params[:action] == 'index') && 'display: none' }
     .head
       The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a different zookeeper and displays information for that zookeeper.
@@ -41,7 +41,7 @@
             %li This warning is a count of the number queries that have been running for more than a minute.
 
 .help-section#environment
-  %h3 Environment Page Help 
+  %h3 Environment Help 
   .help-content{ :style =>  !(params[:controller] == 'zookeepers' && params[:action] == 'show_current') && 'display: none' }
     .head
       The "Environment" page is a zookeeper specific status page.
@@ -51,8 +51,8 @@
         %li The "controllers" box lists each controller with its name, blur version, and status.
         %li The "shards" box lists each shard with its name, blur version, and status.
         
-.help-section#blur_table
-  %h3 BlurTables Page Help 
+.help-section#blur_tables
+  %h3 Blur Tables Help 
   .help-content{ :style =>  params[:controller] != 'blur_tables' && 'display: none' }
     .head
       The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row contains information describing a BlurTable.
@@ -75,8 +75,8 @@
     .head
       The bottom of the table displays the total number of BlurTables in this Zookeeper instance.
       
-.help-section#blur_query
-  %h3 BlurQuery Page Help 
+.help-section#blur_queries
+  %h3 Blur Queries Help 
   .help-content{ :style =>  params[:controller] != 'blur_queries' && 'display: none' }
     .head
       The "Blur Queries" page is a list of recently executed Blur Queries.
@@ -118,7 +118,7 @@
         %li The "More Info" link displays details associated with the executed query. This is only visible to users with the auditor role.
   
 .help-section#search
-  %h3 Search Page Help 
+  %h3 Search Help 
   .help-content{ :style =>  params[:controller] != 'search' && 'display: none' }
     .help_list#saved_help
       .head
@@ -162,16 +162,16 @@
           %li The "Name" field is used to name your saved searches.
  
 .help-section#hdfs
-  %h3 HDFS Page help 
+  %h3 HDFS help 
   .help-content{ :style =>  params[:controller] != 'hdfs' && 'display: none' }
 
 .help-section#admin
-  %h3 Admin Page help 
+  %h3 Admin help 
   .help-content{ :style =>  !(params[:controller] == 'users' && params[:action] == 'index') && 'display: none' }
     .head
       The "Admin Page" contains a list of all the current users registered in the system. Users with the admin role may edit the roles and information for users on this page. It is only visible to users with the admin role.
-.help-section#user
-  %h3 Users Page help 
+.help-section#users
+  %h3 Users help 
   .help-content{ :style =>  !(params[:controller] == 'users' && params[:action] == 'show') && 'display: none' } 
     .head
       The "Column Preferences" section allows the user to choose what column families they want to display first in the results table when they execute a search on the search page.

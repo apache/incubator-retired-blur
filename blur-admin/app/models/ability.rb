@@ -2,7 +2,6 @@ class Ability
   include CanCan::Ability
 
   def initialize(user)
-    can :update, :preferences
 
     if user # logged in
 
@@ -26,17 +25,17 @@ class Ability
         can :files, :hdfs
         can :jstree, :hdfs
 
-
-
         # can view everything but query_string on blur_tables:
-        attributes = BlurQuery.new.attribute_names
-        attributes.delete "query_string"
-        attributes.collect! {|attribute| attribute.to_sym}
+        attributes = BlurQuery.new.attribute_names.collect{|att| att.to_sym}
+        attributes.delete :query_string
         can :index, :blur_queries, attributes
 
-        # view more info o[M `Dr_queries on with everything but query_string
+        # view more info on queries with everything but query_string
         can :more_info, :blur_queries, attributes
         can :refresh, :blur_queries
+
+        # Can modify own filter preferences
+        can :update, :preferences, {:user_id => user.id, :pref_type => 'filter'}
 
         # View hosts and schema on blur_tables
         can :hosts, :blur_tables
@@ -62,6 +61,9 @@ class Ability
       if user.has_role? :searcher
         # search
         can [:show, :filters, :create, :load, :delete, :reload, :save, :update], :search
+
+        # Can modify own column preferences
+        can :update, :preferences, {:user_id => user.id, :pref_type => 'column'}
       end
 
     else  # not logged in

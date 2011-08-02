@@ -56,15 +56,16 @@ $(document).ready ->
             #if it is not the special case select by the controller as the id
             correct_child = $('.help-section#' + $('#help-menu').data().controller).children('.help-content')
           correct_child.toggle()
-    #after the help menu is built show the dialog
-    $('#help-menu').dialog
-      title: "Help Menu",
-      maxHeight: 1000,
-      width: 710,
-      modal: false,
-      resizable: false,
-      draggable: true,
-      position: 'top'
+
+          #after the help menu is built show the dialog
+          $('#help-menu').dialog
+            title: "Help Menu",
+            maxHeight: 1000,
+            width: 710,
+            modal: true,
+            resizable: false,
+            draggable: true,
+            position: 'top'
       
   $('.help-section').live 'click', ->
     $(this).children('.help-content').toggle('fast')

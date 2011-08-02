@@ -33,7 +33,7 @@ BlurAdmin::Application.routes.draw do
   match 'reload/:blur_table' => 'search#reload'
   match 'preference/save' => 'preference#save', :via => :post
   match 'preference/filter' => 'preference#save_filters', :via => :post
-  match 'help' => 'application#help'
+  match 'help/:tab' => 'application#help'
   
   
   resources :hdfs

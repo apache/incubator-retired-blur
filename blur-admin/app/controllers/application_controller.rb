@@ -23,6 +23,7 @@ class ApplicationController < ActionController::Base
   end
   
   def help
+    @tab = params['tab']
     respond_to do |format|
       format.html {render :partial => 'layouts/help_menu' }
     end

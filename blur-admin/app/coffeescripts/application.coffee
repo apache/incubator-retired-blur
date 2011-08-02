@@ -40,32 +40,22 @@ $(document).ready ->
   
   # Initialize Help
   $('#page-help').click ()->
-    if $('#help-menu').has('div').length == 0
-      #ajax request for help
-      $.ajax '/help',
-        type: 'GET',
-        success: (data) ->
-          #load the html into the help div and display
-          $('#help-menu').html(data)
-          #if logic for controllers that are shared by different pages have to select by action
-          if $('#help-menu').data().controller == "zookeepers" && $('#help-menu').data().action == "show_current"
-            correct_child = $('.help-section#environment').children('.help-content')
-          else if $('#help-menu').data().controller == "users" && $('#help-menu').data().action == "index"
-            correct_child = $('.help-section#admin').children('.help-content')
-          else
-            #if it is not the special case select by the controller as the id
-            correct_child = $('.help-section#' + $('#help-menu').data().controller).children('.help-content')
-          correct_child.toggle()
-
-          #after the help menu is built show the dialog
-          $('#help-menu').dialog
-            title: "Help Menu",
-            maxHeight: 1000,
-            width: 710,
-            modal: true,
-            resizable: false,
-            draggable: true,
-            position: 'top'
+    url = window.location.pathname
+    tab
+    if url == '/'
+      tab = "dashboard"
+    else if url.substring(1) == 'zookeeper'
+      tab = "environment"
+    else if url.substring(1) == 'users'
+      tab = "admin"
+    else 
+      pre_tab = url.substring 1
+      if pre_tab.indexOf('/') != -1
+        tab = pre_tab.substring 0, pre_tab.indexOf '/'
+      else
+        tab = pre_tab
+        
+    help_win = window.open "/help/" + tab,"Help Menu","menubar=0,resizable=0,width=500,height=800"
       
   $('.help-section').live 'click', ->
     $(this).children('.help-content').toggle('fast')

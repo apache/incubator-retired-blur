@@ -72,12 +72,20 @@ body {
 .help-section{
   cursor: pointer;
   margin: 2px;
-  padding: 5px;
+  padding: 8px;
+  padding-left: 10px;
   background: #EEE;
   @include border-radius;
   @include border;
-  h3{
-    margin: 0px
+  .help-label{
+    margin: 0px;
+    margin-bottom: 5px;
+  }
+  .head{
+    margin-bottom: 2px;
+  }
+  ul{
+    margin-top: 3px;
   }
 }
 

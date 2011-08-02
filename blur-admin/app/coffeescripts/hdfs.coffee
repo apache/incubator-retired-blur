@@ -2,11 +2,15 @@ $(document).ready ->
   # method to initialize the jstree
   setup_file_tree = () ->
     $('.file_layout').jstree
-      plugins: ["themes", "html_data", "sort", "ui"],
+      plugins: ["themes", "html_data", "sort", "ui", "search" ],
       themes:
         theme: 'apple',
     $('.file_layout').bind "loaded.jstree", ->
       $('#hdfs_files').show()
+    $('#search_button').live "click", ->
+      $('.file_layout').jstree "search", $('#search_string').val()
+    $('.file_layout').bind "search.jstree", (e, data) ->
+      alert "Found " + data.rslt.nodes.length + " nodes matching '" + data.rslt.str + "'."
 
   setup_file_tree()
 
@@ -27,7 +31,9 @@ $(document).ready ->
     info = []
     $.each children, ->
       info.push this.id
-    $.ajax '/hdfs/'+ id + '/' + info ,
+    if info.length == 0
+      info = 'none'
+    $.ajax '/hdfs/' + info ,
       type: 'POST',
       success: (data) ->
         $('#data_container_display').html data
@@ -35,6 +41,7 @@ $(document).ready ->
         $.each($("#file_tiles > button" ), ->
           $('#file_tiles #' + this.id).button()
         )
+    $('#location_string').text id
 
   $('#view_options').live 'change', ->
     view = $('#view_options').find(':checked').attr('value')

@@ -5,8 +5,6 @@
 #search_page_wrapper
   = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
     #filter_section
-      #search_help
-        %a#help-link{:href=>'javascript:void(0)'} Help
       .tab#saved
         .header#saved
           %label{:id => 'saved'} Saved Searches
@@ -65,8 +63,6 @@
 
 #dialog-confirm{:title => "Delete this saved query?", :style => "display:none"}
   %p This will permanently delete the selected saved query. Do you wish to continue?
-#dialog-help{:title => "Search Help", :style=> "display:none"}
-  = render :partial => 'help'
 #update-conflict{:title => "Update Error", :style=> "display:none"}
   %ul
     An error occurred while trying to update the saved search, either:

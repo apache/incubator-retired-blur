@@ -64,6 +64,31 @@ body {
   background-color: $bg-blue-color;
 }
 
+//help dialog styles
+#page-help{
+  text-decoration: none;
+}
+
+.help-section{
+  cursor: pointer;
+  margin: 2px;
+  padding: 8px;
+  padding-left: 10px;
+  background: #EEE;
+  @include border-radius;
+  @include border;
+  .help-label{
+    margin: 0px;
+    margin-bottom: 5px;
+  }
+  .head{
+    margin-bottom: 2px;
+  }
+  ul{
+    margin-top: 3px;
+  }
+}
+
 h2 { font-size: 200%; }
 
 .ui-dialog { min-width: 300px; }

@@ -21,6 +21,13 @@ class ApplicationController < ActionController::Base
   def current_user
     @current_user ||= current_user_session && current_user_session.user
   end
+  
+  def help
+    @tab = params['tab']
+    respond_to do |format|
+      format.html {render :partial => 'layouts/help_menu' }
+    end
+  end
 
   private
 

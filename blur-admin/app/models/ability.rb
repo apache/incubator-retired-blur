@@ -18,12 +18,13 @@ class Ability
 
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs]
-        can :show, :zookeepers
+        can :show, [:zookeepers, :help]
         can :show_current, :zookeepers
         can :make_current, :zookeepers
         can :dashboard, :zookeepers
         can :files, :hdfs
         can :jstree, :hdfs
+        can :help, :application
 
         # can view everything but query_string on blur_tables:
         attributes = BlurQuery.new.attribute_names.collect{|att| att.to_sym}

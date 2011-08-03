@@ -1,3 +1,4 @@
+require 'ganapati'
 class HdfsThriftClient
   def self.client(hdfs_id)
     #@client = Ganapati::Client.new(HDFS_THRIFT[:host], HDFS_THRIFT[:port]) unless @client

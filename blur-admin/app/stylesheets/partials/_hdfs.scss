@@ -1,5 +1,5 @@
 #hdfs_wrapper{
-  margin-top: 2em;
+  //margin-top: 2em;
   padding-bottom: 165px;
   @include full;
   @include standard-font;
@@ -7,6 +7,7 @@
   #hdfs_files_layout {
     @include columns(4,$total-cols);
     overflow: auto;
+    margin-top: 1em;
   }
 
   #data_wrapper {
@@ -18,19 +19,16 @@
       height: 100%;
       background-color: #eee;
       position: fixed;
+      z-index: -5;
     }
 
-    #data_container{
+    #data_container_display {
       @include columns(25,26);
       @include omega(26);
-      #data_container_display {padding-top: 1em; }
-      #toolbar {
-        display: inline-block;
-        padding: 0 5px;
-        .ui-widget{ font-size: 0.9em; }
-      }
     }
   }
+  #data_container_display {padding-top: 1em; }
+
 
   #file_tiles {
     .ui-button {
@@ -42,4 +40,27 @@
 
   .ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
   a:hover { color: #06C; }
+  .jstree-search { color: $base-theme-color; }
+}
+
+#toolbar_wrapper {
+  background: #eee;
+  width: 100%;
+  @include standard-font;
+  #toolbar {
+    @include full;
+    padding: 5px 0;
+    .ui-widget{ font-size: 0.9em; }
+    #location { padding-top: 0.5em; vertical-align: middle; }
+    #location_string, #search_string {
+      max-height: 18px;
+      max-width: 200px;
+      min-height: 18px;
+      min-width: 200px;
+      vertical-align: middle;
+    }
+  }
+  #search { float: right; display: inline-block; }
+  #search_button { vertical-align: top; }
+  .ui-widget { border: none;  }
 }

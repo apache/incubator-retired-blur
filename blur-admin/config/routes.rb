@@ -35,10 +35,10 @@ BlurAdmin::Application.routes.draw do
   match 'search/save/' => 'search#save', :via => :post
   match 'search/:search_id' => 'search#update', :via => :put
   match 'reload/:blur_table' => 'search#reload'
-
+  match 'help/:tab' => 'application#help'
+  
   resources :hdfs
-  match 'hdfs/:file' => 'hdfs#files', :via => :post
-  match 'hdfs/:file/:files' => 'hdfs#files', :via => :post
+  match 'hdfs/:files' => 'hdfs#files', :via => :post
 
   root :to => 'zookeepers#index'
 

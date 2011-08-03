@@ -9,6 +9,8 @@ class UsersController < ApplicationController
   end
 
   def show
+    @column_preference = @user.column_preference
+    @filter_preference = @user.filter_preference
     @columns = @user.column_preference.value
     @filters = @user.filter_preference.value
     @choices = BlurTable.all.collect {|table| table.schema.keys}.flatten.uniq 
@@ -21,7 +23,7 @@ class UsersController < ApplicationController
   def create
     @user = User.new(params[:user])
     if @user.save
-      redirect_to root_path, :notice => "Successfully Created User"
+      redirect_to users_path, :notice => "User Created"
     else
       render 'new'
     end
@@ -32,7 +34,7 @@ class UsersController < ApplicationController
 
   def update
     if @user.update_attributes(params[:user])
-      redirect_to @user, :notice  => "Successfully updated user."
+      redirect_to users_path, :notice  => "User Updated"
     else
       render :action => 'edit'
     end
@@ -40,7 +42,7 @@ class UsersController < ApplicationController
 
   def destroy
     @user.destroy
-    redirect_to users_path, :notice => "Successfully destroyed user."
+    redirect_to users_path, :notice => "User Removed"
   end
 
   private

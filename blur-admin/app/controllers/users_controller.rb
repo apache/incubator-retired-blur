@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
 
   load_and_authorize_resource
+
   before_filter :find_user, :only => [:show, :edit, :update, :destroy, :save]
   skip_before_filter :current_zookeeper, :zookeepers
 
@@ -11,8 +12,6 @@ class UsersController < ApplicationController
   def show
     @column_preference = @user.column_preference
     @filter_preference = @user.filter_preference
-    @columns = @user.column_preference.value
-    @filters = @user.filter_preference.value
     @choices = BlurTable.all.collect {|table| table.schema.keys}.flatten.uniq 
   end
 
@@ -21,9 +20,12 @@ class UsersController < ApplicationController
   end
 
   def create
-    @user = User.new(params[:user])
     if @user.save
-      redirect_to users_path, :notice => "User Created"
+      if can? :index, :users
+        redirect_to users_path, :notice => "User Created"
+      else
+        redirect_to @user, :notice => "User Created"
+      end
     else
       render 'new'
     end
@@ -34,7 +36,11 @@ class UsersController < ApplicationController
 
   def update
     if @user.update_attributes(params[:user])
-      redirect_to users_path, :notice  => "User Updated"
+      if can? :index, :users
+        redirect_to users_path, :notice => "User Updated"
+      else
+        redirect_to @user, :notice => "User Updated"
+      end
     else
       render :action => 'edit'
     end

@@ -89,14 +89,14 @@ Factory.define :user do |t|
   t.sequence (:email)     {|n| "user#{n}@example.com"}
   t.password              "password"
   t.password_confirmation "password"
-  t.roles [:editor, :admin, :reader, :auditor]
+  t.roles [:editor, :admin, :reader, :auditor, :searcher]
 end
 
 #create a valid preference
 Factory.define :preference do |t|
-  t.name      'columns'
-  t.pref_type 'columns'
-  t.value     ['ColumnFamily2'].to_json
+  t.name      'column'
+  t.pref_type 'column'
+  t.value     ['ColumnFamily2']
 end
 
 Factory.define :filter_preference, :parent => :preference do |t|

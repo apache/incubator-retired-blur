@@ -54,13 +54,13 @@ class Ability
       end
 
       if user.has_role? :admin
-        can [:show, :index, :edit, :destroy, :create, :new], :users
+        can [:index, :edit, :destroy, :create, :new], :users
         can :update, :users, User.valid_roles
       end
 
       if user.has_role? :searcher
         # search
-        can [:show, :filters, :create, :load, :delete, :reload, :save, :update], :search
+        can :access, :search
 
         # Can modify own column preferences
         can :update, :preferences, {:user_id => user.id, :pref_type => 'column'}

@@ -9,20 +9,9 @@ class UsersController < ApplicationController
   end
 
   def show
-    @tables = BlurTable.all
     @columns = @user.column_preference.value
     @filters = @user.filter_preference.value
-
-    puts "*"*80
-    puts @columns
-    puts @filters
-    
-    #@choices = BlurTable.all.collect {|table| table.schema.keys}.flatten.uniq 
-    @choices = []
-    BlurTable.all.each do |table|
-      @choices << table.schema.keys
-    end
-    @choices.flatten!.uniq!
+    @choices = BlurTable.all.collect {|table| table.schema.keys}.flatten.uniq 
   end
 
   def new

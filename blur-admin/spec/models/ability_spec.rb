@@ -1,6 +1,21 @@
 require "spec_helper"
 require "cancan/matchers"
 
+def controller_actions
+  # this method returns a hash of controllers each with an array of their respective
+  # actions.  Use this list to make sure unauthorized users are not able to access any
+  # actions in a controller.  Note that the action_methods also includes some callbacks,
+  # so this list cannot be used for determining that a user *can* do all of the actions
+  # in a controller (use cancan 2.0's 'access' for that).
+  
+  Dir[File.join Rails.root, 'app', 'controllers', '*'].each {|file| load file}
+  @controller_actions ||= ApplicationController.subclasses.reduce({}) do |memo, controller|
+    memo[controller.to_s.gsub("Controller", "").underscore.to_sym] = 
+      controller.action_methods.collect {|method| method.to_sym}
+    memo
+  end
+end
+
 describe Ability do
   describe "when not logged in" do
     before(:each) do
@@ -16,8 +31,9 @@ describe Ability do
     end
 
     it "can not create a user (register) with roles" do
-      @ability.should_not be_able_to :create, :users, :admin
-      @ability.should_not be_able_to :create, :users, :editor
+      User.valid_roles.each do |role|
+        @ability.should_not be_able_to :create, :users, role
+      end
     end
 
     it "can create a session (log in)" do
@@ -25,49 +41,33 @@ describe Ability do
       @ability.should be_able_to :new, :user_sessions
     end
 
-    it "can not view pages" do
-      @ability.should_not be_able_to :access, :blur_tables
-      @ability.should_not be_able_to :access, :zookeepers
-      @ability.should_not be_able_to :access, :blur_queries
+    it "can not access pages" do
+      # actions are automatically added to this check.  Thus, you have to specifically
+      # filter actions that should be available to non logged-in users
+
+      @actions = controller_actions
+
+      #filter out actions available to non logged in users
+      @actions[:user_sessions] -= [:create, :new]
+      @actions[:users]         -= [:new, :create]
+
+      @actions.each do |controller, actions|
+        actions.each {|action| @ability.should_not be_able_to action, controller}
+      end
+
     end
   end
 
   describe "when a user with no roles" do
     before(:each) do
-      @user = User.new
-      @user.stub(:id).and_return(123)
-      @user.stub(:has_role?).with(:editor).and_return(false)
-      @user.stub(:has_role?).with(:admin).and_return(false)
-      @user.stub(:has_role?).with(:auditor).and_return(false)
-      @user.stub(:has_role?).with(:reader).and_return(false)
-      @user.stub(:has_role?).with(:searcher).and_return(false)
+      @user = Factory.stub :user, :roles => []
       @ability = Ability.new @user
     end
-
 
     it "can view, edit and delete itself" do
       @ability.should be_able_to :show, @user
       @ability.should be_able_to :edit, @user
       @ability.should be_able_to :destroy, @user
-    end
-
-    it "can not view, edit, update, or delete other users" do
-      other_user = User.new
-      @ability.should_not be_able_to :show, other_user
-      @ability.should_not be_able_to :edit, other_user
-      @ability.should_not be_able_to :update, other_user
-      @ability.should_not be_able_to :destroy, other_user
-    end
-
-    it "can not view the admin page" do
-      @ability.should_not be_able_to :index, :users
-    end
-
-    it "can not create a new user or session" do
-      @ability.should_not be_able_to :new, :user_sessions
-      @ability.should_not be_able_to :create, :user_sessions
-      @ability.should_not be_able_to :new, :users
-      @ability.should_not be_able_to :create, :users
     end
 
     it "can log out" do
@@ -81,6 +81,14 @@ describe Ability do
       @ability.should be_able_to :update, @user, :password_confirmation
    end
 
+    it "can not view, edit, update, or delete other users" do
+      other_user = User.new
+      @ability.should_not be_able_to :show, other_user
+      @ability.should_not be_able_to :edit, other_user
+      @ability.should_not be_able_to :update, other_user
+      @ability.should_not be_able_to :destroy, other_user
+    end
+
     it "can not update own roles" do
       @ability.should_not be_able_to :update, @user, :admin
       @ability.should_not be_able_to :update, @user, :editor 
@@ -90,38 +98,31 @@ describe Ability do
       @ability.should_not be_able_to :index, :blur_queries, :query_string
     end
 
-    it "can not view pages" do
-      @ability.should_not be_able_to :index, :blur_tables
-      @ability.should_not be_able_to :hosts, :blur_tables
-      @ability.should_not be_able_to :schema, :blur_tables
-      @ability.should_not be_able_to :show_current, :zookeepers
-      @ability.should_not be_able_to :make_current, :zookeepers
-      @ability.should_not be_able_to :show, :search
-      @ability.should_not be_able_to :index, :blur_queries
-      @ability.should_not be_able_to :more_info, :blur_queries
-    end
+    it "can not access pages" do
+      # actions are automatically added to this check.  Thus, you have to specifically
+      # filter actions that should be available to non logged-in users.
+      # NOTE:  These are just the vanilla actions, so if the action depends on what
+      # attribute is being updated, or what value an attribute is (i.e. checking to 
+      # make sure updated object is the user's) it will pass, so those cases must be
+      # tested seperately.
 
-    it "can not perform queries" do
-      @ability.should_not be_able_to :filters, :search
-      @ability.should_not be_able_to :create,  :search
-      @ability.should_not be_able_to :load,    :search
-      @ability.should_not be_able_to :delete,  :search
-      @ability.should_not be_able_to :reload,  :search
-      @ability.should_not be_able_to :save,    :search
-      @ability.should_not be_able_to :update,  :search
+      @actions = controller_actions
+
+      #filter out actions available to non logged in users
+      @actions[:users] -= [:show, :edit, :destroy, :update]
+      @actions[:user_sessions] -= [:destroy]
+
+      @actions.each do |controller, actions|
+        actions.each {|action| @ability.should_not be_able_to action, controller}
+      end
+
     end
 
   end
 
   describe "when a reader" do
     before(:each) do
-      @user = User.new
-      @user.stub(:id).and_return(123)
-      @user.stub(:has_role?).with(:editor).and_return(false)
-      @user.stub(:has_role?).with(:admin).and_return(false)
-      @user.stub(:has_role?).with(:auditor).and_return(false)
-      @user.stub(:has_role?).with(:reader).and_return(true)
-      @user.stub(:has_role?).with(:searcher).and_return(false)
+      @user = Factory.stub :user, :roles => [:reader]
       @ability = Ability.new @user
     end
 
@@ -140,17 +141,21 @@ describe Ability do
       @ability.should_not be_able_to :more_info, :blur_queries, :query_string
       @ability.should_not be_able_to :index, :blur_queries, :query_string
     end
+
+    it "can not change own column preferences" do
+      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'column'
+      @ability.should_not be_able_to :update, @preference
+    end
+
+    it "can change own filter preferences" do
+      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'filter'
+      @ability.should be_able_to :update, @preference
+    end
   end
 
   describe "when an editor" do
     before(:each) do
-      @user = User.new
-      @user.stub(:id).and_return(123)
-      @user.stub(:has_role?).with(:editor).and_return(true)
-      @user.stub(:has_role?).with(:admin).and_return(false)
-      @user.stub(:has_role?).with(:auditor).and_return(false)
-      @user.stub(:has_role?).with(:reader).and_return(true)
-      @user.stub(:has_role?).with(:searcher).and_return(false)
+      @user = Factory.stub :user, :roles => [:editor]
       @ability = Ability.new @user
     end
   
@@ -166,14 +171,8 @@ describe Ability do
 
   describe "when an auditor" do
     before(:each) do
-      @user = User.new
-      @user.stub(:id).and_return(123)
-      @user.stub(:has_role?).with(:editor).and_return(false)
-      @user.stub(:has_role?).with(:admin).and_return(false)
-      @user.stub(:has_role?).with(:auditor).and_return(true)
-      @user.stub(:has_role?).with(:reader).and_return(true)
-      @user.stub(:has_role?).with(:searcher).and_return(false)
-      @ability = Ability.new(@user)
+      @user = Factory.stub :user, :roles => [:auditor]
+      @ability = Ability.new @user
     end
   
     it "can view blur query string" do
@@ -184,19 +183,13 @@ describe Ability do
   
   describe "when an admin" do
     before(:each) do
-      @user = User.new
-      @user.stub(:id).and_return(123)
-      @user.stub(:has_role?).with(:editor).and_return(false)
-      @user.stub(:has_role?).with(:admin).and_return(true)
-      @user.stub(:has_role?).with(:auditor).and_return(false)
-      @user.stub(:has_role?).with(:reader).and_return(true)
-      @user.stub(:has_role?).with(:searcher).and_return(false)
+      @user = Factory.stub :user, :roles => [:admin]
       @ability = Ability.new @user
       @other_user = User.new
     end
-    it "can view, edit, and delete other users" do
+
+    it "can edit, and delete other users" do
       @ability.should be_able_to :index, :users
-      @ability.should be_able_to :show, @other_user
       @ability.should be_able_to :edit, @other_user
       @ability.should be_able_to :destroy, @other_user
     end
@@ -204,6 +197,10 @@ describe Ability do
     it "can update other users' roles" do
       @ability.should be_able_to :update, @other_user, :admin
       @ability.should be_able_to :update, @other_user, :editor
+    end
+
+    it "can not view other individual users" do
+      @ability.should_not be_able_to :show, @other_user
     end
 
     it "can not update other users' username, email, or password" do
@@ -221,18 +218,20 @@ describe Ability do
 
   describe "when a searcher" do
     before do
-      @user = User.new
-      @user.stub(:id).and_return(123)
-      @user.stub(:has_role?).with(:editor).and_return(false)
-      @user.stub(:has_role?).with(:admin).and_return(false)
-      @user.stub(:has_role?).with(:auditor).and_return(false)
-      @user.stub(:has_role?).with(:reader).and_return(false)
-      @user.stub(:has_role?).with(:searcher).and_return(true)
+      @user = Factory.stub :user, :roles => [:searcher]
       @ability = Ability.new @user
     end
 
     it "can view and use the search page" do
-      @ability.should_not be_able_to :access, :search
+      @ability.should be_able_to :access, :search
+    end
+    it "can change own column preferences" do
+      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'column'
+      @ability.should be_able_to :update, @preference
+    end
+    it "can not change own filter preferences" do
+      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'filter'
+      @ability.should_not be_able_to :update, @preference
     end
   end
 end

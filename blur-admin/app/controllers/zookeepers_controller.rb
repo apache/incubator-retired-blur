@@ -35,7 +35,7 @@ class ZookeepersController < ApplicationController
   def index
     @zookeepers = Zookeeper.select('name, id').order('name')
   end
-  
+
   def show
     session[:current_zookeeper_id] = params[:id] if params[:id]
     redirect_to :zookeeper

@@ -36,7 +36,7 @@ BlurAdmin::Application.routes.draw do
   match 'search/:search_id' => 'search#update', :via => :put
   match 'reload/:blur_table' => 'search#reload'
   match 'help/:tab' => 'application#help'
-  
+
   resources :hdfs
   match 'hdfs/:files' => 'hdfs#files', :via => :post
 

@@ -14,7 +14,7 @@
             - columns.each do |column|
               %th{:class => "column_#{family}_#{column} family_#{family}"}
                 = column.gsub(/([A-Z])/, '&shy;\1').html_safe
-        
+
       %tbody
         - @results.each do |result|
           - result_stripe = cycle('odd', 'even', :name => 'row-cycle')

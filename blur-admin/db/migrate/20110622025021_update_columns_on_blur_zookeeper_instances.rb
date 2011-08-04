@@ -1,7 +1,7 @@
 class UpdateColumnsOnBlurZookeeperInstances < ActiveRecord::Migration
   def self.up
     add_column :blur_zookeeper_instances, :name, :string
-    
+
     remove_column :blur_zookeeper_instances, :port
     remove_column :blur_zookeeper_instances, :created_at
     remove_column :blur_zookeeper_instances, :updated_at

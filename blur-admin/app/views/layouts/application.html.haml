@@ -31,7 +31,7 @@
                   = message
           - if @current_zookeeper && @zookeepers
             #zookeeper_select
-              = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper', 
+              = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',
                                                       :method => :put,
                                                       :remote => :true do
                 %b Current Zookeeper Instance:

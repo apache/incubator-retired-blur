@@ -5,11 +5,11 @@ class SearchController < ApplicationController
   #Show action that sets instance variables used to build the filter column
   def show
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
-    # required because of the lazy loading (in this case where a few more variables 
+    # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
     @blur_table = @blur_tables[0]
-	  @columns = @blur_table.schema &preference_sort(current_user.column_preference.value) if @blur_table
+    @columns = @blur_table.schema &preference_sort(current_user.column_preference.value) if @blur_table
     @searches = current_user.searches.order("name")
 	end
 

@@ -21,7 +21,7 @@ class User < ActiveRecord::Base
       preference.value = []
     end
   end
-  
+
   #returns the array of saved cols
   def filter_preference
     Preference.find_or_create_by_user_id_and_pref_type(self.id, 'filter') do |preference|

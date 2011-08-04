@@ -11,28 +11,21 @@
         = link_to 'Filters', '', :id => :filter_header
       %div
         .query_filter
-          = label_tag :created_at_time, 'Within past:'
-          = select_tag :created_at_time, options_for_select([['1 minute', 1],
-      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['5 minutes', 5],
-      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['15 minutes', 15],
-      			 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	   ['30 minutes', 30],
-                                                             ['1 hour', 60]], @filters['created_at_time'])
+          = label_tag "created_at_time", 'Within past:'
+          = select_tag "created_at_time",
+            options_for_created_at_time(@filters['created_at_time'])
         .query_filter
-          = label_tag :super_query_on, 'Super Query:'
-          = select_tag :super_query_on, options_for_select([['All', nil],
-         	                                                 	['On', true],
-                                                         	 	['Off', false]], @filters['super_query_on'])
+          = label_tag "super_query_on", 'Super Query:'
+          = select_tag "super_query_on",
+            options_for_all_on_off(@filters['super_query_on'])
         .query_filter
-          = label_tag :running, 'Running:'
-          = select_tag :running, options_for_select([['All Queries', nil],
-                                                     ['Yes', true],
-                                                     ['No', false]], @filters['running'])
+          = label_tag "running", 'Running:'
+          = select_tag "running", 
+            options_for_all_yes_no(@filters['running'])
         .query_filter
-          = label_tag :interrupted, 'Interrupted:'
-          = select_tag :interrupted, options_for_select([['All Queries', nil],
-                                                         ['Yes', true],
-                                                         ['No', false]], @filters['interrupted'])
-
+          = label_tag "interrupted", 'Interrupted:'
+          = select_tag "interrupted",
+            options_for_all_yes_no(@filters['interrupted'])
           = submit_tag 'filter'
 
     #selector_wrapper
@@ -44,11 +37,8 @@
       #refresh_wrapper
         = hidden_field_tag :time_since_refresh
         = label_tag :refresh_period, 'Refresh:'
-        = select_tag :refresh_period, options_for_select([['never', 'false'],
-                                                          ['continuously', 'continuous'],
-                                                          ['every 10 seconds', 10],
-                                                          ['every 1 minute', 60],
-                                                          ['every 10 minutes', 600]], @filters['refresh_period'])
+        = select_tag :refresh_period,
+          options_for_refresh_period(@filters['refresh_period'])
         #pause_button
           #pause.ui-icon.ui-icon-pause
 

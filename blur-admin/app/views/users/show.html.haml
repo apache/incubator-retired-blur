@@ -46,38 +46,24 @@
       =form_tag(user_preference_path(@user, :filter), :method => :put, :id => 'filters', :remote => true)
       .query_filter
         = label_tag "value[created_at_time]", 'Within past:'
-        = select_tag "value[created_at_time]", options_for_select([['1 minute', 1],
-                                                           ['5 minutes', 5],
-                                                           ['15 minutes', 15],
-                                                           ['30 minutes', 30],
-                                                           ['1 hour', 60]],
-                                                           @filter_preference.value['created_at_time'])
+        = select_tag "value[created_at_time]",
+          options_for_created_at_time(@filter_preference.value['created_at_time'])
       .query_filter
         = label_tag "value[super_query_on]", 'Super Query:'
-        = select_tag "value[super_query_on]", options_for_select([['All', nil],
-                                                          ['On', true],
-                                                          ['Off', false]],
-                                                          @filter_preference.value['super_query_on'])
+        = select_tag "value[super_query_on]",
+          options_for_all_yes_no(@filter_preference.value['super_query_on'])
       .query_filter
         = label_tag "value[running]", 'Running:'
-        = select_tag "value[running]", options_for_select([['All Queries', nil],
-                                                   ['Yes', true],
-                                                   ['No', false]],
-                                                   @filter_preference.value['running'])
+        = select_tag "value[running]", 
+          options_for_all_yes_no(@filter_preference.value['running'])
       .query_filter
         = label_tag "value[interrupted]", 'Interrupted:'
-        = select_tag "value[interrupted]", options_for_select([['All Queries', nil],
-                                                       ['Yes', true],
-                                                       ['No', false]],
-                                                       @filter_preference.value['interrupted'])
+        = select_tag "value[interrupted]",
+          options_for_all_yes_no(@filter_preference.value['interrupted'])
       .query_filter
         = label_tag "value[refresh_period]", 'Refresh:'
-        = select_tag "value[refresh_period]", options_for_select([['never', 'false'],
-                                                          ['continuously', 'continuous'],
-                                                          ['every 10 seconds', 10],
-                                                          ['every 1 minute', 60],
-                                                          ['every 10 minutes', 600]],
-                                                          @filter_preference.value['refresh_period'])
+        = select_tag "value[refresh_period]",
+          options_for_refresh_period(@filter_preference.value['refresh_period'])
 
     #user-info
       %p

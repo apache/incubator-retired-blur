@@ -4,7 +4,7 @@ class BlurTablesController < ApplicationController
   before_filter :zookeepers, :only => :index
 
   def index
-    @blur_tables = @current_zookeeper.blur_tables.order('table_name ASC')
+    @blur_tables = @current_zookeeper.blur_tables.order('status DESC, table_name ASC')
   end
 
   def update

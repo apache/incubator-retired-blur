@@ -1,6 +1,6 @@
 #searches.partial-section
-  -if @searches.length != 0 && !@blur_table.nil?
-    -@searches.each do |search|
+  -if searches.length != 0 && !blur_table.nil?
+    -searches.each do |search|
       -val = is_valid_search?(search)
       .search_element{:id => search.id}
         %label{:title => val ? search.name : "This is not a valid search for this schema"}

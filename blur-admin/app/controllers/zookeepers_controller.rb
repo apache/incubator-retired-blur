@@ -46,7 +46,6 @@ class ZookeepersController < ApplicationController
 
     @shard_nodes = @zookeeper.shards.collect { |shard| shard.blur_version }.flatten.uniq.length
     @controller_nodes = @zookeeper.controllers.collect { |controller| controller.blur_version }.flatten.uniq.length
-
     respond_to do |format|
       format.html { render :show_current }
     end

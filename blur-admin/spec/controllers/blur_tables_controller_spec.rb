@@ -17,7 +17,7 @@ describe BlurTablesController do
       # Set up association chain
       @zookeeper  = Factory.stub :zookeeper
 
-      @zookeeper.stub(:blur_tables).and_return [@blur_table]
+      @zookeeper.stub_chain(:blur_tables, :order).and_return [@blur_table]
       @blur_table.stub(:zookeeper).and_return @zookeeper
 
       # ApplicationController.current_zookeeper
@@ -55,10 +55,9 @@ describe BlurTablesController do
     before do
       BlurTable.stub(:find).and_return @blur_table
     end
-    it "should assign @blur_table to be the blur table being whose schema is requested" do
+    it "should the blur table whose schema is requested" do
       BlurTable.should_receive(:find).with @blur_table.id
       put :update, :id => @blur_table.id
-      assigns(:blur_table).should == @blur_table
     end
     it "should render the schema partial" do
       get :schema, :id => @blur_table.id
@@ -76,10 +75,9 @@ describe BlurTablesController do
     before do
       BlurTable.stub(:find).and_return @blur_table
     end
-    it "should assign @blur_table to be the blur table being whose hosts is requested" do
+    it "finds the blur table being whose hosts is requested" do
       BlurTable.should_receive(:find).with @blur_table.id
       put :update, :id => @blur_table.id
-      assigns(:blur_table).should == @blur_table
     end
     it "should render the hosts partial" do
       get :hosts, :id => @blur_table.id
@@ -98,10 +96,9 @@ describe BlurTablesController do
       BlurTable.stub(:find).and_return(@blur_table)
     end
 
-    it "should assign @blur_table to be the blur table being updated" do
+    it "finds the blur table being updated" do
       BlurTable.should_receive(:find).with @blur_table.id
       put :update, :id => @blur_table.id
-      assigns(:blur_table).should == @blur_table
     end
 
     it "enables the table if enable is true" do
@@ -125,11 +122,10 @@ describe BlurTablesController do
       BlurTable.stub(:find).and_return(@blur_table)
     end
 
-    it "should assign @blur_table to be the blur table being deleted" do
+    it "finds the blur table being deleted" do
       BlurTable.should_receive(:find).with(@blur_table.id)
       @blur_table.stub(:destroy)
       delete :destroy, :id => @blur_table.id
-      assigns(:blur_table).should == @blur_table
     end
 
     it "should delete a table and preserve the index" do

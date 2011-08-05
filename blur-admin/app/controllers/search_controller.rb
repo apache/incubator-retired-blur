@@ -15,9 +15,11 @@ class SearchController < ApplicationController
 
 	#Filter action to help build the tree for column families
   def filters
-    @blur_table = BlurTable.find params[:blur_table_id]
-    @columns = @blur_table ? (@blur_table.schema &preference_sort(current_user.column_preference.value)) : []
-	  render :partial => 'filters'
+    blur_table = BlurTable.find params[:blur_table_id]
+    columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value)) : []
+    respond_to do |format|
+      format.html {render :partial =>"filters", :locals => {:columns => columns}}
+    end
   end
 
 	#Create action is a large action that handles all of the filter data
@@ -112,7 +114,7 @@ class SearchController < ApplicationController
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
-      format.html {render :partial =>"saved" }
+      format.html {render :partial =>"saved", :locals => {:searches => @searches, :blur_table => @blur_table}}
     end
   end
 
@@ -137,7 +139,7 @@ class SearchController < ApplicationController
     @blur_table = BlurTable.find params[:blur_table]
 
     respond_to do |format|
-      format.html {render :partial =>"saved"}
+      format.html {render :partial =>"saved", :locals => {:searches => @searches, :blur_table => @blur_table}}
     end
   end
   

@@ -4,7 +4,9 @@
 
 #zookeeper_wrapper
   - if @zookeeper
-    = render 'zookeeper'
+    = render 'zookeeper', :zookeeper        => @zookeeper,
+                          :controller_nodes => @controller_nodes,
+                          :shard_nodes      => @shard_nodes
 
   - else
     No Zookeeper Instances Available

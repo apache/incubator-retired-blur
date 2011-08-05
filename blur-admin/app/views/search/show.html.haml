@@ -9,7 +9,7 @@
         .header#saved
           %label{:id => 'saved'} Saved Searches
         .body#saved
-          = render "saved"
+          = render "saved", :searches => @searches, :blur_table => @blur_table
       .tab#standard
         .header#standard
           %label{:id => 'standard'} Search
@@ -21,7 +21,7 @@
           .filter
             Column Families:
           #filter_columns{:style => 'display: none;' }
-            = render 'filters'
+            = render 'filters', :columns => @columns
 
       .tab#advanced
         .header#advanced

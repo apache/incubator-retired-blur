@@ -6,118 +6,118 @@
       %tr
         %td{:class => "more-info-label"} Query String
         %td
-          -if @blur_query.query_string
-            =@blur_query.query_string
+          -if blur_query.query_string
+            =blur_query.query_string
           -else
             =empty_message
     %tr
       %td{:class => "more-info-label"} CPU Time
       %td
-        -if @blur_query.cpu_time
-          =@blur_query.cpu_time
+        -if blur_query.cpu_time
+          =blur_query.cpu_time
         -else
           =empty_message
     %tr
       %td{:class => "more-info-label"} Real Time
       %td
-        -if @blur_query.real_time
-          =@blur_query.real_time
+        -if blur_query.real_time
+          =blur_query.real_time
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} UUID
       %td
-        -if @blur_query.uuid
-          =@blur_query.uuid
+        -if blur_query.uuid
+          =blur_query.uuid
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Status
       %td
-        -if @blur_query.complete == 1
+        -if blur_query.complete == 1
           Complete
-        -elsif @blur_query.interrupted
+        -elsif blur_query.interrupted
           Interrupted
-        -elsif @blur_query.running
+        -elsif blur_query.running
           Running
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Created At
       %td
-        -if @blur_query.created_at
-          =@blur_query.created_at
+        -if blur_query.created_at
+          =blur_query.created_at
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Table Name
       %td
-        -if @blur_query.blur_table.table_name
-          =@blur_query.blur_table.table_name
+        -if blur_query.blur_table.table_name
+          =blur_query.blur_table.table_name
         -else
           =empty_message
     %tr
       %td{:class => "more-info-label"} Super Query
       %td
-        -if @blur_query.super_query_on
+        -if blur_query.super_query_on
           On
-        -elsif @blur_query.super_query_on == false
+        -elsif blur_query.super_query_on == false
           Off
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Facets
       %td
-        -if @blur_query.facets
-          =@blur_query.facets
+        -if blur_query.facets
+          =blur_query.facets
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Start
       %td
-        -if @blur_query.start
-          =@blur_query.start
+        -if blur_query.start
+          =blur_query.start
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Fetch Number
       %td
-        -if @blur_query.fetch_num
-          =@blur_query.fetch_num
+        -if blur_query.fetch_num
+          =blur_query.fetch_num
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Pre Filters
       %td
-        -if @blur_query.pre_filters
-          =@blur_query.pre_filters
+        -if blur_query.pre_filters
+          =blur_query.pre_filters
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Post Filters
       %td
-        -if @blur_query.post_filters
-          =@blur_query.post_filters
+        -if blur_query.post_filters
+          =blur_query.post_filters
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Selector Column Families
       %td
-        -if @blur_query.selector_column_families
-          =@blur_query.selector_column_families
+        -if blur_query.selector_column_families
+          =blur_query.selector_column_families
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} Selector columns
       %td
-        -if @blur_query.selector_columns
-          =@blur_query.selector_columns
+        -if blur_query.selector_columns
+          =blur_query.selector_columns
         -else
           =empty_message
     %tr 
       %td{:class => "more-info-label"} User ID
       %td
-        -if @blur_query.userid
-          =@blur_query.userid
+        -if blur_query.userid
+          =blur_query.userid
         -else
           =empty_message

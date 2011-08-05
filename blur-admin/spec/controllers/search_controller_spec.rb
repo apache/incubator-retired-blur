@@ -62,10 +62,9 @@ describe SearchController do
       response.should render_template "filters"
     end
 
-    it "should assign columns" do
+    it "should find the new columns" do
       BlurTable.should_receive(:find).with(@blur_table.id)
       get :filters, :blur_table_id => @blur_table.id
-      assigns(:columns).should == @blur_table.schema
     end
     
     it "should return an empty array to columns when no blur table is selected" do

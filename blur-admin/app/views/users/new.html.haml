@@ -3,7 +3,7 @@
 #new_user_wrapper
   %h2 Register
 
-  = render 'form'
+  = render 'form', :user => @user
 
   %br
   - if @current_user

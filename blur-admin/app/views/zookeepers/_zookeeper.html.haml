@@ -1,18 +1,18 @@
-.zookeeper{ :id => @zookeeper.id }
+.zookeeper{ :id => zookeeper.id }
   #zookeeper
     %h2 Zookeeper Information
     %table
       %tbody
         %tr
           %td.label Name:
-          %td.value= @zookeeper.name
+          %td.value= zookeeper.name
         %tr
           %td.label Connection:
-          %td.value= @zookeeper.url
+          %td.value= zookeeper.url
         %tr
           %td.label Status:
           %td.value
-            - if @zookeeper.status == 1
+            - if zookeeper.status == 1
               .green_box.ui-corner-all
                 Online
             - else
@@ -22,19 +22,19 @@
     %h2 Blur Status
     #controllers
       .blur_container
-        - if @zookeeper.controllers
-          %h3= "Controllers(#{@zookeeper.controllers.length})"
+        - if zookeeper.controllers
+          %h3= "Controllers(#{zookeeper.controllers.length})"
           #controllers-placeholder
-            - if @controller_nodes == 1
-              = "Controllers (blur version #{@zookeeper.controllers.first.blur_version}) :"
-            - elsif @controller_nodes > 1
+            - if controller_nodes == 1
+              = "Controllers (blur version #{zookeeper.controllers.first.blur_version}) :"
+            - elsif controller_nodes > 1
               .warning
                 = "Controllers are not running the same blur version"
             %ul
-              - @zookeeper.controllers.each do |controller|
+              - zookeeper.controllers.each do |controller|
                 %li
                   = "#{controller.node_name}"
-                - if @controller_nodes > 1
+                - if controller_nodes > 1
                   = "(blur version #{controller.blur_version})"
                 - if controller.status == 2
                   .green_box.ui-corner-all
@@ -50,18 +50,18 @@
           %p Not Available
     #shards
       .blur_container
-        - if @zookeeper.shards
-          %h3= "Shards(#{@zookeeper.shards.length})"
-          - if @shard_nodes == 1
-            = "Shards (blur version #{@zookeeper.shards.first.blur_version}) :"
-          - elsif @shard_nodes > 1
+        - if zookeeper.shards
+          %h3= "Shards(#{zookeeper.shards.length})"
+          - if shard_nodes == 1
+            = "Shards (blur version #{zookeeper.shards.first.blur_version}) :"
+          - elsif shard_nodes > 1
             .warning
               = "Shards are not running the same blur version"
           %ul
-            - @zookeeper.shards.each do |shard|
+            - zookeeper.shards.each do |shard|
               %li
                 = "#{shard.node_name}"
-                - if @shard_nodes > 1
+                - if shard_nodes > 1
                   = "(blur version #{shard.blur_version})"
                 - if shard.status == 2
                   .green_box.ui-corner-all

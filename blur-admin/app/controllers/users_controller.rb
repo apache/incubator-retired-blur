@@ -42,7 +42,7 @@ class UsersController < ApplicationController
         redirect_to @user, :notice => "User Updated"
       end
     else
-      render :action => 'edit'
+      render 'edit'
     end
   end
 

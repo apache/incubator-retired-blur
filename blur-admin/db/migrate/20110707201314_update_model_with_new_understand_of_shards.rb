@@ -7,7 +7,7 @@ class UpdateModelWithNewUnderstandOfShards < ActiveRecord::Migration
 
   def self.down
     remove_column :blur_tables, :cluster_id
-    
+
     create_table :blur_tables_shards, :id => false do |t|
       t.integer :shard_id
       t.integer :blur_table_id

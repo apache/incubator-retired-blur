@@ -20,7 +20,7 @@
             options_for_all_on_off(@filters['super_query_on'])
         .query_filter
           = label_tag "running", 'Running:'
-          = select_tag "running", 
+          = select_tag "running",
             options_for_all_yes_no(@filters['running'])
         .query_filter
           = label_tag "interrupted", 'Interrupted:'

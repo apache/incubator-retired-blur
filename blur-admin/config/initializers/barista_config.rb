@@ -6,7 +6,7 @@ Barista.configure do |c|
 
   # Change the output root, causing Barista to compile into public/coffeescripts
   c.output_root = Rails.root.join("public", "javascripts", "compiled")
-  
+
   # Set the compiler
   
   # Disable wrapping in a closure:

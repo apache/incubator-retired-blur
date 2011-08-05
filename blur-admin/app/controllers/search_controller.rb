@@ -57,7 +57,7 @@ class SearchController < ApplicationController
     @results = []
     blur_results.results.each do |blur_result_container|
       # drill down through the result object cruft to get the real result
-      blur_result = blur_result_container.fetchResult.rowResult.row 
+      blur_result = blur_result_container.fetchResult.rowResult.row
       # continue to next result if there is no returned data
       next if blur_result.columnFamilies.empty?
 
@@ -95,7 +95,7 @@ class SearchController < ApplicationController
     # finally, sort column families by user preferences, then by alphabetical order
     @schema = Hash[@schema.sort &preference_sort(current_user.column_preference.value)]
 
-    render :template=>'search/create.html.haml', :layout => false
+    render 'create', :layout => false
   end
 
   #save action that loads the state of a saved action and returns a json to be used to populate the form

@@ -8,7 +8,7 @@ class UserSessionsController < ApplicationController
     if @user_session.save
       redirect_to root_url, :notice => "Successfully Logged In"
     else
-      render :action => 'new'
+      render 'new'
     end
   end
 

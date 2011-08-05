@@ -40,7 +40,7 @@ class ZookeepersController < ApplicationController
     session[:current_zookeeper_id] = params[:id] if params[:id]
     redirect_to :zookeeper
   end
-  
+
   def show_current
     @zookeeper = @current_zookeeper
 

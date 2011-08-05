@@ -245,7 +245,7 @@ $(document).ready ->
         #display the results from the save
           $('.body#saved').html(data)
     $('#loading-spinner').show()
-    
+
   #ajax listener for the save action
   $('#update_button').live 'click', (evt) ->
     send_request = false
@@ -272,6 +272,3 @@ $(document).ready ->
       			buttons:
       				"Ok": ->
       				  $(this).dialog "close"
-
-      
-

@@ -8,12 +8,7 @@ class BlurTable < ActiveRecord::Base
 
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts
-    if self.server
-      JSON.parse self.server
-    else
-      return nil
-    end
-
+    JSON.parse read_attribute(:server)
   end
 
   def schema
@@ -61,16 +56,6 @@ class BlurTable < ActiveRecord::Base
     rescue
       puts "Exception in BlurTable.destroy"
       return false;
-    end
-  end
-
-  def <=> (other)
-    if other.is_enabled? == self.is_enabled?
-      return self.table_name <=> other.table_name
-    elsif self.is_enabled?
-      return -1
-    else
-      return 1
     end
   end
 end

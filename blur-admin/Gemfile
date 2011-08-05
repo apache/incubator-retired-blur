@@ -24,5 +24,5 @@ group :development, :test do
   gem 'cover_me'
   gem 'rails-erd'
   gem 'factory_girl_rails'
-  #gem 'system-metrics'
+  gem 'system-metrics'
 end

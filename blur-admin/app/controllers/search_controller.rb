@@ -95,7 +95,9 @@ class SearchController < ApplicationController
     # finally, sort column families by user preferences, then by alphabetical order
     @schema = Hash[@schema.sort &preference_sort(current_user.column_preference.value)]
 
-    render 'create', :layout => false
+    respond_to do |format|
+      format.html {render 'create', :layout => false}
+    end
   end
 
   #save action that loads the state of a saved action and returns a json to be used to populate the form

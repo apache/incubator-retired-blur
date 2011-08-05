@@ -1,19 +1,16 @@
-#file_header
-  %h4= @file_name
-
 #file_list{:style => 'display: none' }
-  - if @file_names
+  - if !file_names.empty?
     %ul
-    - @file_names.each do |file|
+    - file_names.each do |file|
       %li
-        %a{:id => file}= file
+        %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
   - else
     No available files
 
 #file_tiles{:style => 'display: none' }
-  - if @file_names
-    - @file_names.each do |file|
-      %button{:id => file}
-        = file
+  - if !file_names.empty?
+    - file_names.each do |file|
+      %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
+        = file.split('/').last
   - else
     No available files

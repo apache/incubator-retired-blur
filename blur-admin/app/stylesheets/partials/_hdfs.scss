@@ -5,16 +5,16 @@
   @include standard-font;
 
   #hdfs_files_layout {
-    @include columns(4,$total-cols);
+    @include columns(8,$total-cols);
     overflow: auto;
     margin-top: 1em;
   }
 
   #data_wrapper {
-    @include columns(26,$total-cols);
+    @include columns(22,$total-cols);
     @include omega($total-cols);
     #hdfs_bar{
-      @include columns(1,26);
+      @include columns(1,22);
       width: 1em;
       height: 100%;
       background-color: #eee;
@@ -23,8 +23,8 @@
     }
 
     #data_container_display {
-      @include columns(25,26);
-      @include omega(26);
+      @include columns(21,22);
+      @include omega(22);
     }
   }
   #data_container_display {padding-top: 1em; }
@@ -51,12 +51,18 @@
     @include full;
     padding: 5px 0;
     .ui-widget{ font-size: 0.9em; }
-    #location { padding-top: 0.5em; vertical-align: middle; }
-    #location_string, #search_string {
-      max-height: 18px;
-      max-width: 200px;
-      min-height: 18px;
-      min-width: 200px;
+    #location {
+      padding-top: 0.5em;
+      vertical-align: middle;
+      label { }
+      #location_string{ }
+    }
+    
+    #search_string {
+      max-height: 1.5em;
+      max-width: 10em;
+      min-height: 1.5em;
+      min-width: 10em;
       vertical-align: middle;
     }
   }

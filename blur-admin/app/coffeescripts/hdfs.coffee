@@ -27,13 +27,9 @@ $(document).ready ->
       $('#file_tiles').show()
 
   new_data = (id) ->
-    children = $('li #' + id).siblings('ul').children()
-    info = []
-    $.each children, ->
-      info.push this.id
-    if info.length == 0
-      info = 'none'
-    $.ajax '/hdfs/' + info ,
+    file = $('#'+ id).attr('name').replace(/\//g," ").replace('.','*')
+    connection = $('#'+ id).attr('connection')
+    $.ajax '/hdfs/' + file + '/' + connection,
       type: 'POST',
       success: (data) ->
         $('#data_container_display').html data
@@ -41,7 +37,7 @@ $(document).ready ->
         $.each($("#file_tiles > button" ), ->
           $('#file_tiles #' + this.id).button()
         )
-    $('#location_string').text id
+    $('#location_string').text $('#'+ id).attr('name')
 
   $('#view_options').live 'change', ->
     view = $('#view_options').find(':checked').attr('value')

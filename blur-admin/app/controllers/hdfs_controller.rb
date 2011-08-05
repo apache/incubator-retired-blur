@@ -4,34 +4,43 @@ class HdfsController < ApplicationController
 
   def index
     if Hdfs.all.length > 0
-      @hdfs_ids = Hdfs.select 'id'
-      puts '******************'
-      puts HdfsThriftClient.client(@hdfs_ids.first.id).inspect
-      #puts HdfsThriftClient.client
+      hdfs_ids = Hdfs.select 'id'
+      @files = {}
+      @connections = {}
+      hdfs_ids.each do |hdfs_id|
+        @hdfs = HdfsThriftClient.client(hdfs_id.id)
+        @hdfs.ls('/').each do |file|
+          @files[file] = get_files file
+          @connections[file] = hdfs_id.id
+        end
+      end
     end
-
-    temp_files
   end
 
   def files
-    #@file_name = params[:file]
-    @file_names = params[:files].split(',') if params[:files] != 'none'
+    hdfs = HdfsThriftClient.client(params[:connection])
+    file = params[:file].gsub(/[ *]/, ' ' => '/', '*' => '.')
 
-   render :template=>'hdfs/files.html.haml', :layout => false
+    if hdfs.exists? file
+      file_names = hdfs.ls file
+      if file_names.length == 1 and file == file_names[0]
+        file_names.clear
+      end
+    end
+
+   render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:connection => params[:connection], :file_names => file_names}
   end
 
-  def temp_files
-    @files = {
-      'root1' => {
-        'file1' => {'element1' => {}},
-        'file2' => {'element2' => {}, 'element3' => {}, 'element4' => {}},
-        'file3' => {'element5' => {}, 'element6' => {}} },
-      'root2' => {
-        'file4' => {'element7' => {'element8' => {'element9' => {'element10' => {}}}}},
-        'file5' => {'element11' => {}, 'element12' => {}, 'element13' => {}},
-        'file6' => {'element14' => {}, 'element15' => {}}
-        }
-      }
+  def get_files curr_file
+    if @hdfs.exists? curr_file
+      curr_file_children_hash = {}
+      curr_file_children = @hdfs.ls curr_file
+      curr_file_children.each do |child|
+        if !curr_file.eql? child
+          curr_file_children_hash[child] = get_files child
+        end
+      end
+    end
+    curr_file_children_hash
   end
-
 end

@@ -42,10 +42,9 @@
   }
 
   #file_details {
-    @include border;
     tr:nth-child(even) { background-color: white; };
     tr:nth-child(odd) { background-color: $grey-div-color; }
-    table { margin: 0; }
+    table { margin: 0; @include border;}
     th {
       background-color: $table-hd-color;
       color: $table-hd-text;
@@ -54,6 +53,10 @@
     th, td {
       @include standard-font;
       text-align: center;
+    }
+    tr:hover {
+      cursor: pointer;
+      background: $row-hover;
     }
   }
 

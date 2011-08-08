@@ -86,7 +86,7 @@ $(document).ready ->
     new_data()
 
   # Listener for all file links
-  $('#hdfs_files a, #file_tiles > .ui-button, #file_list a').live 'click', ->
+  $('#hdfs_files a, #file_tiles > .ui-button, #file_list a, #file_details tbody tr').live 'click', ->
     to_new_file this.id
 
   # Listener for file up button

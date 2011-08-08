@@ -15,10 +15,7 @@ $(document).ready ->
   # Methods to call on page load
   setup_file_tree()
   $('#view_options').buttonset()
-  $.each($("#toolbar > button" ), ->
-    $('#toolbar #' + this.id).button()
-  )
-  $.each($("#toolbar input[type='submit']"), ->
+  $.each($("#toolbar button,#toolbar input[type='submit']" ), ->
     $('#toolbar #' + this.id).button()
   )
   back_history = []
@@ -40,7 +37,7 @@ $(document).ready ->
       $('#back_button').button('enable')
       id = back_history[back_history.length - 1]
       if id == ""
-        $('#data_container_display').html '<div></div>'
+        no_file()
       else
         file = $('#'+ id).attr('name').replace(/\//g," ").replace('.','*')
         connection = $('#'+ id).attr('connection')
@@ -53,17 +50,24 @@ $(document).ready ->
               $('#file_tiles #' + this.id).button()
             )
         $('#location_string').val $('#'+ id).attr('name')
+        $('#up_button').button('enable')
     else
       $('#back_button').button('disable')
-      $('#data_container_display').html '<div></div>'
+      no_file()
     if forward_history.length > 0
       $('#forward_button').button('enable')
     else
       $('#forward_button').button('disable')
 
-  # Listener for all file links
-  $('#hdfs_files a, #file_tiles > .ui-button, #file_list a').live 'click', ->
-    back_history.push this.id
+  # Called when no files are available to display
+  no_file = () ->
+    $('#up_button').button('disable')
+    $('#data_container_display').html '<div></div>'
+    $('#location_string').val ''
+
+  # Called when a new file location is called to display
+  to_new_file = (id) ->
+    back_history.push id
     forward_history = []
     new_data()
 
@@ -75,13 +79,16 @@ $(document).ready ->
     back_history.push forward_history.pop()
     new_data()
 
+  # Listener for all file links
+  $('#hdfs_files a, #file_tiles > .ui-button, #file_list a').live 'click', ->
+    to_new_file this.id
+
   # Listener for file up button
   $('#up_button').live 'click', ->
-    parent = ""
-    if back_history.length > 0 and $('#' + back_history[back_history.length - 1]).parent().attr('class')
-      parent = $('#' + back_history[back_history.length - 1]).parent().attr('class')
-    back_history.push parent
-    new_data()
+    parent = $('#' + back_history[back_history.length - 1]).parent().attr('class')
+    if !parent
+      parent = ''
+    to_new_file parent
 
   # Listener for file view option
   $('#view_options').live 'change', ->
@@ -102,8 +109,6 @@ $(document).ready ->
   go_to_file = () ->
     id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
     if id != "" and $('#hdfs_files').find('#' + id).length > 0
-      back_history.push id
-      forward_history = []
-      new_data()
+      to_new_file id
     else
       $('#data_container_display').html '<div>Not a valid file location</div>'

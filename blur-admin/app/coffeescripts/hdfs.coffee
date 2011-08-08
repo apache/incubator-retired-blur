@@ -27,9 +27,15 @@ $(document).ready ->
     if view == 'list'
       $('#file_tiles').hide()
       $('#file_list').show()
+      $('#file_details').hide()
     else if view == 'icon'
       $('#file_list').hide()
       $('#file_tiles').show()
+      $('#file_details').hide()
+    else if view == 'detail'
+      $('#file_list').hide()
+      $('#file_tiles').hide()
+      $('#file_details').show()
 
   # Method to display information for new file
   new_data = () ->

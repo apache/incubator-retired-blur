@@ -14,3 +14,28 @@
         = file.split('/').last
   - else
     No available files
+
+#file_details{:style => 'display: none' }
+  - if !file_names.empty?
+    %table
+      %thead
+        %tr
+          %th.name File Name
+          %th Length
+          %th Directory
+          %th Block Reps
+          %th Block Size
+          %th Owner
+          %th Group
+      %tbody
+        - file_names.each do |file|
+          %tr
+            %td.name=file
+            %td ''
+            %td ''
+            %td ''
+            %td ''
+            %td ''
+            %td ''
+  - else
+    No available files

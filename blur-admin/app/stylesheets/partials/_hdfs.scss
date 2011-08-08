@@ -41,6 +41,22 @@
     }
   }
 
+  #file_details {
+    @include border;
+    tr:nth-child(even) { background-color: white; };
+    tr:nth-child(odd) { background-color: $grey-div-color; }
+    table { margin: 0; }
+    th {
+      background-color: $table-hd-color;
+      color: $table-hd-text;
+    }
+    th.name, td.name {text-align: left; }
+    th, td {
+      @include standard-font;
+      text-align: center;
+    }
+  }
+
   .ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
   a:hover { color: #06C; }
   .jstree-search { color: $base-theme-color; }

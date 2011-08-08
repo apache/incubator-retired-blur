@@ -39,9 +39,6 @@ $(document).ready ->
 
   # Method to display information for new file
   new_data = () ->
-    console.log back_history
-    console.log forward_history
-
     if back_history.length > 0
       $('#back_button').button('enable')
       id = back_history[back_history.length - 1]

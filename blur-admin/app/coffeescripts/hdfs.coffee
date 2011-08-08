@@ -39,6 +39,9 @@ $(document).ready ->
 
   # Method to display information for new file
   new_data = () ->
+    console.log back_history
+    console.log forward_history
+
     if back_history.length > 0
       $('#back_button').button('enable')
       id = back_history[back_history.length - 1]
@@ -106,7 +109,7 @@ $(document).ready ->
     go_to_file()
 
   # Listener for file text submit on enter
-  $('#location_string').live "keypress keydown keyup", (name) ->
+  $('#location_string').live "keypress", (name) ->
     if name.keyCode == 13 && !name.shiftKey   #check if it is enter
       name.preventDefault()
       go_to_file()

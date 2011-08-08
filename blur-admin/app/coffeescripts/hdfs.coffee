@@ -57,9 +57,9 @@ $(document).ready ->
     #check if it is enter
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
-      n = $('#location_string').val().replace(/[.,_:\/]/g,"-")
-      if $('#hdfs_files').find('#' + n).length > 0
-        new_data n
+      id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
+      if $('#hdfs_files').find('#' + id).length > 0
+        new_data id
       else
         $('#data_container_display').html '<div>Not a valid file location</div>'
 

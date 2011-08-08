@@ -4,13 +4,17 @@
 
 #toolbar_wrapper
   #toolbar
+    %button{:type => "button", :id => 'back_button'}
+      Back
+    %button{:type => "button", :id => 'forward_button'}
+      Forward
+    %button{:type => "button", :id => 'up_button'}
+      File Up
     %span#view_options
       = radio_button_tag 'view_options', 'list', true
       = label_tag 'view_options_list', 'List View'
       = radio_button_tag 'view_options', 'icon'
       = label_tag 'view_options_icon', 'Icon View'
-    %button{:type => "button", :id => 'view_button'}
-      Placeholder Button
     #search
       = text_area_tag :search_string
       = submit_tag 'Search', :id => 'search_button'

@@ -63,6 +63,11 @@
   .ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
   a:hover { color: #06C; }
   .jstree-search { color: $base-theme-color; }
+
+  #icon {
+    height: 32px;
+    width: 32px;
+  }
 }
 
 #toolbar_wrapper {

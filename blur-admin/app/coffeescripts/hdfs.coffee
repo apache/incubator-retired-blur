@@ -7,10 +7,15 @@ $(document).ready ->
         theme: 'apple',
     $('.file_layout').bind "loaded.jstree", ->
       $('#hdfs_files').show()
+      
     $('#search_button').live "click", ->
       $('.file_layout').jstree "search", $('#search_string').val()
+    $('#search_string').live "keypress", (name) ->
+      if name.keyCode == 13 && !name.shiftKey   #check if it is enter
+        name.preventDefault()
+        $('.file_layout').jstree "search", $('#search_string').val()
     $('.file_layout').bind "search.jstree", (e, data) ->
-      alert "Found " + data.rslt.nodes.length + " nodes matching '" + data.rslt.str + "'."
+      $('#data_container_display').html "<div>Found " + data.rslt.nodes.length + " files that match '" + data.rslt.str + "'.</div>"
 
   # Methods to call on page load
   setup_file_tree()
@@ -57,6 +62,7 @@ $(document).ready ->
             )
         $('#location_string').val $('#'+ id).attr('name')
         $('#up_button').button('enable')
+        $('.file_layout').jstree "open_node", '#' + id
     else
       $('#back_button').button('disable')
       no_file()
@@ -118,3 +124,4 @@ $(document).ready ->
       to_new_file id
     else
       $('#data_container_display').html '<div>Not a valid file location</div>'
+

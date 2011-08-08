@@ -1,5 +1,4 @@
 #hdfs_wrapper{
-  //margin-top: 2em;
   padding-bottom: 165px;
   @include full;
   @include standard-font;
@@ -7,7 +6,8 @@
   #hdfs_files_layout {
     @include columns(8,$total-cols);
     overflow: auto;
-    margin-top: 1em;
+    margin-top: 2em;
+    #hdfs_files { margin-bottom: 95px; }
   }
 
   #data_wrapper {
@@ -27,14 +27,36 @@
       @include omega(22);
     }
   }
-  #data_container_display {padding-top: 1em; }
-
+  #data_container_display {
+    padding-top: 2em;
+    margin-bottom: 95px;
+    ul { list-style: none; margin-left: -1.5em; }
+  }
 
   #file_tiles {
     .ui-button {
       margin: 5px;
       width: 200px;
       display: inline-block;
+    }
+  }
+
+  #file_details {
+    tr:nth-child(even) { background-color: white; };
+    tr:nth-child(odd) { background-color: $grey-div-color; }
+    table { margin: 0; @include border;}
+    th {
+      background-color: $table-hd-color;
+      color: $table-hd-text;
+    }
+    th.name, td.name {text-align: left; }
+    th, td {
+      @include standard-font;
+      text-align: center;
+    }
+    tr:hover {
+      cursor: pointer;
+      background: $row-hover;
     }
   }
 
@@ -54,19 +76,18 @@
     #location {
       padding-top: 0.5em;
       vertical-align: middle;
-      label { }
-      #location_string{ }
+      #location_string{ width: 50%; height: 1.5em; }
     }
     
     #search_string {
       max-height: 1.5em;
-      max-width: 10em;
+      max-width: 20em;
       min-height: 1.5em;
-      min-width: 10em;
+      min-width: 20em;
       vertical-align: middle;
     }
   }
   #search { float: right; display: inline-block; }
-  #search_button { vertical-align: top; }
-  .ui-widget { border: none;  }
+  #search_button { vertical-align: top; margin-top: 4px; }
+  #go_button { vertical-align: top; }
 }

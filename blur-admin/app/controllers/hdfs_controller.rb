@@ -32,8 +32,8 @@ class HdfsController < ApplicationController
   end
 
   def get_files curr_file
+    curr_file_children_hash = {}
     if @hdfs.exists? curr_file
-      curr_file_children_hash = {}
       curr_file_children = @hdfs.ls curr_file
       curr_file_children.each do |child|
         if !curr_file.eql? child

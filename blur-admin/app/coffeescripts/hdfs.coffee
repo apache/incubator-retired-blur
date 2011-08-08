@@ -37,7 +37,7 @@ $(document).ready ->
         $.each($("#file_tiles > button" ), ->
           $('#file_tiles #' + this.id).button()
         )
-    $('#location_string').text $('#'+ id).attr('name')
+    $('#location_string').val $('#'+ id).attr('name')
 
   $('#view_options').live 'change', ->
     view = $('#view_options').find(':checked').attr('value')
@@ -52,6 +52,18 @@ $(document).ready ->
   $.each($("#toolbar > button" ), ->
     $('#toolbar #' + this.id).button()
   )
+
+  $('#location_string').live "keypress keydown keyup", (name) ->
+    #check if it is enter
+    if name.keyCode == 13 && !name.shiftKey
+      name.preventDefault()
+      n = $('#location_string').val().replace(/[.,_:\/]/g,"-")
+      if $('#hdfs_files').find('#' + n).length > 0
+        new_data n
+      else
+        $('#data_container_display').html '<div>Not a valid file location</div>'
+
+
 
   # make jstree with json
   setup_file2_tree = () ->

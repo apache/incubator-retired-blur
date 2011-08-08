@@ -8,7 +8,8 @@
               .zookeeper-name
                 = zookeeper.name
               .zookeeper-status
-                Online
+                = case zookeeper.status; when 0 then "Offline"; when 1 then "Online"; else "Not Available"; end
+
         %tbody
           %tr
             %td.index

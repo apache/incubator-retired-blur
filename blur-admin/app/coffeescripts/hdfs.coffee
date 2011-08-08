@@ -18,6 +18,9 @@ $(document).ready ->
   $.each($("#toolbar > button" ), ->
     $('#toolbar #' + this.id).button()
   )
+  $.each($("#toolbar input[type='submit']"), ->
+    $('#toolbar #' + this.id).button()
+  )
   back_history = []
   forward_history = []
 
@@ -85,15 +88,22 @@ $(document).ready ->
     view = $('#view_options').find(':checked').attr('value')
     change_view()
 
-  # Listener for file text submit
+  # Listener for file text submit on 'go'
+  $('#go_button').live 'click', ->
+    go_to_file()
+
+  # Listener for file text submit on enter
   $('#location_string').live "keypress keydown keyup", (name) ->
-    #check if it is enter
-    if name.keyCode == 13 && !name.shiftKey
+    if name.keyCode == 13 && !name.shiftKey   #check if it is enter
       name.preventDefault()
-      id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
-      if $('#hdfs_files').find('#' + id).length > 0
-        back_history.push id
-        forward_history = []
-        new_data()
-      else
-        $('#data_container_display').html '<div>Not a valid file location</div>'
+      go_to_file()
+
+  # Method for file text submit
+  go_to_file = () ->
+    id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
+    if id != "" and $('#hdfs_files').find('#' + id).length > 0
+      back_history.push id
+      forward_history = []
+      new_data()
+    else
+      $('#data_container_display').html '<div>Not a valid file location</div>'

@@ -1,9 +1,9 @@
 #file_list{:style => 'display: none' }
   - if !file_names.empty?
     %ul
-    - file_names.each do |file|
-      %li
-        %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
+      - file_names.each do |file|
+        %li
+          %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
   - else
     No available files
 

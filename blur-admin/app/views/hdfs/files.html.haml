@@ -1,22 +1,22 @@
 #file_list{:style => 'display: none' }
-  - if !file_names.empty?
+  - if !file_names_hash.empty?
     %ul
-      - file_names.each do |file|
+      - file_names_hash.each do |file,stats|
         %li
           %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
   - else
     No available files
 
 #file_tiles{:style => 'display: none' }
-  - if !file_names.empty?
-    - file_names.each do |file|
+  - if !file_names_hash.empty?
+    - file_names_hash.each do |file,stats|
       %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
         = file.split('/').last
   - else
     No available files
 
 #file_details{:style => 'display: none' }
-  - if !file_names.empty?
+  - if !file_names_hash.empty?
     %table
       %thead
         %tr
@@ -28,14 +28,14 @@
           %th Owner
           %th Group
       %tbody
-        - file_names.each do |file|
+        - file_names_hash.each do |file,stats|
           %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
-            %td.name=file
-            %td ''
-            %td ''
-            %td ''
-            %td ''
-            %td ''
-            %td ''
+            %td.name=file.split('/').last
+            %td=stats.length
+            %td=stats.isdir
+            %td=stats.block_replication
+            %td=stats.blocksize
+            %td=stats.owner
+            %td=stats.group
   - else
     No available files

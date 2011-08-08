@@ -20,15 +20,21 @@ class HdfsController < ApplicationController
   def files
     hdfs = HdfsThriftClient.client(params[:connection])
     file = params[:file].gsub(/[ *]/, ' ' => '/', '*' => '.')
+    file_names_hash = {}
 
     if hdfs.exists? file
       file_names = hdfs.ls file
       if file_names.length == 1 and file == file_names[0]
         file_names.clear
       end
+      file_names.each do |name|
+        file_names_hash[name] = hdfs.stat name
+      end
     end
 
-   render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:connection => params[:connection], :file_names => file_names}
+    puts file_names_hash
+
+   render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:connection => params[:connection], :file_names_hash => file_names_hash}
   end
 
   def get_files curr_file

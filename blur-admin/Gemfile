@@ -19,6 +19,7 @@ gem 'capistrano'
 group :development, :test do
   gem 'autotest'
   gem 'rspec-rails'
+  gem 'capybara'
   gem 'ci_reporter'
   gem 'metric_fu'
   gem 'cover_me'

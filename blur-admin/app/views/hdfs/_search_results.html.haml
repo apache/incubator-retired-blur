@@ -1,16 +1,20 @@
+#search_results
+  - if file_names_hash.length == 1 and file_names_hash
+    = "Found 1 file that matches '#{search_string}'"
+  - else
+    = "Found #{file_names_hash.length} files that match '#{search_string}'"
+
 #file_list{:style => 'display: none' }
-  - if !file_names_hash.empty?
+  - if file_names_hash.length > 0 and file_names_hash
     %ul
       - file_names_hash.each do |file,stats|
         %li
-          %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
-  - else
-    No available files
+          %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}= file.split('/').last
 
 #file_tiles{:style => 'display: none' }
-  - if !file_names_hash.empty?
+  - if file_names_hash.length > 0 and file_names_hash
     - file_names_hash.each do |file,stats|
-      %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
+      %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}
         - if file.split('/').last.split('.').length > 1
           - name = file.split('/').last.split('.').last
         - if stats.isdir
@@ -28,11 +32,9 @@
         - else
           %img{:id => 'icon', :src => "/images/default.ico"}
         = file.split('/').last
-  - else
-    No available files
 
 #file_details{:style => 'display: none' }
-  - if !file_names_hash.empty?
+  - if file_names_hash.length > 0 and file_names_hash
     %table
       %thead
         %tr
@@ -45,7 +47,7 @@
           %th Group
       %tbody
         - file_names_hash.each do |file,stats|
-          %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
+          %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}
             %td.name=file.split('/').last
             %td=stats.length
             %td=stats.isdir
@@ -53,5 +55,3 @@
             %td=stats.blocksize
             %td=stats.owner
             %td=stats.group
-  - else
-    No available files

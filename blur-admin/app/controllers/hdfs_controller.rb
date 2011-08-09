@@ -33,8 +33,6 @@ class HdfsController < ApplicationController
       end
     end
 
-    puts file_names_hash
-
    render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:connection => params[:connection], :file_names_hash => file_names_hash}
   end
 
@@ -49,5 +47,25 @@ class HdfsController < ApplicationController
       end
     end
     curr_file_children_hash
+  end
+
+  def search
+    file_names_hash = {}
+    connections = {}
+    search_string = ""
+    if params[:results]
+      params[:results][0].each do |name, connection|
+        if name == "*search_string*"
+          search_string = connection
+        else
+          hdfs = HdfsThriftClient.client(connection.to_i)
+          file_names_hash[name] = hdfs.stat name
+          connections[name] = connection
+        end
+      end
+    end
+    respond_to do |format|
+      format.html {render :partial => 'search_results', :locals => {:search_string => search_string, :connections => connections,:file_names_hash => file_names_hash}}
+    end
   end
 end

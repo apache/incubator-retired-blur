@@ -59,4 +59,3 @@ describe "login" do
     end
   end
 end
-

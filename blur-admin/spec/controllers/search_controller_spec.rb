@@ -91,6 +91,13 @@ describe SearchController do
                                      :realTime => 10,
                                      :results => [create_blur_result(@search)]
       @search.stub(:fetch_results).and_return(results)
+
+      # Set up association chain
+      @zookeeper  = Factory.stub :zookeeper
+
+      # ApplicationController.current_zookeeper
+      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub_chain(:order, :first).and_return @zookeeper
     end
 
     def create_blur_result(search)

@@ -11,7 +11,7 @@ describe ZookeepersController do
 
     # ApplicationController.current_zookeeper
     Zookeeper.stub(:find_by_id).and_return(nil)
-    Zookeeper.stub_arel.and_return @zookeeper
+    Zookeeper.stub_chain(:order, :first).and_return @zookeeper
     # ApplicationController.zookeepers
     Zookeeper.stub(:order).and_return [@zookeeper]
   end
@@ -66,7 +66,7 @@ describe ZookeepersController do
       describe "with no previous zookeeper" do
         it "redirects to the root path, with no current_zookeeper_id in session" do
           Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)
-          Zookeeper.stub_arel.and_return(nil)
+          Zookeeper.stub_chain(:order, :first).and_return nil
           get :show_current, nil, :current_zookeeper_id => 1
           session[:current_zookeeper_id].should be nil
           response.should redirect_to root_path
@@ -75,7 +75,7 @@ describe ZookeepersController do
       describe "with a previous current zookeeper" do
         it "redirects to the root path, with no current_zookeeper_id in session" do
           Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)
-          Zookeeper.stub_arel.and_return(nil)
+          Zookeeper.stub_chain(:order, :first).and_return nil
           get :show_current, nil, :current_zookeeper_id => 1
           session[:current_zookeeper_id].should be nil
           response.should redirect_to root_path

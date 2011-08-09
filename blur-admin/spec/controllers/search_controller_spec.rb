@@ -19,7 +19,7 @@ describe SearchController do
 
       # ApplicationController.current_zookeeper
       Zookeeper.stub(:find_by_id).and_return(nil)
-      Zookeeper.stub_arel.and_return @zookeeper
+      Zookeeper.stub_chain(:order, :first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:order).and_return [@zookeeper]
 
@@ -33,7 +33,7 @@ describe SearchController do
     end
     
     it "find and assign tables, and columns" do
-      @zookeeper.stub_arel(:blur_tables, BlurTable).and_return(@blur_tables)
+      @zookeeper.stub_chain(:blur_tables, :order, :all).and_return(@blur_tables)
       get :show
       assigns(:blur_tables).should == @blur_tables
       assigns(:blur_table).should == @blur_table
@@ -42,7 +42,7 @@ describe SearchController do
 
     describe "when no tables are available" do
       it "find and assign tables and columns" do
-        @zookeeper.stub_arel(:blur_tables, BlurTable).and_return []
+        @zookeeper.stub_chain(:blur_tables, :order, :all).and_return []
         get :show
         assigns(:blur_tables).should == []
         assigns(:blur_table).should be nil

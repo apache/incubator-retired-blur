@@ -11,12 +11,23 @@
   - if !file_names_hash.empty?
     - file_names_hash.each do |file,stats|
       %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
-        - name = file.split('/').last
+        - if file.split('/').last.split('.').length > 1
+          - name = file.split('/').last.split('.').last
         - if stats.isdir
-          %img{:id => 'icon', :src => "/images/_Open.ico"}
+          %img{:id => 'icon', :src => "/images/open_folder.png"}
+        - elsif name == 'pdf'
+          %img{:id => 'icon', :src => "/images/pdf.ico"}
+        - elsif name == 'png'
+          %img{:id => 'icon', :src => "/images/png.ico"}
+        - elsif name == 'rtf'
+          %img{:id => 'icon', :src => "/images/rtf.ico"}
+        - elsif name == 'text' or name == 'txt'
+          %img{:id => 'icon', :src => "/images/text.ico"}
+        - elsif name == 'xml'
+          %img{:id => 'icon', :src => "/images/xml.ico"}
         - else
           %img{:id => 'icon', :src => "/images/default.ico"}
-        = name
+        = file.split('/').last
   - else
     No available files
 

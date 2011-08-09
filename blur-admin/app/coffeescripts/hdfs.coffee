@@ -14,11 +14,28 @@ $(document).ready ->
         name.preventDefault()
         search_file_tree()
     $('.file_layout').bind "search.jstree", (e, data) ->
-      $('#data_container_display').html "<div>Found " + data.rslt.nodes.length + " files that match '" + data.rslt.str + "'.</div>"
+      #$('#data_container_display').html "<div>Found " + data.rslt.nodes.length + " files that match '" + data.rslt.str + "'.</div>"
+      array = {}
+      array['*search_string*'] = data.rslt.str
+      $.each data.rslt.nodes, -> 
+        array[$('#' + this.id).attr('name')] = $('#' + this.id).attr 'connection'
+      search_results array
+      back_history.push array
+      $('#back_button').button 'enable'
+      $('#up_button').button 'disable'
+      $('#forward_button').button 'disable'
+
 
   search_file_tree = () ->
     $('.jstree-search').removeClass 'jstree-search'
     $('.file_layout').jstree "search", $('#search_string').val()
+
+  search_results = (array) ->
+    $.post '/hdfs/search', { 'results[]': array }, (data) ->
+      $('#data_container_display').html data
+      change_view()
+      $('#search_string').val array['*search_string*']
+      $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
 
   # Methods to call on page load
   setup_file_tree()
@@ -50,6 +67,8 @@ $(document).ready ->
       id = back_history[back_history.length - 1]
       if id == ""
         no_file()
+      else if typeof(id) != 'string'
+        search_results id
       else
         file = $('#'+ id).attr('name').replace(/\//g," ").replace('.','*')
         connection = $('#'+ id).attr 'connection'
@@ -58,13 +77,12 @@ $(document).ready ->
           success: (data) ->
             $('#data_container_display').html data
             change_view()
-            $.each($("#file_tiles > button" ), ->
-              $('#file_tiles #' + this.id).button()
-            )
+            $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
         $('#location_string').val $('#'+ id).attr 'name'
         $('#up_button').button 'enable'
         $('.file_layout').jstree "open_node", '#' + id
         $('.file_layout').find('li > #' + id).addClass 'jstree-search'
+        $('#search_string').val ""
     else
       $('#back_button').button 'disable'
       no_file()
@@ -90,7 +108,8 @@ $(document).ready ->
     forward_history.push back_history.pop()
     new_data()
   $('#forward_button').live 'click', ->
-    to_new_file forward_history.pop()
+    back_history.push forward_history.pop()
+    new_data()
 
   # Listener for all file links
   $('#hdfs_files a, #file_tiles > .ui-button, #file_list a, #file_details tbody tr').live 'click', ->

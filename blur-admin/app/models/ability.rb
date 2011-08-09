@@ -24,6 +24,7 @@ class Ability
         can :dashboard, :zookeepers
         can :files, :hdfs
         can :jstree, :hdfs
+        can :search, :hdfs
         can :help, :application
 
         # can view everything but query_string on blur_tables:

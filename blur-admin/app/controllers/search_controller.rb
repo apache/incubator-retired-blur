@@ -1,5 +1,5 @@
 class SearchController < ApplicationController
-  before_filter :current_zookeeper, :only => :show
+  before_filter :current_zookeeper, :only => [:show, :create]
   before_filter :zookeepers, :only => :show
 
   #Show action that sets instance variables used to build the filter column
@@ -43,7 +43,7 @@ class SearchController < ApplicationController
     blur_table = BlurTable.find params[:blur_table]
 
 
-    blur_results = search.fetch_results(blur_table.table_name)
+    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.url)
 
     # parse up the response object and reformat it to be @results
     # Results Object:

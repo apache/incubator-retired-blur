@@ -4,11 +4,11 @@ class HdfsController < ApplicationController
 
   def index
     if Hdfs.all.length > 0
-      hdfs_ids = Hdfs.select 'id'
+      hdfs_ids = Hdfs.select 'id, host, port'
       @files = {}
       @connections = {}
       hdfs_ids.each do |hdfs_id|
-        @hdfs = HdfsThriftClient.client(hdfs_id.id)
+        @hdfs = HdfsThriftClient.client(hdfs_id.host, hdfs_id.port)
         @hdfs.ls('/').each do |file|
           @files[file] = get_files file
           @connections[file] = hdfs_id.id
@@ -18,7 +18,8 @@ class HdfsController < ApplicationController
   end
 
   def files
-    hdfs = HdfsThriftClient.client(params[:connection])
+    hdfs_model = Hdfs.find params[:connection]
+    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
     file = params[:file].gsub(/[ *]/, ' ' => '/', '*' => '.')
     file_names_hash = {}
 

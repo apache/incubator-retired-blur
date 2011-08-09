@@ -1,7 +1,7 @@
 class ZookeepersController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:show_current, :show]
-  before_filter :zookeepers, :only => [:show_current, :index]
+  before_filter :zookeepers, :only => [:show_current]
 
   QUERY = "
     select
@@ -63,9 +63,8 @@ class ZookeepersController < ApplicationController
     connection = ActiveRecord::Base.connection()
     connection.execute(QUERY).each_hash { |row| zookeeper_results << row }
 
-    @zookeeper_status = zookeeper_results
     respond_to do |format|
-      format.json { render :json => @zookeeper_status.to_json() }
+      format.json { render :json => zookeeper_results }
     end
   end
 end

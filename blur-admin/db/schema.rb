@@ -87,9 +87,9 @@ ActiveRecord::Schema.define(:version => 20110727013041) do
     t.integer  "dead_nodes"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "hdfs_id"
     t.string   "host"
     t.integer  "port"
-    t.integer  "hdfs_id"
   end
 
   create_table "preferences", :force => true do |t|

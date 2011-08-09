@@ -6,6 +6,7 @@
   %h2 Zookeepers
 
   - if @zookeepers
-    = render 'zookeepers', :zookeepers => @zookeepers
+    #zookeepers
+      = render @zookeepers
   - else
     %h4 No Zookeeper Instances Available

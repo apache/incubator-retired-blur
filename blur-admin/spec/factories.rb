@@ -43,9 +43,15 @@ Factory.define :blur_table do |t|
       :setTable           => true,
       :setColumnFamilies  => true,
       :columnFamiliesSize => 3,
-      :columnFamilies     => { 'ColumnFamily1' => ['Column1A', 'Column1B', 'Column1C'],
-                               'ColumnFamily2' => ['Column2A', 'Column2B', 'Column2C'],
-                               'ColumnFamily3' => ['Column3A', 'Column3B', 'Column3C'] }
+      :columnFamilies     => { 'ColumnFamily1' => %w[Column1A Column1B Column1C],
+                               'ColumnFamily2' => %w[Column2A Column2B Column2C],
+                               'ColumnFamily3' => %w[Column3A Column3B Column3C] }
+    }.to_json
+  end
+  t.server do |blur_table|
+    {
+      'Host1:101' => %w[shard-001 shard-002 shard-003],
+      'Host2:102' => %w[shard-004 shard-005 shard-006]
     }.to_json
   end
 end
@@ -85,7 +91,7 @@ end
 
 #create a valid user
 Factory.define :user do |t|
-  t.sequence (:username)  {|n| "User ##{n}"}
+  t.sequence (:username)  {|n| "user#{n}"}
   t.sequence (:email)     {|n| "user#{n}@example.com"}
   t.password              "password"
   t.password_confirmation "password"
@@ -102,7 +108,11 @@ end
 Factory.define :filter_preference, :parent => :preference do |t|
   t.name 'filters'
   t.pref_type 'filters'
-  t.value {{'created_at_time' =>  1, 'super_query_on' => '', 'running' => true, 'interrupted' => '', 'refresh_period' => 'false'}.to_json}
+  t.value {{'created_at_time' =>  1,
+    'super_query_on' => '',
+    'running' => true,
+    'interrupted' => '',
+    'refresh_period' => 'false'}.to_json}
 end
 
 # Create models with association chains already created. These real objects and

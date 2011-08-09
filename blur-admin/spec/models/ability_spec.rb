@@ -1,5 +1,4 @@
 require "spec_helper"
-require "cancan/matchers"
 
 def controller_actions
   # this method returns a hash of controllers each with an array of their respective

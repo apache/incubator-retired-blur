@@ -16,13 +16,17 @@ gem 'compass-susy-plugin'
 gem "ganapati", "~> 0.0.5"
 gem 'capistrano'
 
+group :development do
+  gem 'system-metrics'
+end
+
 group :development, :test do
   gem 'autotest'
   gem 'rspec-rails'
+  gem 'capybara'
   gem 'ci_reporter'
   gem 'metric_fu'
   gem 'cover_me'
   gem 'rails-erd'
   gem 'factory_girl_rails'
-  gem 'system-metrics'
 end

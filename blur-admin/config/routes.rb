@@ -1,5 +1,5 @@
 BlurAdmin::Application.routes.draw do
-  resources :user_sessions
+  resources :user_sessions, :only => [:create]
 
   resources :users do
     match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference

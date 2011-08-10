@@ -32,7 +32,9 @@
 
                 - if record # then insert the record
                   - columns.each do |column|
-                    %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} column_#{column_family}_#{column} family_#{column_family}", :title => column}= record[column]
+                    %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} column_#{column_family}_#{column} family_#{column_family}",
+                        :title => column}
+                      = record[column]
 
                 - elsif i == result[column_family].length # fill in the remaining space with a big cell
                   %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} family_#{column_family} family_#{column_family}_empty",

@@ -28,7 +28,7 @@
         %h2 Blur Status
         #controllers
           .blur_container
-            - if @zookeeper.controllers
+            - unless @zookeeper.controllers.empty?
               %h3= "Controllers(#{@zookeeper.controllers.length})"
               #controllers-placeholder
                 - if @controller_nodes == 1
@@ -56,7 +56,7 @@
               %p Not Available
         #shards
           .blur_container
-            - if @zookeeper.shards
+            - unless @zookeeper.shards.empty?
               %h3= "Shards(#{@zookeeper.shards.length})"
               - if @shard_nodes == 1
                 = "Shards (blur version #{@zookeeper.shards.first.blur_version}) :"

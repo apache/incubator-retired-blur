@@ -44,8 +44,8 @@ class ZookeepersController < ApplicationController
   def show_current
     @zookeeper = @current_zookeeper
 
-    @shard_nodes = @zookeeper.shards.collect { |shard| shard.blur_version }.flatten.uniq.length
-    @controller_nodes = @zookeeper.controllers.collect { |controller| controller.blur_version }.flatten.uniq.length
+    @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
+    @shard_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'
     respond_to do |format|
       format.html { render :show_current }
     end

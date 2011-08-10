@@ -1,8 +1,5 @@
 #file_info
-  - if children == 1
-    = "#{file_stat.path} has 1 file"
-  - else
-    = "#{file_stat.path} has #{children} files"
+  = "#{file_stat.path} has #{pluralize(children.to_i,'file')}"
 
 #file_list{:style => 'display: none' }
   - if !file_names_hash.empty?
@@ -11,26 +8,7 @@
         %li
           %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
   - else
-    #file_table
-      %table
-        %tr
-          %td Length
-          %td=file_stat.length
-        %tr
-          %td Directory
-          %td=file_stat.isdir
-        %tr
-          %td Block Reps
-          %td=file_stat.block_replication
-        %tr
-          %td Block Size
-          %td=file_stat.blocksize
-        %tr
-          %td Owner
-          %td=file_stat.owner
-        %tr
-          %td Group
-          %td=file_stat.group
+    = render 'file_info', :file_stat => file_stat
 
 #file_tiles{:style => 'display: none' }
   - if !file_names_hash.empty?
@@ -42,38 +20,15 @@
           %img{:id => 'icon', :src => "/images/open_folder.png"}
         - elsif name == 'pdf'
           %img{:id => 'icon', :src => "/images/pdf.ico"}
-        - elsif name == 'png'
-          %img{:id => 'icon', :src => "/images/png.ico"}
         - elsif name == 'rtf'
           %img{:id => 'icon', :src => "/images/rtf.ico"}
         - elsif name == 'text' or name == 'txt'
           %img{:id => 'icon', :src => "/images/text.ico"}
-        - elsif name == 'xml'
-          %img{:id => 'icon', :src => "/images/xml.ico"}
         - else
           %img{:id => 'icon', :src => "/images/default.ico"}
         = file.split('/').last
   - else
-    #file_table
-      %table
-        %tr
-          %td Length
-          %td=file_stat.length
-        %tr
-          %td Directory
-          %td=file_stat.isdir
-        %tr
-          %td Block Reps
-          %td=file_stat.block_replication
-        %tr
-          %td Block Size
-          %td=file_stat.blocksize
-        %tr
-          %td Owner
-          %td=file_stat.owner
-        %tr
-          %td Group
-          %td=file_stat.group
+    = render 'file_info', :file_stat => file_stat
 
 #file_details{:style => 'display: none' }
   - if !file_names_hash.empty?
@@ -99,23 +54,4 @@
               %td=stats.owner
               %td=stats.group
   - else
-    #file_table
-      %table
-        %tr
-          %td Length
-          %td=file_stat.length
-        %tr
-          %td Directory
-          %td=file_stat.isdir
-        %tr
-          %td Block Reps
-          %td=file_stat.block_replication
-        %tr
-          %td Block Size
-          %td=file_stat.blocksize
-        %tr
-          %td Owner
-          %td=file_stat.owner
-        %tr
-          %td Group
-          %td=file_stat.group
+    = render 'file_info', :file_stat => file_stat

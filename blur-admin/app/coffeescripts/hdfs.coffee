@@ -143,4 +143,3 @@ $(document).ready ->
       to_new_file id
     else
       $('#data_container_display').html '<div>Not a valid file location</div>'
-

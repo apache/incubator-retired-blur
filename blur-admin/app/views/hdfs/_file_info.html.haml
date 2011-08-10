@@ -1,0 +1,20 @@
+#file_table
+  %table
+    %tr
+      %td Length
+      %td=file_stat.length
+    %tr
+      %td Directory
+      %td=file_stat.isdir
+    %tr
+      %td Block Reps
+      %td=file_stat.block_replication
+    %tr
+      %td Block Size
+      %td=file_stat.blocksize
+    %tr
+      %td Owner
+      %td=file_stat.owner
+    %tr
+      %td Group
+      %td=file_stat.group

@@ -15,6 +15,7 @@ import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
 
 public class TableCollector {
 	public static void startCollecting(String connection, final JdbcTemplate jdbc) throws Exception {
@@ -28,7 +29,7 @@ public class TableCollector {
 				//Create and update tables
 				for (String table : tables) {				
 					//TODO: This will be a problem because we aren't specifying the cluster
-					List<Map<String, Object>> existingTable = jdbc.queryForList("select id from blur_tables where table_name=?", table);
+					List<Map<String, Object>> existingTable = jdbc.queryForList("select id, cluster_id from blur_tables where table_name=?", table);
 					TableDescriptor descriptor = client.describe(table);
 					
 					//add the tablename and tableid to the map that acts as a dictionary
@@ -58,8 +59,13 @@ public class TableCollector {
 //					String tableUri = descriptor.tableUri;
 					String tableAnalyzer = descriptor.analyzerDefinition.fullTextAnalyzerClassName;
 					
+					//TODO: Make this use the descriptor when its filled in
+//					System.out.println(descriptor.getCluster());
+//					Integer clusterId = jdbc.queryForInt("select id from clusters where name=?", new Object[]{descriptor.getCluster()});
 					
-					//TODO: need to pull stats
+					Integer clusterId = (Integer) existingTable.get(0).get("CLUSTER_ID");
+					
+					TableStats tableStats = client.getTableStats(table);
 					
 					if (existingTable.isEmpty()) {
 						//New Table
@@ -67,8 +73,8 @@ public class TableCollector {
 //								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
 					} else {
 						//Update Table
-						jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=? where table_name=?", 
-								new Object[]{tableAnalyzer, schemaString, shardServerString, table});
+						jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=?, current_size=?, query_usage=?, record_count=?, row_count=? where table_name=? and cluster_id=?", 
+								new Object[]{tableAnalyzer, schemaString, shardServerString, tableStats.getBytes(), tableStats.getQueries(), tableStats.getRecordCount(), tableStats.getRowCount(), table, clusterId});
 					}
 				}
 				

@@ -20,7 +20,9 @@ class HdfsController < ApplicationController
   def files
     hdfs_model = Hdfs.find params[:connection]
     hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-    file = params[:file].gsub(/[ *]/, ' ' => '/', '*' => '.')
+    file = params[:file]
+
+    file_stat = hdfs.stat file
     file_names_hash = {}
 
     if hdfs.exists? file
@@ -33,7 +35,7 @@ class HdfsController < ApplicationController
       end
     end
 
-   render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:connection => params[:connection], :file_names_hash => file_names_hash}
+   render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:file_stat => file_stat, :connection => params[:connection], :file_names_hash => file_names_hash, :children => params[:children]}
   end
 
   def get_files curr_file
@@ -54,7 +56,7 @@ class HdfsController < ApplicationController
     connections = {}
     search_string = ""
     if params[:results]
-      params[:results][0].each do |name, connection|
+      params[:results].each do |name, connection|
         if name == "*search_string*"
           search_string = connection
         else

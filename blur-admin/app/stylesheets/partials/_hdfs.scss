@@ -31,6 +31,7 @@
     padding-top: 2em;
     margin-bottom: 95px;
     ul { list-style: none; margin-left: -1.5em; }
+    #search_results { margin-bottom: 1em; }
   }
 
   #file_tiles {
@@ -38,10 +39,11 @@
       margin: 5px;
       width: 150px;
       display: inline-block;
+      word-wrap: break-word;
     }
   }
 
-  #file_details {
+  #file_details_table {
     tr:nth-child(even) { background-color: white; };
     tr:nth-child(odd) { background-color: $grey-div-color; }
     table { margin: 0; @include border;}

@@ -20,7 +20,10 @@ BlurAdmin::Application.routes.draw do
 
   match 'blur_queries/refresh' => 'blur_queries#refresh', :via => :get, :as => :refresh
   resources :blur_queries do
-    get 'more_info', :on => :member
+    member do
+      get 'more_info'
+      get 'times'
+    end
   end
 
   controller "search" do

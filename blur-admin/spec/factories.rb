@@ -58,16 +58,21 @@ end
 
 Factory.define :blur_query do |t|
   t.sequence (:query_string) { |n| "Blur Query ##{n} Query String" }
-  t.cpu_time  { rand 10 * 10 ** 3 } #Between 0 and 10 seconds
-  t.real_time { |blur_query| blur_query.cpu_time + rand( 10 * 10 ** 3) } #Between 0 and 10 additional seconds
-  t.complete  { rand 2 }
-  t.interrupted { rand(2) == 1 ? true : false } # 50% chance
-  t.running      { rand(2) == 1 ? true : false } # 50% chance
+  t.complete_shards  { rand 2 }
   t.uuid        { rand 10 ** 8 }
   t.super_query_on { rand(4) != 0 } # 75% chance
   t.start { rand 10 ** 6 }
   t.fetch_num { rand 10 ** 6 }
   t.userid { "Test User ##{rand 20}" }
+  t.times do |blur_query|
+    { 'shard' => {  :cpuTime => 40,
+                    :realTime => 56,
+                    :setCpuTime => true,
+                    :setRealTime => true }
+    }.to_json
+  end
+  t.total_shards { rand 2 }
+  t.state { rand 2 }
   #t.selector_column_families
   #t.selector_columns
   #t.pre_filters

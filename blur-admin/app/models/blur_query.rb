@@ -21,7 +21,9 @@ class BlurQuery < ActiveRecord::Base
   end
 
   def times
-    JSON.parse read_attribute(:times)
+    JSON.parse(read_attribute(:times)).each do |shard, value|
+      value.reject! {|type, value| type == 'setCpuTime' or type == 'setRealTime'}
+    end
   end
 
   def state

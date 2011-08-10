@@ -35,6 +35,9 @@ class Ability
         can :more_info, :blur_queries, attributes
         can :refresh, :blur_queries
 
+        # view times on blur queries
+        can :times, :blur_queries
+
         # Can modify own filter preferences
         can :update, :preferences, {:user_id => user.id, :pref_type => 'filter'}
 

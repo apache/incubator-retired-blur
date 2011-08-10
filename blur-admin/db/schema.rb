@@ -10,15 +10,11 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110809202748) do
+ActiveRecord::Schema.define(:version => 20110810142348) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
-    t.integer  "cpu_time"
-    t.integer  "real_time"
-    t.integer  "complete"
-    t.boolean  "interrupted"
-    t.boolean  "running"
+    t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -32,6 +28,9 @@ ActiveRecord::Schema.define(:version => 20110809202748) do
     t.text     "selector_columns"
     t.string   "userid"
     t.integer  "blur_table_id"
+    t.string   "times"
+    t.integer  "total_shards"
+    t.integer  "state"
   end
 
   create_table "blur_tables", :force => true do |t|
@@ -47,6 +46,7 @@ ActiveRecord::Schema.define(:version => 20110809202748) do
     t.text     "table_schema"
     t.text     "server"
     t.integer  "cluster_id"
+    t.integer  "row_count",      :limit => 8
   end
 
   create_table "clusters", :force => true do |t|
@@ -87,9 +87,9 @@ ActiveRecord::Schema.define(:version => 20110809202748) do
     t.integer  "dead_nodes"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "hdfs_id"
     t.string   "host"
     t.integer  "port"
+    t.integer  "hdfs_id"
   end
 
   create_table "preferences", :force => true do |t|

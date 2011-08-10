@@ -29,7 +29,7 @@ class BlurQuery < ActiveRecord::Base
       when 0 then "Running"
       when 1 then "Interrupted"
       when 2 then "Complete"
-      else "Not Available"
+      else nil
     end
   end
 

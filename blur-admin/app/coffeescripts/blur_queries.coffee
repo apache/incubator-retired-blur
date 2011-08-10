@@ -167,6 +167,20 @@ $(document).ready ->
         open: ->
           $('.ui-widget-overlay').bind 'click', -> 
             $('#more-info-table').dialog('close')
+  # Ajax request handling for more info link
+  $('a.times')
+    .live 'ajax:success', (evt, data, status, xhr) ->
+      $(data).dialog
+        modal: true
+        draggable: false
+        resizable: false
+        width: 'auto'
+        title: "Query Time"
+        close: (event, ui) ->
+          $(this).remove()
+        open: ->
+          $('.ui-widget-overlay').bind 'click', -> 
+            $('#more-info-table').dialog('close')
 
   #when the page loads show the currently selected filters
   update_filter_choices()

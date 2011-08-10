@@ -11,20 +11,6 @@
           -else
             =empty_message
     %tr
-      %td{:class => "more-info-label"} CPU Time
-      %td
-        -if blur_query.cpu_time
-          =blur_query.cpu_time
-        -else
-          =empty_message
-    %tr
-      %td{:class => "more-info-label"} Real Time
-      %td
-        -if blur_query.real_time
-          =blur_query.real_time
-        -else
-          =empty_message
-    %tr
       %td{:class => "more-info-label"} UUID
       %td
         -if blur_query.uuid
@@ -34,14 +20,10 @@
     %tr 
       %td{:class => "more-info-label"} Status
       %td
-        -if blur_query.complete == 1
-          Complete
-        -elsif blur_query.interrupted
-          Interrupted
-        -elsif blur_query.running
-          Running
+        -if blur_query.state
+          = blur_query.state
         -else
-          =empty_message
+          = empty_message
     %tr 
       %td{:class => "more-info-label"} Created At
       %td

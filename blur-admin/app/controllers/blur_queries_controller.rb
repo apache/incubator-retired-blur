@@ -78,8 +78,9 @@ class BlurQueriesController < ApplicationController
 
   def times
     times = BlurQuery.find(params[:id]).times
+    puts times
     respond_to do |format|
-      format.json render times
+      format.html { render :partial => 'times', :locals => {:times => times} }
     end
   end
 end

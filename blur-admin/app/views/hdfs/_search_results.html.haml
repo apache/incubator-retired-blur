@@ -9,7 +9,7 @@
     %ul
       - file_names_hash.each do |file,stats|
         %li
-          %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}= file.split('/').last
+          %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}= file
 
 #file_tiles{:style => 'display: none' }
   - if file_names_hash.length > 0 and file_names_hash
@@ -31,7 +31,7 @@
           %img{:id => 'icon', :src => "/images/xml.ico"}
         - else
           %img{:id => 'icon', :src => "/images/default.ico"}
-        = file.split('/').last
+        = file
 
 #file_details{:style => 'display: none' }
   - if file_names_hash.length > 0 and file_names_hash
@@ -48,7 +48,7 @@
       %tbody
         - file_names_hash.each do |file,stats|
           %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}
-            %td.name=file.split('/').last
+            %td.name=file
             %td=stats.length
             %td=stats.isdir
             %td=stats.block_replication

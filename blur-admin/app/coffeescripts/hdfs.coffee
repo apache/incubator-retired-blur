@@ -31,7 +31,7 @@ $(document).ready ->
     $('.file_layout').jstree "search", $('#search_string').val()
 
   search_results = (array) ->
-    $.post '/hdfs/search', { 'results[]': array }, (data) ->
+    $.post '/hdfs/search', { 'results': array }, (data) ->
       $('#data_container_display').html data
       change_view()
       $('#search_string').val array['*search_string*']
@@ -70,14 +70,13 @@ $(document).ready ->
       else if typeof(id) != 'string'
         search_results id
       else
-        file = $('#'+ id).attr('name').replace(/\//g," ").replace('.','*')
+        file = $('#'+ id).attr('name')
         connection = $('#'+ id).attr 'connection'
-        $.ajax '/hdfs/' + file + '/' + connection,
-          type: 'POST',
-          success: (data) ->
-            $('#data_container_display').html data
-            change_view()
-            $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
+        children = $('#'+ id + ' > ul').children().size()
+        $.post '/hdfs/files', { 'file': file, 'connection': connection, 'children': children }, (data) ->
+          $('#data_container_display').html data
+          change_view()
+          $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
         $('#location_string').val $('#'+ id).attr 'name'
         $('#up_button').button 'enable'
         $('.file_layout').jstree "open_node", '#' + id

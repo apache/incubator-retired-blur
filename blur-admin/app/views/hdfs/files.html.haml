@@ -1,3 +1,9 @@
+#file_info
+  - if children == 1
+    = "#{file_stat.path} has 1 file"
+  - else
+    = "#{file_stat.path} has #{children} files"
+
 #file_list{:style => 'display: none' }
   - if !file_names_hash.empty?
     %ul
@@ -5,7 +11,26 @@
         %li
           %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
   - else
-    No available files
+    #file_table
+      %table
+        %tr
+          %td Length
+          %td=file_stat.length
+        %tr
+          %td Directory
+          %td=file_stat.isdir
+        %tr
+          %td Block Reps
+          %td=file_stat.block_replication
+        %tr
+          %td Block Size
+          %td=file_stat.blocksize
+        %tr
+          %td Owner
+          %td=file_stat.owner
+        %tr
+          %td Group
+          %td=file_stat.group
 
 #file_tiles{:style => 'display: none' }
   - if !file_names_hash.empty?
@@ -29,29 +54,68 @@
           %img{:id => 'icon', :src => "/images/default.ico"}
         = file.split('/').last
   - else
-    No available files
+    #file_table
+      %table
+        %tr
+          %td Length
+          %td=file_stat.length
+        %tr
+          %td Directory
+          %td=file_stat.isdir
+        %tr
+          %td Block Reps
+          %td=file_stat.block_replication
+        %tr
+          %td Block Size
+          %td=file_stat.blocksize
+        %tr
+          %td Owner
+          %td=file_stat.owner
+        %tr
+          %td Group
+          %td=file_stat.group
 
 #file_details{:style => 'display: none' }
   - if !file_names_hash.empty?
-    %table
-      %thead
-        %tr
-          %th.name File Name
-          %th Length
-          %th Directory
-          %th Block Reps
-          %th Block Size
-          %th Owner
-          %th Group
-      %tbody
-        - file_names_hash.each do |file,stats|
-          %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
-            %td.name=file.split('/').last
-            %td=stats.length
-            %td=stats.isdir
-            %td=stats.block_replication
-            %td=stats.blocksize
-            %td=stats.owner
-            %td=stats.group
+    #file_details_table
+      %table
+        %thead
+          %tr
+            %th.name File Name
+            %th Length
+            %th Directory
+            %th Block Reps
+            %th Block Size
+            %th Owner
+            %th Group
+        %tbody
+          - file_names_hash.each do |file,stats|
+            %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
+              %td.name=file.split('/').last
+              %td=stats.length
+              %td=stats.isdir
+              %td=stats.block_replication
+              %td=stats.blocksize
+              %td=stats.owner
+              %td=stats.group
   - else
-    No available files
+    #file_table
+      %table
+        %tr
+          %td Length
+          %td=file_stat.length
+        %tr
+          %td Directory
+          %td=file_stat.isdir
+        %tr
+          %td Block Reps
+          %td=file_stat.block_replication
+        %tr
+          %td Block Size
+          %td=file_stat.blocksize
+        %tr
+          %td Owner
+          %td=file_stat.owner
+        %tr
+          %td Group
+          %td=file_stat.group

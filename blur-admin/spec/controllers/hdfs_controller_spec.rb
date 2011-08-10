@@ -10,21 +10,48 @@ describe HdfsController do
     controller.stub!(:current_ability).and_return(@ability)
 
     @hdfs = Factory.stub :hdfs
+    @file_strings = ["hdfs://file-location"]
+
+    @hdfs_stat = mock(ThriftHadoopFileSystem::FileStatus)
   end
 
   describe "GET index" do
+    before do
+      Hdfs.stub(:select).and_return([@hdfs])
+      @hdfs_client.stub(:ls).and_return(@file_strings)
+      @hdfs_client.stub(:exists?).and_return(true)
+    end
+
     it "renders the index template" do
-      Hdfs.stub(:select).and_return(@hdfs)
       get :index
+      response.should render_template "index"
     end
   end
 
   describe "PUT files" do
-    it "renders the selected files"
+    before do
+      Hdfs.stub(:find).and_return(@hdfs)
+    end
+
+    it "renders the selected files" do
+      @hdfs_client.should_receive(:stat).and_return(@hdfs_stat)
+      @hdfs_client.should_receive(:exists?).and_return(true)
+      @hdfs_client.should_receive(:ls).and_return(@file_strings)
+      get :files, :connection => '4', :file => "hdfs://file-location"
+      response.should render_template "files"
+    end
   end
 
   describe "PUT search" do
-    it "renders search results"
+    before do
+      Hdfs.stub(:find).and_return(@hdfs)
+    end
+    it "renders search results" do
+      @hdfs_client.stub(:stat).and_return(@hdfs_stat)
+      @hdfs_client.should_receive(:exists?).and_return(true)
+      @hdfs_client.should_receive(:ls).and_return(@file_strings)
+      get :files, :results => { "hdfs://file-location" => '4' }
+    end
   end
 
 end

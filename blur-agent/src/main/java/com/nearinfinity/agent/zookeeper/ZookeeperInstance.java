@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,7 +34,10 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	private void initializeZkInstanceModel() {
 		List<Map<String, Object>> instances = jdbc.queryForList("select id from zookeepers where name = ?", new Object[]{name});
 		if (instances.isEmpty()) {
-			jdbc.update("insert into zookeepers (name, url) values (?, ?)", new Object[]{name, url});
+			String blurConnection = props.getProperty("blur." + name + ".url");
+			String blurHost = blurConnection.split(":")[0]; 
+			String blurPort = blurConnection.split(":")[1]; 
+			jdbc.update("insert into zookeepers (name, url, host, port) values (?, ?, ?, ?)", new Object[]{name, url, blurHost, blurPort});
 			instanceId = jdbc.queryForInt("select id from zookeepers where name = ?", new Object[]{name});
 		} else {
 			instanceId = (Integer) instances.get(0).get("ID");

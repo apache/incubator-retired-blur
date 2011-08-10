@@ -1,6 +1,8 @@
 class BlurThriftClient
-  def self.client
-    @client = ThriftClient.new(Blur::Blur::Client, "#{BLUR_THRIFT[:host]}:#{BLUR_THRIFT[:port]}", :retries => 10) unless @client
-    @client
+  @@connections = {}
+
+  def self.client(host, port)
+    url = "#{host}:#{port}"
+    @@connections[url] ||= ThriftClient.new Blur::Blur::Client, url, :retries => 10
   end
 end

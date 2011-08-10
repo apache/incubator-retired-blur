@@ -1,5 +1,5 @@
 class SearchController < ApplicationController
-  before_filter :current_zookeeper, :only => :show
+  before_filter :current_zookeeper, :only => [:show, :create]
   before_filter :zookeepers, :only => :show
 
   #Show action that sets instance variables used to build the filter column
@@ -43,14 +43,14 @@ class SearchController < ApplicationController
     blur_table = BlurTable.find params[:blur_table]
 
 
-    blur_results = search.fetch_results(blur_table.table_name)
+    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.host, @current_zookeeper.port)
 
     # parse up the response object and reformat it to be @results
     # Results Object:
     #   @results is an array of results. Each result is a series of nested hashes/arrays:
-    #     result = {:id, :max_record_count, :column_families => column_families}
-    #     column_families = {:column_family_name => [record]}
-    #     record = {:recordId => recordId, :column_name => value}
+    #     result = {:id, :max_record_count, :records => [records]}
+    #     records = {:recordId, :family, :columns => [column]}
+    #     column = {:name, :value}
 
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime
@@ -59,26 +59,25 @@ class SearchController < ApplicationController
       # drill down through the result object cruft to get the real result
       blur_result = blur_result_container.fetchResult.rowResult.row
       # continue to next result if there is no returned data
-      next if blur_result.columnFamilies.empty?
+      next if blur_result.records.empty?
+      # next if blur_result.columnFamilies.empty?
 
-      max_record_count = blur_result.columnFamilies.collect {|cf| cf.records.keys.count }.max
+      max_record_count = blur_result.records.collect {|record| record.columns.count }.max
 
       result = {:max_record_count => max_record_count, :id => blur_result.id}
 
-      blur_result.columnFamilies.each do |blur_column_family|
-        column_family = blur_column_family.family
-        records = []
-        blur_column_family.records.each do |record_id, blur_columns|
-          record = {'recordId' => record_id}
-          blur_columns.each do |blur_column|
-            unless blur_column == 'recordId'
-              column = blur_column.name
-              record[column] = blur_column.values.join ', '
-            end
+      blur_result.records.each do |blur_record|
+        column_family = blur_record.family
+        columns = []
+        blur_record.columns.each do |blur_column|
+          record = {'recordId' => blur_record.recordId}
+          unless blur_column.name == 'recordId'
+            column = blur_column.name
+            record[column] = blur_column.value
           end
-          records << record
+          columns << record
         end
-        result[column_family] = records
+        result[column_family] = columns
       end
       @results << result
     end

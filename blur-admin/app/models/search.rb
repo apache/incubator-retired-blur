@@ -41,7 +41,7 @@ class Search < ActiveRecord::Base
     Blur::Selector.new :columnFamiliesToFetch => self.column_families,
                        :columnsToFetch        => self.columns
   end
-  def fetch_results(table_name)
-    BlurThriftClient.client.query(table_name, self.blur_query)
+  def fetch_results(table_name, host, port)
+    BlurThriftClient.client(host, port).query(table_name, self.blur_query)
   end
 end

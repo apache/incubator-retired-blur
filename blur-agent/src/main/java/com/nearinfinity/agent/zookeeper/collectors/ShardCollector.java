@@ -45,9 +45,9 @@ public class ShardCollector {
 	
 	private void markOfflineShards(List<String> shards) {
 		if (shards.isEmpty()) {
-			jdbc.update("update shards set status = 0");
+			jdbc.update("update shards set status = 0 where cluster_id = ?", new Object[]{clusterId});
 		} else {
-			jdbc.update("update shards set status = 0 where node_name not in ('" + StringUtils.join(shards, "','") + "')");
+			jdbc.update("update shards set status = 0 where node_name not in ('" + StringUtils.join(shards, "','") + "') and cluster_id=?", new Object[]{clusterId});
 		}
 	}
 	
@@ -57,7 +57,7 @@ public class ShardCollector {
 			if (instances.isEmpty()) {
 				jdbc.update("insert into shards (node_name, node_location, status, cluster_id, blur_version) values (?, ?, ?, ?, ?)", new Object[]{shard, "placeholder", 2, clusterId, "1.0"});
 			} else {
-				jdbc.update("update shards set status=2, blur_version=? where node_name=?", new Object[]{"1.0", shard});
+				jdbc.update("update shards set status=2, blur_version=? where node_name=? and cluster_id=?", new Object[]{"1.0", shard, clusterId});
 			}
 		}
 	}

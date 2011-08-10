@@ -19,4 +19,21 @@ class BlurQuery < ActiveRecord::Base
   def zookeeper
     self.blur_table.zookeeper
   end
+
+  def times
+    JSON.parse read_attribute(:times)
+  end
+
+  def state
+    case read_attribute(:state)
+      when 0 then "Running"
+      when 1 then "Interrupted"
+      when 2 then "Complete"
+      else "Not Available"
+    end
+  end
+
+  def complete
+    self.complete_shards / self.total_shards.to_f
+  end
 end

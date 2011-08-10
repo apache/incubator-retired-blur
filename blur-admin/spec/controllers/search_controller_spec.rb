@@ -113,6 +113,19 @@ describe SearchController do
       #columns          = Set.new                 # Set
       #column           = mock 'column'           # Blur::Column
       #values           = []                      # Array
+      #
+      ###### Hierarchy of Blur::BlurResults 8/10 #######
+      #blur_results     = mock 'results'          # Blur::BlurResults
+      #results          = []                      # Array
+      #result           = mock 'result'           # Blur::BlurResult
+      #fetch_result     = mock 'fetch_result'     # Blur::FetchResult
+      #fetch_row_result = mock 'fetch_row_result' # Blur::FetchRowResult
+      #row              = mock 'row'              # Blur::Row
+      #records          = []                      # Array
+      #record           = mock 'record'           # Blur::Record
+      #columns          = []                      # Array
+      #column           = mock 'column'           # Blur::Column
+      #
 
       schema = search.columns
       column_families = Set.new

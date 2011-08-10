@@ -41,7 +41,6 @@ BlurAdmin::Application.routes.draw do
   match 'help/:tab' => 'application#help'
 
   resources :hdfs
-  #match 'hdfs/:file/:connection/:children' => 'hdfs#files', :via => :post
   match 'hdfs/search' => 'hdfs#search', :via => :post
   match 'hdfs/files' => 'hdfs#files', :via => :post
 

@@ -60,7 +60,8 @@ class HdfsController < ApplicationController
         if name == "*search_string*"
           search_string = connection
         else
-          hdfs = HdfsThriftClient.client(connection.to_i)
+          hdfs_model = Hdfs.find connection
+          hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
           file_names_hash[name] = hdfs.stat name
           connections[name] = connection
         end

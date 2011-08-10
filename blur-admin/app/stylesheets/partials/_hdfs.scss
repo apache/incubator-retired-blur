@@ -1,3 +1,29 @@
+#toolbar_wrapper {
+  background: #eee;
+  width: 100%;
+  @include standard-font;
+
+  #toolbar {
+    @include full;
+    padding: 5px 0;
+    .ui-widget{ font-size: 0.9em; }
+    #location, #search {
+      padding-top: 0.5em;
+      vertical-align: middle;
+      display: inline-block;
+    }
+    #location {
+      width: 70%;
+      #location_string{ width: 90%; height: 1.5em; }
+    }
+    #search {
+      width: 29%;
+      #search_string { width: 70%; height: 1.5em; }
+    }
+    #go_button, #search_button { vertical-align: top; }
+  }
+}
+
 #hdfs_wrapper{
   padding-bottom: 165px;
   @include full;
@@ -13,6 +39,7 @@
   #data_wrapper {
     @include columns(22,$total-cols);
     @include omega($total-cols);
+
     #hdfs_bar{
       @include columns(1,22);
       width: 1em;
@@ -25,13 +52,11 @@
     #data_container_display {
       @include columns(21,22);
       @include omega(22);
+      padding-top: 2em;
+      margin-bottom: 95px;
+      ul { list-style: none; margin-left: -1.5em; }
+      #search_results, #file_info { margin-bottom: 1em; }
     }
-  }
-  #data_container_display {
-    padding-top: 2em;
-    margin-bottom: 95px;
-    ul { list-style: none; margin-left: -1.5em; }
-    #search_results { margin-bottom: 1em; }
   }
 
   #file_tiles {
@@ -66,35 +91,7 @@
   a:hover { color: #06C; }
   .jstree-search { color: $base-theme-color; }
 
-  #icon {
-    height: 32px;
-    width: 32px;
-  }
+  #icon { height: 32px; width: 32px; }
 }
 
-#toolbar_wrapper {
-  background: #eee;
-  width: 100%;
-  @include standard-font;
-  #toolbar {
-    @include full;
-    padding: 5px 0;
-    .ui-widget{ font-size: 0.9em; }
-    #location {
-      padding-top: 0.5em;
-      vertical-align: middle;
-      #location_string{ width: 50%; height: 1.5em; }
-    }
-    
-    #search_string {
-      max-height: 1.5em;
-      max-width: 20em;
-      min-height: 1.5em;
-      min-width: 20em;
-      vertical-align: middle;
-    }
-  }
-  #search { float: right; display: inline-block; }
-  #search_button { vertical-align: top; margin-top: 4px; }
-  #go_button { vertical-align: top; }
-}
+

@@ -23,7 +23,6 @@ class Ability
         can :make_current, :zookeepers
         can :dashboard, :zookeepers
         can :files, :hdfs
-        can :jstree, :hdfs
         can :search, :hdfs
         can :help, :application
 

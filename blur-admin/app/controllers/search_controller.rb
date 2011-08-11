@@ -45,12 +45,12 @@ class SearchController < ApplicationController
 
     blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.host, @current_zookeeper.port)
 
-    # parse up the response object and reformat it to be @results
-    # Results Object:
-    #   @results is an array of results. Each result is a series of nested hashes/arrays:
-    #     result = {:id, :max_record_count, :records => [records]}
-    #     records = {:recordId, :family, :columns => [column]}
-    #     column = {:name, :value}
+    # parse up the response object and reformat it to be @results.  @results holds the data
+    # that will be passed to the view. @results is an array of results. Each result is a series
+    # of nested hashes/arrays:
+    #   result = {:id, :max_record_count, :column_families => column_families}
+    #   column_families = {:column_family_name => [record]}
+    #   record = {:recordId => recordId, :column_name => value}
 
     @result_count = blur_results.totalResults
     @result_time = blur_results.realTime
@@ -62,22 +62,27 @@ class SearchController < ApplicationController
       next if blur_result.records.empty?
       # next if blur_result.columnFamilies.empty?
 
-      max_record_count = blur_result.records.collect {|record| record.columns.count }.max
+      max_record_count = blur_result.records.
+        collect {|record| record.family}.
+        reduce(Hash.new(0)) {|count, family| count[family] += 1; count}.
+        values.max
 
       result = {:max_record_count => max_record_count, :id => blur_result.id}
+      result.default = []
 
       blur_result.records.each do |blur_record|
         column_family = blur_record.family
-        columns = []
+
+        record = {'recordId' => blur_record.recordId}
         blur_record.columns.each do |blur_column|
-          record = {'recordId' => blur_record.recordId}
-          unless blur_column.name == 'recordId'
-            column = blur_column.name
-            record[column] = blur_column.value
-          end
-          columns << record
+          record[blur_column.name] = blur_column.value
         end
-        result[column_family] = columns
+        result[column_family] << record
+
+        #result[column_family] << blur_record.columns.reduce({'recordId' => blur_record.recordId}) do |record, blur_column|
+        #  record[blur_column.name] = blur_column.value
+        #  record
+        #end
       end
       @results << result
     end

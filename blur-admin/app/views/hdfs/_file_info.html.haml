@@ -2,16 +2,16 @@
   %table
     %tr
       %td Length
-      %td=file_stat.length
+      %td=number_to_human_size file_stat.length, :precision => 4
     %tr
       %td Directory
       %td=file_stat.isdir
     %tr
       %td Block Reps
-      %td=file_stat.block_replication
+      %td=number_with_delimiter file_stat.block_replication, :delimiter => ','
     %tr
       %td Block Size
-      %td=file_stat.blocksize
+      %td=number_with_delimiter file_stat.blocksize, :delimiter => ','
     %tr
       %td Owner
       %td=file_stat.owner

@@ -26,11 +26,10 @@ describe "environment status" do
   end
 
   it "displays the location and any relevent action buttons in the body" do
-    pending "something wrong with user permissions"
+    # pending "something wrong with user permissions"
     save_and_open_page
     zookeeper.blur_tables.each do |table|
       find("div#blur_table_#{table.id}").should have_content table.table_uri
-      save_and_open_page
       if table.is_enabled?
         find("div#blur_table_#{table.id}").should have_content "Disable Table"
       else

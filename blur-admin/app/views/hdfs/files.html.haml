@@ -1,5 +1,5 @@
 #file_info
-  = "#{file_stat.path} has #{pluralize(children.to_i,'file')}"
+  = "#{file_stat.path} has #{pluralize(children.to_i,'file')}" if children.to_i > 0
 
 #file_list{:style => 'display: none' }
   - if !file_names_hash.empty?
@@ -14,18 +14,8 @@
   - if !file_names_hash.empty?
     - file_names_hash.each do |file,stats|
       %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
-        - if file.split('/').last.split('.').length > 1
-          - name = file.split('/').last.split('.').last
-        - if stats.isdir
-          %img{:id => 'icon', :src => "/images/open_folder.png"}
-        - elsif name == 'pdf'
-          %img{:id => 'icon', :src => "/images/pdf.ico"}
-        - elsif name == 'rtf'
-          %img{:id => 'icon', :src => "/images/rtf.ico"}
-        - elsif name == 'text' or name == 'txt'
-          %img{:id => 'icon', :src => "/images/text.ico"}
-        - else
-          %img{:id => 'icon', :src => "/images/default.ico"}
+        = file_icon(file, stats)
+        %br
         = file.split('/').last
   - else
     = render 'file_info', :file_stat => file_stat
@@ -47,10 +37,10 @@
           - file_names_hash.each do |file,stats|
             %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
               %td.name=file.split('/').last
-              %td=stats.length
+              %td=number_to_human_size stats.length, :delimiter => 4
               %td=stats.isdir
-              %td=stats.block_replication
-              %td=stats.blocksize
+              %td=number_with_delimiter stats.block_replication, :delimiter => ','
+              %td=number_with_delimiter stats.blocksize, :delimiter => ','
               %td=stats.owner
               %td=stats.group
   - else

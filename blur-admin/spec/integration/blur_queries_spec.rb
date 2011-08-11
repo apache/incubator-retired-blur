@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe "environment status" do
+describe "blur queries" do
   # generate a valid user
   let(:user) { Factory.create :user }
   # generate a current zookeeper

@@ -26,15 +26,13 @@ describe "environment status" do
   end
 
   it "displays the location and any relevent action buttons in the body" do
-    # pending "something wrong with user permissions"
-    save_and_open_page
     zookeeper.blur_tables.each do |table|
       find("div#blur_table_#{table.id}").should have_content table.table_uri
       if table.is_enabled?
-        find("div#blur_table_#{table.id}").should have_content "Disable Table"
+        find("div#blur_table_#{table.id}").should have_selector "input[value='Disable Table']"
       else
-        find("div#blur_table_#{table.id}").should have_content "Enable Table"
-        find("div#blur_table_#{table.id}").should have_content "Delete Table"
+        find("div#blur_table_#{table.id}").should have_selector "input[value='Enable Table']"
+        find("div#blur_table_#{table.id}").should have_selector "input[value='Delete Table']"
       end
     end
   end

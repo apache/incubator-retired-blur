@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe "blur queries" do
   # generate a valid user
-  let(:user) { Factory.create :user }
+  let(:user) { Factory.create :user_with_preferences }
   # generate a current zookeeper
   let(:zookeeper) {Factory.create :zookeeper_with_blur_queries}
 

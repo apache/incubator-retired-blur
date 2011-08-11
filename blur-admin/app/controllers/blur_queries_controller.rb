@@ -16,7 +16,6 @@ class BlurQueriesController < ApplicationController
     filters.delete('refresh_period')
     filters.delete('created_at_time')
 
-
     @blur_tables = @current_zookeeper.blur_tables
 
     @blur_queries = BlurQuery.joins(:blur_table => :cluster).

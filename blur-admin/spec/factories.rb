@@ -111,13 +111,13 @@ Factory.define :preference do |t|
 end
 
 Factory.define :filter_preference, :parent => :preference do |t|
-  t.name 'filters'
-  t.pref_type 'filters'
-  t.value {{'created_at_time' =>  1,
+  t.name 'filter'
+  t.pref_type 'filter'
+  t.value {{'created_at_time' =>  5,
     'super_query_on' => '',
-    'running' => true,
+    'running' => '',
     'interrupted' => '',
-    'refresh_period' => 'false'}.to_json}
+    'refresh_period' => 'false'}}
 end
 
 #create a valid hdfs
@@ -127,7 +127,14 @@ Factory.define :hdfs do |t|
   t.name { "factory_hdfs" }
 end
 
-# Create models with association chains already created. These real objects and
+Factory.define :user_with_preferences, :parent => :user do |t|
+  t.after_create do |user|
+    Factory.create :filter_preference, :user => user
+    Factory.create :preference, :user => user
+  end
+end
+
+# Create models with association chains already created. These are real objects and
 # persist them in the database
 
 Factory.define :zookeeper_with_cluster, :parent => :zookeeper do |t|

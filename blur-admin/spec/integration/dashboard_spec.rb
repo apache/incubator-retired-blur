@@ -3,10 +3,9 @@ require 'spec_helper'
 describe "dashboard" do
   # generate a valid user
   let(:user) { Factory.create :user }
-  let(:zookeepers) { Array.new(5).collect {Factory.create :zookeeper_with_blur_queries} }
 
   before do
-    @zookeepers = Array.new(5).collect {Factory.create :zookeeper_with_blur_queries}
+    @zookeepers = Array.new(5).collect {Factory.create :zookeeper_with_blur_tables}
     visit login_path
     fill_in 'Username', :with => user.username
     fill_in 'Password', :with => user.password

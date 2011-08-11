@@ -38,19 +38,19 @@
                     = "Controllers are not running the same blur version"
                 %ul
                   - @zookeeper.controllers.each do |controller|
-                    %li
+                    %li<
                       = "#{controller.node_name}"
-                    - if @controller_nodes > 1
-                      = "(blur version #{controller.blur_version})"
-                    - if controller.status == 2
-                      .green_box.ui-corner-all
-                        Online
-                    - elsif controller.status == 1
-                      .yellow_box.ui-corner-all
-                        Disabled
-                    - else
-                      .ui-state-error.ui-corner-all
-                        Offline
+                      - if @controller_nodes > 1
+                        = "(blur version #{controller.blur_version})"
+                      - if controller.status == 2
+                        .green_box.ui-corner-all
+                          Online
+                      - elsif controller.status == 1
+                        .yellow_box.ui-corner-all
+                          Disabled
+                      - else
+                        .ui-state-error.ui-corner-all
+                          Offline
             - else
               %h3 Controllers
               %p Not Available

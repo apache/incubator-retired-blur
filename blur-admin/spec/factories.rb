@@ -100,7 +100,7 @@ Factory.define :user do |t|
   t.sequence (:email)     {|n| "user#{n}@example.com"}
   t.password              "password"
   t.password_confirmation "password"
-  t.roles [:editor, :admin, :reader, :auditor, :searcher]
+  t.roles {User.valid_roles}
 end
 
 #create a valid preference

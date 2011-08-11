@@ -128,20 +128,18 @@ describe SearchController do
       #
 
       schema = search.columns
-      column_families = Set.new
-      schema.each_key do |column_family|
-
-        columns = Set.new
-        schema[column_family].each do |column|
-          column = mock 'column', :name => column, :values => %w[value_1 value_2 value_3]
+      column_families = []
+      schema.each_key do |column_family_name|
+        columns = []
+        schema[column_family_name].each do |column|
+          column = mock 'column', :name => column, :value => "value_1"
           columns << column
         end
-        records = {rand(100000).to_s => columns}
-        column_family =  mock 'column_family', :records => records, :family => column_family 
+        column_family =  mock 'record', :recordId => rand(10000), :columns => columns, :family => column_family_name 
         column_families << column_family
       end
 
-      row = mock 'row', :columnFamilies => column_families, :id => rand(10000)
+      row = mock 'row', :records => column_families, :id => rand(10000)
       fetch_row_result = mock 'fetch_row_result', :row => row
       fetch_result     = mock 'fetch_result', :rowResult => fetch_row_result
       blur_result      = mock 'result', :fetchResult => fetch_result

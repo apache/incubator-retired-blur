@@ -120,6 +120,13 @@ Factory.define :filter_preference, :parent => :preference do |t|
     'refresh_period' => 'false'}.to_json}
 end
 
+#create a valid hdfs
+Factory.define :hdfs do |t|
+  t.host { "nic-factory-hdfs.com" }
+  t.port { "9000" }
+  t.name { "factory_hdfs" }
+end
+
 # Create models with association chains already created. These real objects and
 # persist them in the database
 

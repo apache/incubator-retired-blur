@@ -101,19 +101,6 @@ describe SearchController do
     end
 
     def create_blur_result(search)
-      ###### Hierarchy of Blur::BlurResults ######
-      #blur_results     = mock 'results'          # Blur::BlurResults
-      #blur_result      = mock 'result'           # Blur::BlurResult
-      #fetch_result     = mock 'fetch_result'     # Blur::FetchResult
-      #fetch_row_result = mock 'fetch_row_result' # Blur::FetchRowResult
-      #row              = mock 'row'              # Blur::Row
-      #column_families  = Set.new                 # Set
-      #column_family    = mock 'column_family'    # Blur::ColumnFamily
-      #records          = {}                      # Hash
-      #columns          = Set.new                 # Set
-      #column           = mock 'column'           # Blur::Column
-      #values           = []                      # Array
-      #
       ###### Hierarchy of Blur::BlurResults 8/10 #######
       #blur_results     = mock 'results'          # Blur::BlurResults
       #results          = []                      # Array

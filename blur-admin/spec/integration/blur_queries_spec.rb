@@ -21,4 +21,16 @@ describe "blur queries" do
       find("#queries-table").should have_content query.userid
     end
   end
+
+  it "shows filter options" do
+    find("#filter_form").should have_content "Within past:"
+    find("#filter_form").should have_content "Super Query:"
+    find("#filter_form").should have_content "Running:"
+    find("#filter_form").should have_content "Interrupted:"
+  end
+
+  it "shows table and refresh options" do
+    find("#filter_form").should have_content "Blur Table:"
+    find("#filter_form").should have_content "Refresh:"
+  end
 end

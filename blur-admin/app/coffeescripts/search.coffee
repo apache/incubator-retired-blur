@@ -21,10 +21,9 @@ $(document).ready ->
       $('#search_submit').removeAttr('disabled')
       if $('#save_name').val() isnt ''
         $('#save_button, #update_button').removeAttr('disabled')
-      else
-        $('#save_button, #update_button').attr('disabled', 'disabled')
     else
       $(':submit').attr('disabled', 'disabled')
+      $('#save_button, #update_button').attr('disabled', 'disabled')
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
@@ -37,14 +36,7 @@ $(document).ready ->
     $('#filter_columns').load 'search/' + $(this).val() + '/filters', setup_filter_tree
     $('.body#saved').load 'reload/' + $(this).val(), ->
       $('html').trigger 'ajax:success'
-
-  # Show spinner when submit button is clicked
-  $('#search_submit').live 'click', ->
-    $('#loading-spinner').show()
       
-  # listener that checks if the submit button should be enabled on click
-  $('#filter_section').live "click", -> toggle_submit()
-
   # listener that checks if the submit button should be enabled on keystrokes
   $('#query_string, #save_name').live "keypress keydown keyup", (name) ->
     #if it is enter then submit else check to see if we can enable the button
@@ -55,7 +47,6 @@ $(document).ready ->
         $('#results_container').html(error_content)
       else
         $('#search_form').submit()
-        $('#loading-spinner').show()
     else
       toggle_submit()
 
@@ -150,13 +141,73 @@ $(document).ready ->
   $('.header').live 'click', ->
     $(this).siblings('.body').first().slideToggle 'fast'
 
+  ########### more Functions #############
+
+  fetch_error = (error) ->
+    message = "<div>An error occured during the search: #{error}</div>"
+    $('#results_container').html message
+
+  no_results = ->
+    #hides number of results option if there are no results
+    message = '<div>No results for your search.</div>'
+    $('#results_container').html message
+
+  # disable buttons on load
+  toggle_submit()
+  # set up listeners for ajax to show spinner and disable buttons
+  $('#loading-spinner').bind 'ajaxStart', ->
+    $(this).show()
+  $('#loading-spinner').bind 'ajaxStop', ->
+    $(this).hide()
+  $('#search_submit, #update_button, #save_button').bind 'ajaxStart', ->
+    $(this).attr 'disabled', 'disabled'
+  $('#search_submit, #update_button, #save_button').bind 'ajaxStop', ->
+    toggle_submit()
+
+
+  populate_form = (data) ->
+    $('.column_family_filter').jstree('uncheck_all')
+    $('#result_count').val(data.saved.search.fetch)
+    $('#offset').val(data.saved.search.offset)
+    $('#query_string').val(data.saved.search.query)
+    $('#save_name').val(data.saved.search.name)
+    if data.saved.search.super_query
+      $('#super_query').attr('checked', 'checked')
+    else
+      $('#super_query').removeAttr('checked')
+    arr = data.saved.search.columns
+    #uncheck everything so we only check what we saved
+    $('.column_family_filter').jstree('uncheck_all')
+    #check everything in the tree
+    for column in  data.saved.search.columns
+      $('.column_family_filter').jstree 'check_node', "##{column}"
+    $('#search_submit').removeAttr('disabled')
+    $('#save_button').removeAttr('disabled')
+    $('#update_button').removeAttr('disabled')
+
+  retrieve_search = (id) ->
+    $.ajax "/search/load/#{id}",
+      type: 'POST',
+      success: (data) ->
+        populate_form(data)
+
+  # fetch the result of a persisted search
+  fetch_result = (id) ->
+    $.ajax '/search/'+ id + '/' + $('#blur_table option:selected').val(),
+      type: 'POST',
+      success: (data) ->
+        if data
+          #shows number of results option if there are results
+          #If data is returned properly process it
+          $('#results_container').html data
+        else
+          no_results()
+      error: (jqXHR, textStatus, errorThrown) ->
+        fetch_error errorThrown
+
   ########### PAGE AJAX LISTENERS ##############
-  #ajax listener for the response from the search action
+  # fetch the result of a new search
   $('#search_form')
-    .live 'ajax:beforeSend', (evt, xhr, settings) ->
-      $('#loading-spinner').show()
-    .live 'ajax:complete', (evt, xhr, status) ->
-      $('#loading-spinner').hide()
     .live 'ajax:success', (evt, data, status, xhr) ->
       if data
         #shows number of results option if there are results
@@ -170,50 +221,18 @@ $(document).ready ->
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'
         $('#results_container').html(error_content)
-    .live 'ajax:error', (evt, xhr, status, error) ->
-      console.log error
+    .live 'ajax:error', (event, xhr, status, error) ->
+      fetch_error error
 
   #ajax listener for the edit action
-  $('#edit_icon, #run_icon').live 'click', ->
-    $.ajax '/search/load/'+ $(this).parent().attr('id'),
-      type: 'POST',
-      success: (data) ->
-        $('.column_family_filter').jstree('uncheck_all')
-        $('#result_count').val(data.saved.search.fetch)
-        $('#offset').val(data.saved.search.offset)
-        $('#query_string').val(data.saved.search.query)
-        $('#save_name').val(data.saved.search.name)
-        if data.saved.search.super_query
-          $('#super_query').attr('checked', 'checked')
-        else
-          $('#super_query').removeAttr('checked')
-        arr = eval(data.saved.search.columns)
-        #uncheck everything so we only check what we saved
-        $('.column_family_filter').jstree('uncheck_all')
-        #check everything in the tree
-        $.each arr, (index, value) ->
-          $('.column_family_filter').jstree('check_node', "#" + value)
-        $('#search_submit').removeAttr('disabled')
-        $('#save_button').removeAttr('disabled')
-        $('#update_button').removeAttr('disabled')
+  $('#edit_icon').live 'click', ->
+    retrieve_search($(this).parent().attr('id'))
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->
-    $.ajax '/search/'+ $(this).parent().attr('id') + '/' + $('#blur_table option:selected').val(),
-      type: 'POST',
-      success: (data) ->
-        $('#loading-spinner').hide()
-        if data
-        #shows number of results option if there are results
-        #If data is returned properly process it
-          $('#results_container').html data
-        else
-          #hides number of results option if there are no results
-          error_content = '<div>No results for your search.</div>'
-          $('#results_container').html error_content
-        $('html').trigger 'ajax:success'
-
-    $('#loading-spinner').show()
+    search = $(this).parent().attr 'id'
+    retrieve_search search
+    fetch_result search
 
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
@@ -224,13 +243,10 @@ $(document).ready ->
     			buttons:
     				"Delete Query": ->
     				  $( this ).dialog "close"
-    				  answer = true
     				  $.ajax '/search/delete/'+ parent.parent().attr("id") + '/' + $('#blur_table option:selected').val(),
                 type: 'DELETE',
                 success: (data) ->
                   $('.body#saved').html(data)
-                  $('#loading-spinner').hide()
-              $('#loading-spinner').show()
     				Cancel: ->
     					$( this ).dialog "close"
 
@@ -240,13 +256,11 @@ $(document).ready ->
       type: 'POST',
       data: $('#search_form').serialize(),
       success: (data) ->
-        $('#loading-spinner').hide()
         if data
         #display the results from the save
           $('.body#saved').html(data)
-    $('#loading-spinner').show()
 
-  #ajax listener for the save action
+  #ajax listener for the update action
   $('#update_button').live 'click', (evt) ->
     send_request = false
     search_id = ""
@@ -259,12 +273,10 @@ $(document).ready ->
         send_request = true
         search_id = $(value).attr('id')
     if send_request
-      $('#loading-spinner').show()
       $.ajax '/search/' + search_id,
         type: 'PUT',
         data: $('#search_form').serialize(),
         success: (data) ->
-          $('#loading-spinner').hide()
     else
       $( "#update-conflict" ).dialog
       			resizable: false,

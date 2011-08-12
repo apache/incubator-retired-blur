@@ -45,9 +45,9 @@
             #save_label= label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'
           .filter#buttons
-            %button{:disabled => true, :name => "save", :type => "button", :id => 'save_button'}
+            %button{:name => "save", :type => "button", :id => 'save_button'}
               Save as New Search
-            %button{:disabled => true, :name => "update", :type => "button", :id => 'update_button'}
+            %button{:name => "update", :type => "button", :id => 'update_button'}
               Update Search
 
       #search_send.partial_section
@@ -55,7 +55,7 @@
              :src => "/images/loadinfo_24.gif",
              :alt => "Loading...",
              :style => "display:none;" }
-        = submit_tag "Search", :disabled => true, :id => "search_submit"
+        = submit_tag "Search", :id => "search_submit"
   #results_wrapper.open_filters
     #bar_section
       #arrow.ui-icon.ui-icon-triangle-1-w

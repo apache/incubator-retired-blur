@@ -12,6 +12,8 @@ $(document).ready ->
         real_checkboxes: true,
         real_checkboxes_names: (n)->
           ['column_data[]', n[0].id]
+    .delegate "a", "click", -> toggle_submit()
+
     $('.column_family_filter').bind "loaded.jstree", ->
       $('#filter_columns').show()
 

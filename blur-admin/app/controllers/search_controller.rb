@@ -128,7 +128,8 @@ class SearchController < ApplicationController
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
-      format.html {render :partial =>"saved"}
+      format.html {render :partial =>"saved", :locals => {:searches => @searches,
+                                                          :blur_table => @blur_table}}
     end
   end
   

@@ -24,8 +24,7 @@ $(document).ready ->
       if $('#save_name').val() isnt ''
         $('#save_button, #update_button').removeAttr('disabled')
     else
-      $(':submit').attr('disabled', 'disabled')
-      $('#save_button, #update_button').attr('disabled', 'disabled')
+      $('#save_button, #update_button, #search_submit').attr('disabled', 'disabled')
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
@@ -36,8 +35,7 @@ $(document).ready ->
   $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load 'search/' + $(this).val() + '/filters', setup_filter_tree
-    $('.body#saved').load 'reload/' + $(this).val(), ->
-      $('html').trigger 'ajax:success'
+    $('.body#saved').load 'reload/' + $(this).val()
       
   # listener that checks if the submit button should be enabled on keystrokes
   $('#query_string, #save_name').live "keypress keydown keyup", (name) ->
@@ -54,32 +52,20 @@ $(document).ready ->
 
   # listener that Hides/Shows filter section
   $('#bar_section').live 'click', ->
-    if !($('#filter_section').is(':hidden'))
-      $('#filter_section').toggle('fast')
-      $('#arrow').removeClass('ui-icon-triangle-1-w')
-      $('#arrow').addClass('ui-icon-triangle-1-e')
-      $('#results_wrapper').removeClass('open_filters')
-      $('#results_wrapper').addClass('collapsed_filters')
-      $('#bar_section').width('2em');
-    else
-      $('#filter_section').toggle('fast')
+    $('#filter_section').toggle('fast')
+
+    if $('#filter_section').is ':hidden'
       $('#arrow').removeClass('ui-icon-triangle-1-e')
       $('#arrow').addClass('ui-icon-triangle-1-w')
       $('#results_wrapper').addClass('open_filters')
       $('#results_wrapper').removeClass('collapsed_filters')
-      $('#bar_section').width('1em');
-
-  toggle_all = () ->
-    #list_num = $('#neighborhood').find("> ul").length
-    num_unchecked = $('#neighborhood').find("> ul > .jstree-unchecked").length
-    $('#result_table').find('thead > .familysets > th').each( ->
-      if this.id
-        a_string = '.family_' + this.id
-        if num_unchecked != 0
-          $(a_string).hide()
-        else
-          $(a_string).show()
-    )
+      $('#bar_section').width('1em')
+    else
+      $('#arrow').removeClass('ui-icon-triangle-1-w')
+      $('#arrow').addClass('ui-icon-triangle-1-e')
+      $('#results_wrapper').removeClass('open_filters')
+      $('#results_wrapper').addClass('collapsed_filters')
+      $('#bar_section').width('2em')
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
@@ -93,7 +79,11 @@ $(document).ready ->
 
     # hide/show all of the columns if 'All' is checked/unchecked
     if name == ".all"
-      toggle_all()
+      num_unchecked = $('#neighborhood').find("> ul > .jstree-unchecked").length
+      for family in $('.familysets th')
+        if family.id?
+          family_class = '.family_' + family.id
+          if num_unchecked is 0 then $(family_class).show() else $(family_class).hide()
 
     # hide the clicked filter element if the corresponding column is visible
     else if $(name).is(":visible")
@@ -139,14 +129,14 @@ $(document).ready ->
         $(family_name + '_empty').attr('colspan', max_col_span)
       $(name).show()
 
-  #listener that accordions the tabs
+  #listener that accordion the filter sections
   $('.header').live 'click', ->
     $(this).siblings('.body').first().slideToggle 'fast'
 
   ########### more Functions #############
 
   fetch_error = (error) ->
-    message = "<div>An error occured during the search: #{error}</div>"
+    message = "<div>An error has occured: #{error}</div>"
     $('#results_container').html message
 
   no_results = ->
@@ -277,8 +267,7 @@ $(document).ready ->
     if send_request
       $.ajax '/search/' + search_id,
         type: 'PUT',
-        data: $('#search_form').serialize(),
-        success: (data) ->
+        data: $('#search_form').serialize()
     else
       $( "#update-conflict" ).dialog
       			resizable: false,

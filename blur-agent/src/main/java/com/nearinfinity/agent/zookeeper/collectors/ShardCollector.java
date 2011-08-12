@@ -34,7 +34,7 @@ public class ShardCollector {
 	
 	private List<String> getShards() {
 		try {
-			return zk.getChildren("/blur/" + clusterName + "/online/shard-nodes", false);
+			return zk.getChildren("/blur/clusters/" + clusterName + "/online/shard-nodes", false);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {

@@ -48,7 +48,7 @@ public class ClusterCollector {
 	
 	private List<String> getClusters() {
 		try {
-			return zk.getChildren("/blur", false);
+			return zk.getChildren("/blur/clusters", false);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {

@@ -59,12 +59,7 @@ public class ControllerCollector {
 	
 	private List<String> getControllers() {
 		try {
-			if ("old".equals(props.getProperty("zk." + zki.getName() + ".version"))) {
-				// TODO: This will be changed when controller won't be under the cluster
-				return zk.getChildren("/blur/default/online/controller-nodes", false);
-			} else {
-				return zk.getChildren("/blur/whos/online/controller-nodes", false);
-			}
+			return zk.getChildren("/blur/online-controller-nodes", false);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {

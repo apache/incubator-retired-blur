@@ -34,7 +34,7 @@ public class TableCollector {
 	
 	private List<String> getTables() {
 		try {
-			return zk.getChildren("/blur/" + clusterName + "/tables", false);
+			return zk.getChildren("/blur/clusters/" + clusterName + "/tables", false);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -57,8 +57,8 @@ public class TableCollector {
 			boolean enabled = false;
 			
 			try {
-				uri = new String(zk.getData("/blur/" + clusterName + "/tables/" + table + "/uri", false, null));
-				enabled = zk.getChildren("/blur/" + clusterName + "/tables/" + table, false).contains("enabled");
+				uri = new String(zk.getData("/blur/clusters/" + clusterName + "/tables/" + table + "/uri", false, null));
+				enabled = zk.getChildren("/blur/clusters/" + clusterName + "/tables/" + table, false).contains("enabled");
 			} catch (KeeperException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {

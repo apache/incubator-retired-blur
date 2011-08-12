@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
@@ -39,16 +38,21 @@ import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.index.WalIndexWriter;
+import com.nearinfinity.blur.index.WalIndexWriter.WalInputFactory;
+import com.nearinfinity.blur.index.WalIndexWriter.WalOutputFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
+import com.nearinfinity.blur.store.HdfsDirectory;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowIndexWriter;
+import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
 
 public class BlurIndexWriter extends BlurIndex {
     
     private static final Log LOG = LogFactory.getLog(BlurIndexWriter.class);
     
     private Directory _directory;
-    private IndexWriter _writer;
+    private WalIndexWriter _writer;
     private BlurAnalyzer _analyzer;
     private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
     private Directory _sync;
@@ -65,7 +69,38 @@ public class BlurIndexWriter extends BlurIndex {
         conf.setSimilarity(new FairSimilarity());
         TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
         mergePolicy.setUseCompoundFile(false);
-        _writer = new IndexWriter(_sync, conf);
+        _writer = new WalIndexWriter(_sync, conf, new WalOutputFactory() {
+            @Override
+            public IndexOutput getWalOutput(Directory directory, String name) throws IOException {
+                if (directory instanceof SyncWatcher) {
+                    SyncWatcher dir = (SyncWatcher) directory;
+                    if (dir._dir instanceof CompressedFieldDataDirectory) {
+                        CompressedFieldDataDirectory comDir = (CompressedFieldDataDirectory) dir._dir;
+                        Directory innerDir = comDir._directory;
+                        if (innerDir instanceof HdfsDirectory) {
+                            return ((HdfsDirectory) innerDir).createOutputHdfs(name);
+                        }
+                    }
+                }
+                return directory.createOutput(name);
+            }
+        }, new WalInputFactory() {
+            @Override
+            public IndexInput getWalInput(Directory directory, String name) throws IOException {
+                if (directory instanceof SyncWatcher) {
+                    SyncWatcher dir = (SyncWatcher) directory;
+                    if (dir._dir instanceof CompressedFieldDataDirectory) {
+                        CompressedFieldDataDirectory comDir = (CompressedFieldDataDirectory) dir._dir;
+                        Directory innerDir = comDir._directory;
+                        if (innerDir instanceof HdfsDirectory) {
+                            System.out.println("i got here....");
+                            return ((HdfsDirectory) innerDir).openInputHdfs(name);
+                        }
+                    }
+                }
+                return directory.openInput(name);
+            }
+        });
         _indexReaderRef.set(IndexReader.open(_writer, true));
         _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
         _open.set(true);
@@ -82,16 +117,14 @@ public class BlurIndexWriter extends BlurIndex {
         if (oldReader.isCurrent()) {
             return;
         }
-        synchronized (_writer) {
-            try {
-                IndexReader reader = oldReader.reopen(_writer, true);
-                if (oldReader != reader) {
-                    _indexReaderRef.set(reader);
-                    _closer.close(oldReader);
-                }
-            } catch (AlreadyClosedException e) {
-                LOG.warn("Writer was already closed, this can happen during closing of a writer.");
+        try {
+            IndexReader reader = oldReader.reopen(_writer, true);
+            if (oldReader != reader) {
+                _indexReaderRef.set(reader);
+                _closer.close(oldReader);
             }
+        } catch (AlreadyClosedException e) {
+            LOG.warn("Writer was already closed, this can happen during closing of a writer.");
         }
     }
     
@@ -114,16 +147,14 @@ public class BlurIndexWriter extends BlurIndex {
     }
     
     @Override
-    public synchronized boolean replaceRow(Row row) throws IOException {
+    public boolean replaceRow(Row row) throws IOException {
         _rowIndexWriter.replace(row);
         return true;
     }
     
     @Override
     public void deleteRow(String rowId) throws IOException {
-        synchronized (_writer) {
-            _writer.deleteDocuments(new Term(ROW_ID,rowId));
-        }
+        _writer.deleteDocuments(true,new Term(ROW_ID,rowId));
     }
     
     public void setAnalyzer(BlurAnalyzer analyzer) {
@@ -144,7 +175,7 @@ public class BlurIndexWriter extends BlurIndex {
 
     private static class SyncWatcher extends Directory {
         
-        private Directory _dir;
+        public Directory _dir;
 
         public SyncWatcher(Directory dir) {
             _dir = dir;

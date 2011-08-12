@@ -179,6 +179,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
                 try {
                     tableIndexes.put(shard, openShard(table,shard));
                 } catch (Exception e) {
+                    e.printStackTrace();
                     LOG.error("Unknown error while opening shard [{0}] for table [{1}].",e.getCause(),shard,table);
                     result.put(shard, EMPTY_BLURINDEX);
                 }

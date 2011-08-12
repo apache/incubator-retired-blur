@@ -8,16 +8,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.lucene.index.IndexWriter;
+
+import com.nearinfinity.blur.index.WalIndexWriter;
 
 public class BlurIndexCommiter {
     
     private static final Log LOG = LogFactory.getLog(BlurIndexCommiter.class);
 
     private Thread _commitDaemon;
-    private Map<String,IndexWriter> _writers = new ConcurrentHashMap<String, IndexWriter>();
+    private Map<String,WalIndexWriter> _writers = new ConcurrentHashMap<String, WalIndexWriter>();
     private AtomicBoolean _running = new AtomicBoolean();
-    private long _delay = TimeUnit.MINUTES.toMillis(1);
+    private long _delay = TimeUnit.MINUTES.toMillis(5);
     
     public void init() {
         _running.set(true);
@@ -41,26 +42,26 @@ public class BlurIndexCommiter {
 
     public void commit() {
         for (String name : _writers.keySet()) {
-            IndexWriter writer = _writers.get(name);
+            WalIndexWriter writer = _writers.get(name);
             if (writer != null) {
                 commitIndex(name, writer);
             }
         }
     }
 
-    private void commitIndex(String name, IndexWriter writer) {
-        synchronized (writer) {
+    private void commitIndex(String name, WalIndexWriter writer) {
+//        synchronized (writer) {
             LOG.info("Commiting writer for [" + name + "]");
             try {
-                writer.commit();
+                writer.commitAndRollWal();
             } catch (IOException e) {
                 e.printStackTrace();
                 return;
             }
-        }
+//        }
     }
 
-    public void addWriter(String name, IndexWriter writer) {
+    public void addWriter(String name, WalIndexWriter writer) {
         _writers.put(name, writer);
     }
 
@@ -76,7 +77,7 @@ public class BlurIndexCommiter {
     }
 
     public void remove(String name) {
-        IndexWriter writer = _writers.remove(name);
+        WalIndexWriter writer = _writers.remove(name);
         commitIndex(name, writer);
     }
 

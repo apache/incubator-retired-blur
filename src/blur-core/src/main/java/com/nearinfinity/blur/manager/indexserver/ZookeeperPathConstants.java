@@ -27,10 +27,8 @@ public class ZookeeperPathConstants {
     private static final String BLUR_TABLES_COMPRESSION_CODEC      = "compression-codec";
     private static final String BLUR_TABLES_COMPRESSION_BLOCK_SIZE = "compression-blocksize";
     
-    
     private static final String BLUR_ONLINE_PATH                = getBlurBasePath() + "/online";
     private static final String BLUR_ONLINE_SHARDS_PATH         = getBlurBasePath() + "/online/shard-nodes";
-    private static final String BLUR_ONLINE_CONTROLLERS_PATH    = getBlurBasePath() + "/online/controller-nodes";
     private static final String BLUR_TABLES                     = getBlurBasePath() + "/tables";
     private static final String BLUR_TABLES_LOCKS               = getBlurBasePath() + "/tables-locks";
     
@@ -40,7 +38,10 @@ public class ZookeeperPathConstants {
     private static final String BLUR_REGISTERED_SHARDS_PATH     = getBlurBasePath() + "/shard-nodes";
     
     public static String getBlurBasePath() {
-        return "/blur/" + BlurConstants.BLUR_CLUSTER;
+        return "/blur/clusters/" + BlurConstants.BLUR_CLUSTER;
+    }
+    public static String getBlurOnlineControllersPath() {
+        return "/blur/online-controller-nodes";
     }
     public static String getBlurTablesEnabled() {
         return BLUR_TABLES_ENABLED;
@@ -56,9 +57,6 @@ public class ZookeeperPathConstants {
     }
     public static String getBlurOnlineShardsPath() {
         return BLUR_ONLINE_SHARDS_PATH;
-    }
-    public static String getBlurOnlineControllersPath() {
-        return BLUR_ONLINE_CONTROLLERS_PATH;
     }
     public static String getBlurTablesPath() {
         return BLUR_TABLES;

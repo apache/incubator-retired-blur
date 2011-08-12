@@ -32,10 +32,10 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.index.WalIndexWriter;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -46,23 +46,23 @@ public class RowIndexWriter {
 
     private static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.NOT_ANALYZED_NO_NORMS);
     private BlurAnalyzer _analyzer;
-    private IndexWriter _indexWriter;
+    private WalIndexWriter _indexWriter;
     private boolean primeDocSet;
     private StringBuilder builder = new StringBuilder();
     
-    public RowIndexWriter(IndexWriter indexWriter, BlurAnalyzer analyzer) {
+    public RowIndexWriter(WalIndexWriter indexWriter, BlurAnalyzer analyzer) {
         _indexWriter = indexWriter;
         _analyzer = analyzer;
     }
     
-    public synchronized void add(Row row) throws IOException {
+    public void add(Row row) throws IOException {
         if (row == null || row.id == null) {
             throw new NullPointerException();
         }
         append(row,false);
     }
     
-    public synchronized void replace(Row row) throws IOException {
+    public void replace(Row row) throws IOException {
         if (row == null || row.id == null) {
             throw new NullPointerException();
         }
@@ -75,12 +75,10 @@ public class RowIndexWriter {
         for (Record record : row.records) {
             convert(row.id,record,documents);
         }
-        synchronized (_indexWriter) {
-            if (replace) {
-                _indexWriter.updateDocuments(new Term(ROW_ID,row.id),documents,_analyzer);
-            } else {
-                _indexWriter.addDocuments(documents,_analyzer);
-            }
+        if (replace) {
+            _indexWriter.updateDocuments(true,new Term(ROW_ID,row.id),documents,_analyzer);
+        } else {
+            _indexWriter.addDocuments(true,documents,_analyzer);
         }
     }
 

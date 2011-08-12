@@ -74,6 +74,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
         controllerServer.setClient(client);
         controllerServer.setClusterStatus(clusterStatus);
         controllerServer.setDistributedManager(dzk);
+        controllerServer.setNodeName(nodeName);
+        
         controllerServer.open();
 
         int threadCount = configuration.getInt("blur.controller.server.thrift.thread.count", 32);

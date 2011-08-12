@@ -29,8 +29,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop</artifactId>
-			<version>0.20.2-core</version>
+			<artifactId>hadoop-core</artifactId>
+			<version>0.20.2-cdh3u1</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -45,6 +45,10 @@
 		<repository>
 			<id>libdir</id>
 			<url>file://${basedir}/../lib</url>
+		</repository>
+		<repository>
+			<id>cloudera</id>
+			<url>https://repository.cloudera.com/content/repositories/releases/</url>
 		</repository>
 	</repositories>
 

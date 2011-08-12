@@ -49,7 +49,7 @@ public class CompressedFieldDataDirectory extends Directory {
     };
     
     private CompressionCodec _compression = DEFAULT_COMPRESSION;
-    private Directory _directory;
+    public Directory _directory;
     private int _writingBlockSize;
     
     public CompressedFieldDataDirectory(Directory dir) {

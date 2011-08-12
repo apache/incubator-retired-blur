@@ -31,6 +31,7 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     private BlockingQueue<ExecutionContext> _contexts = new LinkedBlockingQueue<ExecutionContext>();
     private AtomicBoolean _running = new AtomicBoolean();
     private Thread _daemon;
+    private boolean _loggingDisabled = true;
 
     public void init() {
         _running.set(true);
@@ -52,6 +53,9 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     }
 
     private void log(ExecutionContext context) {
+        if (_loggingDisabled) {
+            return;
+        }
         long now = System.nanoTime();
         List<RecordTime> times = context.getTimes();
         int size = times.size();

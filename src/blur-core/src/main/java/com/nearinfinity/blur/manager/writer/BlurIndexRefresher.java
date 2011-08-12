@@ -16,7 +16,7 @@ public class BlurIndexRefresher extends TimerTask {
     private static final Log LOG = LogFactory.getLog(BlurIndexRefresher.class);
 
     private Timer _timer;
-    private long _period = TimeUnit.MILLISECONDS.toMillis(100);
+    private long _period = TimeUnit.MINUTES.toMillis(1);
     private long _delay = _period;
     private Collection<BlurIndex> _indexes = new LinkedBlockingQueue<BlurIndex>();
 

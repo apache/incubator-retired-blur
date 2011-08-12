@@ -30,6 +30,7 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DFSClient.DFSDataInputStream;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
@@ -72,9 +73,8 @@ public class HdfsDirectory extends Directory {
     public void close() throws IOException {
 
     }
-
-    @Override
-    public IndexOutput createOutput(String name) throws IOException {
+    
+    public IndexOutput createOutputHdfs(String name) throws IOException {
         final FSDataOutputStream outputStream = getOutputStream(name);
         return new IndexOutput() {
 
@@ -87,7 +87,7 @@ public class HdfsDirectory extends Directory {
 
             @Override
             public void flush() throws IOException {
-                outputStream.flush();
+                outputStream.sync();
             }
 
             @Override
@@ -119,6 +119,11 @@ public class HdfsDirectory extends Directory {
         };
     }
 
+    @Override
+    public IndexOutput createOutput(String name) throws IOException {
+        return createOutputHdfs(name);
+    }
+
     protected void rename(String currentName, String newName) throws IOException {
         getFileSystem().rename(new Path(_hdfsDirPath,currentName), new Path(_hdfsDirPath,newName));
     }
@@ -134,8 +139,23 @@ public class HdfsDirectory extends Directory {
 
     @Override
     public IndexInput openInput(final String name, int bufferSize) throws IOException {
-        long length = fileLength(name);
-        final FSDataInputStream inputStream = getFileSystem().open(new Path(_hdfsDirPath, name));
+        return openInputHdfs(name,bufferSize);
+    }
+    
+    public IndexInput openInputHdfs(String name) throws IOException {
+        return openInputHdfs(name, BUFFER_SIZE);
+    }
+    
+    public IndexInput openInputHdfs(String name, int bufferSize) throws IOException {
+        FSDataInputStream inputStream = getFileSystem().open(new Path(_hdfsDirPath, name));
+        long length = 0;
+        if (inputStream instanceof DFSDataInputStream) {
+            //This is needed because if the file was in progress of being written but was not closed the
+            //length of the file is 0.  This will fetch the synced length of the file.
+            length = ((DFSDataInputStream) inputStream).getVisibleLength();
+        } else {
+            length = fileLength(name);
+        }
         return new HdfsBufferedIndexInput(inputStream,length,bufferSize,name);
     }
     

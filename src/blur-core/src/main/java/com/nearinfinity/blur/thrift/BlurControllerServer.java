@@ -41,6 +41,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
+import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
@@ -84,6 +85,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     private boolean _closed;
     private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
     private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
+    private String _nodeName;
 
     public void open() {
         _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
@@ -95,6 +97,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                 updateShardLayout();
             }
         }, _layoutDelay, _layoutDelay);
+        _dm.createEphemeralPath(ZookeeperPathConstants.getBlurOnlineControllersPath() + "/" + _nodeName);
     }
 
     public synchronized void close() {
@@ -505,6 +508,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public List<String> shardClusterList() throws BlurException, TException {
         return Arrays.asList(BlurConstants.BLUR_CLUSTER);
+    }
+
+    public void setNodeName(String nodeName) {
+        _nodeName = nodeName;
     }
 
 }

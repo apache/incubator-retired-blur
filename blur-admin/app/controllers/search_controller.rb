@@ -68,21 +68,17 @@ class SearchController < ApplicationController
         values.max
 
       result = {:max_record_count => max_record_count, :id => blur_result.id}
-      result.default = []
 
       blur_result.records.each do |blur_record|
         column_family = blur_record.family
-
-        record = {'recordId' => blur_record.recordId}
-        blur_record.columns.each do |blur_column|
-          record[blur_column.name] = blur_column.value
+        unless column_family.nil? # to compensate for a bug in blur that returns empty records if a column family is not selected
+          record = {'recordId' => blur_record.recordId}
+          blur_record.columns.each do |blur_column|
+            record[blur_column.name] = blur_column.value
+          end
+          result[column_family] = [] unless result[column_family]
+          result[column_family] << record
         end
-        result[column_family] << record
-
-        #result[column_family] << blur_record.columns.reduce({'recordId' => blur_record.recordId}) do |record, blur_column|
-        #  record[blur_column.name] = blur_column.value
-        #  record
-        #end
       end
       @results << result
     end

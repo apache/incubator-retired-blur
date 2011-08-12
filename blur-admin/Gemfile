@@ -17,7 +17,7 @@ gem "ganapati", "~> 0.0.5"
 gem 'capistrano'
 
 group :development do
-  gem 'system-metrics'
+  #gem 'system-metrics'
 end
 
 group :development, :test do

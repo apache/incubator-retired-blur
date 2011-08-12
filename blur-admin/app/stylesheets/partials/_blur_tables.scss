@@ -78,12 +78,12 @@
     whitespace: normal;
   }
 
-  span.hosts, span.count, span.size, span.second, span.status {@include columns(3,$total-cols)}
+  span.hosts, span.count, span.row-count, span.size, span.second, span.status {@include columns(3,$total-cols)}
   span.schema { @include omega($total-cols); @include columns(2.5,$total-cols)}
 
   span.table_name {
     @include prefix(0.25, $total-cols);
-    @include columns(11.75, $total-cols);
+    @include columns(8.75, $total-cols);
     text-align: left;
     font-size: 1.4em;
   }

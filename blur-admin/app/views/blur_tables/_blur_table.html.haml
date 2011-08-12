@@ -15,6 +15,7 @@
       - else
         = nil_message
 
+    %span.row-count=  blur_table.row_count ? number_with_delimiter(blur_table.row_count, :delimiter => ',') : nil_message
     %span.count=  blur_table.record_count ? number_with_delimiter(blur_table.record_count, :delimiter => ',') : nil_message
     %span.size=   blur_table.current_size ? number_to_human_size(blur_table.current_size, :precision => 4)    : nil_message
     %span.second= blur_table.query_usage  ? number_with_delimiter(blur_table.query_usage, :delimiter => ',')  : nil_message

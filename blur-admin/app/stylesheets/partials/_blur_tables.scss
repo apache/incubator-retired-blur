@@ -7,11 +7,7 @@
   @include border-radius;
   @include standard-font;
 
-  h3:nth-of-type(even)            {background-color: $shaded_row_color};
-  div.blur_table:nth-of-type(odd) {background-color: $shaded_row_color};
-  h3:nth-of-type(odd)             {background-color: white};
-  div.blur_table:nth-of-type(even){background-color: white};
-
+  .blur_table:nth-of-type(odd)  {background-color: $shaded_row_color};
   .blur_table h3, .blur_tables_header, .blur_tables_footer { font-size: 1em; }
 
   .blur_tables_header, .blur_tables_footer {

@@ -11,15 +11,14 @@ $(document).ready ->
       $(this).jstree('toggle_node')
 
   # Close all accordions on page load
-  for table in $('div.blur_table')
-    $(table).hide()
+  for collapsible in $('div.collapsible')
+    $(collapsible).hide()
 
   # Accordion open/close Listener
   # Stuff having to do with 'last' variable is a hack to make the
   # bottom table's bottom border appear and dissapear on opening.
-  $('h3.blur_table').live 'click', ->
-    id = $(this).attr('id')
-    $('div#' + id).slideToggle 'fast', ->
+  $('div.blur_table > h3').live 'click', ->
+    $(this).siblings('.collapsible').slideToggle 'fast', ->
 
   # Ajax request handling for hosts/schema link
   $('a#hosts, a#schema')
@@ -48,9 +47,8 @@ $(document).ready ->
     .live 'ajax:complete', (evt, xhr, status) ->
       $(this).find('input[type=submit]').removeAttr('disabled')
     .live 'ajax:success', (evt, data, status, xhr) ->
-      selector = ".blur_table#" + $(this).attr 'id'
-      $(selector).filter(':first').remove()
-      $(selector).replaceWith data
+      $blur_table = $(this).closest('.blur_table')
+      $blur_table.replaceWith data
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: improve error handling
       console.log "Error in ajax call"

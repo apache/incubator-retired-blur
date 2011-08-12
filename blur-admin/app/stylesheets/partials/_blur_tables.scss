@@ -12,7 +12,7 @@
   h3:nth-of-type(odd)             {background-color: white};
   div.blur_table:nth-of-type(even){background-color: white};
 
-  h3.blur_table, .blur_tables_header, .blur_tables_footer { font-size: 1em; }
+  .blur_table h3, .blur_tables_header, .blur_tables_footer { font-size: 1em; }
 
   .blur_tables_header, .blur_tables_footer {
     background-color: $table-hd-color;
@@ -35,45 +35,46 @@
     padding-top: 0.5em;
   }
 
-  h3.blur_table { 
-    @include border-top;
-    @include border-bottom;
-    @include full($total-cols);
-    margin-bottom: 0px;
-    height: $row-height;
-    &:hover {
-      cursor: pointer;
-      background: $row-hover;
+  .blur_table {
+    h3 { 
+      @include border-top;
+      @include border-bottom;
+      @include full($total-cols);
+      margin-bottom: 0px;
+      height: $row-height;
+      &:hover {
+        cursor: pointer;
+        background: $row-hover;
+      }
     }
-  }
 
-  div.blur_table {
-    height: 42px;
-    @include full($total-cols);
-    @include border-bottom;
-    .location {
-      margin-top: 10px;
-      margin-bottom: 10px;
-      @include prefix(0.25, $total-cols);
-      @include columns(14.5, $total-cols);
-    }
-    .actions {
-      @include columns($total-cols / 2, $total-cols);
-      @include omega($total-cols);
-      margin-top: 10px;
-      margin-bottom: 10px;
-      text-align: right;
-    }
-    .actions form {
-      margin: 0px;
-      display: inline;
-      input {
+    .collapsible {
+      height: 42px;
+      @include full($total-cols);
+      @include border-bottom;
+      .location {
+        margin-top: 10px;
+        margin-bottom: 10px;
+        @include prefix(0.25, $total-cols);
+        @include columns(14.5, $total-cols);
+      }
+      .actions {
+        @include columns($total-cols / 2, $total-cols);
+        @include omega($total-cols);
+        margin-top: 10px;
+        margin-bottom: 10px;
+        text-align: right;
+      }
+      .actions form {
         margin: 0px;
-        margin-right: 10px;
+        display: inline;
+        input {
+          margin: 0px;
+          margin-right: 10px;
+        }
       }
     }
   }
-
   span {
     height: 100%;
     text-align: center;

@@ -3,7 +3,7 @@
     %ul
       - @files.each do |parent, children|
         %li{:id => parent.gsub(/[^[:alnum:]]/,'-'), :name => parent, :connection => @connections[parent] }
-          %a{:href=>'',:id => parent.gsub(/[^[:alnum:]]/,'-')}= parent
+          %a.hdfs-node{:href=>'',:id => parent.gsub(/[^[:alnum:]]/,'-')}= parent
           - if children.length > 0
             %ul{:class => parent.gsub(/[^[:alnum:]]/,'-')}
               = render "file_child", :connection => @connections[parent], :new_parent => children

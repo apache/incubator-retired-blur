@@ -1,6 +1,11 @@
 $(document).ready ->
   # Method to initialize the jstree
   setup_file_tree = () ->
+    $('.hdfs-node').contextMenu
+      menu: 'hdfs-context-menu',
+      (action, el, pos) ->
+        alert(action)
+        alert(el)
     $('.file_layout').jstree
       plugins: ["themes", "html_data", "sort", "ui", "search" ],
       themes:
@@ -25,7 +30,13 @@ $(document).ready ->
       $('#up_button').button 'disable'
       $('#forward_button').button 'disable'
 
-
+  tree_context_menu = () ->
+    $("<ul id='hdfs-context-menu' class='contextMenu'>
+      <li class='cut'><a href='#cut'>Cut</a></li>
+      <li class='copy'><a href='#copy'>Copy</a></li>
+      <li class='paste'><a href='#paste'>Paste</a></li>
+      <li class='delete'><a href='#delete'>Delete</a></li>
+    ")
   search_file_tree = () ->
     $('.jstree-search').removeClass 'jstree-search'
     $('.file_layout').jstree "search", $('#search_string').val()
@@ -38,6 +49,7 @@ $(document).ready ->
       $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
 
   # Methods to call on page load
+  $(document.body).append(tree_context_menu())
   setup_file_tree()
   $('#view_options').buttonset()
   $.each $("#toolbar button,#toolbar input[type='submit']"), -> $('#toolbar #' + this.id).button()
@@ -77,6 +89,11 @@ $(document).ready ->
           $('#data_container_display').html data
           change_view()
           $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
+          $('#data_container_display .hdfs-node').contextMenu
+            menu: 'hdfs-context-menu',
+            (action, el, pos) ->
+              alert(action)
+              alert(el)
         $('#location_string').val $('#'+ id).attr 'name'
         $('#up_button').button 'enable'
         $('.file_layout').jstree "open_node", '#' + id

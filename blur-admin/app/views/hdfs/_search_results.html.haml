@@ -8,25 +8,15 @@
   - if file_names_hash.length > 0 and file_names_hash
     %ul
       - file_names_hash.each do |file,stats|
-        %li
+        %li.hdfs-node
           %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}= file
 
 #file_tiles{:style => 'display: none' }
   - if file_names_hash.length > 0 and file_names_hash
     - file_names_hash.each do |file,stats|
-      %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}
-        - if file.split('/').last.split('.').length > 1
-          - name = file.split('/').last.split('.').last
-        - if stats.isdir
-          %img{:id => 'icon', :src => "/images/open_folder.png"}
-        - elsif name == 'pdf'
-          %img{:id => 'icon', :src => "/images/pdf.ico"}
-        - elsif name == 'rtf'
-          %img{:id => 'icon', :src => "/images/rtf.ico"}
-        - elsif name == 'text' or name == 'txt'
-          %img{:id => 'icon', :src => "/images/text.ico"}
-        - else
-          %img{:id => 'icon', :src => "/images/default.ico"}
+      %button.hdfs-node{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}
+        = file_icon(file, stats)
+        %br
         = file
 
 #file_details{:style => 'display: none' }
@@ -43,7 +33,7 @@
           %th Group
       %tbody
         - file_names_hash.each do |file,stats|
-          %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}
+          %tr.hdfs-node{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connections[file]}
             %td.name=file
             %td=stats.length
             %td=stats.isdir

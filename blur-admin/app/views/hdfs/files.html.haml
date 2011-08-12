@@ -5,7 +5,7 @@
   - if !file_names_hash.empty?
     %ul
       - file_names_hash.each do |file,stats|
-        %li
+        %li.hdfs-node
           %a{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}= file.split('/').last
   - else
     = render 'file_info', :file_stat => file_stat
@@ -13,7 +13,7 @@
 #file_tiles{:style => 'display: none' }
   - if !file_names_hash.empty?
     - file_names_hash.each do |file,stats|
-      %button{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
+      %button.hdfs-node{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
         = file_icon(file, stats)
         %br
         = file.split('/').last
@@ -35,7 +35,7 @@
             %th Group
         %tbody
           - file_names_hash.each do |file,stats|
-            %tr{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
+            %tr.hdfs-node{:id => file.gsub(/[^[:alnum:]]/,'-'), :connection => connection}
               %td.name=file.split('/').last
               %td=number_to_human_size stats.length, :delimiter => 4
               %td=stats.isdir

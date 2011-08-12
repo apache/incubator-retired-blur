@@ -1,6 +1,8 @@
 - content_for :title, 'HDFS'
 - content_for :javascript do
-  =javascript_include_tag 'jquery.jstree','compiled/hdfs'
+  =javascript_include_tag 'jquery.contextMenu', 'jquery.jstree','compiled/hdfs'
+- content_for :stylesheets do
+  =stylesheet_link_tag 'jquery.contextMenu.css'
 
 
 #toolbar_wrapper

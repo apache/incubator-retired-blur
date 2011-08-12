@@ -23,6 +23,7 @@ class HdfsController < ApplicationController
     file = params[:file]
 
     file_stat = hdfs.stat file
+    puts file_stat.inspect
     file_names_hash = {}
 
     if hdfs.exists? file

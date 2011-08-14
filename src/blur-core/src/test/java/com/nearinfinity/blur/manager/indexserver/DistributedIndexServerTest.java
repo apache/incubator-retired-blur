@@ -62,7 +62,7 @@ public class DistributedIndexServerTest {
         List<String> shardBeingServed = new ArrayList<String>();
         for (String node : NODE_LIST) {
             DistributedManager dm = new ZkInMemory();
-            dm.createPath("blur","default","tables",TEST,"enabled");
+            dm.createPath("blur","clusters","default","tables",TEST,"enabled");
             DistributedIndexServer indexServer = new MockDistributedIndexServer(NODE_LIST,SHARD_LIST);
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
@@ -82,7 +82,7 @@ public class DistributedIndexServerTest {
         toBeClosed.add("g");
         toBeClosed.add("h");
         DistributedManager dm = new ZkInMemory();
-        dm.createPath("blur","default","tables",TEST,"enabled");
+        dm.createPath("blur","clusters","default","tables",TEST,"enabled");
         DistributedIndexServer indexServer = new MockDistributedIndexServer(nodes, SHARD_LIST) {
             @Override
             protected void beforeClose(String shard, BlurIndex index) {
@@ -113,7 +113,7 @@ public class DistributedIndexServerTest {
         Map<String,DistributedIndexServer> servers = new TreeMap<String,DistributedIndexServer>();
         for (String node : bigNodeList) {
             DistributedManager dm = new ZkInMemory();
-            dm.createPath("blur","default","tables",TEST,"enabled");
+            dm.createPath("blur","clusters","default","tables",TEST,"enabled");
             DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes);
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);

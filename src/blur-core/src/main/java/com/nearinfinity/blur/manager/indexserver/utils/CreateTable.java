@@ -21,9 +21,11 @@ import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurShardName;
@@ -34,7 +36,6 @@ import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
-import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public class CreateTable {
     
@@ -57,7 +58,15 @@ public class CreateTable {
     
     public static CompressionCodec getInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Class<?> clazz = Class.forName(className);
-        return (CompressionCodec) clazz.newInstance();
+        return configure((CompressionCodec) clazz.newInstance());
+    }
+
+    private static CompressionCodec configure(CompressionCodec codec) {
+        if (codec instanceof Configurable) {
+            Configurable configurable = (Configurable) codec;
+            configurable.setConf(new Configuration());
+        }
+        return codec;
     }
 
     public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, int shardCount, CompressionCodec compressionCodec, int compressionBlockSize) throws IOException {

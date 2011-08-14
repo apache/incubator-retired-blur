@@ -76,7 +76,7 @@ public class BlurIndexWriter extends BlurIndex {
                     SyncWatcher dir = (SyncWatcher) directory;
                     if (dir._dir instanceof CompressedFieldDataDirectory) {
                         CompressedFieldDataDirectory comDir = (CompressedFieldDataDirectory) dir._dir;
-                        Directory innerDir = comDir._directory;
+                        Directory innerDir = comDir.getInnerDirectory();
                         if (innerDir instanceof HdfsDirectory) {
                             return ((HdfsDirectory) innerDir).createOutputHdfs(name);
                         }
@@ -91,9 +91,8 @@ public class BlurIndexWriter extends BlurIndex {
                     SyncWatcher dir = (SyncWatcher) directory;
                     if (dir._dir instanceof CompressedFieldDataDirectory) {
                         CompressedFieldDataDirectory comDir = (CompressedFieldDataDirectory) dir._dir;
-                        Directory innerDir = comDir._directory;
+                        Directory innerDir = comDir.getInnerDirectory();
                         if (innerDir instanceof HdfsDirectory) {
-                            System.out.println("i got here....");
                             return ((HdfsDirectory) innerDir).openInputHdfs(name);
                         }
                     }

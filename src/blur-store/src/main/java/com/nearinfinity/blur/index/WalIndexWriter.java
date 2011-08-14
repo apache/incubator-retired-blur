@@ -9,8 +9,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,7 +41,7 @@ public class WalIndexWriter extends IndexWriter {
     private String _currentWalName;
     private WalOutputFactory _walOutputFactory;
     private WalInputFactory _walInputFactory;
-    private static ExecutorService _service = Executors.newSingleThreadExecutor();
+    private static ExecutorService _service;
     
     public static interface WalOutputFactory {
         IndexOutput getWalOutput(Directory directory, String name) throws IOException;
@@ -78,6 +79,7 @@ public class WalIndexWriter extends IndexWriter {
         IndexOutput walOutput = _walOutputFactory.getWalOutput(_directory, name);
         _walOutput.set(walOutput);
         _currentWalName = name;
+        _service = new ThreadPoolExecutor(1, 1, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), new ThreadPoolExecutor.CallerRunsPolicy());
     }
     
     public void deleteDocuments(boolean wal, Query... queries) throws CorruptIndexException, IOException {

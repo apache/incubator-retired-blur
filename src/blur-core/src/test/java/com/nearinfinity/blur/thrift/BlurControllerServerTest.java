@@ -27,11 +27,13 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
+import org.apache.zookeeper.Watcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
+import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -66,6 +68,7 @@ public class BlurControllerServerTest {
         server = new BlurControllerServer();
         server.setClient(getClient());
         server.setClusterStatus(getClusterStatus());
+        server.setDistributedManager(getDistributedManager());
         server.open();
     }
     
@@ -323,5 +326,70 @@ public class BlurControllerServerTest {
     
     private void addShardServer(String node) {
         shardServers.put(node, getShardServer(node));
+    }
+    
+    private DistributedManager getDistributedManager() {
+        return new DistributedManager() {
+            
+            @Override
+            protected void unlockInternal(String path) {
+                
+            }
+            
+            @Override
+            protected boolean saveDataInternal(byte[] data, String path) {
+                return false;
+            }
+            
+            @Override
+            protected void removePath(String path) {
+                
+            }
+            
+            @Override
+            protected void removeEphemeralPathOnShutdownInternal(String path) {
+                
+            }
+            
+            @Override
+            protected void registerCallableOnChangeInternal(Watcher watcher, String path) {
+                
+            }
+            
+            @Override
+            protected void lockInternal(String path) {
+                
+            }
+            
+            @Override
+            protected List<String> listInternal(String path) {
+                return null;
+            }
+            
+            @Override
+            protected void fetchDataInternal(Value value, String path) {
+                
+            }
+            
+            @Override
+            protected boolean existsInternal(String path) {
+                return false;
+            }
+            
+            @Override
+            protected void createPathInternal(String path) {
+                
+            }
+            
+            @Override
+            protected void createEphemeralPathInternal(String path) {
+                
+            }
+            
+            @Override
+            public void close() {
+                
+            }
+        };
     }
 }

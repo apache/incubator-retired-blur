@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
@@ -51,7 +49,7 @@ public class WalFile {
         }
     }
     
-    private static final Log LOG = LogFactory.getLog(WalFile.class);
+//    private static final Log LOG = LogFactory.getLog(WalFile.class);
     
     public static List<Document> readBlockOfDocs(IndexInput input) throws IOException {
         int size = input.readVInt();

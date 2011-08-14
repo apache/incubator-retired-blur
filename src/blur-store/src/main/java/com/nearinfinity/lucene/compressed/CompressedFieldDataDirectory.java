@@ -18,11 +18,16 @@ package com.nearinfinity.lucene.compressed;
 
 import java.io.IOException;
 
+import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.Compressor;
+import org.apache.hadoop.io.compress.Decompressor;
+import org.apache.hadoop.io.compress.DefaultCodec;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
+
 
 public class CompressedFieldDataDirectory extends Directory {
     
@@ -31,26 +36,17 @@ public class CompressedFieldDataDirectory extends Directory {
     private static final String FDT = ".fdt";
     private static final String Z_TMP = ".tmp";
     
-    private static final int COMPRESSED_BUFFER_SIZE = 4096;
+    private static final int COMPRESSED_BUFFER_SIZE = 65536;
     
-    public static CompressionCodec DEFAULT_COMPRESSION = new CompressionCodec() {
-        
-        @Override
-        public int compress(byte[] src, int length, byte[] dest) {
-            System.arraycopy(src, 0, dest, 0, length);
-            return length;
-        }
-
-        @Override
-        public int decompress(byte[] src, int length, byte[] dest) {
-            System.arraycopy(src, 0, dest, 0, length);
-            return length;
-        }
-    };
+    public static CompressionCodec DEFAULT_COMPRESSION = new DefaultCodec();
     
     private CompressionCodec _compression = DEFAULT_COMPRESSION;
-    public Directory _directory;
+    private Directory _directory;
     private int _writingBlockSize;
+    
+    public Directory getInnerDirectory() {
+        return _directory;
+    }
     
     public CompressedFieldDataDirectory(Directory dir) {
         this(dir, DEFAULT_COMPRESSION);
@@ -211,9 +207,11 @@ public class CompressedFieldDataDirectory extends Directory {
         private CompressionCodec _compression;
         private String _name;
         private int _blockCount;
+        private Compressor _compressor;
 
         public CompressedIndexOutput(String name, Directory directory, CompressionCodec compression, int blockSize) throws IOException {
             _compression = compression;
+            _compressor = _compression.createCompressor();
             _directory = directory;
             _name = name;
             _output = directory.createOutput(name);
@@ -243,8 +241,15 @@ public class CompressedFieldDataDirectory extends Directory {
 
         private void flushBuffer() throws IOException {
             if (_bufferPosition > 0) {
-                int length = _compression.compress(_buffer, _bufferPosition, _compressedBuffer);
-                _tmpOutput.writeVLong(_output.getFilePointer());
+                _compressor.reset();
+                _compressor.setInput(_buffer, 0, _bufferPosition);
+                _compressor.finish();
+                
+                long filePointer = _output.getFilePointer();
+                
+                int length = _compressor.compress(_compressedBuffer, 0, _compressedBuffer.length);
+                
+                _tmpOutput.writeVLong(filePointer);
                 _tmpOutput.writeVInt(length);
                 _blockCount++;
                 _output.writeBytes(_compressedBuffer, 0, length);
@@ -285,6 +290,7 @@ public class CompressedFieldDataDirectory extends Directory {
                 }
             }
             _directory.deleteFile(_name + Z_TMP);
+            _compressor.end();
         }
 
         @Override
@@ -311,7 +317,7 @@ public class CompressedFieldDataDirectory extends Directory {
     public static class CompressedIndexInput extends IndexInput {
         
         private static final int _SIZES_META_DATA = 24;
-        private CompressionCodec _compression;
+        private CompressionCodec _codec;
         private IndexInput  _indexInput;
         private long        _pos;
         private boolean     _isClone;
@@ -326,10 +332,11 @@ public class CompressedFieldDataDirectory extends Directory {
         private long   _realLength;
         private int    _blockBufferLength;
         private int    _blockSize;
-        
+        private Decompressor _decompressor;
 
-        public CompressedIndexInput(String name, Directory directory, CompressionCodec compression) throws IOException {
-            _compression = compression;
+        public CompressedIndexInput(String name, Directory directory, CompressionCodec codec) throws IOException {
+            _codec = codec;
+            _decompressor = _codec.createDecompressor();
             _indexInput = directory.openInput(name);
             _realLength = _indexInput.length();
             readMetaData();
@@ -361,10 +368,12 @@ public class CompressedFieldDataDirectory extends Directory {
         public Object clone() {
             CompressedIndexInput clone = (CompressedIndexInput) super.clone();
             clone._isClone = true;
+            clone._decompressor = _codec.createDecompressor();
             return clone;
         }
 
         public void close() throws IOException {
+            _decompressor.end();
             if (!_isClone) {
                 _indexInput.close();
             }
@@ -416,7 +425,11 @@ public class CompressedFieldDataDirectory extends Directory {
             int length = _blockLengths[blockId];
             _indexInput.seek(position);
             _indexInput.readBytes(_decompressionBuffer, 0, length);
-            _blockBufferLength = _compression.decompress(_decompressionBuffer,length,_blockBuffer);
+            
+            _decompressor.reset();
+            _decompressor.setInput(_decompressionBuffer, 0, length);
+            _blockBufferLength = _decompressor.decompress(_blockBuffer, 0, _blockBuffer.length);
+            
             _currentBlockId = blockId;
         }
 

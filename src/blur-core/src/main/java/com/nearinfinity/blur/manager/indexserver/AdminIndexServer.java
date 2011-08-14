@@ -35,6 +35,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -46,7 +47,6 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager.Value;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public abstract class AdminIndexServer extends AbstractIndexServer {
     

@@ -19,8 +19,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.thrift</groupId>
-			<artifactId>thrift</artifactId>
-			<version>0.6.0</version>
+			<artifactId>libthrift</artifactId>
+			<version>0.7.0</version>
 		</dependency>
 	</dependencies>
 
@@ -61,7 +61,8 @@
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
 							<excludeTransitive>true</excludeTransitive>
-							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop,slf4j-api</excludeArtifactIds>
+							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop,slf4j-api
+							</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>

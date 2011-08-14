@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.Similarity;
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +30,6 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public class BlurShardServerTest {
     

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
@@ -48,8 +49,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
-import com.nearinfinity.lucene.compressed.CompressionCodec;
-import com.nearinfinity.lucene.compressed.DeflaterCompressionCodec;
+import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
 
 public class LocalIndexServer extends AbstractIndexServer {
 
@@ -59,7 +59,7 @@ public class LocalIndexServer extends AbstractIndexServer {
     private File _localDir;
     private BlurIndexCloser _closer;
     private int _blockSize = 65536;
-    private CompressionCodec _compression = new DeflaterCompressionCodec();
+    private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
     private BlurIndexRefresher _refresher;
     private BlurIndexCommiter _commiter;
 

@@ -20,11 +20,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.Similarity;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
-import com.nearinfinity.lucene.compressed.CompressionCodec;
 
 public interface IndexServer {
     

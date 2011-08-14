@@ -115,11 +115,11 @@ public class FacetQuery extends AbstractWrapperQuery {
 
         @Override
         public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {
-            Scorer scorer = weight.scorer(reader, scoreDocsInOrder, topScorer);
+            Scorer scorer = weight.scorer(reader, true, topScorer);
             if (scorer == null) {
                 return null;
             }
-            return new FacetScorer(scorer, getScorers(reader,scoreDocsInOrder,topScorer), counts);
+            return new FacetScorer(scorer, getScorers(reader,true,topScorer), counts);
         }
 
         private Scorer[] getScorers(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException {

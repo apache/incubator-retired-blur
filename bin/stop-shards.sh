@@ -5,5 +5,5 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-
+slaves.sh $BLUR_HOME/bin/stop-shard-server.sh
 

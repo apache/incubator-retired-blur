@@ -1,3 +1,5 @@
+bin=`dirname "$0"`
+bin=`cd "$bin"; pwd`
 
 export BLUR_HOME=`dirname "$this"`/..
 export BLUR_HOME_CONF=$BLUR_HOME/conf

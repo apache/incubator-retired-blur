@@ -292,32 +292,73 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    class BlurQuery
+    class SimpleQuery
       include ::Thrift::Struct, ::Thrift::Struct_Union
       QUERYSTR = 1
       SUPERQUERYON = 2
       TYPE = 3
       POSTSUPERFILTER = 4
       PRESUPERFILTER = 5
-      START = 6
-      FETCH = 7
-      MINIMUMNUMBEROFRESULTS = 8
-      MAXQUERYTIME = 9
-      UUID = 10
-      USERID = 11
-      RESOLVEIDS = 12
-      FACETS = 13
-      SELECTOR = 14
-      STARTTIME = 15
-      CACHEONLY = 16
-      ALLOWSTALEDATA = 17
 
       FIELDS = {
         QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
         SUPERQUERYON => {:type => ::Thrift::Types::BOOL, :name => 'superQueryOn', :default => true},
         TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :default =>         0, :enum_class => Blur::ScoreType},
         POSTSUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'postSuperFilter'},
-        PRESUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'preSuperFilter'},
+        PRESUPERFILTER => {:type => ::Thrift::Types::STRING, :name => 'preSuperFilter'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        unless @type.nil? || Blur::ScoreType::VALID_VALUES.include?(@type)
+          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
+        end
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class ExpertQuery
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      QUERY = 1
+      FILTER = 2
+      SORT = 3
+
+      FIELDS = {
+        QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :binary => true},
+        FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter', :binary => true},
+        SORT => {:type => ::Thrift::Types::STRING, :name => 'sort', :binary => true}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class BlurQuery
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      SIMPLEQUERY = 1
+      EXPERTQUERY = 2
+      START = 3
+      FETCH = 4
+      MINIMUMNUMBEROFRESULTS = 5
+      MAXQUERYTIME = 6
+      UUID = 7
+      USERID = 8
+      RESOLVEIDS = 9
+      FACETS = 10
+      SELECTOR = 11
+      STARTTIME = 12
+      CACHEONLY = 13
+      ALLOWSTALEDATA = 14
+
+      FIELDS = {
+        SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => Blur::SimpleQuery},
+        EXPERTQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'expertQuery', :class => Blur::ExpertQuery},
         START => {:type => ::Thrift::Types::I64, :name => 'start', :default => 0},
         FETCH => {:type => ::Thrift::Types::I32, :name => 'fetch', :default => 10},
         MINIMUMNUMBEROFRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfResults', :default => 9223372036854775807},
@@ -335,9 +376,6 @@ module Blur
       def struct_fields; FIELDS; end
 
       def validate
-        unless @type.nil? || Blur::ScoreType::VALID_VALUES.include?(@type)
-          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
-        end
       end
 
       ::Thrift::Struct.generate_accessors self
@@ -347,13 +385,11 @@ module Blur
       include ::Thrift::Struct, ::Thrift::Struct_Union
       LOCATIONID = 1
       SCORE = 2
-      REASON = 3
-      FETCHRESULT = 4
+      FETCHRESULT = 3
 
       FIELDS = {
         LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
         SCORE => {:type => ::Thrift::Types::DOUBLE, :name => 'score'},
-        REASON => {:type => ::Thrift::Types::STRING, :name => 'reason', :default => %q"UNKNOWN"},
         FETCHRESULT => {:type => ::Thrift::Types::STRUCT, :name => 'fetchResult', :class => Blur::FetchResult}
       }
 
@@ -513,12 +549,14 @@ module Blur
       include ::Thrift::Struct, ::Thrift::Struct_Union
       TABLE = 1
       ROWID = 2
-      ROWMUTATIONTYPE = 3
-      RECORDMUTATIONS = 4
+      WAL = 3
+      ROWMUTATIONTYPE = 4
+      RECORDMUTATIONS = 5
 
       FIELDS = {
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
+        WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal'},
         ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
         RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}}
       }

@@ -82,31 +82,41 @@ struct FetchResult {
   5:FetchRecordResult recordResult
 }
 
-struct BlurQuery {
+struct SimpleQuery {
   1:string queryStr,
   2:bool superQueryOn = 1,
   3:ScoreType type = ScoreType.SUPER, 
   4:string postSuperFilter,
   5:string preSuperFilter,
-  6:i64 start = 0,
-  7:i32 fetch = 10, 
-  8:i64 minimumNumberOfResults = 9223372036854775807,
-  9:i64 maxQueryTime = 9223372036854775807,
-  10:i64 uuid,
-  11:string userId,
-  12:bool resolveIds,
-  13:list<Facet> facets,
-  14:Selector selector,
-  15:i64 startTime,
-  16:bool cacheOnly = 0,
-  17:bool allowStaleData
+}
+
+struct ExpertQuery {
+  1:binary query,
+  2:binary filter,
+  3:binary sort
+}
+
+struct BlurQuery {
+  1:SimpleQuery simpleQuery,
+  2:ExpertQuery expertQuery,
+  3:i64 start = 0,
+  4:i32 fetch = 10, 
+  5:i64 minimumNumberOfResults = 9223372036854775807,
+  6:i64 maxQueryTime = 9223372036854775807,
+  7:i64 uuid,
+  8:string userId,
+  9:bool resolveIds,
+  10:list<Facet> facets,
+  11:Selector selector,
+  12:i64 startTime,
+  13:bool cacheOnly = 0,
+  14:bool allowStaleData
 }
 
 struct BlurResult {
   1:string locationId,
   2:double score,
-  3:string reason = "UNKNOWN",
-  4:FetchResult fetchResult
+  3:FetchResult fetchResult
 }
 
 struct BlurResults {
@@ -176,8 +186,9 @@ enum RowMutationType {
 struct RowMutation {
   1:string table,
   2:string rowId,
-  3:RowMutationType rowMutationType,
-  4:list<RecordMutation> recordMutations
+  3:bool wal,
+  4:RowMutationType rowMutationType,
+  5:list<RecordMutation> recordMutations
 }
 
 struct TableStats {

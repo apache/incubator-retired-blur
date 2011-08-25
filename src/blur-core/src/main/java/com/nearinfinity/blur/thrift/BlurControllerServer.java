@@ -461,8 +461,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public void mutate(final RowMutation mutation) throws BlurException, TException {
         try {
-            String table = mutation.getTable();
             MutationHelper.validateMutation(mutation);
+            String table = mutation.getTable();
             
             int numberOfShards = getShardCount(table);
             Map<String, String> tableLayout = _shardServerLayout.get().get(table);

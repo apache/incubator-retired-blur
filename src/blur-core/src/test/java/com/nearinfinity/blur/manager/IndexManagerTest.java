@@ -58,6 +58,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class IndexManagerTest {
@@ -258,9 +259,10 @@ public class IndexManagerTest {
     @Test
     public void testQuerySuperQueryTrue() throws Exception {
         BlurQuery blurQuery = new BlurQuery();
-        blurQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.superQueryOn = true;
-        blurQuery.type = ScoreType.SUPER;
+        blurQuery.simpleQuery = new SimpleQuery();
+        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+        blurQuery.simpleQuery.superQueryOn = true;
+        blurQuery.simpleQuery.type = ScoreType.SUPER;
         blurQuery.fetch = 10;
         blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
         blurQuery.maxQueryTime = Long.MAX_VALUE;
@@ -284,9 +286,10 @@ public class IndexManagerTest {
     @Test
     public void testQuerySuperQueryTrueWithSelector() throws Exception {
         BlurQuery blurQuery = new BlurQuery();
-        blurQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.superQueryOn = true;
-        blurQuery.type = ScoreType.SUPER;
+        blurQuery.simpleQuery = new SimpleQuery();
+        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+        blurQuery.simpleQuery.superQueryOn = true;
+        blurQuery.simpleQuery.type = ScoreType.SUPER;
         blurQuery.fetch = 10;
         blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
         blurQuery.maxQueryTime = Long.MAX_VALUE;
@@ -308,8 +311,9 @@ public class IndexManagerTest {
     @Test
     public void testQuerySuperQueryFalse() throws Exception {
         BlurQuery blurQuery = new BlurQuery();
-        blurQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.superQueryOn = false;
+        blurQuery.simpleQuery = new SimpleQuery();
+        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+        blurQuery.simpleQuery.superQueryOn = false;
         blurQuery.fetch = 10;
         blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
         blurQuery.maxQueryTime = Long.MAX_VALUE;
@@ -333,8 +337,9 @@ public class IndexManagerTest {
     @Test
     public void testQuerySuperQueryFalseWithSelector() throws Exception {
         BlurQuery blurQuery = new BlurQuery();
-        blurQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.superQueryOn = false;
+        blurQuery.simpleQuery = new SimpleQuery();
+        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+        blurQuery.simpleQuery.superQueryOn = false;
         blurQuery.fetch = 10;
         blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
         blurQuery.maxQueryTime = Long.MAX_VALUE;
@@ -357,9 +362,10 @@ public class IndexManagerTest {
     @Test
     public void testQueryWithFacets() throws Exception {
         BlurQuery blurQuery = new BlurQuery();
-        blurQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.superQueryOn = true;
-        blurQuery.type = ScoreType.SUPER;
+        blurQuery.simpleQuery = new SimpleQuery();
+        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+        blurQuery.simpleQuery.superQueryOn = true;
+        blurQuery.simpleQuery.type = ScoreType.SUPER;
         blurQuery.fetch = 10;
         blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
         blurQuery.maxQueryTime = Long.MAX_VALUE;

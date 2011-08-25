@@ -330,6 +330,7 @@ public class BlurShardServer extends ExecutionContextIface {
             TException {
         long start = context.startTime();
         try {
+            MutationHelper.validateMutation(mutation);
             checkTableStatus(context, mutation.table);
             try {
                 indexManager.mutate(mutation);
@@ -348,7 +349,7 @@ public class BlurShardServer extends ExecutionContextIface {
             MutationHelper.validateMutation(mutation);
         }
         for (RowMutation mutation : mutations) {
-            mutate(mutation);
+            mutate(context, mutation);
         }
     }
 

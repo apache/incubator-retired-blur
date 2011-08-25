@@ -54,6 +54,7 @@ import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
+import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -77,6 +78,7 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.Column;
+import com.nearinfinity.blur.thrift.generated.ExpertQuery;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.FetchRowResult;
 import com.nearinfinity.blur.thrift.generated.Record;
@@ -87,6 +89,7 @@ import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -275,19 +278,52 @@ public class IndexManager {
                 throw new BException(e.getMessage(),e);
             }
             Analyzer analyzer = _indexServer.getAnalyzer(table);
-            Filter preFilter = parseFilter(table, blurQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
-            Filter postFilter = parseFilter(table, blurQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
-            Query userQuery = parseQuery(blurQuery.queryStr, blurQuery.superQueryOn, 
-                    analyzer, postFilter, preFilter, getScoreType(blurQuery.type));
-            final Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
             
-            QueryParallelCall call = new QueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
+            ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
+            if (isSimpleQuery(blurQuery)) {
+                SimpleQuery simpleQuery = blurQuery.simpleQuery;
+                Filter preFilter = parseFilter(table, simpleQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
+                Filter postFilter = parseFilter(table, simpleQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
+                Query userQuery = parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, 
+                        analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
+                Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
+                call = new QueryParallelCall(table, status, _indexServer, 
+                        facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
+                
+            } else {
+                Query query = getQuery(blurQuery.expertQuery);
+                Filter filter = getFilter(blurQuery.expertQuery);
+                Sort sort = getSort(blurQuery.expertQuery);
+                
+                throw new RuntimeException("not implemented");
+            }
             MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
             return ForkJoin.execute(_executor, blurIndexes.entrySet(), call).merge(merger);
         } finally {
             status.deattachThread();
             _statusManager.removeStatus(status);
         }
+    }
+
+    private Sort getSort(ExpertQuery expertQuery) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private Filter getFilter(ExpertQuery expertQuery) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    private Query getQuery(ExpertQuery expertQuery) {
+        return null;
+    }
+
+    private boolean isSimpleQuery(BlurQuery blurQuery) {
+        if (blurQuery.simpleQuery != null) {
+            return true;
+        }
+        return false;
     }
 
     private Query getFacetedQuery(BlurQuery blurQuery, Query userQuery, AtomicLongArray counts, Analyzer analyzer) throws ParseException {
@@ -301,7 +337,7 @@ public class IndexManager {
         int size = blurQuery.facets.size();
         Query[] queries = new Query[size];
         for (int i = 0; i < size; i++) {
-            queries[i] = parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
+            queries[i] = parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
         }
         return queries;
     }

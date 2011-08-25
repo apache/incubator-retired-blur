@@ -25,11 +25,13 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
 
   private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField ROW_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("rowId", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField ROW_MUTATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("rowMutationType", org.apache.thrift.protocol.TType.I32, (short)3);
-  private static final org.apache.thrift.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutations", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField WAL_FIELD_DESC = new org.apache.thrift.protocol.TField("wal", org.apache.thrift.protocol.TType.BOOL, (short)3);
+  private static final org.apache.thrift.protocol.TField ROW_MUTATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("rowMutationType", org.apache.thrift.protocol.TType.I32, (short)4);
+  private static final org.apache.thrift.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutations", org.apache.thrift.protocol.TType.LIST, (short)5);
 
   public String table; // required
   public String rowId; // required
+  public boolean wal; // required
   /**
    * 
    * @see RowMutationType
@@ -41,12 +43,13 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TABLE((short)1, "table"),
     ROW_ID((short)2, "rowId"),
+    WAL((short)3, "wal"),
     /**
      * 
      * @see RowMutationType
      */
-    ROW_MUTATION_TYPE((short)3, "rowMutationType"),
-    RECORD_MUTATIONS((short)4, "recordMutations");
+    ROW_MUTATION_TYPE((short)4, "rowMutationType"),
+    RECORD_MUTATIONS((short)5, "recordMutations");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -65,9 +68,11 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
           return TABLE;
         case 2: // ROW_ID
           return ROW_ID;
-        case 3: // ROW_MUTATION_TYPE
+        case 3: // WAL
+          return WAL;
+        case 4: // ROW_MUTATION_TYPE
           return ROW_MUTATION_TYPE;
-        case 4: // RECORD_MUTATIONS
+        case 5: // RECORD_MUTATIONS
           return RECORD_MUTATIONS;
         default:
           return null;
@@ -109,6 +114,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   }
 
   // isset id assignments
+  private static final int __WAL_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -117,6 +124,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ROW_ID, new org.apache.thrift.meta_data.FieldMetaData("rowId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.WAL, new org.apache.thrift.meta_data.FieldMetaData("wal", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     tmpMap.put(_Fields.ROW_MUTATION_TYPE, new org.apache.thrift.meta_data.FieldMetaData("rowMutationType", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, RowMutationType.class)));
     tmpMap.put(_Fields.RECORD_MUTATIONS, new org.apache.thrift.meta_data.FieldMetaData("recordMutations", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -132,12 +141,15 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   public RowMutation(
     String table,
     String rowId,
+    boolean wal,
     RowMutationType rowMutationType,
     List<RecordMutation> recordMutations)
   {
     this();
     this.table = table;
     this.rowId = rowId;
+    this.wal = wal;
+    setWalIsSet(true);
     this.rowMutationType = rowMutationType;
     this.recordMutations = recordMutations;
   }
@@ -146,12 +158,15 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
    * Performs a deep copy on <i>other</i>.
    */
   public RowMutation(RowMutation other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetTable()) {
       this.table = other.table;
     }
     if (other.isSetRowId()) {
       this.rowId = other.rowId;
     }
+    this.wal = other.wal;
     if (other.isSetRowMutationType()) {
       this.rowMutationType = other.rowMutationType;
     }
@@ -172,6 +187,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   public void clear() {
     this.table = null;
     this.rowId = null;
+    setWalIsSet(false);
+    this.wal = false;
     this.rowMutationType = null;
     this.recordMutations = null;
   }
@@ -222,6 +239,29 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     if (!value) {
       this.rowId = null;
     }
+  }
+
+  public boolean isWal() {
+    return this.wal;
+  }
+
+  public RowMutation setWal(boolean wal) {
+    this.wal = wal;
+    setWalIsSet(true);
+    return this;
+  }
+
+  public void unsetWal() {
+    __isset_bit_vector.clear(__WAL_ISSET_ID);
+  }
+
+  /** Returns true if field wal is set (has been assigned a value) and false otherwise */
+  public boolean isSetWal() {
+    return __isset_bit_vector.get(__WAL_ISSET_ID);
+  }
+
+  public void setWalIsSet(boolean value) {
+    __isset_bit_vector.set(__WAL_ISSET_ID, value);
   }
 
   /**
@@ -313,6 +353,14 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       }
       break;
 
+    case WAL:
+      if (value == null) {
+        unsetWal();
+      } else {
+        setWal((Boolean)value);
+      }
+      break;
+
     case ROW_MUTATION_TYPE:
       if (value == null) {
         unsetRowMutationType();
@@ -340,6 +388,9 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     case ROW_ID:
       return getRowId();
 
+    case WAL:
+      return Boolean.valueOf(isWal());
+
     case ROW_MUTATION_TYPE:
       return getRowMutationType();
 
@@ -361,6 +412,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return isSetTable();
     case ROW_ID:
       return isSetRowId();
+    case WAL:
+      return isSetWal();
     case ROW_MUTATION_TYPE:
       return isSetRowMutationType();
     case RECORD_MUTATIONS:
@@ -397,6 +450,15 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       if (!(this_present_rowId && that_present_rowId))
         return false;
       if (!this.rowId.equals(that.rowId))
+        return false;
+    }
+
+    boolean this_present_wal = true;
+    boolean that_present_wal = true;
+    if (this_present_wal || that_present_wal) {
+      if (!(this_present_wal && that_present_wal))
+        return false;
+      if (this.wal != that.wal)
         return false;
     }
 
@@ -454,6 +516,16 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetWal()).compareTo(typedOther.isSetWal());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWal()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.wal, typedOther.wal);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetRowMutationType()).compareTo(typedOther.isSetRowMutationType());
     if (lastComparison != 0) {
       return lastComparison;
@@ -505,14 +577,22 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // ROW_MUTATION_TYPE
+        case 3: // WAL
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.wal = iprot.readBool();
+            setWalIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 4: // ROW_MUTATION_TYPE
           if (field.type == org.apache.thrift.protocol.TType.I32) {
             this.rowMutationType = RowMutationType.findByValue(iprot.readI32());
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // RECORD_MUTATIONS
+        case 5: // RECORD_MUTATIONS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
               org.apache.thrift.protocol.TList _list71 = iprot.readListBegin();
@@ -555,6 +635,9 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       oprot.writeString(this.rowId);
       oprot.writeFieldEnd();
     }
+    oprot.writeFieldBegin(WAL_FIELD_DESC);
+    oprot.writeBool(this.wal);
+    oprot.writeFieldEnd();
     if (this.rowMutationType != null) {
       oprot.writeFieldBegin(ROW_MUTATION_TYPE_FIELD_DESC);
       oprot.writeI32(this.rowMutationType.getValue());
@@ -597,6 +680,10 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     }
     first = false;
     if (!first) sb.append(", ");
+    sb.append("wal:");
+    sb.append(this.wal);
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("rowMutationType:");
     if (this.rowMutationType == null) {
       sb.append("null");
@@ -630,6 +717,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);

@@ -66,7 +66,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
             @Override
             public BlurResult convert(ScoreDoc scoreDoc) throws Exception {
                 String resolveId = resolveId(scoreDoc.doc);
-                return new BlurResult(resolveId, scoreDoc.score, "UNKNOWN", getFetchResult(resolveId));
+                return new BlurResult(resolveId, scoreDoc.score, getFetchResult(resolveId));
             }
         });
         _shardInfo.put(_shard, (long) _totalHitsRef.totalHits());

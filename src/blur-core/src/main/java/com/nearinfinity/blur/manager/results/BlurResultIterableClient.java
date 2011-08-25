@@ -57,9 +57,9 @@ public class BlurResultIterableClient implements BlurResultIterable {
     private void performSearch() {
         try {
             long cursor = _fetchCount * _batch;
-            BlurQuery blurQuery = new BlurQuery(_originalQuery.queryStr, _originalQuery.superQueryOn, _originalQuery.type, 
-                    _originalQuery.postSuperFilter, _originalQuery.preSuperFilter, cursor, _fetchCount, _originalQuery.minimumNumberOfResults, 
-                    _originalQuery.maxQueryTime, _originalQuery.uuid, _originalQuery.userId, false, _originalQuery.facets, null, 
+            BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery, cursor, 
+                    _fetchCount, _originalQuery.minimumNumberOfResults, _originalQuery.maxQueryTime, 
+                    _originalQuery.uuid, _originalQuery.userId, false, _originalQuery.facets, null, 
                     _originalQuery.startTime, false, _originalQuery.allowStaleData);
             
             _results = _client.query(_table, blurQuery);

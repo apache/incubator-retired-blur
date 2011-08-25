@@ -1,5 +1,0 @@
-{
-	"blur.zookeeper.connection":"127.0.0.1",
-	"blur.local.cache.pathes":"./tmp/local-testing-tmp",
-	"blur.cluster.name":"default"
-}

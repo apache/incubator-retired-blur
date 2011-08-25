@@ -1,8 +1,23 @@
-export JAVA_HOME=/Library/Java/Home
-export HADOOP_HOME=/Users/amccurry/Downloads/hadoop-0.20.2
+# Set environment specific Blur settings here.
+
+# JAVA_HOME is required
+# export JAVA_HOME=/usr/lib/j2sdk1.6-sun
+
+# HADOOP_HOME is required
+# export HADOOP_HOME=/var/hadoop-0.20.2
+
+# JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
 export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m"
+
+# JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
 export BLUR_CONTROLLER_JVM_OPTIONS="-Xmx1024m"
+
+# Any SSH Options to be used during startup or shutdown commands.
 export BLUR_SSH_OPTS=
+
+# Time to sleep between shard server commands.
 export BLUR_SHARD_SLEEP=0.1
+
+# Time to sleep between controller server commands.
 export BLUR_CONTROLLER_SLEEP=0.1
 

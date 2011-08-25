@@ -146,14 +146,14 @@ public class BlurIndexWriter extends BlurIndex {
     }
     
     @Override
-    public boolean replaceRow(Row row) throws IOException {
-        _rowIndexWriter.replace(row);
+    public boolean replaceRow(boolean wal, Row row) throws IOException {
+        _rowIndexWriter.replace(wal,row);
         return true;
     }
     
     @Override
-    public void deleteRow(String rowId) throws IOException {
-        _writer.deleteDocuments(true,new Term(ROW_ID,rowId));
+    public void deleteRow(boolean wal, String rowId) throws IOException {
+        _writer.deleteDocuments(wal,new Term(ROW_ID,rowId));
     }
     
     public void setAnalyzer(BlurAnalyzer analyzer) {

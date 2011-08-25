@@ -23,7 +23,9 @@ import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.RowDocumentUtil.getColumns;
 import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -287,9 +289,8 @@ public class IndexManager {
                 Query userQuery = parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, 
                         analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
                 Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
-                call = new QueryParallelCall(table, status, _indexServer, 
+                call = new SimpleQueryParallelCall(table, status, _indexServer, 
                         facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
-                
             } else {
                 Query query = getQuery(blurQuery.expertQuery);
                 Filter filter = getFilter(blurQuery.expertQuery);
@@ -305,18 +306,16 @@ public class IndexManager {
         }
     }
 
-    private Sort getSort(ExpertQuery expertQuery) {
-        // TODO Auto-generated method stub
-        return null;
+    private Sort getSort(ExpertQuery expertQuery) throws BException {
+        return readObject(expertQuery.getSort());
     }
 
-    private Filter getFilter(ExpertQuery expertQuery) {
-        // TODO Auto-generated method stub
-        return null;
+    private Filter getFilter(ExpertQuery expertQuery) throws BException {
+        return readObject(expertQuery.getFilter());
     }
 
-    private Query getQuery(ExpertQuery expertQuery) {
-        return null;
+    private Query getQuery(ExpertQuery expertQuery) throws BException {
+        return readObject(expertQuery.getQuery());
     }
 
     private boolean isSimpleQuery(BlurQuery blurQuery) {
@@ -632,13 +631,13 @@ public class IndexManager {
         switch (type) {
         case REPLACE_ROW:
             Row row = MutationHelper.getRowFromMutations(mutation.rowId,mutation.recordMutations);
-            blurIndex.replaceRow(row);
+            blurIndex.replaceRow(mutation.wal,row);
             break;
         case UPDATE_ROW:
             doUpdateRowMutation(mutation,blurIndex);
             break;
         case DELETE_ROW:
-            blurIndex.deleteRow(mutation.rowId);
+            blurIndex.deleteRow(mutation.wal,mutation.rowId);
             break;
         default:
             throw new RuntimeException("Not supported [" + type + "]");
@@ -661,9 +660,10 @@ public class IndexManager {
                     }
                 }
             }
+            blurIndex.replaceRow(mutation.wal,newRow);
         } else {
             Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-            blurIndex.replaceRow(row);
+            blurIndex.replaceRow(mutation.wal,row);
         }
     }
 
@@ -715,7 +715,7 @@ public class IndexManager {
         return _indexServer.getShardCount(table);
     }
     
-    public static class QueryParallelCall implements ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> {
+    public static class SimpleQueryParallelCall implements ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> {
         
         private String _table;
         private QueryStatus _status;
@@ -724,7 +724,7 @@ public class IndexManager {
         private Selector _selector;
         private boolean _forceRefresh;
         
-        public QueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh) {
+        public SimpleQueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh) {
             _table = table;
             _status = status;
             _indexServer = indexServer;
@@ -752,8 +752,32 @@ public class IndexManager {
             }
         }
     }
-
+    
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static <T> T readObject(byte[] bs) throws BException {
+        if (bs == null) {
+            return null;
+        }
+        ObjectInputStream inputStream = null;
+        try {
+            inputStream = new ObjectInputStream(new ByteArrayInputStream(bs));
+            return (T) inputStream.readObject();
+        } catch (IOException e) {
+            throw new BException("Unknown error", e);
+        } catch (ClassNotFoundException e) {
+            throw new BException("Unknown error", e);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    throw new BException("Unknown error", e);
+                }
+            }
+        }
     }
 }

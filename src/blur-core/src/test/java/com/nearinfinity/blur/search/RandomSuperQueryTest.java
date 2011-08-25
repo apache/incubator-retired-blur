@@ -104,7 +104,7 @@ public class RandomSuperQueryTest {
 		RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30)));
 		int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
 		for (int i = 0; i < numberOfDocs; i++) {
-		    indexWriter.replace(generatSuperDoc(random, columns, sampler));
+		    indexWriter.replace(false,generatSuperDoc(random, columns, sampler));
 		}
 		writer.close();
 		return directory;

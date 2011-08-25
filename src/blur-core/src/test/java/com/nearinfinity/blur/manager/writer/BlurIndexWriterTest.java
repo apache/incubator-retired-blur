@@ -79,7 +79,7 @@ public class BlurIndexWriterTest {
         long s = System.nanoTime();
         int total = 0;
         for (int i = 0; i < TEST_NUMBER; i++) {
-            writer.replaceRow(genRow());
+            writer.replaceRow(true,genRow());
             total++;
         }
         long e = System.nanoTime();

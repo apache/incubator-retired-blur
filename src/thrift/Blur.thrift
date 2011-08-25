@@ -186,7 +186,7 @@ enum RowMutationType {
 struct RowMutation {
   1:string table,
   2:string rowId,
-  3:bool wal,
+  3:bool wal = 1,
   4:RowMutationType rowMutationType,
   5:list<RecordMutation> recordMutations
 }

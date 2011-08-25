@@ -153,14 +153,14 @@ public class SuperQueryTest {
 		WalIndexWriter writer = new WalIndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33)));
 		BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
 		RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
-		indexWriter.replace(newRow("1", 
+		indexWriter.replace(false,newRow("1", 
 		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
 		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
 		        newRecord("address", UUID.randomUUID().toString(), newColumn("street","sulgrave"))));
-		indexWriter.replace(newRow("2", 
+		indexWriter.replace(false,newRow("2", 
 		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","hannah")),
 		        newRecord("address", UUID.randomUUID().toString(), newColumn("street","sulgrave"))));
-		indexWriter.replace(newRow("3", 
+		indexWriter.replace(false,newRow("3", 
 		        newRecord("person", UUID.randomUUID().toString(), newColumn("name","aaron")),
 		        newRecord("address", UUID.randomUUID().toString(), newColumn("street","sulgrave court"))));;
 		writer.close();

@@ -26,7 +26,7 @@ public class BlurIndexReader extends BlurIndex {
     }
 
     @Override
-    public boolean replaceRow(Row row) {
+    public boolean replaceRow(boolean wal, Row row) {
         return false;
     }
 
@@ -36,7 +36,7 @@ public class BlurIndexReader extends BlurIndex {
     }
 
     @Override
-    public void deleteRow(String rowId) {
+    public void deleteRow(boolean wal, String rowId) {
         
     }
 }

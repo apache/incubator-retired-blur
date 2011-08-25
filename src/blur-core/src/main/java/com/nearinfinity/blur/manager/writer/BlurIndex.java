@@ -8,7 +8,7 @@ import com.nearinfinity.blur.thrift.generated.Row;
 
 public abstract class BlurIndex {
     
-    public abstract boolean replaceRow(Row row) throws IOException;
+    public abstract boolean replaceRow(boolean wal, Row row) throws IOException;
     
     public abstract IndexReader getIndexReader(boolean forceRefresh) throws IOException;
 
@@ -16,6 +16,6 @@ public abstract class BlurIndex {
 
     public abstract void refresh() throws IOException;
 
-    public abstract void deleteRow(String rowId) throws IOException;
+    public abstract void deleteRow(boolean wal,String rowId) throws IOException;
 
 }

@@ -55,30 +55,30 @@ public class RowIndexWriter {
         _analyzer = analyzer;
     }
     
-    public void add(Row row) throws IOException {
+    public void add(boolean wal, Row row) throws IOException {
         if (row == null || row.id == null) {
             throw new NullPointerException();
         }
-        append(row,false);
+        append(wal,row,false);
     }
     
-    public void replace(Row row) throws IOException {
+    public void replace(boolean wal, Row row) throws IOException {
         if (row == null || row.id == null) {
             throw new NullPointerException();
         }
-        append(row,true);
+        append(wal,row,true);
     }
 
-    private void append(Row row, boolean replace) throws IOException {
+    private void append(boolean wal, Row row, boolean replace) throws IOException {
         primeDocSet = false;
         List<Document> documents = new ArrayList<Document>();
         for (Record record : row.records) {
             convert(row.id,record,documents);
         }
         if (replace) {
-            _indexWriter.updateDocuments(true,new Term(ROW_ID,row.id),documents,_analyzer);
+            _indexWriter.updateDocuments(wal,new Term(ROW_ID,row.id),documents,_analyzer);
         } else {
-            _indexWriter.addDocuments(true,documents,_analyzer);
+            _indexWriter.addDocuments(wal,documents,_analyzer);
         }
     }
 

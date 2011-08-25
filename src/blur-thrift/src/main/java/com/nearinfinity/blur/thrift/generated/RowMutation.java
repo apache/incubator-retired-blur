@@ -136,6 +136,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   }
 
   public RowMutation() {
+    this.wal = true;
+
   }
 
   public RowMutation(
@@ -187,8 +189,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   public void clear() {
     this.table = null;
     this.rowId = null;
-    setWalIsSet(false);
-    this.wal = false;
+    this.wal = true;
+
     this.rowMutationType = null;
     this.recordMutations = null;
   }

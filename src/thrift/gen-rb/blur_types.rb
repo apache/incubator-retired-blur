@@ -556,7 +556,7 @@ module Blur
       FIELDS = {
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
-        WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal'},
+        WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal', :default => true},
         ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
         RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}}
       }

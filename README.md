@@ -39,6 +39,8 @@ Then you will need to setup the `config/blur.properties` file.
 
 Then in the `config/shards` list the servers that should run as blur shard servers.
 
+NOTE:  By default shard servers run on port `40020` and bind to the `0.0.0.0` address.
+
     shard1
     shard2
     shard3
@@ -46,6 +48,8 @@ Then in the `config/shards` list the servers that should run as blur shard serve
 ### controllers
 
 Like the shards file, in the `config/controllers` list servers that will run as the blur controller servers.
+
+NOTE:  By default controller servers run on port `40010` and bind to the `0.0.0.0` address.
 
     controller1
     controller2
@@ -70,6 +74,50 @@ To start the entire cluster run `bin/start-all.sh`, this will execute `bin/start
 ### Stop
 
 To shutdown blur run `bin/stop-all.sh`, this will stop all the blur processes on all the servers.
+
+Thrift Client
+----
+
+All of the examples below require Thrift to execute, if you have successfully gotten to this point you already have the libraries required.
+
+### Plain Thrift API example
+
+    TTransport trans = new TSocket("controller1", 40010);
+    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
+    Client client = new Client(proto);
+    try {
+        trans.open();
+        //use client here
+    } catch (Exception e) {
+        //do something smart...
+    } finally {
+        trans.close();
+    }
+
+### Automatic connect/pool/error retry API example
+
+    BlurClientManager.execute("controller1:40010", new BlurCommand<Void>() {
+	    @Override
+	    public Void call(Client client) throws Exception {
+            //use client here
+            return null;
+	    }
+	});
+	
+### Async Thrift client helper API example
+
+    AsyncClientPool pool = new AsyncClientPool(10,60000); // 10 connections per host with a timeout of 60 seconds.
+    AsyncIface client = pool.getClient(Blur.AsyncIface.class, "controller1:40010");
+	client.tableList(new AsyncMethodCallback<tableList_call>() {
+        @Override
+        public void onError(Exception exception) {
+            //do something smart...
+        }  
+        @Override
+        public void onComplete(tableList_call response) {
+            //process result
+	    }
+    });
 
 Creating a Table
 ----
@@ -194,6 +242,8 @@ The data loaded in the Loading Data section above put `value` in the `columnname
 ### Expert Search
 
 Example coming.
+
+
 
 [cluster_setup]: http://hadoop.apache.org/common/docs/r0.20.203.0/cluster_setup.html
 [single_node]: http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html#Setup+passphraseless

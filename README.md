@@ -138,9 +138,29 @@ This is the shorter way of creating the same RowMutation.
 
 Example coming.
 
-Searching
+Fetching Data
 ----
 
+Simple example of how to fetch an entire row from a table by rowid:
+
+    Selector selector = new Selector();
+    selector.setRowId("rowid-1234");
+    FetchResult fetchRow = client.fetchRow("test-table", selector);
+    FetchRowResult rowResult = fetchRow.getRowResult();
+    Row row = rowResult.getRow();
+
+To select a subset of columns from a column family:
+
+    Set<String> columnNames = new HashSet<String>();
+    columnNames.add("columnname");
+    selector.putToColumnsToFetch("column-family", columnNames);
+
+To select a all the columns from a subset of column families:
+
+   selector.addToColumnFamiliesToFetch("column-family");
+
+Searching
+----
 
 [cluster_setup]: http://hadoop.apache.org/common/docs/r0.20.203.0/cluster_setup.html
 [single_node]: http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html#Setup+passphraseless

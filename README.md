@@ -23,9 +23,9 @@ http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html#Setup+pa
 
 4. Then you will need to setup the `config/blur.properties` file.
 
-	blur.zookeeper.connection=localhost
-	blur.local.cache.pathes=/tmp/blur-cache
-	blur.cluster.name=default
+    blur.zookeeper.connection=localhost
+    blur.local.cache.pathes=/tmp/blur-cache
+    blur.cluster.name=default
 
 5. Then in the `config/shards` list the servers that should run as blur shard servers.
 

@@ -22,18 +22,33 @@ NOTE: If you are running blur on a single machine this is not necessary, but [pa
 
 ### blur-env.sh
 
-Next you will need to configure the `config/blur-env.sh` file.
+Next you will need to configure the `config/blur-env.sh` file.  The two exports that are required:
 
     export JAVA_HOME=/usr/lib/j2sdk1.6-sun
     export HADOOP_HOME=/var/hadoop-0.20.2
 
 ### blur.properties
 
-Then you will need to setup the `config/blur.properties` file.
+Then you will need to setup the `config/blur.properties` file.  The default site configuration:
 
     blur.zookeeper.connection=localhost
     blur.local.cache.pathes=/tmp/blur-cache
     blur.cluster.name=default
+
+Other options:
+
+NOTE:  By default if the `blur.*.hostname` properties are left blank the default value is the result of `InetAddress.getLocalHost().getHostName();` and it required that it be unique for every server.
+
+    blur.shard.hostname=
+    blur.shard.bind.address=0.0.0.0
+    blur.shard.bind.port=40020
+    blur.controller.hostname=
+    blur.controller.bind.address=0.0.0.0
+    blur.controller.bind.port=40010
+    blur.max.clause.count=1024
+    blur.indexmanager.search.thread.count=32
+    blur.shard.server.thrift.thread.count=32
+    blur.controller.server.thrift.thread.count=32
 
 ### shards
 
@@ -54,7 +69,7 @@ NOTE:  By default controller servers run on port `40010` and bind to the `0.0.0.
     controller1
     controller2
 
-NOTE: To just get started you do not need to run controllers as the shard servers are fully functional on the their own.  Both the controllers and the shard servers share the same thrift API.
+NOTE: To just get started you do not need to run controllers if you are going to run a single shard server.  A single shard server is fully functional on the it's own.  Controllers and the shard servers share the same thrift API, so later your code won't have to be modified to run against a cluster.
 
 ### $BLUR_HOME
 

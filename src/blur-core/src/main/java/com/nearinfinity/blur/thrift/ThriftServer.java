@@ -15,7 +15,6 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.thrift.generated.Blur.Processor;
 
 public class ThriftServer {
     
@@ -38,7 +37,7 @@ public class ThriftServer {
     }
     
     public void start() throws TTransportException {
-        Processor processor = new Blur.Processor(iface);
+        Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(iface);
         TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(configuration));
         
         Args args = new Args(serverTransport);

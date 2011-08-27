@@ -157,11 +157,45 @@ To select a subset of columns from a column family:
 
 To select a all the columns from a subset of column families:
 
-   selector.addToColumnFamiliesToFetch("column-family");
+    selector.addToColumnFamiliesToFetch("column-family");
 
 Searching
 ----
 
+The blur query language is the same as Lucene's [query parser][queryparser] syntax.
+
+### Simple search
+
+The search example will do a full text search for `value` in each column in every column family.  This is a result of the basic setup, so this behavior can be configured.
+
+    BlurQuery blurQuery = new BlurQuery();
+    SimpleQuery simpleQuery = new SimpleQuery();
+    simpleQuery.setQueryStr("value");
+    blurQuery.setSimpleQuery(simpleQuery);
+    blurQuery.setSelector(new Selector());
+
+    BlurResults blurResults = client.query("test-table", blurQuery);
+    for (BlurResult result : blurResults.getResults()) {
+       System.out.println(result);
+    }
+
+Shorted version of the same thing:
+
+    import static com.nearinfinity.blur.utils.BlurUtil.*;
+
+    BlurQuery blurQuery = newSimpleQuery("value");
+    BlurResults blurResults = client.query("test-table", blurQuery);
+    for (BlurResult result : blurResults.getResults()) {
+       System.out.println(result);
+    }
+
+The data loaded in the Loading Data section above put `value` in the `columnname` column in the `column-family` column family.  So you could also search for the row by using the `column-family.columnname:value` and find all the rows that contain `value` in `columnname`.
+
+### Expert Search
+
+Example coming.
+
 [cluster_setup]: http://hadoop.apache.org/common/docs/r0.20.203.0/cluster_setup.html
 [single_node]: http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html#Setup+passphraseless
 [Zookeeper]: http://zookeeper.apache.org/doc/r3.3.3/zookeeperStarted.html
+[queryparser]: http://lucene.apache.org/java/3_3_0/queryparsersyntax.html

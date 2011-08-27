@@ -48,11 +48,21 @@ import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurUtil {
     
     private static final Log LOG = LogFactory.getLog(BlurUtil.class);
+    
+    public static BlurQuery newSimpleQuery(String query) {
+        BlurQuery blurQuery = new BlurQuery();
+        SimpleQuery simpleQuery = new SimpleQuery();
+        simpleQuery.setQueryStr(query);
+        blurQuery.setSimpleQuery(simpleQuery);
+        blurQuery.setSelector(new Selector());
+        return blurQuery;
+    }
     
     public static List<Long> getList(AtomicLongArray atomicLongArray) {
         if (atomicLongArray == null) {

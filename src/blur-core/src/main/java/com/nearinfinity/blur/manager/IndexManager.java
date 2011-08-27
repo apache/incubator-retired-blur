@@ -20,12 +20,13 @@ import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+import static com.nearinfinity.blur.utils.BlurUtil.readFilter;
+import static com.nearinfinity.blur.utils.BlurUtil.readQuery;
+import static com.nearinfinity.blur.utils.BlurUtil.readSort;
 import static com.nearinfinity.blur.utils.RowDocumentUtil.getColumns;
 import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -295,8 +296,19 @@ public class IndexManager {
                 Query query = getQuery(blurQuery.expertQuery);
                 Filter filter = getFilter(blurQuery.expertQuery);
                 Sort sort = getSort(blurQuery.expertQuery);
-                
-                throw new RuntimeException("not implemented");
+                if (sort == null) {
+                    Query userQuery;
+                    if (filter != null) {
+                        userQuery = new FilteredQuery(query, filter);
+                    } else {
+                        userQuery = query;
+                    }
+                    Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
+                    call = new SimpleQueryParallelCall(table, status, _indexServer, 
+                            facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
+                } else {
+                    throw new RuntimeException("sort not implemented");
+                }
             }
             MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
             return ForkJoin.execute(_executor, blurIndexes.entrySet(), call).merge(merger);
@@ -307,15 +319,15 @@ public class IndexManager {
     }
 
     private Sort getSort(ExpertQuery expertQuery) throws BException {
-        return readObject(expertQuery.getSort());
+        return readSort(expertQuery.getSort());
     }
 
     private Filter getFilter(ExpertQuery expertQuery) throws BException {
-        return readObject(expertQuery.getFilter());
+        return readFilter(expertQuery.getFilter());
     }
 
     private Query getQuery(ExpertQuery expertQuery) throws BException {
-        return readObject(expertQuery.getQuery());
+        return readQuery(expertQuery.getQuery());
     }
 
     private boolean isSimpleQuery(BlurQuery blurQuery) {
@@ -755,29 +767,5 @@ public class IndexManager {
     
     public void setThreadCount(int threadCount) {
         this.threadCount = threadCount;
-    }
-    
-    @SuppressWarnings("unchecked")
-    private static <T> T readObject(byte[] bs) throws BException {
-        if (bs == null) {
-            return null;
-        }
-        ObjectInputStream inputStream = null;
-        try {
-            inputStream = new ObjectInputStream(new ByteArrayInputStream(bs));
-            return (T) inputStream.readObject();
-        } catch (IOException e) {
-            throw new BException("Unknown error", e);
-        } catch (ClassNotFoundException e) {
-            throw new BException("Unknown error", e);
-        } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    throw new BException("Unknown error", e);
-                }
-            }
-        }
     }
 }

@@ -37,7 +37,7 @@ Then you will need to setup the `config/blur.properties` file.  The default site
 
 Other options:
 
-NOTE:  By default if the `blur.*.hostname` properties are left blank the default value is the result of `InetAddress.getLocalHost().getHostName();` and it required that it be unique for every server.
+NOTE:  By default if the `blur.*.hostname` properties are left blank, the default value is the result of `InetAddress.getLocalHost().getHostName();`.  Hostname is required to be unique for every server.
 
     blur.shard.hostname=
     blur.shard.bind.address=0.0.0.0

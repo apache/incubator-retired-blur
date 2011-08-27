@@ -33,9 +33,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
+import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
@@ -242,5 +247,68 @@ public class BlurUtil {
             }
         }
         return results;
+    }
+    
+    public static Query readQuery(byte[] bs) throws BException {
+        return readObject(bs);
+    }
+    
+    public static byte[] writeQuery(Query query) throws BException {
+        return writeObject(query);
+    }
+
+    public static Sort readSort(byte[] bs) throws BException {
+        return readObject(bs);
+    }
+    
+    public static byte[] writeSort(Sort sort) throws BException {
+        return writeObject(sort);
+    }
+    
+    public static Filter readFilter(byte[] bs) throws BException {
+        return readObject(bs);
+    }
+    
+    public static byte[] writeFilter(Filter filter) throws BException {
+        return writeObject(filter);
+    }
+    
+    private static byte[] writeObject(Serializable o) throws BException {
+        if (o == null) {
+            return null;
+        }
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream outputStream = new ObjectOutputStream(byteArrayOutputStream);
+            outputStream.writeObject(o);
+            outputStream.close();
+            return byteArrayOutputStream.toByteArray();
+        } catch (IOException e) {
+            throw new BException("Unknown error", e);
+        }
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static <T> T readObject(byte[] bs) throws BException {
+        if (bs == null) {
+            return null;
+        }
+        ObjectInputStream inputStream = null;
+        try {
+            inputStream = new ObjectInputStream(new ByteArrayInputStream(bs));
+            return (T) inputStream.readObject();
+        } catch (IOException e) {
+            throw new BException("Unknown error", e);
+        } catch (ClassNotFoundException e) {
+            throw new BException("Unknown error", e);
+        } finally {
+            if (inputStream != null) {
+                try {
+                    inputStream.close();
+                } catch (IOException e) {
+                    throw new BException("Unknown error", e);
+                }
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 namespace java com.nearinfinity.blur.thrift.generated
 namespace rb blur
+namespace perl Blur
 
 exception BlurException {
   1:string message,

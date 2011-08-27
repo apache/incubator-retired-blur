@@ -12,7 +12,7 @@ First clone the project and compile the project using Maven.  Once this is compl
 
 ### HDFS
 
-It is assumed that all your servers will be setup to run Hadoop's HDFS filesystem.  Though possible, the Map/Reduce system is not recommended to be run on the same machines as blur.  Follow the Hadoop [cluster setup][clustersetup] guide.
+It is assumed that all your servers will be setup to run Hadoop's HDFS filesystem.  Though possible, the Map/Reduce system is not recommended to be run on the same machines as blur.  Follow the Hadoop [cluster setup][cluster_setup] guide.
 
 NOTE: If you are running blur on a single machine this is not necessary, but [passphraseless][single_node] ssh is still needed.
 
@@ -48,6 +48,24 @@ Like the shards file, in the `config/controllers` list servers that will run as 
 
 NOTE: To just get started you do not need to run controllers as the shard servers are fully functional on the their own.  Both the controllers and the shard servers share the same thrift API.
 
+### $BLUR_HOME
 
-[cluster setup]: http://hadoop.apache.org/common/docs/r0.20.203.0/cluster_setup.html
+It is a good idea to add `export BLUR_HOME=/var/blur` in your `.bash_profile`.
+
+### Setup Nodes
+
+Copy the Blur directory to the same location on all servers in the cluster.
+
+Running Blur
+----
+
+### Start
+
+To start the entire cluster run `bin/start-all.sh`, this will execute `bin/start-shards.sh` and then `bin/start-controllers.sh`.  These two scripts start blur on all the servers.
+
+### Stop
+
+To shutdown blur run `bin/stop-all.sh`, this will stop all the blur processes on all the servers.
+
+[cluster_setup]: http://hadoop.apache.org/common/docs/r0.20.203.0/cluster_setup.html
 [single_node]: http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html#Setup+passphraseless

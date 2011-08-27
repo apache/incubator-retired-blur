@@ -16,7 +16,7 @@
 
 package com.nearinfinity.blur.analysis;
 
-import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
+import static com.nearinfinity.blur.utils.BlurConstants.*;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
@@ -42,6 +42,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
@@ -69,6 +70,7 @@ public class BlurAnalyzer extends Analyzer {
     private Set<String> _fullTextFields = new HashSet<String>();
     private AnalyzerDefinition _analyzerDefinition;
     private PerFieldAnalyzerWrapper _wrapper;
+    private Analyzer _fullTextAnalyzer = new StandardAnalyzer(Version.LUCENE_33);
 
     public void addSubField(String name) {
         int lastIndexOf = name.lastIndexOf('.');
@@ -91,10 +93,15 @@ public class BlurAnalyzer extends Analyzer {
     }
 
     public BlurAnalyzer(AnalyzerDefinition analyzerDefinition) {
-        this._analyzerDefinition = analyzerDefinition;
+        _analyzerDefinition = analyzerDefinition;
         ColumnDefinition defaultDefinition = analyzerDefinition.getDefaultDefinition();
+        String fullTextAnalyzerClassName = analyzerDefinition.fullTextAnalyzerClassName;
+        if (fullTextAnalyzerClassName != null) {
+            _fullTextAnalyzer = getAnalyzerByClassName(fullTextAnalyzerClassName, aliases);
+        }
         if (defaultDefinition == null) {
             defaultDefinition = new ColumnDefinition(STANDARD, true, null);
+            analyzerDefinition.setDefaultDefinition(defaultDefinition);
         }
         Analyzer defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases);
         _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer);
@@ -102,6 +109,7 @@ public class BlurAnalyzer extends Analyzer {
         _wrapper.addAnalyzer(ROW_ID, keywordAnalyzer);
         _wrapper.addAnalyzer(RECORD_ID, keywordAnalyzer);
         _wrapper.addAnalyzer(PRIME_DOC, keywordAnalyzer);
+        _wrapper.addAnalyzer(SUPER, _fullTextAnalyzer);
         load();
     }
 
@@ -196,6 +204,9 @@ public class BlurAnalyzer extends Analyzer {
     }
 
     public boolean isFullTextField(String fieldName) {
+        if (_analyzerDefinition.getDefaultDefinition().fullTextIndex) {
+            return true;
+        }
         return _fullTextFields.contains(fieldName);
     }
 

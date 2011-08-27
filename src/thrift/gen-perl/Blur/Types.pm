@@ -2249,12 +2249,12 @@ sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{isEnabled} = undef;
+  $self->{isEnabled} = 1;
   $self->{analyzerDefinition} = undef;
-  $self->{shardCount} = undef;
+  $self->{shardCount} = 1;
   $self->{tableUri} = undef;
-  $self->{compressionClass} = undef;
-  $self->{compressionBlockSize} = undef;
+  $self->{compressionClass} = "org.apache.hadoop.io.compress.DefaultCodec";
+  $self->{compressionBlockSize} = 32768;
   $self->{cluster} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {

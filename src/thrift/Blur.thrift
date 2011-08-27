@@ -132,12 +132,12 @@ struct BlurResults {
 }
 
 struct TableDescriptor {
-  1:bool isEnabled,
+  1:bool isEnabled = 1,
   2:AnalyzerDefinition analyzerDefinition,
-  3:i32 shardCount,
+  3:i32 shardCount = 1,
   4:string tableUri,
-  5:string compressionClass,
-  6:i32 compressionBlockSize,
+  5:string compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec',
+  6:i32 compressionBlockSize = 32768,
   7:string cluster
 }
 

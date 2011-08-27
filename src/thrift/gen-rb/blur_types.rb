@@ -442,12 +442,12 @@ module Blur
       CLUSTER = 7
 
       FIELDS = {
-        ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled'},
+        ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
         ANALYZERDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'analyzerDefinition', :class => Blur::AnalyzerDefinition},
-        SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount'},
+        SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount', :default => 1},
         TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'},
-        COMPRESSIONCLASS => {:type => ::Thrift::Types::STRING, :name => 'compressionClass'},
-        COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize'},
+        COMPRESSIONCLASS => {:type => ::Thrift::Types::STRING, :name => 'compressionClass', :default => %q"org.apache.hadoop.io.compress.DefaultCodec"},
+        COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize', :default => 32768},
         CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
       }
 

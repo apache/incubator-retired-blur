@@ -10,6 +10,10 @@ Getting Started
 
 First clone the project and compile the project using Maven.  Once this is complete the blur libraries and dependences will be copied into the lib directory.
 
+### Zookeeper
+
+Setup [Zookeeper][Zookeeper].
+
 ### HDFS
 
 It is assumed that all your servers will be setup to run Hadoop's HDFS filesystem.  Though possible, the Map/Reduce system is not recommended to be run on the same machines as blur.  Follow the Hadoop [cluster setup][cluster_setup] guide.
@@ -67,5 +71,77 @@ To start the entire cluster run `bin/start-all.sh`, this will execute `bin/start
 
 To shutdown blur run `bin/stop-all.sh`, this will stop all the blur processes on all the servers.
 
+Creating a Table
+----
+
+### Standalone mode
+
+If you are running on a single node you may reference a local directory for storing the index data.
+
+    AnalyzerDefinition ad = new AnalyzerDefinition();
+    TableDescriptor td = new TableDescriptor(); 
+    td.setTableUri("file:///tmp/blur-tables/test-table"); // Location on the local machine
+    td.setAnalyzerDefinition(ad);
+    client.createTable("test-table", td);
+
+### Cluster mode
+
+If you are running on a single node you may reference a local directory for storing the index data.
+
+    AnalyzerDefinition ad = new AnalyzerDefinition();
+    TableDescriptor td = new TableDescriptor();
+    td.setShardCount(16); // The number of shards should be based on how many indexes your hardware can support as well as the volume of data.
+    td.setTableUri("hdfs://hadoop-namenode:9000/blur/tables/test-table"); // Location in HDFS
+    td.setAnalyzerDefinition(ad);
+    client.createTable("test-table", td);
+
+Loading Data
+----
+
+### Thrift
+
+This is the long thrift way of creating a lot of objects to create a simple row and load into a table.
+
+    List<Column> columns = new ArrayList<Column>();
+    columns.add(new Column("columnname", "value"));
+
+    Record record = new Record();
+    record.setRecordId("recordid-5678");
+    record.setFamily("column-family");
+    record.setColumns(columns);
+
+    RecordMutation recordMutation = new RecordMutation();
+    recordMutation.setRecord(record);
+    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+
+    List<RecordMutation> recordMutations = new ArrayList<RecordMutation>();
+    recordMutations.add(recordMutation);
+
+    RowMutation mutation = new RowMutation();
+    mutation.setTable("test-table");
+    mutation.setRowId("rowid-1234");
+    mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+
+    mutation.setRecordMutations(recordMutations);
+    client.mutate(mutation);
+
+This is the shorter way of creating the same RowMutation.
+
+    import static com.nearinfinity.blur.utils.BlurUtil.*;
+
+    RowMutation mutation = newRowMutation("test-table", "rowid-1234", 
+            newRecordMutation("column-family", "recordid-5678", 
+                newColumn("columnname", "value")));
+    client.mutate(mutation);
+
+### Map/Reduce Bulk Load
+
+Example coming.
+
+Searching
+----
+
+
 [cluster_setup]: http://hadoop.apache.org/common/docs/r0.20.203.0/cluster_setup.html
 [single_node]: http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html#Setup+passphraseless
+[Zookeeper]: http://zookeeper.apache.org/doc/r3.3.3/zookeeperStarted.html

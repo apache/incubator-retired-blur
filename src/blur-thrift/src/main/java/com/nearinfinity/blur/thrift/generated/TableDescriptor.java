@@ -143,6 +143,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   }
 
   public TableDescriptor() {
+    this.isEnabled = true;
+
+    this.shardCount = 1;
+
+    this.compressionClass = "org.apache.hadoop.io.compress.DefaultCodec";
+
+    this.compressionBlockSize = 32768;
+
   }
 
   public TableDescriptor(
@@ -196,15 +204,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
   @Override
   public void clear() {
-    setIsEnabledIsSet(false);
-    this.isEnabled = false;
+    this.isEnabled = true;
+
     this.analyzerDefinition = null;
-    setShardCountIsSet(false);
-    this.shardCount = 0;
+    this.shardCount = 1;
+
     this.tableUri = null;
-    this.compressionClass = null;
-    setCompressionBlockSizeIsSet(false);
-    this.compressionBlockSize = 0;
+    this.compressionClass = "org.apache.hadoop.io.compress.DefaultCodec";
+
+    this.compressionBlockSize = 32768;
+
     this.cluster = null;
   }
 

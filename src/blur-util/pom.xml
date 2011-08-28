@@ -89,7 +89,7 @@
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
 							<excludeTransitive>true</excludeTransitive>
-							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop,slf4j-api,slf4j-log4j12</excludeArtifactIds>
+							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api,slf4j-log4j12</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>

@@ -70,8 +70,10 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     //need a daemon to track reopening changed indexes
     
     public void init() {
+        LOG.info("init - start");
         super.init();
         startIndexReaderCloserDaemon();
+        LOG.info("init - complete");
     }
     
     protected abstract BlurIndex openShard(String table, String shard) throws IOException;

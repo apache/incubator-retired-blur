@@ -35,6 +35,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -69,9 +71,11 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
     @Override
     public void init() {
+        LOG.info("init - start");
         super.init();
         _closer = new BlurIndexCloser();
         _closer.init();
+        LOG.info("init - complete");
     }
     
     @Override
@@ -125,17 +129,39 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     private BlurIndex warmUp(BlurIndex index) throws IOException {
         IndexReader reader = index.getIndexReader(true);
         try {
-            int maxDoc = reader.maxDoc();
-            int numDocs = reader.numDocs();
-            Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-            int primeDocCount = reader.docFreq(new Term(PRIME_DOC,PRIME_DOC_VALUE));
-            //@TODO warm up position files.
-            LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fields [" + fieldNames + "]");
+            warmUpAllSegments(reader);
         } finally {
             //this will allow for closing of index
             reader.decRef();
         }
         return index;
+    }
+
+    private void warmUpAllSegments(IndexReader reader) throws IOException {
+        IndexReader[] indexReaders = reader.getSequentialSubReaders();
+        if (indexReaders != null) {
+            for (IndexReader r : indexReaders) {
+                warmUpAllSegments(r);
+            }
+        }
+        int maxDoc = reader.maxDoc();
+        int numDocs = reader.numDocs();
+        Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+        Term term = new Term(PRIME_DOC,PRIME_DOC_VALUE);
+        int primeDocCount = reader.docFreq(term);
+        
+        TermDocs termDocs = reader.termDocs(term);
+        termDocs.next();
+        termDocs.close();
+        
+        TermPositions termPositions = reader.termPositions(term);
+        if (termPositions.next()) {
+            if (termPositions.freq() > 0) {
+                termPositions.nextPosition();
+            }
+        }
+        termPositions.close();
+        LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fieldCount [" + fieldNames.size() + "]");
     }
 
     @Override

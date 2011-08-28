@@ -34,6 +34,7 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
     private boolean _loggingDisabled = true;
 
     public void init() {
+        LOG.info("init - start");
         _running.set(true);
         _daemon = new Thread(new Runnable() {
             @Override
@@ -50,6 +51,7 @@ public abstract class ExecutionContextIface extends TableAdmin implements IfaceE
         _daemon.setName("Execution Context Logger");
         _daemon.setDaemon(true);
         _daemon.start();
+        LOG.info("init - complete");
     }
 
     private void log(ExecutionContext context) {

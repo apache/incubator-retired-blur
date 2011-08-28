@@ -20,11 +20,13 @@ public class BlurIndexCloser implements Runnable {
     private AtomicBoolean running = new AtomicBoolean();
 
     public void init() {
+        LOG.info("init - start");
         running.set(true);
         daemon = new Thread(this);
         daemon.setDaemon(true);
         daemon.setName(getClass().getName() + "-Daemon");
         daemon.start();
+        LOG.info("init - complete");
     }
 
     public void close() {

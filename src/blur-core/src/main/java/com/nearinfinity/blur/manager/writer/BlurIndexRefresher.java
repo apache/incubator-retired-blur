@@ -34,8 +34,10 @@ public class BlurIndexRefresher extends TimerTask {
     }
 
     public void init() {
+        LOG.info("init - start");
         _timer = new Timer("IndexReader-Refresher", true);
         _timer.schedule(this, _delay, _period);
+        LOG.info("init - complete");
     }
 
     @Override

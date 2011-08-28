@@ -63,8 +63,8 @@ public class ReplicationDaemon implements Runnable {
         }
     } 
     
-    private Thread daemon;
-    private LocalIOWrapper wrapper = new LocalIOWrapper() {
+    private Thread _daemon;
+    private LocalIOWrapper _wrapper = new LocalIOWrapper() {
         @Override
         public IndexOutput wrapOutput(IndexOutput fileIndexOutput) {
             return fileIndexOutput;
@@ -74,12 +74,12 @@ public class ReplicationDaemon implements Runnable {
             return fileIndexInput;
         }
     };
-    private long period = TimeUnit.SECONDS.toMillis(1);
-    private LocalFileCache localFileCache;
-    private PriorityBlockingQueue<RepliaWorkUnit> replicaQueue = new PriorityBlockingQueue<RepliaWorkUnit>(1024, new RepliaWorkUnitCompartor());
-    private Collection<String> replicaNames = Collections.synchronizedCollection(new HashSet<String>());
-    private volatile boolean closed;
-    private IndexInputFactory indexInputFactory = new IndexInputFactory() {
+    private long _period = TimeUnit.SECONDS.toMillis(1);
+    private LocalFileCache _localFileCache;
+    private PriorityBlockingQueue<RepliaWorkUnit> _replicaQueue = new PriorityBlockingQueue<RepliaWorkUnit>(1024, new RepliaWorkUnitCompartor());
+    private Collection<String> _replicaNames = Collections.synchronizedCollection(new HashSet<String>());
+    private volatile boolean _closed;
+    private IndexInputFactory _indexInputFactory = new IndexInputFactory() {
         @Override
         public void replicationComplete(RepliaWorkUnit workUnit, LocalIOWrapper wrapper, int bufferSize) throws IOException {
             ReplicaIndexInput replicaIndexInput = workUnit.replicaIndexInput;
@@ -94,31 +94,34 @@ public class ReplicationDaemon implements Runnable {
     };
     
     public void init() {
-        this.daemon = new Thread(this);
-        this.daemon.setDaemon(true);
-        this.daemon.setPriority(Thread.MIN_PRIORITY);
-        this.daemon.start();
+        LOG.info("init - start");
+        _daemon = new Thread(this);
+        _daemon.setName("replication-daemon");
+        _daemon.setDaemon(true);
+        _daemon.setPriority(Thread.MIN_PRIORITY);
+        _daemon.start();
+        LOG.info("init - complete");
     }
     
     public synchronized void close() {
-        if (!closed) {
-            closed = true;
-            daemon.interrupt();
+        if (!_closed) {
+            _closed = true;
+            _daemon.interrupt();
         }
     }
 
     @Override
     public void run() {
-        while (!closed) {
+        while (!_closed) {
             try {
                 replicate();
             } catch (Exception e) {
                 LOG.error("Error during local replication.", e);
             }
             try {
-                Thread.sleep(period);
+                Thread.sleep(_period);
             } catch (InterruptedException e) {
-                if (closed) {
+                if (_closed) {
                     return;
                 }
                 throw new RuntimeException(e);
@@ -127,9 +130,9 @@ public class ReplicationDaemon implements Runnable {
     }
 
     private void replicate() throws InterruptedException, IOException {
-        while (!replicaQueue.isEmpty() && !closed) {
+        while (!_replicaQueue.isEmpty() && !_closed) {
             LOG.info("Total files left to be replicated [{0}], totaling [{1} MB]",getNumberOfFilesToReplicate(),getSizeOfFilesToReplicate());
-            RepliaWorkUnit unit = replicaQueue.take();
+            RepliaWorkUnit unit = _replicaQueue.take();
             ReplicaIndexInput replicaIndexInput = unit.replicaIndexInput;
             String dirName = replicaIndexInput.dirName;
             String fileName = replicaIndexInput.fileName;
@@ -137,14 +140,14 @@ public class ReplicationDaemon implements Runnable {
             FileSystem fileSystem = directory.getFileSystem();
             Path hdfsDirPath = directory.getHdfsDirPath();
             
-            File localFile = localFileCache.getLocalFile(dirName, fileName);
+            File localFile = _localFileCache.getLocalFile(dirName, fileName);
             if (localFile.exists()) {
                 LOG.info("Local file of [{0}/{1}] was found, deleting and recopying.",dirName,fileName);
                 if (!localFile.delete()) {
                     LOG.fatal("Error trying to delete existing file during replication [{0}]", localFile.getAbsolutePath());
                     //not sure what to do now.
                 } else {
-                    localFile = localFileCache.getLocalFile(dirName, fileName);
+                    localFile = _localFileCache.getLocalFile(dirName, fileName);
                 }
             }
             
@@ -154,18 +157,18 @@ public class ReplicationDaemon implements Runnable {
             fileSystem.copyToLocalFile(source, dest);
             LOG.info("Finished copying file [{0}/{1}] locally.",dirName,fileName);
             
-            indexInputFactory.replicationComplete(unit, wrapper, BUFFER_SIZE);
-            replicaNames.remove(getLookupName(dirName,fileName));
+            _indexInputFactory.replicationComplete(unit, _wrapper, BUFFER_SIZE);
+            _replicaNames.remove(getLookupName(dirName,fileName));
         }
     }
 
     private int getNumberOfFilesToReplicate() {
-        return replicaQueue.size();
+        return _replicaQueue.size();
     }
 
     private float getSizeOfFilesToReplicate() {
         float total = 0;
-        for (RepliaWorkUnit unit : replicaQueue) {
+        for (RepliaWorkUnit unit : _replicaQueue) {
             total += (unit.replicaIndexInput.length / MB);
         }
         return total;
@@ -180,8 +183,8 @@ public class ReplicationDaemon implements Runnable {
         RepliaWorkUnit unit = new RepliaWorkUnit();
         unit.replicaIndexInput = replicaIndexInput;
         unit.directory = directory;
-        replicaQueue.add(unit);
-        replicaNames.add(getLookupName(dirName,fileName));
+        _replicaQueue.add(unit);
+        _replicaNames.add(getLookupName(dirName,fileName));
     }
 
     private String getLookupName(String dirName, String fileName) {
@@ -189,14 +192,14 @@ public class ReplicationDaemon implements Runnable {
     }
 
     public boolean isBeingReplicated(String dirName, String name) {
-        return replicaNames.contains(getLookupName(dirName, name));
+        return _replicaNames.contains(getLookupName(dirName, name));
     }
 
     public void setWrapper(LocalIOWrapper wrapper) {
-        this.wrapper = wrapper;
+        this._wrapper = wrapper;
     }
 
     public void setLocalFileCache(LocalFileCache localFileCache) {
-        this.localFileCache = localFileCache;
+        this._localFileCache = localFileCache;
     }
 }

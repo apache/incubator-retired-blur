@@ -50,6 +50,7 @@ public class LocalFileCache {
     private boolean closed;
     
     public void init() {
+        LOG.info("init - start");
         tryToCreateAllDirs();
         files = getValid(potentialDirs);
         daemon = new Timer("LocalFileCache-FileGC-Daemon",true);
@@ -64,6 +65,7 @@ public class LocalFileCache {
             }
         }, gcStartDelay, gcWaitPeriod);
         setup = true;
+        LOG.info("init - complete");
     }
     
     public synchronized void close() {

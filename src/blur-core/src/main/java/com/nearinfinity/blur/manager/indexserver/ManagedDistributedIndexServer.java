@@ -65,6 +65,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
     
     @Override
     public void init() {
+        LOG.info("init - start");
         setupZookeeper();
         super.init();
         lockNodeState();
@@ -77,6 +78,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         waitIfInSafeMode();
         startPollingDaemon();
         pollForState();
+        LOG.info("init - complete");
     }
 
     private void lockNodeState() {

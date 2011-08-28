@@ -74,10 +74,12 @@ public abstract class AdminIndexServer extends AbstractIndexServer {
      * @throws IOException 
      */
     public void init() {
+        LOG.info("init - start");
         executorService = Executors.newThreadPool("admin-index-server",threadCount);
         dm.createPath(getBlurTablesPath()); //ensures the path exists
         updateStatus();
         startUpdateStatusPollingDaemon();
+        LOG.info("init - complete");
     }
     
     public void close() {
@@ -88,12 +90,12 @@ public abstract class AdminIndexServer extends AbstractIndexServer {
 
     protected void startUpdateStatusPollingDaemon() {
         daemon = new Timer("AdminIndexServer-Status-Poller", true);
-        daemon.scheduleAtFixedRate(new TimerTask() {
+        daemon.schedule(new TimerTask() {
             @Override
             public void run() {
                 updateStatus();
             }
-        }, TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS.toMillis(10));
+        }, 0, TimeUnit.SECONDS.toMillis(1));
     }
 
     protected synchronized void updateStatus() {
@@ -105,10 +107,12 @@ public abstract class AdminIndexServer extends AbstractIndexServer {
     }
 
     protected void warmUpIndexes() {
+        LOG.debug("Warm up indexes");
         List<String> tableList = getTableList();
         for (String t : tableList) {
             final String table = t;
             if (getTableStatus(table) == TABLE_STATUS.ENABLED) {
+                LOG.debug("Warm up table [{0}]",t);
                 executorService.execute(new Runnable() {
                     @Override
                     public void run() {

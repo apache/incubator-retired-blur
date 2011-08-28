@@ -118,8 +118,10 @@ public class IndexManager {
     }
 
     public void init() {
+        LOG.info("init - start");
         _executor = Executors.newThreadPool("index-manager",threadCount);
         _statusManager.init();
+        LOG.info("init - complete");
     }
 
     public synchronized void close() {

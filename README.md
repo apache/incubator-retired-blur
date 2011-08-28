@@ -20,9 +20,9 @@ Blur requires Hadoop to be installed because of library dependencies, but runnin
 
 ### HDFS Notes
 
-Setup Hadoop's HDFS filesystem, which is required for clustered setup.  Though possible, the Map/Reduce system is not recommended to be run on the same machines the are running the Blur daemons.  Follow the Hadoop [cluster setup][cluster_setup] guide.
+If you are running Blur on a single machine this is not necessary, but [single node][single_node] setup is still required for libraries.
 
-NOTE: If you are running Blur on a single machine this is not necessary, but [single node][single_node] setup is still required for libraries.
+Setup Hadoop's HDFS filesystem, which is required for clustered setup.  Though possible, the Map/Reduce system is not recommended to be run on the same machines the are running the Blur daemons.  Follow the Hadoop [cluster setup][cluster_setup] guide.
 
 ### HDFS Options
 
@@ -30,14 +30,14 @@ HDFS is not required to be installed and running on the same servers as Blur.  H
 	
 NOTE: The normal 0.20.2 is not compatible with Cloudera's 0.20.2 CDH3u1 version.  Meaning you cannot install CDH3 on your Blur servers and reference a normal 0.20.2 HDFS instance for storage.  Blur has not been tested with Hadoop version 0.20.203.0.
 
-### blur-env.sh
+### blur-env.sh Configuration
 
 Next you will need to configure the `config/blur-env.sh` file.  The two exports that are required:
 
     export JAVA_HOME=/usr/lib/j2sdk1.6-sun
     export HADOOP_HOME=/var/hadoop-0.20.2
 
-### blur.properties
+### blur.properties Configuration
 
 Then you will need to setup the `config/blur.properties` file.  The default site configuration:
 
@@ -47,7 +47,7 @@ Then you will need to setup the `config/blur.properties` file.  The default site
 
 Other options:
 
-NOTE:  By default if the `blur.*.hostname` properties are left blank, the default value is the result of `InetAddress.getLocalHost().getHostName();`.  Hostname is required to be unique for every server.
+By default if the `blur.*.hostname` properties are left blank, the default value is the result of `InetAddress.getLocalHost().getHostName();`.  Hostname is required to be unique for every server.
 
     blur.shard.hostname=
     blur.shard.bind.address=0.0.0.0
@@ -62,9 +62,7 @@ NOTE:  By default if the `blur.*.hostname` properties are left blank, the defaul
 
 ### shards
 
-Then in the `config/shards` list the servers that should run as blur shard servers.
-
-NOTE:  By default shard servers run on port `40020` and bind to the `0.0.0.0` address.
+Then in the `config/shards` list the servers that should run as blur shard servers.  By default shard servers run on port `40020` and bind to the `0.0.0.0` address.
 
     shard1
     shard2
@@ -72,14 +70,12 @@ NOTE:  By default shard servers run on port `40020` and bind to the `0.0.0.0` ad
 
 ### controllers
 
-Like the shards file, in the `config/controllers` list servers that will run as the blur controller servers.
-
-NOTE:  By default controller servers run on port `40010` and bind to the `0.0.0.0` address.
+Like the shards file, in the `config/controllers` list servers that will run as the blur controller servers.  By default controller servers run on port `40010` and bind to the `0.0.0.0` address.
 
     controller1
     controller2
 
-NOTE: To just get started you do not need to run controllers if you are going to run a single shard server.  A single shard server is fully functional on the it's own.  Controllers and the shard servers share the same thrift API, so later your code won't have to be modified to run against a cluster.
+NOTE: If you are going to run a single shard server running controllers is not required.  A single shard server is fully functional on the it's own.  Controllers and the shard servers share the same thrift API, so later your code won't have to be modified to run against a cluster.
 
 ### $BLUR_HOME
 

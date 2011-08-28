@@ -10,10 +10,32 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
+/**
+ * The scoring type used during a SuperQuery to score multi Record
+ * hits within a ColumnFamily.
+ */
 public enum ScoreType implements org.apache.thrift.TEnum {
+  /**
+   * During a multi Record match, a calculation of the best match
+   * Record plus how often it occurs within the match Row produces
+   * the score that is used in the scoring of the SuperQuery.
+   */
   SUPER(0),
+  /**
+   * During a multi Record match, the aggregate score of all the
+   * Records within a ColumnFamily is used in the scoring of the
+   * SuperQuery.
+   */
   AGGREGATE(1),
+  /**
+   * During a multi Record match, the best score of all the
+   * Records within a ColumnFamily is used in the scoring of the
+   * SuperQuery.
+   */
   BEST(2),
+  /**
+   * A constant score of 1 is used in the scoring of the SuperQuery.
+   */
   CONSTANT(3);
 
   private final int value;

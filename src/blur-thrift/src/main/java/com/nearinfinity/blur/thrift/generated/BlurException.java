@@ -20,18 +20,34 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * BlurException that carries a message plus the original stack
+ * trace (if any).
+ */
 public class BlurException extends Exception implements org.apache.thrift.TBase<BlurException, BlurException._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurException");
 
   private static final org.apache.thrift.protocol.TField MESSAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("message", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField STACK_TRACE_STR_FIELD_DESC = new org.apache.thrift.protocol.TField("stackTraceStr", org.apache.thrift.protocol.TType.STRING, (short)2);
 
+  /**
+   * The message in the exception.
+   */
   public String message; // required
+  /**
+   * The original stack trace (if any).
+   */
   public String stackTraceStr; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The message in the exception.
+     */
     MESSAGE((short)1, "message"),
+    /**
+     * The original stack trace (if any).
+     */
     STACK_TRACE_STR((short)2, "stackTraceStr");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -137,10 +153,16 @@ public class BlurException extends Exception implements org.apache.thrift.TBase<
     this.stackTraceStr = null;
   }
 
+  /**
+   * The message in the exception.
+   */
   public String getMessage() {
     return this.message;
   }
 
+  /**
+   * The message in the exception.
+   */
   public BlurException setMessage(String message) {
     this.message = message;
     return this;
@@ -161,10 +183,16 @@ public class BlurException extends Exception implements org.apache.thrift.TBase<
     }
   }
 
+  /**
+   * The original stack trace (if any).
+   */
   public String getStackTraceStr() {
     return this.stackTraceStr;
   }
 
+  /**
+   * The original stack trace (if any).
+   */
   public BlurException setStackTraceStr(String stackTraceStr) {
     this.stackTraceStr = stackTraceStr;
     return this;

@@ -10,9 +10,24 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
+/**
+ * Specifies the type of Row mutation that should occur during
+ * a mutation of a given Row.
+ */
 public enum RowMutationType implements org.apache.thrift.TEnum {
+  /**
+   * Indicates that the entire Row is to be deleted.
+   */
   DELETE_ROW(0),
+  /**
+   * Indicates that the entire Row is to be deleted, and then a new
+   * Row with the same id is to be added.
+   */
   REPLACE_ROW(1),
+  /**
+   * Indicates that mutations of the underlying Records will be
+   * processed individually.
+   */
   UPDATE_ROW(2);
 
   private final int value;

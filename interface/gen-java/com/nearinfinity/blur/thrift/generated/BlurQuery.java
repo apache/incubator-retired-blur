@@ -1252,14 +1252,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         case 10: // FACETS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list36 = iprot.readListBegin();
-              this.facets = new ArrayList<Facet>(_list36.size);
-              for (int _i37 = 0; _i37 < _list36.size; ++_i37)
+              org.apache.thrift.protocol.TList _list21 = iprot.readListBegin();
+              this.facets = new ArrayList<Facet>(_list21.size);
+              for (int _i22 = 0; _i22 < _list21.size; ++_i22)
               {
-                Facet _elem38; // required
-                _elem38 = new Facet();
-                _elem38.read(iprot);
-                this.facets.add(_elem38);
+                Facet _elem23; // required
+                _elem23 = new Facet();
+                _elem23.read(iprot);
+                this.facets.add(_elem23);
               }
               iprot.readListEnd();
             }
@@ -1351,9 +1351,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       oprot.writeFieldBegin(FACETS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.facets.size()));
-        for (Facet _iter39 : this.facets)
+        for (Facet _iter24 : this.facets)
         {
-          _iter39.write(oprot);
+          _iter24.write(oprot);
         }
         oprot.writeListEnd();
       }

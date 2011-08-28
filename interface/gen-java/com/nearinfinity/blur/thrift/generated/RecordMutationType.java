@@ -10,10 +10,29 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
+/**
+ * Specifies the type of Record mutation that should occur during
+ * a mutation of a given Record.
+ */
 public enum RecordMutationType implements org.apache.thrift.TEnum {
+  /**
+   * Indicates the Record with the given recordId in the given Row
+   * is to be deleted.
+   */
   DELETE_ENTIRE_RECORD(0),
+  /**
+   * Indicates the Record with the given recordId in the given Row
+   * is to be deleted, and a new Record with the same id is to be added.
+   */
   REPLACE_ENTIRE_RECORD(1),
+  /**
+   * Replace the columns that are specified in the Record mutation.
+   */
   REPLACE_COLUMNS(2),
+  /**
+   * Append the columns in the Record mutation to the Record that
+   * could already exist.
+   */
   APPEND_COLUMN_VALUES(3);
 
   private final int value;

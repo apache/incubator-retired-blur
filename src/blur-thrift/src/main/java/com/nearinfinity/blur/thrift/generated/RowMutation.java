@@ -597,14 +597,14 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
         case 5: // RECORD_MUTATIONS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list71 = iprot.readListBegin();
-              this.recordMutations = new ArrayList<RecordMutation>(_list71.size);
-              for (int _i72 = 0; _i72 < _list71.size; ++_i72)
+              org.apache.thrift.protocol.TList _list42 = iprot.readListBegin();
+              this.recordMutations = new ArrayList<RecordMutation>(_list42.size);
+              for (int _i43 = 0; _i43 < _list42.size; ++_i43)
               {
-                RecordMutation _elem73; // required
-                _elem73 = new RecordMutation();
-                _elem73.read(iprot);
-                this.recordMutations.add(_elem73);
+                RecordMutation _elem44; // required
+                _elem44 = new RecordMutation();
+                _elem44.read(iprot);
+                this.recordMutations.add(_elem44);
               }
               iprot.readListEnd();
             }
@@ -649,9 +649,9 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       oprot.writeFieldBegin(RECORD_MUTATIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.recordMutations.size()));
-        for (RecordMutation _iter74 : this.recordMutations)
+        for (RecordMutation _iter45 : this.recordMutations)
         {
-          _iter74.write(oprot);
+          _iter45.write(oprot);
         }
         oprot.writeListEnd();
       }

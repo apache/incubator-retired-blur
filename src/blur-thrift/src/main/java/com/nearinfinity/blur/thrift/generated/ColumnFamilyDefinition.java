@@ -353,16 +353,16 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
         case 2: // COLUMN_DEFINITIONS
           if (field.type == org.apache.thrift.protocol.TType.MAP) {
             {
-              org.apache.thrift.protocol.TMap _map5 = iprot.readMapBegin();
-              this.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map5.size);
-              for (int _i6 = 0; _i6 < _map5.size; ++_i6)
+              org.apache.thrift.protocol.TMap _map65 = iprot.readMapBegin();
+              this.columnDefinitions = new HashMap<String,ColumnDefinition>(2*_map65.size);
+              for (int _i66 = 0; _i66 < _map65.size; ++_i66)
               {
-                String _key7; // required
-                ColumnDefinition _val8; // required
-                _key7 = iprot.readString();
-                _val8 = new ColumnDefinition();
-                _val8.read(iprot);
-                this.columnDefinitions.put(_key7, _val8);
+                String _key67; // required
+                ColumnDefinition _val68; // required
+                _key67 = iprot.readString();
+                _val68 = new ColumnDefinition();
+                _val68.read(iprot);
+                this.columnDefinitions.put(_key67, _val68);
               }
               iprot.readMapEnd();
             }
@@ -394,10 +394,10 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
       oprot.writeFieldBegin(COLUMN_DEFINITIONS_FIELD_DESC);
       {
         oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, this.columnDefinitions.size()));
-        for (Map.Entry<String, ColumnDefinition> _iter9 : this.columnDefinitions.entrySet())
+        for (Map.Entry<String, ColumnDefinition> _iter69 : this.columnDefinitions.entrySet())
         {
-          oprot.writeString(_iter9.getKey());
-          _iter9.getValue().write(oprot);
+          oprot.writeString(_iter69.getKey());
+          _iter69.getValue().write(oprot);
         }
         oprot.writeMapEnd();
       }

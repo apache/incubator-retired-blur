@@ -347,14 +347,14 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
         case 2: // RECORDS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
-              org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
-              this.records = new ArrayList<Record>(_list32.size);
-              for (int _i33 = 0; _i33 < _list32.size; ++_i33)
+              org.apache.thrift.protocol.TList _list4 = iprot.readListBegin();
+              this.records = new ArrayList<Record>(_list4.size);
+              for (int _i5 = 0; _i5 < _list4.size; ++_i5)
               {
-                Record _elem34; // required
-                _elem34 = new Record();
-                _elem34.read(iprot);
-                this.records.add(_elem34);
+                Record _elem6; // required
+                _elem6 = new Record();
+                _elem6.read(iprot);
+                this.records.add(_elem6);
               }
               iprot.readListEnd();
             }
@@ -386,9 +386,9 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       oprot.writeFieldBegin(RECORDS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.records.size()));
-        for (Record _iter35 : this.records)
+        for (Record _iter7 : this.records)
         {
-          _iter35.write(oprot);
+          _iter7.write(oprot);
         }
         oprot.writeListEnd();
       }

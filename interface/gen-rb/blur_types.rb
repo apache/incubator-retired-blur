@@ -7,167 +7,76 @@
 
 module Blur
     module ScoreType
+      # During a multi Record match, a calculation of the best match
+      # Record plus how often it occurs within the match Row produces
+      # the score that is used in the scoring of the SuperQuery.
       SUPER = 0
+      # During a multi Record match, the aggregate score of all the
+      # Records within a ColumnFamily is used in the scoring of the
+      # SuperQuery.
       AGGREGATE = 1
+      # During a multi Record match, the best score of all the
+      # Records within a ColumnFamily is used in the scoring of the
+      # SuperQuery.
       BEST = 2
+      # A constant score of 1 is used in the scoring of the SuperQuery.
       CONSTANT = 3
       VALUE_MAP = {0 => "SUPER", 1 => "AGGREGATE", 2 => "BEST", 3 => "CONSTANT"}
       VALID_VALUES = Set.new([SUPER, AGGREGATE, BEST, CONSTANT]).freeze
     end
 
     module QueryState
+      # Query is running.
       RUNNING = 0
+      # Query has been interrupted.
       INTERRUPTED = 1
+      # Query is complete.
       COMPLETE = 2
       VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE"}
       VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE]).freeze
     end
 
-    module RecordMutationType
-      DELETE_ENTIRE_RECORD = 0
-      REPLACE_ENTIRE_RECORD = 1
-      REPLACE_COLUMNS = 2
-      APPEND_COLUMN_VALUES = 3
-      VALUE_MAP = {0 => "DELETE_ENTIRE_RECORD", 1 => "REPLACE_ENTIRE_RECORD", 2 => "REPLACE_COLUMNS", 3 => "APPEND_COLUMN_VALUES"}
-      VALID_VALUES = Set.new([DELETE_ENTIRE_RECORD, REPLACE_ENTIRE_RECORD, REPLACE_COLUMNS, APPEND_COLUMN_VALUES]).freeze
-    end
-
     module RowMutationType
+      # Indicates that the entire Row is to be deleted.
       DELETE_ROW = 0
+      # Indicates that the entire Row is to be deleted, and then a new
+      # Row with the same id is to be added.
       REPLACE_ROW = 1
+      # Indicates that mutations of the underlying Records will be
+      # processed individually.
       UPDATE_ROW = 2
       VALUE_MAP = {0 => "DELETE_ROW", 1 => "REPLACE_ROW", 2 => "UPDATE_ROW"}
       VALID_VALUES = Set.new([DELETE_ROW, REPLACE_ROW, UPDATE_ROW]).freeze
     end
 
+    module RecordMutationType
+      # Indicates the Record with the given recordId in the given Row
+      # is to be deleted.
+      DELETE_ENTIRE_RECORD = 0
+      # Indicates the Record with the given recordId in the given Row
+      # is to be deleted, and a new Record with the same id is to be added.
+      REPLACE_ENTIRE_RECORD = 1
+      # Replace the columns that are specified in the Record mutation.
+      REPLACE_COLUMNS = 2
+      # Append the columns in the Record mutation to the Record that
+      # could already exist.
+      APPEND_COLUMN_VALUES = 3
+      VALUE_MAP = {0 => "DELETE_ENTIRE_RECORD", 1 => "REPLACE_ENTIRE_RECORD", 2 => "REPLACE_COLUMNS", 3 => "APPEND_COLUMN_VALUES"}
+      VALID_VALUES = Set.new([DELETE_ENTIRE_RECORD, REPLACE_ENTIRE_RECORD, REPLACE_COLUMNS, APPEND_COLUMN_VALUES]).freeze
+    end
+
+    # BlurException that carries a message plus the original stack
+    # trace (if any).
     class BlurException < ::Thrift::Exception
       include ::Thrift::Struct, ::Thrift::Struct_Union
       MESSAGE = 1
       STACKTRACESTR = 2
 
       FIELDS = {
+        # The message in the exception.
         MESSAGE => {:type => ::Thrift::Types::STRING, :name => 'message'},
+        # The original stack trace (if any).
         STACKTRACESTR => {:type => ::Thrift::Types::STRING, :name => 'stackTraceStr'}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class AlternateColumnDefinition
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      ANALYZERCLASSNAME = 1
-
-      FIELDS = {
-        ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName'}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class ColumnDefinition
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      ANALYZERCLASSNAME = 1
-      FULLTEXTINDEX = 2
-      ALTERNATECOLUMNDEFINITIONS = 3
-
-      FIELDS = {
-        ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName'},
-        FULLTEXTINDEX => {:type => ::Thrift::Types::BOOL, :name => 'fullTextIndex'},
-        ALTERNATECOLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'alternateColumnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::AlternateColumnDefinition}}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class ColumnFamilyDefinition
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      DEFAULTDEFINITION = 1
-      COLUMNDEFINITIONS = 2
-
-      FIELDS = {
-        DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => Blur::ColumnDefinition},
-        COLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::ColumnDefinition}}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class AnalyzerDefinition
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      DEFAULTDEFINITION = 1
-      FULLTEXTANALYZERCLASSNAME = 2
-      COLUMNFAMILYDEFINITIONS = 3
-
-      FIELDS = {
-        DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => Blur::ColumnDefinition},
-        FULLTEXTANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'fullTextAnalyzerClassName'},
-        COLUMNFAMILYDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnFamilyDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::ColumnFamilyDefinition}}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class Selector
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      RECORDONLY = 1
-      LOCATIONID = 2
-      ROWID = 3
-      RECORDID = 4
-      COLUMNFAMILIESTOFETCH = 5
-      COLUMNSTOFETCH = 6
-      ALLOWSTALEDATA = 7
-
-      FIELDS = {
-        RECORDONLY => {:type => ::Thrift::Types::BOOL, :name => 'recordOnly'},
-        LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
-        ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
-        RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
-        COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::SET, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
-        COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}},
-        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'}
-      }
-
-      def struct_fields; FIELDS; end
-
-      def validate
-      end
-
-      ::Thrift::Struct.generate_accessors self
-    end
-
-    class Facet
-      include ::Thrift::Struct, ::Thrift::Struct_Union
-      QUERYSTR = 1
-      MINIMUMNUMBEROFBLURRESULTS = 2
-
-      FIELDS = {
-        QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
-        MINIMUMNUMBEROFBLURRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfBlurResults'}
       }
 
       def struct_fields; FIELDS; end
@@ -224,6 +133,34 @@ module Blur
       FIELDS = {
         ID => {:type => ::Thrift::Types::STRING, :name => 'id'},
         RECORDS => {:type => ::Thrift::Types::LIST, :name => 'records', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Record}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class Selector
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      RECORDONLY = 1
+      LOCATIONID = 2
+      ROWID = 3
+      RECORDID = 4
+      COLUMNFAMILIESTOFETCH = 5
+      COLUMNSTOFETCH = 6
+      ALLOWSTALEDATA = 7
+
+      FIELDS = {
+        RECORDONLY => {:type => ::Thrift::Types::BOOL, :name => 'recordOnly'},
+        LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
+        ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
+        RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
+        COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::SET, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
+        COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}},
+        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'}
       }
 
       def struct_fields; FIELDS; end
@@ -339,6 +276,24 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    class Facet
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      QUERYSTR = 1
+      MINIMUMNUMBEROFBLURRESULTS = 2
+
+      FIELDS = {
+        QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
+        MINIMUMNUMBEROFBLURRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfBlurResults'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
     class BlurQuery
       include ::Thrift::Struct, ::Thrift::Struct_Union
       SIMPLEQUERY = 1
@@ -431,29 +386,49 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    class TableDescriptor
+    class RecordMutation
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      ISENABLED = 1
-      ANALYZERDEFINITION = 2
-      SHARDCOUNT = 3
-      TABLEURI = 4
-      COMPRESSIONCLASS = 5
-      COMPRESSIONBLOCKSIZE = 6
-      CLUSTER = 7
+      RECORDMUTATIONTYPE = 1
+      RECORD = 2
 
       FIELDS = {
-        ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
-        ANALYZERDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'analyzerDefinition', :class => Blur::AnalyzerDefinition},
-        SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount', :default => 1},
-        TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'},
-        COMPRESSIONCLASS => {:type => ::Thrift::Types::STRING, :name => 'compressionClass', :default => %q"org.apache.hadoop.io.compress.DefaultCodec"},
-        COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize', :default => 32768},
-        CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
+        RECORDMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'recordMutationType', :enum_class => Blur::RecordMutationType},
+        RECORD => {:type => ::Thrift::Types::STRUCT, :name => 'record', :class => Blur::Record}
       }
 
       def struct_fields; FIELDS; end
 
       def validate
+        unless @recordMutationType.nil? || Blur::RecordMutationType::VALID_VALUES.include?(@recordMutationType)
+          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field recordMutationType!')
+        end
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class RowMutation
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLE = 1
+      ROWID = 2
+      WAL = 3
+      ROWMUTATIONTYPE = 4
+      RECORDMUTATIONS = 5
+
+      FIELDS = {
+        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
+        WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal', :default => true},
+        ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
+        RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+        unless @rowMutationType.nil? || Blur::RowMutationType::VALID_VALUES.include?(@rowMutationType)
+          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field rowMutationType!')
+        end
       end
 
       ::Thrift::Struct.generate_accessors self
@@ -506,6 +481,30 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    class TableStats
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      TABLENAME = 1
+      BYTES = 2
+      RECORDCOUNT = 3
+      ROWCOUNT = 4
+      QUERIES = 5
+
+      FIELDS = {
+        TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
+        BYTES => {:type => ::Thrift::Types::I64, :name => 'bytes'},
+        RECORDCOUNT => {:type => ::Thrift::Types::I64, :name => 'recordCount'},
+        ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'},
+        QUERIES => {:type => ::Thrift::Types::I64, :name => 'queries'}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
     class Schema
       include ::Thrift::Struct, ::Thrift::Struct_Union
       TABLE = 1
@@ -524,68 +523,98 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
-    class RecordMutation
+    class AlternateColumnDefinition
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      RECORDMUTATIONTYPE = 1
-      RECORD = 2
+      ANALYZERCLASSNAME = 1
 
       FIELDS = {
-        RECORDMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'recordMutationType', :enum_class => Blur::RecordMutationType},
-        RECORD => {:type => ::Thrift::Types::STRUCT, :name => 'record', :class => Blur::Record}
+        ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName'}
       }
 
       def struct_fields; FIELDS; end
 
       def validate
-        unless @recordMutationType.nil? || Blur::RecordMutationType::VALID_VALUES.include?(@recordMutationType)
-          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field recordMutationType!')
-        end
       end
 
       ::Thrift::Struct.generate_accessors self
     end
 
-    class RowMutation
+    class ColumnDefinition
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLE = 1
-      ROWID = 2
-      WAL = 3
-      ROWMUTATIONTYPE = 4
-      RECORDMUTATIONS = 5
+      ANALYZERCLASSNAME = 1
+      FULLTEXTINDEX = 2
+      ALTERNATECOLUMNDEFINITIONS = 3
 
       FIELDS = {
-        TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
-        ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
-        WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal', :default => true},
-        ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
-        RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}}
+        ANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'analyzerClassName'},
+        FULLTEXTINDEX => {:type => ::Thrift::Types::BOOL, :name => 'fullTextIndex'},
+        ALTERNATECOLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'alternateColumnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::AlternateColumnDefinition}}
       }
 
       def struct_fields; FIELDS; end
 
       def validate
-        unless @rowMutationType.nil? || Blur::RowMutationType::VALID_VALUES.include?(@rowMutationType)
-          raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field rowMutationType!')
-        end
       end
 
       ::Thrift::Struct.generate_accessors self
     end
 
-    class TableStats
+    class ColumnFamilyDefinition
       include ::Thrift::Struct, ::Thrift::Struct_Union
-      TABLENAME = 1
-      BYTES = 2
-      RECORDCOUNT = 3
-      ROWCOUNT = 4
-      QUERIES = 5
+      DEFAULTDEFINITION = 1
+      COLUMNDEFINITIONS = 2
 
       FIELDS = {
-        TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
-        BYTES => {:type => ::Thrift::Types::I64, :name => 'bytes'},
-        RECORDCOUNT => {:type => ::Thrift::Types::I64, :name => 'recordCount'},
-        ROWCOUNT => {:type => ::Thrift::Types::I64, :name => 'rowCount'},
-        QUERIES => {:type => ::Thrift::Types::I64, :name => 'queries'}
+        DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => Blur::ColumnDefinition},
+        COLUMNDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::ColumnDefinition}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class AnalyzerDefinition
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      DEFAULTDEFINITION = 1
+      FULLTEXTANALYZERCLASSNAME = 2
+      COLUMNFAMILYDEFINITIONS = 3
+
+      FIELDS = {
+        DEFAULTDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'defaultDefinition', :class => Blur::ColumnDefinition},
+        FULLTEXTANALYZERCLASSNAME => {:type => ::Thrift::Types::STRING, :name => 'fullTextAnalyzerClassName'},
+        COLUMNFAMILYDEFINITIONS => {:type => ::Thrift::Types::MAP, :name => 'columnFamilyDefinitions', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRUCT, :class => Blur::ColumnFamilyDefinition}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    class TableDescriptor
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      ISENABLED = 1
+      ANALYZERDEFINITION = 2
+      SHARDCOUNT = 3
+      TABLEURI = 4
+      COMPRESSIONCLASS = 5
+      COMPRESSIONBLOCKSIZE = 6
+      CLUSTER = 7
+
+      FIELDS = {
+        ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
+        ANALYZERDEFINITION => {:type => ::Thrift::Types::STRUCT, :name => 'analyzerDefinition', :class => Blur::AnalyzerDefinition},
+        SHARDCOUNT => {:type => ::Thrift::Types::I32, :name => 'shardCount', :default => 1},
+        TABLEURI => {:type => ::Thrift::Types::STRING, :name => 'tableUri'},
+        COMPRESSIONCLASS => {:type => ::Thrift::Types::STRING, :name => 'compressionClass', :default => %q"org.apache.hadoop.io.compress.DefaultCodec"},
+        COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize', :default => 32768},
+        CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
       }
 
       def struct_fields; FIELDS; end

@@ -10,9 +10,21 @@ import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
 
+/**
+ * The state of a query.
+ */
 public enum QueryState implements org.apache.thrift.TEnum {
+  /**
+   * Query is running.
+   */
   RUNNING(0),
+  /**
+   * Query has been interrupted.
+   */
   INTERRUPTED(1),
+  /**
+   * Query is complete.
+   */
   COMPLETE(2);
 
   private final int value;

@@ -10,15 +10,25 @@ Getting Started
 
 First clone the project and compile the project using Maven.  Once this is complete the blur libraries and dependences will be copied into the lib directory.
 
-### Zookeeper
+### Zookeeper Setup
 
-Setup [Zookeeper][Zookeeper].
+Setup [Zookeeper][Zookeeper].  It is recommended that all production setups use a clustered Zookeeper environment, following best [practices][replicated_zk].
 
-### HDFS
+### Hadoop Setup
 
-It is assumed that all your servers will be setup to run Hadoop's HDFS filesystem.  Though possible, the Map/Reduce system is not recommended to be run on the same machines as blur.  Follow the Hadoop [cluster setup][cluster_setup] guide.
+Blur requires Hadoop to be installed because of library dependencies, but running the Hadoop daemons on the servers is optional.
 
-NOTE: If you are running blur on a single machine this is not necessary, but [passphraseless][single_node] ssh is still needed.
+### HDFS Notes
+
+Setup Hadoop's HDFS filesystem, which is required for clustered setup.  Though possible, the Map/Reduce system is not recommended to be run on the same machines the are running the Blur daemons.  Follow the Hadoop [cluster setup][cluster_setup] guide.
+
+NOTE: If you are running Blur on a single machine this is not necessary, but [single node][single_node] setup is still required for libraries.
+
+### HDFS Options
+
+HDFS is not required to be installed and running on the same servers as Blur.  However if the source HDFS is being used for heavy Map/Reduce or any other heavy I/O operations, performance could be affected.  The storage location for each table is setup independently and via a URI location (e.g. hdfs://<namenode>:<port>/blur/tables/table/path).  So there may be several tables online in a Blur cluster and each one could reference a different HDFS instance.  This assumes that all the HDFS instances are compatible with one another.
+	
+NOTE: The normal 0.20.2 is not compatible with Cloudera's 0.20.2 CDH3u1 version.  Meaning you cannot install CDH3 on your Blur servers and reference a normal 0.20.2 HDFS instance for storage.  Blur has not been tested with Hadoop version 0.20.203.0.
 
 ### blur-env.sh
 
@@ -154,7 +164,7 @@ If you are running on a single node you may reference a local directory for stor
     AnalyzerDefinition ad = new AnalyzerDefinition();
     TableDescriptor td = new TableDescriptor();
     td.setShardCount(16); // The number of shards should be based on how many indexes your hardware can support as well as the volume of data.
-    td.setTableUri("hdfs://hadoop-namenode:9000/blur/tables/test-table"); // Location in HDFS
+    td.setTableUri("hdfs://<namenode>:<port>/blur/tables/test-table"); // Location in HDFS
     td.setAnalyzerDefinition(ad);
     client.createTable("test-table", td);
 
@@ -261,6 +271,7 @@ Example coming.
 
 
 [cluster_setup]: http://hadoop.apache.org/common/docs/r0.20.203.0/cluster_setup.html
-[single_node]: http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html#Setup+passphraseless
+[single_node]: http://hadoop.apache.org/common/docs/r0.20.203.0/single_node_setup.html
 [Zookeeper]: http://zookeeper.apache.org/doc/r3.3.3/zookeeperStarted.html
 [queryparser]: http://lucene.apache.org/java/3_3_0/queryparsersyntax.html
+[replicated_zk]: http://zookeeper.apache.org/doc/r3.3.3/zookeeperStarted.html#sc_RunningReplicatedZooKeeper

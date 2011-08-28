@@ -27,7 +27,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.lucene.analysis.KeywordAnalyzer;
@@ -37,6 +40,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
@@ -65,12 +69,14 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     private long delay = TimeUnit.SECONDS.toMillis(30);
     private Map<String,DistributedLayoutManager> layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
     private Map<String, Set<String>> layoutCache = new ConcurrentHashMap<String, Set<String>>();
+    private ExecutorService _openerService;
     //need a GC daemon for closing indexes
     //need a daemon for tracking what indexes to open ???
     //need a daemon to track reopening changed indexes
     
     public void init() {
         LOG.info("init - start");
+        _openerService = Executors.newThreadPool("shard-opener", 16);
         super.init();
         startIndexReaderCloserDaemon();
         LOG.info("init - complete");
@@ -173,20 +179,43 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     //Getters and setters
     
     private synchronized Map<String, BlurIndex> openMissingShards(final String table, Set<String> shardsToServe, final Map<String, BlurIndex> tableIndexes) {
-        Map<String, BlurIndex> result = new HashMap<String, BlurIndex>();
+        Map<String,Future<BlurIndex>> opening = new HashMap<String, Future<BlurIndex>>();
         for (String s : shardsToServe) {
             final String shard = s;
             BlurIndex blurIndex = tableIndexes.get(shard);
             if (blurIndex == null) {
-                try {
-                    tableIndexes.put(shard, openShard(table,shard));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    LOG.error("Unknown error while opening shard [{0}] for table [{1}].",e.getCause(),shard,table);
-                    result.put(shard, EMPTY_BLURINDEX);
-                }
+                LOG.info("Opening missing shard [{0}] from table [{1}]",shard,table);
+                Future<BlurIndex> submit = _openerService.submit(new Callable<BlurIndex>() {
+                    @Override
+                    public BlurIndex call() throws Exception {
+                        return openShard(table,shard);
+                    }
+                });
+                opening.put(shard, submit);
             }
-            result.put(shard, blurIndex);
+        }
+        
+        for (Entry<String,Future<BlurIndex>> entry : opening.entrySet()) {
+            String shard = entry.getKey();
+            Future<BlurIndex> future = entry.getValue();
+            try {
+                BlurIndex blurIndex = future.get();
+                tableIndexes.put(shard, blurIndex);
+            } catch (Exception e) {
+                e.printStackTrace();
+                LOG.error("Unknown error while opening shard [{0}] for table [{1}].",e.getCause(),shard,table);
+            }
+        }
+        
+        Map<String, BlurIndex> result = new HashMap<String, BlurIndex>();
+        for (String shard : shardsToServe) {
+            BlurIndex blurIndex = tableIndexes.get(shard);
+            if (blurIndex == null) {
+                LOG.error("Missing shard [{0}] for table [{1}].");
+                result.put(shard, EMPTY_BLURINDEX);
+            } else {
+                result.put(shard, blurIndex);
+            }
         }
         return result;
     }

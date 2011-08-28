@@ -20,6 +20,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -67,6 +68,7 @@ public class BlurIndexWriter extends BlurIndex {
         _sync = watchSync(_directory);
         IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
         conf.setSimilarity(new FairSimilarity());
+        conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
         TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
         mergePolicy.setUseCompoundFile(false);
         _writer = new WalIndexWriter(_sync, conf, new WalOutputFactory() {

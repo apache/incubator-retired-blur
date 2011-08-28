@@ -28,6 +28,8 @@ import org.apache.lucene.search.Weight;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache.IndexReaderCache;
 import com.nearinfinity.blur.utils.bitset.BlurBitSet;
@@ -35,7 +37,44 @@ import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 @SuppressWarnings("deprecation")
 public class SuperQuery extends AbstractWrapperQuery {
     
+    private static final Log LOG = LogFactory.getLog(SuperQuery.class);
+    
     public static final String BLUR_NATIVE_PREVSETBIT = "blur.native.prevsetbit";
+    private static PrevSetBit prevSetBitMethod;
+    
+    static {
+        boolean nativePrevSetBit = Boolean.getBoolean(BLUR_NATIVE_PREVSETBIT);
+        if (nativePrevSetBit) {
+            LOG.warn(BLUR_NATIVE_PREVSETBIT + " turned on.");
+            prevSetBitMethod = new NativePrevSetBit();                
+        } else {
+            prevSetBitMethod = new LoopPrevSetBit();
+        }
+    }
+    
+    private interface PrevSetBit {
+        int prevSetBit(BlurBitSet bitSet, int index);
+    }
+    
+    private static class NativePrevSetBit implements PrevSetBit {
+        @Override
+        public int prevSetBit(BlurBitSet bitSet, int index) {
+            return bitSet.prevSetBit(index);
+        }
+    }
+    
+    private static class LoopPrevSetBit implements PrevSetBit {
+        @Override
+        public int prevSetBit(BlurBitSet bitSet, int index) {
+            while (!bitSet.get(index)) {
+                index--;
+                if (index <= 0) {
+                    return 0;
+                }
+            }
+            return index;
+        }
+    }
 
     private static final long serialVersionUID = -5901574044714034398L;
     private ScoreType scoreType;
@@ -153,7 +192,6 @@ public class SuperQuery extends AbstractWrapperQuery {
         private float bestScore;
         private float aggregateScore;
         private int hitsInEntity;
-        private PrevSetBit prevSetBit;
 
         protected SuperScorer(Scorer scorer, BlurBitSet bitSet, String originalQueryStr, ScoreType scoreType) {
             super(scorer.getSimilarity());
@@ -161,13 +199,6 @@ public class SuperQuery extends AbstractWrapperQuery {
             this.bitSet = bitSet;
             this.originalQueryStr = originalQueryStr;
             this.scoreType = scoreType;
-            
-            boolean nativePrevSetBit = Boolean.getBoolean(BLUR_NATIVE_PREVSETBIT);
-            if (nativePrevSetBit) {
-                this.prevSetBit = new NativePrevSetBit();                
-            } else {
-                this.prevSetBit = new LoopPrevSetBit();
-            }
         }
 
         @Override
@@ -266,36 +297,11 @@ public class SuperQuery extends AbstractWrapperQuery {
         }
 
         private int getPrimeDoc(int doc) {
-            return prevSetBit.prevSetBit(bitSet, doc);
+            return prevSetBitMethod.prevSetBit(bitSet, doc);
         }
 
         private boolean isScorerExhausted(int doc) {
             return doc == NO_MORE_DOCS ? true : false;
         }
-        
-        private interface PrevSetBit {
-            int prevSetBit(BlurBitSet bitSet, int index);
-        }
-        
-        private static class NativePrevSetBit implements PrevSetBit {
-            @Override
-            public int prevSetBit(BlurBitSet bitSet, int index) {
-                return bitSet.prevSetBit(index);
-            }
-        }
-        
-        private static class LoopPrevSetBit implements PrevSetBit {
-            @Override
-            public int prevSetBit(BlurBitSet bitSet, int index) {
-                while (!bitSet.get(index)) {
-                    index--;
-                    if (index <= 0) {
-                        return 0;
-                    }
-                }
-                return index;
-            }
-        }
-        
     }
 }

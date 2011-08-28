@@ -204,7 +204,8 @@ public class BlurAnalyzer extends Analyzer {
     }
 
     public boolean isFullTextField(String fieldName) {
-        if (_analyzerDefinition.getDefaultDefinition().fullTextIndex) {
+        ColumnDefinition defaultDefinition = _analyzerDefinition.getDefaultDefinition();
+        if (defaultDefinition != null && defaultDefinition.fullTextIndex) {
             return true;
         }
         return _fullTextFields.contains(fieldName);

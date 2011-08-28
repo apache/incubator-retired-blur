@@ -34,6 +34,8 @@ import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 @SuppressWarnings("deprecation")
 public class SuperQuery extends AbstractWrapperQuery {
+    
+    public static final String BLUR_NATIVE_PREVSETBIT = "blur.native.prevsetbit";
 
     private static final long serialVersionUID = -5901574044714034398L;
     private ScoreType scoreType;
@@ -151,6 +153,7 @@ public class SuperQuery extends AbstractWrapperQuery {
         private float bestScore;
         private float aggregateScore;
         private int hitsInEntity;
+        private PrevSetBit prevSetBit;
 
         protected SuperScorer(Scorer scorer, BlurBitSet bitSet, String originalQueryStr, ScoreType scoreType) {
             super(scorer.getSimilarity());
@@ -158,6 +161,13 @@ public class SuperQuery extends AbstractWrapperQuery {
             this.bitSet = bitSet;
             this.originalQueryStr = originalQueryStr;
             this.scoreType = scoreType;
+            
+            boolean nativePrevSetBit = Boolean.getBoolean(BLUR_NATIVE_PREVSETBIT);
+            if (nativePrevSetBit) {
+                this.prevSetBit = new NativePrevSetBit();                
+            } else {
+                this.prevSetBit = new LoopPrevSetBit();
+            }
         }
 
         @Override
@@ -256,23 +266,36 @@ public class SuperQuery extends AbstractWrapperQuery {
         }
 
         private int getPrimeDoc(int doc) {
-//            return bitSet.prevSetBit(doc); //somewhere around the 62 63 64 border when calling prev doesn't work
-            // // System.out.println("================================");
-            // // System.out.println("doc=" + doc);
-            // // System.out.println("prevSetBit [" + bitSet.prevSetBit(doc) + "]");
-            while (!bitSet.get(doc)) {
-                doc--;
-                if (doc <= 0) {
-                    // System.out.println("prime [" + 0 + "] but really [" + doc + "]");
-                    return 0;
-                }
-            }
-            // System.out.println("prime [" + doc + "]");
-            return doc;
+            return prevSetBit.prevSetBit(bitSet, doc);
         }
 
         private boolean isScorerExhausted(int doc) {
             return doc == NO_MORE_DOCS ? true : false;
         }
+        
+        private interface PrevSetBit {
+            int prevSetBit(BlurBitSet bitSet, int index);
+        }
+        
+        private static class NativePrevSetBit implements PrevSetBit {
+            @Override
+            public int prevSetBit(BlurBitSet bitSet, int index) {
+                return bitSet.prevSetBit(index);
+            }
+        }
+        
+        private static class LoopPrevSetBit implements PrevSetBit {
+            @Override
+            public int prevSetBit(BlurBitSet bitSet, int index) {
+                while (!bitSet.get(index)) {
+                    index--;
+                    if (index <= 0) {
+                        return 0;
+                    }
+                }
+                return index;
+            }
+        }
+        
     }
 }

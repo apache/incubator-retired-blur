@@ -153,7 +153,7 @@ public class BlurAnalyzerTest {
     private AnalyzerDefinition getDef() {
         
         AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().
-            setDefaultDefinition(new ColumnDefinition(STANDARD, true, null)).
+            setDefaultDefinition(new ColumnDefinition(STANDARD, false, null)).
             setFullTextAnalyzerClassName(STANDARD);
         Map<String, ColumnFamilyDefinition> columnFamilyDefinitions = new HashMap<String, ColumnFamilyDefinition>();
         

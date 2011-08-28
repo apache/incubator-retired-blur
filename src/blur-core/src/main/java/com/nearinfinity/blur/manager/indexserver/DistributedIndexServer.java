@@ -64,19 +64,21 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
         }
     }
     
-    private ConcurrentHashMap<String,Map<String,BlurIndex>> readers = new ConcurrentHashMap<String, Map<String,BlurIndex>>();
-    private Timer readerCloserDaemon;
-    private long delay = TimeUnit.SECONDS.toMillis(30);
-    private Map<String,DistributedLayoutManager> layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
-    private Map<String, Set<String>> layoutCache = new ConcurrentHashMap<String, Set<String>>();
+    private ConcurrentHashMap<String,Map<String,BlurIndex>> _readers = new ConcurrentHashMap<String, Map<String,BlurIndex>>();
+    private Timer _readerCloserDaemon;
+    private long _delay = TimeUnit.SECONDS.toMillis(30);
+    private Map<String,DistributedLayoutManager> _layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
+    private Map<String, Set<String>> _layoutCache = new ConcurrentHashMap<String, Set<String>>();
     private ExecutorService _openerService;
+    private int _shardOpenerThreadCount = 1;
     //need a GC daemon for closing indexes
     //need a daemon for tracking what indexes to open ???
     //need a daemon to track reopening changed indexes
     
+    
     public void init() {
         LOG.info("init - start");
-        _openerService = Executors.newThreadPool("shard-opener", 16);
+        _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
         super.init();
         startIndexReaderCloserDaemon();
         LOG.info("init - complete");
@@ -87,15 +89,15 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     protected abstract void beforeClose(String shard, BlurIndex index);
     
     public void shardServerStateChange() {
-        layoutManagers.clear();
-        layoutCache.clear();
+        _layoutManagers.clear();
+        _layoutCache.clear();
     }
 
     @Override
     public Map<String, BlurIndex> getIndexes(String table) throws IOException {
         Set<String> shardsToServe = getShardsToServe(table);
         setupReaders(table);
-        Map<String, BlurIndex> tableIndexes = readers.get(table);
+        Map<String, BlurIndex> tableIndexes = _readers.get(table);
         Set<String> shardsBeingServed = new HashSet<String>(tableIndexes.keySet());
         if (shardsBeingServed.containsAll(shardsToServe)) {
             Map<String, BlurIndex> result = new HashMap<String, BlurIndex>(tableIndexes);
@@ -119,24 +121,24 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
     
     private void closeOldReadersForTablesThatAreMissing() {
-        Set<String> tablesWithOpenIndexes = readers.keySet();
+        Set<String> tablesWithOpenIndexes = _readers.keySet();
         List<String> currentTables = getTableList();
         for (String table : tablesWithOpenIndexes) {
             if (!currentTables.contains(table)) {
                 //close all readers
                 LOG.info("Table [" + table + "] no longer available, closing all indexes.");
-                Map<String, BlurIndex> map = readers.get(table);
+                Map<String, BlurIndex> map = _readers.get(table);
                 for (String shard : map.keySet()) {
                     closeIndex(table, shard, map.get(shard));
                 }
-                readers.remove(table);
+                _readers.remove(table);
             }
         }
     }
 
     protected void closeOldReaders(String table) {
         Set<String> shardsToServe = getShardsToServe(table);
-        Map<String, BlurIndex> tableIndex = readers.get(table);
+        Map<String, BlurIndex> tableIndex = _readers.get(table);
         if (tableIndex == null) {
             return;
         }
@@ -169,11 +171,11 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     //Getters and setters
 
     public long getDelay() {
-        return delay;
+        return _delay;
     }
 
     public void setDelay(long delay) {
-        this.delay = delay;
+        this._delay = delay;
     }
     
     //Getters and setters
@@ -221,7 +223,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     }
 
     private void setupReaders(String table) {
-        readers.putIfAbsent(table, new ConcurrentHashMap<String, BlurIndex>());
+        _readers.putIfAbsent(table, new ConcurrentHashMap<String, BlurIndex>());
     }
     
     private Set<String> getShardsToServe(String table) {
@@ -229,11 +231,11 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
         if (tableStatus == TABLE_STATUS.DISABLED) {
             return new HashSet<String>();
         }
-        DistributedLayoutManager layoutManager = layoutManagers.get(table);
+        DistributedLayoutManager layoutManager = _layoutManagers.get(table);
         if (layoutManager == null) {
             return setupLayoutManager(table);
         } else {
-            return layoutCache.get(table);
+            return _layoutCache.get(table);
         }
     }
     
@@ -262,21 +264,29 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
                 shardsToServeCache.add(entry.getKey());
             }
         }
-        layoutCache.put(table, shardsToServeCache);
-        layoutManagers.put(table, layoutManager);
+        _layoutCache.put(table, shardsToServeCache);
+        _layoutManagers.put(table, layoutManager);
         return shardsToServeCache;
     }
 
     //Daemon threads
 
     private void startIndexReaderCloserDaemon() {
-        readerCloserDaemon = new Timer("Reader-Closer-Daemon", true);
-        readerCloserDaemon.scheduleAtFixedRate(new TimerTask() {
+        _readerCloserDaemon = new Timer("Reader-Closer-Daemon", true);
+        _readerCloserDaemon.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 closeOldReaders();
             }
-        }, delay, delay);
+        }, _delay, _delay);
+    }
+
+    public int getShardOpenerThreadCount() {
+        return _shardOpenerThreadCount;
+    }
+
+    public void setShardOpenerThreadCount(int shardOpenerThreadCount) {
+        _shardOpenerThreadCount = shardOpenerThreadCount;
     }
 
 }

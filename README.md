@@ -229,7 +229,7 @@ To select a subset of columns from a column family:
     columnNames.add("columnname");
     selector.putToColumnsToFetch("column-family", columnNames);
 
-To select a all the columns from a subset of column families:
+To select all the columns from a subset of column families:
 
     selector.addToColumnFamiliesToFetch("column-family");
 

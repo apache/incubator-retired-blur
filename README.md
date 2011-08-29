@@ -148,20 +148,24 @@ Creating a Table
 If you are running on a single node you may reference a local directory for storing the index data.
 
     AnalyzerDefinition ad = new AnalyzerDefinition();
+    
     TableDescriptor td = new TableDescriptor(); 
     td.setTableUri("file:///tmp/blur-tables/test-table"); // Location on the local machine
     td.setAnalyzerDefinition(ad);
+    
     client.createTable("test-table", td);
 
 ### Cluster mode
 
-If you are running on a single node you may reference a local directory for storing the index data.
+If you are running in a cluster you have to use HDFS as the table storage.
 
     AnalyzerDefinition ad = new AnalyzerDefinition();
+    
     TableDescriptor td = new TableDescriptor();
     td.setShardCount(16); // The number of shards should be based on how many indexes your hardware can support as well as the volume of data.
     td.setTableUri("hdfs://<namenode>:<port>/blur/tables/test-table"); // Location in HDFS
     td.setAnalyzerDefinition(ad);
+    
     client.createTable("test-table", td);
 
 Loading Data
@@ -190,8 +194,8 @@ This is the long thrift way of creating a lot of objects to create a simple row 
     mutation.setTable("test-table");
     mutation.setRowId("rowid-1234");
     mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
-
     mutation.setRecordMutations(recordMutations);
+    
     client.mutate(mutation);
 
 This is the shorter way of creating the same RowMutation.
@@ -201,6 +205,7 @@ This is the shorter way of creating the same RowMutation.
     RowMutation mutation = newRowMutation("test-table", "rowid-1234", 
             newRecordMutation("column-family", "recordid-5678", 
                 newColumn("columnname", "value")));
+
     client.mutate(mutation);
 
 ### Map/Reduce Bulk Load
@@ -245,7 +250,7 @@ The search example will do a full text search for `value` in each column in ever
 
     BlurResults blurResults = client.query("test-table", blurQuery);
     for (BlurResult result : blurResults.getResults()) {
-       System.out.println(result);
+       // do something with the result
     }
 
 Shorted version of the same thing:

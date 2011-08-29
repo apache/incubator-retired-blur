@@ -16,7 +16,7 @@
 
 package com.nearinfinity.blur.thrift;
 
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_LOCAL_CACHE_PATHES;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_LOCAL_CACHE_PATHS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
@@ -71,7 +71,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
         String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
-        String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHES), BLUR_LOCAL_CACHE_PATHES);
+        String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHS), BLUR_LOCAL_CACHE_PATHS);
 
         List<File> localFileCaches = new ArrayList<File>();
         for (String cachePath : localCacheDirs.split(",")) {

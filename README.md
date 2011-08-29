@@ -75,7 +75,7 @@ Like the shards file, in the `config/controllers` list servers that will run as 
     controller1
     controller2
 
-NOTE: If you are going to run a single shard server running controllers is not required.  A single shard server is fully functional on the it's own.  Controllers and the shard servers share the same thrift API, so later your code won't have to be modified to run against a cluster.
+NOTE: If you are going to run a single shard server running controllers is not required.  A single shard server is fully functional on it's own.  Controllers and the shard servers share the same thrift API, so later your code won't have to be modified to run against a cluster.
 
 ### $BLUR_HOME
 

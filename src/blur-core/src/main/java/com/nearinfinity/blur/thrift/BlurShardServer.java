@@ -84,16 +84,20 @@ public class BlurShardServer extends ExecutionContextIface {
         long start = context.startTime();
         try {
             checkTableStatus(context, table);
+            BlurQuery original = new BlurQuery(blurQuery);
             if (blurQuery.useCacheIfPresent) {
-                QueryCacheEntry queryCacheEntry = _queryCache.get(_queryCache.getNoralizedBlurQuery(blurQuery));
+                LOG.debug("Using cache for query [{0}] on table [{1}].",blurQuery, table);
+                BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
+                QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
                 if (_queryCache.isValid(queryCacheEntry)) {
+                    LOG.debug("Cache hit for query [{0}] on table [{1}].",blurQuery, table);
                     return queryCacheEntry.getBlurResults(blurQuery);
                 }
             }
             try {
                 AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
                 BlurResultIterable hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
-                return BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, null, null, null, null);
+                return _queryCache.cache(original,BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, null, null, null, null));
             } catch (Exception e) {
                 LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
                 throw new BException(e.getMessage(), e);

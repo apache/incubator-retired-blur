@@ -120,9 +120,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         try {
             final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 
+            BlurQuery original = new BlurQuery(blurQuery);
             if (blurQuery.useCacheIfPresent) {
-                QueryCacheEntry queryCacheEntry = _queryCache.get(_queryCache.getNoralizedBlurQuery(blurQuery));
+                LOG.debug("Using cache for query [{0}] on table [{1}].",blurQuery, table);
+                BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
+                QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
                 if (_queryCache.isValid(queryCacheEntry)) {
+                    LOG.debug("Cache hit for query [{0}] on table [{1}].",blurQuery, table);
                     return queryCacheEntry.getBlurResults(blurQuery);
                 }
             }
@@ -136,7 +140,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                     return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
                 }
             }, new MergerBlurResultIterable(blurQuery));
-            return BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table);
+            return _queryCache.cache(original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table));
         } catch (Exception e) {
             LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
             throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);

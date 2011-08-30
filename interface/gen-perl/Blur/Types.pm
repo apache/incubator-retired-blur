@@ -1193,7 +1193,7 @@ sub write {
 
 package Blur::BlurQuery;
 use base qw(Class::Accessor);
-Blur::BlurQuery->mk_accessors( qw( simpleQuery expertQuery facets selector allowStaleData useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext ) );
+Blur::BlurQuery->mk_accessors( qw( simpleQuery expertQuery facets selector allowStaleData useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult ) );
 
 sub new {
   my $classname = shift;
@@ -1211,6 +1211,7 @@ sub new {
   $self->{maxQueryTime} = 9223372036854775807;
   $self->{uuid} = undef;
   $self->{userContext} = undef;
+  $self->{cacheResult} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{simpleQuery}) {
       $self->{simpleQuery} = $vals->{simpleQuery};
@@ -1247,6 +1248,9 @@ sub new {
     }
     if (defined $vals->{userContext}) {
       $self->{userContext} = $vals->{userContext};
+    }
+    if (defined $vals->{cacheResult}) {
+      $self->{cacheResult} = $vals->{cacheResult};
     }
   }
   return bless ($self, $classname);
@@ -1359,6 +1363,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^13$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{cacheResult});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -1438,6 +1448,11 @@ sub write {
   if (defined $self->{userContext}) {
     $xfer += $output->writeFieldBegin('userContext', TType::STRING, 12);
     $xfer += $output->writeString($self->{userContext});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{cacheResult}) {
+    $xfer += $output->writeFieldBegin('cacheResult', TType::BOOL, 13);
+    $xfer += $output->writeBool($self->{cacheResult});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

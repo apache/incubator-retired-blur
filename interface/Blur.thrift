@@ -207,7 +207,8 @@ struct BlurQuery {
   9:i64 minimumNumberOfResults = 9223372036854775807,
   10:i64 maxQueryTime = 9223372036854775807,
   11:i64 uuid,
-  12:string userContext
+  12:string userContext,
+  13:bool cacheResult
 }
 
 struct BlurResult {

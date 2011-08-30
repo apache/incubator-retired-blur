@@ -246,6 +246,7 @@ public class BlurUtil {
                 result.setFetchResult(future.get());
             }
         }
+        results.query = query;
         return results;
     }
     

@@ -308,6 +308,7 @@ module Blur
       MAXQUERYTIME = 10
       UUID = 11
       USERCONTEXT = 12
+      CACHERESULT = 13
 
       FIELDS = {
         SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => Blur::SimpleQuery},
@@ -321,7 +322,8 @@ module Blur
         MINIMUMNUMBEROFRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfResults', :default => 9223372036854775807},
         MAXQUERYTIME => {:type => ::Thrift::Types::I64, :name => 'maxQueryTime', :default => 9223372036854775807},
         UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'},
-        USERCONTEXT => {:type => ::Thrift::Types::STRING, :name => 'userContext'}
+        USERCONTEXT => {:type => ::Thrift::Types::STRING, :name => 'userContext'},
+        CACHERESULT => {:type => ::Thrift::Types::BOOL, :name => 'cacheResult'}
       }
 
       def struct_fields; FIELDS; end

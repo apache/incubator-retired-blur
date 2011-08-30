@@ -106,6 +106,8 @@ public class Facet implements org.apache.thrift.TBase<Facet, Facet._Fields>, jav
   }
 
   public Facet() {
+    this.minimumNumberOfBlurResults = 9223372036854775807L;
+
   }
 
   public Facet(
@@ -137,8 +139,8 @@ public class Facet implements org.apache.thrift.TBase<Facet, Facet._Fields>, jav
   @Override
   public void clear() {
     this.queryStr = null;
-    setMinimumNumberOfBlurResultsIsSet(false);
-    this.minimumNumberOfBlurResults = 0;
+    this.minimumNumberOfBlurResults = 9223372036854775807L;
+
   }
 
   public String getQueryStr() {

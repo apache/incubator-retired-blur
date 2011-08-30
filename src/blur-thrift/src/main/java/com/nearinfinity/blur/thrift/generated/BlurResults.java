@@ -26,31 +26,25 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
   private static final org.apache.thrift.protocol.TField TOTAL_RESULTS_FIELD_DESC = new org.apache.thrift.protocol.TField("totalResults", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField SHARD_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("shardInfo", org.apache.thrift.protocol.TType.MAP, (short)2);
   private static final org.apache.thrift.protocol.TField RESULTS_FIELD_DESC = new org.apache.thrift.protocol.TField("results", org.apache.thrift.protocol.TType.LIST, (short)3);
-  private static final org.apache.thrift.protocol.TField EXCEPTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("exceptions", org.apache.thrift.protocol.TType.LIST, (short)4);
-  private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRUCT, (short)5);
-  private static final org.apache.thrift.protocol.TField REAL_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("realTime", org.apache.thrift.protocol.TType.I64, (short)6);
-  private static final org.apache.thrift.protocol.TField CPU_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("cpuTime", org.apache.thrift.protocol.TType.I64, (short)7);
-  private static final org.apache.thrift.protocol.TField FACET_COUNTS_FIELD_DESC = new org.apache.thrift.protocol.TField("facetCounts", org.apache.thrift.protocol.TType.LIST, (short)8);
+  private static final org.apache.thrift.protocol.TField FACET_COUNTS_FIELD_DESC = new org.apache.thrift.protocol.TField("facetCounts", org.apache.thrift.protocol.TType.LIST, (short)4);
+  private static final org.apache.thrift.protocol.TField EXCEPTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("exceptions", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRUCT, (short)6);
 
   public long totalResults; // required
   public Map<String,Long> shardInfo; // required
   public List<BlurResult> results; // required
+  public List<Long> facetCounts; // required
   public List<BlurException> exceptions; // required
   public BlurQuery query; // required
-  public long realTime; // required
-  public long cpuTime; // required
-  public List<Long> facetCounts; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     TOTAL_RESULTS((short)1, "totalResults"),
     SHARD_INFO((short)2, "shardInfo"),
     RESULTS((short)3, "results"),
-    EXCEPTIONS((short)4, "exceptions"),
-    QUERY((short)5, "query"),
-    REAL_TIME((short)6, "realTime"),
-    CPU_TIME((short)7, "cpuTime"),
-    FACET_COUNTS((short)8, "facetCounts");
+    FACET_COUNTS((short)4, "facetCounts"),
+    EXCEPTIONS((short)5, "exceptions"),
+    QUERY((short)6, "query");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -71,16 +65,12 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
           return SHARD_INFO;
         case 3: // RESULTS
           return RESULTS;
-        case 4: // EXCEPTIONS
-          return EXCEPTIONS;
-        case 5: // QUERY
-          return QUERY;
-        case 6: // REAL_TIME
-          return REAL_TIME;
-        case 7: // CPU_TIME
-          return CPU_TIME;
-        case 8: // FACET_COUNTS
+        case 4: // FACET_COUNTS
           return FACET_COUNTS;
+        case 5: // EXCEPTIONS
+          return EXCEPTIONS;
+        case 6: // QUERY
+          return QUERY;
         default:
           return null;
       }
@@ -122,9 +112,7 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
 
   // isset id assignments
   private static final int __TOTALRESULTS_ISSET_ID = 0;
-  private static final int __REALTIME_ISSET_ID = 1;
-  private static final int __CPUTIME_ISSET_ID = 2;
-  private BitSet __isset_bit_vector = new BitSet(3);
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -138,18 +126,14 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     tmpMap.put(_Fields.RESULTS, new org.apache.thrift.meta_data.FieldMetaData("results", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurResult.class))));
+    tmpMap.put(_Fields.FACET_COUNTS, new org.apache.thrift.meta_data.FieldMetaData("facetCounts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     tmpMap.put(_Fields.EXCEPTIONS, new org.apache.thrift.meta_data.FieldMetaData("exceptions", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT))));
     tmpMap.put(_Fields.QUERY, new org.apache.thrift.meta_data.FieldMetaData("query", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, BlurQuery.class)));
-    tmpMap.put(_Fields.REAL_TIME, new org.apache.thrift.meta_data.FieldMetaData("realTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.CPU_TIME, new org.apache.thrift.meta_data.FieldMetaData("cpuTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
-    tmpMap.put(_Fields.FACET_COUNTS, new org.apache.thrift.meta_data.FieldMetaData("facetCounts", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurResults.class, metaDataMap);
   }
@@ -163,24 +147,18 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     long totalResults,
     Map<String,Long> shardInfo,
     List<BlurResult> results,
+    List<Long> facetCounts,
     List<BlurException> exceptions,
-    BlurQuery query,
-    long realTime,
-    long cpuTime,
-    List<Long> facetCounts)
+    BlurQuery query)
   {
     this();
     this.totalResults = totalResults;
     setTotalResultsIsSet(true);
     this.shardInfo = shardInfo;
     this.results = results;
+    this.facetCounts = facetCounts;
     this.exceptions = exceptions;
     this.query = query;
-    this.realTime = realTime;
-    setRealTimeIsSet(true);
-    this.cpuTime = cpuTime;
-    setCpuTimeIsSet(true);
-    this.facetCounts = facetCounts;
   }
 
   /**
@@ -212,6 +190,13 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       }
       this.results = __this__results;
     }
+    if (other.isSetFacetCounts()) {
+      List<Long> __this__facetCounts = new ArrayList<Long>();
+      for (Long other_element : other.facetCounts) {
+        __this__facetCounts.add(other_element);
+      }
+      this.facetCounts = __this__facetCounts;
+    }
     if (other.isSetExceptions()) {
       List<BlurException> __this__exceptions = new ArrayList<BlurException>();
       for (BlurException other_element : other.exceptions) {
@@ -221,15 +206,6 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     }
     if (other.isSetQuery()) {
       this.query = new BlurQuery(other.query);
-    }
-    this.realTime = other.realTime;
-    this.cpuTime = other.cpuTime;
-    if (other.isSetFacetCounts()) {
-      List<Long> __this__facetCounts = new ArrayList<Long>();
-      for (Long other_element : other.facetCounts) {
-        __this__facetCounts.add(other_element);
-      }
-      this.facetCounts = __this__facetCounts;
     }
   }
 
@@ -243,13 +219,9 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
 
     this.shardInfo = null;
     this.results = null;
+    this.facetCounts = null;
     this.exceptions = null;
     this.query = null;
-    setRealTimeIsSet(false);
-    this.realTime = 0;
-    setCpuTimeIsSet(false);
-    this.cpuTime = 0;
-    this.facetCounts = null;
   }
 
   public long getTotalResults() {
@@ -349,6 +321,45 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     }
   }
 
+  public int getFacetCountsSize() {
+    return (this.facetCounts == null) ? 0 : this.facetCounts.size();
+  }
+
+  public java.util.Iterator<Long> getFacetCountsIterator() {
+    return (this.facetCounts == null) ? null : this.facetCounts.iterator();
+  }
+
+  public void addToFacetCounts(long elem) {
+    if (this.facetCounts == null) {
+      this.facetCounts = new ArrayList<Long>();
+    }
+    this.facetCounts.add(elem);
+  }
+
+  public List<Long> getFacetCounts() {
+    return this.facetCounts;
+  }
+
+  public BlurResults setFacetCounts(List<Long> facetCounts) {
+    this.facetCounts = facetCounts;
+    return this;
+  }
+
+  public void unsetFacetCounts() {
+    this.facetCounts = null;
+  }
+
+  /** Returns true if field facetCounts is set (has been assigned a value) and false otherwise */
+  public boolean isSetFacetCounts() {
+    return this.facetCounts != null;
+  }
+
+  public void setFacetCountsIsSet(boolean value) {
+    if (!value) {
+      this.facetCounts = null;
+    }
+  }
+
   public int getExceptionsSize() {
     return (this.exceptions == null) ? 0 : this.exceptions.size();
   }
@@ -412,91 +423,6 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     }
   }
 
-  public long getRealTime() {
-    return this.realTime;
-  }
-
-  public BlurResults setRealTime(long realTime) {
-    this.realTime = realTime;
-    setRealTimeIsSet(true);
-    return this;
-  }
-
-  public void unsetRealTime() {
-    __isset_bit_vector.clear(__REALTIME_ISSET_ID);
-  }
-
-  /** Returns true if field realTime is set (has been assigned a value) and false otherwise */
-  public boolean isSetRealTime() {
-    return __isset_bit_vector.get(__REALTIME_ISSET_ID);
-  }
-
-  public void setRealTimeIsSet(boolean value) {
-    __isset_bit_vector.set(__REALTIME_ISSET_ID, value);
-  }
-
-  public long getCpuTime() {
-    return this.cpuTime;
-  }
-
-  public BlurResults setCpuTime(long cpuTime) {
-    this.cpuTime = cpuTime;
-    setCpuTimeIsSet(true);
-    return this;
-  }
-
-  public void unsetCpuTime() {
-    __isset_bit_vector.clear(__CPUTIME_ISSET_ID);
-  }
-
-  /** Returns true if field cpuTime is set (has been assigned a value) and false otherwise */
-  public boolean isSetCpuTime() {
-    return __isset_bit_vector.get(__CPUTIME_ISSET_ID);
-  }
-
-  public void setCpuTimeIsSet(boolean value) {
-    __isset_bit_vector.set(__CPUTIME_ISSET_ID, value);
-  }
-
-  public int getFacetCountsSize() {
-    return (this.facetCounts == null) ? 0 : this.facetCounts.size();
-  }
-
-  public java.util.Iterator<Long> getFacetCountsIterator() {
-    return (this.facetCounts == null) ? null : this.facetCounts.iterator();
-  }
-
-  public void addToFacetCounts(long elem) {
-    if (this.facetCounts == null) {
-      this.facetCounts = new ArrayList<Long>();
-    }
-    this.facetCounts.add(elem);
-  }
-
-  public List<Long> getFacetCounts() {
-    return this.facetCounts;
-  }
-
-  public BlurResults setFacetCounts(List<Long> facetCounts) {
-    this.facetCounts = facetCounts;
-    return this;
-  }
-
-  public void unsetFacetCounts() {
-    this.facetCounts = null;
-  }
-
-  /** Returns true if field facetCounts is set (has been assigned a value) and false otherwise */
-  public boolean isSetFacetCounts() {
-    return this.facetCounts != null;
-  }
-
-  public void setFacetCountsIsSet(boolean value) {
-    if (!value) {
-      this.facetCounts = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TOTAL_RESULTS:
@@ -523,6 +449,14 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       }
       break;
 
+    case FACET_COUNTS:
+      if (value == null) {
+        unsetFacetCounts();
+      } else {
+        setFacetCounts((List<Long>)value);
+      }
+      break;
+
     case EXCEPTIONS:
       if (value == null) {
         unsetExceptions();
@@ -536,30 +470,6 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
         unsetQuery();
       } else {
         setQuery((BlurQuery)value);
-      }
-      break;
-
-    case REAL_TIME:
-      if (value == null) {
-        unsetRealTime();
-      } else {
-        setRealTime((Long)value);
-      }
-      break;
-
-    case CPU_TIME:
-      if (value == null) {
-        unsetCpuTime();
-      } else {
-        setCpuTime((Long)value);
-      }
-      break;
-
-    case FACET_COUNTS:
-      if (value == null) {
-        unsetFacetCounts();
-      } else {
-        setFacetCounts((List<Long>)value);
       }
       break;
 
@@ -577,20 +487,14 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     case RESULTS:
       return getResults();
 
+    case FACET_COUNTS:
+      return getFacetCounts();
+
     case EXCEPTIONS:
       return getExceptions();
 
     case QUERY:
       return getQuery();
-
-    case REAL_TIME:
-      return Long.valueOf(getRealTime());
-
-    case CPU_TIME:
-      return Long.valueOf(getCpuTime());
-
-    case FACET_COUNTS:
-      return getFacetCounts();
 
     }
     throw new IllegalStateException();
@@ -609,16 +513,12 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       return isSetShardInfo();
     case RESULTS:
       return isSetResults();
+    case FACET_COUNTS:
+      return isSetFacetCounts();
     case EXCEPTIONS:
       return isSetExceptions();
     case QUERY:
       return isSetQuery();
-    case REAL_TIME:
-      return isSetRealTime();
-    case CPU_TIME:
-      return isSetCpuTime();
-    case FACET_COUNTS:
-      return isSetFacetCounts();
     }
     throw new IllegalStateException();
   }
@@ -663,6 +563,15 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
         return false;
     }
 
+    boolean this_present_facetCounts = true && this.isSetFacetCounts();
+    boolean that_present_facetCounts = true && that.isSetFacetCounts();
+    if (this_present_facetCounts || that_present_facetCounts) {
+      if (!(this_present_facetCounts && that_present_facetCounts))
+        return false;
+      if (!this.facetCounts.equals(that.facetCounts))
+        return false;
+    }
+
     boolean this_present_exceptions = true && this.isSetExceptions();
     boolean that_present_exceptions = true && that.isSetExceptions();
     if (this_present_exceptions || that_present_exceptions) {
@@ -678,33 +587,6 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       if (!(this_present_query && that_present_query))
         return false;
       if (!this.query.equals(that.query))
-        return false;
-    }
-
-    boolean this_present_realTime = true;
-    boolean that_present_realTime = true;
-    if (this_present_realTime || that_present_realTime) {
-      if (!(this_present_realTime && that_present_realTime))
-        return false;
-      if (this.realTime != that.realTime)
-        return false;
-    }
-
-    boolean this_present_cpuTime = true;
-    boolean that_present_cpuTime = true;
-    if (this_present_cpuTime || that_present_cpuTime) {
-      if (!(this_present_cpuTime && that_present_cpuTime))
-        return false;
-      if (this.cpuTime != that.cpuTime)
-        return false;
-    }
-
-    boolean this_present_facetCounts = true && this.isSetFacetCounts();
-    boolean that_present_facetCounts = true && that.isSetFacetCounts();
-    if (this_present_facetCounts || that_present_facetCounts) {
-      if (!(this_present_facetCounts && that_present_facetCounts))
-        return false;
-      if (!this.facetCounts.equals(that.facetCounts))
         return false;
     }
 
@@ -754,6 +636,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetFacetCounts()).compareTo(typedOther.isSetFacetCounts());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetFacetCounts()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.facetCounts, typedOther.facetCounts);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     lastComparison = Boolean.valueOf(isSetExceptions()).compareTo(typedOther.isSetExceptions());
     if (lastComparison != 0) {
       return lastComparison;
@@ -770,36 +662,6 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     }
     if (isSetQuery()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.query, typedOther.query);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetRealTime()).compareTo(typedOther.isSetRealTime());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetRealTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.realTime, typedOther.realTime);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetCpuTime()).compareTo(typedOther.isSetCpuTime());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCpuTime()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cpuTime, typedOther.cpuTime);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetFacetCounts()).compareTo(typedOther.isSetFacetCounts());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetFacetCounts()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.facetCounts, typedOther.facetCounts);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -866,17 +728,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 4: // EXCEPTIONS
+        case 4: // FACET_COUNTS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
               org.apache.thrift.protocol.TList _list32 = iprot.readListBegin();
-              this.exceptions = new ArrayList<BlurException>(_list32.size);
+              this.facetCounts = new ArrayList<Long>(_list32.size);
               for (int _i33 = 0; _i33 < _list32.size; ++_i33)
               {
-                BlurException _elem34; // required
-                _elem34 = new BlurException();
-                _elem34.read(iprot);
-                this.exceptions.add(_elem34);
+                long _elem34; // required
+                _elem34 = iprot.readI64();
+                this.facetCounts.add(_elem34);
               }
               iprot.readListEnd();
             }
@@ -884,43 +745,28 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 5: // QUERY
-          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
-            this.query = new BlurQuery();
-            this.query.read(iprot);
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 6: // REAL_TIME
-          if (field.type == org.apache.thrift.protocol.TType.I64) {
-            this.realTime = iprot.readI64();
-            setRealTimeIsSet(true);
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 7: // CPU_TIME
-          if (field.type == org.apache.thrift.protocol.TType.I64) {
-            this.cpuTime = iprot.readI64();
-            setCpuTimeIsSet(true);
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
-        case 8: // FACET_COUNTS
+        case 5: // EXCEPTIONS
           if (field.type == org.apache.thrift.protocol.TType.LIST) {
             {
               org.apache.thrift.protocol.TList _list35 = iprot.readListBegin();
-              this.facetCounts = new ArrayList<Long>(_list35.size);
+              this.exceptions = new ArrayList<BlurException>(_list35.size);
               for (int _i36 = 0; _i36 < _list35.size; ++_i36)
               {
-                long _elem37; // required
-                _elem37 = iprot.readI64();
-                this.facetCounts.add(_elem37);
+                BlurException _elem37; // required
+                _elem37 = new BlurException();
+                _elem37.read(iprot);
+                this.exceptions.add(_elem37);
               }
               iprot.readListEnd();
             }
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 6: // QUERY
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.query = new BlurQuery();
+            this.query.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -968,13 +814,25 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       }
       oprot.writeFieldEnd();
     }
+    if (this.facetCounts != null) {
+      oprot.writeFieldBegin(FACET_COUNTS_FIELD_DESC);
+      {
+        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, this.facetCounts.size()));
+        for (long _iter40 : this.facetCounts)
+        {
+          oprot.writeI64(_iter40);
+        }
+        oprot.writeListEnd();
+      }
+      oprot.writeFieldEnd();
+    }
     if (this.exceptions != null) {
       oprot.writeFieldBegin(EXCEPTIONS_FIELD_DESC);
       {
         oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.exceptions.size()));
-        for (BlurException _iter40 : this.exceptions)
+        for (BlurException _iter41 : this.exceptions)
         {
-          _iter40.write(oprot);
+          _iter41.write(oprot);
         }
         oprot.writeListEnd();
       }
@@ -983,24 +841,6 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     if (this.query != null) {
       oprot.writeFieldBegin(QUERY_FIELD_DESC);
       this.query.write(oprot);
-      oprot.writeFieldEnd();
-    }
-    oprot.writeFieldBegin(REAL_TIME_FIELD_DESC);
-    oprot.writeI64(this.realTime);
-    oprot.writeFieldEnd();
-    oprot.writeFieldBegin(CPU_TIME_FIELD_DESC);
-    oprot.writeI64(this.cpuTime);
-    oprot.writeFieldEnd();
-    if (this.facetCounts != null) {
-      oprot.writeFieldBegin(FACET_COUNTS_FIELD_DESC);
-      {
-        oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, this.facetCounts.size()));
-        for (long _iter41 : this.facetCounts)
-        {
-          oprot.writeI64(_iter41);
-        }
-        oprot.writeListEnd();
-      }
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -1032,6 +872,14 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     }
     first = false;
     if (!first) sb.append(", ");
+    sb.append("facetCounts:");
+    if (this.facetCounts == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.facetCounts);
+    }
+    first = false;
+    if (!first) sb.append(", ");
     sb.append("exceptions:");
     if (this.exceptions == null) {
       sb.append("null");
@@ -1045,22 +893,6 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
       sb.append("null");
     } else {
       sb.append(this.query);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("realTime:");
-    sb.append(this.realTime);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("cpuTime:");
-    sb.append(this.cpuTime);
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("facetCounts:");
-    if (this.facetCounts == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.facetCounts);
     }
     first = false;
     sb.append(")");

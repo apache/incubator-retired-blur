@@ -38,7 +38,7 @@ public class BlurResultIterableClient implements BlurResultIterable {
     private Client _client;
     private String _table;
     private BlurResults _results;
-    private int _fetchCount = 100;
+    private int _remoteFetchCount;
     private int _batch = 0;
     private long _totalResults;
     private long _skipTo;
@@ -46,21 +46,27 @@ public class BlurResultIterableClient implements BlurResultIterable {
     private boolean _alreadyProcessed;
     private BlurQuery _originalQuery;
 
-    public BlurResultIterableClient(Blur.Client client, String table, BlurQuery query, AtomicLongArray facetCounts) {
+    public BlurResultIterableClient(Blur.Client client, String table, BlurQuery query, AtomicLongArray facetCounts, int remoteFetchCount) {
         _client = client;
         _table = table;
         _facetCounts = facetCounts;
         _originalQuery = query;
+        _remoteFetchCount = remoteFetchCount;
         performSearch();
     }
 
     private void performSearch() {
         try {
-            long cursor = _fetchCount * _batch;
-            BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery, cursor, 
-                    _fetchCount, _originalQuery.minimumNumberOfResults, _originalQuery.maxQueryTime, 
-                    _originalQuery.uuid, _originalQuery.userId, false, _originalQuery.facets, null, 
-                    _originalQuery.startTime, false, _originalQuery.allowStaleData);
+            long cursor = _remoteFetchCount * _batch;
+            BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery, _originalQuery.facets, 
+                    null, _originalQuery.allowStaleData, _originalQuery.useCacheIfPresent, cursor, _remoteFetchCount, 
+                    _originalQuery.minimumNumberOfResults, _originalQuery.maxQueryTime, _originalQuery.uuid, 
+                    _originalQuery.userContext);
+            
+//            BlurQuery blurQuery = new BlurQuery(_originalQuery.simpleQuery, _originalQuery.expertQuery, cursor, 
+//                    _fetchCount, _originalQuery.minimumNumberOfResults, _originalQuery.maxQueryTime, 
+//                    _originalQuery.uuid, _originalQuery.userId, false, _originalQuery.facets, null, 
+//                    _originalQuery.startTime, false, _originalQuery.allowStaleData);
             
             _results = _client.query(_table, blurQuery);
             addFacets();

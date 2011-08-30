@@ -192,24 +192,22 @@ struct ExpertQuery {
 
 struct Facet {
   1:string queryStr,
-  2:i64 minimumNumberOfBlurResults
+  2:i64 minimumNumberOfBlurResults = 9223372036854775807
 }
 
 struct BlurQuery {
   1:SimpleQuery simpleQuery,
   2:ExpertQuery expertQuery,
-  3:i64 start = 0,
-  4:i32 fetch = 10, 
-  5:i64 minimumNumberOfResults = 9223372036854775807,
-  6:i64 maxQueryTime = 9223372036854775807,
-  7:i64 uuid,
-  8:string userId,
-  9:bool resolveIds,
-  10:list<Facet> facets,
-  11:Selector selector,
-  12:i64 startTime,
-  13:bool cacheOnly = 0,
-  14:bool allowStaleData
+  3:list<Facet> facets,
+  4:Selector selector,
+  5:bool allowStaleData,
+  6:bool useCacheIfPresent,
+  7:i64 start = 0,
+  8:i32 fetch = 10, 
+  9:i64 minimumNumberOfResults = 9223372036854775807,
+  10:i64 maxQueryTime = 9223372036854775807,
+  11:i64 uuid,
+  12:string userContext
 }
 
 struct BlurResult {
@@ -222,13 +220,10 @@ struct BlurResults {
   1:i64 totalResults = 0,
   2:map<string,i64> shardInfo,
   3:list<BlurResult> results,
-  4:list<BlurException> exceptions,
-  5:BlurQuery query,
-  6:i64 realTime,
-  7:i64 cpuTime,
-  8:list<i64> facetCounts
+  4:list<i64> facetCounts,
+  5:list<BlurException> exceptions,
+  6:BlurQuery query
 }
-
 
 
 
@@ -244,8 +239,6 @@ struct RowMutation {
   4:RowMutationType rowMutationType,
   5:list<RecordMutation> recordMutations
 }
-
-
 
 
 

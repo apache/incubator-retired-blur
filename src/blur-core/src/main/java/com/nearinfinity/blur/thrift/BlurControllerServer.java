@@ -65,6 +65,8 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
+import com.nearinfinity.blur.utils.QueryCache;
+import com.nearinfinity.blur.utils.QueryCacheEntry;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
@@ -86,8 +88,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
     private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
     private String _nodeName;
+    private int _remoteFetchCount = 100;
+    private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);
+    private int _maxQueryCacheElements = 128;
+    private QueryCache _queryCache;
 
-    public void open() {
+    public void init() {
+        _queryCache = new QueryCache("controller-cache",_maxQueryCacheElements,_maxTimeToLive);
         _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
         updateShardLayout();
         _shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
@@ -113,13 +120,20 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         try {
             final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 
+            if (blurQuery.useCacheIfPresent) {
+                QueryCacheEntry queryCacheEntry = _queryCache.get(_queryCache.getNoralizedBlurQuery(blurQuery));
+                if (_queryCache.isValid(queryCacheEntry)) {
+                    return queryCacheEntry.getBlurResults(blurQuery);
+                }
+            }
+            
             Selector selector = blurQuery.getSelector();
             blurQuery.setSelector(null);
 
             BlurResultIterable hitsIterable = scatterGather(new BlurCommand<BlurResultIterable>() {
                 @Override
                 public BlurResultIterable call(Client client) throws Exception {
-                    return new BlurResultIterableClient(client, table, blurQuery, facetCounts);
+                    return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
                 }
             }, new MergerBlurResultIterable(blurQuery));
             return BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table);
@@ -283,10 +297,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                 }
             });
         } catch (Exception e) {
-            LOG
-                    .error(
-                            "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
-                            e, table, columnFamily, columnName, startWith, size);
+            LOG.error(
+                    "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
+                    e, table, columnFamily, columnName, startWith, size);
             throw new BException(
                     "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
                     e, table, columnFamily, columnName, startWith, size);
@@ -512,6 +525,30 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
     public void setNodeName(String nodeName) {
         _nodeName = nodeName;
+    }
+
+    public int getRemoteFetchCount() {
+        return _remoteFetchCount;
+    }
+
+    public void setRemoteFetchCount(int remoteFetchCount) {
+        _remoteFetchCount = remoteFetchCount;
+    }
+    
+    public long getMaxTimeToLive() {
+        return _maxTimeToLive;
+    }
+
+    public void setMaxTimeToLive(long maxTimeToLive) {
+        _maxTimeToLive = maxTimeToLive;
+    }
+
+    public int getMaxQueryCacheElements() {
+        return _maxQueryCacheElements;
+    }
+
+    public void setMaxQueryCacheElements(int maxQueryCacheElements) {
+        _maxQueryCacheElements = maxQueryCacheElements;
     }
 
 }

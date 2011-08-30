@@ -283,7 +283,7 @@ module Blur
 
       FIELDS = {
         QUERYSTR => {:type => ::Thrift::Types::STRING, :name => 'queryStr'},
-        MINIMUMNUMBEROFBLURRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfBlurResults'}
+        MINIMUMNUMBEROFBLURRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfBlurResults', :default => 9223372036854775807}
       }
 
       def struct_fields; FIELDS; end
@@ -298,34 +298,30 @@ module Blur
       include ::Thrift::Struct, ::Thrift::Struct_Union
       SIMPLEQUERY = 1
       EXPERTQUERY = 2
-      START = 3
-      FETCH = 4
-      MINIMUMNUMBEROFRESULTS = 5
-      MAXQUERYTIME = 6
-      UUID = 7
-      USERID = 8
-      RESOLVEIDS = 9
-      FACETS = 10
-      SELECTOR = 11
-      STARTTIME = 12
-      CACHEONLY = 13
-      ALLOWSTALEDATA = 14
+      FACETS = 3
+      SELECTOR = 4
+      ALLOWSTALEDATA = 5
+      USECACHEIFPRESENT = 6
+      START = 7
+      FETCH = 8
+      MINIMUMNUMBEROFRESULTS = 9
+      MAXQUERYTIME = 10
+      UUID = 11
+      USERCONTEXT = 12
 
       FIELDS = {
         SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => Blur::SimpleQuery},
         EXPERTQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'expertQuery', :class => Blur::ExpertQuery},
+        FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Facet}},
+        SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => Blur::Selector},
+        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'},
+        USECACHEIFPRESENT => {:type => ::Thrift::Types::BOOL, :name => 'useCacheIfPresent'},
         START => {:type => ::Thrift::Types::I64, :name => 'start', :default => 0},
         FETCH => {:type => ::Thrift::Types::I32, :name => 'fetch', :default => 10},
         MINIMUMNUMBEROFRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfResults', :default => 9223372036854775807},
         MAXQUERYTIME => {:type => ::Thrift::Types::I64, :name => 'maxQueryTime', :default => 9223372036854775807},
         UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'},
-        USERID => {:type => ::Thrift::Types::STRING, :name => 'userId'},
-        RESOLVEIDS => {:type => ::Thrift::Types::BOOL, :name => 'resolveIds'},
-        FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Facet}},
-        SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => Blur::Selector},
-        STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime'},
-        CACHEONLY => {:type => ::Thrift::Types::BOOL, :name => 'cacheOnly', :default => false},
-        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'}
+        USERCONTEXT => {:type => ::Thrift::Types::STRING, :name => 'userContext'}
       }
 
       def struct_fields; FIELDS; end
@@ -361,21 +357,17 @@ module Blur
       TOTALRESULTS = 1
       SHARDINFO = 2
       RESULTS = 3
-      EXCEPTIONS = 4
-      QUERY = 5
-      REALTIME = 6
-      CPUTIME = 7
-      FACETCOUNTS = 8
+      FACETCOUNTS = 4
+      EXCEPTIONS = 5
+      QUERY = 6
 
       FIELDS = {
         TOTALRESULTS => {:type => ::Thrift::Types::I64, :name => 'totalResults', :default => 0},
         SHARDINFO => {:type => ::Thrift::Types::MAP, :name => 'shardInfo', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::I64}},
         RESULTS => {:type => ::Thrift::Types::LIST, :name => 'results', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::BlurResult}},
+        FACETCOUNTS => {:type => ::Thrift::Types::LIST, :name => 'facetCounts', :element => {:type => ::Thrift::Types::I64}},
         EXCEPTIONS => {:type => ::Thrift::Types::LIST, :name => 'exceptions', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::BlurException}},
-        QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => Blur::BlurQuery},
-        REALTIME => {:type => ::Thrift::Types::I64, :name => 'realTime'},
-        CPUTIME => {:type => ::Thrift::Types::I64, :name => 'cpuTime'},
-        FACETCOUNTS => {:type => ::Thrift::Types::LIST, :name => 'facetCounts', :element => {:type => ::Thrift::Types::I64}}
+        QUERY => {:type => ::Thrift::Types::STRUCT, :name => 'query', :class => Blur::BlurQuery}
       }
 
       def struct_fields; FIELDS; end

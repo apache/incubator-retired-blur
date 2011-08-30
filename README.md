@@ -52,13 +52,21 @@ By default if the `blur.*.hostname` properties are left blank, the default value
     blur.shard.hostname=
     blur.shard.bind.address=0.0.0.0
     blur.shard.bind.port=40020
+    blur.shard.server.thrift.thread.count=32
+    blur.shard.opener.thread.count=16
+    blur.shard.cache.max.querycache.elements=128
+    blur.shard.cache.max.timetolive=60000
+    blur.max.clause.count=1024
+    blur.indexmanager.search.thread.count=32
+    
     blur.controller.hostname=
     blur.controller.bind.address=0.0.0.0
     blur.controller.bind.port=40010
-    blur.max.clause.count=1024
-    blur.indexmanager.search.thread.count=32
-    blur.shard.server.thrift.thread.count=32
     blur.controller.server.thrift.thread.count=32
+    blur.controller.remote.fetch.count=100
+    blur.controller.cache.max.querycache.elements=128
+    blur.controller.cache.max.timetolive=60000
+
 
 ### shards
 
@@ -157,12 +165,12 @@ If you are running on a single node you may reference a local directory for stor
 
 ### Cluster mode
 
-If you are running in a cluster you have to use HDFS as the table storage.
+If you are running in a cluster you have to use HDFS as the table storage.  The number of shards should be based on how many indexes your hardware can support as well as the volume of data.
 
     AnalyzerDefinition ad = new AnalyzerDefinition();
     
     TableDescriptor td = new TableDescriptor();
-    td.setShardCount(16); // The number of shards should be based on how many indexes your hardware can support as well as the volume of data.
+    td.setShardCount(16);
     td.setTableUri("hdfs://<namenode>:<port>/blur/tables/test-table"); // Location in HDFS
     td.setAnalyzerDefinition(ad);
     

@@ -1121,7 +1121,7 @@ sub new {
   my $self      = {};
   my $vals      = shift || {};
   $self->{queryStr} = undef;
-  $self->{minimumNumberOfBlurResults} = undef;
+  $self->{minimumNumberOfBlurResults} = 9223372036854775807;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{queryStr}) {
       $self->{queryStr} = $vals->{queryStr};
@@ -1193,7 +1193,7 @@ sub write {
 
 package Blur::BlurQuery;
 use base qw(Class::Accessor);
-Blur::BlurQuery->mk_accessors( qw( simpleQuery expertQuery start fetch minimumNumberOfResults maxQueryTime uuid userId resolveIds facets selector startTime cacheOnly allowStaleData ) );
+Blur::BlurQuery->mk_accessors( qw( simpleQuery expertQuery facets selector allowStaleData useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext ) );
 
 sub new {
   my $classname = shift;
@@ -1201,24 +1201,34 @@ sub new {
   my $vals      = shift || {};
   $self->{simpleQuery} = undef;
   $self->{expertQuery} = undef;
+  $self->{facets} = undef;
+  $self->{selector} = undef;
+  $self->{allowStaleData} = undef;
+  $self->{useCacheIfPresent} = undef;
   $self->{start} = 0;
   $self->{fetch} = 10;
   $self->{minimumNumberOfResults} = 9223372036854775807;
   $self->{maxQueryTime} = 9223372036854775807;
   $self->{uuid} = undef;
-  $self->{userId} = undef;
-  $self->{resolveIds} = undef;
-  $self->{facets} = undef;
-  $self->{selector} = undef;
-  $self->{startTime} = undef;
-  $self->{cacheOnly} = 0;
-  $self->{allowStaleData} = undef;
+  $self->{userContext} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{simpleQuery}) {
       $self->{simpleQuery} = $vals->{simpleQuery};
     }
     if (defined $vals->{expertQuery}) {
       $self->{expertQuery} = $vals->{expertQuery};
+    }
+    if (defined $vals->{facets}) {
+      $self->{facets} = $vals->{facets};
+    }
+    if (defined $vals->{selector}) {
+      $self->{selector} = $vals->{selector};
+    }
+    if (defined $vals->{allowStaleData}) {
+      $self->{allowStaleData} = $vals->{allowStaleData};
+    }
+    if (defined $vals->{useCacheIfPresent}) {
+      $self->{useCacheIfPresent} = $vals->{useCacheIfPresent};
     }
     if (defined $vals->{start}) {
       $self->{start} = $vals->{start};
@@ -1235,26 +1245,8 @@ sub new {
     if (defined $vals->{uuid}) {
       $self->{uuid} = $vals->{uuid};
     }
-    if (defined $vals->{userId}) {
-      $self->{userId} = $vals->{userId};
-    }
-    if (defined $vals->{resolveIds}) {
-      $self->{resolveIds} = $vals->{resolveIds};
-    }
-    if (defined $vals->{facets}) {
-      $self->{facets} = $vals->{facets};
-    }
-    if (defined $vals->{selector}) {
-      $self->{selector} = $vals->{selector};
-    }
-    if (defined $vals->{startTime}) {
-      $self->{startTime} = $vals->{startTime};
-    }
-    if (defined $vals->{cacheOnly}) {
-      $self->{cacheOnly} = $vals->{cacheOnly};
-    }
-    if (defined $vals->{allowStaleData}) {
-      $self->{allowStaleData} = $vals->{allowStaleData};
+    if (defined $vals->{userContext}) {
+      $self->{userContext} = $vals->{userContext};
     }
   }
   return bless ($self, $classname);
@@ -1293,49 +1285,7 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{start});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^4$/ && do{      if ($ftype == TType::I32) {
-        $xfer += $input->readI32(\$self->{fetch});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^5$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{minimumNumberOfResults});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^6$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{maxQueryTime});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^7$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{uuid});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^8$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{userId});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^9$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{resolveIds});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^10$/ && do{      if ($ftype == TType::LIST) {
+      /^3$/ && do{      if ($ftype == TType::LIST) {
         {
           my $_size37 = 0;
           $self->{facets} = [];
@@ -1354,27 +1304,57 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^11$/ && do{      if ($ftype == TType::STRUCT) {
+      /^4$/ && do{      if ($ftype == TType::STRUCT) {
         $self->{selector} = new Blur::Selector();
         $xfer += $self->{selector}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^12$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{startTime});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^13$/ && do{      if ($ftype == TType::BOOL) {
-        $xfer += $input->readBool(\$self->{cacheOnly});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^14$/ && do{      if ($ftype == TType::BOOL) {
+      /^5$/ && do{      if ($ftype == TType::BOOL) {
         $xfer += $input->readBool(\$self->{allowStaleData});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^6$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{useCacheIfPresent});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^7$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{start});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^8$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{fetch});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^9$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{minimumNumberOfResults});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^10$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{maxQueryTime});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^11$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{uuid});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^12$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{userContext});
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -1401,43 +1381,8 @@ sub write {
     $xfer += $self->{expertQuery}->write($output);
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{start}) {
-    $xfer += $output->writeFieldBegin('start', TType::I64, 3);
-    $xfer += $output->writeI64($self->{start});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{fetch}) {
-    $xfer += $output->writeFieldBegin('fetch', TType::I32, 4);
-    $xfer += $output->writeI32($self->{fetch});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{minimumNumberOfResults}) {
-    $xfer += $output->writeFieldBegin('minimumNumberOfResults', TType::I64, 5);
-    $xfer += $output->writeI64($self->{minimumNumberOfResults});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{maxQueryTime}) {
-    $xfer += $output->writeFieldBegin('maxQueryTime', TType::I64, 6);
-    $xfer += $output->writeI64($self->{maxQueryTime});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{uuid}) {
-    $xfer += $output->writeFieldBegin('uuid', TType::I64, 7);
-    $xfer += $output->writeI64($self->{uuid});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{userId}) {
-    $xfer += $output->writeFieldBegin('userId', TType::STRING, 8);
-    $xfer += $output->writeString($self->{userId});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{resolveIds}) {
-    $xfer += $output->writeFieldBegin('resolveIds', TType::BOOL, 9);
-    $xfer += $output->writeBool($self->{resolveIds});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{facets}) {
-    $xfer += $output->writeFieldBegin('facets', TType::LIST, 10);
+    $xfer += $output->writeFieldBegin('facets', TType::LIST, 3);
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{facets}}));
       {
@@ -1451,23 +1396,48 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{selector}) {
-    $xfer += $output->writeFieldBegin('selector', TType::STRUCT, 11);
+    $xfer += $output->writeFieldBegin('selector', TType::STRUCT, 4);
     $xfer += $self->{selector}->write($output);
     $xfer += $output->writeFieldEnd();
   }
-  if (defined $self->{startTime}) {
-    $xfer += $output->writeFieldBegin('startTime', TType::I64, 12);
-    $xfer += $output->writeI64($self->{startTime});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{cacheOnly}) {
-    $xfer += $output->writeFieldBegin('cacheOnly', TType::BOOL, 13);
-    $xfer += $output->writeBool($self->{cacheOnly});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{allowStaleData}) {
-    $xfer += $output->writeFieldBegin('allowStaleData', TType::BOOL, 14);
+    $xfer += $output->writeFieldBegin('allowStaleData', TType::BOOL, 5);
     $xfer += $output->writeBool($self->{allowStaleData});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{useCacheIfPresent}) {
+    $xfer += $output->writeFieldBegin('useCacheIfPresent', TType::BOOL, 6);
+    $xfer += $output->writeBool($self->{useCacheIfPresent});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{start}) {
+    $xfer += $output->writeFieldBegin('start', TType::I64, 7);
+    $xfer += $output->writeI64($self->{start});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{fetch}) {
+    $xfer += $output->writeFieldBegin('fetch', TType::I32, 8);
+    $xfer += $output->writeI32($self->{fetch});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{minimumNumberOfResults}) {
+    $xfer += $output->writeFieldBegin('minimumNumberOfResults', TType::I64, 9);
+    $xfer += $output->writeI64($self->{minimumNumberOfResults});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{maxQueryTime}) {
+    $xfer += $output->writeFieldBegin('maxQueryTime', TType::I64, 10);
+    $xfer += $output->writeI64($self->{maxQueryTime});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{uuid}) {
+    $xfer += $output->writeFieldBegin('uuid', TType::I64, 11);
+    $xfer += $output->writeI64($self->{uuid});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{userContext}) {
+    $xfer += $output->writeFieldBegin('userContext', TType::STRING, 12);
+    $xfer += $output->writeString($self->{userContext});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -1572,7 +1542,7 @@ sub write {
 
 package Blur::BlurResults;
 use base qw(Class::Accessor);
-Blur::BlurResults->mk_accessors( qw( totalResults shardInfo results exceptions query realTime cpuTime facetCounts ) );
+Blur::BlurResults->mk_accessors( qw( totalResults shardInfo results facetCounts exceptions query ) );
 
 sub new {
   my $classname = shift;
@@ -1581,11 +1551,9 @@ sub new {
   $self->{totalResults} = 0;
   $self->{shardInfo} = undef;
   $self->{results} = undef;
+  $self->{facetCounts} = undef;
   $self->{exceptions} = undef;
   $self->{query} = undef;
-  $self->{realTime} = undef;
-  $self->{cpuTime} = undef;
-  $self->{facetCounts} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{totalResults}) {
       $self->{totalResults} = $vals->{totalResults};
@@ -1596,20 +1564,14 @@ sub new {
     if (defined $vals->{results}) {
       $self->{results} = $vals->{results};
     }
+    if (defined $vals->{facetCounts}) {
+      $self->{facetCounts} = $vals->{facetCounts};
+    }
     if (defined $vals->{exceptions}) {
       $self->{exceptions} = $vals->{exceptions};
     }
     if (defined $vals->{query}) {
       $self->{query} = $vals->{query};
-    }
-    if (defined $vals->{realTime}) {
-      $self->{realTime} = $vals->{realTime};
-    }
-    if (defined $vals->{cpuTime}) {
-      $self->{cpuTime} = $vals->{cpuTime};
-    }
-    if (defined $vals->{facetCounts}) {
-      $self->{facetCounts} = $vals->{facetCounts};
     }
   }
   return bless ($self, $classname);
@@ -1683,15 +1645,14 @@ sub read {
       /^4$/ && do{      if ($ftype == TType::LIST) {
         {
           my $_size57 = 0;
-          $self->{exceptions} = [];
+          $self->{facetCounts} = [];
           my $_etype60 = 0;
           $xfer += $input->readListBegin(\$_etype60, \$_size57);
           for (my $_i61 = 0; $_i61 < $_size57; ++$_i61)
           {
             my $elem62 = undef;
-            $elem62 = new Blur::BlurException();
-            $xfer += $elem62->read($input);
-            push(@{$self->{exceptions}},$elem62);
+            $xfer += $input->readI64(\$elem62);
+            push(@{$self->{facetCounts}},$elem62);
           }
           $xfer += $input->readListEnd();
         }
@@ -1699,39 +1660,28 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^5$/ && do{      if ($ftype == TType::STRUCT) {
-        $self->{query} = new Blur::BlurQuery();
-        $xfer += $self->{query}->read($input);
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^6$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{realTime});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^7$/ && do{      if ($ftype == TType::I64) {
-        $xfer += $input->readI64(\$self->{cpuTime});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^8$/ && do{      if ($ftype == TType::LIST) {
+      /^5$/ && do{      if ($ftype == TType::LIST) {
         {
           my $_size63 = 0;
-          $self->{facetCounts} = [];
+          $self->{exceptions} = [];
           my $_etype66 = 0;
           $xfer += $input->readListBegin(\$_etype66, \$_size63);
           for (my $_i67 = 0; $_i67 < $_size63; ++$_i67)
           {
             my $elem68 = undef;
-            $xfer += $input->readI64(\$elem68);
-            push(@{$self->{facetCounts}},$elem68);
+            $elem68 = new Blur::BlurException();
+            $xfer += $elem68->read($input);
+            push(@{$self->{exceptions}},$elem68);
           }
           $xfer += $input->readListEnd();
         }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^6$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{query} = new Blur::BlurQuery();
+        $xfer += $self->{query}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -1782,14 +1732,28 @@ sub write {
     }
     $xfer += $output->writeFieldEnd();
   }
+  if (defined $self->{facetCounts}) {
+    $xfer += $output->writeFieldBegin('facetCounts', TType::LIST, 4);
+    {
+      $xfer += $output->writeListBegin(TType::I64, scalar(@{$self->{facetCounts}}));
+      {
+        foreach my $iter72 (@{$self->{facetCounts}}) 
+        {
+          $xfer += $output->writeI64($iter72);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
   if (defined $self->{exceptions}) {
-    $xfer += $output->writeFieldBegin('exceptions', TType::LIST, 4);
+    $xfer += $output->writeFieldBegin('exceptions', TType::LIST, 5);
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{exceptions}}));
       {
-        foreach my $iter72 (@{$self->{exceptions}}) 
+        foreach my $iter73 (@{$self->{exceptions}}) 
         {
-          $xfer += ${iter72}->write($output);
+          $xfer += ${iter73}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -1797,32 +1761,8 @@ sub write {
     $xfer += $output->writeFieldEnd();
   }
   if (defined $self->{query}) {
-    $xfer += $output->writeFieldBegin('query', TType::STRUCT, 5);
+    $xfer += $output->writeFieldBegin('query', TType::STRUCT, 6);
     $xfer += $self->{query}->write($output);
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{realTime}) {
-    $xfer += $output->writeFieldBegin('realTime', TType::I64, 6);
-    $xfer += $output->writeI64($self->{realTime});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{cpuTime}) {
-    $xfer += $output->writeFieldBegin('cpuTime', TType::I64, 7);
-    $xfer += $output->writeI64($self->{cpuTime});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{facetCounts}) {
-    $xfer += $output->writeFieldBegin('facetCounts', TType::LIST, 8);
-    {
-      $xfer += $output->writeListBegin(TType::I64, scalar(@{$self->{facetCounts}}));
-      {
-        foreach my $iter73 (@{$self->{facetCounts}}) 
-        {
-          $xfer += $output->writeI64($iter73);
-        }
-      }
-      $xfer += $output->writeListEnd();
-    }
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.ZooKeeper;
@@ -136,6 +137,8 @@ public class ThriftBlurShardServer extends ThriftServer {
         shardServer.setIndexServer(indexServer);
         shardServer.setIndexManager(indexManager);
         shardServer.setDistributedManager(dzk);
+        shardServer.setMaxQueryCacheElements(configuration.getInt("blur.shard.cache.max.querycache.elements",128));
+        shardServer.setMaxTimeToLive(configuration.getLong("blur.shard.cache.max.timetolive",TimeUnit.MINUTES.toMillis(1)));
         shardServer.init();
 
         int threadCount = configuration.getInt("blur.shard.server.thrift.thread.count", 32);

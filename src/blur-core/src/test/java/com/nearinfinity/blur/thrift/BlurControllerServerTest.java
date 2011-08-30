@@ -69,7 +69,7 @@ public class BlurControllerServerTest {
         server.setClient(getClient());
         server.setClusterStatus(getClusterStatus());
         server.setDistributedManager(getDistributedManager());
-        server.open();
+        server.init();
     }
     
     private ClusterStatus getClusterStatus() {

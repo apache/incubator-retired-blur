@@ -24,6 +24,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.ZooKeeper;
@@ -75,8 +76,10 @@ public class ThriftBlurControllerServer extends ThriftServer {
         controllerServer.setClusterStatus(clusterStatus);
         controllerServer.setDistributedManager(dzk);
         controllerServer.setNodeName(nodeName);
-        
-        controllerServer.open();
+        controllerServer.setRemoteFetchCount(configuration.getInt("blur.controller.remote.fetch.count",100));
+        controllerServer.setMaxQueryCacheElements(configuration.getInt("blur.controller.cache.max.querycache.elements",128));
+        controllerServer.setMaxTimeToLive(configuration.getLong("blur.controller.cache.max.timetolive",TimeUnit.MINUTES.toMillis(1)));
+        controllerServer.init();
 
         int threadCount = configuration.getInt("blur.controller.server.thrift.thread.count", 32);
         

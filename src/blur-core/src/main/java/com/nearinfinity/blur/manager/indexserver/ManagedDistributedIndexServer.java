@@ -100,7 +100,7 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
                 throw new RuntimeException("This node [" + getNodeName() + "] should have been" +
                 		" registered, and should have been online.");
             }
-            LOG.info("Setuping safe mode, first node online.");
+            LOG.info("Starting safe mode, first node online.");
             dm.createPath(getBlurSafemodePath());
             dm.saveData(getSafeModeEndTime(),getBlurSafemodePath());
             removeShutdownFlag();

@@ -33,27 +33,8 @@ public interface IndexServer {
         DISABLED
     }
     
-    /**
-     * Gets the similarity object used by lucene for this table.
-     * @param table the table name.
-     * @return the similarity object.
-     */
-    Similarity getSimilarity(String table);
+    //Server state
     
-    /**
-     * Gets the status of the table.
-     * @param table the table name.
-     * @return the status.
-     */
-    TABLE_STATUS getTableStatus(String table);
-    
-    /**
-     * Gets the analyzer for the table.
-     * @param table the table name.
-     * @return the analyzer for lucene.
-     */
-    BlurAnalyzer getAnalyzer(String table);
-
     /**
      * Gets a map of the index readers for current running node.
      * <p/>
@@ -64,24 +45,6 @@ public interface IndexServer {
      * @throws IOException
      */
     Map<String, BlurIndex> getIndexes(String table) throws IOException;
-
-    /**
-     * The table name list.
-     * @return the list of tables.
-     */
-    List<String> getTableList();
-    
-    /** 
-     * The shard list for a given table.
-     * @param table the table name.
-     * @return the list of shards.
-     */
-    List<String> getShardList(String table);
-    
-    /**
-     * Closes the index server.
-     */
-    void close();
     
     /**
      * Gets a list of all the controller nodes in the cluster.
@@ -109,11 +72,47 @@ public interface IndexServer {
      */
     List<String> getOnlineShardServers();
     
+    //Table Meta Data
+    
+    /** 
+     * The shard list for a given table.
+     * @param table the table name.
+     * @return the list of shards.
+     */
+    List<String> getShardList(String table);
+    
+    /**
+     * Gets the similarity object used by lucene for this table.
+     * @param table the table name.
+     * @return the similarity object.
+     */
+    Similarity getSimilarity(String table);
+    
+    /**
+     * Gets the status of the table.
+     * @param table the table name.
+     * @return the status.
+     */
+    TABLE_STATUS getTableStatus(String table);
+    
+    /**
+     * Gets the analyzer for the table.
+     * @param table the table name.
+     * @return the analyzer for lucene.
+     */
+    BlurAnalyzer getAnalyzer(String table);
+    
     /**
      * Gets the current nodes name.
      * @return
      */
     String getNodeName();
+    
+    /**
+     * The table name list.
+     * @return the list of tables.
+     */
+    List<String> getTableList();
 
     /**
      * Gets the table uri.  (hdfs://cluster1:9000/blur/tables/tablename1234)
@@ -122,16 +121,57 @@ public interface IndexServer {
      */
     String getTableUri(String table);
     
+    /**
+     * Gets the shard count for the given table.
+     * @param table the name of the table.
+     * @return
+     */
     int getShardCount(String table);
     
+    /**
+     * Gets the compress codec for the given table.
+     * @param table the name of the table.
+     * @return the {@link CompressionCodec}
+     */
     CompressionCodec getCompressionCodec(String table);
     
+    /**
+     * Get the compression block size.
+     * @param table the name of the table.
+     * @return the block size.
+     */
     int getCompressionBlockSize(String table);
     
+    
+    //Metrics
+    
+    /**
+     * Gets the record count of the table.
+     * @param table the name of the table.
+     * @return the record count.
+     * @throws IOException
+     */
     long getRecordCount(String table) throws IOException;
     
+    /**
+     * Gets the row count of the table.
+     * @param table the name of the table.
+     * @return
+     * @throws IOException
+     */
     long getRowCount(String table) throws IOException;
     
+    /**
+     * Gets the current on disk table size.
+     * @param table the name of the table.
+     * @return the number of bytes on disk.
+     * @throws IOException
+     */
     long getTableSize(String table) throws IOException;
+    
+    /**
+     * Closes the index server.
+     */
+    void close();
 
 }

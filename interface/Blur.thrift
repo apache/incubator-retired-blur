@@ -126,21 +126,61 @@ enum RecordMutationType {
 
 
 
-
+/**
+ * Column is the lowest storage element in Blur, it stores a single name and value pair.
+ */
 struct Column {
+  /**
+   * The name of the column.
+   */
   1:string name,
+
+  /**
+   * The value to be indexed and stored.
+   */
   2:string value
 }
 
+/**
+ * Records contain a list of columns, multiple columns with the same name are allowed.
+ */
 struct Record {
+  /**
+   * Record id uniquely identifies a record within a single row.
+   */
   1:string recordId,
+
+  /**
+   * The family in which this record resides.
+   */
   2:string family,
+
+  /**
+   * A list of columns, multiple columns with the same name are allowed.
+   */
   3:list<Column> columns
 }
 
+/**
+ * Rows contain a list of records.
+ */
 struct Row {
+  /**
+   * The row id.
+   */
   1:string id,
-  2:list<Record> records
+
+  /**
+   * The list records within the row.  If paging is used this list will only 
+   * reflect the paged records from the selector.
+   */
+  2:list<Record> records,
+
+  /**
+   * The total record count for the row.  If paging is used in a selector to page 
+   * through records of a row, this count will reflect the entire row.
+   */
+  3:i32 recordCount
 }
 
 
@@ -186,8 +226,7 @@ struct SimpleQuery {
 
 struct ExpertQuery {
   1:binary query,
-  2:binary filter,
-  3:binary sort
+  2:binary filter
 }
 
 struct Facet {

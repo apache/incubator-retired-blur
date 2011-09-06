@@ -66,6 +66,8 @@ By default if the `blur.*.hostname` properties are left blank, the default value
     blur.controller.remote.fetch.count=100
     blur.controller.cache.max.querycache.elements=128
     blur.controller.cache.max.timetolive=60000
+    
+    blur.zookeeper.system.time.tolerance=3000
 
 
 ### shards

@@ -16,11 +16,18 @@
 
 package com.nearinfinity.blur.thrift;
 
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_LOCAL_CACHE_PATHS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
 import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
@@ -36,12 +43,14 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.transport.TTransportException;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
 import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
@@ -56,6 +65,7 @@ import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
 import com.nearinfinity.blur.store.replication.ReplicationDaemon;
 import com.nearinfinity.blur.store.replication.ReplicationStrategy;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
@@ -63,7 +73,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
 
-    public static void main(String[] args) throws TTransportException, IOException {
+    public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
         LOG.info("Setting up Shard Server");
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
@@ -73,6 +83,8 @@ public class ThriftBlurShardServer extends ThriftServer {
         String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
         String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHS), BLUR_LOCAL_CACHE_PATHS);
+        
+        BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
         List<File> localFileCaches = new ArrayList<File>();
         for (String cachePath : localCacheDirs.split(",")) {
@@ -84,6 +96,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         }
 
         final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
+        ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
 
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
@@ -122,26 +135,27 @@ public class ThriftBlurShardServer extends ThriftServer {
         indexServer.setReplicationDaemon(replicationDaemon);
         indexServer.setReplicationStrategy(replicationStrategy);
         indexServer.setRefresher(refresher);
-        indexServer.setShardOpenerThreadCount(configuration.getInt("blur.shard.opener.thread.count", 16));
+        indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
         indexServer.init();
 
         localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));
 
         final IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
-        indexManager.setMaxClauseCount(configuration.getInt("blur.max.clause.count", 1024));
-        indexManager.setThreadCount(configuration.getInt("blur.indexmanager.search.thread.count", 32));
+        indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
+        indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
         indexManager.init();
 
         final BlurShardServer shardServer = new BlurShardServer();
         shardServer.setIndexServer(indexServer);
         shardServer.setIndexManager(indexManager);
         shardServer.setDistributedManager(dzk);
-        shardServer.setMaxQueryCacheElements(configuration.getInt("blur.shard.cache.max.querycache.elements",128));
-        shardServer.setMaxTimeToLive(configuration.getLong("blur.shard.cache.max.timetolive",TimeUnit.MINUTES.toMillis(1)));
+        shardServer.setMaxQueryCacheElements(configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS,128));
+        shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE,TimeUnit.MINUTES.toMillis(1)));
+        shardServer.setQueryChecker(queryChecker);
         shardServer.init();
 
-        int threadCount = configuration.getInt("blur.shard.server.thrift.thread.count", 32);
+        int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
         
         final ThriftBlurShardServer server = new ThriftBlurShardServer();
         server.setNodeName(nodeName);

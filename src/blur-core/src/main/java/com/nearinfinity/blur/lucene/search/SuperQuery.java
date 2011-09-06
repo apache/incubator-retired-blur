@@ -25,57 +25,16 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Weight;
+import org.apache.lucene.util.OpenBitSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nearinfinity.blur.log.Log;
-import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache.IndexReaderCache;
-import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 @SuppressWarnings("deprecation")
 public class SuperQuery extends AbstractWrapperQuery {
     
-    private static final Log LOG = LogFactory.getLog(SuperQuery.class);
-    
-    public static final String BLUR_NATIVE_PREVSETBIT = "blur.native.prevsetbit";
-    private static PrevSetBit prevSetBitMethod;
-    
-    static {
-        boolean nativePrevSetBit = Boolean.getBoolean(BLUR_NATIVE_PREVSETBIT);
-        if (nativePrevSetBit) {
-            LOG.warn(BLUR_NATIVE_PREVSETBIT + " turned on.");
-            prevSetBitMethod = new NativePrevSetBit();                
-        } else {
-            prevSetBitMethod = new LoopPrevSetBit();
-        }
-    }
-    
-    private interface PrevSetBit {
-        int prevSetBit(BlurBitSet bitSet, int index);
-    }
-    
-    private static class NativePrevSetBit implements PrevSetBit {
-        @Override
-        public int prevSetBit(BlurBitSet bitSet, int index) {
-            return bitSet.prevSetBit(index);
-        }
-    }
-    
-    private static class LoopPrevSetBit implements PrevSetBit {
-        @Override
-        public int prevSetBit(BlurBitSet bitSet, int index) {
-            while (!bitSet.get(index)) {
-                index--;
-                if (index <= 0) {
-                    return 0;
-                }
-            }
-            return index;
-        }
-    }
-
     private static final long serialVersionUID = -5901574044714034398L;
     private ScoreType scoreType;
 
@@ -163,7 +122,7 @@ public class SuperQuery extends AbstractWrapperQuery {
                 return null;
             }
             if (reader instanceof SegmentReader) {
-                BlurBitSet primeDocBitSet = indexReaderCache.getPrimeDocBitSet((SegmentReader) reader);
+                OpenBitSet primeDocBitSet = indexReaderCache.getPrimeDocBitSet((SegmentReader) reader);
                 return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
             } else {
                 throw new UnsupportedOperationException("Reader is not a segment reader.");
@@ -182,7 +141,7 @@ public class SuperQuery extends AbstractWrapperQuery {
         private final static Logger LOG = LoggerFactory.getLogger(SuperScorer.class);
         private static final double SUPER_POWER_CONSTANT = 2;
         private Scorer scorer;
-        private BlurBitSet bitSet;
+        private OpenBitSet bitSet;
         private int nextPrimeDoc;
         private int primeDoc = -1;
         private String originalQueryStr;
@@ -193,7 +152,7 @@ public class SuperQuery extends AbstractWrapperQuery {
         private float aggregateScore;
         private int hitsInEntity;
 
-        protected SuperScorer(Scorer scorer, BlurBitSet bitSet, String originalQueryStr, ScoreType scoreType) {
+        protected SuperScorer(Scorer scorer, OpenBitSet bitSet, String originalQueryStr, ScoreType scoreType) {
             super(scorer.getSimilarity());
             this.scorer = scorer;
             this.bitSet = bitSet;
@@ -297,7 +256,7 @@ public class SuperQuery extends AbstractWrapperQuery {
         }
 
         private int getPrimeDoc(int doc) {
-            return prevSetBitMethod.prevSetBit(bitSet, doc);
+            return bitSet.prevSetBit(doc);
         }
 
         private boolean isScorerExhausted(int doc) {

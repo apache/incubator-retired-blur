@@ -20,19 +20,47 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Rows contain a list of records.
+ */
 public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Row");
 
   private static final org.apache.thrift.protocol.TField ID_FIELD_DESC = new org.apache.thrift.protocol.TField("id", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField RECORDS_FIELD_DESC = new org.apache.thrift.protocol.TField("records", org.apache.thrift.protocol.TType.LIST, (short)2);
+  private static final org.apache.thrift.protocol.TField RECORD_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("recordCount", org.apache.thrift.protocol.TType.I32, (short)3);
 
+  /**
+   * The row id.
+   */
   public String id; // required
+  /**
+   * The list records within the row.  If paging is used this list will only
+   * reflect the paged records from the selector.
+   */
   public List<Record> records; // required
+  /**
+   * The total record count for the row.  If paging is used in a selector to page
+   * through records of a row, this count will reflect the entire row.
+   */
+  public int recordCount; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The row id.
+     */
     ID((short)1, "id"),
-    RECORDS((short)2, "records");
+    /**
+     * The list records within the row.  If paging is used this list will only
+     * reflect the paged records from the selector.
+     */
+    RECORDS((short)2, "records"),
+    /**
+     * The total record count for the row.  If paging is used in a selector to page
+     * through records of a row, this count will reflect the entire row.
+     */
+    RECORD_COUNT((short)3, "recordCount");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -51,6 +79,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
           return ID;
         case 2: // RECORDS
           return RECORDS;
+        case 3: // RECORD_COUNT
+          return RECORD_COUNT;
         default:
           return null;
       }
@@ -91,6 +121,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
   }
 
   // isset id assignments
+  private static final int __RECORDCOUNT_ISSET_ID = 0;
+  private BitSet __isset_bit_vector = new BitSet(1);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -100,6 +132,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     tmpMap.put(_Fields.RECORDS, new org.apache.thrift.meta_data.FieldMetaData("records", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Record.class))));
+    tmpMap.put(_Fields.RECORD_COUNT, new org.apache.thrift.meta_data.FieldMetaData("recordCount", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(Row.class, metaDataMap);
   }
@@ -109,17 +143,22 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
 
   public Row(
     String id,
-    List<Record> records)
+    List<Record> records,
+    int recordCount)
   {
     this();
     this.id = id;
     this.records = records;
+    this.recordCount = recordCount;
+    setRecordCountIsSet(true);
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
   public Row(Row other) {
+    __isset_bit_vector.clear();
+    __isset_bit_vector.or(other.__isset_bit_vector);
     if (other.isSetId()) {
       this.id = other.id;
     }
@@ -130,6 +169,7 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       }
       this.records = __this__records;
     }
+    this.recordCount = other.recordCount;
   }
 
   public Row deepCopy() {
@@ -140,12 +180,20 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
   public void clear() {
     this.id = null;
     this.records = null;
+    setRecordCountIsSet(false);
+    this.recordCount = 0;
   }
 
+  /**
+   * The row id.
+   */
   public String getId() {
     return this.id;
   }
 
+  /**
+   * The row id.
+   */
   public Row setId(String id) {
     this.id = id;
     return this;
@@ -181,10 +229,18 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     this.records.add(elem);
   }
 
+  /**
+   * The list records within the row.  If paging is used this list will only
+   * reflect the paged records from the selector.
+   */
   public List<Record> getRecords() {
     return this.records;
   }
 
+  /**
+   * The list records within the row.  If paging is used this list will only
+   * reflect the paged records from the selector.
+   */
   public Row setRecords(List<Record> records) {
     this.records = records;
     return this;
@@ -205,6 +261,37 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     }
   }
 
+  /**
+   * The total record count for the row.  If paging is used in a selector to page
+   * through records of a row, this count will reflect the entire row.
+   */
+  public int getRecordCount() {
+    return this.recordCount;
+  }
+
+  /**
+   * The total record count for the row.  If paging is used in a selector to page
+   * through records of a row, this count will reflect the entire row.
+   */
+  public Row setRecordCount(int recordCount) {
+    this.recordCount = recordCount;
+    setRecordCountIsSet(true);
+    return this;
+  }
+
+  public void unsetRecordCount() {
+    __isset_bit_vector.clear(__RECORDCOUNT_ISSET_ID);
+  }
+
+  /** Returns true if field recordCount is set (has been assigned a value) and false otherwise */
+  public boolean isSetRecordCount() {
+    return __isset_bit_vector.get(__RECORDCOUNT_ISSET_ID);
+  }
+
+  public void setRecordCountIsSet(boolean value) {
+    __isset_bit_vector.set(__RECORDCOUNT_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case ID:
@@ -223,6 +310,14 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       }
       break;
 
+    case RECORD_COUNT:
+      if (value == null) {
+        unsetRecordCount();
+      } else {
+        setRecordCount((Integer)value);
+      }
+      break;
+
     }
   }
 
@@ -233,6 +328,9 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
 
     case RECORDS:
       return getRecords();
+
+    case RECORD_COUNT:
+      return Integer.valueOf(getRecordCount());
 
     }
     throw new IllegalStateException();
@@ -249,6 +347,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       return isSetId();
     case RECORDS:
       return isSetRecords();
+    case RECORD_COUNT:
+      return isSetRecordCount();
     }
     throw new IllegalStateException();
   }
@@ -284,6 +384,15 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
         return false;
     }
 
+    boolean this_present_recordCount = true;
+    boolean that_present_recordCount = true;
+    if (this_present_recordCount || that_present_recordCount) {
+      if (!(this_present_recordCount && that_present_recordCount))
+        return false;
+      if (this.recordCount != that.recordCount)
+        return false;
+    }
+
     return true;
   }
 
@@ -316,6 +425,16 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
     }
     if (isSetRecords()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.records, typedOther.records);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetRecordCount()).compareTo(typedOther.isSetRecordCount());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRecordCount()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.recordCount, typedOther.recordCount);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -362,6 +481,14 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 3: // RECORD_COUNT
+          if (field.type == org.apache.thrift.protocol.TType.I32) {
+            this.recordCount = iprot.readI32();
+            setRecordCountIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -394,6 +521,9 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       }
       oprot.writeFieldEnd();
     }
+    oprot.writeFieldBegin(RECORD_COUNT_FIELD_DESC);
+    oprot.writeI32(this.recordCount);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -418,6 +548,10 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
       sb.append(this.records);
     }
     first = false;
+    if (!first) sb.append(", ");
+    sb.append("recordCount:");
+    sb.append(this.recordCount);
+    first = false;
     sb.append(")");
     return sb.toString();
   }
@@ -436,6 +570,8 @@ public class Row implements org.apache.thrift.TBase<Row, Row._Fields>, java.io.S
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bit_vector = new BitSet(1);
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);

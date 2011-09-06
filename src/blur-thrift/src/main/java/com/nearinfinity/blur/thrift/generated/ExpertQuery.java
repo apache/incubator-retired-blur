@@ -25,17 +25,14 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
 
   private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("filter", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField SORT_FIELD_DESC = new org.apache.thrift.protocol.TField("sort", org.apache.thrift.protocol.TType.STRING, (short)3);
 
   public ByteBuffer query; // required
   public ByteBuffer filter; // required
-  public ByteBuffer sort; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     QUERY((short)1, "query"),
-    FILTER((short)2, "filter"),
-    SORT((short)3, "sort");
+    FILTER((short)2, "filter");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -54,8 +51,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
           return QUERY;
         case 2: // FILTER
           return FILTER;
-        case 3: // SORT
-          return SORT;
         default:
           return null;
       }
@@ -104,8 +99,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     tmpMap.put(_Fields.FILTER, new org.apache.thrift.meta_data.FieldMetaData("filter", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
-    tmpMap.put(_Fields.SORT, new org.apache.thrift.meta_data.FieldMetaData("sort", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING        , true)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ExpertQuery.class, metaDataMap);
   }
@@ -115,13 +108,11 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
 
   public ExpertQuery(
     ByteBuffer query,
-    ByteBuffer filter,
-    ByteBuffer sort)
+    ByteBuffer filter)
   {
     this();
     this.query = query;
     this.filter = filter;
-    this.sort = sort;
   }
 
   /**
@@ -136,10 +127,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
       this.filter = org.apache.thrift.TBaseHelper.copyBinary(other.filter);
 ;
     }
-    if (other.isSetSort()) {
-      this.sort = org.apache.thrift.TBaseHelper.copyBinary(other.sort);
-;
-    }
   }
 
   public ExpertQuery deepCopy() {
@@ -150,7 +137,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
   public void clear() {
     this.query = null;
     this.filter = null;
-    this.sort = null;
   }
 
   public byte[] getQuery() {
@@ -221,40 +207,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
     }
   }
 
-  public byte[] getSort() {
-    setSort(org.apache.thrift.TBaseHelper.rightSize(sort));
-    return sort == null ? null : sort.array();
-  }
-
-  public ByteBuffer bufferForSort() {
-    return sort;
-  }
-
-  public ExpertQuery setSort(byte[] sort) {
-    setSort(sort == null ? (ByteBuffer)null : ByteBuffer.wrap(sort));
-    return this;
-  }
-
-  public ExpertQuery setSort(ByteBuffer sort) {
-    this.sort = sort;
-    return this;
-  }
-
-  public void unsetSort() {
-    this.sort = null;
-  }
-
-  /** Returns true if field sort is set (has been assigned a value) and false otherwise */
-  public boolean isSetSort() {
-    return this.sort != null;
-  }
-
-  public void setSortIsSet(boolean value) {
-    if (!value) {
-      this.sort = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case QUERY:
@@ -273,14 +225,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
       }
       break;
 
-    case SORT:
-      if (value == null) {
-        unsetSort();
-      } else {
-        setSort((ByteBuffer)value);
-      }
-      break;
-
     }
   }
 
@@ -291,9 +235,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
 
     case FILTER:
       return getFilter();
-
-    case SORT:
-      return getSort();
 
     }
     throw new IllegalStateException();
@@ -310,8 +251,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
       return isSetQuery();
     case FILTER:
       return isSetFilter();
-    case SORT:
-      return isSetSort();
     }
     throw new IllegalStateException();
   }
@@ -344,15 +283,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
       if (!(this_present_filter && that_present_filter))
         return false;
       if (!this.filter.equals(that.filter))
-        return false;
-    }
-
-    boolean this_present_sort = true && this.isSetSort();
-    boolean that_present_sort = true && that.isSetSort();
-    if (this_present_sort || that_present_sort) {
-      if (!(this_present_sort && that_present_sort))
-        return false;
-      if (!this.sort.equals(that.sort))
         return false;
     }
 
@@ -392,16 +322,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
         return lastComparison;
       }
     }
-    lastComparison = Boolean.valueOf(isSetSort()).compareTo(typedOther.isSetSort());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetSort()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.sort, typedOther.sort);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
     return 0;
   }
 
@@ -433,13 +353,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
-        case 3: // SORT
-          if (field.type == org.apache.thrift.protocol.TType.STRING) {
-            this.sort = iprot.readBinary();
-          } else { 
-            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-          }
-          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -465,11 +378,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
       oprot.writeBinary(this.filter);
       oprot.writeFieldEnd();
     }
-    if (this.sort != null) {
-      oprot.writeFieldBegin(SORT_FIELD_DESC);
-      oprot.writeBinary(this.sort);
-      oprot.writeFieldEnd();
-    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -492,14 +400,6 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
       sb.append("null");
     } else {
       org.apache.thrift.TBaseHelper.toString(this.filter, sb);
-    }
-    first = false;
-    if (!first) sb.append(", ");
-    sb.append("sort:");
-    if (this.sort == null) {
-      sb.append("null");
-    } else {
-      org.apache.thrift.TBaseHelper.toString(this.sort, sb);
     }
     first = false;
     sb.append(")");

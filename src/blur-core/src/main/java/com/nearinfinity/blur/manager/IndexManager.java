@@ -22,7 +22,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurUtil.readFilter;
 import static com.nearinfinity.blur.utils.BlurUtil.readQuery;
-import static com.nearinfinity.blur.utils.BlurUtil.readSort;
 import static com.nearinfinity.blur.utils.RowDocumentUtil.getColumns;
 import static com.nearinfinity.blur.utils.RowDocumentUtil.getRow;
 
@@ -57,7 +56,6 @@ import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
-import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -207,8 +205,7 @@ public class IndexManager {
             TopDocs topDocs = searcher.search(query, 1);
             if (topDocs.totalHits > 1) {
                 if (selector.recordOnly) {
-                    LOG.warn("Rowid [" + rowId + "], recordId [" + recordId +
-                    		"] has more than one prime doc that is not deleted.");
+                    LOG.warn("Rowid [" + rowId + "], recordId [" + recordId + "] has more than one prime doc that is not deleted.");
                 } else {
                     LOG.warn("Rowid [" + rowId + "] has more than one prime doc that is not deleted.");
                 }
@@ -229,12 +226,15 @@ public class IndexManager {
         String rowId = selector.rowId;
         String recordId = selector.recordId;
         boolean recordOnly = selector.recordOnly;
+        
+        LOG.warn("Rewrite selector vaildation.");
+        
         if (locationId != null) {
             if (recordId != null && rowId != null) {
                 throw new BlurException("Invalid selector locationId [" + locationId +
                 		"] and recordId [" + recordId +
                 		"] and rowId [" + rowId +
-                		"] are set, if using locationId rowId and recordId are not needed.",null);
+                		"] are set, if using locationId, then rowId and recordId are not needed.",null);
             } else if (recordId != null) {
                 throw new BlurException("Invalid selector locationId [" + locationId +
                         "] and recordId [" + recordId +
@@ -297,20 +297,15 @@ public class IndexManager {
             } else {
                 Query query = getQuery(blurQuery.expertQuery);
                 Filter filter = getFilter(blurQuery.expertQuery);
-                Sort sort = getSort(blurQuery.expertQuery);
-                if (sort == null) {
-                    Query userQuery;
-                    if (filter != null) {
-                        userQuery = new FilteredQuery(query, filter);
-                    } else {
-                        userQuery = query;
-                    }
-                    Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
-                    call = new SimpleQueryParallelCall(table, status, _indexServer, 
-                            facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
+                Query userQuery;
+                if (filter != null) {
+                    userQuery = new FilteredQuery(query, filter);
                 } else {
-                    throw new RuntimeException("sort not implemented");
+                    userQuery = query;
                 }
+                Query facetedQuery = getFacetedQuery(blurQuery,userQuery,facetedCounts, analyzer);
+                call = new SimpleQueryParallelCall(table, status, _indexServer, 
+                        facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
             }
             MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
             return ForkJoin.execute(_executor, blurIndexes.entrySet(), call).merge(merger);
@@ -318,10 +313,6 @@ public class IndexManager {
             status.deattachThread();
             _statusManager.removeStatus(status);
         }
-    }
-
-    private Sort getSort(ExpertQuery expertQuery) throws BException {
-        return readSort(expertQuery.getSort());
     }
 
     private Filter getFilter(ExpertQuery expertQuery) throws BException {

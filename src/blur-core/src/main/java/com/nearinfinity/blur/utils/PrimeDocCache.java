@@ -25,22 +25,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.util.OpenBitSet;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.utils.bitset.BlurBitSet;
 
 public class PrimeDocCache {
     
     private static final Log LOG = LogFactory.getLog(PrimeDocCache.class);
 
-    public static final BlurBitSet EMPTY_BIT_SET = new BlurBitSet();
+    public static final OpenBitSet EMPTY_BIT_SET = new OpenBitSet();
     private static final Term PRIME_DOC_TERM = new Term(PRIME_DOC,PRIME_DOC_VALUE);
     
-    private static Map<String,Map<String,Map<String,BlurBitSet>>> bitSets = new ConcurrentHashMap<String, Map<String,Map<String,BlurBitSet>>>();
+    private static Map<String,Map<String,Map<String,OpenBitSet>>> bitSets = new ConcurrentHashMap<String, Map<String,Map<String,OpenBitSet>>>();
 
     public interface IndexReaderCache {
-        BlurBitSet getPrimeDocBitSet(SegmentReader reader);
+        OpenBitSet getPrimeDocBitSet(SegmentReader reader);
     }
     
     public interface ShardCache {
@@ -62,7 +62,7 @@ public class PrimeDocCache {
                         checkShard(table, shard);
                         return new IndexReaderCache() {
                             @Override
-                            public BlurBitSet getPrimeDocBitSet(SegmentReader reader) {
+                            public OpenBitSet getPrimeDocBitSet(SegmentReader reader) {
                                 return getBlurBitSet(table,shard,reader);
                             }
                         };
@@ -72,23 +72,23 @@ public class PrimeDocCache {
         };
     }
     
-    private static BlurBitSet getBlurBitSet(String table, String shard, SegmentReader reader) {
-        Map<String, Map<String, BlurBitSet>> shardMap = bitSets.get(table);
+    private static OpenBitSet getBlurBitSet(String table, String shard, SegmentReader reader) {
+        Map<String, Map<String, OpenBitSet>> shardMap = bitSets.get(table);
         if (shardMap == null) {
             throw new RuntimeException("While table is enabled, this shardMap should never be null.");
         }
-        Map<String, BlurBitSet> segmentMap = shardMap.get(shard);
+        Map<String, OpenBitSet> segmentMap = shardMap.get(shard);
         String segmentName = reader.getSegmentName();
-        BlurBitSet blurBitSet = segmentMap.get(segmentName);
+        OpenBitSet blurBitSet = segmentMap.get(segmentName);
         if (blurBitSet != null) {
             return blurBitSet;
         }
         return createBlurBitSet(reader,segmentMap);
     }
     
-    private synchronized static BlurBitSet createBlurBitSet(SegmentReader reader, Map<String, BlurBitSet> segmentMap) {
+    private synchronized static OpenBitSet createBlurBitSet(SegmentReader reader, Map<String, OpenBitSet> segmentMap) {
         try {
-            BlurBitSet bitSet = new BlurBitSet(reader.maxDoc());
+            OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
             TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
             while (termDocs.next()) {
                 bitSet.set(termDocs.doc());
@@ -102,15 +102,15 @@ public class PrimeDocCache {
     }
 
     private static void checkShard(String table, String shard) {
-        Map<String, Map<String, BlurBitSet>> shardMap = bitSets.get(table);
+        Map<String, Map<String, OpenBitSet>> shardMap = bitSets.get(table);
         if (!shardMap.containsKey(shard)) {
             addShard(shard, shardMap);
         }
     }
 
-    private static synchronized void addShard(String shard, Map<String, Map<String, BlurBitSet>> shardMap) {
+    private static synchronized void addShard(String shard, Map<String, Map<String, OpenBitSet>> shardMap) {
         if (!shardMap.containsKey(shard)) {
-            shardMap.put(shard, new ConcurrentHashMap<String, BlurBitSet>());
+            shardMap.put(shard, new ConcurrentHashMap<String, OpenBitSet>());
         }
     }
     
@@ -122,7 +122,7 @@ public class PrimeDocCache {
 
     private synchronized static void addTable(String table) {
         if (!bitSets.containsKey(table)) {
-            bitSets.put(table, new ConcurrentHashMap<String, Map<String,BlurBitSet>>());
+            bitSets.put(table, new ConcurrentHashMap<String, Map<String,OpenBitSet>>());
         }
     }
     

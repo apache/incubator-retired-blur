@@ -19,6 +19,7 @@ package com.nearinfinity.blur.thrift;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +33,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nearinfinity.blur.BlurConfiguration;
+import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.thrift.client.BlurClient;
@@ -61,14 +64,16 @@ public class BlurControllerServerTest {
     private BlurControllerServer server;
     
     @Before
-    public void setup() {
+    public void setup() throws IOException {
         addShardServer("shard-00000000");
         addShardServer("shard-00000001");
         addShardServer("shard-00000002");
+        BlurQueryChecker queryChecker = new BlurQueryChecker(new BlurConfiguration());
         server = new BlurControllerServer();
         server.setClient(getClient());
         server.setClusterStatus(getClusterStatus());
         server.setDistributedManager(getDistributedManager());
+        server.setQueryChecker(queryChecker);
         server.init();
     }
     

@@ -303,7 +303,7 @@ sub write {
 
 package Blur::Row;
 use base qw(Class::Accessor);
-Blur::Row->mk_accessors( qw( id records ) );
+Blur::Row->mk_accessors( qw( id records recordCount ) );
 
 sub new {
   my $classname = shift;
@@ -311,12 +311,16 @@ sub new {
   my $vals      = shift || {};
   $self->{id} = undef;
   $self->{records} = undef;
+  $self->{recordCount} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{id}) {
       $self->{id} = $vals->{id};
     }
     if (defined $vals->{records}) {
       $self->{records} = $vals->{records};
+    }
+    if (defined $vals->{recordCount}) {
+      $self->{recordCount} = $vals->{recordCount};
     }
   }
   return bless ($self, $classname);
@@ -366,6 +370,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^3$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{recordCount});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -395,6 +405,11 @@ sub write {
       }
       $xfer += $output->writeListEnd();
     }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{recordCount}) {
+    $xfer += $output->writeFieldBegin('recordCount', TType::I32, 3);
+    $xfer += $output->writeI32($self->{recordCount});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();
@@ -1020,7 +1035,7 @@ sub write {
 
 package Blur::ExpertQuery;
 use base qw(Class::Accessor);
-Blur::ExpertQuery->mk_accessors( qw( query filter sort ) );
+Blur::ExpertQuery->mk_accessors( qw( query filter ) );
 
 sub new {
   my $classname = shift;
@@ -1028,16 +1043,12 @@ sub new {
   my $vals      = shift || {};
   $self->{query} = undef;
   $self->{filter} = undef;
-  $self->{sort} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{query}) {
       $self->{query} = $vals->{query};
     }
     if (defined $vals->{filter}) {
       $self->{filter} = $vals->{filter};
-    }
-    if (defined $vals->{sort}) {
-      $self->{sort} = $vals->{sort};
     }
   }
   return bless ($self, $classname);
@@ -1074,12 +1085,6 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
-      /^3$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{sort});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -1100,11 +1105,6 @@ sub write {
   if (defined $self->{filter}) {
     $xfer += $output->writeFieldBegin('filter', TType::STRING, 2);
     $xfer += $output->writeString($self->{filter});
-    $xfer += $output->writeFieldEnd();
-  }
-  if (defined $self->{sort}) {
-    $xfer += $output->writeFieldBegin('sort', TType::STRING, 3);
-    $xfer += $output->writeString($self->{sort});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

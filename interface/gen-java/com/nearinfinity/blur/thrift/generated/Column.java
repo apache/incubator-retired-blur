@@ -20,18 +20,33 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Column is the lowest storage element in Blur, it stores a single name and value pair.
+ */
 public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Column");
 
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("value", org.apache.thrift.protocol.TType.STRING, (short)2);
 
+  /**
+   * The name of the column.
+   */
   public String name; // required
+  /**
+   * The value to be indexed and stored.
+   */
   public String value; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The name of the column.
+     */
     NAME((short)1, "name"),
+    /**
+     * The value to be indexed and stored.
+     */
     VALUE((short)2, "value");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -137,10 +152,16 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     this.value = null;
   }
 
+  /**
+   * The name of the column.
+   */
   public String getName() {
     return this.name;
   }
 
+  /**
+   * The name of the column.
+   */
   public Column setName(String name) {
     this.name = name;
     return this;
@@ -161,10 +182,16 @@ public class Column implements org.apache.thrift.TBase<Column, Column._Fields>, 
     }
   }
 
+  /**
+   * The value to be indexed and stored.
+   */
   public String getValue() {
     return this.value;
   }
 
+  /**
+   * The value to be indexed and stored.
+   */
   public Column setValue(String value) {
     this.value = value;
     return this;

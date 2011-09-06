@@ -28,6 +28,7 @@ import org.apache.thrift.TException;
 import com.nearinfinity.blur.concurrent.ExecutionContext;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
@@ -57,6 +58,7 @@ public class BlurShardServer extends ExecutionContextIface {
     private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);
     private int _maxQueryCacheElements = 128;
     private QueryCache _queryCache;
+    private BlurQueryChecker _queryChecker;
     
     public void init() {
         super.init();
@@ -81,6 +83,7 @@ public class BlurShardServer extends ExecutionContextIface {
     @Override
     public BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException,
             TException {
+        _queryChecker.checkQuery(blurQuery);
         long start = context.startTime();
         try {
             checkTableStatus(context, table);
@@ -393,5 +396,9 @@ public class BlurShardServer extends ExecutionContextIface {
 
     public void setMaxQueryCacheElements(int maxQueryCacheElements) {
         _maxQueryCacheElements = maxQueryCacheElements;
+    }
+
+    public void setQueryChecker(BlurQueryChecker queryChecker) {
+        _queryChecker = queryChecker;
     }
 }

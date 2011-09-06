@@ -87,13 +87,16 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    # Column is the lowest storage element in Blur, it stores a single name and value pair.
     class Column
       include ::Thrift::Struct, ::Thrift::Struct_Union
       NAME = 1
       VALUE = 2
 
       FIELDS = {
+        # The name of the column.
         NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+        # The value to be indexed and stored.
         VALUE => {:type => ::Thrift::Types::STRING, :name => 'value'}
       }
 
@@ -105,6 +108,7 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    # Records contain a list of columns, multiple columns with the same name are allowed.
     class Record
       include ::Thrift::Struct, ::Thrift::Struct_Union
       RECORDID = 1
@@ -112,8 +116,11 @@ module Blur
       COLUMNS = 3
 
       FIELDS = {
+        # Record id uniquely identifies a record within a single row.
         RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
+        # The family in which this record resides.
         FAMILY => {:type => ::Thrift::Types::STRING, :name => 'family'},
+        # A list of columns, multiple columns with the same name are allowed.
         COLUMNS => {:type => ::Thrift::Types::LIST, :name => 'columns', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Column}}
       }
 
@@ -125,14 +132,22 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    # Rows contain a list of records.
     class Row
       include ::Thrift::Struct, ::Thrift::Struct_Union
       ID = 1
       RECORDS = 2
+      RECORDCOUNT = 3
 
       FIELDS = {
+        # The row id.
         ID => {:type => ::Thrift::Types::STRING, :name => 'id'},
-        RECORDS => {:type => ::Thrift::Types::LIST, :name => 'records', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Record}}
+        # The list records within the row.  If paging is used this list will only
+        # reflect the paged records from the selector.
+        RECORDS => {:type => ::Thrift::Types::LIST, :name => 'records', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Record}},
+        # The total record count for the row.  If paging is used in a selector to page
+        # through records of a row, this count will reflect the entire row.
+        RECORDCOUNT => {:type => ::Thrift::Types::I32, :name => 'recordCount'}
       }
 
       def struct_fields; FIELDS; end
@@ -260,12 +275,10 @@ module Blur
       include ::Thrift::Struct, ::Thrift::Struct_Union
       QUERY = 1
       FILTER = 2
-      SORT = 3
 
       FIELDS = {
         QUERY => {:type => ::Thrift::Types::STRING, :name => 'query', :binary => true},
-        FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter', :binary => true},
-        SORT => {:type => ::Thrift::Types::STRING, :name => 'sort', :binary => true}
+        FILTER => {:type => ::Thrift::Types::STRING, :name => 'filter', :binary => true}
       }
 
       def struct_fields; FIELDS; end

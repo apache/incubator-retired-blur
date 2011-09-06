@@ -39,6 +39,7 @@ import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
+import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
@@ -92,6 +93,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);
     private int _maxQueryCacheElements = 128;
     private QueryCache _queryCache;
+    private BlurQueryChecker _queryChecker;
 
     public void init() {
         _queryCache = new QueryCache("controller-cache",_maxQueryCacheElements,_maxTimeToLive);
@@ -117,6 +119,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
     @Override
     public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
+        _queryChecker.checkQuery(blurQuery);
         try {
             final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
 
@@ -554,5 +557,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     public void setMaxQueryCacheElements(int maxQueryCacheElements) {
         _maxQueryCacheElements = maxQueryCacheElements;
     }
-
+    
+    public void setQueryChecker(BlurQueryChecker queryChecker) {
+        _queryChecker = queryChecker;
+    }
 }

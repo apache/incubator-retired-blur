@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Records contain a list of columns, multiple columns with the same name are allowed.
+ */
 public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Record");
 
@@ -27,14 +30,32 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
   private static final org.apache.thrift.protocol.TField FAMILY_FIELD_DESC = new org.apache.thrift.protocol.TField("family", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField COLUMNS_FIELD_DESC = new org.apache.thrift.protocol.TField("columns", org.apache.thrift.protocol.TType.LIST, (short)3);
 
+  /**
+   * Record id uniquely identifies a record within a single row.
+   */
   public String recordId; // required
+  /**
+   * The family in which this record resides.
+   */
   public String family; // required
+  /**
+   * A list of columns, multiple columns with the same name are allowed.
+   */
   public List<Column> columns; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * Record id uniquely identifies a record within a single row.
+     */
     RECORD_ID((short)1, "recordId"),
+    /**
+     * The family in which this record resides.
+     */
     FAMILY((short)2, "family"),
+    /**
+     * A list of columns, multiple columns with the same name are allowed.
+     */
     COLUMNS((short)3, "columns");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -155,10 +176,16 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     this.columns = null;
   }
 
+  /**
+   * Record id uniquely identifies a record within a single row.
+   */
   public String getRecordId() {
     return this.recordId;
   }
 
+  /**
+   * Record id uniquely identifies a record within a single row.
+   */
   public Record setRecordId(String recordId) {
     this.recordId = recordId;
     return this;
@@ -179,10 +206,16 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     }
   }
 
+  /**
+   * The family in which this record resides.
+   */
   public String getFamily() {
     return this.family;
   }
 
+  /**
+   * The family in which this record resides.
+   */
   public Record setFamily(String family) {
     this.family = family;
     return this;
@@ -218,10 +251,16 @@ public class Record implements org.apache.thrift.TBase<Record, Record._Fields>, 
     this.columns.add(elem);
   }
 
+  /**
+   * A list of columns, multiple columns with the same name are allowed.
+   */
   public List<Column> getColumns() {
     return this.columns;
   }
 
+  /**
+   * A list of columns, multiple columns with the same name are allowed.
+   */
   public Record setColumns(List<Column> columns) {
     this.columns = columns;
     return this;

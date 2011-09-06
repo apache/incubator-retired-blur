@@ -2,7 +2,6 @@ package com.nearinfinity.agent.zookeeper.collectors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
@@ -34,7 +33,7 @@ public class ShardCollector {
 	
 	private List<String> getShards() {
 		try {
-			return zk.getChildren("/blur/clusters/" + clusterName + "/online/shard-nodes", false);
+			return zk.getChildren("/blur/clusters/" + clusterName + "/online/shard-nodes", true);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -45,19 +44,22 @@ public class ShardCollector {
 	
 	private void markOfflineShards(List<String> shards) {
 		if (shards.isEmpty()) {
-			jdbc.update("update shards set status = 0 where cluster_id = ?", new Object[]{clusterId});
+			jdbc.update("update shards set status = 0 where cluster_id = ?", clusterId);
 		} else {
-			jdbc.update("update shards set status = 0 where node_name not in ('" + StringUtils.join(shards, "','") + "') and cluster_id=?", new Object[]{clusterId});
+			jdbc.update("update shards set status = 0 where node_name not in ('" + StringUtils.join(shards, "','") + "') and cluster_id=?", clusterId);
 		}
 	}
 	
 	private void updateOnlineShards(List<String> shards) {
 		for (String shard : shards) {
-			List<Map<String, Object>> instances = jdbc.queryForList("select id from shards where node_name = ?", new Object[]{shard});
-			if (instances.isEmpty()) {
-				jdbc.update("insert into shards (node_name, node_location, status, cluster_id, blur_version) values (?, ?, ?, ?, ?)", new Object[]{shard, "placeholder", 2, clusterId, "1.0"});
-			} else {
-				jdbc.update("update shards set status=2, blur_version=? where node_name=? and cluster_id=?", new Object[]{"1.0", shard, clusterId});
+			String uri = "placeholder";
+			int status = 2;
+			String blurVersion = "1.0";			
+			
+			int updatedCount = jdbc.update("update shards set node_location=?, status=?, blur_version=? where node_name=? and cluster_id=?", uri, status, blurVersion, shard, clusterId);
+			
+			if (updatedCount == 0) {
+				jdbc.update("insert into shards (node_name, node_location, status, cluster_id, blur_version) values (?, ?, ?, ?, ?)", shard, uri, status, clusterId, blurVersion);				
 			}
 		}
 	}

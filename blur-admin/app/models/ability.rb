@@ -50,6 +50,7 @@ class Ability
       if user.has_role? :editor
         can [:update, :destroy], :blur_tables
         can :update, :blur_queries
+        can [:destroy_shard, :destroy_controller], :zookeepers
       end
 
       if user.has_role? :auditor

@@ -59,19 +59,6 @@ $(document).ready ->
         else
           status_shards.find('.shards-online > .word').html('<div>Shards Online</div>')
 
-        if this.shard_disabled_node != "0"
-          status_shards.find('.shards-disabled').removeClass('grey_box')
-          status_shards.find('.shards-disabled').addClass('yellow_box ')
-          status_shards.find('.shards-disabled > .number').html('<div>' + this.shard_disabled_node + '</div>')
-        else
-          status_shards.find('.shards-disabled').removeClass('yellow_box')
-          status_shards.find('.shards-disabled').addClass('grey_box')
-          status_shards.find('.shards-disabled > .number').html('<div>0</div>')
-        if this.shard_disabled_node == "1"
-          status_shards.find('.shards-disabled > .word').html('<div>Shard Disabled</div>')
-        else
-          status_shards.find('.shards-disabled > .word').html('<div>Shards Disabled</div>')
-
         if this.shard_offline_node != "0"
           status_shards.find('.shards-offline').removeClass('grey_box')
           status_shards.find('.shards-offline').addClass('ui-state-error')
@@ -115,19 +102,6 @@ $(document).ready ->
           status_controllers.find('.controllers-online > .word').html('<div>Controller Online</div>')
         else
           status_controllers.find('.controllers-online > .word').html('<div>Controllers Online</div>')
-
-        if this.controller_disabled_node != "0"
-          status_controllers.find('.controllers-disabled').removeClass('grey_box')
-          status_controllers.find('.controllers-disabled').addClass('yellow_box')
-          status_controllers.find('.controllers-disabled > .number').html('<div>' + this.controller_disabled_node + '</div>')
-        else
-          status_controllers.find('.controllers-disabled').removeClass('yellow_box')
-          status_controllers.find('.controllers-disabled').addClass('grey_box')
-          status_controllers.find('.controllers-disabled > .number').html('<div>0</div>')
-        if this.controller_disabled_node == "1"
-          status_controllers.find('.controllers-disabled > .word').html('<div>Controller Disabled</div>')
-        else
-          status_controllers.find('.controllers-disabled > .word').html('<div>Controllers Disabled</div>')
 
         if this.controller_offline_node != "0"
           status_controllers.find('.controllers-offline').removeClass('grey_box')

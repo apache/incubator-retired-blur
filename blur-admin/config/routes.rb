@@ -12,6 +12,8 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/make_current' => 'zookeepers#make_current', :via => :put, :as => :make_current_zookeeper
   match 'zookeepers/dashboard' => 'zookeepers#dashboard', :via => :get, :as => :dashboard
   match 'zookeepers/:id' => 'zookeepers#show', :via => :get
+  match 'zookeepers/:id/controller/:controller_id' => 'zookeepers#destroy_controller', :via => :delete, :as => :destroy_controller
+  match 'zookeepers/:id/shard/:shard_id' => 'zookeepers#destroy_shard', :via => :delete, :as => :destroy_shard
 
   resources :blur_tables do
     get 'hosts', :on => :member

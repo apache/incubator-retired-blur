@@ -60,11 +60,14 @@ class HdfsController < ApplicationController
       search_string = params[:results]['search_string']
       params[:results].each do |name, connection|
         if name != 'search_string'
-          index = hdfs_connections.keys.index{ |conn| conn.id.to_s == name }
+          index = hdfs_connections.keys.index{ |conn| conn.id.to_s == connection }
           if index.nil?
             hdfs_model = Hdfs.find connection
             hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
             hdfs_connections[hdfs_model] = hdfs
+          else
+            hdfs_model = hdfs_connections.keys[index]
+            hdfs = hdfs_connections[hdfs_model]
           end
           file_names_hash[name] = hdfs.stat name
           connections[name] = connection

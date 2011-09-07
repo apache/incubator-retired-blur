@@ -4,8 +4,7 @@ $(document).ready ->
     $('.hdfs-node').contextMenu
       menu: 'hdfs-context-menu',
       (action, el, pos) ->
-        alert(action)
-        alert(el)
+        perform_action action, el
     $('.file_layout').jstree
       plugins: ["themes", "html_data", "sort", "ui", "search" ],
       themes:
@@ -19,11 +18,10 @@ $(document).ready ->
         name.preventDefault()
         search_file_tree()
     $('.file_layout').bind "search.jstree", (e, data) ->
-      #$('#data_container_display').html "<div>Found " + data.rslt.nodes.length + " files that match '" + data.rslt.str + "'.</div>"
       array = {}
-      array['*search_string*'] = data.rslt.str
+      array['search_string'] = data.rslt.str
       $.each data.rslt.nodes, -> 
-        array[$('#' + this.id).attr('name')] = $('#' + this.id).attr 'connection'
+        array[$('li#' + this.id).attr('name')] = $('a#' + this.id).attr 'connection'
       search_results array
       back_history.push array
       $('#back_button').button 'enable'
@@ -47,28 +45,44 @@ $(document).ready ->
       change_view()
       $('#search_string').val array['*search_string*']
       $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
-
-  # Methods to call on page load
-  $(document.body).append(tree_context_menu())
-  setup_file_tree()
-  $('#view_options').buttonset()
-  $.each $("#toolbar button,#toolbar input[type='submit']"), -> $('#toolbar #' + this.id).button()
-  back_history = []; forward_history = []
-
+      
+  delete_location = (location) ->
+    'Fix me'
+    
+  move_location = (location) ->
+    'Fix me'
+    
+  destroy_history_stack = () ->
+    'Fix me'
+  
+  perform_action = (action, el) ->
+    switch action
+      when "delete"
+        #destroy the stack
+        alert "This was deleted"
+      when "cut"
+        #destroy the stack
+        alert "This was cut"
+      when "copy"
+        #destroy the stack
+        alert "This was copied"
+      when "paste"
+        #destroy the stack
+        alert "This was pasted"
+    paste_buffer.action = action
+    console.log paste_buffer.action
+    
   # Method to change file view
   change_view = () ->
     view = $('input:radio:checked').val()
     if view == 'list'
-      $('#file_tiles').hide()
-      $('#file_details').hide()
+      $('#file_tiles, #file_details').hide()
       $('#file_list').show()
     else if view == 'icon'
-      $('#file_list').hide()
-      $('#file_details').hide()
+      $('#file_list, #file_details').hide()
       $('#file_tiles').show()
     else if view == 'detail'
-      $('#file_list').hide()
-      $('#file_tiles').hide()
+      $('#file_list, #file_tiles').hide()
       $('#file_details').show()
 
   # Method to display information for new file
@@ -83,17 +97,16 @@ $(document).ready ->
         search_results id
       else
         file = $('#'+ id).attr('name')
-        connection = $('#'+ id).attr 'connection'
-        children = $('#'+ id + ' > ul').children().size()
-        $.post '/hdfs/files', { 'file': file, 'connection': connection, 'children': children }, (data) ->
+        connection = $('a#'+ id).attr 'connection'
+        $.post '/hdfs/files', { 'file': file, 'connection': connection}, (data) ->
           $('#data_container_display').html data
           change_view()
           $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
           $('#data_container_display .hdfs-node').contextMenu
             menu: 'hdfs-context-menu',
             (action, el, pos) ->
-              alert(action)
-              alert(el)
+              perform_action action, el
+
         $('#location_string').val $('#'+ id).attr 'name'
         $('#up_button').button 'enable'
         $('.file_layout').jstree "open_node", '#' + id
@@ -118,6 +131,23 @@ $(document).ready ->
     back_history.push id
     forward_history = []
     new_data()
+
+  # Method for file text submit
+  go_to_file = () ->
+    id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
+    if id != "" and $('#hdfs_files').find('#' + id).length > 0
+      to_new_file id
+    else
+      $('#data_container_display').html '<div>Not a valid file location</div>'
+
+  # Methods to call on page load
+  $(document.body).append(tree_context_menu())
+  setup_file_tree()
+  #set up the buttons
+  $('#view_options').buttonset()
+  $.each $("#toolbar button,#toolbar input[type='submit']"), -> $('#toolbar #' + this.id).button()
+  #variables to help with history, and the context menu buffer
+  back_history = []; forward_history = []; paste_buffer = [];
 
   # Listeners for back/forward buttons
   $('#back_button').live 'click', ->
@@ -152,11 +182,3 @@ $(document).ready ->
     if name.keyCode == 13 && !name.shiftKey   #check if it is enter
       name.preventDefault()
       go_to_file()
-
-  # Method for file text submit
-  go_to_file = () ->
-    id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
-    if id != "" and $('#hdfs_files').find('#' + id).length > 0
-      to_new_file id
-    else
-      $('#data_container_display').html '<div>Not a valid file location</div>'

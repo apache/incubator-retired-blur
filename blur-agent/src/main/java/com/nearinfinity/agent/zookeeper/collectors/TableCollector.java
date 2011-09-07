@@ -2,7 +2,6 @@ package com.nearinfinity.agent.zookeeper.collectors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.zookeeper.KeeperException;
@@ -34,7 +33,7 @@ public class TableCollector {
 	
 	private List<String> getTables() {
 		try {
-			return zk.getChildren("/blur/clusters/" + clusterName + "/tables", false);
+			return zk.getChildren("/blur/clusters/" + clusterName + "/tables", true);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
@@ -47,7 +46,7 @@ public class TableCollector {
 		if (tables.isEmpty()) {
 			jdbc.update("update blur_tables set status = 0 where cluster_id=?", clusterId);
 		} else {
-			jdbc.update("update blur_tables set status = 0 where cluster_id='" + clusterId + "' and table_name not in ('" + StringUtils.join(tables, "','") + "')");
+			jdbc.update("update blur_tables set status = 0 where cluster_id=? and table_name not in ('" + StringUtils.join(tables, "','") + "')", clusterId);
 		}
 	}
 	
@@ -57,19 +56,18 @@ public class TableCollector {
 			boolean enabled = false;
 			
 			try {
-				uri = new String(zk.getData("/blur/clusters/" + clusterName + "/tables/" + table + "/uri", false, null));
-				enabled = zk.getChildren("/blur/clusters/" + clusterName + "/tables/" + table, false).contains("enabled");
+				uri = new String(zk.getData("/blur/clusters/" + clusterName + "/tables/" + table + "/uri", true, null));
+				enabled = zk.getChildren("/blur/clusters/" + clusterName + "/tables/" + table, true).contains("enabled");
 			} catch (KeeperException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			
-			List<Map<String, Object>> instances = jdbc.queryForList("select id from blur_tables where table_name = ? and cluster_id=?", new Object[]{table, clusterId});
-			if (instances.isEmpty()) {
-				jdbc.update("insert into blur_tables (table_name, table_uri, status, cluster_id) values (?, ?, ?, ?)", new Object[]{table, uri, (enabled ? 2 : 1), clusterId});
-			} else {
-				jdbc.update("update blur_tables set status=? where table_name=? and cluster_id=?", new Object[]{(enabled ? 2 : 1), table, clusterId});
+			int updatedCount = jdbc.update("update blur_tables set table_uri=?, status=? where table_name=? and cluster_id=?", uri, (enabled ? 2 : 1), table, clusterId);
+			
+			if (updatedCount == 0) {
+				jdbc.update("insert into blur_tables (table_name, table_uri, status, cluster_id) values (?, ?, ?, ?)", table, uri, (enabled ? 2 : 1), clusterId);				
 			}
 		}
 	}

@@ -45,12 +45,10 @@
                       - if controller.status == 2
                         .green_box.ui-corner-all
                           Online
-                      - elsif controller.status == 1
-                        .yellow_box.ui-corner-all
-                          Disabled
                       - else
                         .ui-state-error.ui-corner-all
                           Offline
+                        = link_to 'Forget Offline Node', destroy_controller_path(@zookeeper, controller), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
             - else
               %h3 Controllers
               %p Not Available
@@ -72,12 +70,10 @@
                     - if shard.status == 2
                       .green_box.ui-corner-all
                         Online
-                    - elsif shard.status == 1
-                      .yellow_box.ui-corner-all
-                        Disabled
                     - else
                       .ui-state-error.ui-corner-all
                         Offline
+                      = link_to 'Forget Offline Node', destroy_shard_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
             - else
               %h3 Shards
               %p Not Available

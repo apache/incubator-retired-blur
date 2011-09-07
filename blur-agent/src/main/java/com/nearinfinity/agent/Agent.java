@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Timer;
 
 import org.apache.commons.cli.ParseException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -77,7 +78,7 @@ public class Agent {
 			System.exit(1);
 		}
 		
-		JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+		final JdbcTemplate jdbc = new JdbcTemplate(dataSource);
 		
 		//Initialize ZooKeeper watchers
 		List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
@@ -95,46 +96,73 @@ public class Agent {
 			HDFSCollector.initializeHdfs(hdfsEntry.getKey(), hdfsEntry.getValue().get("thrift"), jdbc);
 		}
 		
-		//Start polling
-		while(true) {
-			//Pull HDFS information
-			if (activeCollectors.contains("hdfs")) {
-				for (Map<String, String> instance : hdfsInstances.values()) {
-					try {
-						//HDFSCollector.startCollecting(instance.get("default"), jdbc);
-					} catch (Exception e) {
-						System.out.println("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
-					}
+		//Pull HDFS information
+		if (activeCollectors.contains("hdfs")) {
+			for (Map<String, String> instance : hdfsInstances.values()) {
+				try {
+					new Thread(new Runnable(){
+						@Override
+						public void run() {
+							while(true) {
+								//HDFSCollector.startCollecting(instance.get("default"), jdbc);
+								try {
+									Thread.sleep(1500);
+								} catch (InterruptedException e) {
+									break;
+								}
+							}
+						}
+					}).start();
+				} catch (Exception e) {
+					System.out.println("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
 				}
-			}
-			//Pull Query information
-			if (activeCollectors.contains("queries")) {
-				for (String uri : blurInstances.values()) {
-					try {
-						QueryCollector.startCollecting(uri, jdbc);
-					} catch (Exception e) {
-						System.out.println("Unable to collect Query status, will try again next pass: " + e.getMessage());
-					}
-				}
-			}
-			//Pull Table information
-			if (activeCollectors.contains("tables")) {
-				for (String uri : blurInstances.values()) {
-					try {
-						TableCollector.startCollecting(uri, jdbc);
-					} catch (Exception e) {
-						System.out.println("Unable to collect Table information, will try again next pass: " + e.getMessage());
-					}
-				}
-			}
-			
-			//Sleep
-			try {
-				Thread.sleep(1500);
-			} catch (InterruptedException e) {
-				break;
 			}
 		}
+		//Pull Query information
+		if (activeCollectors.contains("queries")) {
+			for (final String uri : blurInstances.values()) {
+				try {
+					new Thread(new Runnable(){
+						@Override
+						public void run() {
+							while(true) {
+								QueryCollector.startCollecting(uri, jdbc);
+								try {
+									Thread.sleep(1500);
+								} catch (InterruptedException e) {
+									break;
+								}
+							}
+						}
+					}).start();
+				} catch (Exception e) {
+					System.out.println("Unable to collect Query status, will try again next pass: " + e.getMessage());
+				}
+			}
+		}
+		//Pull Table information
+		if (activeCollectors.contains("tables")) {
+			for (final String uri : blurInstances.values()) {
+				try {
+					new Thread(new Runnable(){
+						@Override
+						public void run() {
+							while (true) {
+								TableCollector.startCollecting(uri, jdbc);
+								try {
+									Thread.sleep(1500);
+								} catch (InterruptedException e) {
+									break;
+								}
+							}
+						}
+					}).start();
+				} catch (Exception e) {
+					System.out.println("Unable to collect Table information, will try again next pass: " + e.getMessage());
+				}
+			}
+		}
+
 		
 		System.out.println("Exiting polling agent");
 	}

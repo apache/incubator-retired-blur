@@ -32,11 +32,11 @@ public class ClusterCollector {
 	
 	private void updateOnlineClusters(List<String> clusters) {
 		for (String cluster : clusters) {
-			List<Map<String, Object>> instances = jdbc.queryForList("select id from clusters where name = ?", new Object[]{cluster});
+			List<Map<String, Object>> instances = jdbc.queryForList("select id from clusters where name = ? and zookeeper_id=?", cluster, instanceId);
 			int clusterId;
 			if (instances.isEmpty()) {
-				jdbc.update("insert into clusters (name, zookeeper_id) values (?, ?)", new Object[]{cluster, instanceId});
-				clusterId = jdbc.queryForInt("select id from clusters where name = ?", new Object[]{cluster});
+				jdbc.update("insert into clusters (name, zookeeper_id) values (?, ?)", cluster, instanceId);
+				clusterId = jdbc.queryForInt("select id from clusters where name = ? and zookeeper_id=?", cluster, instanceId);
 			} else {
 				clusterId = (Integer) instances.get(0).get("ID");
 			}
@@ -48,7 +48,7 @@ public class ClusterCollector {
 	
 	private List<String> getClusters() {
 		try {
-			return zk.getChildren("/blur/clusters", false);
+			return zk.getChildren("/blur/clusters", true);
 		} catch (KeeperException e) {
 			e.printStackTrace();
 		} catch (InterruptedException e) {

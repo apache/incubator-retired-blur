@@ -1,8 +1,6 @@
 package com.nearinfinity.agent.zookeeper;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.zookeeper.Watcher;
@@ -32,26 +30,28 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	}
 	
 	private void initializeZkInstanceModel() {
-		List<Map<String, Object>> instances = jdbc.queryForList("select id from zookeepers where name = ?", new Object[]{name});
-		if (instances.isEmpty()) {
-			String blurConnection = props.getProperty("blur." + name + ".url");
-			String blurHost = blurConnection.split(":")[0]; 
-			String blurPort = blurConnection.split(":")[1]; 
-			jdbc.update("insert into zookeepers (name, url, host, port) values (?, ?, ?, ?)", new Object[]{name, url, blurHost, blurPort});
-			instanceId = jdbc.queryForInt("select id from zookeepers where name = ?", new Object[]{name});
-		} else {
-			instanceId = (Integer) instances.get(0).get("ID");
+		String blurConnection = props.getProperty("blur." + name + ".url");
+		String blurHost = blurConnection.split(":")[0]; 
+		String blurPort = blurConnection.split(":")[1]; 
+		
+		int updatedCount = jdbc.update("update zookeepers set url=?, host=?, port=? where name=?", url, blurHost, blurPort, name);
+		
+		if (updatedCount == 0) {
+			jdbc.update("insert into zookeepers (name, url, host, port) values (?, ?, ?, ?)", name, url, blurHost, blurPort);
 		}
+		
+		instanceId = jdbc.queryForInt("select id from zookeepers where name = ?", new Object[]{name});
 	}
 
 	@Override
 	public void resetConnection() {
+		updateZookeeperStatus(false);
 		zk = null;
 	}
 
 	@Override
 	public void run() {	
-		boolean needsInitialPath = true;
+		boolean needsInitialPass = true;
 		while(true) {
 			if (zk == null) {
 				try {
@@ -72,11 +72,10 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 					return;
 				}
 			} else {
-				//TODO: Probably want to check what actually changed and just update that, but this will work for now
 				updateZookeeperStatus(true);
-				if (needsInitialPath) {
+				if (needsInitialPass) {
 					runInitialRegistration();
-//					needsInitialPath = false;
+					needsInitialPass = false;
 				}
 				try {
 					synchronized (watcher) {
@@ -110,7 +109,7 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	}
 	
 	private void runInitialRegistration() {
-		ControllerCollector.collect(this, jdbc, props, this);
+		ControllerCollector.collect(this, jdbc);
 		ClusterCollector.collect(this, jdbc);
 	}
 

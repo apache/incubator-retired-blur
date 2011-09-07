@@ -10,18 +10,16 @@ class ZookeepersController < ApplicationController
       z.id,
       v.controller_version,
       c.controller_offline_node,
-      c.controller_disabled_node,
       c.controller_total,
       v.shard_version,
       s.shard_offline_node,
-      s.shard_disabled_node,
       s.shard_total,
       q.long_running_queries
     from
       zookeepers z,
       (select z1.id, count(distinct c1.blur_version) as controller_version, count(distinct s1.blur_version) as shard_version from zookeepers z1 left join controllers c1 on (z1.id = c1.zookeeper_id), zookeepers z2 left join clusters c2 on (z2.id = c2.zookeeper_id) left join shards s1 on (c2.id = s1.cluster_id) where z1.id = z2.id group by z1.id) v,
-      (select z2.id, sum(if(c3.status = 0, 1, 0)) as controller_offline_node, sum(if(c3.status = 1, 1, 0)) as controller_disabled_node, count(c3.id) as controller_total from zookeepers z2 left join controllers c3 on (z2.id = c3.zookeeper_id) group by z2.id) c,
-      (select z3.id, sum(if(s2.status = 0, 1, 0)) as shard_offline_node, sum(if(s2.status = 1, 1, 0)) as shard_disabled_node, count(s2.id) as shard_total from zookeepers z3 left join clusters c4 on (z3.id = c4.zookeeper_id) left join shards s2 on (c4.id = s2.cluster_id) group by z3.id) s,
+      (select z2.id, sum(if(c3.status = 0, 1, 0)) as controller_offline_node, count(c3.id) as controller_total from zookeepers z2 left join controllers c3 on (z2.id = c3.zookeeper_id) group by z2.id) c,
+      (select z3.id, sum(if(s2.status = 0, 1, 0)) as shard_offline_node, count(s2.id) as shard_total from zookeepers z3 left join clusters c4 on (z3.id = c4.zookeeper_id) left join shards s2 on (c4.id = s2.cluster_id) group by z3.id) s,
       (select z4.id, sum(if(q1.state = 0 and q1.created_at < date_sub(utc_timestamp(), interval 1 minute), 1, 0)) as long_running_queries from zookeepers z4 left join clusters c5 on (z4.id = c5.zookeeper_id) left join blur_tables t1 on (c5.id = t1.cluster_id) left join blur_queries q1 on (t1.id = q1.blur_table_id) group by z4.id) q
     where
       z.id = v.id and
@@ -42,7 +40,7 @@ class ZookeepersController < ApplicationController
   end
 
   def show_current
-    @zookeeper = @current_zookeeper
+    @zookeeper = current_zookeeper
 
     @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
     @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'
@@ -66,5 +64,15 @@ class ZookeepersController < ApplicationController
     respond_to do |format|
       format.json { render :json => zookeeper_results }
     end
+  end
+  
+  def destroy_shard
+    Shard.destroy(params[:shard_id])
+    redirect_to :zookeeper
+  end
+  
+  def destroy_controller
+    Controller.destroy(params[:controller_id])
+    redirect_to :zookeeper
   end
 end

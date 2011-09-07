@@ -10,8 +10,8 @@ describe ZookeepersController do
     @zookeeper  = Factory.stub :zookeeper
 
     # ApplicationController.current_zookeeper
-    Zookeeper.stub(:find_by_id).and_return(nil)
-    Zookeeper.stub_chain(:order, :first).and_return @zookeeper
+    Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+    # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
     # ApplicationController.zookeepers
     Zookeeper.stub(:order).and_return [@zookeeper]
   end
@@ -55,7 +55,7 @@ describe ZookeepersController do
       end
       describe "with an invalid pre-existing current_zookeeper" do
         it "sets current_zookeeper to the first zookeeper, and resets the session" do
-          Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)
+          Zookeeper.should_receive(:find_by_id).with(1).and_return(@zookeeper)
           get :show_current, nil, :current_zookeeper_id => 1
           assigns(:current_zookeeper).should == @zookeeper
           session[:current_zookeeper_id].should == @zookeeper.id

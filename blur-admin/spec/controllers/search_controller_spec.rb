@@ -18,8 +18,8 @@ describe SearchController do
       @zookeeper  = Factory.stub :zookeeper
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
-      Zookeeper.stub_chain(:order, :first).and_return @zookeeper
+      Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+      # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:order).and_return [@zookeeper]
 
@@ -96,8 +96,8 @@ describe SearchController do
       @zookeeper  = Factory.stub :zookeeper
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
-      Zookeeper.stub_chain(:order, :first).and_return @zookeeper
+      Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+      # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
     end
 
     def create_blur_result(search)

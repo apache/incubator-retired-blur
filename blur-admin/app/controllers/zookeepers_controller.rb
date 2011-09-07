@@ -1,6 +1,6 @@
 class ZookeepersController < ApplicationController
 
-  before_filter :current_zookeeper, :only => [:show_current, :show]
+  before_filter :current_zookeeper, :only => [:show_current]
   before_filter :zookeepers, :only => [:show_current]
 
   QUERY = "
@@ -40,7 +40,7 @@ class ZookeepersController < ApplicationController
   end
 
   def show_current
-    @zookeeper = current_zookeeper
+    @zookeeper = @current_zookeeper
 
     @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
     @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'

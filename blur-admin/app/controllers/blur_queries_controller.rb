@@ -1,7 +1,6 @@
 class BlurQueriesController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:index, :refresh]
-  before_filter :zookeepers, :only => :index
 
   def index
     @filters = current_user.filter_preference.value

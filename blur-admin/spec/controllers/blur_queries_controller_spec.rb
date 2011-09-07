@@ -34,16 +34,16 @@ describe BlurQueriesController do
       BlurQuery.stub_chain(:joins, :where, :where, :includes, :order).and_return([@blur_query])
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
-      Zookeeper.stub_chain(:order, :first).and_return @zookeeper
+      Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+      # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
       # ApplicationController.zookeepers
       Zookeeper.stub(:order).and_return [@zookeeper]
 
     end
-    it "assigns the collection all zookeepers to @zookeepers" do
-      get :index
-      assigns(:zookeepers).should == [@zookeeper]
-    end
+    # it "assigns the collection all zookeepers to @zookeepers" do
+    #       get :index
+    #       assigns(:zookeepers).should == [@zookeeper]
+    #     end
 
     it "assigns the current zookeeper to @current_zookeeper" do
       get :index
@@ -99,7 +99,7 @@ describe BlurQueriesController do
       @blur_query.stub(:zookeeper).and_return(@zookeeper)
 
       # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(nil)
+      Zookeeper.stub(:find_by_id).and_return(@zookeeper)
       Zookeeper.stub_chain(:order, :first).and_return @zookeeper
 
     end

@@ -14,16 +14,24 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.manager.indexserver;
+package com.nearinfinity.blur.manager.clusterstatus;
 
 import java.util.List;
 
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+
 public abstract class ClusterStatus {
 
-    public abstract List<String> getOnlineShardServers();
+    public abstract List<String> getOnlineShardServers(String cluster);
 
-    public abstract List<String> controllerServerList();
+    public abstract List<String> getControllerServerList();
 
-    public abstract List<String> shardServerList();
+    public abstract List<String> getShardServerList(String cluster);
+    
+    public abstract List<String> getClusterServerList();
+
+    public abstract TableDescriptor getTableDescriptor(String table);
+
+    public abstract List<String> getTableList();
 
 }

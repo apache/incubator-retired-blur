@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
-import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
+import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
@@ -81,20 +82,38 @@ public class BlurControllerServerTest {
         return new ClusterStatus() {
 
             @Override
-            public List<String> controllerServerList() {
+            public List<String> getClusterServerList() {
+                return Arrays.asList("default");
+            }
+
+            @Override
+            public List<String> getControllerServerList() {
                 throw new RuntimeException("no impl");
             }
 
             @Override
-            public List<String> getOnlineShardServers() {
-                return shardServerList();
+            public List<String> getOnlineShardServers(String cluster) {
+                return getShardServerList(cluster);
             }
 
             @Override
-            public List<String> shardServerList() {
+            public List<String> getShardServerList(String cluster) {
                 List<String> nodes = new ArrayList<String>(shardServers.keySet());
                 Collections.sort(nodes);
                 return nodes;
+            }
+
+            @Override
+            public TableDescriptor getTableDescriptor(String table) {
+                TableDescriptor tableDescriptor = new TableDescriptor();
+                tableDescriptor.cluster = "default";
+                tableDescriptor.shardCount = 3;
+                return tableDescriptor;
+            }
+
+            @Override
+            public List<String> getTableList() {
+                return Arrays.asList(TABLE);
             }
             
         };

@@ -41,7 +41,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
-import com.nearinfinity.blur.manager.indexserver.ClusterStatus;
+import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
@@ -137,7 +137,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             Selector selector = blurQuery.getSelector();
             blurQuery.setSelector(null);
 
-            BlurResultIterable hitsIterable = scatterGather(new BlurCommand<BlurResultIterable>() {
+            BlurResultIterable hitsIterable = scatterGather(getCluster(table), new BlurCommand<BlurResultIterable>() {
                 @Override
                 public BlurResultIterable call(Client client) throws Exception {
                     return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
@@ -173,7 +173,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public void cancelQuery(final String table, final long uuid) throws BlurException, TException {
         try {
-            scatter(new BlurCommand<Void>() {
+            scatter(getCluster(table), new BlurCommand<Void>() {
                 @Override
                 public Void call(Client client) throws Exception {
                     client.cancelQuery(table, uuid);
@@ -189,7 +189,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public List<BlurQueryStatus> currentQueries(final String table) throws BlurException, TException {
         try {
-            return scatterGather(new BlurCommand<List<BlurQueryStatus>>() {
+            return scatterGather(getCluster(table), new BlurCommand<List<BlurQueryStatus>>() {
                 @Override
                 public List<BlurQueryStatus> call(Client client) throws Exception {
                     return client.currentQueries(table);
@@ -204,7 +204,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public TableStats getTableStats(final String table) throws BlurException, TException {
     	try {
-    		return scatterGather(new BlurCommand<TableStats>() {
+    		return scatterGather(getCluster(table), new BlurCommand<TableStats>() {
 
 				@Override
 				public TableStats call(Client client) throws Exception {
@@ -232,7 +232,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     public long recordFrequency(final String table, final String columnFamily, final String columnName,
             final String value) throws BlurException, TException {
         try {
-            return scatterGather(new BlurCommand<Long>() {
+            return scatterGather(getCluster(table), new BlurCommand<Long>() {
                 @Override
                 public Long call(Client client) throws Exception {
                     return client.recordFrequency(table, columnFamily, columnName, value);
@@ -258,7 +258,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public Schema schema(final String table) throws BlurException, TException {
         try {
-            return scatterGather(new BlurCommand<Schema>() {
+            return scatterGather(getCluster(table), new BlurCommand<Schema>() {
                 @Override
                 public Schema call(Client client) throws Exception {
                     return client.schema(table);
@@ -288,7 +288,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     public List<String> terms(final String table, final String columnFamily, final String columnName,
             final String startWith, final short size) throws BlurException, TException {
         try {
-            return scatterGather(new BlurCommand<List<String>>() {
+            return scatterGather(getCluster(table), new BlurCommand<List<String>>() {
                 @Override
                 public List<String> call(Client client) throws Exception {
                     return client.terms(table, columnFamily, columnName, startWith, size);
@@ -304,11 +304,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                 }
             });
         } catch (Exception e) {
-            LOG.error(
-                    "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
+            LOG.error("Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
                     e, table, columnFamily, columnName, startWith, size);
-            throw new BException(
-                    "Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
+            throw new BException("Unknown error while trying to terms table [{0}] columnFamily [{1}] columnName [{2}] startWith [{3}] size [{4}]",
                     e, table, columnFamily, columnName, startWith, size);
         }
     }
@@ -341,7 +339,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             Map<String, Map<String, String>> layout = new HashMap<String, Map<String, String>>();
             for (String t : tableList()) {
                 final String table = t;
-                layout.put(table, ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(),
+                layout.put(table, ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(getCluster(table)),
                         new ParallelCall<String, Map<String, String>>() {
                             @Override
                             public Map<String, String> call(final String hostnamePort) throws Exception {
@@ -370,8 +368,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
     }
 
-    private <R> R scatterGather(final BlurCommand<R> command, Merger<R> merger) throws Exception {
-        return ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(), new ParallelCall<String, R>() {
+    private <R> R scatterGather(String cluster, final BlurCommand<R> command, Merger<R> merger) throws Exception {
+        return ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(cluster), new ParallelCall<String, R>() {
             @SuppressWarnings("unchecked")
             @Override
             public R call(String hostnamePort) throws Exception {
@@ -380,8 +378,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }).merge(merger);
     }
 
-    private <R> void scatter(BlurCommand<R> command) throws Exception {
-        scatterGather(command, new Merger<R>() {
+    private <R> void scatter(String cluster, BlurCommand<R> command) throws Exception {
+        scatterGather(cluster, command, new Merger<R>() {
             @Override
             public R merge(BlurExecutorCompletionService<R> service) throws Exception {
                 while (service.getRemainingCount() > 0) {
@@ -391,45 +389,33 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             }
         });
     }
+    
+    private String getCluster(String table) throws BlurException, TException {
+        TableDescriptor describe = describe(table);
+        if (describe == null) {
+            throw new BlurException("Table [" + table + "] not found.",null);
+        }
+        return describe.cluster;
+    }
 
     @Override
     public TableDescriptor describe(final String table) throws BlurException, TException {
         try {
-            String hostname = getSingleOnlineShardServer();
-            return _client.execute(hostname, new BlurCommand<TableDescriptor>() {
-                @Override
-                public TableDescriptor call(Client client) throws Exception {
-                    return client.describe(table);
-                }
-            });
+            return _clusterStatus.getTableDescriptor(table);
         } catch (Exception e) {
-            LOG.error("Unknown error while trying to describe table [{0}]", e, table);
-            throw new BException("Unknown error while trying to describe table [{0}]", e, table);
+            LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
+            throw new BException("Unknown error while trying to describe a table [" + table + "].", e);
         }
     }
 
     @Override
     public List<String> tableList() throws BlurException, TException {
         try {
-            String hostname = getSingleOnlineShardServer();
-            return _client.execute(hostname, new BlurCommand<List<String>>() {
-                @Override
-                public List<String> call(Client client) throws Exception {
-                    return client.tableList();
-                }
-            });
+            return _clusterStatus.getTableList();
         } catch (Exception e) {
-            List<String> onlineShardServers = _clusterStatus.getOnlineShardServers();
-            LOG.error("Unknown error while trying to get table list.  Current online shard servers [{0}]", e,
-                    onlineShardServers);
-            throw new BException("Unknown error while trying to get table list.  Current online shard servers [{0}]",
-                    e, onlineShardServers);
+            LOG.error("Unknown error while trying to get a table list.", e);
+            throw new BException("Unknown error while trying to get a table list.", e);
         }
-    }
-
-    private String getSingleOnlineShardServer() throws BlurException, TException {
-        List<String> onlineShardServers = _clusterStatus.getOnlineShardServers();
-        return onlineShardServers.get(_random.nextInt(onlineShardServers.size()));
     }
 
     public static Schema merge(Schema result, Schema schema) {
@@ -450,7 +436,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     @Override
     public List<String> controllerServerList() throws BlurException, TException {
         try {
-            return _clusterStatus.controllerServerList();
+            return _clusterStatus.getControllerServerList();
         } catch (Exception e) {
             LOG.error("Unknown error while trying to get a controller list.", e);
             throw new BException("Unknown error while trying to get a controller list.", e);
@@ -461,7 +447,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     public List<String> shardServerList(String cluster) throws BlurException, TException {
         if (cluster.equals(BlurConstants.BLUR_CLUSTER)) {
             try {
-                return _clusterStatus.shardServerList();
+                return _clusterStatus.getShardServerList(cluster);
             } catch (Exception e) {
                 LOG.error("Unknown error while trying to get a shard list.", e);
                 throw new BException("Unknown error while trying to get a shard list.", e);

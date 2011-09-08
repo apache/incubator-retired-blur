@@ -40,8 +40,8 @@ import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.thrift.client.BlurClient;
@@ -76,9 +76,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
 
-        final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus();
-        clusterStatus.setDistributedManager(dzk);
-        clusterStatus.init();
+        final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 
         BlurClient client = new BlurClientRemote();
 

@@ -40,6 +40,9 @@ public class ZookeeperPathConstants {
     public static String getBlurBasePath() {
         return "/blur/clusters/" + BlurConstants.BLUR_CLUSTER;
     }
+    public static String getBlurClusterPath() {
+        return "/blur/clusters";
+    }
     public static String getBlurOnlineControllersPath() {
         return "/blur/online-controller-nodes";
     }

@@ -52,6 +52,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
 import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
@@ -100,6 +101,8 @@ public class ThriftBlurShardServer extends ThriftServer {
 
         ZookeeperDistributedManager dzk = new ZookeeperDistributedManager();
         dzk.setZooKeeper(zooKeeper);
+        
+        final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 
         final LocalFileCache localFileCache = new LocalFileCache();
         localFileCache.setPotentialFiles(localFileCaches.toArray(new File[localFileCaches.size()]));
@@ -150,6 +153,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         shardServer.setIndexServer(indexServer);
         shardServer.setIndexManager(indexManager);
         shardServer.setDistributedManager(dzk);
+        shardServer.setClusterStatus(clusterStatus);
         shardServer.setMaxQueryCacheElements(configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS,128));
         shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE,TimeUnit.MINUTES.toMillis(1)));
         shardServer.setQueryChecker(queryChecker);

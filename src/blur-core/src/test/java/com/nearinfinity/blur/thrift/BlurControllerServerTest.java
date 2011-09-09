@@ -82,7 +82,7 @@ public class BlurControllerServerTest {
         return new ClusterStatus() {
 
             @Override
-            public List<String> getClusterServerList() {
+            public List<String> getClusterList() {
                 return Arrays.asList("default");
             }
 

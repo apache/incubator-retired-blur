@@ -16,7 +16,6 @@
 
 package com.nearinfinity.blur.thrift;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,6 +31,7 @@ import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
+import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -44,7 +44,6 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.QueryCache;
 import com.nearinfinity.blur.utils.QueryCacheEntry;
@@ -59,6 +58,7 @@ public class BlurShardServer extends ExecutionContextIface {
     private int _maxQueryCacheElements = 128;
     private QueryCache _queryCache;
     private BlurQueryChecker _queryChecker;
+    private ClusterStatus _clusterStatus;
     
     public void init() {
         super.init();
@@ -290,22 +290,19 @@ public class BlurShardServer extends ExecutionContextIface {
 
     @Override
     public List<String> tableList(ExecutionContext context) throws BlurException, TException {
-        return _indexServer.getTableList();
+        try {
+            return _clusterStatus.getTableList();
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get a table list.", e);
+            throw new BException("Unknown error while trying to get a table list.", e);
+        }
     }
 
     @Override
     public TableDescriptor describe(ExecutionContext context, String table) throws BlurException, TException {
         long start = context.startTime();
         try {
-            TableDescriptor descriptor = new TableDescriptor();
-            descriptor.analyzerDefinition = _indexServer.getAnalyzer(table).getAnalyzerDefinition();
-            boolean tableEnabled = isTableEnabled(context, table);
-            descriptor.shardCount = _indexServer.getShardCount(table);
-            descriptor.isEnabled = tableEnabled;
-            descriptor.tableUri = _indexServer.getTableUri(table);
-            descriptor.compressionBlockSize = _indexServer.getCompressionBlockSize(table);
-            descriptor.compressionClass = _indexServer.getCompressionCodec(table).getClass().getName();
-            return descriptor;
+            return _clusterStatus.getTableDescriptor(table);
         } catch (Exception e) {
             LOG.error("Unknown error while trying to describe table [" + table + "]", e);
             throw new BException(e.getMessage(), e);
@@ -338,15 +335,22 @@ public class BlurShardServer extends ExecutionContextIface {
 
     @Override
     public List<String> controllerServerList(ExecutionContext context) throws BlurException, TException {
-        return _indexServer.getControllerServerList();
+        try {
+            return _clusterStatus.getControllerServerList();
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get a controller list.", e);
+            throw new BException("Unknown error while trying to get a controller list.", e);
+        }
     }
-
+    
     @Override
     public List<String> shardServerList(ExecutionContext context, String cluster) throws BlurException, TException {
-        if (cluster.equals(BlurConstants.BLUR_CLUSTER)) {
-            return _indexServer.getOnlineShardServers();
+        try {
+            return _clusterStatus.getShardServerList(cluster);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get a shard server list.", e);
+            throw new BException("Unknown error while trying to get a shard server list.", e);
         }
-        throw new BException("Cluster [" + cluster + "] is not valid.");
     }
 
     @Override
@@ -379,7 +383,12 @@ public class BlurShardServer extends ExecutionContextIface {
 
     @Override
     public List<String> shardClusterList(ExecutionContext context) throws BlurException, TException {
-        return Arrays.asList(BlurConstants.BLUR_CLUSTER);
+        try {
+            return _clusterStatus.getClusterList();
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get a cluster list.", e);
+            throw new BException("Unknown error while trying to get a cluster list.", e);
+        }
     }
 
     public long getMaxTimeToLive() {
@@ -400,5 +409,13 @@ public class BlurShardServer extends ExecutionContextIface {
 
     public void setQueryChecker(BlurQueryChecker queryChecker) {
         _queryChecker = queryChecker;
+    }
+
+    public ClusterStatus getClusterStatus() {
+        return _clusterStatus;
+    }
+
+    public void setClusterStatus(ClusterStatus clusterStatus) {
+        _clusterStatus = clusterStatus;
     }
 }

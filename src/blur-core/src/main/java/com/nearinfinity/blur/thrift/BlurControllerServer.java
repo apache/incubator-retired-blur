@@ -17,11 +17,9 @@
 package com.nearinfinity.blur.thrift;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -62,7 +60,6 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -81,7 +78,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             new HashMap<String, Map<String, String>>());
     private BlurClient _client;
     private long _layoutDelay = TimeUnit.SECONDS.toMillis(5);
-    private Random _random = new Random();
     private Timer _shardLayoutTimer;
     private ClusterStatus _clusterStatus;
     private int _threadCount = 64;
@@ -445,15 +441,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
     @Override
     public List<String> shardServerList(String cluster) throws BlurException, TException {
-        if (cluster.equals(BlurConstants.BLUR_CLUSTER)) {
-            try {
-                return _clusterStatus.getShardServerList(cluster);
-            } catch (Exception e) {
-                LOG.error("Unknown error while trying to get a shard list.", e);
-                throw new BException("Unknown error while trying to get a shard list.", e);
-            }
+        try {
+            return _clusterStatus.getShardServerList(cluster);
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get a shard list.", e);
+            throw new BException("Unknown error while trying to get a shard list.", e);
         }
-        throw new BException("Cluster [" + cluster + "] is not valid.");
     }
 
     public ClusterStatus getClusterStatus() {
@@ -513,7 +506,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
     @Override
     public List<String> shardClusterList() throws BlurException, TException {
-        return Arrays.asList(BlurConstants.BLUR_CLUSTER);
+        try {
+            return _clusterStatus.getClusterList();
+        } catch (Exception e) {
+            LOG.error("Unknown error while trying to get a cluster list.", e);
+            throw new BException("Unknown error while trying to get a cluster list.", e);
+        }
     }
 
     public void setNodeName(String nodeName) {

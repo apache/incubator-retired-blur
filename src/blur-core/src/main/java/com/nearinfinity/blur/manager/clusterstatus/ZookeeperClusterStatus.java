@@ -63,13 +63,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         });
         ZookeeperClusterStatus status = new ZookeeperClusterStatus(zooKeeper);
         for (int i = 0; i < 100; i++) {
-            System.out.println(status.getClusterServerList());
+            System.out.println(status.getClusterList());
             System.out.println(status.getControllerServerList());
             System.out.println(status.getOnlineShardServers("default"));
             System.out.println(status.getShardServerList("default"));
             System.out.println(status.getTableList());
             
-            for (String cluster : status.getClusterServerList()) {
+            for (String cluster : status.getClusterList()) {
                 System.out.println(status.getOnlineShardServers(cluster));
                 System.out.println(status.getShardServerList(cluster));
             }
@@ -87,7 +87,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
     
     @Override
-    public List<String> getClusterServerList() {
+    public List<String> getClusterList() {
         return _clusters.get();
     }
 
@@ -179,7 +179,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     @Override
     public List<String> getTableList() {
         List<String> result = new ArrayList<String>();
-        for (String cluster : getClusterServerList()) {
+        for (String cluster : getClusterList()) {
             AtomicReference<List<String>> tables = _tables.get(cluster);
             if (tables == null) {
                 tables = new AtomicReference<List<String>>();

@@ -28,7 +28,7 @@ public abstract class ClusterStatus {
 
     public abstract List<String> getShardServerList(String cluster);
     
-    public abstract List<String> getClusterServerList();
+    public abstract List<String> getClusterList();
 
     public abstract TableDescriptor getTableDescriptor(String table);
 

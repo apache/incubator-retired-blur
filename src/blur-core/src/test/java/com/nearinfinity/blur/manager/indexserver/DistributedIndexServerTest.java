@@ -42,9 +42,11 @@ import org.apache.lucene.util.Version;
 import org.junit.After;
 import org.junit.Test;
 
+import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZkTest.ZkInMemory;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class DistributedIndexServerTest {
     
@@ -64,6 +66,7 @@ public class DistributedIndexServerTest {
             DistributedManager dm = new ZkInMemory();
             dm.createPath("blur","clusters","default","tables",TEST,"enabled");
             DistributedIndexServer indexServer = new MockDistributedIndexServer(NODE_LIST,SHARD_LIST);
+            indexServer.setClusterStatus(new MockClusterStatus(NODE_LIST,SHARD_LIST));
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
             indexServer.init();
@@ -115,6 +118,7 @@ public class DistributedIndexServerTest {
             DistributedManager dm = new ZkInMemory();
             dm.createPath("blur","clusters","default","tables",TEST,"enabled");
             DistributedIndexServer indexServer = new MockDistributedIndexServer(bigNodeList,bigShardList,offlineNodes);
+            indexServer.setClusterStatus(new MockClusterStatus(bigNodeList,bigShardList,offlineNodes));
             indexServer.setNodeName(node);
             indexServer.setDistributedManager(dm);
             indexServer.init();
@@ -202,6 +206,61 @@ public class DistributedIndexServerTest {
         }
         return nodes;
     }
+    
+    public static class MockClusterStatus extends ClusterStatus {
+
+        private List<String> _nodes;
+        private List<String> _shards;
+        private List<String> _offlineNodes;
+
+        public MockClusterStatus(List<String> nodes, List<String> shards, List<String> offlineNodes) {
+            _nodes = nodes;
+            _shards = shards;
+            _offlineNodes = offlineNodes;
+        }
+
+        public MockClusterStatus(List<String> nodes, List<String> shards) {
+            this(nodes,shards,new ArrayList<String>());
+        }
+
+        @Override
+        public String getCluster(String table) {
+            return "default";
+        }
+
+        @Override
+        public List<String> getClusterList() {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public List<String> getControllerServerList() {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public List<String> getOnlineShardServers(String cluster) {
+            List<String> list = new ArrayList<String>(getShardServerList(cluster));
+            list.removeAll(_offlineNodes);
+            return list;
+        }
+
+        @Override
+        public List<String> getShardServerList(String cluster) {
+            return _nodes;
+        }
+
+        @Override
+        public TableDescriptor getTableDescriptor(String table) {
+            throw new RuntimeException("not impl");
+        }
+
+        @Override
+        public List<String> getTableList() {
+            throw new RuntimeException("not impl");
+        }
+        
+    }
 
     public static class MockDistributedIndexServer extends DistributedIndexServer {
         
@@ -244,10 +303,10 @@ public class DistributedIndexServerTest {
             return shards;
         }
 
-        @Override
-        public List<String> getShardServerList() {
-            return nodes;
-        }
+//        @Override
+//        public List<String> getShardServerList() {
+//            return nodes;
+//        }
         
         @Override
         public void close() {
@@ -255,27 +314,27 @@ public class DistributedIndexServerTest {
         }
 
 
-        @Override
-        public List<String> getControllerServerList() {
-            throw new RuntimeException("not implement");
-        }
+//        @Override
+//        public List<String> getControllerServerList() {
+//            throw new RuntimeException("not implement");
+//        }
 
         @Override
         protected void beforeClose(String shard, BlurIndex index) {
             throw new RuntimeException("not implement");            
         }
 
-        @Override
-        public List<String> getOfflineShardServers() {
-            return offlineNodes;
-        }
+//        @Override
+//        public List<String> getOfflineShardServers() {
+//            return offlineNodes;
+//        }
 
-        @Override
-        public List<String> getOnlineShardServers() {
-            List<String> list = new ArrayList<String>(getShardServerList());
-            list.removeAll(getOfflineShardServers());
-            return list;
-        }
+//        @Override
+//        public List<String> getOnlineShardServers() {
+//            List<String> list = new ArrayList<String>(getShardServerList());
+//            list.removeAll(getOfflineShardServers());
+//            return list;
+//        }
 
 		@Override
 		public long getTableSize(String table) throws IOException {

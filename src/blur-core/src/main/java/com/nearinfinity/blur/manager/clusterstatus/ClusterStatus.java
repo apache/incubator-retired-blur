@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.manager.clusterstatus;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
@@ -33,5 +34,13 @@ public abstract class ClusterStatus {
     public abstract TableDescriptor getTableDescriptor(String table);
 
     public abstract List<String> getTableList();
+
+    public abstract String getCluster(String table);
+
+    public List<String> getOfflineShardServers(String cluster) {
+        List<String> shardServerList = new ArrayList<String>(getShardServerList(cluster));
+        shardServerList.removeAll(getOnlineShardServers(cluster));
+        return shardServerList;
+    }
 
 }

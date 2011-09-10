@@ -139,6 +139,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         indexServer.setReplicationStrategy(replicationStrategy);
         indexServer.setRefresher(refresher);
         indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
+        indexServer.setClusterStatus(clusterStatus);
         indexServer.init();
 
         localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));

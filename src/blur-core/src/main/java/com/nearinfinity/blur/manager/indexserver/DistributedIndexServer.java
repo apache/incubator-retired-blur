@@ -43,6 +43,7 @@ import org.apache.lucene.util.Version;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 
@@ -71,6 +72,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     private Map<String, Set<String>> _layoutCache = new ConcurrentHashMap<String, Set<String>>();
     private ExecutorService _openerService;
     private int _shardOpenerThreadCount = 1;
+    private ClusterStatus _clusterStatus;
     //need a GC daemon for closing indexes
     //need a daemon for tracking what indexes to open ???
     //need a daemon to track reopening changed indexes
@@ -247,8 +249,10 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     private synchronized Set<String> setupLayoutManager(String table) {
         DistributedLayoutManager layoutManager = new DistributedLayoutManager();
         
-        List<String> shardServerList = getShardServerList();
-        List<String> offlineShardServers = new ArrayList<String>(getOfflineShardServers());
+        String cluster = _clusterStatus.getCluster(table);
+        
+        List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
+        List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(cluster));
         List<String> shardList = getShardList(table);
         
         layoutManager.setNodes(shardServerList);
@@ -287,6 +291,10 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
 
     public void setShardOpenerThreadCount(int shardOpenerThreadCount) {
         _shardOpenerThreadCount = shardOpenerThreadCount;
+    }
+
+    public void setClusterStatus(ClusterStatus clusterStatus) {
+        _clusterStatus = clusterStatus;
     }
 
 }

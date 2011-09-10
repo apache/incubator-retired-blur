@@ -71,22 +71,12 @@ public class BlurShardServerTest {
             }
 
             @Override
-            public List<String> getControllerServerList() {
-                throw new RuntimeException("not impl");
-            }
-
-            @Override
             public Map<String, BlurIndex> getIndexes(String table) throws IOException {
                 throw new RuntimeException("not impl");
             }
 
             @Override
             public List<String> getShardList(String table) {
-                throw new RuntimeException("not impl");
-            }
-
-            @Override
-            public List<String> getShardServerList() {
                 throw new RuntimeException("not impl");
             }
 
@@ -103,16 +93,6 @@ public class BlurShardServerTest {
             @Override
             public TABLE_STATUS getTableStatus(String table) {
                 throw new RuntimeException("not impl");
-            }
-
-            @Override
-            public List<String> getOfflineShardServers() {
-                throw new RuntimeException("not impl");
-            }
-
-            @Override
-            public List<String> getOnlineShardServers() {
-                throw new RuntimeException("no impl");
             }
 
             @Override

@@ -225,26 +225,6 @@ public abstract class ManagedDistributedIndexServer extends DistributedIndexServ
         dm.close();
     }
 
-    @Override
-    public List<String> getControllerServerList() {
-        return controllers;
-    }
-
-    @Override
-    public List<String> getOfflineShardServers() {
-        return offlineShards;
-    }
-    
-    @Override
-    public List<String> getOnlineShardServers() {
-        return onlineShards;
-    }
-
-    @Override
-    public List<String> getShardServerList() {
-        return shards;
-    }
-    
     public long getZkPollDelay() {
         return zkPollDelay;
     }

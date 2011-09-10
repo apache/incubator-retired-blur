@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -170,16 +169,6 @@ public class LocalIndexServer extends AbstractIndexServer {
     }
 
     @Override
-    public List<String> getControllerServerList() {
-        return Arrays.asList("localhost:40010");
-    }
-
-    @Override
-    public List<String> getShardServerList() {
-        return Arrays.asList("localhost:40020");
-    }
-
-    @Override
     public List<String> getTableList() {
         return new ArrayList<String>(_readersMap.keySet());
     }
@@ -200,16 +189,6 @@ public class LocalIndexServer extends AbstractIndexServer {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public List<String> getOfflineShardServers() {
-        return new ArrayList<String>();
-    }
-
-    @Override
-    public List<String> getOnlineShardServers() {
-        return getShardServerList();
     }
 
     @Override

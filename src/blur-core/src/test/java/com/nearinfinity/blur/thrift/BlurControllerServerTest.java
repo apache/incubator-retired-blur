@@ -115,6 +115,11 @@ public class BlurControllerServerTest {
             public List<String> getTableList() {
                 return Arrays.asList(TABLE);
             }
+
+            @Override
+            public String getCluster(String table) {
+                return "default";
+            }
             
         };
     }

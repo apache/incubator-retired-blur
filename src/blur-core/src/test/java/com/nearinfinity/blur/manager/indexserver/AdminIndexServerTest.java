@@ -104,33 +104,13 @@ public class AdminIndexServerTest {
             }
 
             @Override
-            public List<String> getControllerServerList() {
-                throw new RuntimeException();
-            }
-
-            @Override
             public Map<String, BlurIndex> getIndexes(String table) throws IOException {
                 System.out.println("Do nothing.");
                 return new HashMap<String, BlurIndex>();
             }
 
             @Override
-            public List<String> getOfflineShardServers() {
-                throw new RuntimeException();
-            }
-
-            @Override
-            public List<String> getOnlineShardServers() {
-                throw new RuntimeException();
-            }
-
-            @Override
             public List<String> getShardList(String table) {
-                throw new RuntimeException();
-            }
-
-            @Override
-            public List<String> getShardServerList() {
                 throw new RuntimeException();
             }
 

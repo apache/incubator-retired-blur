@@ -122,14 +122,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
     @Override
     public TableDescriptor getTableDescriptor(String table) {
-        Map<String,AtomicReference<List<String>>> tables = new HashMap<String, AtomicReference<List<String>>>(_tables);
-        String cluster = null;
-        for (Entry<String,AtomicReference<List<String>>> entry : tables.entrySet()) {
-            List<String> tablesInCluster = new ArrayList<String>(entry.getValue().get());
-            if (tablesInCluster.contains(table)) {
-                cluster = entry.getKey();
-            }
-        }
+        String cluster = getCluster(table);
         if (cluster == null) {
             return null;
         }
@@ -243,5 +236,17 @@ public class ZookeeperClusterStatus extends ClusterStatus {
             }
         }
         _threads.add(thread);
+    }
+
+    @Override
+    public String getCluster(String table) {
+        Map<String,AtomicReference<List<String>>> tables = new HashMap<String, AtomicReference<List<String>>>(_tables);
+        for (Entry<String,AtomicReference<List<String>>> entry : tables.entrySet()) {
+            List<String> tablesInCluster = new ArrayList<String>(entry.getValue().get());
+            if (tablesInCluster.contains(table)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 }

@@ -59,7 +59,7 @@ class ZookeepersController < ApplicationController
   def dashboard
     zookeeper_results = []
     connection = ActiveRecord::Base.connection()
-    connection.execute(QUERY).each_hash { |row| zookeeper_results << row }
+    connection.execute(QUERY).each { |row| zookeeper_results << row }
 
     respond_to do |format|
       format.json { render :json => zookeeper_results }

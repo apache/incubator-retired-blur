@@ -65,8 +65,8 @@ public class ZookeeperLockFactory extends LockFactory {
         }
     }
 
-    public ZookeeperLockFactory(ZooKeeper zk, String sharedLockPath, String name) {
-        _lockPath = sharedLockPath + "/" + name;
+    public ZookeeperLockFactory(ZooKeeper zk, String lockPath) {
+        _lockPath = lockPath;
         _zk = zk;
         ZkUtils.mkNodesStr(_zk, _lockPath);
     }
@@ -74,6 +74,13 @@ public class ZookeeperLockFactory extends LockFactory {
     @Override
     public void clearLock(String lockName) throws IOException {
         LOG.info("Clearing Lock [{0}]",lockName);
+        try {
+            _zk.delete(_lockPath + "/" + lockName, -1);
+        } catch (InterruptedException e) {
+            throw new IOException(e);
+        } catch (KeeperException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override

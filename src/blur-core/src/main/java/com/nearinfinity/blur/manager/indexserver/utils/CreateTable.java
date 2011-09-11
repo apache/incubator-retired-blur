@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -84,12 +85,16 @@ public class CreateTable {
         dm.saveData(Integer.toString(shardCount).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
         dm.saveData(compressionCodec.getClass().getName().getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
         dm.saveData(Integer.toString(compressionBlockSize).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
+        dm.createPath(ZookeeperPathConstants.getBlurLockPath(table));
     }
 
     private static void setupFileSystem(String uri, int shardCount) throws IOException {
         Path tablePath = new Path(uri);
         FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
-        createPath(fileSystem,tablePath);
+        if (createPath(fileSystem,tablePath)) {
+            LOG.info("Table uri existed.");
+            validateShardCount(shardCount,fileSystem,tablePath);
+        }
         for (int i = 0; i < shardCount; i++) {
             String shardName = BlurShardName.getShardName(SHARD_PREFIX, i);
             Path shardPath = new Path(tablePath, shardName);
@@ -97,11 +102,25 @@ public class CreateTable {
         }
     }
 
-    private static void createPath(FileSystem fileSystem, Path path) throws IOException {
+    private static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {
+        FileStatus[] listStatus = fileSystem.listStatus(tablePath);
+        if (listStatus.length != shardCount) {
+            LOG.error("Number of directories in table path [" + tablePath + 
+            		"] does not match definition of [" + shardCount + 
+            		"] shard count.");
+            throw new RuntimeException("Number of directories in table path [" + tablePath + 
+                    "] does not match definition of [" + shardCount + 
+                    "] shard count.");
+        }
+    }
+
+    private static boolean createPath(FileSystem fileSystem, Path path) throws IOException {
         if (!fileSystem.exists(path)) {
             LOG.info("Path [{0}] does not exist, creating.",path);
             fileSystem.mkdirs(path);
+            return false;
         }
+        return true;
     }
 
 }

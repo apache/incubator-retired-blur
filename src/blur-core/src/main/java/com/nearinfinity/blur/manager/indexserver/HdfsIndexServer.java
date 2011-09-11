@@ -47,7 +47,6 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
-import com.nearinfinity.blur.store.cache.HdfsUtil;
 import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
@@ -94,8 +93,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         Path tablePath = new Path(tableUri.toString());
         Path hdfsDirPath = new Path(tablePath,shard);
         
-        ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getBlurTablesLocksPath(), 
-                HdfsUtil.getDirName(table, shard));
+        String shardPath = ZookeeperPathConstants.getBlurLockPath(table) + "/" + shard;
+        ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, shardPath);
         ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, 
                 _localFileCache, lockFactory, new Progressable() {
             @Override

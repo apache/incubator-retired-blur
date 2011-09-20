@@ -36,7 +36,6 @@ $(document).ready ->
       <li class='delete'><a href='#delete'>Delete</a></li>
     ")
   search_file_tree = () ->
-    $('.jstree-search').removeClass 'jstree-search'
     $('.file_layout').jstree "search", $('#search_string').val()
 
   search_results = (array) ->
@@ -44,18 +43,18 @@ $(document).ready ->
       $('#data_container_display').html data
       $('#data_container_display > .file_id').attr('data-search', array['search_string'])
       change_view()
-      $('#search_string').val array['search_string']
+      set_view_state()
       $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
       
-  copy = (location) ->
+  copy_location = (location) ->
     'Fix me'
     #invalidate forward and back stacks
     
-  paste = (location) ->
+  paste_location = (location) ->
     'Fix me'
     #invalidate forward and back stacks
     
-  delete = (location) ->
+  delete_location = (location) ->
     'Fix me'
     #invalidate forward and back stacks
   
@@ -102,8 +101,9 @@ $(document).ready ->
   set_view_state = ->
     #if the new view we are showing has a definite location find it and set it in the location
     def_location = $('#data_container_display > .file_id').attr('id')
-    $('.file_layout').jstree 'close_all'
     if def_location
+      $('.file_layout').jstree 'close_all'
+      $('.jstree-search').removeClass 'jstree-search'
       $('#location_string').val $('#' + def_location).attr 'name'
       $('#up_button').button 'enable'
       $('.file_layout').jstree "open_node", '#' + def_location
@@ -111,13 +111,13 @@ $(document).ready ->
       $('#search_string').val ""
     #else it is an old search and we can show the string
     else
+    #ToDo: Search doesnt fix the tree on back or forward, needs to be re - searched without making a call to the event
       $('#search_string').val $('#data_container_display > .file_id').attr('data-search')
 
   # Method for search text submit
   display_file_at_path = (id) ->
     forward_history = []
     $('#forward_button').button 'disable'
-    $('.jstree-search').removeClass 'jstree-search'
     if !id
       id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
     if id != "" and $('#hdfs_files').find('#' + id).length > 0
@@ -150,7 +150,6 @@ $(document).ready ->
 
   # Listeners for back/forward buttons
   $('#back_button').live 'click', ->
-    $('.jstree-search').removeClass 'jstree-search'
     if back_history.length > 0
       add_to_forward $('#data_container_display').html()
       $('#data_container_display').html back_history.pop()
@@ -165,7 +164,6 @@ $(document).ready ->
         $('#forward_button').button 'enable'
         
   $('#forward_button').live 'click', ->
-    $('.jstree-search').removeClass 'jstree-search'
     if forward_history.length > 0
       add_to_back $('#data_container_display').html()
       $('#data_container_display').html forward_history.pop()

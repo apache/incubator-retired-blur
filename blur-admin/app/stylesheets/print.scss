@@ -1,5 +1,4 @@
 @import "blueprint";
-@import "application";
 
 body {
   @include blueprint-print(true); }

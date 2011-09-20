@@ -75,8 +75,7 @@ body {
   padding: 8px;
   padding-left: 10px;
   background: #EEE;
-  @include border-radius;
-  @include border;
+  @include standard-border;
   .help-label{
     margin: 0px;
     margin-bottom: 5px;

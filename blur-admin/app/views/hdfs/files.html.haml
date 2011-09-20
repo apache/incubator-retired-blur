@@ -1,5 +1,7 @@
-#file_info
-  = "#{file_stat.path} has #{pluralize(children.to_i,'file')}" if children.to_i > 0
+.file_id{:id => file_stat.path.gsub(/[^[:alnum:]]/,'-')}
+-if children.to_i > 0
+  #file_info
+    = "#{file_stat.path} has #{pluralize(children.to_i,'file')}"
 
 #file_list{:style => 'display: none' }
   - if !file_names_hash.empty?

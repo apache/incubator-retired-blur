@@ -47,14 +47,17 @@ $(document).ready ->
       $('#search_string').val array['search_string']
       $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
       
-  delete_location = (location) ->
+  copy = (location) ->
     'Fix me'
+    #invalidate forward and back stacks
     
-  move_location = (location) ->
+  paste = (location) ->
     'Fix me'
+    #invalidate forward and back stacks
     
-  destroy_history_stack = () ->
+  delete = (location) ->
     'Fix me'
+    #invalidate forward and back stacks
   
   perform_action = (action, el) ->
     switch action
@@ -76,12 +79,12 @@ $(document).ready ->
   add_to_back = (hist_el) ->
     if hist_el != ""
       back_history.push hist_el
-      $('#back_button').enable()
+      $('#back_button').button 'enable'
     
   add_to_forward = (hist_el) ->
     if hist_el != ""
       forward_history.push hist_el
-      $('#forward_button').enable()
+      $('#forward_button').button 'enable'
     
   # Method to change file view
   change_view = () ->
@@ -99,25 +102,32 @@ $(document).ready ->
   set_view_state = ->
     #if the new view we are showing has a definite location find it and set it in the location
     def_location = $('#data_container_display > .file_id').attr('id')
+    $('.file_layout').jstree 'close_all'
     if def_location
       $('#location_string').val $('#' + def_location).attr 'name'
       $('#up_button').button 'enable'
-      $('.file_layout').jstree "open_node", '#' + id
-      $('.file_layout').find('li > #' + id).addClass 'jstree-search'
+      $('.file_layout').jstree "open_node", '#' + def_location
+      $('.file_layout').find('li > #' + def_location).addClass 'jstree-search'
       $('#search_string').val ""
     #else it is an old search and we can show the string
     else
       $('#search_string').val $('#data_container_display > .file_id').attr('data-search')
 
   # Method for search text submit
-  display_file_at_path = ->
-    id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
+  display_file_at_path = (id) ->
+    forward_history = []
+    $('#forward_button').button 'disable'
+    $('.jstree-search').removeClass 'jstree-search'
+    if !id
+      id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
     if id != "" and $('#hdfs_files').find('#' + id).length > 0
       file = $('#'+ id).attr('name')
       connection = $('a#'+ id).attr 'connection'
       $.post '/hdfs/files', { 'file': file, 'connection': connection}, (data) ->
         add_to_back $('#data_container_display').html()
         $('#data_container_display').html data
+        $('#location_string').val(file)
+        set_view_state()
         change_view()
         $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
         $('#data_container_display .hdfs-node').contextMenu
@@ -126,6 +136,7 @@ $(document).ready ->
             perform_action action, el
     else
       $('#data_container_display').html '<div>Not a valid file location on this system.</div>'
+      $('.file_layout').jstree 'close_all'
 
   # Methods to call on page load
   $(document.body).append(tree_context_menu())
@@ -142,21 +153,22 @@ $(document).ready ->
     $('.jstree-search').removeClass 'jstree-search'
     if back_history.length > 0
       add_to_forward $('#data_container_display').html()
-      $('#data_container_display').html back_history.pop
-      if back_history.length > 0
-        $('#back_button').button 'enable'
+      $('#data_container_display').html back_history.pop()
+      if back_history.length <= 0
+        $('#back_button').button 'disable'
       set_view_state()
     else
       $('#data_container_display').html 'No Page in the Back Queue, our mistake.'
       $('#back_button').button 'disable'
-      if forward_history.length > 0
+      $('.file_layout').jstree 'close_all'
+      if forward_history.length < 0
         $('#forward_button').button 'enable'
         
   $('#forward_button').live 'click', ->
     $('.jstree-search').removeClass 'jstree-search'
     if forward_history.length > 0
       add_to_back $('#data_container_display').html()
-      $('#data_container_display').html forward_history.pop
+      $('#data_container_display').html forward_history.pop()
       $('#back_button').button 'enable'
       if forward_history.length <= 0
         $('#forward_button').button 'disable'
@@ -164,20 +176,20 @@ $(document).ready ->
     else
       $('#data_container_display').html 'No Page in the Forward Queue, our mistake.'
       $('#forward_button').button 'disable'
+      $('.file_layout').jstree 'close_all'
       if back_history.length > 0
         $('#back_button').button 'enable'
 
   # Listener for all file links
   $('#hdfs_files a, #file_tiles > .ui-button, #file_list a, #file_details tbody tr').live 'click', ->
-    display_new_file this.id
+    display_file_at_path this.id
 
   # Listener for file up button
   $('#up_button').live 'click', ->
-    #ToDo: With the changes to back_history this will break
-    parent = $('#' + back_history[back_history.length - 1]).parent().attr 'class'
+    parent = $('#' + $('#data_container_display > .file_id').attr('id')).parent().attr 'class'
     if !parent
       parent = ''
-    display_new_file parent
+    display_file_at_path parent
 
   # Listener for changing between the different layouts
   $('#view_options').live 'change', ->

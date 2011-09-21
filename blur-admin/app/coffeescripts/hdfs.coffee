@@ -46,34 +46,39 @@ $(document).ready ->
       set_view_state()
       $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
       
-  copy_location = (location) ->
-    'Fix me'
-    #invalidate forward and back stacks
+  move_file = (file, location) ->
+    if file.attr('connection') == location.attr('connection')
+      target_file = file.parent().attr 'name'
+      target_location = location.parent().attr 'name'
+      
+      connection = file.attr('connection')
     
-  paste_location = (location) ->
-    'Fix me'
-    #invalidate forward and back stacks
+      $.post '/hdfs/move_file', { 'target': target_file, 'location': target_location, 'connection': connection}, (data) ->
+        back_history.length = 0;
+        forward_history.length = 0;
     
-  delete_location = (location) ->
+  delete_file = (file) ->
     'Fix me'
+    #send
     #invalidate forward and back stacks
   
   perform_action = (action, el) ->
     switch action
       when "delete"
-        #destroy the stack
-        alert "This was deleted"
+        delete_file(el)
       when "cut"
-        #destroy the stack
-        alert "This was cut"
+        paste_buffer.location = el
+        paste_buffer.action = action
       when "copy"
-        #destroy the stack
-        alert "This was copied"
+        paste_buffer.location = el
+        paste_buffer.action = action
       when "paste"
-        #destroy the stack
-        alert "This was pasted"
-    paste_buffer.action = action
-    console.log paste_buffer.action
+        if paste_buffer.action
+          if paste_buffer.action == "cut"
+            move_file(paste_buffer.location, el)
+            delete_file(paste_buffer.location)
+          else
+            move_file(paste_buffer.location, el)
   
   add_to_back = (hist_el) ->
     if hist_el != ""
@@ -116,7 +121,7 @@ $(document).ready ->
 
   # Method for search text submit
   display_file_at_path = (id) ->
-    forward_history = []
+    forward_history.length = 0
     $('#forward_button').button 'disable'
     if !id
       id = $('#location_string').val().replace(/[.,_:\/]/g,"-")
@@ -146,7 +151,7 @@ $(document).ready ->
   $.each $("#toolbar button,#toolbar input[type='submit']"), ->
     $('#toolbar #' + this.id).button()
   #variables to help with history, and the context menu buffer
-  back_history = []; forward_history = []; paste_buffer = [];
+  back_history = []; forward_history = []; paste_buffer = {};
 
   # Listeners for back/forward buttons
   $('#back_button').live 'click', ->

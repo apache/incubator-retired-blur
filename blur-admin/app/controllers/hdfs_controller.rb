@@ -38,19 +38,6 @@ class HdfsController < ApplicationController
    render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:file_stat => file_stat, :connection => params[:connection], :file_names_hash => file_names_hash, :children => params[:children]}
   end
 
-  def get_files curr_file
-    curr_file_children_hash = {}
-    if @hdfs.exists? curr_file
-      curr_file_children = @hdfs.ls curr_file
-      curr_file_children.each do |child|
-        if !curr_file.eql? child
-          curr_file_children_hash[child] = get_files child
-        end
-      end
-    end
-    curr_file_children_hash
-  end
-
   def search
     file_names_hash = {}
     connections = {}
@@ -77,4 +64,38 @@ class HdfsController < ApplicationController
       format.html {render :partial => 'search_results', :locals => {:search_string => search_string, :connections => connections,:file_names_hash => file_names_hash}}
     end
   end
+  
+  def move_file
+    #hdfs_model = Hdfs.find connection
+    #hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
+    #hdfs.mv "/home/someuser/afile.txt", "/home/someuser/test.txt"
+    render :nothing => true
+  end
+  
+  def delete_file
+    #hdfs_model = Hdfs.find connection
+    #hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
+    #hdfs.rm "/home/someuser/afile.txt"
+    render :nothing => true
+  end
+  
+  private
+  
+  def get_files curr_file
+    curr_file_children_hash = {}
+    if @hdfs.exists? curr_file
+      curr_file_children = @hdfs.ls curr_file
+      curr_file_children.each do |child|
+        if !curr_file.eql? child
+          curr_file_children_hash[child] = get_files child
+        end
+      end
+    end
+    curr_file_children_hash
+  end
 end
+
+
+
+
+

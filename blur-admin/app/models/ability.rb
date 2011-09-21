@@ -19,11 +19,9 @@ class Ability
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs]
         can :show, [:zookeepers, :help]
-        can :show_current, :zookeepers
-        can :make_current, :zookeepers
+        can [:show_current, :make_current], :zookeepers
         can :dashboard, :zookeepers
-        can :files, :hdfs
-        can :search, :hdfs
+        can [:search, :files], :hdfs
         can :help, :application
 
         # can view everything but query_string on blur_tables:
@@ -51,6 +49,7 @@ class Ability
         can [:update, :destroy], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller], :zookeepers
+        can [:move_file, :delete_file], :hdfs
       end
 
       if user.has_role? :auditor

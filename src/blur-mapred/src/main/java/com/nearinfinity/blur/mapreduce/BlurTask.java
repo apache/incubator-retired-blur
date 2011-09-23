@@ -18,6 +18,7 @@ package com.nearinfinity.blur.mapreduce;
 
 import java.io.IOException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -92,7 +93,7 @@ public class BlurTask {
 
     public BlurAnalyzer getAnalyzer() {
         try {
-            return BlurAnalyzer.create(configuration.get(BLUR_ANALYZER_JSON));
+            return BlurAnalyzer.create(new String(Base64.decodeBase64(configuration.get(BLUR_ANALYZER_JSON))));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -111,7 +112,7 @@ public class BlurTask {
     }
 
     public void setBlurAnalyzer(BlurAnalyzer blurAnalyzer) {
-        configuration.set(BLUR_ANALYZER_JSON, blurAnalyzer.toJSON());
+        configuration.set(BLUR_ANALYZER_JSON, new String(Base64.encodeBase64(blurAnalyzer.toJSON().getBytes())));
     }
     
     public String getTableName() {

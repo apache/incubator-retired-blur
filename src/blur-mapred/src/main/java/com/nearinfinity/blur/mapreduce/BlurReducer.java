@@ -208,7 +208,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
     protected void setupDirectory(Context context) throws IOException {
       File dir = new File(System.getProperty("java.io.tmpdir"));
-      _directory = FSDirectory.open(dir);
+      _directory = FSDirectory.open(new File(dir,"index"));
     }
 
     protected <T> T nullCheck(T o) {

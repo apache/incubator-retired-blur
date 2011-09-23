@@ -30,6 +30,7 @@ public class BlurBaseDirectory extends Directory {
 
   private Directory _directory;
   private int _blockSize;
+  private String _dirName;
   private DirectoryCache _cache = new DirectoryCache() {
     
     @Override
@@ -43,13 +44,15 @@ public class BlurBaseDirectory extends Directory {
     }
   };
   
-  public BlurBaseDirectory(Directory directory) throws IOException {
+  public BlurBaseDirectory(String dirName, Directory directory) throws IOException {
+    _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
     setLockFactory(directory.getLockFactory());
   }
 
-  public BlurBaseDirectory(Directory directory, DirectoryCache cache) throws IOException {
+  public BlurBaseDirectory(String dirName, Directory directory, DirectoryCache cache) throws IOException {
+    _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
     _cache = cache;
@@ -58,13 +61,13 @@ public class BlurBaseDirectory extends Directory {
   
   public IndexInput openInput(String name, int bufferSize) throws IOException {
     final IndexInput source = _directory.openInput(name, _blockSize);
-    return new CachedIndexInput(source, _blockSize, name, _cache, bufferSize);
+    return new CachedIndexInput(source, _blockSize, _dirName, name, _cache, bufferSize);
   }
   
   @Override
   public IndexInput openInput(final String name) throws IOException {
     final IndexInput source = _directory.openInput(name, _blockSize);
-    return new CachedIndexInput(source, _blockSize, name, _cache);
+    return new CachedIndexInput(source, _blockSize, _dirName, name, _cache);
   }
 
   static class CachedIndexInput extends BufferedIndexInput {
@@ -73,24 +76,24 @@ public class BlurBaseDirectory extends Directory {
     private int _blockSize;
     private long _fileLength;
     private byte[] _buffer;
-    private String _name;
+    private String _cacheName;
     private DirectoryCache _cache;
 
-    public CachedIndexInput(IndexInput source, int blockSize, String name, DirectoryCache cache) {
+    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, DirectoryCache cache) {
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();
-      _name = name;
+      _cacheName = dirName + "/" + name;
       _cache = cache;
       _buffer = new byte[_blockSize];
     }
     
-    public CachedIndexInput(IndexInput source, int blockSize, String name, DirectoryCache cache, int bufferSize) {
+    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, DirectoryCache cache, int bufferSize) {
       super(bufferSize);
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();
-      _name = name;
+      _cacheName = dirName + "/" + name;
       _cache = cache;
       _buffer = new byte[_blockSize];
     }
@@ -146,11 +149,11 @@ public class BlurBaseDirectory extends Directory {
       _source.seek(position);
       _source.readBytes(_buffer, 0, length);
       System.arraycopy(_buffer, blockOffset, b, off, lengthToReadInBlock);
-      _cache.update(_name,blockId,_buffer);
+      _cache.update(_cacheName,blockId,_buffer);
     }
 
     private boolean checkCache(long blockId, int blockOffset, int lengthToReadInBlock, byte[] b, int off) {
-      return _cache.fetch(_name,blockId,blockOffset,b,off,lengthToReadInBlock);
+      return _cache.fetch(_cacheName,blockId,blockOffset,b,off,lengthToReadInBlock);
     }
   }
 

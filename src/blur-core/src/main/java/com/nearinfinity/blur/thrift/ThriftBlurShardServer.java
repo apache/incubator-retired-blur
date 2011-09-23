@@ -33,6 +33,7 @@ import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -59,6 +60,9 @@ import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
+import com.nearinfinity.blur.store.blockcache.BlockCache;
+import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
+import com.nearinfinity.blur.store.blockcache.BlurBaseDirectory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
@@ -70,6 +74,15 @@ public class ThriftBlurShardServer extends ThriftServer {
     public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
         LOG.info("Setting up Shard Server");
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
+        
+        //setup block cache
+        //134,217,728 is the bank size, therefore there are 8,192 block 
+        //in a bank when using a block of 16,384
+        int numberOfBlocksPerBank = 8192;
+        int blockSize = BlurBaseDirectory.BLOCK_SIZE;
+        int numberOfBanks = getNumberOfBanks(0.5f,numberOfBlocksPerBank,blockSize);
+        BlockCache blockCache = new BlockCache(numberOfBanks,numberOfBlocksPerBank,blockSize);
+        BlockDirectoryCache cache = new BlockDirectoryCache(blockCache);
 
         BlurConfiguration configuration = new BlurConfiguration();
 
@@ -112,6 +125,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         indexServer.setRefresher(refresher);
         indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
         indexServer.setClusterStatus(clusterStatus);
+        indexServer.setCache(cache);
         indexServer.init();
 
         final IndexManager indexManager = new IndexManager();
@@ -154,6 +168,19 @@ public class ThriftBlurShardServer extends ThriftServer {
             }
         }, zooKeeper);
         server.start();
+    }
+
+    private static int getNumberOfBanks(float heapPercentage, int numberOfBlocksPerBank, int blockSize) {
+      long max = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
+      long targetBytes = (long) (max * heapPercentage);
+      int slabSize = numberOfBlocksPerBank * blockSize;
+      int slabs = (int) (targetBytes / slabSize);
+      if (slabs == 0) {
+        throw new RuntimeException("Minimum heap size is 512m!");
+      }
+      LOG.info("Block cache parameters, target heap usage [" + heapPercentage + "] slab size of [" + slabSize + 
+          "] will allocate [" + slabs + "] slabs and use ~[" + ((long) slabs * (long) slabSize) + "] bytes");
+      return slabs;
     }
 
     public static Iface crazyMode(final Iface iface) {

@@ -47,168 +47,176 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.store.HdfsDirectory;
+import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
+import com.nearinfinity.blur.store.blockcache.BlurBaseDirectory;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
-    
-    private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
 
-    private boolean _closed;
-    private Configuration _configuration = new Configuration();
-    private BlurIndexCloser _closer;
-    private ZooKeeper _zookeeper;
-    private BlurIndexRefresher _refresher;
-    private BlurIndexCommiter _commiter;
-    
-    @Override
-    public void init() {
-        LOG.info("init - start");
-        super.init();
-        _closer = new BlurIndexCloser();
-        _closer.init();
-        LOG.info("init - complete");
+  private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
+
+  private boolean _closed;
+  private Configuration _configuration = new Configuration();
+  private BlurIndexCloser _closer;
+  private ZooKeeper _zookeeper;
+  private BlurIndexRefresher _refresher;
+  private BlurIndexCommiter _commiter;
+  private BlockDirectoryCache _cache;
+
+  @Override
+  public void init() {
+    LOG.info("init - start");
+    super.init();
+    _closer = new BlurIndexCloser();
+    _closer.init();
+    LOG.info("init - complete");
+  }
+
+  @Override
+  public synchronized void close() {
+    _closer.close();
+    if (!_closed) {
+      _closed = true;
+      super.close();
     }
-    
-    @Override
-    public synchronized void close() {
-        _closer.close();
-        if (!_closed) {
-            _closed = true;
-            super.close();
+  }
+
+  @Override
+  protected BlurIndex openShard(String table, String shard) throws IOException {
+    LOG.info("Opening shard [{0}] for table [{1}]", shard, table);
+    URI tableUri = getTableURI(table);
+    Path tablePath = new Path(tableUri.toString());
+    Path hdfsDirPath = new Path(tablePath, shard);
+
+    String shardPath = ZookeeperPathConstants.getBlurLockPath(table) + "/" + shard;
+    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, shardPath);
+
+    Directory directory = new HdfsDirectory(hdfsDirPath);
+    directory.setLockFactory(lockFactory);
+
+    CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, getCompressionCodec(table), getCompressionBlockSize(table));
+
+    BlurBaseDirectory baseDirectory = new BlurBaseDirectory(table + "_" + shard, compressedDirectory, _cache);
+    BlurIndexWriter writer = new BlurIndexWriter();
+    writer.setCloser(_closer);
+    writer.setCommiter(_commiter);
+    writer.setAnalyzer(getAnalyzer(table));
+    writer.setDirectory(baseDirectory);
+    writer.setRefresher(_refresher);
+    writer.init();
+    return warmUp(writer);
+  }
+
+  private URI getTableURI(String table) {
+    try {
+      return new URI(getTableUri(table));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private BlurIndex warmUp(BlurIndex index) throws IOException {
+    IndexReader reader = index.getIndexReader(true);
+    try {
+      warmUpAllSegments(reader);
+    } finally {
+      // this will allow for closing of index
+      reader.decRef();
+    }
+    return index;
+  }
+
+  private void warmUpAllSegments(IndexReader reader) throws IOException {
+    IndexReader[] indexReaders = reader.getSequentialSubReaders();
+    if (indexReaders != null) {
+      for (IndexReader r : indexReaders) {
+        warmUpAllSegments(r);
+      }
+    }
+    int maxDoc = reader.maxDoc();
+    int numDocs = reader.numDocs();
+    Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+    Term term = new Term(PRIME_DOC, PRIME_DOC_VALUE);
+    int primeDocCount = reader.docFreq(term);
+
+    TermDocs termDocs = reader.termDocs(term);
+    termDocs.next();
+    termDocs.close();
+
+    TermPositions termPositions = reader.termPositions(term);
+    if (termPositions.next()) {
+      if (termPositions.freq() > 0) {
+        termPositions.nextPosition();
+      }
+    }
+    termPositions.close();
+    LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fieldCount ["
+        + fieldNames.size() + "]");
+  }
+
+  @Override
+  public List<String> getShardList(String table) {
+    List<String> result = new ArrayList<String>();
+    try {
+      URI tableUri = getTableURI(table);
+      Path tablePath = new Path(tableUri.toString());
+      FileSystem fileSystem = FileSystem.get(tableUri, _configuration);
+      if (!fileSystem.exists(tablePath)) {
+        LOG.warn("Table [{0}] is missing, defined location [{1}]", table, tableUri.toString());
+        return new ArrayList<String>();
+      }
+      FileStatus[] listStatus = fileSystem.listStatus(tablePath);
+      for (FileStatus status : listStatus) {
+        if (status.isDir()) {
+          String name = status.getPath().getName();
+          if (name.startsWith(SHARD_PREFIX)) {
+            result.add(name);
+          }
         }
+      }
+      return result;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    @Override
-    protected BlurIndex openShard(String table, String shard) throws IOException {
-        LOG.info("Opening shard [{0}] for table [{1}]",shard,table);
-        URI tableUri = getTableURI(table);
-        Path tablePath = new Path(tableUri.toString());
-        Path hdfsDirPath = new Path(tablePath,shard);
-        
-        String shardPath = ZookeeperPathConstants.getBlurLockPath(table) + "/" + shard;
-        ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, shardPath);
-        
-        Directory directory = null;
-        
-        CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, 
-                getCompressionCodec(table), 
-                getCompressionBlockSize(table));
-        
-        BlurIndexWriter writer = new BlurIndexWriter();
-        writer.setCloser(_closer);
-        writer.setCommiter(_commiter);
-        writer.setAnalyzer(getAnalyzer(table));
-        writer.setDirectory(compressedDirectory);
-        writer.setRefresher(_refresher);
-        writer.init();
-        return warmUp(writer);
+  @Override
+  protected void beforeClose(String shard, BlurIndex indexReader) {
+
+  }
+
+  protected static void rm(File file) {
+    LOG.info("Deleting file [{0}]", file);
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rm(f);
+      }
     }
+    file.delete();
+  }
 
-    private URI getTableURI(String table) {
-        try {
-            return new URI(getTableUri(table));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
-        }
-    }
+  public void setZookeeper(ZooKeeper zookeeper) {
+    _zookeeper = zookeeper;
+  }
 
-    private BlurIndex warmUp(BlurIndex index) throws IOException {
-        IndexReader reader = index.getIndexReader(true);
-        try {
-            warmUpAllSegments(reader);
-        } finally {
-            //this will allow for closing of index
-            reader.decRef();
-        }
-        return index;
-    }
+  @Override
+  public long getTableSize(String table) throws IOException {
+    Path tablePath = new Path(getTableUri(table));
+    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
+    return fileSystem.getFileStatus(tablePath).getLen();
+  }
 
-    private void warmUpAllSegments(IndexReader reader) throws IOException {
-        IndexReader[] indexReaders = reader.getSequentialSubReaders();
-        if (indexReaders != null) {
-            for (IndexReader r : indexReaders) {
-                warmUpAllSegments(r);
-            }
-        }
-        int maxDoc = reader.maxDoc();
-        int numDocs = reader.numDocs();
-        Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-        Term term = new Term(PRIME_DOC,PRIME_DOC_VALUE);
-        int primeDocCount = reader.docFreq(term);
-        
-        TermDocs termDocs = reader.termDocs(term);
-        termDocs.next();
-        termDocs.close();
-        
-        TermPositions termPositions = reader.termPositions(term);
-        if (termPositions.next()) {
-            if (termPositions.freq() > 0) {
-                termPositions.nextPosition();
-            }
-        }
-        termPositions.close();
-        LOG.info("Warmup of indexreader [" + reader + "] complete, maxDocs [" + maxDoc + "], numDocs [" + numDocs + "], primeDocumentCount [" + primeDocCount + "], fieldCount [" + fieldNames.size() + "]");
-    }
+  public void setRefresher(BlurIndexRefresher refresher) {
+    _refresher = refresher;
+  }
 
-    @Override
-    public List<String> getShardList(String table) {
-        List<String> result = new ArrayList<String>();
-        try {
-            URI tableUri = getTableURI(table);
-            Path tablePath = new Path(tableUri.toString());
-            FileSystem fileSystem = FileSystem.get(tableUri, _configuration);
-            if (!fileSystem.exists(tablePath)) {
-                LOG.warn("Table [{0}] is missing, defined location [{1}]",table,tableUri.toString());
-                return new ArrayList<String>();
-            }
-            FileStatus[] listStatus = fileSystem.listStatus(tablePath);
-            for (FileStatus status : listStatus) {
-                if (status.isDir()) {
-                    String name = status.getPath().getName();
-                    if (name.startsWith(SHARD_PREFIX)) {
-                        result.add(name);
-                    }
-                }
-            }
-            return result;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+  public void setCommiter(BlurIndexCommiter commiter) {
+    _commiter = commiter;
+  }
 
-    @Override
-    protected void beforeClose(String shard, BlurIndex indexReader) {
-
-    }
-    
-    protected static void rm(File file) {
-        LOG.info("Deleting file [{0}]",file);
-        if (file.isDirectory()) {
-            for (File f : file.listFiles()) {
-                rm(f);
-            }
-        }
-        file.delete();
-    }
-
-    public void setZookeeper(ZooKeeper zookeeper) {
-        _zookeeper = zookeeper;
-    }
-
-	@Override
-	public long getTableSize(String table) throws IOException {
-		Path tablePath = new Path(getTableUri(table));
-		FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
-		return fileSystem.getFileStatus(tablePath).getLen();
-	}
-
-    public void setRefresher(BlurIndexRefresher refresher) {
-        _refresher = refresher;
-    }
-
-    public void setCommiter(BlurIndexCommiter commiter) {
-        _commiter = commiter;
-    }
-
+  public void setCache(BlockDirectoryCache cache) {
+    _cache = cache;
+  }
 }

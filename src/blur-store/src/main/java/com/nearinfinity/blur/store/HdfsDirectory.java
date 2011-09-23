@@ -180,39 +180,62 @@ public class HdfsDirectory extends Directory {
   static class HdfsIndexInput extends IndexInput {
     
     private HdfsFileReader _reader;
+    private long _length;
+    private long _pos;
+    private boolean isClone;
     
     public HdfsIndexInput(HdfsFileReader reader) {
       _reader = reader;
+      _length = _reader.length();
     }
-
+    
     @Override
     public void close() throws IOException {
-      _reader.close();
+      if (!isClone) {
+        _reader.close();
+      }
     }
 
     @Override
     public long getFilePointer() {
-      return _reader.getPosition();
+      return _pos;
     }
 
     @Override
     public long length() {
-      return _reader.length();
+      return _length;
     }
 
     @Override
     public void seek(long pos) throws IOException {
-      _reader.seek(pos);
+      _pos = pos;
     } 
 
     @Override
     public byte readByte() throws IOException {
-      return _reader.readByte();
+      _reader.seek(_pos);
+      try {
+        return _reader.readByte();
+      } finally {
+        _pos++;
+      }
     }
 
     @Override
     public void readBytes(byte[] b, int offset, int len) throws IOException {
-      _reader.readBytes(b, offset, len);
+      _reader.seek(_pos);
+      try {
+        _reader.readBytes(b, offset, len);
+      } finally {
+        _pos += len;
+      }
+    }
+
+    @Override
+    public Object clone() {
+      HdfsIndexInput input = (HdfsIndexInput) super.clone();
+      input.isClone = true;
+      return input;
     }
   }
   

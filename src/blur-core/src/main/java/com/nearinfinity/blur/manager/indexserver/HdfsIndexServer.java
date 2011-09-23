@@ -32,12 +32,12 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.util.Progressable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.index.IndexReader.FieldOption;
+import org.apache.lucene.store.Directory;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
@@ -47,21 +47,14 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
-import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
-import com.nearinfinity.blur.store.replication.ReplicaHdfsDirectory;
-import com.nearinfinity.blur.store.replication.ReplicationDaemon;
-import com.nearinfinity.blur.store.replication.ReplicationStrategy;
 import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
     
     private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
 
-    private LocalFileCache _localFileCache;
-    private ReplicationDaemon _replicationDaemon;
     private boolean _closed;
-    private ReplicationStrategy _replicationStrategy;
     private Configuration _configuration = new Configuration();
     private BlurIndexCloser _closer;
     private ZooKeeper _zookeeper;
@@ -95,13 +88,8 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
         
         String shardPath = ZookeeperPathConstants.getBlurLockPath(table) + "/" + shard;
         ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, shardPath);
-        ReplicaHdfsDirectory directory = new ReplicaHdfsDirectory(table, shard, hdfsDirPath, 
-                _localFileCache, lockFactory, new Progressable() {
-            @Override
-            public void progress() {
-                //do nothing for now
-            }
-        }, _replicationDaemon, _replicationStrategy);
+        
+        Directory directory = null;
         
         CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, 
                 getCompressionCodec(table), 
@@ -202,18 +190,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
             }
         }
         file.delete();
-    }
-    
-    public void setLocalFileCache(LocalFileCache localFileCache) {
-        this._localFileCache = localFileCache;
-    }
-
-    public void setReplicationDaemon(ReplicationDaemon replicationDaemon) {
-        this._replicationDaemon = replicationDaemon;
-    }
-
-    public void setReplicationStrategy(ReplicationStrategy replicationStrategy) {
-        this._replicationStrategy = replicationStrategy;
     }
 
     public void setZookeeper(ZooKeeper zookeeper) {

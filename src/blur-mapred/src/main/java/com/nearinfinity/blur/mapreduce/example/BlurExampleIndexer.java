@@ -25,7 +25,10 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.mapreduce.BlurRecord;
 import com.nearinfinity.blur.mapreduce.BlurReducer;
 import com.nearinfinity.blur.mapreduce.BlurTask;
@@ -40,8 +43,9 @@ public class BlurExampleIndexer {
             System.exit(2);
         }
         
+        BlurAnalyzer blurAnalyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_33));
         BlurTask blurTask = new BlurTask(configuration);
-        blurTask.setBlurAnalyzerStr("");
+        blurTask.setBlurAnalyzer(blurAnalyzer);
         blurTask.setTableName("test");
         blurTask.setBasePath("./blur-testing");
         

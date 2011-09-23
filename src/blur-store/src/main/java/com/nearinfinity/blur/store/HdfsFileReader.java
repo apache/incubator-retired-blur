@@ -73,6 +73,9 @@ public class HdfsFileReader extends DataInput {
   }
 
   public void seek(long pos) throws IOException {
+    if (_logicalPos == pos) {
+      return;
+    }
     _logicalPos = pos;
     seekInternal();
   }

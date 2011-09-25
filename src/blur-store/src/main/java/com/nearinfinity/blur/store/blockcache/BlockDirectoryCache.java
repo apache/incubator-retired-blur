@@ -1,16 +1,21 @@
 package com.nearinfinity.blur.store.blockcache;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class BlockDirectoryCache implements DirectoryCache {
+public class BlockDirectoryCache implements Cache {
   private BlockCache blockCache;
   private AtomicInteger counter = new AtomicInteger();
-  private Map<String,Integer> names = new HashMap<String, Integer>();
+  private Map<String,Integer> names = new ConcurrentHashMap<String, Integer>();
   
   public BlockDirectoryCache(BlockCache blockCache) {
     this.blockCache = blockCache;
+  }
+  
+  @Override
+  public void delete(String name) {
+    names.remove(name);
   }
   
   @Override
@@ -23,9 +28,10 @@ public class BlockDirectoryCache implements DirectoryCache {
     BlockCacheKey blockCacheKey = new BlockCacheKey();
     blockCacheKey.setBlock(blockId);
     blockCacheKey.setFile(file);
-    blockCache.store(blockCacheKey, buffer);
+    synchronized (blockCache) {
+      blockCache.store(blockCacheKey, buffer);  
+    }
   }
-  
 
   @Override
   public boolean fetch(String name, long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {
@@ -36,6 +42,8 @@ public class BlockDirectoryCache implements DirectoryCache {
     BlockCacheKey blockCacheKey = new BlockCacheKey();
     blockCacheKey.setBlock(blockId);
     blockCacheKey.setFile(file);
-    return blockCache.fetch(blockCacheKey, b, blockOffset, off, lengthToReadInBlock);
+    synchronized (blockCache) {
+      return blockCache.fetch(blockCacheKey, b, blockOffset, off, lengthToReadInBlock);
+    }
   }
 }

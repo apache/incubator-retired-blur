@@ -10,7 +10,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-public class BlurBaseDirectory extends Directory {
+public class BlockDirectory extends Directory {
   
   public static final long BLOCK_SHIFT = 14; // 2^14 = 16,384 bytes per block
   public static final long BLOCK_MOD = 0x3FFF;
@@ -31,7 +31,7 @@ public class BlurBaseDirectory extends Directory {
   private Directory _directory;
   private int _blockSize;
   private String _dirName;
-  private DirectoryCache _cache = new DirectoryCache() {
+  private Cache _cache = new Cache() {
     
     @Override
     public void update(String name, long blockId, byte[] buffer) {
@@ -42,16 +42,21 @@ public class BlurBaseDirectory extends Directory {
     public boolean fetch(String name, long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {
       return false;
     }
+
+    @Override
+    public void delete(String name) {
+      
+    }
   };
   
-  public BlurBaseDirectory(String dirName, Directory directory) throws IOException {
+  public BlockDirectory(String dirName, Directory directory) throws IOException {
     _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
     setLockFactory(directory.getLockFactory());
   }
 
-  public BlurBaseDirectory(String dirName, Directory directory, DirectoryCache cache) throws IOException {
+  public BlockDirectory(String dirName, Directory directory, Cache cache) throws IOException {
     _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
@@ -77,9 +82,9 @@ public class BlurBaseDirectory extends Directory {
     private long _fileLength;
     private byte[] _buffer;
     private String _cacheName;
-    private DirectoryCache _cache;
+    private Cache _cache;
 
-    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, DirectoryCache cache) {
+    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache) {
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();
@@ -88,7 +93,7 @@ public class BlurBaseDirectory extends Directory {
       _buffer = new byte[_blockSize];
     }
     
-    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, DirectoryCache cache, int bufferSize) {
+    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache, int bufferSize) {
       super(bufferSize);
       _source = source;
       _blockSize = blockSize;
@@ -135,15 +140,15 @@ public class BlurBaseDirectory extends Directory {
       long blockId = getBlock(position);
       int blockOffset = (int) getPosition(position);
       int lengthToReadInBlock = Math.min(len, _blockSize - blockOffset);
-      if (checkCache(blockId, blockOffset, lengthToReadInBlock, b, off)) {
+      if (checkCache(blockId, blockOffset, b, off, lengthToReadInBlock)) {
         return lengthToReadInBlock;
       } else {
-        readIntoCacheAndResult(blockId, blockOffset, lengthToReadInBlock, b, off);
+        readIntoCacheAndResult(blockId, blockOffset, b, off, lengthToReadInBlock);
       }
       return lengthToReadInBlock;
     }
 
-    private void readIntoCacheAndResult(long blockId, int blockOffset, int lengthToReadInBlock, byte[] b, int off) throws IOException {
+    private void readIntoCacheAndResult(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) throws IOException {
       long position = getRealPosition(blockId,0);
       int length = (int) Math.min(_blockSize, _fileLength - position);
       _source.seek(position);
@@ -152,7 +157,7 @@ public class BlurBaseDirectory extends Directory {
       _cache.update(_cacheName,blockId,_buffer);
     }
 
-    private boolean checkCache(long blockId, int blockOffset, int lengthToReadInBlock, byte[] b, int off) {
+    private boolean checkCache(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {
       return _cache.fetch(_cacheName,blockId,blockOffset,b,off,lengthToReadInBlock);
     }
   }
@@ -205,6 +210,7 @@ public class BlurBaseDirectory extends Directory {
 
   public void deleteFile(String name) throws IOException {
     _directory.deleteFile(name);
+    _cache.delete(name);
   }
 
   public boolean fileExists(String name) throws IOException {

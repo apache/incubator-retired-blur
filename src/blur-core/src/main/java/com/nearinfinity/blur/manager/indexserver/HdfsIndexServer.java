@@ -48,10 +48,9 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.store.HdfsDirectory;
+import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
-import com.nearinfinity.blur.store.blockcache.BlurBaseDirectory;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
-import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
@@ -96,9 +95,9 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     Directory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
-    CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, getCompressionCodec(table), getCompressionBlockSize(table));
+//    CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, getCompressionCodec(table), getCompressionBlockSize(table));
 
-    BlurBaseDirectory baseDirectory = new BlurBaseDirectory(table + "_" + shard, compressedDirectory, _cache);
+    BlockDirectory baseDirectory = new BlockDirectory(table + "_" + shard, directory, _cache);
     BlurIndexWriter writer = new BlurIndexWriter();
     writer.setCloser(_closer);
     writer.setCommiter(_commiter);

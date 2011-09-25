@@ -1,10 +1,11 @@
 package com.nearinfinity.blur.store.blockcache;
 
 import java.util.BitSet;
-import java.util.LinkedHashMap;
+import java.util.Collections;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.commons.collections.map.LRUMap;
 
 public class BlockCache {
 
@@ -20,6 +21,7 @@ public class BlockCache {
   private int _numberOfBlocksPerBank;
   private int _maxEntries;
 
+  @SuppressWarnings("unchecked")
   public BlockCache(final int numberOfBanks, final int numberOfBlocksPerBank,
       int blockSize) {
     _numberOfBlocksPerBank = numberOfBlocksPerBank;
@@ -32,33 +34,23 @@ public class BlockCache {
       _bitSets[i] = new BitSet(numberOfBlocksPerBank);
       _bitSetCounters[i] = new AtomicInteger();
     }
-    _cache = new LinkedHashMap<BlockCacheKey, BlockCacheLocation>() {
-      private static final long serialVersionUID = -8029502526796487882L;
-
+    _cache = Collections.synchronizedMap(new LRUMap(_maxEntries) {
+      private static final long serialVersionUID = 2091289339926232984L;
       @Override
-      protected boolean removeEldestEntry(
-          Entry<BlockCacheKey, BlockCacheLocation> eldest) {
-        return removeEldestEntryCache(eldest);
+      protected boolean removeLRU(LinkEntry entry) {
+        BlockCacheLocation location = (BlockCacheLocation) entry.getValue();
+        int bankId = location.getBankId();
+        int block = location.getBlock();
+        _bitSets[bankId].clear(block);
+        _bitSetCounters[bankId].decrementAndGet();
+        // double seconds = (System.currentTimeMillis() -
+        // location.getLastAccess()) / 1000.0;
+        // System.out.println("Last Accessed [" + seconds + "] ago with [" +
+        // location.getNumberOfAccesses() + "] accesses.");
+        return true;
       }
-    };
+    });
     _blockSize = blockSize;
-  }
-
-  protected boolean removeEldestEntryCache(
-      Entry<BlockCacheKey, BlockCacheLocation> eldest) {
-    if (_cache.size() >= _maxEntries) {
-      BlockCacheLocation location = eldest.getValue();
-      int bankId = location.getBankId();
-      int block = location.getBlock();
-      _bitSets[bankId].clear(block);
-      _bitSetCounters[bankId].decrementAndGet();
-      // double seconds = (System.currentTimeMillis() -
-      // location.getLastAccess()) / 1000.0;
-      // System.out.println("Last Accessed [" + seconds + "] ago with [" +
-      // location.getNumberOfAccesses() + "] accesses.");
-      return true;
-    }
-    return false;
   }
 
   public boolean store(BlockCacheKey blockCacheKey, byte[] data) {
@@ -82,8 +74,7 @@ public class BlockCache {
     return true;
   }
 
-  public boolean fetch(BlockCacheKey blockCacheKey, byte[] buffer,
-      int blockOffset, int off, int length) {
+  public boolean fetch(BlockCacheKey blockCacheKey, byte[] buffer, int blockOffset, int off, int length) {
     BlockCacheLocation location = _cache.get(blockCacheKey);
     if (location == null) {
       return false;

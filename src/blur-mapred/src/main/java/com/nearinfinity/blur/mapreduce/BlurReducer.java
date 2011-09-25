@@ -162,7 +162,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       } catch (IOException ioe) {
         priorException = ioe;
       } finally {
-        IOUtils.closeSafely(priorException, os, is);
+        IOUtils.closeWhileHandlingException(priorException, os, is);
       }
       return 0;//this should never be called
     }

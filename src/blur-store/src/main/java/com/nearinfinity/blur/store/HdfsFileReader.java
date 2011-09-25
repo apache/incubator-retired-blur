@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -15,20 +14,6 @@ import org.apache.lucene.store.DataInput;
 public class HdfsFileReader extends DataInput {
 
   private static final int VERSION = -1;
-
-  public static void main(String[] args) throws IOException {
-    FileSystem fs = FileSystem.getLocal(new Configuration());
-    Path p = new Path("file:///tmp/testint.hdfs.writer");
-
-    HdfsFileReader reader = new HdfsFileReader(fs, p);
-    for (int i = 0; i < 50000; i++) {
-      int v = reader.readInt();
-      if (i != v) {
-        System.out.println("pos:" + reader.getPosition() + " value: " + i + " = " + v);
-      }
-    }
-    reader.close();
-  }
 
   private final FSDataInputStream _inputStream;
   private final long _length;
@@ -86,6 +71,7 @@ public class HdfsFileReader extends DataInput {
 
   @Override
   public byte readByte() throws IOException {
+    checkBoundary();
     if (_logicalPos >= _boundary) {
       seekInternal();
     }
@@ -98,6 +84,7 @@ public class HdfsFileReader extends DataInput {
 
   @Override
   public void readBytes(byte[] b, int offset, int len) throws IOException {
+    checkBoundary();
     // might need to read in multiple stages
     while (len > 0) {
       if (_logicalPos >= _boundary) {
@@ -111,6 +98,12 @@ public class HdfsFileReader extends DataInput {
     }
   }
 
+  private void checkBoundary() throws IOException {
+    if (_boundary == -1l) {
+      throw new IOException("eof");
+    }
+  }
+
   private void seekInternal() throws IOException {
     HdfsMetaBlock block = null;
     for (HdfsMetaBlock b : _metaBlocks) {
@@ -118,9 +111,13 @@ public class HdfsFileReader extends DataInput {
         block = b;
       }
     }
-    long realPos = block.getRealPosition(_logicalPos);
-    _inputStream.seek(realPos);
-    _boundary = getBoundary(block);
+    if (block == null) {
+      _boundary = -1l;
+    } else {
+      long realPos = block.getRealPosition(_logicalPos);
+      _inputStream.seek(realPos);
+      _boundary = getBoundary(block);
+    }
   }
 
   private long getBoundary(HdfsMetaBlock block) {

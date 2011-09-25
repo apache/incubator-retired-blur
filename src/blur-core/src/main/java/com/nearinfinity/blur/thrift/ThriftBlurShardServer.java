@@ -62,7 +62,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
-import com.nearinfinity.blur.store.blockcache.BlurBaseDirectory;
+import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
@@ -79,7 +79,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         //134,217,728 is the bank size, therefore there are 8,192 block 
         //in a bank when using a block of 16,384
         int numberOfBlocksPerBank = 8192;
-        int blockSize = BlurBaseDirectory.BLOCK_SIZE;
+        int blockSize = BlockDirectory.BLOCK_SIZE;
         int numberOfBanks = getNumberOfBanks(0.5f,numberOfBlocksPerBank,blockSize);
         BlockCache blockCache = new BlockCache(numberOfBanks,numberOfBlocksPerBank,blockSize);
         BlockDirectoryCache cache = new BlockDirectoryCache(blockCache);
@@ -170,7 +170,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         server.start();
     }
 
-    private static int getNumberOfBanks(float heapPercentage, int numberOfBlocksPerBank, int blockSize) {
+    public static int getNumberOfBanks(float heapPercentage, int numberOfBlocksPerBank, int blockSize) {
       long max = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
       long targetBytes = (long) (max * heapPercentage);
       int slabSize = numberOfBlocksPerBank * blockSize;

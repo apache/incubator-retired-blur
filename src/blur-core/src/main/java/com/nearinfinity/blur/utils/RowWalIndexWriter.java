@@ -32,23 +32,25 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.index.WalIndexWriter;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 
-public class RowIndexWriter {
+public class RowWalIndexWriter {
     
+//    private static final Log LOG = LogFactory.getLog(RowIndexWriter.class);
+
     private static final Field PRIME_DOC_FIELD = new Field(PRIME_DOC,PRIME_DOC_VALUE,Store.NO,Index.NOT_ANALYZED_NO_NORMS);
     private BlurAnalyzer _analyzer;
-    private IndexWriter _indexWriter;
+    private WalIndexWriter _indexWriter;
     private boolean primeDocSet;
     private StringBuilder builder = new StringBuilder();
     
-    public RowIndexWriter(IndexWriter indexWriter, BlurAnalyzer analyzer) {
+    public RowWalIndexWriter(WalIndexWriter indexWriter, BlurAnalyzer analyzer) {
         _indexWriter = indexWriter;
         _analyzer = analyzer;
     }
@@ -74,9 +76,9 @@ public class RowIndexWriter {
             convert(row.id,record,documents);
         }
         if (replace) {
-            _indexWriter.updateDocuments(new Term(ROW_ID,row.id),documents,_analyzer);
+            _indexWriter.updateDocuments(wal,new Term(ROW_ID,row.id),documents,_analyzer);
         } else {
-            _indexWriter.addDocuments(documents,_analyzer);
+            _indexWriter.addDocuments(wal,documents,_analyzer);
         }
     }
 

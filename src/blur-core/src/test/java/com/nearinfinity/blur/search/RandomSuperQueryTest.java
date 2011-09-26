@@ -50,7 +50,7 @@ import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache;
-import com.nearinfinity.blur.utils.RowIndexWriter;
+import com.nearinfinity.blur.utils.RowWalIndexWriter;
 
 public class RandomSuperQueryTest {
 	
@@ -101,7 +101,7 @@ public class RandomSuperQueryTest {
 		}
 		
 		WalIndexWriter writer = new WalIndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33)));
-		RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30)));
+		RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30)));
 		int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
 		for (int i = 0; i < numberOfDocs; i++) {
 		    indexWriter.replace(false,generatSuperDoc(random, columns, sampler));

@@ -57,7 +57,7 @@ import com.nearinfinity.blur.store.HdfsDirectory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IterableConverter;
-import com.nearinfinity.blur.utils.RowIndexWriter;
+import com.nearinfinity.blur.utils.RowWalIndexWriter;
 
 public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritable, BlurRecord> {
 
@@ -238,7 +238,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
         document.add(new Field(ROW_ID, record.getRowId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
         document.add(new Field(RECORD_ID, record.getRecordId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
         String columnFamily = record.getColumnFamily();
-        RowIndexWriter.addColumns(document, _analyzer, builder, columnFamily, 
+        RowWalIndexWriter.addColumns(document, _analyzer, builder, columnFamily, 
             new IterableConverter<BlurColumn, Column>(
                 record.getColumns(), new Converter<BlurColumn, Column>() {
                     @Override

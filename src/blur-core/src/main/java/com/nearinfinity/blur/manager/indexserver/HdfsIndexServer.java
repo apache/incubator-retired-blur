@@ -95,8 +95,6 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     Directory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
-//    CompressedFieldDataDirectory compressedDirectory = new CompressedFieldDataDirectory(directory, getCompressionCodec(table), getCompressionBlockSize(table));
-
     BlockDirectory baseDirectory = new BlockDirectory(table + "_" + shard, directory, _cache);
     BlurIndexWriter writer = new BlurIndexWriter();
     writer.setCloser(_closer);

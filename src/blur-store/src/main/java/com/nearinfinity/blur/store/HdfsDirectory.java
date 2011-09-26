@@ -213,21 +213,25 @@ public class HdfsDirectory extends Directory {
 
     @Override
     public byte readByte() throws IOException {
-      _reader.seek(_pos);
-      try {
-        return _reader.readByte();
-      } finally {
-        _pos++;
+      synchronized (_reader) {
+        _reader.seek(_pos);
+        try {
+          return _reader.readByte();
+        } finally {
+          _pos++;
+        }    
       }
     }
 
     @Override
     public void readBytes(byte[] b, int offset, int len) throws IOException {
-      _reader.seek(_pos);
-      try {
-        _reader.readBytes(b, offset, len);
-      } finally {
-        _pos += len;
+      synchronized (_reader) {
+        _reader.seek(_pos);
+        try {
+          _reader.readBytes(b, offset, len);
+        } finally {
+          _pos += len;
+        }
       }
     }
 

@@ -45,7 +45,7 @@ import com.nearinfinity.blur.index.WalIndexWriter.WalOutputFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.store.HdfsDirectory;
 import com.nearinfinity.blur.thrift.generated.Row;
-import com.nearinfinity.blur.utils.RowIndexWriter;
+import com.nearinfinity.blur.utils.RowWalIndexWriter;
 import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
 
 public class BlurIndexWriter extends BlurIndex {
@@ -59,7 +59,7 @@ public class BlurIndexWriter extends BlurIndex {
   private Directory _sync;
   private BlurIndexCloser _closer;
   private BlurIndexRefresher _refresher;
-  private RowIndexWriter _rowIndexWriter;
+  private RowWalIndexWriter _rowIndexWriter;
   private BlurIndexCommiter _commiter;
   private AtomicBoolean _open = new AtomicBoolean();
   private String _id = UUID.randomUUID().toString();
@@ -103,7 +103,7 @@ public class BlurIndexWriter extends BlurIndex {
       }
     });
     _indexReaderRef.set(IndexReader.open(_writer, true));
-    _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
+    _rowIndexWriter = new RowWalIndexWriter(_writer, _analyzer);
     _open.set(true);
     _refresher.register(this);
     _commiter.addWriter(_id, _writer);

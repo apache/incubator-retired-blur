@@ -1,3 +1,19 @@
+/*
+* Copyright (C) 2011 Near Infinity Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 package com.nearinfinity.blur.thrift;
 
 import java.io.IOException;
@@ -12,6 +28,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.thrift.async.AsyncMethodCallback;
 import org.apache.thrift.async.TAsyncClient;
 import org.apache.thrift.async.TAsyncClientManager;
@@ -19,9 +37,6 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocolFactory;
 import org.apache.thrift.transport.TNonblockingSocket;
 import org.apache.thrift.transport.TNonblockingTransport;
-
-import com.nearinfinity.blur.log.Log;
-import com.nearinfinity.blur.log.LogFactory;
 
 public class AsyncClientPool {
     
@@ -33,7 +48,7 @@ public class AsyncClientPool {
     private int _maxConnectionsPerHost;
     private long _timeout;
     private long _pollTime = 5;
-    private AtomicInteger _numberOfConnections = new AtomicInteger();
+    private Map<String,AtomicInteger> _numberOfConnections = new ConcurrentHashMap<String,AtomicInteger>();
     
     private Map<Connection,BlockingQueue<TAsyncClient>> _clientMap = new ConcurrentHashMap<Connection, BlockingQueue<TAsyncClient>>();
     private Map<String,Constructor<?>> _constructorCache = new ConcurrentHashMap<String, Constructor<?>>();
@@ -90,7 +105,10 @@ public class AsyncClientPool {
         if (!client.hasError()) {
             getQueue(connection).put(client);
         } else {
-            _numberOfConnections.decrementAndGet();
+            AtomicInteger counter = _numberOfConnections.get(connection._host);
+        	if (counter != null) {
+        		counter.decrementAndGet();
+        	}
         }
     }
 
@@ -113,36 +131,49 @@ public class AsyncClientPool {
         if (client != null) {
             return client;
         }
-        int numOfConnections = _numberOfConnections.get();
-        while (numOfConnections >= _maxConnectionsPerHost) {
-            client = blockingQueue.poll(_pollTime , TimeUnit.MILLISECONDS);
-            if (client != null) {
-                return client;
+        
+        AtomicInteger counter;
+        synchronized (_numberOfConnections) {
+        	counter = _numberOfConnections.get(connection._host);
+        	if (counter == null) {
+        		counter = new AtomicInteger();
+        		_numberOfConnections.put(connection._host,counter);
+        	}
+		}
+        
+        synchronized (counter) {
+            int numOfConnections = counter.get();
+            while (numOfConnections >= _maxConnectionsPerHost) {
+                client = blockingQueue.poll(_pollTime , TimeUnit.MILLISECONDS);
+                if (client != null) {
+                    return client;
+                }
+                LOG.debug("Waiting for client number of connection [" + numOfConnections +
+                		"], max connection per host [" + _maxConnectionsPerHost + "]");
+                numOfConnections = counter.get();
             }
-            LOG.debug("Waiting for client number of connection [{0}], max connection per host [{1}]",numOfConnections,_maxConnectionsPerHost);
-            numOfConnections = _numberOfConnections.get();
-        }
-        LOG.info("Creating a new client for [{0}]",connection);
-        String name = c.getName();
-        Constructor<?> constructor = _constructorCache.get(name);
-        if (constructor == null) {
-            String clientClassName = name.replace("$AsyncIface", "$AsyncClient");
+            LOG.info("Creating a new client for [" + connection + "]");
+            String name = c.getName();
+            Constructor<?> constructor = _constructorCache.get(name);
+            if (constructor == null) {
+                String clientClassName = name.replace("$AsyncIface", "$AsyncClient");
+                try {
+                    Class<?> clazz = Class.forName(clientClassName);
+                    constructor = clazz.getConstructor(new Class[]{TProtocolFactory.class,TAsyncClientManager.class,TNonblockingTransport.class});
+                    _constructorCache.put(name, constructor);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
             try {
-                Class<?> clazz = Class.forName(clientClassName);
-                constructor = clazz.getConstructor(new Class[]{TProtocolFactory.class,TAsyncClientManager.class,TNonblockingTransport.class});
-                _constructorCache.put(name, constructor);
+                client = (TAsyncClient) constructor.newInstance(new Object[]{_protocolFactory,_clientManager,newTransport(connection)});
+                client.setTimeout(_timeout);
+                counter.incrementAndGet();
+                return client;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-        }
-        try {
-            client = (TAsyncClient) constructor.newInstance(new Object[]{_protocolFactory,_clientManager,newTransport(connection)});
-            client.setTimeout(_timeout);
-            _numberOfConnections.incrementAndGet();
-            return client;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+		}
     }
 
     private TNonblockingSocket newTransport(Connection connection) throws IOException {
@@ -175,7 +206,10 @@ public class AsyncClientPool {
 
         @Override
         public void onError(Exception exception) {
-            _pool._numberOfConnections.decrementAndGet();
+        	AtomicInteger counter = _pool._numberOfConnections.get(_connection._host);
+        	if (counter != null) {
+        		counter.decrementAndGet();
+        	}
             _realCallback.onError(exception);
         }
     }

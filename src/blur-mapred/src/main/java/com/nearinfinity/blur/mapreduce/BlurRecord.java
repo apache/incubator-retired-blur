@@ -26,35 +26,6 @@ import org.apache.hadoop.io.Writable;
 
 public class BlurRecord implements Writable {
     
-    public enum Operation {
-        CREATE_ROW(1),
-        REPLACE_ROW(2),
-        DELETE_ROW(3);
-        
-        private int intVal;
-
-        Operation(int intVal) {
-            this.intVal = intVal;
-        }
-
-        public int getIntVal() {
-            return intVal;
-        }
-
-        public static Operation value(int intVal) {
-            switch (intVal) {
-            case 1:
-                return CREATE_ROW;
-            case 2:
-                return REPLACE_ROW;
-            case 3:
-                return DELETE_ROW;
-            }
-            return null;
-        }
-    }
-    
-    private Operation _operation = Operation.CREATE_ROW;
     private String _rowId;
     private String _recordId;
     private String _columnFamily;
@@ -62,7 +33,6 @@ public class BlurRecord implements Writable {
 
     @Override
     public void readFields(DataInput in) throws IOException {
-        Operation.value(IOUtil.readVInt(in));
         _rowId = IOUtil.readString(in);
         _recordId = IOUtil.readString(in);
         _columnFamily = IOUtil.readString(in);
@@ -77,7 +47,6 @@ public class BlurRecord implements Writable {
 
     @Override
     public void write(DataOutput out) throws IOException {
-        IOUtil.writeVInt(out, _operation.getIntVal());
         IOUtil.writeString(out, _rowId);
         IOUtil.writeString(out, _recordId);
         IOUtil.writeString(out, _columnFamily);
@@ -132,13 +101,5 @@ public class BlurRecord implements Writable {
         blurColumn.setName(name);
         blurColumn.setValue(value);
         addColumn(blurColumn);
-    }
-
-    public Operation getOperation() {
-        return _operation;
-    }
-
-    public void setOperation(Operation operation) {
-        this._operation = operation;
     }
 }

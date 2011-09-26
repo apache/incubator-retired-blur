@@ -16,9 +16,9 @@
 
 package com.nearinfinity.blur.mapreduce;
 
-import java.io.File;
 import java.io.IOException;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -30,19 +30,16 @@ import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.store.cache.LocalFileCache;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurTask {
 	
 	private static final Log log = LogFactory.getLog(BlurTask.class);
 
-    public static final String EMPTY = "EMPTY";
     public static final String BLUR_TABLE_NAME = "blur.table.name";
     public static final String BLUR_BASE_PATH = "blur.base.path";
     public static final String BLUR_ANALYZER_JSON = "blur.analyzer.json";
     public static final String BLUR_RAM_BUFFER_SIZE = "blur.ram.buffer.size";
-    public static final String MAPRED_LOCAL_DIR = "mapred.local.dir";
     public static final String BLUR_MAPPER_MAX_RECORD_COUNT = "blur.mapper.max.record.count";
     
     private Configuration configuration;
@@ -94,16 +91,9 @@ public class BlurTask {
 		}
     }
 
-    public LocalFileCache getLocalFileCache() {
-        LocalFileCache localFileCache = new LocalFileCache();
-        localFileCache.setPotentialFiles(getFiles(configuration.get(MAPRED_LOCAL_DIR)));
-        localFileCache.init();
-        return localFileCache;
-    }
-
     public BlurAnalyzer getAnalyzer() {
         try {
-            return BlurAnalyzer.create(configuration.get(BLUR_ANALYZER_JSON));
+            return BlurAnalyzer.create(new String(Base64.decodeBase64(configuration.get(BLUR_ANALYZER_JSON))));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -121,8 +111,8 @@ public class BlurTask {
         return configuration.get(BLUR_ANALYZER_JSON);
     }
 
-    public void setBlurAnalyzerStr(String blurAnalyzerStr) {
-        configuration.set(BLUR_ANALYZER_JSON, blurAnalyzerStr);
+    public void setBlurAnalyzer(BlurAnalyzer blurAnalyzer) {
+        configuration.set(BLUR_ANALYZER_JSON, new String(Base64.encodeBase64(blurAnalyzer.toJSON().getBytes())));
     }
     
     public String getTableName() {
@@ -147,15 +137,6 @@ public class BlurTask {
 
     public void setMaxRecordCount(long maxRecordCount) {
         configuration.setLong(BLUR_MAPPER_MAX_RECORD_COUNT, maxRecordCount);
-    }
-    
-    private File[] getFiles(String dirs) {
-        String[] split = dirs.split(",");
-        File[] files = new File[split.length];
-        for (int i = 0; i < files.length; i++) {
-            files[i] = new File(split[i]);
-        }
-        return files;
     }
     
     public String getCounterGroupName() {

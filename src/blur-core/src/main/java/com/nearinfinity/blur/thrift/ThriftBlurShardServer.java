@@ -33,12 +33,12 @@ import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -58,14 +58,11 @@ import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
-import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
-import com.nearinfinity.blur.store.cache.HdfsUtil;
-import com.nearinfinity.blur.store.cache.LocalFileCache;
-import com.nearinfinity.blur.store.cache.LocalFileCacheCheck;
-import com.nearinfinity.blur.store.replication.ReplicationDaemon;
-import com.nearinfinity.blur.store.replication.ReplicationStrategy;
+import com.nearinfinity.blur.store.blockcache.BlockCache;
+import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
+import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
@@ -77,6 +74,15 @@ public class ThriftBlurShardServer extends ThriftServer {
     public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
         LOG.info("Setting up Shard Server");
         Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
+        
+        //setup block cache
+        //134,217,728 is the bank size, therefore there are 8,192 block 
+        //in a bank when using a block of 16,384
+        int numberOfBlocksPerBank = 8192;
+        int blockSize = BlockDirectory.BLOCK_SIZE;
+        int numberOfBanks = getNumberOfBanks(0.5f,numberOfBlocksPerBank,blockSize);
+        BlockCache blockCache = new BlockCache(numberOfBanks,numberOfBlocksPerBank,blockSize);
+        BlockDirectoryCache cache = new BlockDirectoryCache(blockCache);
 
         BlurConfiguration configuration = new BlurConfiguration();
 
@@ -104,24 +110,6 @@ public class ThriftBlurShardServer extends ThriftServer {
         
         final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 
-        final LocalFileCache localFileCache = new LocalFileCache();
-        localFileCache.setPotentialFiles(localFileCaches.toArray(new File[localFileCaches.size()]));
-        localFileCache.init();
-
-        final ReplicationDaemon replicationDaemon = new ReplicationDaemon();
-        replicationDaemon.setLocalFileCache(localFileCache);
-        replicationDaemon.init();
-
-        ReplicationStrategy replicationStrategy = new ReplicationStrategy() {
-            @Override
-            public boolean replicateLocally(String table, String name) {
-                if (name.endsWith(".fdt") || name.endsWith(".fdz")) {
-                    return false;
-                }
-                return true;
-            }
-        };
-
         final BlurIndexRefresher refresher = new BlurIndexRefresher();
         refresher.init();
         
@@ -131,18 +119,14 @@ public class ThriftBlurShardServer extends ThriftServer {
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setCommiter(commiter);
         indexServer.setType(NODE_TYPE.SHARD);
-        indexServer.setLocalFileCache(localFileCache);
         indexServer.setZookeeper(zooKeeper);
         indexServer.setNodeName(nodeName);
         indexServer.setDistributedManager(dzk);
-        indexServer.setReplicationDaemon(replicationDaemon);
-        indexServer.setReplicationStrategy(replicationStrategy);
         indexServer.setRefresher(refresher);
         indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
         indexServer.setClusterStatus(clusterStatus);
+        indexServer.setCache(cache);
         indexServer.init();
-
-        localFileCache.setLocalFileCacheCheck(getLocalFileCacheCheck(indexServer));
 
         final IndexManager indexManager = new IndexManager();
         indexManager.setIndexServer(indexServer);
@@ -179,30 +163,24 @@ public class ThriftBlurShardServer extends ThriftServer {
         new BlurServerShutDown().register(new BlurShutdown() {
             @Override
             public void shutdown() {
-                quietClose(commiter, refresher, replicationDaemon, server, shardServer, indexManager, indexServer, localFileCache);
+                quietClose(commiter, refresher, server, shardServer, indexManager, indexServer);
                 System.exit(0);
             }
         }, zooKeeper);
         server.start();
     }
 
-    private static LocalFileCacheCheck getLocalFileCacheCheck(final HdfsIndexServer indexServer) {
-        return new LocalFileCacheCheck() {
-            @Override
-            public boolean isSafeForRemoval(String dirName, String name) throws IOException {
-                String table = HdfsUtil.getTable(dirName);
-                String shard = HdfsUtil.getShard(dirName);
-                List<String> tableList = indexServer.getTableList();
-                if (!tableList.contains(table)) {
-                    return true;
-                }
-                Map<String, BlurIndex> blurIndexes = indexServer.getIndexes(table);
-                if (blurIndexes.containsKey(shard)) {
-                    return false;
-                }
-                return true;
-            }
-        };
+    public static int getNumberOfBanks(float heapPercentage, int numberOfBlocksPerBank, int blockSize) {
+      long max = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
+      long targetBytes = (long) (max * heapPercentage);
+      int slabSize = numberOfBlocksPerBank * blockSize;
+      int slabs = (int) (targetBytes / slabSize);
+      if (slabs == 0) {
+        throw new RuntimeException("Minimum heap size is 512m!");
+      }
+      LOG.info("Block cache parameters, target heap usage [" + heapPercentage + "] slab size of [" + slabSize + 
+          "] will allocate [" + slabs + "] slabs and use ~[" + ((long) slabs * (long) slabSize) + "] bytes");
+      return slabs;
     }
 
     public static Iface crazyMode(final Iface iface) {

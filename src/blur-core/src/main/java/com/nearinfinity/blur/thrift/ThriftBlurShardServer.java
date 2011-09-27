@@ -115,7 +115,7 @@ public class ThriftBlurShardServer extends ThriftServer {
         
         final BlurIndexCommiter commiter = new BlurIndexCommiter();
         commiter.init();
-
+        
         final HdfsIndexServer indexServer = new HdfsIndexServer();
         indexServer.setCommiter(commiter);
         indexServer.setType(NODE_TYPE.SHARD);

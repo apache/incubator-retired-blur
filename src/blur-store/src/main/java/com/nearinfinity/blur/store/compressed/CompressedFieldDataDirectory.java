@@ -28,7 +28,9 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-public class CompressedFieldDataDirectory extends Directory {
+import com.nearinfinity.blur.store.DirectIODirectory;
+
+public class CompressedFieldDataDirectory extends DirectIODirectory {
 
   private static final int _MIN_BUFFER_SIZE = 100;
   private static final String FDZ = ".fdz";
@@ -40,22 +42,22 @@ public class CompressedFieldDataDirectory extends Directory {
   public static CompressionCodec DEFAULT_COMPRESSION = new DefaultCodec();
 
   private CompressionCodec _compression = DEFAULT_COMPRESSION;
-  private Directory _directory;
+  private DirectIODirectory _directory;
   private int _writingBlockSize;
 
   public Directory getInnerDirectory() {
     return _directory;
   }
 
-  public CompressedFieldDataDirectory(Directory dir) {
+  public CompressedFieldDataDirectory(DirectIODirectory dir) {
     this(dir, DEFAULT_COMPRESSION);
   }
 
-  public CompressedFieldDataDirectory(Directory dir, CompressionCodec compression) {
+  public CompressedFieldDataDirectory(DirectIODirectory dir, CompressionCodec compression) {
     this(dir, compression, COMPRESSED_BUFFER_SIZE);
   }
 
-  public CompressedFieldDataDirectory(Directory dir, CompressionCodec compression, int blockSize) {
+  public CompressedFieldDataDirectory(DirectIODirectory dir, CompressionCodec compression, int blockSize) {
     _directory = dir;
     if (compression == null) {
       _compression = DEFAULT_COMPRESSION;
@@ -323,7 +325,6 @@ public class CompressedFieldDataDirectory extends Directory {
     private final long _origLength;
     private final int _blockSize;
     
-    private CompressionCodec _codec;
     private IndexInput _indexInput;
     private long _pos;
     private boolean _isClone;
@@ -334,8 +335,7 @@ public class CompressedFieldDataDirectory extends Directory {
     private Decompressor _decompressor;
 
     public CompressedIndexInput(String name, Directory directory, CompressionCodec codec) throws IOException {
-      _codec = codec;
-      _decompressor = _codec.createDecompressor();
+      _decompressor = codec.createDecompressor();
       _indexInput = directory.openInput(name);
       _realLength = _indexInput.length();
       
@@ -355,26 +355,29 @@ public class CompressedFieldDataDirectory extends Directory {
         _blockLengths[i] = _indexInput.readVInt();
       }
       
-      
-      _blockBuffer = new byte[_blockSize];
-      int dsize = _blockSize * 2;
+      setupBuffers(this);
+    }
+
+    private static void setupBuffers(CompressedIndexInput input) {
+      input._blockBuffer = new byte[input._blockSize];
+      int dsize = input._blockSize * 2;
       if (dsize < _MIN_BUFFER_SIZE) {
         dsize = _MIN_BUFFER_SIZE;
       }
-      _decompressionBuffer = new byte[dsize];
+      input._decompressionBuffer = new byte[dsize];
     }
 
     public Object clone() {
       CompressedIndexInput clone = (CompressedIndexInput) super.clone();
       clone._isClone = true;
-      clone._decompressor = _codec.createDecompressor();
       clone._indexInput = (IndexInput) _indexInput.clone();
+      setupBuffers(clone);
       return clone;
     }
 
     public void close() throws IOException {
-      _decompressor.end();
       if (!_isClone) {
+        _decompressor.end();
         _indexInput.close();
       }
     }
@@ -426,9 +429,11 @@ public class CompressedFieldDataDirectory extends Directory {
       _indexInput.seek(position);
       _indexInput.readBytes(_decompressionBuffer, 0, length);
 
-      _decompressor.reset();
-      _decompressor.setInput(_decompressionBuffer, 0, length);
-      _blockBufferLength = _decompressor.decompress(_blockBuffer, 0, _blockBuffer.length);
+      synchronized (_decompressor) {
+        _decompressor.reset();
+        _decompressor.setInput(_decompressionBuffer, 0, length);
+        _blockBufferLength = _decompressor.decompress(_blockBuffer, 0, _blockBuffer.length);
+      }
 
       _currentBlockId = blockId;
     }
@@ -440,5 +445,15 @@ public class CompressedFieldDataDirectory extends Directory {
     public void seek(long pos) throws IOException {
       _pos = pos;
     }
+  }
+
+  @Override
+  public IndexOutput createOutputDirectIO(String name) throws IOException {
+    return _directory.createOutputDirectIO(name);
+  }
+
+  @Override
+  public IndexInput openInputDirectIO(String name) throws IOException {
+    return _directory.openInputDirectIO(name);
   }
 }

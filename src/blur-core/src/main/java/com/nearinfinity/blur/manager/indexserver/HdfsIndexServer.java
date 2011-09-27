@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -41,15 +42,19 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.store.HdfsDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
+import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
@@ -91,8 +96,21 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     String shardPath = ZookeeperPathConstants.getBlurLockPath(table) + "/" + shard;
     ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, shardPath);
 
-    HdfsDirectory directory = new HdfsDirectory(hdfsDirPath);
+    DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
+    
+    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(table);
+    String compressionClass = descriptor.compressionClass;
+    int compressionBlockSize = descriptor.compressionBlockSize;
+    if (compressionClass != null) {
+      CompressionCodec compressionCodec;
+      try {
+        compressionCodec = CreateTable.getInstance(compressionClass);
+        directory = new CompressedFieldDataDirectory(directory, compressionCodec, compressionBlockSize);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
+    }
 
     BlockDirectory baseDirectory = new BlockDirectory(table + "_" + shard, directory, _cache);
     BlurIndexWriter writer = new BlurIndexWriter();

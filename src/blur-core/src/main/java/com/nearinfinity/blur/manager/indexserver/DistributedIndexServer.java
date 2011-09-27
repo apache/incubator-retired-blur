@@ -72,7 +72,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     private Map<String, Set<String>> _layoutCache = new ConcurrentHashMap<String, Set<String>>();
     private ExecutorService _openerService;
     private int _shardOpenerThreadCount = 1;
-    private ClusterStatus _clusterStatus;
+    protected ClusterStatus _clusterStatus;
     //need a GC daemon for closing indexes
     //need a daemon for tracking what indexes to open ???
     //need a daemon to track reopening changed indexes

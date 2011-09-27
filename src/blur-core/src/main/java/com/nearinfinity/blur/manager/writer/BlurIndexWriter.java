@@ -31,11 +31,8 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.AlreadyClosedException;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
-import org.apache.lucene.store.Lock;
-import org.apache.lucene.store.LockFactory;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -43,20 +40,18 @@ import com.nearinfinity.blur.index.WalIndexWriter;
 import com.nearinfinity.blur.index.WalIndexWriter.WalInputFactory;
 import com.nearinfinity.blur.index.WalIndexWriter.WalOutputFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
-import com.nearinfinity.blur.store.HdfsDirectory;
+import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
-import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
 
 public class BlurIndexWriter extends BlurIndex {
 
   private static final Log LOG = LogFactory.getLog(BlurIndexWriter.class);
 
-  private Directory _directory;
+  private DirectIODirectory _directory;
   private WalIndexWriter _writer;
   private BlurAnalyzer _analyzer;
   private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
-  private Directory _sync;
   private BlurIndexCloser _closer;
   private BlurIndexRefresher _refresher;
   private RowWalIndexWriter _rowIndexWriter;
@@ -65,43 +60,23 @@ public class BlurIndexWriter extends BlurIndex {
   private String _id = UUID.randomUUID().toString();
 
   public void init() throws IOException {
-    _sync = watchSync(_directory);
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
     conf.setSimilarity(new FairSimilarity());
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-    _writer = new WalIndexWriter(_sync, conf, new WalOutputFactory() {
+    _writer = new WalIndexWriter(_directory, conf, new WalOutputFactory() {
       @Override
-      public IndexOutput getWalOutput(Directory directory, String name) throws IOException {
-        if (directory instanceof SyncWatcher) {
-          SyncWatcher dir = (SyncWatcher) directory;
-          if (dir._dir instanceof CompressedFieldDataDirectory) {
-            CompressedFieldDataDirectory comDir = (CompressedFieldDataDirectory) dir._dir;
-            Directory innerDir = comDir.getInnerDirectory();
-            if (innerDir instanceof HdfsDirectory) {
-              return ((HdfsDirectory) innerDir).createOutputHdfs(name);
-            }
-          }
-        }
-        return directory.createOutput(name);
+      public IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException {
+        return directory.createOutputDirectIO(name);
       }
     }, new WalInputFactory() {
       @Override
-      public IndexInput getWalInput(Directory directory, String name) throws IOException {
-        if (directory instanceof SyncWatcher) {
-          SyncWatcher dir = (SyncWatcher) directory;
-          if (dir._dir instanceof CompressedFieldDataDirectory) {
-            CompressedFieldDataDirectory comDir = (CompressedFieldDataDirectory) dir._dir;
-            Directory innerDir = comDir.getInnerDirectory();
-            if (innerDir instanceof HdfsDirectory) {
-              return ((HdfsDirectory) innerDir).openInputHdfs(name);
-            }
-          }
-        }
-        return directory.openInput(name);
+      public IndexInput getWalInput(DirectIODirectory directory, String name) throws IOException {
+        return directory.openInputDirectIO(name);
       }
     });
+    _writer.commitAndRollWal();
     _indexReaderRef.set(IndexReader.open(_writer, true));
     _rowIndexWriter = new RowWalIndexWriter(_writer, _analyzer);
     _open.set(true);
@@ -168,106 +143,12 @@ public class BlurIndexWriter extends BlurIndex {
     _analyzer = analyzer;
   }
 
-  public void setDirectory(Directory directory) {
+  public void setDirectory(DirectIODirectory directory) {
     _directory = directory;
-  }
-
-  private Directory watchSync(Directory dir) {
-    return new SyncWatcher(dir);
   }
 
   public void setCloser(BlurIndexCloser closer) {
     _closer = closer;
-  }
-
-  private static class SyncWatcher extends Directory {
-
-    public Directory _dir;
-
-    public SyncWatcher(Directory dir) {
-      _dir = dir;
-    }
-
-    public void clearLock(String name) throws IOException {
-      _dir.clearLock(name);
-    }
-
-    public void close() throws IOException {
-      _dir.close();
-    }
-
-    public IndexOutput createOutput(String arg0) throws IOException {
-      return _dir.createOutput(arg0);
-    }
-
-    public void deleteFile(String arg0) throws IOException {
-      _dir.deleteFile(arg0);
-    }
-
-    public boolean equals(Object obj) {
-      return _dir.equals(obj);
-    }
-
-    public boolean fileExists(String arg0) throws IOException {
-      return _dir.fileExists(arg0);
-    }
-
-    public long fileLength(String arg0) throws IOException {
-      return _dir.fileLength(arg0);
-    }
-
-    public long fileModified(String arg0) throws IOException {
-      return _dir.fileModified(arg0);
-    }
-
-    public LockFactory getLockFactory() {
-      return _dir.getLockFactory();
-    }
-
-    public String getLockID() {
-      return _dir.getLockID();
-    }
-
-    public int hashCode() {
-      return _dir.hashCode();
-    }
-
-    public String[] listAll() throws IOException {
-      return _dir.listAll();
-    }
-
-    public Lock makeLock(String name) {
-      return _dir.makeLock(name);
-    }
-
-    public IndexInput openInput(String name, int bufferSize) throws IOException {
-      return _dir.openInput(name, bufferSize);
-    }
-
-    public IndexInput openInput(String arg0) throws IOException {
-      return _dir.openInput(arg0);
-    }
-
-    public void setLockFactory(LockFactory lockFactory) throws IOException {
-      _dir.setLockFactory(lockFactory);
-    }
-
-    @SuppressWarnings("deprecation")
-    public void sync(String name) throws IOException {
-      long start = System.nanoTime();
-      _dir.sync(name);
-      long end = System.nanoTime();
-      LOG.debug("Sync of [" + name + "] took [" + (end - start) / 1000000.0 + " ms]");
-    }
-
-    public String toString() {
-      return _dir.toString();
-    }
-
-    @SuppressWarnings("deprecation")
-    public void touchFile(String arg0) throws IOException {
-      _dir.touchFile(arg0);
-    }
   }
 
   public void setRefresher(BlurIndexRefresher refresher) {
@@ -277,5 +158,6 @@ public class BlurIndexWriter extends BlurIndex {
   public void setCommiter(BlurIndexCommiter commiter) {
     _commiter = commiter;
   }
-
+  
+  
 }

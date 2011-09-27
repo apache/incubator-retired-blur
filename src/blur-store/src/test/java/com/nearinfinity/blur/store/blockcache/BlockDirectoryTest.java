@@ -17,6 +17,8 @@ import org.apache.lucene.store.IndexOutput;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.nearinfinity.blur.store.DirectIODirectory;
+
 public class BlockDirectoryTest {
 
   private static final int MAX_NUMBER_OF_WRITES = 10000;
@@ -36,7 +38,7 @@ public class BlockDirectoryTest {
     rm(file);
     file.mkdirs();
     FSDirectory dir = FSDirectory.open(new File(file, "base"));
-    directory = new BlockDirectory("test", dir, getBasicCache());
+    directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), getBasicCache());
     seed = new Random().nextLong();
     seed = -7671132935535364673L;
 

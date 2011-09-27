@@ -61,9 +61,7 @@ public class HdfsDirectoryTest {
 
     assertEquals(4, directory.fileLength("testing.test"));
 
-    directory.rename("testing.test", "testing.test.new");
-
-    IndexInput input1 = directory.openInput("testing.test.new");
+    IndexInput input1 = directory.openInput("testing.test");
 
     IndexInput input2 = (IndexInput) input1.clone();
     assertEquals(12345, input2.readInt());
@@ -72,10 +70,10 @@ public class HdfsDirectoryTest {
     assertEquals(12345, input1.readInt());
     input1.close();
 
+    assertFalse(directory.fileExists("testing.test.other"));
+    assertTrue(directory.fileExists("testing.test"));
+    directory.deleteFile("testing.test");
     assertFalse(directory.fileExists("testing.test"));
-    assertTrue(directory.fileExists("testing.test.new"));
-    directory.deleteFile("testing.test.new");
-    assertFalse(directory.fileExists("testing.test.new"));
   }
   
   @Test

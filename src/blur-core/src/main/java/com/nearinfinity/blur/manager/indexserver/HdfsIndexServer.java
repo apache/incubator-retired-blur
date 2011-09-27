@@ -37,7 +37,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.index.IndexReader.FieldOption;
-import org.apache.lucene.store.Directory;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
@@ -92,7 +91,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     String shardPath = ZookeeperPathConstants.getBlurLockPath(table) + "/" + shard;
     ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, shardPath);
 
-    Directory directory = new HdfsDirectory(hdfsDirPath);
+    HdfsDirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
     BlockDirectory baseDirectory = new BlockDirectory(table + "_" + shard, directory, _cache);

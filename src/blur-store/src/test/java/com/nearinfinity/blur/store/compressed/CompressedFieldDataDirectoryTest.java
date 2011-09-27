@@ -1,4 +1,4 @@
-package com.nearinfinity.lucene.compressed;
+package com.nearinfinity.blur.store.compressed;
 
 import static org.junit.Assert.assertEquals;
 
@@ -20,6 +20,8 @@ import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.Test;
+
+import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 
 public class CompressedFieldDataDirectoryTest {
     

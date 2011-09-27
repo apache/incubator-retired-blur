@@ -24,10 +24,11 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockObtainFailedException;
+
+import com.nearinfinity.blur.store.DirectIODirectory;
 
 public class WalIndexWriter extends IndexWriter {
     
@@ -36,7 +37,7 @@ public class WalIndexWriter extends IndexWriter {
 
     private static final Log LOG = LogFactory.getLog(WalIndexWriter.class);
 
-    private Directory _directory;
+    private DirectIODirectory _directory;
     private AtomicReference<IndexOutput> _walOutput = new AtomicReference<IndexOutput>();
     private String _currentWalName;
     private WalOutputFactory _walOutputFactory;
@@ -44,29 +45,29 @@ public class WalIndexWriter extends IndexWriter {
     private static ExecutorService _service;
     
     public static interface WalOutputFactory {
-        IndexOutput getWalOutput(Directory directory, String name) throws IOException;
+        IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException;
     }
     
     public static interface WalInputFactory {
-        IndexInput getWalInput(Directory directory, String name) throws IOException;
+        IndexInput getWalInput(DirectIODirectory directory, String name) throws IOException;
     }
     
-    public WalIndexWriter(Directory directory, IndexWriterConfig config) throws CorruptIndexException, 
+    public WalIndexWriter(DirectIODirectory directory, IndexWriterConfig config) throws CorruptIndexException, 
         LockObtainFailedException, IOException {
         this(directory,config,new WalOutputFactory() {
             @Override
-            public IndexOutput getWalOutput(Directory directory, String name) throws IOException {
+            public IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException {
                 return directory.createOutput(name);
             }
         }, new WalInputFactory() {
             @Override
-            public IndexInput getWalInput(Directory directory, String name) throws IOException {
+            public IndexInput getWalInput(DirectIODirectory directory, String name) throws IOException {
                 return directory.openInput(name);
             }
         });
     }
     
-    public WalIndexWriter(Directory directory, IndexWriterConfig config, WalOutputFactory walOutputFactory, WalInputFactory walInputFactory) throws CorruptIndexException, 
+    public WalIndexWriter(DirectIODirectory directory, IndexWriterConfig config, WalOutputFactory walOutputFactory, WalInputFactory walInputFactory) throws CorruptIndexException, 
         LockObtainFailedException, IOException {
         super(directory, config);
         _walOutputFactory = walOutputFactory;

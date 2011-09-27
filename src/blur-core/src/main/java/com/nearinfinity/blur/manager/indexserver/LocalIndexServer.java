@@ -35,7 +35,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.MMapDirectory;
 import org.apache.lucene.util.Version;
 
@@ -48,7 +47,8 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
-import com.nearinfinity.lucene.compressed.CompressedFieldDataDirectory;
+import com.nearinfinity.blur.store.DirectIODirectory;
+import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 
 public class LocalIndexServer extends AbstractIndexServer {
 
@@ -113,12 +113,10 @@ public class LocalIndexServer extends AbstractIndexServer {
             Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
             for (File f : tableFile.listFiles()) {
                 if (f.isDirectory()) {
-                    // Directory directory = FSDirectory.open(f);
                     MMapDirectory directory = new MMapDirectory(f);
                     if (!IndexReader.indexExists(directory)) {
                         new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer())).close();
                     }
-                    warmUp(directory);
                     String shardName = f.getName();
                     shards.put(shardName, openIndex(table, directory));
                 }
@@ -128,33 +126,9 @@ public class LocalIndexServer extends AbstractIndexServer {
         throw new IOException("Table [" + table + "] not found.");
     }
 
-    private void warmUp(final MMapDirectory directory) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    for (String name : directory.listAll()) {
-                        if (name.endsWith(".fdx")) {
-                            continue;
-                        }
-                        IndexInput input = directory.openInput(name);
-                        long length = input.length();
-                        long hash = 0;
-                        for (long i = 0; i < length; i++) {
-                            hash += input.readByte();
-                        }
-                        input.close();
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }).start();
-    }
-
     private BlurIndex openIndex(String table, Directory dir) throws CorruptIndexException, IOException {
         BlurIndexWriter writer = new BlurIndexWriter();
-        writer.setDirectory(dir);
+        writer.setDirectory(DirectIODirectory.wrap(dir));
         writer.setAnalyzer(getAnalyzer(table));
         writer.setCloser(_closer);
         writer.setRefresher(_refresher);

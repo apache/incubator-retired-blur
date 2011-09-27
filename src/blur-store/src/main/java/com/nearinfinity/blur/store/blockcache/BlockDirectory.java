@@ -10,7 +10,9 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-public class BlockDirectory extends Directory {
+import com.nearinfinity.blur.store.DirectIODirectory;
+
+public class BlockDirectory extends DirectIODirectory {
   
   public static final long BLOCK_SHIFT = 14; // 2^14 = 16,384 bytes per block
   public static final long BLOCK_MOD = 0x3FFF;
@@ -28,7 +30,7 @@ public class BlockDirectory extends Directory {
     return (block << BLOCK_SHIFT) + positionInBlock;
   }
 
-  private Directory _directory;
+  private DirectIODirectory _directory;
   private int _blockSize;
   private String _dirName;
   private Cache _cache = new Cache() {
@@ -49,14 +51,14 @@ public class BlockDirectory extends Directory {
     }
   };
   
-  public BlockDirectory(String dirName, Directory directory) throws IOException {
+  public BlockDirectory(String dirName, DirectIODirectory directory) throws IOException {
     _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
     setLockFactory(directory.getLockFactory());
   }
 
-  public BlockDirectory(String dirName, Directory directory, Cache cache) throws IOException {
+  public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache) throws IOException {
     _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
@@ -232,6 +234,16 @@ public class BlockDirectory extends Directory {
   @SuppressWarnings("deprecation")
   public void touchFile(String name) throws IOException {
     _directory.touchFile(name);
+  }
+
+  @Override
+  public IndexOutput createOutputDirectIO(String name) throws IOException {
+    return _directory.createOutputDirectIO(name);
+  }
+
+  @Override
+  public IndexInput openInputDirectIO(String name) throws IOException {
+    return _directory.openInputDirectIO(name);
   }
 
 }

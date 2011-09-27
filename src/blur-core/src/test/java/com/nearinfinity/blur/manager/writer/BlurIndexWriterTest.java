@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -45,7 +46,7 @@ public class BlurIndexWriterTest {
         commiter.init();
         
         writer = new BlurIndexWriter();
-        writer.setDirectory(FSDirectory.open(dir));
+        writer.setDirectory(DirectIODirectory.wrap(FSDirectory.open(dir)));
         writer.setCloser(closer);
         writer.setAnalyzer(analyzer);
         writer.setRefresher(refresher);

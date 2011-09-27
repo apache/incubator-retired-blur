@@ -25,16 +25,18 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.lucene.store.Directory;
+import org.apache.hadoop.hdfs.DFSClient.DFSDataInputStream;
+import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
-public class HdfsDirectory extends Directory {
+public class HdfsDirectory extends DirectIODirectory {
 
   protected Path _hdfsDirPath;
   protected AtomicReference<FileSystem> _fileSystemRef = new AtomicReference<FileSystem>();
@@ -71,22 +73,10 @@ public class HdfsDirectory extends Directory {
 
   }
 
-  public IndexOutput createOutputHdfs(String name) throws IOException {
-    HdfsFileWriter writer = new HdfsFileWriter(getFileSystem(), new Path(_hdfsDirPath,name));
-    return new HdfsIndexOutput(writer);
-  }
-
   @Override
   public IndexOutput createOutput(String name) throws IOException {
-    return createOutputHdfs(name);
-  }
-
-  protected void rename(String currentName, String newName) throws IOException {
-    getFileSystem().rename(new Path(_hdfsDirPath, currentName), new Path(_hdfsDirPath, newName));
-  }
-
-  protected FSDataOutputStream getOutputStream(String name) throws IOException {
-    return getFileSystem().create(new Path(_hdfsDirPath, name));
+    HdfsFileWriter writer = new HdfsFileWriter(getFileSystem(), new Path(_hdfsDirPath,name));
+    return new HdfsIndexOutput(writer);
   }
 
   @Override
@@ -96,24 +86,6 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public IndexInput openInput(final String name, int bufferSize) throws IOException {
-    return openInputHdfs(name, bufferSize);
-  }
-
-  public IndexInput openInputHdfs(String name) throws IOException {
-    return openInputHdfs(name, BUFFER_SIZE);
-  }
-
-  public IndexInput openInputHdfs(String name, int bufferSize) throws IOException {
-    //    FSDataInputStream inputStream = getFileSystem().open(new Path(_hdfsDirPath, name));
-//    long length = 0;
-//    if (inputStream instanceof DFSDataInputStream) {
-//      // This is needed because if the file was in progress of being written but
-//      // was not closed the
-//      // length of the file is 0. This will fetch the synced length of the file.
-//      length = ((DFSDataInputStream) inputStream).getVisibleLength();
-//    } else {
-//      length = fileLength(name);
-//    }
     HdfsFileReader reader = new HdfsFileReader(getFileSystem(), new Path(_hdfsDirPath, name));
     return new HdfsIndexInput(reader);
   }
@@ -128,10 +100,6 @@ public class HdfsDirectory extends Directory {
 
   @Override
   public boolean fileExists(String name) throws IOException {
-    return fileExistsHdfs(name);
-  }
-
-  public boolean fileExistsHdfs(String name) throws IOException {
     return getFileSystem().exists(new Path(_hdfsDirPath, name));
   }
 
@@ -284,6 +252,116 @@ public class HdfsDirectory extends Directory {
     @Override
     public void writeBytes(byte[] b, int offset, int length) throws IOException {
       _writer.writeBytes(b, offset, length);
+    }
+  }
+
+  @Override
+  public IndexOutput createOutputDirectIO(String name) throws IOException {
+    FileSystem fileSystem = getFileSystem();
+    final FSDataOutputStream outputStream = fileSystem.create(new Path(_hdfsDirPath, name));
+    return new IndexOutput() {
+
+      @Override
+      public void close() throws IOException {
+        outputStream.close();
+      }
+
+      @Override
+      public void flush() throws IOException {
+        outputStream.sync();
+      }
+
+      @Override
+      public long getFilePointer() {
+        try {
+          return outputStream.getPos();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
+      @Override
+      public long length() throws IOException {
+        return outputStream.getPos();
+      }
+
+      @Override
+      public void seek(long pos) throws IOException {
+        throw new IOException("Seeks not allowed");
+      }
+
+      @Override
+      public void writeByte(byte b) throws IOException {
+        outputStream.write(b & 0xFF);
+      }
+
+      @Override
+      public void writeBytes(byte[] b, int offset, int length) throws IOException {
+        outputStream.write(b, offset, length);
+      }
+    };
+  }
+
+  @Override
+  public IndexInput openInputDirectIO(String name) throws IOException {
+    Path path = new Path(_hdfsDirPath, name);
+    FSDataInputStream inputStream = getFileSystem().open(path);
+    return new DirectIOHdfsIndexInput(inputStream,realFileLength(path));
+  }
+  
+  private long realFileLength(Path path) throws IOException {
+    FileSystem fileSystem = getFileSystem();
+    FileStatus fileStatus = fileSystem.getFileStatus(path);
+    return fileStatus.getLen();
+  }
+
+  static class DirectIOHdfsIndexInput extends BufferedIndexInput {
+    
+    private long _length;
+    private FSDataInputStream _inputStream;
+    private boolean isClone;
+
+    public DirectIOHdfsIndexInput(FSDataInputStream inputStream, long length) throws IOException {
+      if (inputStream instanceof DFSDataInputStream) {
+        // This is needed because if the file was in progress of being written but
+        // was not closed the
+        // length of the file is 0. This will fetch the synced length of the file.
+        _length = ((DFSDataInputStream) inputStream).getVisibleLength();
+      } else {
+        _length = length;
+      }
+      _inputStream = inputStream;
+    }
+    
+    @Override
+    public long length() {
+      return _length;
+    }
+    
+    @Override
+    public void close() throws IOException {
+      if (!isClone) {
+        _inputStream.close();
+      }
+    }
+    
+    @Override
+    protected void seekInternal(long pos) throws IOException {
+      
+    }
+    
+    @Override
+    protected void readInternal(byte[] b, int offset, int length) throws IOException {
+      synchronized (_inputStream) {
+        _inputStream.readFully(getFilePointer(), b, offset, length);
+      }
+    }
+
+    @Override
+    public Object clone() {
+      DirectIOHdfsIndexInput clone = (DirectIOHdfsIndexInput) super.clone();
+      clone.isClone = true;
+      return clone;
     }
   }
 }

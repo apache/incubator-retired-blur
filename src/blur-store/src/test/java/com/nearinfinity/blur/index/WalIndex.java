@@ -21,6 +21,8 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.store.DirectIODirectory;
+
 
 public class WalIndex {
     
@@ -36,7 +38,7 @@ public class WalIndex {
         conf.setMaxThreadStates(3);
         TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
         mergePolicy.setUseCompoundFile(false);
-        WalIndexWriter writer = new WalIndexWriter(dir, conf);
+        WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(dir), conf);
         int count = 0;
         int max = 50000;
         int size = 10;

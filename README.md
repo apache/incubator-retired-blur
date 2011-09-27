@@ -42,7 +42,6 @@ Next you will need to configure the `config/blur-env.sh` file.  The two exports 
 Then you will need to setup the `config/blur.properties` file.  The default site configuration:
 
     blur.zookeeper.connection=localhost
-    blur.local.cache.paths=/tmp/blur-cache
     blur.cluster.name=default
 
 Other options:

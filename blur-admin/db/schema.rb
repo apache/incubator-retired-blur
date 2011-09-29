@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110810142348) do
+ActiveRecord::Schema.define(:version => 20110929224549) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -75,21 +75,22 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
   end
 
   create_table "hdfs_stats", :force => true do |t|
-    t.integer  "config_capacity"
-    t.integer  "present_capacity"
-    t.integer  "dfs_remaining"
-    t.integer  "dfs_used"
-    t.decimal  "dfs_used_percent", :precision => 10, :scale => 0
-    t.integer  "under_replicated"
-    t.integer  "corrupt_blocks"
-    t.integer  "missing_blocks"
+    t.integer  "config_capacity",  :limit => 8
+    t.integer  "present_capacity", :limit => 8
+    t.integer  "dfs_remaining",    :limit => 8
+    t.integer  "dfs_used",         :limit => 8
+    t.float    "dfs_used_percent"
+    t.integer  "under_replicated", :limit => 8
+    t.integer  "corrupt_blocks",   :limit => 8
+    t.integer  "missing_blocks",   :limit => 8
     t.integer  "total_nodes"
     t.integer  "dead_nodes"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "host"
-    t.integer  "port"
+    t.string   "port"
     t.integer  "hdfs_id"
+    t.integer  "live_nodes"
   end
 
   create_table "preferences", :force => true do |t|

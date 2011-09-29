@@ -13,9 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Timer;
 
-import org.apache.commons.cli.ParseException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
@@ -26,7 +24,7 @@ import com.nearinfinity.agent.zookeeper.ZookeeperInstance;
 
 public class Agent {
 
-	public static void main(String[] args) throws ParseException {
+	public static void main(String[] args) {
 		try {
 			File pidFile = new File("agent.pid");
 			PrintWriter pidOut = new PrintWriter(pidFile);
@@ -98,13 +96,14 @@ public class Agent {
 		
 		//Pull HDFS information
 		if (activeCollectors.contains("hdfs")) {
-			for (Map<String, String> instance : hdfsInstances.values()) {
+			for (final Map<String, String> instance : hdfsInstances.values()) {
 				try {
 					new Thread(new Runnable(){
 						@Override
 						public void run() {
 							while(true) {
-								//HDFSCollector.startCollecting(instance.get("default"), jdbc);
+								System.out.println(instance);
+								HDFSCollector.startCollecting(instance.get("default"), instance.get("name"), jdbc);
 								try {
 									Thread.sleep(1500);
 								} catch (InterruptedException e) {
@@ -164,7 +163,15 @@ public class Agent {
 		}
 
 		
-		System.out.println("Exiting polling agent");
+		while (true) {
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				break;
+			}
+		}
+		
+		System.out.println("Exiting agent");
 	}
 
 	private Map<String, String> loadBlurInstances(Properties props) {
@@ -191,6 +198,7 @@ public class Agent {
 				Map<String, String> instanceInfo = new HashMap<String, String>();
 				instanceInfo.put("thrift", props.getProperty("hdfs.thrift." + hdfs + ".url"));
 				instanceInfo.put("default", props.getProperty("hdfs." + hdfs + ".url"));
+				instanceInfo.put("name", hdfs);
 				instances.put(hdfs, instanceInfo);
 			}
 		}

@@ -23,6 +23,8 @@ public class HDFSCollector {
 				@Override
 				public void run() {
 					try {
+						jdbc.update("delete from hdfs_stats where created_at+0 < NOW() - (7*24*60*60);");
+						
 						String[] uriParts = uriString.split(":");
 						String host = uriParts[0];
 						String port = uriParts[1];

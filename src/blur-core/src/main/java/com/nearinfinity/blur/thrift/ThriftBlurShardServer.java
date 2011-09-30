@@ -17,7 +17,6 @@
 package com.nearinfinity.blur.thrift;
 
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_LOCAL_CACHE_PATHS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
@@ -31,14 +30,11 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TI
 import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -61,8 +57,8 @@ import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.N
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
-import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
+import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
@@ -89,14 +85,9 @@ public class ThriftBlurShardServer extends ThriftServer {
         String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
         String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
         String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
-        String localCacheDirs = isEmpty(configuration.get(BLUR_LOCAL_CACHE_PATHS), BLUR_LOCAL_CACHE_PATHS);
         
         BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
-        List<File> localFileCaches = new ArrayList<File>();
-        for (String cachePath : localCacheDirs.split(",")) {
-            localFileCaches.add(new File(cachePath));
-        }
         boolean crazyMode = false;
         if (args.length == 1 && args[0].equals(CRAZY)) {
             crazyMode = true;

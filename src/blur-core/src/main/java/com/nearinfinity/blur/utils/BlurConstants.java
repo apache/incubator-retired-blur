@@ -41,7 +41,6 @@ public class BlurConstants {
     public static final String SUPER = "super";
     public static final String SEP = ".";
     
-    public static final String BLUR_LOCAL_CACHE_PATHS = "blur.local.cache.paths";
     public static final String BLUR_TABLE_PATH = "blur.table.path";
     public static final String BLUR_ZOOKEEPER_CONNECTION = "blur.zookeeper.connection";
     public static final String BLUR_SHARD_HOSTNAME = "blur.shard.hostname";

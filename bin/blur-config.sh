@@ -17,7 +17,7 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-export BLUR_HOME=`dirname "$this"`/..
+export BLUR_HOME="$bin"/..
 export BLUR_HOME_CONF=$BLUR_HOME/conf
 
 . $BLUR_HOME/conf/blur-env.sh

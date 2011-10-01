@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
   require 'blur_thrift_client'
 
   before_filter :current_user_session, :current_user
+  helper_method :license
 
   enable_authorization do |exception|
     if current_user
@@ -27,6 +28,10 @@ class ApplicationController < ActionController::Base
     respond_to do |format|
       format.html {render :partial => 'layouts/help_menu', :locals => {:tab => tab}}
     end
+  end
+  
+  def license
+    @license ||= License.first
   end
 
   private

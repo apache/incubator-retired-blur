@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110929224549) do
+ActiveRecord::Schema.define(:version => 20111001193840) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -91,6 +91,12 @@ ActiveRecord::Schema.define(:version => 20110929224549) do
     t.string   "port"
     t.integer  "hdfs_id"
     t.integer  "live_nodes"
+  end
+
+  create_table "licenses", :id => false, :force => true do |t|
+    t.string "org"
+    t.date   "issued_date"
+    t.date   "expires_date"
   end
 
   create_table "preferences", :force => true do |t|

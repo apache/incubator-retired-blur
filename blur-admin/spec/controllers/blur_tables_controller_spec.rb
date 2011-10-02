@@ -57,7 +57,7 @@ describe BlurTablesController do
     end
     it "should the blur table whose schema is requested" do
       BlurTable.should_receive(:find).with @blur_table.id
-      put :update, :id => @blur_table.id
+      get :schema, :id => @blur_table.id
     end
     it "should render the schema partial" do
       get :schema, :id => @blur_table.id
@@ -77,7 +77,7 @@ describe BlurTablesController do
     end
     it "finds the blur table being whose hosts is requested" do
       BlurTable.should_receive(:find).with @blur_table.id
-      put :update, :id => @blur_table.id
+      get :hosts, :id => @blur_table.id
     end
     it "should render the hosts partial" do
       get :hosts, :id => @blur_table.id

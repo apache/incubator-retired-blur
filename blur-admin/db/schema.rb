@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111001193840) do
+ActiveRecord::Schema.define(:version => 20111002175546) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -33,6 +33,8 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.integer  "state"
   end
 
+  add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"
+
   create_table "blur_tables", :force => true do |t|
     t.string   "table_name"
     t.integer  "current_size",   :limit => 8
@@ -49,12 +51,16 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.integer  "row_count",      :limit => 8
   end
 
+  add_index "blur_tables", ["cluster_id"], :name => "index_blur_tables_on_cluster_id"
+
   create_table "clusters", :force => true do |t|
     t.string   "name"
     t.integer  "zookeeper_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "clusters", ["zookeeper_id"], :name => "index_clusters_on_zookeeper_id"
 
   create_table "controllers", :force => true do |t|
     t.integer  "status"
@@ -65,6 +71,8 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
 
   create_table "hdfs", :force => true do |t|
     t.string   "host"
@@ -93,6 +101,8 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.integer  "live_nodes"
   end
 
+  add_index "hdfs_stats", ["hdfs_id"], :name => "index_hdfs_stats_on_hdfs_id"
+
   create_table "licenses", :id => false, :force => true do |t|
     t.string "org"
     t.date   "issued_date"
@@ -108,6 +118,8 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.integer  "user_id"
   end
 
+  add_index "preferences", ["user_id"], :name => "index_preferences_on_user_id"
+
   create_table "searches", :force => true do |t|
     t.boolean  "super_query"
     t.text     "columns"
@@ -121,6 +133,9 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.datetime "updated_at"
   end
 
+  add_index "searches", ["blur_table_id"], :name => "index_searches_on_blur_table_id"
+  add_index "searches", ["user_id"], :name => "index_searches_on_user_id"
+
   create_table "shards", :force => true do |t|
     t.integer  "status"
     t.string   "blur_version"
@@ -130,6 +145,8 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "shards", ["cluster_id"], :name => "index_shards_on_cluster_id"
 
   create_table "system_metrics", :force => true do |t|
     t.string   "name",               :null => false
@@ -143,6 +160,10 @@ ActiveRecord::Schema.define(:version => 20111001193840) do
     t.string   "action",             :null => false
     t.string   "category",           :null => false
   end
+
+  add_index "system_metrics", ["parent_id"], :name => "index_system_metrics_on_parent_id"
+  add_index "system_metrics", ["request_id"], :name => "index_system_metrics_on_request_id"
+  add_index "system_metrics", ["transaction_id"], :name => "index_system_metrics_on_transaction_id"
 
   create_table "users", :force => true do |t|
     t.string   "username"

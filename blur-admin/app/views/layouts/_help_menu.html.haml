@@ -19,42 +19,42 @@
           It has a link to your "User" page:
           %ul
             %li This is located in the top right, next to the "logout" button.
-        
+
 .help-section#zookeepers
-  %h3.help-label Dashboard Help 
+  %h3.help-label Dashboard Help
   .help-content{ :style =>  tab != 'dashboard' && 'display: none' }
     .head
       The "Dashboard" page is a high level view of the overall health of your system. Each box on this page represents a different zookeeper and displays information for that zookeeper.
     .body
       %ol
         %li The header of each zookeeper box displays whether or not the system is online.
-        %li 
+        %li
           The first row gives the user a warning about inconsistent blur versions.
-          %ul 
+          %ul
             %li If the system detects that any of the controllers or shards are using inconsistent versions of Blur, then the status changes to "Inconsistent Blur Versions".
-        %li 
-          The next three rows of the box are an aggregation of all the different states of all the controllers and shards respectively. 
-          %ul 
+        %li
+          The next three rows of the box are an aggregation of all the different states of all the controllers and shards respectively.
+          %ul
             %li The "online", "disabled", and "offline" bars display the number of shards/controllers that are currently online, disabled, and offline.
         %li Clicking on a Zookeeper box will take the user to the Environment page of that particular blur instance.
-        %li 
+        %li
           A warning will appear at the bottom of the box if there are any "long running" queries.
-          %ul 
+          %ul
             %li This warning is a count of the number queries that have been running for more than a minute.
 
 .help-section#environment
-  %h3.help-label Environment Help 
+  %h3.help-label Environment Help
   .help-content{ :style =>  tab != 'environment' && 'display: none' }
     .head
       The "Environment" page is a zookeeper specific status page.
     .body
       %ol
-        %li The top section lists some of the details about the current zookeeper such as the name, the connection (URL), and its current status. 
+        %li The top section lists some of the details about the current zookeeper such as the name, the connection (URL), and its current status.
         %li The "controllers" box lists each controller with its name, blur version, and status.
         %li The "shards" box lists each shard with its name, blur version, and status.
-    
+
 .help-section#blur_tables
-  %h3.help-label Blur Tables Help 
+  %h3.help-label Blur Tables Help
   .help-content{ :style =>  tab != 'blur_tables' && 'display: none' }
     .head
       The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row contains information describing a BlurTable.
@@ -76,15 +76,15 @@
         %li If the user has the editor role, then 'enable', 'disable', and 'delete' buttons will be available depending on the current state of the table.
     .head
       The bottom of the table displays the total number of BlurTables in this Zookeeper instance.
-  
+
 .help-section#blur_queries
-  %h3.help-label Blur Queries Help 
+  %h3.help-label Blur Queries Help
   .help-content{ :style =>  tab != 'blur_queries' && 'display: none' }
     .head
       The "Blur Queries" page is a list of recently executed Blur Queries.
     .body
       %ol
-        %li 
+        %li
           The "Filters" section is a set of options for limiting what queries are displayed in the list.
           %ul
             %li The "Within past" selector allows you to limit the queries based on how long ago the query was submitted.
@@ -107,7 +107,7 @@
       %ol
         %li To the top right of the table is a list of current filters.
         %li The "User Id" column shows the ID of the user that submitted that query.
-        %li 
+        %li
           The "Query" column is the text of the executed query. This is only visible to users with the auditor role.
           %ul
             %li Only the first 20 characters of the query text are displayed on the table. The full text can be seen by hovering your mouse over the query column.
@@ -120,7 +120,7 @@
         %li The "More Info" link displays details associated with the executed query. This is only visible to users with the auditor role.
 
 .help-section#search
-  %h3.help-label Search Help 
+  %h3.help-label Search Help
   .help-content{ :style =>  tab != 'search' && 'display: none' }
     .help_list#saved_help
       .head
@@ -164,17 +164,17 @@
           %li The "Name" field is used to name your saved searches.
 
 .help-section#hdfs
-  %h3.help-label HDFS help 
+  %h3.help-label HDFS help
   .help-content{ :style =>  tab != 'hdfs' && 'display: none' }
 
 .help-section#admin
-  %h3.help-label Admin help 
+  %h3.help-label Admin help
   .help-content{ :style =>  tab != 'admin' && 'display: none' }
     .head
       The "Admin Page" contains a list of all the current users registered in the system. Users with the admin role may edit the roles and information for users on this page. It is only visible to users with the admin role.
 .help-section#users
-  %h3.help-label Users help 
-  .help-content{ :style =>  tab != 'users' && 'display: none' } 
+  %h3.help-label Users help
+  .help-content{ :style =>  tab != 'users' && 'display: none' }
     .head
       The "Column Preferences" section allows the user to choose what column families they want to display first in the results table when they execute a search on the search page.
     .body

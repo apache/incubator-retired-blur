@@ -44,4 +44,14 @@ class Search < ActiveRecord::Base
   def fetch_results(table_name, host, port)
     BlurThriftClient.client(host, port).query(table_name, self.blur_query)
   end
+
+  def schema(blur_table)
+    tmp_schema = columns
+    column_families.each do |family|
+      tmp_schema[family] = ['recordId']
+      tmp_schema[family] << blur_table.schema[family]
+      tmp_schema[family].flatten!
+    end
+    tmp_schema
+  end
 end

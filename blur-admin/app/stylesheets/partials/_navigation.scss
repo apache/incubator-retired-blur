@@ -99,7 +99,22 @@ $nav-height: 40px;
   @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
   @include text-shadow(0 -1px 0 lighten($footer-color, 5%));
   text-align: right;
+  &.expiring_license {
+    background-color: $red-state-color;
+    color: $grey-color;
+    @include text-shadow(0 0 0 $red-state-color);
+    p, p a {
+      color: $grey-color;
+    }
+  }
   
+  #license {
+    float: left;
+    margin-left: 50px;
+  }
+  #company-info {
+    float: right;
+  }
   p{
     color: darken($footer-color, 40%);
     text-decoration: none;

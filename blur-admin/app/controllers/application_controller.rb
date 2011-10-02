@@ -1,3 +1,4 @@
+# Base Application Controller
 class ApplicationController < ActionController::Base
   protect_from_forgery
 
@@ -5,6 +6,7 @@ class ApplicationController < ActionController::Base
   require 'blur_thrift_client'
 
   before_filter :current_user_session, :current_user
+  helper_method :license, :current_user
 
   enable_authorization do |exception|
     if current_user
@@ -19,7 +21,8 @@ class ApplicationController < ActionController::Base
   end
 
   def current_user
-    @current_user ||= current_user_session && current_user_session.user
+    session = current_user_session
+    @current_user ||= session && session.user
   end
 
   def help
@@ -27,6 +30,10 @@ class ApplicationController < ActionController::Base
     respond_to do |format|
       format.html {render :partial => 'layouts/help_menu', :locals => {:tab => tab}}
     end
+  end
+
+  def license
+    @license ||= License.first
   end
 
   private

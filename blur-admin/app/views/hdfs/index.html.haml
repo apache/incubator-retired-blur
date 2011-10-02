@@ -32,7 +32,7 @@
   #hdfs_files_layout
     HDFS Files
     #hdfs_files{:style => 'display: none;' }
-      = render 'file_layout'
+      = render 'file_layout', :files => @files, :connections => @connections
   #data_wrapper
     #hdfs_bar
     #data_container_display

@@ -32,7 +32,7 @@
       #table_wrapper
         = label_tag :blur_table_id, 'Blur Table:'
         = select_tag :blur_table_id,
-            options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")   
+            options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
 
       #refresh_wrapper
         = hidden_field_tag :time_since_refresh
@@ -48,5 +48,5 @@
   #current
     %span
       %b Current Filters:
-    %span#filters 
+    %span#filters
   = render 'query_table', :blur_queries => @blur_queries

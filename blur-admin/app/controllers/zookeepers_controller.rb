@@ -2,6 +2,7 @@ class ZookeepersController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:show_current]
   before_filter :zookeepers, :only => [:show_current]
+  before_filter :reset_zookeeper, :only => [:show, :make_current]
 
   QUERY = "
     select
@@ -35,7 +36,6 @@ class ZookeepersController < ApplicationController
   end
 
   def show
-    session[:current_zookeeper_id] = params[:id] if params[:id]
     redirect_to :zookeeper
   end
 
@@ -50,29 +50,32 @@ class ZookeepersController < ApplicationController
   end
 
   def make_current
-    session[:current_zookeeper_id] = params[:id] if params[:id]
-
     # Javascript redirect (has to be done in js)
     render :js => "window.location = '#{request.referer}'"
   end
-  
+
   def dashboard
     zookeeper_results = []
     connection = ActiveRecord::Base.connection()
-    connection.execute(QUERY).each { |row| zookeeper_results << row }
+    connection.execute(QUERY).each(:as => :hash) { |row| zookeeper_results << row }
 
     respond_to do |format|
       format.json { render :json => zookeeper_results }
     end
   end
-  
+
   def destroy_shard
     Shard.destroy(params[:shard_id])
     redirect_to :zookeeper
   end
-  
+
   def destroy_controller
     Controller.destroy(params[:controller_id])
     redirect_to :zookeeper
   end
+
+  private
+    def reset_zookeeper
+      session[:current_zookeeper_id] = params[:id] if params[:id]
+    end
 end

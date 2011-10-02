@@ -1,7 +1,6 @@
 package com.nearinfinity.agent.collectors;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -16,6 +15,7 @@ import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
+import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 
 public class QueryCollector {
 	public static void startCollecting(String connection, final JdbcTemplate jdbc) {
@@ -42,8 +42,12 @@ public class QueryCollector {
 								TimeZone z = cal.getTimeZone();
 								cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
 								
+								SimpleQuery query = blurQueryStatus.getQuery().getSimpleQuery();
+								
+								System.out.println(blurQueryStatus.getQuery().getSelector());
+								
 								jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
-											new Object[]{blurQueryStatus.getQuery().getQueryStr(), 
+											new Object[]{query.getQueryStr(), 
 												times,
 												blurQueryStatus.getCompleteShards(),
 												blurQueryStatus.getTotalShards(),
@@ -53,15 +57,15 @@ public class QueryCollector {
 												cal.getTime(),
 												cal.getTime(),
 												TableMap.get().get(table),
-												blurQueryStatus.getQuery().isSuperQueryOn(),
+												query.isSuperQueryOn(),
 												StringUtils.join(blurQueryStatus.getQuery().getFacets(), ", "),
 												blurQueryStatus.getQuery().getStart(),
 												blurQueryStatus.getQuery().getFetch(),
-												blurQueryStatus.getQuery().getPreSuperFilter(),
-												blurQueryStatus.getQuery().getPostSuperFilter(),
+												query.getPreSuperFilter(),
+												query.getPostSuperFilter(),
 												blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnFamiliesToFetch()),
 												blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnsToFetch()),
-												blurQueryStatus.getQuery().getUserId()
+												blurQueryStatus.getQuery().getUserContext()
 											});
 							} else if (queryHasChanged(blurQueryStatus, times, existingRow.get(0))){
 								Calendar cal = Calendar.getInstance();

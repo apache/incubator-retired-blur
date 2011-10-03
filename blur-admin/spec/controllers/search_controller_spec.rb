@@ -154,11 +154,11 @@ describe SearchController do
       get :create, :search_id  => @search.id
       assigns(:schema).keys.should == %w[ColumnFamily2 ColumnFamily1 ColumnFamily3]
     end
-    it "assigns the @result_count and @result_time instance variables" do
-      get :create, :search_id  => @search.id
-      assigns(:result_count).should == @search.fetch
-      assigns(:result_time).should == 10
-    end
+    # it "assigns the @result_count and @result_time instance variables" do
+    #       get :create, :search_id  => @search.id
+    #       assigns(:result_count).should == @search.fetch
+    #       assigns(:result_time).should == 10
+    #     end
     it "correctly parses a result from blur" do
       pending "Is there a better way to do this?"
       get :create, :search_id  => @search.id

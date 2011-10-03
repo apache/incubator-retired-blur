@@ -18,7 +18,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 public class HDFSCollector {
 	public static void startCollecting(final String uriString, final String name, final JdbcTemplate jdbc) {
 		try {
-			System.out.println("HDFS Collector");
 			new Thread(new Runnable(){
 				@Override
 				public void run() {
@@ -34,7 +33,6 @@ public class HDFSCollector {
 						URI uri = new URI(uriString);
 						FileSystem fileSystem = FileSystem.get(uri, new Configuration());
 	
-						System.out.println(fileSystem.getClass());
 						if (fileSystem instanceof DistributedFileSystem) {
 							DistributedFileSystem dfs = (DistributedFileSystem) fileSystem;
 	
@@ -44,16 +42,16 @@ public class HDFSCollector {
 							long remaining = ds.getRemaining();
 							long presentCapacity = used + remaining;
 	
-							System.out.println("Configured Capacity: " + capacity);
-							System.out.println("Present Capacity: " + presentCapacity);
-							System.out.println("DFS Remaining: " + remaining);
-							System.out.println("DFS Used: " + used);
-							System.out.println("DFS Used%: " + (((1.0 * used) / presentCapacity) * 100) + "%");
-							System.out.println("Under replicated blocks: " + dfs.getUnderReplicatedBlocksCount());
-							System.out.println("Blocks with corrupt replicas: " + dfs.getCorruptBlocksCount());
-							System.out.println("Missing blocks: " + dfs.getMissingBlocksCount());
-							System.out.println();
-							System.out.println("-------------------------------------------------");
+//							System.out.println("Configured Capacity: " + capacity);
+//							System.out.println("Present Capacity: " + presentCapacity);
+//							System.out.println("DFS Remaining: " + remaining);
+//							System.out.println("DFS Used: " + used);
+//							System.out.println("DFS Used%: " + (((1.0 * used) / presentCapacity) * 100) + "%");
+//							System.out.println("Under replicated blocks: " + dfs.getUnderReplicatedBlocksCount());
+//							System.out.println("Blocks with corrupt replicas: " + dfs.getCorruptBlocksCount());
+//							System.out.println("Missing blocks: " + dfs.getMissingBlocksCount());
+//							System.out.println();
+//							System.out.println("-------------------------------------------------");
 							
 							long liveNodes = -1;
 							long deadNodes = -1;
@@ -62,7 +60,7 @@ public class HDFSCollector {
 							try {
 								DatanodeInfo[] live = dfs.getClient().datanodeReport(DatanodeReportType.LIVE);
 								DatanodeInfo[] dead = dfs.getClient().datanodeReport(DatanodeReportType.DEAD);
-								System.out.println("Datanodes available: " + live.length + " ("	+ (live.length + dead.length) + " total, " + dead.length + " dead)\n");
+//								System.out.println("Datanodes available: " + live.length + " ("	+ (live.length + dead.length) + " total, " + dead.length + " dead)\n");
 								
 								liveNodes = live.length;
 								deadNodes = dead.length;

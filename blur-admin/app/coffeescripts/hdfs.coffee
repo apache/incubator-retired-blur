@@ -46,21 +46,36 @@ $(document).ready ->
       set_view_state()
       $.each $("#file_tiles > button" ), -> $('#file_tiles #' + this.id).button()
       
-  move_file = (file, location) ->
+  copy_file = (file, location) ->
     if file.attr('connection') == location.attr('connection')
       target_file = file.parent().attr 'name'
       target_location = location.parent().attr 'name'
       
       connection = file.attr('connection')
     
-      $.post '/hdfs/move_file', { 'target': target_file, 'location': target_location, 'connection': connection}, (data) ->
+      #$.post '/hdfs/copy_file', { 'target': target_file, 'location': target_location, 'connection': connection}, (data) ->
+        #back_history.length = 0;
+        #forward_history.length = 0;
+          
+  cut_file = (file, location) ->
+    if file.attr('connection') == location.attr('connection')
+      target_file = file.parent().attr 'name'
+      target_location = location.parent().attr 'name'
+
+      connection = file.attr('connection')
+
+      $.post '/hdfs/cut_file', { 'target': target_file, 'location': target_location, 'connection': connection}, (data) ->
         back_history.length = 0;
         forward_history.length = 0;
     
   delete_file = (file) ->
-    'Fix me'
-    #send
-    #invalidate forward and back stacks
+    target_file = file.parent().attr 'name'
+  
+    connection = file.attr('connection')
+
+    $.post '/hdfs/delete_file', { 'target': target_file, 'connection': connection}, (data) ->
+      back_history.length = 0;
+      forward_history.length = 0;
   
   perform_action = (action, el) ->
     switch action
@@ -75,10 +90,9 @@ $(document).ready ->
       when "paste"
         if paste_buffer.action
           if paste_buffer.action == "cut"
-            move_file(paste_buffer.location, el)
-            delete_file(paste_buffer.location)
+            cut_file(paste_buffer.location, el)
           else
-            move_file(paste_buffer.location, el)
+            copy_file(paste_buffer.location, el)
   
   add_to_back = (hist_el) ->
     if hist_el != ""
@@ -107,7 +121,6 @@ $(document).ready ->
     #if the new view we are showing has a definite location find it and set it in the location
     def_location = $('#data_container_display > .file_id').attr('id')
     if def_location
-      $('.file_layout').jstree 'close_all'
       $('.jstree-search').removeClass 'jstree-search'
       $('#location_string').val $('#' + def_location).attr 'name'
       $('#up_button').button 'enable'
@@ -116,7 +129,6 @@ $(document).ready ->
       $('#search_string').val ""
     #else it is an old search and we can show the string
     else
-    #ToDo: Search doesnt fix the tree on back or forward, needs to be re - searched without making a call to the event
       $('#search_string').val $('#data_container_display > .file_id').attr('data-search')
 
   # Method for search text submit

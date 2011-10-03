@@ -65,17 +65,24 @@ class HdfsController < ApplicationController
     end
   end
   
-  def move_file
-    #hdfs_model = Hdfs.find connection
+  def cut_file
+    hdfs_model = Hdfs.find params[:connection]
+    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
+    hdfs.mv(params[:target], params[:location])
+    render :nothing => true
+  end
+  
+  def copy_file
+    #hdfs_model = Hdfs.find params[:connection]
     #hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-    #hdfs.mv "/home/someuser/afile.txt", "/home/someuser/test.txt"
+    #hdfs.put(params[:target], params[:location])
     render :nothing => true
   end
   
   def delete_file
-    #hdfs_model = Hdfs.find connection
-    #hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-    #hdfs.rm "/home/someuser/afile.txt"
+    hdfs_model = Hdfs.find params[:connection]
+    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
+    hdfs.rm params[:target]
     render :nothing => true
   end
   

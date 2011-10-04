@@ -51,13 +51,13 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 
 	@Override
 	public void run() {	
-		boolean needsInitialPass = true;
 		while(true) {
 			if (zk == null) {
 				try {
 					watcher = new ZookeeperWatcher(this);
 					zk = new ZooKeeper(url, 3000, watcher);
 				} catch (IOException e) {
+					watcher = null;
 					zk = null;
 				}
 			}
@@ -73,15 +73,12 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 				}
 			} else {
 				updateZookeeperStatus(true);
-				if (needsInitialPass) {
-					runInitialRegistration();
-					needsInitialPass = false;
-				}
+				runInitialRegistration();
 				try {
-					synchronized (watcher) {
+					synchronized(watcher) {
 						watcher.wait();
-						System.out.println("Zookeeper Watcher was woken up, time to do work.");
 					}
+						System.out.println("Zookeeper Watcher was woken up, time to do work.");
 				} catch (InterruptedException e) {
 					System.out.println("Exiting Zookeeper instance");
 					return;
@@ -104,13 +101,18 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 		return instanceId;
 	}
 	
+	@Override
+	public JdbcTemplate getJdbc() {
+		return jdbc;
+	}
+	
 	public String getName() {
 		return name;
 	}
 	
 	private void runInitialRegistration() {
-		ControllerCollector.collect(this, jdbc);
-		ClusterCollector.collect(this, jdbc);
+		ControllerCollector.collect(this);
+		ClusterCollector.collect(this);
 	}
 
 }

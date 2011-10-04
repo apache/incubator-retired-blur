@@ -15,10 +15,10 @@ public class ControllerCollector {
 	private int instanceId;
 	private JdbcTemplate jdbc;
 	
-	private ControllerCollector(InstanceManager manager, JdbcTemplate jdbc) {
+	private ControllerCollector(InstanceManager manager) {
 		this.zk = manager.getInstance();
 		this.instanceId = manager.getInstanceId();
-		this.jdbc = jdbc;
+		this.jdbc = manager.getJdbc();
 
 		updateControllers();
 	}
@@ -63,7 +63,7 @@ public class ControllerCollector {
 		return new ArrayList<String>();
 	}
 
-	public static void collect(InstanceManager manager, JdbcTemplate jdbc) {
-		new ControllerCollector(manager, jdbc);
+	public static void collect(InstanceManager manager) {
+		new ControllerCollector(manager);
 	}
 }

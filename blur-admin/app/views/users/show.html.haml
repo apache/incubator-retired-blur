@@ -37,9 +37,9 @@
               .my-select.fam{:id => "value_#{option}"}
                 =option
             -else
-              .fam{:id => "value_#{option}"}  
+              .fam{:id => "value_#{option}"}
                 =option
-                  
+
     #pref-filter-info
       %h3
         Blur Queries Filter Preferences
@@ -54,7 +54,7 @@
           options_for_all_yes_no(@filter_preference.value['super_query_on'])
       .query_filter
         = label_tag "value[running]", 'Running:'
-        = select_tag "value[running]", 
+        = select_tag "value[running]",
           options_for_all_yes_no(@filter_preference.value['running'])
       .query_filter
         = label_tag "value[interrupted]", 'Interrupted:'
@@ -73,7 +73,7 @@
         %strong Email:
         = @user.email
       %p
-        %strong Roles: 
+        %strong Roles:
         = @user.roles.to_a.join ', '
       %p
         - if can? :edit, @user

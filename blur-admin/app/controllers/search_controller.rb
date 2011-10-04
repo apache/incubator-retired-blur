@@ -1,6 +1,7 @@
 class SearchController < ApplicationController
   before_filter :current_zookeeper, :only => [:show, :create]
   before_filter :zookeepers, :only => :show
+  before_filter :clean_column_data, :only => [:save, :update]
 
   #Show action that sets instance variables used to build the filter column
   def show
@@ -11,9 +12,9 @@ class SearchController < ApplicationController
     @blur_table = @blur_tables[0]
     @columns = @blur_table.schema &preference_sort(current_user.column_preference.value) if @blur_table
     @searches = current_user.searches.order("name")
-	end
+  end
 
-	#Filter action to help build the tree for column families
+  #Filter action to help build the tree for column families
   def filters
     blur_table = BlurTable.find params[:blur_table_id]
     columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value)) : []
@@ -22,7 +23,7 @@ class SearchController < ApplicationController
     end
   end
 
-	#Create action is a large action that handles all of the filter data
+  #Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
     #if the search_id param is set than the user is trying to directly run a saved query
@@ -53,7 +54,7 @@ class SearchController < ApplicationController
     #   record = {:recordId => recordId, :column_name => value}
 
     @result_count = blur_results.totalResults
-    @result_time = blur_results.realTime
+    @result_time = -1 #blur_results.realTime
     @results = []
     blur_results.results.each do |blur_result_container|
       # drill down through the result object cruft to get the real result
@@ -83,17 +84,7 @@ class SearchController < ApplicationController
       @results << result
     end
 
-    # create a schema hash which contains the column_family => columns which the search is over
-    # initialize to be set of incomplete column families
-    @schema = search.columns
-    # add complete column families / columns
-    search.column_families.each do |family|
-      @schema[family] = ['recordId']
-      @schema[family] << blur_table.schema[family]
-      @schema[family].flatten!
-    end
-    # finally, sort column families by user preferences, then by alphabetical order
-    @schema = Hash[@schema.sort &preference_sort(current_user.column_preference.value)]
+    @schema = Hash[search.schema(blur_table).sort &preference_sort(current_user.column_preference.value)]
 
     respond_to do |format|
       format.html {render 'create', :layout => false}
@@ -128,9 +119,8 @@ class SearchController < ApplicationController
                                                           :blur_table => @blur_table}}
     end
   end
-  
+
   def save
-    params[:column_data].delete 'neighborhood'
     Search.create(:name         => params[:save_name],
                   :super_query  =>!params[:super_query].nil?,
                   :columns      => params[:column_data],
@@ -145,9 +135,8 @@ class SearchController < ApplicationController
       format.html {render :partial =>"saved", :locals => {:searches => @searches, :blur_table => @blur_table}}
     end
   end
-  
+
   def update
-    params[:column_data].delete 'neighborhood'
     search = Search.find params[:search_id]
     search.update_attributes(:name        => params[:save_name],
                              :super_query =>!params[:super_query].nil?,
@@ -170,5 +159,9 @@ class SearchController < ApplicationController
           a[0] <=> b[0]
         end
       end
+    end
+
+    def clean_column_data
+      params[:column_data].delete 'neighborhood'
     end
 end

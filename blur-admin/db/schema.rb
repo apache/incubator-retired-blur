@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20110810142348) do
+ActiveRecord::Schema.define(:version => 20111002175546) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -33,6 +33,8 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
     t.integer  "state"
   end
 
+  add_index "blur_queries", ["blur_table_id"], :name => "index_blur_queries_on_blur_table_id"
+
   create_table "blur_tables", :force => true do |t|
     t.string   "table_name"
     t.integer  "current_size",   :limit => 8
@@ -49,12 +51,16 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
     t.integer  "row_count",      :limit => 8
   end
 
+  add_index "blur_tables", ["cluster_id"], :name => "index_blur_tables_on_cluster_id"
+
   create_table "clusters", :force => true do |t|
     t.string   "name"
     t.integer  "zookeeper_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "clusters", ["zookeeper_id"], :name => "index_clusters_on_zookeeper_id"
 
   create_table "controllers", :force => true do |t|
     t.integer  "status"
@@ -66,6 +72,8 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
     t.datetime "updated_at"
   end
 
+  add_index "controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
+
   create_table "hdfs", :force => true do |t|
     t.string   "host"
     t.string   "port"
@@ -75,21 +83,30 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
   end
 
   create_table "hdfs_stats", :force => true do |t|
-    t.integer  "config_capacity"
-    t.integer  "present_capacity"
-    t.integer  "dfs_remaining"
-    t.integer  "dfs_used"
-    t.decimal  "dfs_used_percent", :precision => 10, :scale => 0
-    t.integer  "under_replicated"
-    t.integer  "corrupt_blocks"
-    t.integer  "missing_blocks"
+    t.integer  "config_capacity",  :limit => 8
+    t.integer  "present_capacity", :limit => 8
+    t.integer  "dfs_remaining",    :limit => 8
+    t.integer  "dfs_used",         :limit => 8
+    t.float    "dfs_used_percent"
+    t.integer  "under_replicated", :limit => 8
+    t.integer  "corrupt_blocks",   :limit => 8
+    t.integer  "missing_blocks",   :limit => 8
     t.integer  "total_nodes"
     t.integer  "dead_nodes"
     t.datetime "created_at"
     t.datetime "updated_at"
     t.string   "host"
-    t.integer  "port"
+    t.string   "port"
     t.integer  "hdfs_id"
+    t.integer  "live_nodes"
+  end
+
+  add_index "hdfs_stats", ["hdfs_id"], :name => "index_hdfs_stats_on_hdfs_id"
+
+  create_table "licenses", :id => false, :force => true do |t|
+    t.string "org"
+    t.date   "issued_date"
+    t.date   "expires_date"
   end
 
   create_table "preferences", :force => true do |t|
@@ -100,6 +117,8 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
     t.datetime "updated_at"
     t.integer  "user_id"
   end
+
+  add_index "preferences", ["user_id"], :name => "index_preferences_on_user_id"
 
   create_table "searches", :force => true do |t|
     t.boolean  "super_query"
@@ -114,6 +133,9 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
     t.datetime "updated_at"
   end
 
+  add_index "searches", ["blur_table_id"], :name => "index_searches_on_blur_table_id"
+  add_index "searches", ["user_id"], :name => "index_searches_on_user_id"
+
   create_table "shards", :force => true do |t|
     t.integer  "status"
     t.string   "blur_version"
@@ -123,6 +145,8 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
     t.datetime "created_at"
     t.datetime "updated_at"
   end
+
+  add_index "shards", ["cluster_id"], :name => "index_shards_on_cluster_id"
 
   create_table "system_metrics", :force => true do |t|
     t.string   "name",               :null => false
@@ -136,6 +160,10 @@ ActiveRecord::Schema.define(:version => 20110810142348) do
     t.string   "action",             :null => false
     t.string   "category",           :null => false
   end
+
+  add_index "system_metrics", ["parent_id"], :name => "index_system_metrics_on_parent_id"
+  add_index "system_metrics", ["request_id"], :name => "index_system_metrics_on_request_id"
+  add_index "system_metrics", ["transaction_id"], :name => "index_system_metrics_on_transaction_id"
 
   create_table "users", :force => true do |t|
     t.string   "username"

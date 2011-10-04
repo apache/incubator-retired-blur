@@ -16,8 +16,6 @@ $(document).ready ->
     #when the order is changed
     stop: ->
       save_pref()
-      
-  $('#my-cols').draggable()
   
   $('#actual-trash').droppable
     drop: (event, ui)->

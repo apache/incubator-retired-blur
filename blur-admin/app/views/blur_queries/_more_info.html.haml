@@ -17,21 +17,21 @@
           =blur_query.uuid
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Status
       %td
         -if blur_query.state
           = blur_query.state
         -else
           = empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Created At
       %td
         -if blur_query.created_at
           =blur_query.created_at
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Table Name
       %td
         -if blur_query.blur_table.table_name
@@ -47,56 +47,56 @@
           Off
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Facets
       %td
         -if blur_query.facets
           =blur_query.facets
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Start
       %td
         -if blur_query.start
           =blur_query.start
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Fetch Number
       %td
         -if blur_query.fetch_num
           =blur_query.fetch_num
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Pre Filters
       %td
         -if blur_query.pre_filters
           =blur_query.pre_filters
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Post Filters
       %td
         -if blur_query.post_filters
           =blur_query.post_filters
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Selector Column Families
       %td
         -if blur_query.selector_column_families
           =blur_query.selector_column_families
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} Selector columns
       %td
         -if blur_query.selector_columns
           =blur_query.selector_columns
         -else
           =empty_message
-    %tr 
+    %tr
       %td{:class => "more-info-label"} User ID
       %td
         -if blur_query.userid

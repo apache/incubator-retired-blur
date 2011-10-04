@@ -29,7 +29,7 @@
           = f.label role, role.capitalize
           = f.check_box role
   %br
-    - if @current_user
+    - if current_user
       = f.submit 'Save'
     - else
       = f.submit 'Register'

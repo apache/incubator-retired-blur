@@ -3,13 +3,12 @@ class Search < ActiveRecord::Base
   belongs_to :user
 
   def blur_query
-    Blur::BlurQuery.new :queryStr     => self.query,
+    Blur::BlurQuery.new :simpleQuery  => Blur::SimpleQuery.new(:queryStr => self.query, :superQueryOn => self.super_query?),
                         :fetch        => self.fetch,
                         :start        => self.offset,
                         :uuid         => Time.now.to_i*1000 + rand(1000),
-                        :superQueryOn => self.super_query?,
                         :selector     => self.selector,
-                        :userId       => User.find(self.user_id).username
+                        :userContext  => User.find(self.user_id).username
   end
 
   def columns=(columns)
@@ -38,10 +37,22 @@ class Search < ActiveRecord::Base
     columns
   end
   def selector
+    puts self.column_families
+    puts self.columns
     Blur::Selector.new :columnFamiliesToFetch => self.column_families,
                        :columnsToFetch        => self.columns
   end
   def fetch_results(table_name, host, port)
     BlurThriftClient.client(host, port).query(table_name, self.blur_query)
+  end
+
+  def schema(blur_table)
+    tmp_schema = columns
+    column_families.each do |family|
+      tmp_schema[family] = ['recordId']
+      tmp_schema[family] << blur_table.schema[family]
+      tmp_schema[family].flatten!
+    end
+    tmp_schema
   end
 end

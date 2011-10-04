@@ -23,7 +23,6 @@ class HdfsController < ApplicationController
     file = params[:file]
 
     file_stat = hdfs.stat file
-    puts file_stat.inspect
     file_names_hash = {}
 
     if hdfs.exists? file
@@ -36,20 +35,7 @@ class HdfsController < ApplicationController
       end
     end
 
-   render :template=>'hdfs/files.html.haml', :layout => false, :locals => {:file_stat => file_stat, :connection => params[:connection], :file_names_hash => file_names_hash, :children => params[:children]}
-  end
-
-  def get_files curr_file
-    curr_file_children_hash = {}
-    if @hdfs.exists? curr_file
-      curr_file_children = @hdfs.ls curr_file
-      curr_file_children.each do |child|
-        if !curr_file.eql? child
-          curr_file_children_hash[child] = get_files child
-        end
-      end
-    end
-    curr_file_children_hash
+   render 'hdfs/files.html.haml', :layout => false, :locals => {:file_stat => file_stat, :connection => params[:connection], :file_names_hash => file_names_hash, :children => params[:children]}
   end
 
   def search
@@ -78,4 +64,45 @@ class HdfsController < ApplicationController
       format.html {render :partial => 'search_results', :locals => {:search_string => search_string, :connections => connections,:file_names_hash => file_names_hash}}
     end
   end
+  
+  def cut_file
+    hdfs_model = Hdfs.find params[:connection]
+    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
+    hdfs.mv(params[:target], params[:location])
+    render :nothing => true
+  end
+  
+  def copy_file
+    #hdfs_model = Hdfs.find params[:connection]
+    #hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
+    #hdfs.put(params[:target], params[:location])
+    render :nothing => true
+  end
+  
+  def delete_file
+    hdfs_model = Hdfs.find params[:connection]
+    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
+    hdfs.rm params[:target]
+    render :nothing => true
+  end
+  
+  private
+  
+  def get_files curr_file
+    curr_file_children_hash = {}
+    if @hdfs.exists? curr_file
+      curr_file_children = @hdfs.ls curr_file
+      curr_file_children.each do |child|
+        if !curr_file.eql? child
+          curr_file_children_hash[child] = get_files child
+        end
+      end
+    end
+    curr_file_children_hash
+  end
 end
+
+
+
+
+

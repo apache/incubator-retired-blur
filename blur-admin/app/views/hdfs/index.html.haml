@@ -1,19 +1,20 @@
 - content_for :title, 'HDFS'
 - content_for :javascript do
   =javascript_include_tag 'jquery.contextMenu', 'jquery.jstree','compiled/hdfs'
+  :javascript
+    var hdfs_tree_data = #{@tree_data}
 - content_for :stylesheets do
   =stylesheet_link_tag 'jquery.contextMenu.css'
-
 
 #toolbar_wrapper
   #toolbar
     #buttons
-      %button{:type => "button", :id => 'back_button', :disabled => true}
-        Back
-      %button{:type => "button", :id => 'forward_button', :disabled => true}
-        Forward
-      %button{:type => "button", :id => 'up_button', :disabled => true}
-        File Up
+      -# %button{:type => "button", :id => 'back_button', :disabled => true}
+        -# Back
+      -# %button{:type => "button", :id => 'forward_button', :disabled => true}
+        -# Forward
+      -# %button{:type => "button", :id => 'up_button', :disabled => true}
+        -# File Up
       %span#view_options
         = radio_button_tag 'view_options', 'list', true
         = label_tag 'view_options_list', 'List View'
@@ -21,18 +22,17 @@
         = label_tag 'view_options_icon', 'Icon View'
         = radio_button_tag 'view_options', 'detail'
         = label_tag 'view_options_detail', 'Detail View'
-    #location
-      = text_area_tag :location_string
-      = submit_tag 'Go', :id => 'go_button'
-    #search
-      = text_area_tag :search_string
-      = submit_tag 'Search', :id => 'search_button'
+    -# #location
+      -# = text_area_tag :location_string
+      -# = submit_tag 'Go', :id => 'go_button'
+    -# #search
+      -# = text_area_tag :search_string
+      -# = submit_tag 'Search', :id => 'search_button'
 
 #hdfs_wrapper
   #hdfs_files_layout
-    HDFS Files
-    #hdfs_files{:style => 'display: none;' }
-      = render 'file_layout', :files => @files, :connections => @connections
+    HDFS Instances
+    #hdfs_instances
   #data_wrapper
     #hdfs_bar
     #data_container_display

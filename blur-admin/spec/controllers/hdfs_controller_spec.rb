@@ -27,31 +27,4 @@ describe HdfsController do
       response.should render_template "index"
     end
   end
-
-  describe "PUT files" do
-    before do
-      Hdfs.stub(:find).and_return(@hdfs)
-    end
-
-    it "renders the selected files" do
-      @hdfs_client.should_receive(:stat).and_return(@hdfs_stat)
-      @hdfs_client.should_receive(:exists?).and_return(true)
-      @hdfs_client.should_receive(:ls).and_return(@file_strings)
-      get :files, :connection => '4', :file => "hdfs://file-location"
-      response.should render_template "files"
-    end
-  end
-
-  describe "PUT search" do
-    before do
-      Hdfs.stub(:find).and_return(@hdfs)
-    end
-    it "renders search results" do
-      @hdfs_client.stub(:stat).and_return(@hdfs_stat)
-      @hdfs_client.should_receive(:exists?).and_return(true)
-      @hdfs_client.should_receive(:ls).and_return(@file_strings)
-      get :files, :results => { "hdfs://file-location" => '4' }
-    end
-  end
-
 end

@@ -1,104 +1,54 @@
 class HdfsController < ApplicationController
-
   require 'hdfs_thrift_client'
 
   def index
-    if Hdfs.all.length > 0
-      hdfs_ids = Hdfs.select 'id, host, port'
-      @files = {}
-      @connections = {}
-      hdfs_ids.each do |hdfs_id|
-        @hdfs = HdfsThriftClient.client(hdfs_id.host, hdfs_id.port)
-        @hdfs.ls('/').each do |file|
-          @files[file] = get_files file
-          @connections[file] = hdfs_id.id
-        end
-      end
-    end
+    instances = Hdfs.select 'id, name'
+    @tree_data = instances.collect {|hdfs| {:data => hdfs.name, :state => 'closed', :attr => {:class => 'hdfs_root'}, :metadata => {:hdfs_id => hdfs.id, :fs_path=>'/'}}}.to_json
   end
+  
+  def expand
+    instance = Hdfs.find params[:hdfs]
+    
+    client = HdfsThriftClient.client(instance.host, instance.port)
+    files = client.ls params[:fs_path]
 
-  def files
-    hdfs_model = Hdfs.find params[:connection]
-    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-    file = params[:file]
-
-    file_stat = hdfs.stat file
-    file_names_hash = {}
-
-    if hdfs.exists? file
-      file_names = hdfs.ls file
-      if file_names.length == 1 and file == file_names[0]
-        file_names.clear
-      end
-      file_names.each do |name|
-        file_names_hash[name] = hdfs.stat name
+    children_data = files.collect do |file|
+      uri = URI.parse file
+      stats = client.stat uri.path
+      if stats.isdir
+        {:data => uri.path.split('/').last, :state => 'closed', :attr => {:class => 'hdfs_dir'}, :metadata => {:hdfs_id => instance.id, :fs_path => uri.path}}
+      else
+        {:data => {:title => uri.path.split('/').last}, :attr => {:class => 'hdfs_file'}, :metadata => {:hdfs_id => instance.id, :fs_path => uri.path}, :children => nil}
       end
     end
-
-   render 'hdfs/files.html.haml', :layout => false, :locals => {:file_stat => file_stat, :connection => params[:connection], :file_names_hash => file_names_hash, :children => params[:children]}
+    
+    render :json => children_data
   end
-
-  def search
-    file_names_hash = {}
-    connections = {}
-    hdfs_connections = {}
-    if params[:results]
-      search_string = params[:results]['search_string']
-      params[:results].each do |name, connection|
-        if name != 'search_string'
-          index = hdfs_connections.keys.index{ |conn| conn.id.to_s == connection }
-          if index.nil?
-            hdfs_model = Hdfs.find connection
-            hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-            hdfs_connections[hdfs_model] = hdfs
-          else
-            hdfs_model = hdfs_connections.keys[index]
-            hdfs = hdfs_connections[hdfs_model]
-          end
-          file_names_hash[name] = hdfs.stat name
-          connections[name] = connection
-        end
-      end
-    end
-    respond_to do |format|
-      format.html {render :partial => 'search_results', :locals => {:search_string => search_string, :connections => connections,:file_names_hash => file_names_hash}}
-    end
+  
+  def view_node
+    instance = Hdfs.find params[:hdfs]
+    
+    client = HdfsThriftClient.client(instance.host, instance.port)
+    @stat = client.stat params[:fs_path]
+    @files = client.ls(params[:fs_path], true) if @stat.isdir
+    render :layout => false
   end
   
   def cut_file
-    hdfs_model = Hdfs.find params[:connection]
-    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-    hdfs.mv(params[:target], params[:location])
-    render :nothing => true
-  end
-  
-  def copy_file
-    #hdfs_model = Hdfs.find params[:connection]
-    #hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-    #hdfs.put(params[:target], params[:location])
+    instance = Hdfs.find params[:hdfs]
+    client = HdfsThriftClient.client(instance.host, instance.port)
+    
+    client.mv(params[:target], params[:location])
     render :nothing => true
   end
   
   def delete_file
-    hdfs_model = Hdfs.find params[:connection]
-    hdfs = HdfsThriftClient.client(hdfs_model.host, hdfs_model.port)
-    hdfs.rm params[:target]
+    instance = Hdfs.find params[:hdfs]
+    client = HdfsThriftClient.client(instance.host, instance.port)
+    
+    uri = URI.parse params[:fs_path]
+    client.rm uri.path
     render :nothing => true
-  end
-  
-  private
-  
-  def get_files curr_file
-    curr_file_children_hash = {}
-    if @hdfs.exists? curr_file
-      curr_file_children = @hdfs.ls curr_file
-      curr_file_children.each do |child|
-        if !curr_file.eql? child
-          curr_file_children_hash[child] = get_files child
-        end
-      end
-    end
-    curr_file_children_hash
   end
 end
 

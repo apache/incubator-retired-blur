@@ -21,7 +21,7 @@ class Ability
         can :show, [:zookeepers, :help]
         can [:show_current, :make_current], :zookeepers
         can :dashboard, :zookeepers
-        can [:search, :files], :hdfs
+        can [:expand, :view_node], :hdfs
         can :help, :application
 
         # can view everything but query_string on blur_tables:

@@ -31,10 +31,8 @@ if(jQuery)( function() {
 				$('#' + o.menu).addClass('contextMenu');
 				// Simulate a true right click
 				$(this).mousedown( function(e) {
-				  console.log('mousedown')
 					var evt = e;
 					if (evt.button == 2) {
-					  console.log('im here')
 					  evt.stopPropagation();
 					  $(this).bind('mouseup.contextMenu', function(e) {
 					    if( evt.button == 2 ) {

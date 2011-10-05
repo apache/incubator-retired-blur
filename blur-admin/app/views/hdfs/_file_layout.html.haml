@@ -1,9 +1,0 @@
-.file_layout
-  - if files
-    %ul
-      - files.each do |parent, children|
-        %li{:id => parent.gsub(/[^[:alnum:]]/,'-'), :name => parent}
-          %a.hdfs-node{:href=>'',:id => parent.gsub(/[^[:alnum:]]/,'-'), :connection => connections[parent]}= parent
-          - if children.length > 0
-            %ul{:class => parent.gsub(/[^[:alnum:]]/,'-')}
-              = render "file_child", :connection => connections[parent], :new_parent => children

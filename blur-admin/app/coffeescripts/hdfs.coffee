@@ -113,5 +113,7 @@ $(document).ready ->
   $('#view_options').live 'change', ->
     change_view()
     
-  $('#hdfs_instances li, .view_hdfs_dir, .view_hdfs_file').live 'click', ->
+  $('#hdfs_instances a').live 'click', ->
+    view_node $(this).parent('li')
+  $('.view_hdfs_dir, .view_hdfs_file').live 'click', ->
     view_node $(this)

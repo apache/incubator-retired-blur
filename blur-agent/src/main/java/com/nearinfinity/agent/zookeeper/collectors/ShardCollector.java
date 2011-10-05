@@ -52,14 +52,13 @@ public class ShardCollector {
 	
 	private void updateOnlineShards(List<String> shards) {
 		for (String shard : shards) {
-			String uri = "placeholder";
-			int status = 2;
+			int status = 1;
 			String blurVersion = "1.0";			
 			
-			int updatedCount = jdbc.update("update shards set node_location=?, status=?, blur_version=? where node_name=? and cluster_id=?", uri, status, blurVersion, shard, clusterId);
+			int updatedCount = jdbc.update("update shards set status=1, blur_version=? where node_name=? and cluster_id=?", blurVersion, shard, clusterId);
 			
 			if (updatedCount == 0) {
-				jdbc.update("insert into shards (node_name, node_location, status, cluster_id, blur_version) values (?, ?, ?, ?, ?)", shard, uri, status, clusterId, blurVersion);				
+				jdbc.update("insert into shards (node_name, status, cluster_id, blur_version) values (?, 1, ?, ?)", shard, clusterId, blurVersion);				
 			}
 		}
 	}

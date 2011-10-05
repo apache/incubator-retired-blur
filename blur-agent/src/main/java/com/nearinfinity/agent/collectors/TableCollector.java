@@ -64,7 +64,6 @@ public class TableCollector {
 //					System.out.println(descriptor.getCluster());
 //					Integer clusterId = jdbc.queryForInt("select id from clusters where name=?", new Object[]{descriptor.getCluster()});
 						
-						Integer clusterId = (Integer) existingTable.get(0).get("CLUSTER_ID");
 						
 						TableStats tableStats = client.getTableStats(table);
 						
@@ -74,6 +73,7 @@ public class TableCollector {
 //								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
 						} else {
 							//Update Table
+							Integer clusterId = (Integer) existingTable.get(0).get("CLUSTER_ID");
 							jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=?, current_size=?, query_usage=?, record_count=?, row_count=? where table_name=? and cluster_id=?", 
 									new Object[]{tableAnalyzer, schemaString, shardServerString, tableStats.getBytes(), tableStats.getQueries(), tableStats.getRecordCount(), tableStats.getRowCount(), table, clusterId});
 						}

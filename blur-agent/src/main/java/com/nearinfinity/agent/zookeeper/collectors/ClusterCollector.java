@@ -16,10 +16,10 @@ public class ClusterCollector {
 	private JdbcTemplate jdbc;
 	private InstanceManager manager;
 	
-	private ClusterCollector(InstanceManager manager, JdbcTemplate jdbc) {
+	private ClusterCollector(InstanceManager manager) {
 		this.zk = manager.getInstance();
 		this.instanceId = manager.getInstanceId();
-		this.jdbc = jdbc;
+		this.jdbc = manager.getJdbc();
 		this.manager = manager;
 		
 		updateClusters();
@@ -57,7 +57,7 @@ public class ClusterCollector {
 		return new ArrayList<String>();
 	}
 
-	public static void collect(InstanceManager manager, JdbcTemplate jdbc) {
-		new ClusterCollector(manager, jdbc);
+	public static void collect(InstanceManager manager) {
+		new ClusterCollector(manager);
 	}
 }

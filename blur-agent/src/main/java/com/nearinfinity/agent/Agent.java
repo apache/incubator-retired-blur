@@ -32,29 +32,18 @@ import com.nearinfinity.license.IssuingKey;
 public class Agent {
 
 	public static void main(String[] args) {
-		try {
-			File pidFile = new File("agent.pid");
-			PrintWriter pidOut = new PrintWriter(pidFile);
-			System.out.println("Wrote pid file to: " + pidFile.getAbsolutePath());
-			String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();  
-		    int p = nameOfRunningVM.indexOf('@');  
-		    String pid = nameOfRunningVM.substring(0, p);
-		    pidOut.write(pid);
-		    pidOut.close();
-		} catch (FileNotFoundException e) {
-			System.out.println("Unable to find pid file. " + e.getMessage());
-			System.exit(1);
-		}
-		
-		
+		writePidFile();		
+		Properties configProps = loadConfigParams(args);
+		new Agent(configProps);
+	}
+
+	private static Properties loadConfigParams(String[] args) {
 		if (args.length == 0) {
 			System.out.println("Config file location must be the first argument.");
 			System.exit(1);
 		} 
 		
-		String configParam = args[0];
-		
-		File configFile = new File(configParam);
+		File configFile = new File(args[0]);
 		
 		if (!configFile.exists() || !configFile.isFile()) {
 			System.out.println("Unable to find config file at " + configFile.getAbsolutePath());
@@ -68,8 +57,23 @@ public class Agent {
 			System.out.println("Config File is not a valid properties file: " + e.getMessage());
 			System.exit(1);
 		}
-		
-		new Agent(configProps);
+		return configProps;
+	}
+
+	private static void writePidFile() {
+		try {
+			File pidFile = new File("agent.pid");
+			PrintWriter pidOut = new PrintWriter(pidFile);
+			System.out.println("Wrote pid file to: " + pidFile.getAbsolutePath());
+			String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();  
+		    int p = nameOfRunningVM.indexOf('@');  
+		    String pid = nameOfRunningVM.substring(0, p);
+		    pidOut.write(pid);
+		    pidOut.close();
+		} catch (FileNotFoundException e) {
+			System.out.println("Unable to find pid file. " + e.getMessage());
+			System.exit(1);
+		}
 	}
 	
 	public Agent(Properties props) {

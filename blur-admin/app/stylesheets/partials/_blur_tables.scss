@@ -1,90 +1,15 @@
-#blur_tables_wrapper{
-  margin-top: 2em;
-  margin-bottom: 2em;
-  @include full;
-  @include border-sides;
-  @include border-top;
-  @include border-radius;
-  @include standard-font;
-
-  .blur_table:nth-of-type(odd)  {background-color: $shaded_row_color};
-  .blur_table h3, .blur_tables_header, .blur_tables_footer { font-size: 1em; }
-
-  .blur_tables_header, .blur_tables_footer {
-    background-color: $table-hd-color;
-    color: $table-hd-text;
-    @include full($total-cols);
+#blur_tables {
+  width: 99%;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 5px;
+  table {
+    margin-bottom: 5px;
   }
-
-  .blur_tables_header {
-    @include border-top-radius;
-    @include border_bottom;
-    height: $row-height;
+  .global_actions form {
+    float: right;
   }
-
-  .blur_tables_footer {
-    @include border-top;
-    @include border-bottom;
-    @include border-bottom-radius;
-    height: $row-height/2;
-    text-align: center;
-    padding-top: 0.5em;
-  }
-
-  .blur_table {
-    h3 { 
-      @include border-top;
-      @include border-bottom;
-      @include full($total-cols);
-      margin-bottom: 0px;
-      height: $row-height;
-      &:hover {
-        cursor: pointer;
-        background: $row-hover;
-      }
-    }
-
-    .collapsible {
-      height: 42px;
-      @include full($total-cols);
-      @include border-bottom;
-      .location {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        @include prefix(0.25, $total-cols);
-        @include columns(14.5, $total-cols);
-      }
-      .actions {
-        @include columns($total-cols / 2, $total-cols);
-        @include omega($total-cols);
-        margin-top: 10px;
-        margin-bottom: 10px;
-        text-align: right;
-      }
-      .actions form {
-        margin: 0px;
-        display: inline;
-        input {
-          margin: 0px;
-          margin-right: 10px;
-        }
-      }
-    }
-  }
-  span {
-    height: 100%;
-    text-align: center;
-    line-height: $row-height;
-    whitespace: normal;
-  }
-
-  span.hosts, span.count, span.row-count, span.size, span.second, span.status {@include columns(3,$total-cols)}
-  span.schema { @include omega($total-cols); @include columns(2.5,$total-cols)}
-
-  span.table_name {
-    @include prefix(0.25, $total-cols);
-    @include columns(8.75, $total-cols);
-    text-align: left;
-    font-size: 1.4em;
+  .disabled_tables form {
+    float: right;
   }
 }

@@ -21,7 +21,7 @@ class Ability
         can :show, [:zookeepers, :help]
         can [:show_current, :make_current], :zookeepers
         can :dashboard, :zookeepers
-        can [:expand, :view_node], :hdfs
+        can [:expand, :view_node, :info], :hdfs
         can :help, :application
 
         # can view everything but query_string on blur_tables:
@@ -42,11 +42,12 @@ class Ability
         # View hosts and schema on blur_tables
         can :hosts, :blur_tables
         can :schema, :blur_tables
+        can :reload, :blur_tables
 
       end
 
       if user.has_role? :editor
-        can [:update, :destroy], :blur_tables
+        can [:update, :destroy, :update_all, :delete_all], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller], :zookeepers
         can [:cut_file, :delete_file, :copy_file], :hdfs

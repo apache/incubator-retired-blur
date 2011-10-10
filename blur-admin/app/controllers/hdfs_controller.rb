@@ -3,7 +3,12 @@ class HdfsController < ApplicationController
 
   def index
     instances = Hdfs.select 'id, name'
-    @tree_data = instances.collect {|hdfs| {:data => hdfs.name, :state => 'closed', :attr => {:class => 'hdfs_root'}, :metadata => {:hdfs_id => hdfs.id, :fs_path=>'/'}}}.to_json
+    @tree_data = instances.collect {|hdfs| {:data => hdfs.name, :state => 'closed', :attr => {:class => 'hdfs_root'}, :metadata => {:hdfs_id => hdfs.id, :fs_path=>'/', :hdfs_name => hdfs.name}}}.to_json
+  end
+  
+  def info
+    @hdfs = HdfsStat.where('hdfs_id = ?', params[:id]).order("created_at desc").first
+    render :partial => 'info'
   end
   
   def expand

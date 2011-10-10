@@ -64,10 +64,10 @@ public class TableCollector {
 				e.printStackTrace();
 			}
 			
-			int updatedCount = jdbc.update("update blur_tables set table_uri=?, status=? where table_name=? and cluster_id=?", uri, (enabled ? 2 : 1), table, clusterId);
+			int updatedCount = jdbc.update("update blur_tables set table_uri=?, status=? where table_name=? and cluster_id=?", uri, (enabled ? 4 : 2), table, clusterId);
 			
 			if (updatedCount == 0) {
-				jdbc.update("insert into blur_tables (table_name, table_uri, status, cluster_id) values (?, ?, ?, ?)", table, uri, (enabled ? 2 : 1), clusterId);				
+				jdbc.update("insert into blur_tables (table_name, table_uri, status, cluster_id) values (?, ?, ?, ?)", table, uri, (enabled ? 4 : 2), clusterId);				
 			}
 		}
 	}

@@ -29,32 +29,39 @@ class BlurTable < ActiveRecord::Base
   end
 
   def is_enabled?
-    self.status == 2
+    self.status == 4
+  end
+  
+  def is_disabled?
+    self.status = 2
+  end
+  
+  def is_deleted?
+    self.status = 0
   end
 
-  def enable
+  def enable(host, port)
     begin
-      BlurThriftClient.client.enableTable self.table_name
+      BlurThriftClient.client(host, port).enableTable self.table_name
     ensure
       return self.is_enabled?
     end
   end
 
-  def disable
+  def disable(host, port)
     begin
-      #BlurThriftClient.client.disableTable self.table_name
+      BlurThriftClient.client(host, port).disableTable self.table_name
     ensure
       return self.is_enabled?
     end
   end
 
-  def destroy underlying=false
+  def destroy(underlying=false, host, port)
     begin
       #TODO: Uncomment line below when ready to delete tables in Blur
-      #BlurThriftClient.client.removeTable self.table_name underlying
+      BlurThriftClient.client(host, port).removeTable self.table_name underlying
       return true;
     rescue
-      puts "Exception in BlurTable.destroy"
       return false;
     end
   end

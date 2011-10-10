@@ -18,6 +18,9 @@ BlurAdmin::Application.routes.draw do
   resources :blur_tables do
     get 'hosts', :on => :member
     get 'schema', :on => :member
+    get 'reload', :on => :collection
+    put 'update_all', :on => :collection
+    delete 'delete_all', :on => :collection
   end
 
   match 'blur_queries/refresh' => 'blur_queries#refresh', :via => :get, :as => :refresh
@@ -43,6 +46,7 @@ BlurAdmin::Application.routes.draw do
   match 'help/:tab' => 'application#help'
 
   match 'hdfs' => 'hdfs#index', :via => :get
+  match 'hdfs/:id/info' => 'hdfs#info', :via => :get
   match 'hdfs/expand' => 'hdfs#expand', :via => :get, :as => :expand_hdfs
   match 'hdfs/view_node' => 'hdfs#view_node', :via => :get, :as => :view_node
   match 'hdfs/cut_file' => 'hdfs#cut_file', :via => :post

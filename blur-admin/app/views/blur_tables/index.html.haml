@@ -2,19 +2,23 @@
 - content_for :javascript do
   =javascript_include_tag 'jquery.jstree','compiled/blur_tables'
 
-#blur_tables_wrapper
-  .blur_tables_header
-    %span.table_name
-    %span.hosts Hosts / Shards
-    %span.row-count Row Count
-    %span.count Record Count
-    %span.size Size
-    %span.second Queries/Second
-    %span.status Status
-    %span.schema Schema
-
-
-  = render @blur_tables
-
-  .blur_tables_footer
-    = "Total Tables: #{@blur_tables.length}"
+#blur_tables
+  %ul
+    - @clusters.each do |cluster|
+      %li
+        %a{:href=>"#cluster_#{cluster.id}"}= cluster.name
+  - @clusters.each do |cluster|
+    #cluster{:id => cluster.id, :data => {:cluster_id => cluster.id}}
+      .table_accordion
+        %h3
+          %a{:href => '#'} Active Tables
+        %div.active_tables
+          = render :partial => 'active_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_enabled?}, :cluster => cluster.id}
+        %h3
+          %a{:href => '#'} Disabled Tables
+        %div.disabled_tables
+          = render :partial => 'disabled_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_disabled?}, :cluster => cluster.id}
+        %h3
+          %a{:href => '#'} Deleted Tables
+        %div.deleted_tables
+          = render :partial => 'deleted_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_deleted?}, :cluster => cluster.id}

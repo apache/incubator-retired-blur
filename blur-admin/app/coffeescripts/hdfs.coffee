@@ -61,6 +61,22 @@ $(document).ready ->
   delete_file = (file) ->
     data = $(file).data()
     $.post '/hdfs/delete_file', { 'fs_path': data.fs_path, 'hdfs': data.hdfs_id}
+    
+  show_hdfs_props = (el) ->
+    console.log(el.data('hdfs_id'))
+    id = el.data('hdfs_id')
+    title = "HDFS Information (#{el.data('hdfs_name')})"
+    $.get "/hdfs/#{id}/info", (data) ->
+      $(data).dialog
+        modal: true
+        draggable: false
+        resizable: false
+        width: 'auto'
+        title: title
+        close: (event, ui) ->
+          $(this).remove()
+        open: (event, ui)->
+          console.log(ui)
   
   perform_action = (action, el) ->
     switch action
@@ -73,6 +89,8 @@ $(document).ready ->
         if paste_buffer.action
           if paste_buffer.action == "cut"
             cut_file(paste_buffer.location, el)
+      when "props"
+        show_hdfs_props el
     
   # Method to change file view
   change_view = () ->

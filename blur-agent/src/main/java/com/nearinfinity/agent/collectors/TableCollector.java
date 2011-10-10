@@ -29,53 +29,43 @@ public class TableCollector {
 					
 					//Create and update tables
 					for (String table : tables) {				
-						//TODO: This will be a problem because we aren't specifying the cluster
-						List<Map<String, Object>> existingTable = jdbc.queryForList("select id, cluster_id from blur_tables where table_name=?", table);
 						TableDescriptor descriptor = client.describe(table);
+						Integer clusterId = jdbc.queryForInt("select id from clusters where name=?", new Object[]{descriptor.getCluster()});
+						
+						List<Map<String, Object>> existingTable = jdbc.queryForList("select id, cluster_id from blur_tables where table_name=? and cluster_id=?", table, clusterId);
 						
 						//add the tablename and tableid to the map that acts as a dictionary
 						if (!existingTable.isEmpty()){
 							TableMap.get().put(table, (Integer)(existingTable.get(0).get("id")));
 						}
 						
-						//strings that are being mocked to json
-						Schema schema = client.schema(table);
-						String schemaString = mapper.writeValueAsString(schema);
-						
-						Map<String, String> shardServerLayout = client.shardServerLayout(table);
-						
-						Map<String, ArrayList<String>> formattedShard = new HashMap<String, ArrayList<String>>();
-						for(String shard : shardServerLayout.keySet()){
-							String host = shardServerLayout.get(shard);
-							if(formattedShard.get(host) != null){
-								formattedShard.get(host).add(shard);
-							} else {
-								formattedShard.put(host, new ArrayList<String>(Arrays.asList(shard)));
+						if (descriptor.isEnabled) {
+							//strings that are being mocked to json
+							Schema schema = client.schema(table);
+							String schemaString = mapper.writeValueAsString(schema);
+							
+							Map<String, String> shardServerLayout = client.shardServerLayout(table);
+							
+							Map<String, ArrayList<String>> formattedShard = new HashMap<String, ArrayList<String>>();
+							for(String shard : shardServerLayout.keySet()){
+								String host = shardServerLayout.get(shard);
+								if(formattedShard.get(host) != null){
+									formattedShard.get(host).add(shard);
+								} else {
+									formattedShard.put(host, new ArrayList<String>(Arrays.asList(shard)));
+								}
 							}
-						}
-						
-						String shardServerString = mapper.writeValueAsString(formattedShard);
-						
-						//other relevant data to be inserted
-//					String tableUri = descriptor.tableUri;
-						String tableAnalyzer = descriptor.analyzerDefinition.fullTextAnalyzerClassName;
-						
-						//TODO: Make this use the descriptor when its filled in
-//					System.out.println(descriptor.getCluster());
-//					Integer clusterId = jdbc.queryForInt("select id from clusters where name=?", new Object[]{descriptor.getCluster()});
-						
-						
-						TableStats tableStats = client.getTableStats(table);
-						
-						if (existingTable.isEmpty()) {
-							//New Table
-//						jdbc.update("insert into blur_tables (table_name, status, table_uri, table_analyzer, table_schema, server) values (?, ?, ?, ?, ?, ?)", 
-//								new Object[]{table, descriptor.isIsEnabled() ? 2 : 1, tableUri, tableAnalyzer, schemaString, shardServerString});
-						} else {
-							//Update Table
-							Integer clusterId = (Integer) existingTable.get(0).get("CLUSTER_ID");
-							jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=?, current_size=?, query_usage=?, record_count=?, row_count=? where table_name=? and cluster_id=?", 
-									new Object[]{tableAnalyzer, schemaString, shardServerString, tableStats.getBytes(), tableStats.getQueries(), tableStats.getRecordCount(), tableStats.getRowCount(), table, clusterId});
+							
+							String shardServerString = mapper.writeValueAsString(formattedShard);
+							String tableAnalyzer = descriptor.analyzerDefinition.fullTextAnalyzerClassName;
+							
+							TableStats tableStats = client.getTableStats(table);
+							
+							if (!existingTable.isEmpty()) {
+								//Update Table
+								jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=?, current_size=?, query_usage=?, record_count=?, row_count=? where table_name=? and cluster_id=?", 
+										new Object[]{tableAnalyzer, schemaString, shardServerString, tableStats.getBytes(), tableStats.getQueries(), tableStats.getRecordCount(), tableStats.getRowCount(), table, clusterId});
+							}
 						}
 					}
 					

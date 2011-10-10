@@ -11,7 +11,7 @@ describe BlurTable do
   describe "enable " do
     it "method sends the message to enable the table through thrift" do
       @client.should_receive(:enableTable).with @table.table_name
-      @table.enable
+      @table.enable 'test', 40000
     end
   end
   

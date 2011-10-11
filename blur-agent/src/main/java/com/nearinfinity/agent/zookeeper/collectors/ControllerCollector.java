@@ -41,7 +41,7 @@ public class ControllerCollector {
 		for (String controller : controllers) {
 			// TODO: Get information on each controller (i.e. URI, Enabled, etc.) once we have controllers
 			String uri = "placeholder";
-			int status = 2;
+			int status = 1;
 			String blurVersion = "1.0";			
 			
 			int updatedCount = jdbc.update("update controllers set node_location=?, status=?, blur_version=? where node_name=? and zookeeper_id =?", uri, status, blurVersion, controller, instanceId);

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111002175546) do
+ActiveRecord::Schema.define(:version => 20111011041727) do
 
   create_table "blur_queries", :force => true do |t|
     t.string   "query_string"
@@ -39,7 +39,6 @@ ActiveRecord::Schema.define(:version => 20111002175546) do
     t.string   "table_name"
     t.integer  "current_size",   :limit => 8
     t.integer  "query_usage"
-    t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "record_count",   :limit => 8
     t.integer  "status"
@@ -54,32 +53,26 @@ ActiveRecord::Schema.define(:version => 20111002175546) do
   add_index "blur_tables", ["cluster_id"], :name => "index_blur_tables_on_cluster_id"
 
   create_table "clusters", :force => true do |t|
-    t.string   "name"
-    t.integer  "zookeeper_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string  "name"
+    t.integer "zookeeper_id"
   end
 
   add_index "clusters", ["zookeeper_id"], :name => "index_clusters_on_zookeeper_id"
 
   create_table "controllers", :force => true do |t|
-    t.integer  "status"
-    t.string   "blur_version"
-    t.string   "node_name"
-    t.string   "node_location"
-    t.integer  "zookeeper_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.integer "status"
+    t.string  "blur_version"
+    t.string  "node_name"
+    t.string  "node_location"
+    t.integer "zookeeper_id"
   end
 
   add_index "controllers", ["zookeeper_id"], :name => "index_controllers_on_zookeeper_id"
 
   create_table "hdfs", :force => true do |t|
-    t.string   "host"
-    t.string   "port"
-    t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.string "host"
+    t.string "port"
+    t.string "name"
   end
 
   create_table "hdfs_stats", :force => true do |t|
@@ -94,7 +87,6 @@ ActiveRecord::Schema.define(:version => 20111002175546) do
     t.integer  "total_nodes"
     t.integer  "dead_nodes"
     t.datetime "created_at"
-    t.datetime "updated_at"
     t.string   "host"
     t.string   "port"
     t.integer  "hdfs_id"
@@ -137,13 +129,11 @@ ActiveRecord::Schema.define(:version => 20111002175546) do
   add_index "searches", ["user_id"], :name => "index_searches_on_user_id"
 
   create_table "shards", :force => true do |t|
-    t.integer  "status"
-    t.string   "blur_version"
-    t.string   "node_name"
-    t.string   "node_location"
-    t.integer  "cluster_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.integer "status"
+    t.string  "blur_version"
+    t.string  "node_name"
+    t.string  "node_location"
+    t.integer "cluster_id"
   end
 
   add_index "shards", ["cluster_id"], :name => "index_shards_on_cluster_id"

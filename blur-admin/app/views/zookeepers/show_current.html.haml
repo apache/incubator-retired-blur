@@ -42,7 +42,7 @@
                       = "#{controller.node_name}"
                       - if @controller_nodes > 1
                         = "(blur version #{controller.blur_version})"
-                      - if controller.status == 2
+                      - if controller.status == 1
                         .green_box.ui-corner-all
                           Online
                       - else
@@ -67,7 +67,7 @@
                     = "#{shard.node_name}"
                     - if @shard_nodes > 1
                       = "(blur version #{shard.blur_version})"
-                    - if shard.status == 2
+                    - if shard.status == 1
                       .green_box.ui-corner-all
                         Online
                     - else

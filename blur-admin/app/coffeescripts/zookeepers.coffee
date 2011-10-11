@@ -5,7 +5,7 @@ $(document).ready ->
   
   # Updates all fields on the dashboard
   load_dashboard = () ->
-    $.getJSON '/zookeepers/dashboard', (data) ->
+    $.getJSON Routes.dashboard_path(), (data) ->
       # Updates the fields for each zookeeper
       zookeepers = data.zookeepers
       long_queries = data.long_queries
@@ -159,5 +159,5 @@ $(document).ready ->
   load_dashboard()
 
   $('.zookeeper_info').live 'click', ->
-    window.location = "/zookeepers/" + $(this).children('table').attr('id')
+    window.location = Routes.show_zookeeper_path($(this).children('table').attr('id'))
 

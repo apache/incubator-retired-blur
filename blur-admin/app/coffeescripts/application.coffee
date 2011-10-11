@@ -55,7 +55,7 @@ $(document).ready ->
       else
         tab = pre_tab
         
-    help_win = window.open "/help/" + tab,"Help Menu","menubar=0,resizable=0,width=500,height=800"
+    help_win = window.open Routes.help_path(tab),"Help Menu","menubar=0,resizable=0,width=500,height=800"
       
   $('.help-section').live 'click', ->
     $(this).children('.help-content').toggle('fast')

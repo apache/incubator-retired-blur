@@ -1,0 +1,16 @@
+- nil_message = "Not Available"
+
+%table.ui-widget-content.ui-corner-all
+  %thead
+    %tr
+      %th Name/Location
+  %tbody
+    - if tables.empty?
+      %tr
+        %td{:colspan => can?(:update, :blur_tables) ? 4 : 3} No deleted tables found.
+    - tables.each do |table|
+      %tr.ui-widget-content
+        %td
+          = table.table_name
+          %br
+          = table.table_uri

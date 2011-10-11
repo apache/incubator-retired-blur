@@ -1,0 +1,33 @@
+source 'http://rubygems.org'
+
+gem 'rails', '3.0.7'
+
+gem 'sqlite3'
+gem 'mysql2', '0.2.11'
+gem 'jquery-rails', '>= 0.2.6'
+gem 'compass', '0.11.1'
+gem 'haml'
+gem 'barista', '1.0.0'
+gem 'thrift_client'
+gem 'authlogic'
+gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
+gem 'role_model'
+gem 'compass-susy-plugin'
+gem "ganapati", "~> 0.0.5"
+gem 'capistrano'
+
+group :development do
+  #gem 'system-metrics'
+end
+
+group :development, :test do
+  gem 'autotest'
+  gem 'rspec-rails'
+  gem 'capybara'
+  gem 'ci_reporter'
+  gem 'metric_fu'
+  gem 'cover_me'
+  gem 'rails-erd'
+  gem 'factory_girl_rails'
+  gem 'launchy'
+end

@@ -1,0 +1,65 @@
+-if @files
+  #file_info
+    = "Current Path: #{@stat.path}"
+  #file_list{:style => 'display: none'}
+    %ul
+      - @files.each do |file|
+        - node_class = file.isdir ? 'view_hdfs_dir' : 'view_hdfs_file'
+        %li{:class => node_class, :data => {:hdfs_id => params[:hdfs], :fs_path => file.path}}
+          %a{:href => "#"}= file_name_from_path file.path
+  #file_tiles{:style => 'display: none' }
+    - @files.each do |file|
+      - node_class = file.isdir ? 'view_hdfs_dir' : 'view_hdfs_file'
+      %button{:class => node_class, :data => {:hdfs_id => params[:hdfs], :fs_path => file.path}}
+        = file_icon file
+        %br
+        = file_name_from_path file.path
+  #file_details{:style => 'display: none' }
+    #file_details_table
+      %table
+        %thead
+          %tr
+            %th.name File Name
+            %th Length
+            %th Directory
+            %th Block Reps
+            %th Block Size
+            %th Owner
+            %th Group
+            %th Permissions
+        %tbody
+          - @files.each do |file|
+            - node_class = file.isdir ? 'view_hdfs_dir' : 'view_hdfs_file'
+            %tr{:class => node_class, :data => {:hdfs_id => params[:hdfs], :fs_path => file.path}}
+              %td.name= file_name_from_path file.path
+              %td= number_to_human_size file.length, :delimiter => 4
+              %td= file.isdir
+              %td= number_with_delimiter file.block_replication, :delimiter => ','
+              %td= number_with_delimiter file.blocksize, :delimiter => ','
+              %td= file.owner
+              %td= file.group
+              %td= file.permission
+- else
+  #file_table
+    %table
+      %tr
+        %td Length
+        %td= number_to_human_size @stat.length, :precision => 4
+      %tr
+        %td Directory
+        %td= @stat.isdir
+      %tr
+        %td Block Reps
+        %td= number_with_delimiter @stat.block_replication, :delimiter => ','
+      %tr
+        %td Block Size
+        %td= number_with_delimiter @stat.blocksize, :delimiter => ','
+      %tr
+        %td Owner
+        %td= @stat.owner
+      %tr
+        %td Group
+        %td= @stat.group
+      %tr
+        %td Permission
+        %td= @stat.permission

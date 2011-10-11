@@ -1,0 +1,26 @@
+# License Key
+#license.file=
+
+# Mysql connection information
+#store.url=
+#store.user=
+#store.password=
+
+# ZooKeeper Instances
+#zk.instances=some-zk
+
+#zk.some-zk.url=
+
+# Active Collectors
+active.collectors=hdfs|queries|tables
+
+# HDFS Collector properties
+#hdfs.instances=some-hdfs
+
+#hdfs.thrift.some-hdfs.url=
+#hdfs.some-hdfs.url=
+
+# Blur properties
+#blur.instances=some-blur
+
+#blur.some-blur.url=

@@ -1,0 +1,114 @@
+#blur_queries_wrapper {
+  padding-top: 2em;
+  padding-bottom: 2em;
+  @include full;
+  @include standard-font;
+  @include clearfix;
+
+  #filter_form{
+    @include columns(30, $total-cols);
+    #filter_wrapper{
+      margin-bottom: 1em;
+      @include columns(10, $total-cols);
+      .query_filter{ 
+        @include full(10);
+        margin-bottom: .75em;
+        label{ @include columns(3, 10); }
+      }
+      input { float: right; }
+    }
+
+    #selector_wrapper {
+      @include columns(18, $total-cols);
+      padding-top: 0.5em;
+
+      #table_wrapper, #refresh_wrapper {
+        @include columns(7, 18);
+        @include prefix(1);
+      }
+
+      #pause_button {
+        vertical-align: middle;
+        display: inline-block;
+        margin-bottom: 4px;
+        #pause{
+          @include border;
+          cursor: pointer;
+          display: none;
+          &:hover{
+            background-color: $row-hover;
+            background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
+          }
+        }
+      }
+      #spinner_wrapper {
+        @include columns(2, 18);
+        @include omega($total-cols);
+        #filter_spinner { display: none; }
+      }
+    }
+  }
+
+  #current{
+    @include full($total-cols);
+    @include omega;
+    #filters { font-weight: normal; }
+  }
+
+  @mixin table-base {
+    display: table;
+    @include standard-border;
+    tr:nth-child(even) { background-color: white; };
+    tr:nth-child(odd) { background-color: $grey-div-color; };
+    text-align: center;
+    tr.error td{
+      text-align: center;
+    }
+    th {
+      @include border-bottom;
+      font-size: 120%;    
+      text-align: center;
+      background-color: $table-hd-color;
+      color: $table-hd-text;
+      font-weight: bold;
+    }
+    td {
+      text-align: center;
+      font-size: 100%;
+      a { font-weight: bold; };
+    }
+  }
+
+  #queries-table {
+    @include full;
+    @include omega($total-cols);
+    @include table-base;
+    margin-bottom: 165px;
+    tr{
+      height: 50px;
+    }
+
+    // only display the no-queries-row if it is the first (only) row
+    tbody tr#no-queries-row {
+      display: none;
+    }
+    tbody tr:first-child#no-queries-row {
+      display: table-row;
+    }
+  }
+
+  .ui-tooltip { @include standard-font; }
+  #blur_table_id{ margin-bottom: 15px; }
+}
+
+#more-info-table {
+  td { color: #555; }
+  .more-info-label { white-space: nowrap; font-weight: bold;}
+}
+
+#times-table {
+  td { color: #555; }
+  thead td, .shard { font-weight: bold; }
+  .time { text-align: center;}
+
+}

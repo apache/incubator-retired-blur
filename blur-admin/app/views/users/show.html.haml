@@ -1,0 +1,86 @@
+- content_for :title, 'User'
+- content_for :javascript do
+  =javascript_include_tag 'compiled/users'
+
+#show_user_wrapper{'data-user-id' => @user.id}
+  .info-contain
+    - if can? :update, @column_preference
+      #pref-col-info
+        #pref-title
+          %h3 Search Result Column Preferences
+        #pref-bin
+          #pref-col
+            .section-label{:id => @user.id} My Saved Column Families
+            %ul#my-cols.sort
+              -if @column_preference.value.size() == 0
+                #no-saved None Currently Saved
+              -else
+                #no-saved{:style => "display:none;"} None Currently Saved
+                -@column_preference.value.each do |pref|
+                  .sel-fam{:id => "value_#{pref}"}
+                    =pref
+          #pref-trash
+            %ul#actual-trash.sort
+              #trash Drag a column here to remove it from your preferences
+          #pref-key
+            Key:
+            %br
+            Saved Column:
+            #orange_color
+            %br
+            Unsaved Column:
+            #blue_color
+        #opt-col
+          .section-label All Column Families
+          -@choices.each do |option|
+            -if @column_preference.value.include? option
+              .my-select.fam{:id => "value_#{option}"}
+                =option
+            -else
+              .fam{:id => "value_#{option}"}
+                =option
+
+    #pref-filter-info
+      %h3
+        Blur Queries Filter Preferences
+      =form_tag(user_preference_path(@user, :filter), :method => :put, :id => 'filters', :remote => true)
+      .query_filter
+        = label_tag "value[created_at_time]", 'Within past:'
+        = select_tag "value[created_at_time]",
+          options_for_created_at_time(@filter_preference.value['created_at_time'])
+      .query_filter
+        = label_tag "value[super_query_on]", 'Super Query:'
+        = select_tag "value[super_query_on]",
+          options_for_all_yes_no(@filter_preference.value['super_query_on'])
+      .query_filter
+        = label_tag "value[running]", 'Running:'
+        = select_tag "value[running]",
+          options_for_all_yes_no(@filter_preference.value['running'])
+      .query_filter
+        = label_tag "value[interrupted]", 'Interrupted:'
+        = select_tag "value[interrupted]",
+          options_for_all_yes_no(@filter_preference.value['interrupted'])
+      .query_filter
+        = label_tag "value[refresh_period]", 'Refresh:'
+        = select_tag "value[refresh_period]",
+          options_for_refresh_period(@filter_preference.value['refresh_period'])
+
+    #user-info
+      %p
+        %strong Username:
+        = @user.username
+      %p
+        %strong Email:
+        = @user.email
+      %p
+        %strong Roles:
+        = @user.roles.to_a.join ', '
+      %p
+        - if can? :edit, @user
+          = link_to "Edit", edit_user_path(@user)
+        - if can? :destroy, @user
+          |
+          = link_to "Delete User", @user, :confirm => 'Are you sure?', :method => :delete
+        - if can? :index, :users
+          |
+          = link_to "View All Users", users_path

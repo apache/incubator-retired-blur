@@ -1,0 +1,35 @@
+= form_for user do |f|
+  -if user.errors.any?
+    #error_explanation
+      %h4= "#{pluralize(user.errors.count, 'error')} prohibited new user from being saved"
+      %ul
+        - user.errors.full_messages.each do |msg|
+          %li= msg
+  - fields = {:username              => :text_field,
+              :email                 => :email_field,
+              :password              => :password_field,
+              :password_confirmation => :password_field}
+  - fields.each_pair do |field_name, field_type|
+    %p
+      - if (!user.new_record? and can? :update, user, field_name) |
+        or ( user.new_record? and can? :create, user, field_name) |
+        = f.label field_name
+        %br
+        = f.send field_type, field_name
+      - elsif user[field_name]
+        %strong= "#{field_name}: "
+        = user[field_name]
+
+  %strong Roles:
+  #roles_wrapper
+    - User.valid_roles.each do |role|
+      - if (!user.new_record? and can? :update, user, role) |
+        or ( user.new_record? and can? :create, user, role) |
+        .role
+          = f.label role, role.capitalize
+          = f.check_box role
+  %br
+    - if current_user
+      = f.submit 'Save'
+    - else
+      = f.submit 'Register'

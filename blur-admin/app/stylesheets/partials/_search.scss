@@ -1,0 +1,157 @@
+#search_page_wrapper {
+  @include full;
+  @mixin search-margin { margin: .25em 0em .25em; }
+
+  // styles for filters
+  #filter_section {
+    @include columns(5.5,$total-cols);
+    @include standard-font;
+    padding-top: 1em;
+    position: fixed;
+    top: $nav-height + $header-height;
+    display: inline-block;
+    overflow-y: auto;
+    max-height: 70%;
+    
+    .partial-section, .body { padding: 0.5em; }
+    .filter { padding: 0.5em 0 0; }
+    .filter#buttons { text-align: right; }
+
+    // style for the help link
+    #search_help { text-align:right; }
+
+    // styles for text boxes & selectors
+    #query_string { resize:vertical; }
+    #query_string, #blur_table, #save_name_wrap { @include columns(5,5.5); }
+    #offset, #result_count { max-width: 40px; }
+    #save_label { @include columns(1, 5.5); }
+    #save_name { @include columns(4, 5.5); @include omega(5.5);}
+
+    // styles for elements below the filter tabs
+    #search_send {
+      margin-top: 1em;
+      #loading-spinner { margin-left: 1em; }
+      #search_submit { float: right; }
+    }
+  }
+
+  // styles for the collapse bar & results section
+  .collapsed_filters{ @include columns(30,$total-cols); @include omega($total-cols); }
+  .open_filters{ @include columns(24,$total-cols); @include omega($total-cols); @include prefix(.5) }
+  #results_wrapper{
+    #bar_section:hover { background-color: $bar-hover; }
+
+    #bar_section{
+      @include columns(1,$total-cols);
+      width: 1em;
+      height: 100%;
+      position: fixed;
+      background-color: #eee;
+      cursor: pointer;
+
+      #arrow{
+        position: relative;
+        top: 50%;
+        border:none;
+      }
+    }
+
+    #results_container{
+      @include columns(29,$total-cols);
+      @include omega($total-cols);
+      position: relative;
+      padding-top: 1em;
+
+      #results_section{
+        @include border;
+        overflow-x: scroll;
+        background-color : white;
+        margin-bottom: 5em;
+        width: auto;
+      }
+    }
+  }
+
+  // styles for results table
+  table {
+    margin: 0;
+    table-layout: strict;
+    width: 100%;
+    empty-cells: show;
+    display: inline-block;
+    thead {
+      background-color: $table-hd-color;
+      
+      th {
+        background: transparent;
+        text-align: center;
+        color: $table-hd-text;
+        font-weight: bold;
+        font-size: 120%;
+      }
+      tr.columnsets th {
+        font-weight: normal;
+        }
+    }
+    tbody {
+      tr.odd {
+        td {
+          background-color: #fff;
+          &.odd { background-color: mix(#fff, $table-hd-color, 70%); }
+        }
+      }
+      tr.even {
+        td {
+          background-color: #eee;
+          &.odd { background-color: mix(#eee, $table-hd-color, 70%); }
+        }
+      }
+    }
+  }
+
+  // jstree styles
+  .jstree-icon { cursor: pointer; }
+  .jstree a { 
+    @include standard-font;
+    &:hover{ color: #06C; }
+  }
+
+  //Navigation Tab outer divs
+  .tab { @include border; @include border-radius; }
+  .tab#standard, .tab#advanced { @include search-margin; }
+  .body#saved, .body#store, .body#advanced { display: none; }
+
+  // Navigation Tabs labels
+  .tab .header {
+    cursor:pointer;
+    text-align:center;
+  }
+
+  // Navigation Tab label div
+  .header label { cursor:pointer; }
+  .tab { background-color:#EEE; }
+  
+  //Help section styles
+  .help_list{
+    color: #747170;
+    .head{
+      font-weight: bold;
+    }
+  }
+  
+  .action-icon{
+    cursor:pointer;
+    float:right;
+    margin-left: 2px;
+    margin-right: 2px;
+    background-color: #F8F8F8;
+    
+    &:hover{
+      background-color: $row-hover;
+      background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
+    }
+  }
+
+  #hidden-help-container{ display:none; }
+}
+

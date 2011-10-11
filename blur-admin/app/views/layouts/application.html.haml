@@ -1,0 +1,103 @@
+!!!5
+%html
+  %head
+    =csrf_meta_tag
+    = javascript_include_tag 'jquery',
+                             'jquery-ui',
+                             'rails',
+                             'compiled/application'
+
+    -# Use this syntax in haml templates to add page specific javascript
+    -# - content_for :javascript do
+    -#   = javascript_include_tag 'compiled/runtime'
+    = yield :javascript
+    %title
+      = yield(:title)
+      | Blur Admin
+    = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
+    = stylesheet_link_tag 'jquery-ui', 'compiled/print', :media => "print"
+    /[if lt IE 8]
+      = stylesheet_link_tag 'ie'
+    = yield :stylesheets
+  %body
+    #root
+      #top
+        #hd
+          #logo
+            = link_to image_tag('blur_logo.png'), root_path
+          - if flash
+            #flash
+              - flash.each do |type, message|
+                .flash{:id => type}
+                  = message
+          - if @current_zookeeper && @zookeepers
+            #zookeeper_select
+              = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',
+                                                      :method => :put,
+                                                      :remote => :true do
+                %b Current Zookeeper Instance:
+                = select_tag( :id,
+                  options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ),
+                  :id => 'zookeeper_id' )
+          #user_nav
+            - if @current_user
+              = "Welcome, "
+              = link_to @current_user.username, @current_user
+              |
+              = link_to "Log Out", logout_path
+
+            - else
+              = link_to "Register", new_user_path
+              |
+              = link_to "Log In", login_path
+
+        #nav
+          %ul
+            - controller = params[:controller]
+            - action = params[:action]
+
+            %li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
+              = link_to 'Dashboard', root_path
+
+            %li{:class => controller == 'zookeepers' && action == 'show_current' && 'active'}
+              = link_to 'Environment Status', zookeeper_path
+
+            %li{:class => controller == 'blur_tables' && 'active'}
+              = link_to 'Blur Tables', blur_tables_path
+
+            %li{:class => controller == 'blur_queries' && 'active'}
+              = link_to 'Blur Queries', blur_queries_path
+
+            - if can? :show, :search
+              %li{:class => controller == 'search' && 'active', :id => "left"}
+                = link_to 'Search', search_path
+
+            %li{:class => controller == 'hdfs' && 'active'}
+              = link_to 'HDFS', hdfs_path
+
+            - if can? :index, :users
+              %li{:class => controller == 'users' && action == 'index' && 'active', :id=> "left"}
+                = link_to 'Admin', users_path
+
+      #bd
+        = yield
+    #ft{:class => (license.nil? || (license.expires_date - Date.today).to_i < 30) && 'expiring_license'}
+      #license
+        - if license
+          - days_left_in_license = (license.expires_date - Date.today).to_i
+          = "Licensed to: #{license.org} on #{license.issued_date.strftime('%d %b %Y')}."
+          - if days_left_in_license < 0
+            License is expired.
+          - elsif days_left_in_license == 0
+            License expires today.
+          - elsif days_left_in_license < 30
+            = "License expires in #{pluralize(days_left_in_license, 'day')}."
+        - else
+          No valid license found.
+      #company-info
+        %p
+          %a#page-help{:href => '#'} Help
+          | Developed by 
+          %a{:href => "http://www.nearinfinity.com"} Near Infinity
+
+#help-menu{:style => 'display: none', "data-controller" => params[:controller], "data-action" => params[:action]}

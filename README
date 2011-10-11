@@ -1,0 +1,10 @@
+The following tools are included in this repository:
+
+Blur-shell
+    - An interactive console tool to run commands directly on blur, similar to an irb for blur
+
+Admin-console
+    - The admin rails application for administering a Blur instance
+
+Blur-agent
+    - Java agent that collects various information for the admin console

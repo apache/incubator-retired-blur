@@ -1,0 +1,8 @@
+*.swp
+.DS_Store
+nbproject/
+.settings
+.classpath
+.project
+target
+build

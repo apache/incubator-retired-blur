@@ -1,0 +1,19 @@
+%table#queries-table
+  %thead
+    %tr.header
+      %th User ID
+      - if can? :index, :blur_queries, :query_string
+        %th Query
+      %th Super Query
+      %th Start
+      %th Fetch
+      %th Status
+      - if can? :update, :blur_queries
+        %th Actions
+      %th
+      %th
+  %tbody
+    = render blur_queries
+    %tr#no-queries-row
+      %td{:colspan => 9}
+        %b No Available Queries

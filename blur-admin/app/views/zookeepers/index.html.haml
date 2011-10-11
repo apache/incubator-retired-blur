@@ -1,0 +1,12 @@
+- content_for :title, 'Blur Status'
+- content_for :javascript do
+  = javascript_include_tag 'compiled/zookeepers'
+
+#zookeepers_wrapper
+  %h2 Zookeepers
+
+  - if @zookeepers
+    #zookeepers
+      = render @zookeepers
+  - else
+    %h4 No Zookeeper Instances Available

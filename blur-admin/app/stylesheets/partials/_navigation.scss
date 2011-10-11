@@ -1,0 +1,143 @@
+$header-height: 55px;
+$nav-height: 40px;
+
+#root{
+  height: 100%;
+  min-height: 100%;
+  margin-bottom: -46px;
+
+  #top{
+    top:0px;
+    background-color:$bg-blue-color;
+    position:fixed;
+    z-index:2;
+    width:100%;
+    #hd {
+      @include full;
+      height: $header-height;
+      z-index: 2;
+      #logo{
+        margin-top: 1.25em;
+        @include columns(10,$total-cols);
+      }
+      #flash {
+        @include columns(10,$total-cols);
+        @include border-bottom-radius;
+        text-align: center;
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+      #zookeeper_select {
+        @include columns(10, $total-cols);
+        padding-top: 1.25em;
+        text-align: center;
+      }
+      #user_nav {
+        @include columns(10,$total-cols);
+        @include omega($total-cols);
+        text-align: right;
+        padding-top: 1.25em;
+        font-size: 1.2em;
+      }
+    }
+    #nav {
+      background: transparent image-url('gradient.png') repeat-x 0 -58px;
+      @include box-shadow(0 -2px 1px $base-theme-color);
+      text-align: right;
+      width:100%;
+      height: $nav-height;
+      ul {
+        @include inline-block-list(10px);
+        @include text-shadow(0 1px 0 black);
+        @include full;
+
+        li {
+          margin: 6px .5em 0 .5em;
+          padding: 0;
+          color: $nav-blue-color;
+          cursor: pointer;
+          &:hover {
+            color: #eee;
+          }
+
+        &.active {
+          color: $base-theme-color;
+          @include border-radius(25px);
+          @include box-shadow(0 1px 3px rgba(0, 0, 0, 0.5) inset, 0 -1px 0 rgba(255, 255, 255, 0.2) inset);
+          background-color: #323c46;
+          }
+
+        a {
+          cursor: pointer;
+          padding: 0.5em 1em;
+          line-height: 28px;
+          @include unstyled-link;
+          }
+        }
+      }
+    }
+  }
+  #bd {
+    height: 80%;
+    position:relative;
+    top: $header-height + $nav-height;
+    padding-bottom: 46px;
+  }
+}
+
+#ft {
+  bottom: 0;
+  position:fixed;
+  z-index:2;
+  width: 100%;
+  $footer-color: lighten($base-theme-color, 20%);
+  background-color: $footer-color;
+  text-align: center;
+  height: $footer-height;
+  line-height: $footer-height - 1;
+  border-top: 1px solid darken($footer-color, 10%);
+  @include box-shadow(0 1px 0 lighten($footer-color, 10%) inset);
+  @include text-shadow(0 -1px 0 lighten($footer-color, 5%));
+  text-align: right;
+  &.expiring_license {
+    background-color: $red-state-color;
+    color: $grey-color;
+    @include text-shadow(0 0 0 $red-state-color);
+    p, p a {
+      color: $grey-color;
+    }
+  }
+  
+  #license {
+    float: left;
+    margin-left: 50px;
+  }
+  #company-info {
+    float: right;
+  }
+  p{
+    color: darken($footer-color, 40%);
+    text-decoration: none;
+    margin-right: 50px;
+  }
+}
+
+#notice {
+  @include border;
+  @include border-bottom-radius;
+  border-color: darken(#DFD, 20%);
+  background-color: #DFD;
+  padding-top: .75em;
+  font-size: 1.2em;
+  color: #555;
+}
+
+#alert {
+  @include border;
+  @include border-bottom-radius;
+  $yellow: #FFFFC8;
+  border-color: darken($yellow, 10%);
+  background-color: $yellow;
+  padding-top: .75em;
+  font-size: 1.2em;
+}

@@ -5,7 +5,7 @@ $(document).ready ->
     $(ui.panel).find('.table_accordion').accordion('refresh')
   
   reload_table_info = (cluster, state) ->
-    $('#cluster_' + cluster + ' .' + state + '_tables').load "/blur_tables/reload?status=#{state}&cluster_id=#{cluster}", ->
+    $('#cluster_' + cluster + ' .' + state + '_tables').load "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", ->
       $(this).parents('.table_accordion').accordion('refresh')
       setTimeout(-> 
         reload_table_info(cluster, state)

@@ -1,6 +1,6 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.0.7'
+gem 'rails', '3.0.10'
 
 gem 'sqlite3'
 gem 'mysql2', '0.2.11'
@@ -10,11 +10,12 @@ gem 'haml'
 gem 'barista', '1.0.0'
 gem 'thrift_client'
 gem 'authlogic'
-gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
+gem 'cancan', :path => 'vendor/git/cancan'
+#gem 'cancan', :git => 'git://github.com/ryanb/cancan.git', :branch => '2.0'
 gem 'role_model'
 gem 'compass-susy-plugin'
 gem "ganapati", "~> 0.0.5"
-gem 'capistrano'
+#gem 'capistrano'
 
 group :development do
   #gem 'system-metrics'

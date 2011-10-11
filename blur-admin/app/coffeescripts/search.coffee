@@ -34,7 +34,7 @@ $(document).ready ->
   # Reload the filters when the table selector is changed
   $('#blur_table').change ->
     $('#filter_columns').hide()
-    $('#filter_columns').load 'search/' + $(this).val() + '/filters', setup_filter_tree
+    $('#filter_columns').load Routes.search_filters_path($(this).val()), setup_filter_tree
     $('.body#saved').load 'reload/' + $(this).val()
       
   # listener that checks if the submit button should be enabled on keystrokes
@@ -178,14 +178,14 @@ $(document).ready ->
     $('#update_button').removeAttr('disabled')
 
   retrieve_search = (id) ->
-    $.ajax "/search/load/#{id}",
+    $.ajax Routes.search_load_path(id),
       type: 'POST',
       success: (data) ->
         populate_form(data)
 
   # fetch the result of a persisted search
   fetch_result = (id) ->
-    $.ajax '/search/'+ id + '/' + $('#blur_table option:selected').val(),
+    $.ajax Routes.fetch_results_path(id, $('#blur_table option:selected').val()),
       type: 'POST',
       success: (data) ->
         if data
@@ -235,7 +235,7 @@ $(document).ready ->
     			buttons:
     				"Delete Query": ->
     				  $( this ).dialog "close"
-    				  $.ajax '/search/delete/'+ parent.parent().attr("id") + '/' + $('#blur_table option:selected').val(),
+    				  $.ajax Routes.delete_search_path(parent.parent().attr("id"), $('#blur_table option:selected').val()),
                 type: 'DELETE',
                 success: (data) ->
                   $('.body#saved').html(data)
@@ -244,7 +244,7 @@ $(document).ready ->
 
   #ajax listener for the save action
   $('#save_button').live 'click', (evt) ->
-    $.ajax '/search/save/',
+    $.ajax Routes.search_save_path(),
       type: 'POST',
       data: $('#search_form').serialize(),
       success: (data) ->
@@ -265,7 +265,7 @@ $(document).ready ->
         send_request = true
         search_id = $(value).attr('id')
     if send_request
-      $.ajax '/search/' + search_id,
+      $.ajax Routes.update_search_path(search_id),
         type: 'PUT',
         data: $('#search_form').serialize()
     else

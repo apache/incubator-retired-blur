@@ -14,7 +14,7 @@ $(document).ready ->
       json_data:
         data: hdfs_tree_data,
         ajax:
-          url: '/hdfs/expand'
+          url: Routes.expand_hdfs_path()
           data: (node) ->
             info = node.data()
             {'hdfs':info.hdfs_id, 'fs_path':info.fs_path}
@@ -56,17 +56,16 @@ $(document).ready ->
     if file_data.hdfs_id == location_data.hdfs_id
       target_file = file_data.fs_path
       target_location = location_data.fs_path
-      $.post '/hdfs/cut_file', { 'target': target_file, 'location': target_location, 'hdfs': file_data.hdfs_id}
+      $.post Routes.hdfs_cut_file_path(), { 'target': target_file, 'location': target_location, 'hdfs': file_data.hdfs_id}
     
   delete_file = (file) ->
     data = $(file).data()
-    $.post '/hdfs/delete_file', { 'fs_path': data.fs_path, 'hdfs': data.hdfs_id}
+    $.post hdfs_delete_file_path, { 'fs_path': data.fs_path, 'hdfs': data.hdfs_id}
     
   show_hdfs_props = (el) ->
-    console.log(el.data('hdfs_id'))
     id = el.data('hdfs_id')
     title = "HDFS Information (#{el.data('hdfs_name')})"
-    $.get "/hdfs/#{id}/info", (data) ->
+    $.get Routes.hdfs_info_path(id), (data) ->
       $(data).dialog
         modal: true
         draggable: false
@@ -107,7 +106,7 @@ $(document).ready ->
 
   view_node = (node) ->
     data = node.data()
-    $('#data_container_display').load "/hdfs/view_node?hdfs=#{data.hdfs_id}&fs_path=#{data.fs_path}&view_type=#{$('input:radio:checked').val()}", () ->
+    $('#data_container_display').load "#{Routes.view_node_path()}?hdfs=#{data.hdfs_id}&fs_path=#{data.fs_path}&view_type=#{$('input:radio:checked').val()}", () ->
       $('.view_hdfs_dir').contextMenu
         menu: 'hdfs-dir-context-menu',
         (action, el, pos) ->

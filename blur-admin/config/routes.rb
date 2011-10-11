@@ -11,14 +11,14 @@ BlurAdmin::Application.routes.draw do
   match 'zookeeper' => 'zookeepers#show_current', :as => :zookeeper
   match 'zookeepers/make_current' => 'zookeepers#make_current', :via => :put, :as => :make_current_zookeeper
   match 'zookeepers/dashboard' => 'zookeepers#dashboard', :via => :get, :as => :dashboard
-  match 'zookeepers/:id' => 'zookeepers#show', :via => :get
+  match 'zookeepers/:id' => 'zookeepers#show', :via => :get, :as => :show_zookeeper
   match 'zookeepers/:id/controller/:controller_id' => 'zookeepers#destroy_controller', :via => :delete, :as => :destroy_controller
   match 'zookeepers/:id/shard/:shard_id' => 'zookeepers#destroy_shard', :via => :delete, :as => :destroy_shard
 
   resources :blur_tables do
     get 'hosts', :on => :member
     get 'schema', :on => :member
-    get 'reload', :on => :collection
+    get 'reload', :on => :collection, :as => :reload
     put 'update_all', :on => :collection
     delete 'delete_all', :on => :collection
   end
@@ -37,16 +37,16 @@ BlurAdmin::Application.routes.draw do
 
   match 'login' => 'user_sessions#new', :as => :login
   match 'logout' => 'user_sessions#destroy', :as => :logout
-  match 'search/load/:search_id' => 'search#load'
-  match 'search/delete/:search_id/:blur_table' => 'search#delete', :via => :delete
-  match 'search/:search_id/:blur_table' => 'search#create'
+  match 'search/load/:search_id' => 'search#load', :as => :search_load
+  match 'search/delete/:search_id/:blur_table' => 'search#delete', :via => :delete, :as => :delete_search
+  match 'search/:search_id/:blur_table' => 'search#create', :as => :fetch_results
   match 'search/save/' => 'search#save', :via => :post
-  match 'search/:search_id' => 'search#update', :via => :put
+  match 'search/:search_id' => 'search#update', :via => :put, :as => :update_search
   match 'reload/:blur_table' => 'search#reload'
-  match 'help/:tab' => 'application#help'
+  match 'help/:tab' => 'application#help', :as => :help
 
   match 'hdfs' => 'hdfs#index', :via => :get
-  match 'hdfs/:id/info' => 'hdfs#info', :via => :get
+  match 'hdfs/:id/info' => 'hdfs#info', :via => :get, :as => :hdfs_info
   match 'hdfs/expand' => 'hdfs#expand', :via => :get, :as => :expand_hdfs
   match 'hdfs/view_node' => 'hdfs#view_node', :via => :get, :as => :view_node
   match 'hdfs/cut_file' => 'hdfs#cut_file', :via => :post

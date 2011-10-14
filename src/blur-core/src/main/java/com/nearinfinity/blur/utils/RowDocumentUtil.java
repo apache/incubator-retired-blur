@@ -30,57 +30,60 @@ import com.nearinfinity.blur.thrift.generated.Row;
 
 public class RowDocumentUtil {
 
-    public static FetchRecordResult getColumns(Document document) {
-        FetchRecordResult result = new FetchRecordResult();
-        Record record = new Record();
-        String rowId = populateRecord(record, document);
-        result.setRecord(record);
-        result.setRowid(rowId);
-        return result;
-    }
+  public static FetchRecordResult getColumns(Document document) {
+    FetchRecordResult result = new FetchRecordResult();
+    Record record = new Record();
+    String rowId = populateRecord(record, document);
+    result.setRecord(record);
+    result.setRowid(rowId);
+    return result;
+  }
 
-    public static Row getRow(Iterable<Document> docs) {
-        Row row = new Row();
-        boolean empty = true;
-        if (docs == null) {
-            return null;
-        }
-        for (Document document : docs) {
-            empty = false;
-            Record record = new Record();
-            String rowId = populateRecord(record, document);
-            row.addToRecords(record);
-            if (row.id == null) {
-                row.setId(rowId);
-            }
-        }
-        if (empty) {
-            return null;
-        }
-        return row;
+  public static Row getRow(Iterable<Document> docs) {
+    Row row = new Row();
+    boolean empty = true;
+    if (docs == null) {
+      return null;
     }
+    for (Document document : docs) {
+      empty = false;
+      Record record = new Record();
+      String rowId = populateRecord(record, document);
+      if (record.getColumns() != null) {
+        row.addToRecords(record);
+      }
+      if (row.id == null) {
+        row.setId(rowId);
+      }
+      row.recordCount++;
+    }
+    if (empty) {
+      return null;
+    }
+    return row;
+  }
 
-    private static String populateRecord(Record record, Document document) {
-        String rowId = null;
-        String family = null;
-        for (Fieldable field : document.getFields()) {
-            if (field.name().equals(ROW_ID)) {
-                rowId = field.stringValue();
-            } else if (field.name().equals(RECORD_ID)) {
-                record.setRecordId(field.stringValue());
-            } else {
-                String name = field.name();
-                int index = name.indexOf(SEP);
-                if (index < 0) {
-                    continue;
-                } else if (family == null) {
-                    family = name.substring(0, index);
-                }
-                name = name.substring(index + 1);
-                record.addToColumns(new Column(name, field.stringValue()));
-            }
+  private static String populateRecord(Record record, Document document) {
+    String rowId = null;
+    String family = null;
+    for (Fieldable field : document.getFields()) {
+      if (field.name().equals(ROW_ID)) {
+        rowId = field.stringValue();
+      } else if (field.name().equals(RECORD_ID)) {
+        record.setRecordId(field.stringValue());
+      } else {
+        String name = field.name();
+        int index = name.indexOf(SEP);
+        if (index < 0) {
+          continue;
+        } else if (family == null) {
+          family = name.substring(0, index);
         }
-        record.setFamily(family);
-        return rowId;
+        name = name.substring(index + 1);
+        record.addToColumns(new Column(name, field.stringValue()));
+      }
     }
+    record.setFamily(family);
+    return rowId;
+  }
 }

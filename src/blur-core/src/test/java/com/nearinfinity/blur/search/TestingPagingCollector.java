@@ -89,7 +89,7 @@ public class TestingPagingCollector {
 
 	private static IndexReader getReaderFlatScore(int length) throws Exception {
 		RAMDirectory directory = new RAMDirectory();
-		IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer()));
+		IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer()));
 		for (int i = 0; i < length; i++) {
 			Document document = new Document();
 			document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));

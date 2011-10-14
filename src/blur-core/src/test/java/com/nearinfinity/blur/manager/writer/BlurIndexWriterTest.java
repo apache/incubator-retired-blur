@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Random;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.store.FSDirectory;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
@@ -51,6 +53,7 @@ public class BlurIndexWriterTest {
         writer.setAnalyzer(analyzer);
         writer.setRefresher(refresher);
         writer.setCommiter(commiter);
+        writer.setBlurMetrics(new BlurMetrics(new Configuration()));
         writer.init();   
     }
     

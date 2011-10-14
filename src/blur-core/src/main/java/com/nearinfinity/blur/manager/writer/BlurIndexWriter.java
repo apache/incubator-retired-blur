@@ -40,6 +40,7 @@ import com.nearinfinity.blur.index.WalIndexWriter;
 import com.nearinfinity.blur.index.WalIndexWriter.WalInputFactory;
 import com.nearinfinity.blur.index.WalIndexWriter.WalOutputFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
@@ -58,14 +59,15 @@ public class BlurIndexWriter extends BlurIndex {
   private BlurIndexCommiter _commiter;
   private AtomicBoolean _open = new AtomicBoolean();
   private String _id = UUID.randomUUID().toString();
+  private BlurMetrics _blurMetrics;
 
   public void init() throws IOException {
-    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
+    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, _analyzer);
     conf.setSimilarity(new FairSimilarity());
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-    _writer = new WalIndexWriter(_directory, conf, new WalOutputFactory() {
+    _writer = new WalIndexWriter(_directory, conf, _blurMetrics, new WalOutputFactory() {
       @Override
       public IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException {
         return directory.createOutputDirectIO(name);
@@ -157,6 +159,10 @@ public class BlurIndexWriter extends BlurIndex {
 
   public void setCommiter(BlurIndexCommiter commiter) {
     _commiter = commiter;
+  }
+
+  public void setBlurMetrics(BlurMetrics blurMetrics) {
+    _blurMetrics = blurMetrics;
   }
   
   

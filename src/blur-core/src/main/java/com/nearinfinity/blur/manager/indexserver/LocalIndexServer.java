@@ -47,176 +47,183 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 
 public class LocalIndexServer extends AbstractIndexServer {
 
-    private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
+  private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
 
-    private Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
-    private File _localDir;
-    private BlurIndexCloser _closer;
-    private int _blockSize = 65536;
-    private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
-    private BlurIndexRefresher _refresher;
-    private BlurIndexCommiter _commiter;
+  private Map<String, Map<String, BlurIndex>> _readersMap = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
+  private File _localDir;
+  private BlurIndexCloser _closer;
+  private int _blockSize = 65536;
+  private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
+  private BlurIndexRefresher _refresher;
+  private BlurIndexCommiter _commiter;
+  private BlurMetrics _metrics;
 
-    public LocalIndexServer(File file) {
-        _localDir = file;
-        _localDir.mkdirs();
-        _closer = new BlurIndexCloser();
-        _closer.init();
+  public LocalIndexServer(File file) {
+    _localDir = file;
+    _localDir.mkdirs();
+    _closer = new BlurIndexCloser();
+    _closer.init();
+  }
+
+  @Override
+  public BlurAnalyzer getAnalyzer(String table) {
+    return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30, new HashSet<String>()));
+  }
+
+  @Override
+  public Map<String, BlurIndex> getIndexes(String table) throws IOException {
+    Map<String, BlurIndex> tableMap = _readersMap.get(table);
+    if (tableMap == null) {
+      tableMap = openFromDisk(table);
+      _readersMap.put(table, tableMap);
     }
+    return tableMap;
+  }
 
-    @Override
-    public BlurAnalyzer getAnalyzer(String table) {
-        return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30, new HashSet<String>()));
+  @Override
+  public Similarity getSimilarity(String table) {
+    return new FairSimilarity();
+  }
+
+  @Override
+  public void close() {
+    _closer.close();
+    for (String table : _readersMap.keySet()) {
+      close(_readersMap.get(table));
     }
+  }
 
-    @Override
-    public Map<String, BlurIndex> getIndexes(String table) throws IOException {
-        Map<String, BlurIndex> tableMap = _readersMap.get(table);
-        if (tableMap == null) {
-            tableMap = openFromDisk(table);
-            _readersMap.put(table, tableMap);
+  private void close(Map<String, BlurIndex> map) {
+    for (BlurIndex index : map.values()) {
+      try {
+        index.close();
+      } catch (Exception e) {
+        LOG.error("Error while trying to close index.", e);
+      }
+    }
+  }
+
+  private Map<String, BlurIndex> openFromDisk(String table) throws IOException {
+    File tableFile = new File(_localDir, table);
+    if (tableFile.isDirectory()) {
+      Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
+      for (File f : tableFile.listFiles()) {
+        if (f.isDirectory()) {
+          MMapDirectory directory = new MMapDirectory(f);
+          if (!IndexReader.indexExists(directory)) {
+            new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer())).close();
+          }
+          String shardName = f.getName();
+          shards.put(shardName, openIndex(table, directory));
         }
-        return tableMap;
+      }
+      return shards;
     }
+    throw new IOException("Table [" + table + "] not found.");
+  }
 
-    @Override
-    public Similarity getSimilarity(String table) {
-        return new FairSimilarity();
-    }
+  private BlurIndex openIndex(String table, Directory dir) throws CorruptIndexException, IOException {
+    BlurIndexWriter writer = new BlurIndexWriter();
+    writer.setDirectory(DirectIODirectory.wrap(dir));
+    writer.setAnalyzer(getAnalyzer(table));
+    writer.setCloser(_closer);
+    writer.setRefresher(_refresher);
+    writer.setCommiter(_commiter);
+    writer.setBlurMetrics(_metrics);
+    writer.init();
+    return writer;
+  }
 
-    @Override
-    public void close() {
-        _closer.close();
-        for (String table : _readersMap.keySet()) {
-            close(_readersMap.get(table));
+  @Override
+  public TABLE_STATUS getTableStatus(String table) {
+    return TABLE_STATUS.ENABLED;
+  }
+
+  @Override
+  public List<String> getTableList() {
+    return new ArrayList<String>(_readersMap.keySet());
+  }
+
+  @Override
+  public List<String> getShardList(String table) {
+    try {
+      List<String> result = new ArrayList<String>();
+      File tableFile = new File(_localDir, table);
+      if (tableFile.isDirectory()) {
+        for (File f : tableFile.listFiles()) {
+          if (f.isDirectory()) {
+            result.add(f.getName());
+          }
         }
+      }
+      return result;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    private void close(Map<String, BlurIndex> map) {
-        for (BlurIndex index : map.values()) {
-            try {
-                index.close();
-            } catch (Exception e) {
-                LOG.error("Error while trying to close index.", e);
-            }
-        }
-    }
+  @Override
+  public String getNodeName() {
+    return "localhost";
+  }
 
-    private Map<String, BlurIndex> openFromDisk(String table) throws IOException {
-        File tableFile = new File(_localDir, table);
-        if (tableFile.isDirectory()) {
-            Map<String, BlurIndex> shards = new ConcurrentHashMap<String, BlurIndex>();
-            for (File f : tableFile.listFiles()) {
-                if (f.isDirectory()) {
-                    MMapDirectory directory = new MMapDirectory(f);
-                    if (!IndexReader.indexExists(directory)) {
-                        new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer())).close();
-                    }
-                    String shardName = f.getName();
-                    shards.put(shardName, openIndex(table, directory));
-                }
-            }
-            return shards;
-        }
-        throw new IOException("Table [" + table + "] not found.");
-    }
+  @Override
+  public String getTableUri(String table) {
+    return new File(_localDir, table).toURI().toString();
+  }
 
-    private BlurIndex openIndex(String table, Directory dir) throws CorruptIndexException, IOException {
-        BlurIndexWriter writer = new BlurIndexWriter();
-        writer.setDirectory(DirectIODirectory.wrap(dir));
-        writer.setAnalyzer(getAnalyzer(table));
-        writer.setCloser(_closer);
-        writer.setRefresher(_refresher);
-        writer.setCommiter(_commiter);
-        writer.init();
-        return writer;
-    }
+  @Override
+  public int getShardCount(String table) {
+    return getShardList(table).size();
+  }
 
-    @Override
-    public TABLE_STATUS getTableStatus(String table) {
-        return TABLE_STATUS.ENABLED;
-    }
+  @Override
+  public int getCompressionBlockSize(String table) {
+    return _blockSize;
+  }
 
-    @Override
-    public List<String> getTableList() {
-        return new ArrayList<String>(_readersMap.keySet());
-    }
+  @Override
+  public CompressionCodec getCompressionCodec(String table) {
+    return _compression;
+  }
 
-    @Override
-    public List<String> getShardList(String table) {
-        try {
-            List<String> result = new ArrayList<String>();
-            File tableFile = new File(_localDir, table);
-            if (tableFile.isDirectory()) {
-                for (File f : tableFile.listFiles()) {
-                    if (f.isDirectory()) {
-                        result.add(f.getName());
-                    }
-                }
-            }
-            return result;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+  @Override
+  public long getTableSize(String table) throws IOException {
+    try {
+      File file = new File(new URI(getTableUri(table)));
+      return getFolderSize(file);
+    } catch (URISyntaxException e) {
+      throw new IOException("bad URI", e);
     }
+  }
 
-    @Override
-    public String getNodeName() {
-        return "localhost";
+  private long getFolderSize(File file) {
+    long size = 0;
+    if (file.isDirectory()) {
+      for (File sub : file.listFiles()) {
+        size += getFolderSize(sub);
+      }
+    } else {
+      size += file.length();
     }
+    return size;
+  }
 
-    @Override
-    public String getTableUri(String table) {
-        return new File(_localDir, table).toURI().toString();
-    }
+  public void setRefresher(BlurIndexRefresher refresher) {
+    _refresher = refresher;
+  }
 
-    @Override
-    public int getShardCount(String table) {
-        return getShardList(table).size();
-    }
+  public void setCommiter(BlurIndexCommiter commiter) {
+    _commiter = commiter;
+  }
 
-    @Override
-    public int getCompressionBlockSize(String table) {
-        return _blockSize;
-    }
-
-    @Override
-    public CompressionCodec getCompressionCodec(String table) {
-        return _compression;
-    }
-
-	@Override
-	public long getTableSize(String table) throws IOException {
-		try {
-			File file = new File(new URI(getTableUri(table)));
-			return getFolderSize(file);
-		} catch(URISyntaxException e){
-			throw new IOException("bad URI", e);
-		}
-	}
-	
-	private long getFolderSize(File file){
-		long size = 0;
-		if(file.isDirectory()){
-			for (File sub : file.listFiles()) {
-				size += getFolderSize(sub);
-			}
-		} else {
-			size += file.length();
-		}
-		return size;
-	}
-	
-	public void setRefresher(BlurIndexRefresher refresher) {
-        _refresher = refresher;
-    }
-
-    public void setCommiter(BlurIndexCommiter commiter) {
-        _commiter = commiter;
-    }
+  public void setBlurMetrics(BlurMetrics metrics) {
+    _metrics = metrics;
+  }
 }

@@ -36,7 +36,7 @@ public class BlurSimpleIndexWriter extends BlurIndex {
   private long _commitDelay = TimeUnit.MINUTES.toMillis(1);
 
   public void init() throws IOException {
-    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
+    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_34, _analyzer);
     config.setSimilarity(new FairSimilarity());
     config.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     ((TieredMergePolicy) config.getMergePolicy()).setUseCompoundFile(false);

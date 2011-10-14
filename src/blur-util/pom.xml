@@ -50,6 +50,12 @@
 			<version>4.7</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.hadoop</groupId>
+			<artifactId>hadoop-core</artifactId>
+			<version>0.20.2-cdh3u1</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<repositories>

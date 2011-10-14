@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.hadoop.conf.Configuration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +47,7 @@ import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
@@ -75,6 +77,7 @@ public class IndexManagerTest {
         File file = new File("./tmp/indexer-manager-test");
         rm(file);
         new File(new File(file, TABLE), SHARD_NAME).mkdirs();
+        BlurMetrics metrics = new BlurMetrics(new Configuration());
         refresher = new BlurIndexRefresher();
         refresher.init();
         commiter = new BlurIndexCommiter();
@@ -82,6 +85,7 @@ public class IndexManagerTest {
         server = new LocalIndexServer(file);
         server.setRefresher(refresher);
         server.setCommiter(commiter);
+        server.setBlurMetrics(metrics);
         
         indexManager = new IndexManager();
         indexManager.setStatusCleanupTimerDelay(1000);

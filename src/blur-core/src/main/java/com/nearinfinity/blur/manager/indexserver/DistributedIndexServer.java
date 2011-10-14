@@ -57,7 +57,7 @@ public abstract class DistributedIndexServer extends AdminIndexServer {
     static {
         RAMDirectory directory = new RAMDirectory();
         try {
-            new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer())).close();
+            new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer())).close();
             EMPTY_INDEXREADER = IndexReader.open(directory);
             EMPTY_BLURINDEX = new BlurIndexReader(EMPTY_INDEXREADER);
         } catch (IOException e) {

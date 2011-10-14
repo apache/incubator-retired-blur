@@ -48,6 +48,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.store.HdfsDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
@@ -61,12 +62,13 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
   private static final Log LOG = LogFactory.getLog(HdfsIndexServer.class);
 
   private boolean _closed;
-  private Configuration _configuration = new Configuration();
+  private Configuration _configuration;
   private BlurIndexCloser _closer;
   private ZooKeeper _zookeeper;
   private BlurIndexRefresher _refresher;
   private BlurIndexCommiter _commiter;
   private BlockDirectoryCache _cache;
+  private BlurMetrics _blurMetrics;
 
   @Override
   public void init() {
@@ -119,6 +121,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     writer.setAnalyzer(getAnalyzer(table));
     writer.setDirectory(baseDirectory);
     writer.setRefresher(_refresher);
+    writer.setBlurMetrics(_blurMetrics);
     writer.init();
     return warmUp(writer);
   }
@@ -232,5 +235,13 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
 
   public void setCache(BlockDirectoryCache cache) {
     _cache = cache;
+  }
+
+  public void setConfiguration(Configuration configuration) {
+    _configuration = configuration;
+  }
+
+  public void setBlurMetrics(BlurMetrics blurMetrics) {
+    _blurMetrics = blurMetrics;
   }
 }

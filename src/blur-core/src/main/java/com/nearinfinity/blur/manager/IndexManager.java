@@ -101,7 +101,7 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 public class IndexManager {
 
     private static final String NOT_FOUND = "NOT_FOUND";
-    private static final Version LUCENE_VERSION = Version.LUCENE_33;
+    private static final Version LUCENE_VERSION = Version.LUCENE_34;
     private static final Log LOG = LogFactory.getLog(IndexManager.class);
 
     private IndexServer _indexServer;

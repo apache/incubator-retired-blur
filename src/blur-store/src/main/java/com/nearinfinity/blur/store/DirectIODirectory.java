@@ -12,16 +12,17 @@ public abstract class DirectIODirectory extends Directory {
 
   public abstract IndexInput openInputDirectIO(String name) throws IOException;
 
-  public static DirectIODirectory wrap(Directory dir) {
-    return null;
+  public static DirectIODirectory wrap(Directory dir) throws IOException {
+    return new DirectIODirectoryWrapper(dir);
   }
 
   public static class DirectIODirectoryWrapper extends DirectIODirectory {
     
     private Directory _directory;
 
-    public DirectIODirectoryWrapper(Directory directory) {
+    public DirectIODirectoryWrapper(Directory directory) throws IOException {
       _directory = directory;
+      setLockFactory(directory.getLockFactory());
     }
 
     public void close() throws IOException {

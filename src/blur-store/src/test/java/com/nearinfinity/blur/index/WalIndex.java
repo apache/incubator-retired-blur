@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -21,6 +22,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 
 
@@ -33,12 +35,13 @@ public class WalIndex {
 //        rm(path);
         Directory dir = FSDirectory.open(path);
 //        MMapDirectory dir = new MMapDirectory(path);
-        Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_33);
-        IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_33, analyzer);
+        Analyzer analyzer = new StandardAnalyzer(Version.LUCENE_34);
+        IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, analyzer);
         conf.setMaxThreadStates(3);
         TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
         mergePolicy.setUseCompoundFile(false);
-        WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(dir), conf);
+        BlurMetrics metrics = new BlurMetrics(new Configuration());
+        WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(dir), conf, metrics);
         int count = 0;
         int max = 50000;
         int size = 10;

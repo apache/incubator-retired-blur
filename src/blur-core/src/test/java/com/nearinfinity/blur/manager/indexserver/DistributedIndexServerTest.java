@@ -294,7 +294,7 @@ public class DistributedIndexServerTest {
 
         private Directory getEmptyDir() throws CorruptIndexException, LockObtainFailedException, IOException {
             RAMDirectory directory = new RAMDirectory();
-            new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33))).close();
+            new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34))).close();
             return directory;
         }
 

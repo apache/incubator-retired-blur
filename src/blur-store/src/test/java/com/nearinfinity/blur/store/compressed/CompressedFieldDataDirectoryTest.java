@@ -32,7 +32,7 @@ public class CompressedFieldDataDirectoryTest {
   public void testCompressedFieldDataDirectoryBasic() throws CorruptIndexException, IOException {
     RAMDirectory dir = new RAMDirectory();
     CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC);
-    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer());
+    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     IndexWriter writer = new IndexWriter(directory, config);
@@ -45,7 +45,7 @@ public class CompressedFieldDataDirectoryTest {
   public void testCompressedFieldDataDirectoryTransition() throws CorruptIndexException, LockObtainFailedException, IOException {
     RAMDirectory dir = new RAMDirectory();
 
-    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer());
+    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     IndexWriter writer = new IndexWriter(dir, config);
@@ -54,7 +54,7 @@ public class CompressedFieldDataDirectoryTest {
     writer.close();
 
     CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC);
-    config = new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer());
+    config = new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer());
     mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     writer = new IndexWriter(directory, config);
@@ -66,7 +66,7 @@ public class CompressedFieldDataDirectoryTest {
   @Test
   public void testCompressedFieldDataDirectoryMixedBlockSize() throws CorruptIndexException, LockObtainFailedException, IOException {
     RAMDirectory dir = new RAMDirectory();
-    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer());
+    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     IndexWriter writer = new IndexWriter(dir, config);
@@ -74,7 +74,7 @@ public class CompressedFieldDataDirectoryTest {
     writer.close();
 
     CompressedFieldDataDirectory directory1 = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC, 2);
-    config = new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer());
+    config = new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer());
     mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     writer = new IndexWriter(directory1, config);
@@ -82,7 +82,7 @@ public class CompressedFieldDataDirectoryTest {
     writer.close();
 
     CompressedFieldDataDirectory directory2 = new CompressedFieldDataDirectory(DirectIODirectory.wrap(dir), COMPRESSION_CODEC, 4);
-    config = new IndexWriterConfig(Version.LUCENE_33, new KeywordAnalyzer());
+    config = new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer());
     mergePolicy = (TieredMergePolicy) config.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     writer = new IndexWriter(directory2, config);

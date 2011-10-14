@@ -27,6 +27,7 @@ import static junit.framework.Assert.assertEquals;
 import java.io.IOException;
 import java.util.UUID;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
@@ -48,6 +49,7 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.WalIndexWriter;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache;
@@ -151,7 +153,8 @@ public class SuperQueryTest {
 
 	public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
 		Directory directory = new RAMDirectory();
-		WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33)));
+		BlurMetrics metrics = new BlurMetrics(new Configuration());
+    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34)), metrics);
 		BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
 		RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, analyzer);
 		indexWriter.replace(false,newRow("1", 

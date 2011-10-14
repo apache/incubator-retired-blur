@@ -11,7 +11,7 @@ import org.apache.lucene.store.DataOutput;
 
 public class HdfsFileWriter extends DataOutput {
 
-  private static final int VERSION = -1;
+  public static final int VERSION = -1;
 
   private FSDataOutputStream _outputStream;
   private HdfsMetaBlock _block;

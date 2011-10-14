@@ -70,7 +70,7 @@ public class BlurAnalyzer extends Analyzer {
     private Set<String> _fullTextFields = new HashSet<String>();
     private AnalyzerDefinition _analyzerDefinition;
     private PerFieldAnalyzerWrapper _wrapper;
-    private Analyzer _fullTextAnalyzer = new StandardAnalyzer(Version.LUCENE_33);
+    private Analyzer _fullTextAnalyzer = new StandardAnalyzer(Version.LUCENE_34);
 
     public void addSubField(String name) {
         int lastIndexOf = name.lastIndexOf('.');

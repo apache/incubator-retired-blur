@@ -80,7 +80,7 @@ public class TermDocIterableTest {
         FSDirectory directory = FSDirectory.open(new File("./tmp/termdociterable"));
         if (!IndexReader.indexExists(directory)) {
             rm(new File("./tmp/termdociterable"));
-            IndexWriter writer = new IndexWriter(directory,new IndexWriterConfig(Version.LUCENE_33, new StandardAnalyzer(Version.LUCENE_33)));
+            IndexWriter writer = new IndexWriter(directory,new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34)));
             for (int i = 0; i < BLOCKS; i++) {
                 addDocumentBlock(i, COUNT_PER_BLOCK, writer);
             }

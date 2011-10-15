@@ -4,6 +4,10 @@ class Preference < ActiveRecord::Base
                         :inclusion  => {:in => %w(filter column)},
                         :presence => true
   serialize :value
+  
+  def value
+    @value || ""
+  end
 
   # Scopes allow you to call user.preferences.column
   # or user.preferences.filter

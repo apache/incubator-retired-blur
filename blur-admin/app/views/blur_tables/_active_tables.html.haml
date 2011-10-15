@@ -44,3 +44,5 @@
               = tag :input, :type => :button, :value => 'Disable Table', :class => :disable_table_button
           - elsif table.status == 3
             Disabling...
+:javascript
+  $("#cluster_#{cluster} .table_accordion h3:eq(0) .counter").html(#{tables.size})

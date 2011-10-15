@@ -14,3 +14,5 @@
           = table.table_name
           %br
           = table.table_uri
+:javascript
+  $("#cluster_#{cluster} .table_accordion h3:eq(2) .counter").html(#{tables.size})

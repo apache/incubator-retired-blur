@@ -46,4 +46,5 @@
             Enabling...
           - elsif table.status == 1
             Deleting...
-          
+:javascript
+  $("#cluster_#{cluster} .table_accordion h3:eq(1) .counter").html(#{tables.size})

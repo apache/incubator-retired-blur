@@ -37,7 +37,7 @@
                   .warning
                     = "Controllers are not running the same blur version"
                 %ul
-                  - @zookeeper.controllers.each do |controller|
+                  - @zookeeper.controllers.sort_by{|c| c.node_name}.each do |controller|
                     %li<
                       = "#{controller.node_name}"
                       - if @controller_nodes > 1
@@ -62,7 +62,7 @@
                 .warning
                   = "Shards are not running the same blur version"
               %ul
-                - @zookeeper.shards.each do |shard|
+                - @zookeeper.shards.sort_by{|s| s.node_name}.each do |shard|
                   %li
                     = "#{shard.node_name}"
                     - if @shard_nodes > 1

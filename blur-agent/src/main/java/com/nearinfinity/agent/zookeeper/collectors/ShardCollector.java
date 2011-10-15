@@ -52,7 +52,6 @@ public class ShardCollector {
 	
 	private void updateOnlineShards(List<String> shards) {
 		for (String shard : shards) {
-			int status = 1;
 			String blurVersion = "1.0";			
 			
 			int updatedCount = jdbc.update("update shards set status=1, blur_version=? where node_name=? and cluster_id=?", blurVersion, shard, clusterId);

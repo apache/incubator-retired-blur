@@ -1,58 +1,14 @@
 package com.nearinfinity.agent.zookeeper;
 
-import java.io.IOException;
-import java.util.List;
-
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.zookeeper.collectors.ClusterCollector;
 import com.nearinfinity.agent.zookeeper.collectors.ControllerCollector;
 
 public class ZookeeperWatcher implements Watcher {
-
-//	public static void main(String[] args) throws Exception {
-//		InstanceManager manager = new InstanceManager() {
-//			private ZooKeeper zk;
-//			@Override
-//			public void resetConnection() {
-//				zk = null;
-//			}
-//
-//			@Override
-//			public int getInstanceId() {
-//				return 0;
-//			}
-//
-//			@Override
-//			public ZooKeeper getInstance() {
-//				try {
-//					if(zk == null) {
-//						Watcher watcher = new ZookeeperWatcher(this);
-//						String url = "localhost";
-//						zk = new ZooKeeper(url, 3000, watcher);
-//					}
-//					return zk;
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//					return null;
-//				}
-//
-//			}
-//		};
-//		ZooKeeper zooKeeper = manager.getInstance();
-//		byte[] data = zooKeeper.getData("/aatest", true, null);
-//		zooKeeper.getChildren("/", true);
-//		System.out.println(zooKeeper.exists("/crtest", true));
-//		System.out.println(new String(data));
-//		while(true){
-//			Thread.sleep(5000);
-//		}
-//	}
-
 	private InstanceManager manager;
 
 	public ZookeeperWatcher(InstanceManager manager) {
@@ -77,7 +33,6 @@ public class ZookeeperWatcher implements Watcher {
 					break;
 				case Expired:
 					// It's all over
-					System.out.println("Zookeeper expired");
 					manager.resetConnection();
 					synchronized (this) {
 						notify();
@@ -108,25 +63,21 @@ public class ZookeeperWatcher implements Watcher {
 	}
 
 	private void nodeDeleted(String path, ZooKeeper zk) {
-		System.out.println("node deleted " + path);
 		recollectEverything();
 	}
 
 	private void nodeChanged(String path, ZooKeeper zk) throws KeeperException, InterruptedException {
-		byte[] data = zk.getData(path, true, null);
-		System.out.println("node changed " + path);
+		zk.getData(path, true, null);
 		recollectEverything();
 	}
 
 	private void nodeCreated(String path, ZooKeeper zk) throws KeeperException, InterruptedException {
-		byte[] data = zk.getData(path, true, null);
-		System.out.println("node created " + path);
+		zk.getData(path, true, null);
 		recollectEverything();
 	}
 
 	private void nodeChildrenChanged(String path, ZooKeeper zk) throws KeeperException, InterruptedException {
-		List<String> children = zk.getChildren(path, true);
-		System.out.println("node children changed for " + path);
+		zk.getChildren(path, true);
 		recollectEverything();
 	}
 	

@@ -87,7 +87,7 @@ public class Agent {
 		//Initialize ZooKeeper watchers
 		initializeWatchers(props, jdbc);
 		
-		List<String> activeCollectors = new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|")));
+		List<String> activeCollectors = props.containsKey("active.collectors") ? new ArrayList<String>(Arrays.asList(props.getProperty("active.collectors").split("\\|"))) : new ArrayList<String>();
 		
 		//Setup HDFS collectors
 		setupHdfs(props, jdbc, activeCollectors);
@@ -246,10 +246,12 @@ public class Agent {
 	}
 	
 	private void initializeWatchers(Properties props, JdbcTemplate jdbc) {
-		List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
-		for (String zkInstance : zooKeeperInstances) {
-			String zkUrl = props.getProperty("zk."+zkInstance+".url");
-			new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props)).start();
+		if (props.containsKey("zk.instances")) {
+			List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
+			for (String zkInstance : zooKeeperInstances) {
+				String zkUrl = props.getProperty("zk."+zkInstance+".url");
+				new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props)).start();
+			}
 		}
 	}
 

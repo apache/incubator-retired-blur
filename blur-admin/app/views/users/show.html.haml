@@ -78,9 +78,6 @@
       %p
         - if can? :edit, @user
           = link_to "Edit", edit_user_path(@user)
-        - if can? :destroy, @user
-          |
-          = link_to "Delete User", @user, :confirm => 'Are you sure?', :method => :delete
         - if can? :index, :users
           |
           = link_to "View All Users", users_path

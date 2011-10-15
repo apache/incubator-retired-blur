@@ -10,7 +10,7 @@ class SearchController < ApplicationController
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.order("table_name").all
     @blur_table = @blur_tables[0]
-    @columns = @blur_table.schema &preference_sort(current_user.column_preference.value) if @blur_table
+    @columns = @blur_table.schema &preference_sort(current_user.column_preference.value || []) if @blur_table
     @searches = current_user.searches.order("name")
   end
 

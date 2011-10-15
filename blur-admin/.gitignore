@@ -9,3 +9,4 @@ spec/reports
 coverage
 coverage.data
 .idea/*
+routes.js

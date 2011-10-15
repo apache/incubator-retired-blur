@@ -3,7 +3,7 @@ class BlurQueriesController < ApplicationController
   before_filter :current_zookeeper, :only => [:index, :refresh]
 
   def index
-    @filters = current_user.filter_preference.value
+    @filters = current_user.filter_preference.value || {}
     filters = {}
     now = Time.now
     filters['created_at'] = (now - @filters['created_at_time'].to_i.minutes)..now

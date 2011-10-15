@@ -1,5 +1,5 @@
 PATH
-  remote: vendor/git/cancan
+  remote: vendor/gems/cancan
   specs:
     cancan (2.0.0.alpha)
 
@@ -227,7 +227,7 @@ DEPENDENCIES
   authlogic
   autotest
   barista (= 1.0.0)
-  cancan!
+  cancan (= 2.0.0.alpha)!
   capybara
   ci_reporter
   compass (= 0.11.1)

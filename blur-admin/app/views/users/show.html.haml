@@ -5,6 +5,7 @@
 #show_user_wrapper{'data-user-id' => @user.id}
   .info-contain
     - if can? :update, @column_preference
+      - col_prefs = @column_preference.value || []
       #pref-col-info
         #pref-title
           %h3 Search Result Column Preferences
@@ -12,11 +13,11 @@
           #pref-col
             .section-label{:id => @user.id} My Saved Column Families
             %ul#my-cols.sort
-              -if @column_preference.value.size() == 0
+              -if col_prefs.size() == 0
                 #no-saved None Currently Saved
               -else
                 #no-saved{:style => "display:none;"} None Currently Saved
-                -@column_preference.value.each do |pref|
+                -col_prefs.each do |pref|
                   .sel-fam{:id => "value_#{pref}"}
                     =pref
           #pref-trash
@@ -33,7 +34,7 @@
         #opt-col
           .section-label All Column Families
           -@choices.each do |option|
-            -if @column_preference.value.include? option
+            -if col_prefs.include? option
               .my-select.fam{:id => "value_#{option}"}
                 =option
             -else
@@ -44,31 +45,35 @@
       %h3
         Blur Queries Filter Preferences
       =form_tag(user_preference_path(@user, :filter), :method => :put, :id => 'filters', :remote => true)
+      - filter_pref = @filter_preference.value || {'created_at_time'=>'', 'super_query_on'=>'', 'running'=>'', 'interrupted'=>'', 'refresh_period'=>''}
       .query_filter
         = label_tag "value[created_at_time]", 'Within past:'
         = select_tag "value[created_at_time]",
-          options_for_created_at_time(@filter_preference.value['created_at_time'])
+          options_for_created_at_time(filter_pref['created_at_time'])
       .query_filter
         = label_tag "value[super_query_on]", 'Super Query:'
         = select_tag "value[super_query_on]",
-          options_for_all_yes_no(@filter_preference.value['super_query_on'])
+          options_for_all_yes_no(filter_pref['super_query_on'])
       .query_filter
         = label_tag "value[running]", 'Running:'
         = select_tag "value[running]",
-          options_for_all_yes_no(@filter_preference.value['running'])
+          options_for_all_yes_no(filter_pref['running'])
       .query_filter
         = label_tag "value[interrupted]", 'Interrupted:'
         = select_tag "value[interrupted]",
-          options_for_all_yes_no(@filter_preference.value['interrupted'])
+          options_for_all_yes_no(filter_pref['interrupted'])
       .query_filter
         = label_tag "value[refresh_period]", 'Refresh:'
         = select_tag "value[refresh_period]",
-          options_for_refresh_period(@filter_preference.value['refresh_period'])
+          options_for_refresh_period(filter_pref['refresh_period'])
 
     #user-info
       %p
         %strong Username:
         = @user.username
+      %p
+        %strong Name:
+        = @user.name
       %p
         %strong Email:
         = @user.email

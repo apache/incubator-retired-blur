@@ -152,6 +152,7 @@ public class IndexManagerTest {
         assertNotNull(fetchResult.rowResult.row);
         Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
                 newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+        row.recordCount = 1;
         assertEquals(row, fetchResult.rowResult.row);
     }
 
@@ -191,6 +192,7 @@ public class IndexManagerTest {
         assertNotNull(fetchResult.rowResult.row);
         Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
                 newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+        row.recordCount = 1;
         assertEquals(row, fetchResult.rowResult.row);
     }
 
@@ -420,6 +422,7 @@ public class IndexManagerTest {
                             newColumn("testcol1", "value2"),
                             newColumn("testcol2", "value3"), 
                             newColumn("testcol3", "value4")));
+        row.recordCount = 1;
         assertEquals(row, fetchResult.rowResult.row);
     }
 

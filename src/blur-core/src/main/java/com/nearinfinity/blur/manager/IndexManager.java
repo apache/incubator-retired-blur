@@ -227,8 +227,6 @@ public class IndexManager {
     String recordId = selector.recordId;
     boolean recordOnly = selector.recordOnly;
 
-    LOG.warn("Rewrite selector vaildation.");
-
     if (locationId != null) {
       if (recordId != null && rowId != null) {
         throw new BlurException("Invalid selector locationId [" + locationId + "] and recordId [" + recordId + "] and rowId [" + rowId

@@ -19,7 +19,7 @@ public class ConvertDirectory {
 
   public static void convert(Path path) throws IOException {
     FileSystem fileSystem = FileSystem.get(path.toUri(), new Configuration());
-    if (fileSystem.exists(path)) {
+    if (!fileSystem.exists(path)) {
       System.out.println(path + " does not exists.");
       return;
     }

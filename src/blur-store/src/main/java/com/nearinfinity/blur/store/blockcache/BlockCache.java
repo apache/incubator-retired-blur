@@ -1,6 +1,5 @@
 package com.nearinfinity.blur.store.blockcache;
 
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,7 +14,7 @@ public class BlockCache {
 
   private Map<BlockCacheKey, BlockCacheLocation> _cache;
   private byte[][] _banks;
-  private BitSet[] _bitSets;
+  private BlockLocks[] _bitSets;
   private AtomicInteger[] _bitSetCounters;
   private int _blockSize;
   private int _numberOfBlocksPerBank;
@@ -26,12 +25,12 @@ public class BlockCache {
       int blockSize) {
     _numberOfBlocksPerBank = numberOfBlocksPerBank;
     _banks = new byte[numberOfBanks][];
-    _bitSets = new BitSet[numberOfBanks];
+    _bitSets = new BlockLocks[numberOfBanks];
     _bitSetCounters = new AtomicInteger[numberOfBanks];
     _maxEntries = (numberOfBlocksPerBank * numberOfBanks) - 1;
     for (int i = 0; i < numberOfBanks; i++) {
       _banks[i] = new byte[numberOfBlocksPerBank * blockSize];
-      _bitSets[i] = new BitSet(numberOfBlocksPerBank);
+      _bitSets[i] = new BlockLocks(numberOfBlocksPerBank);
       _bitSetCounters[i] = new AtomicInteger();
     }
     _cache = Collections.synchronizedMap(new LRUMap(_maxEntries) {
@@ -103,7 +102,7 @@ public class BlockCache {
 
   private boolean findEmptyLocation(BlockCacheLocation location) {
     for (int bankId = 0; bankId < _banks.length; bankId++) {
-      BitSet bitSet = _bitSets[bankId];
+      BlockLocks bitSet = _bitSets[bankId];
       if (isFullBitSet(bankId)) {
         continue;
       }
@@ -114,7 +113,7 @@ public class BlockCache {
       if (bit != -1) {
         location.setBankId(bankId);
         location.setBlock(bit);
-        bitSet.set(bit, true);
+        bitSet.set(bit);
         _bitSetCounters[bankId].incrementAndGet();
         return true;
       }

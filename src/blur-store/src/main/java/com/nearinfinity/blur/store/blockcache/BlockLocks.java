@@ -58,7 +58,7 @@ public class BlockLocks {
       }
       oword = word;
       word |= bitmask;
-    } while (bits.compareAndSet(wordNum, oword, word));
+    } while (!bits.compareAndSet(wordNum, oword, word));
     return true;
   }
 
@@ -71,6 +71,6 @@ public class BlockLocks {
       word = bits.get(wordNum);
       oword = word;
       word &= ~bitmask;
-    } while (bits.compareAndSet(wordNum, oword, word));
+    } while (!bits.compareAndSet(wordNum, oword, word));
   }
 }

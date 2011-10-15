@@ -104,7 +104,7 @@ public class BenchmarkDirectory {
       System.out.println("Indexing " + (e - s));
 
       IndexReader reader = IndexReader.open(directory);
-      System.out.println("Dpcs " + reader.numDocs());
+      System.out.println("Docs " + reader.numDocs());
       TermEnum terms = reader.terms();
       List<Term> sample = new ArrayList<Term>();
       int limit = 1000;

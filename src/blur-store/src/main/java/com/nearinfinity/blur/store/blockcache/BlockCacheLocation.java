@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.store.blockcache;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 public class BlockCacheLocation {
 
@@ -7,6 +9,7 @@ public class BlockCacheLocation {
     private int _bankId;
     private long _lastAccess = System.currentTimeMillis();
     private long _accesses;
+    private AtomicBoolean _removed = new AtomicBoolean(false);
     
     public void setBlock(int block) {
         _block = block;
@@ -35,6 +38,14 @@ public class BlockCacheLocation {
 
     public long getNumberOfAccesses() {
         return _accesses;
+    }
+
+    public boolean isRemoved() {
+      return _removed.get();
+    }
+
+    public void setRemoved(boolean removed) {
+      _removed.set(removed);
     }
 
 }

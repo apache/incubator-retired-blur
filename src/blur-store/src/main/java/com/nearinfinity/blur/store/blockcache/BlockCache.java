@@ -1,14 +1,14 @@
 package com.nearinfinity.blur.store.blockcache;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.collections.map.LRUMap;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.EvictionListener;
 
 public class BlockCache {
 
-  private final Map<BlockCacheKey, BlockCacheLocation> _cache;
+  private final ConcurrentMap<BlockCacheKey, BlockCacheLocation> _cache;
   private final byte[][] _banks;
   private final BlockLocks[] _locks;
   private final AtomicInteger[] _lockCounters;
@@ -16,7 +16,6 @@ public class BlockCache {
   private final int _numberOfBlocksPerBank;
   private final int _maxEntries;
 
-  @SuppressWarnings("unchecked")
   public BlockCache(final int numberOfBanks, final int numberOfBlocksPerBank, int blockSize) {
     _numberOfBlocksPerBank = numberOfBlocksPerBank;
     _banks = new byte[numberOfBanks][];
@@ -28,21 +27,23 @@ public class BlockCache {
       _locks[i] = new BlockLocks(numberOfBlocksPerBank);
       _lockCounters[i] = new AtomicInteger();
     }
-    _cache = Collections.synchronizedMap(new LRUMap(_maxEntries) {
-      private static final long serialVersionUID = 2091289339926232984L;
-      @Override
-      protected boolean removeLRU(LinkEntry entry) {
-        BlockCacheLocation location = (BlockCacheLocation) entry.getValue();
+    
+    EvictionListener<BlockCacheKey, BlockCacheLocation> listener = new EvictionListener<BlockCacheKey, BlockCacheLocation>() {
+      @Override 
+      public void onEviction(BlockCacheKey key, BlockCacheLocation location) {
         synchronized (location) {
           int bankId = location.getBankId();
           int block = location.getBlock();
           location.setRemoved(true);
           _locks[bankId].clear(block);
           _lockCounters[bankId].decrementAndGet();
-          return true;
         }
       }
-    });
+    };
+    _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>()
+        .maximumWeightedCapacity(_maxEntries)
+        .listener(listener)
+        .build();
     _blockSize = blockSize;
   }
 
@@ -104,7 +105,7 @@ public class BlockCache {
         //if bitset is full
         continue OUTER;
       }
-      //this needs to spin, if a lock was attempted but not obtained the rest of the bank is skipped
+      //this check needs to spin, if a lock was attempted but not obtained the rest of the bank should not be skipped
       int bit = bitSet.nextClearBit(0);
       INNER:
       while (bit != -1) {

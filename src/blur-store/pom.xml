@@ -53,7 +53,8 @@
 		</repository>
 		<repository>
 			<id>cloudera</id>
-			<url>https://repository.cloudera.com/content/repositories/releases/</url>
+			<url>https://repository.cloudera.com/content/repositories/releases/
+			</url>
 		</repository>
 	</repositories>
 
@@ -87,7 +88,8 @@
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
 							<excludeTransitive>true</excludeTransitive>
-							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api</excludeArtifactIds>
+							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api
+							</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>

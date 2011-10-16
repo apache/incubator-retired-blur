@@ -5,9 +5,9 @@
       - if columns
         - columns.each do |family, cols|
           %ul
-            %li#family{:id=>family}
-              %a{:href=>'#', :class => 'check_filter', :name => "family_#{family}"}= family
+            %li#family{:id=>"-sep-_#{family}"}
+              %a{:href=>'#', :class => 'check_filter', :name => "family_-sep-_#{family}"}= family
               %ul
                 - cols.each do |col|
-                  %li#column{:id=>"#{family}_#{col}"}
-                    %a{:href=>'#', :class => 'check_filter', :name => "column_#{family}_#{col}"}= col
+                  %li#column{:id=>"-sep-_#{family}_-sep-_#{col}"}
+                    %a{:href=>'#', :class => 'check_filter', :name => "column_-sep-_#{family}_-sep-_#{col}"}= col

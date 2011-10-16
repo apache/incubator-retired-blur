@@ -75,7 +75,6 @@ $(document).ready ->
         close: (event, ui) ->
           $(this).remove()
         open: (event, ui)->
-          console.log(ui)
   
   perform_action = (action, el) ->
     switch action

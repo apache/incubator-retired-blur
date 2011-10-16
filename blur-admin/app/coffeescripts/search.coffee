@@ -70,10 +70,11 @@ $(document).ready ->
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
     name = '.'+$(this).attr('name')
-    element = name.split("_")[0]
-    family_header = '#'+name.split("_")[1]
-    family_name = '.family_'+name.split("_")[1]
-    recordId_name = '.column_'+name.split("_")[1]+'_recordId'
+    name_split = name.split("_-sep-_")
+    element = name_split[0]
+    family_header = '#'+name_split[1]
+    family_name = '.family_-sep-_'+name_split[1]
+    recordId_name = '.column_-sep-_'+name_split[1]+'_-sep-_recordId'
     curr_col_span = $(family_header).attr('colspan')
     max_col_span = $(family_header).attr('children')
 
@@ -82,7 +83,7 @@ $(document).ready ->
       num_unchecked = $('#neighborhood').find("> ul > .jstree-unchecked").length
       for family in $('.familysets th')
         if family.id?
-          family_class = '.family_' + family.id
+          family_class = '.family_-sep-_' + family.id
           if num_unchecked is 0 then $(family_class).show() else $(family_class).hide()
 
     # hide the clicked filter element if the corresponding column is visible
@@ -93,7 +94,7 @@ $(document).ready ->
           name = family_name
         else
           $(family_header).attr('colspan', curr_col_span-1)
-          $(family_name + '_empty').attr('colspan', curr_col_span-1)
+          $(family_name + '_-sep-_empty').attr('colspan', curr_col_span-1)
         $(name).hide()
       # hide/show column family
       else
@@ -101,7 +102,7 @@ $(document).ready ->
         # show column family if some of it's children are unchecked
         if curr_col_span < max_col_span || curr_col_span < list_length
           $(family_header).attr('colspan', max_col_span)
-          $(family_name + '_empty').attr('colspan', max_col_span)
+          $(family_name + '_-sep-_empty').attr('colspan', max_col_span)
           $(name).show()
         # hide column family otherwise
         else
@@ -115,18 +116,18 @@ $(document).ready ->
         if $(family_header).is(":visible")
           if $('#result_table').find('thead > tr > ' + name).length > 0
             $(family_header).attr('colspan', 1 + parseInt(curr_col_span))
-            $(family_name + '_empty').attr('colspan', 1 + parseInt(curr_col_span))
+            $(family_name + '_-sep-_empty').attr('colspan', 1 + parseInt(curr_col_span))
         # show column and column family when column family is not visible
         else
           $(family_header).attr('colspan', 2)
-          $(family_name + '_empty').attr('colspan', 2)
+          $(family_name + '_-sep-_empty').attr('colspan', 2)
           $(family_header).show()
           $(recordId_name).show()
-          $(family_name + '_empty').show()
+          $(family_name + '_-sep-_empty').show()
       # show a family
       else
         $(family_header).attr('colspan', max_col_span)
-        $(family_name + '_empty').attr('colspan', max_col_span)
+        $(family_name + '_-sep-_empty').attr('colspan', max_col_span)
       $(name).show()
 
   #listener that accordion the filter sections

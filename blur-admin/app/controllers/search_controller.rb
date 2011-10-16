@@ -84,7 +84,7 @@ class SearchController < ApplicationController
       @results << result
     end
 
-    @schema = Hash[search.schema(blur_table).sort &preference_sort(current_user.column_preference.value)]
+    @schema = Hash[search.schema(blur_table).sort &preference_sort(current_user.column_preference.value || [])]
 
     respond_to do |format|
       format.html {render 'create', :layout => false}

@@ -151,7 +151,6 @@ $(document).ready ->
       $(this).closest('tr').replaceWith(data)
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: Add error handling
-      console.log "error"
 
   # Ajax request handling for more info link
   $('a.more_info')

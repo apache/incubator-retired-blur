@@ -45,7 +45,6 @@ $(document).ready ->
           $(data).show()
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: improve error handling
-      console.log "Error in ajax call"
 
   # Ajax request handling for enable/disable/delete
   $('form.update, form.delete')
@@ -110,7 +109,6 @@ $(document).ready ->
     #array of buttons, so that they are dynamic
     btns = {}
     btns[$(this).val()] = -> 
-      console.log(form)
       form.submit()
       $(this).dialog 'close'
     btns["Cancel"] = -> 

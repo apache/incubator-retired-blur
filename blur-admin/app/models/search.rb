@@ -20,7 +20,7 @@ class Search < ActiveRecord::Base
   end
   def column_families
     # complete column families
-    self.raw_columns.collect{|value| value.split('_')[1] if value.starts_with?('family')}.compact
+    self.raw_columns.collect{|value| value.split('_-sep-_')[1] if value.starts_with?('family')}.compact
   end
   def columns
     # hash with key = column_family and value = array of columns
@@ -28,7 +28,7 @@ class Search < ActiveRecord::Base
     families = self.column_families
     columns = {}
     self.raw_columns.each do |raw_column|
-      parts = raw_column.split('_')
+      parts = raw_column.split('_-sep-_')
       if parts[0] == 'column' and !families.include?(parts[1])
         columns[parts[1]] ||= ['recordId']
         columns[parts[1]] << parts[2]

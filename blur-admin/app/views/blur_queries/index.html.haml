@@ -19,13 +19,9 @@
           = select_tag "super_query_on",
             options_for_all_on_off(@filters['super_query_on'])
         .query_filter
-          = label_tag "running", 'Running:'
-          = select_tag "running",
-            options_for_all_yes_no(@filters['running'])
-        .query_filter
-          = label_tag "interrupted", 'Interrupted:'
-          = select_tag "interrupted",
-            options_for_all_yes_no(@filters['interrupted'])
+          = label_tag "state", 'Query State:'
+          = select_tag "state",
+            options_for_select([['All', ''], ['Running', 0], ['Interrupted', 1], ['Completed', 2]], @filters['state'])
           = submit_tag 'filter'
 
     #selector_wrapper

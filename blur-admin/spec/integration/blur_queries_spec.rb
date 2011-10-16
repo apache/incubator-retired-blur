@@ -25,8 +25,7 @@ describe "blur queries" do
   it "shows filter options" do
     find("#filter_form").should have_content "Within past:"
     find("#filter_form").should have_content "Super Query:"
-    find("#filter_form").should have_content "Running:"
-    find("#filter_form").should have_content "Interrupted:"
+    find("#filter_form").should have_content "Query State:"
   end
 
   it "shows table and refresh options" do

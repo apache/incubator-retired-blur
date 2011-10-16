@@ -26,7 +26,7 @@ class BlurQuery < ActiveRecord::Base
     end
   end
 
-  def state
+  def state_str
     case read_attribute(:state)
       when 0 then "Running"
       when 1 then "Interrupted"

@@ -7,13 +7,20 @@
     - else
       %td.query_string
         = 'Not Available'
-  %td= print_value(!blur_query.super_query_on.nil?) { blur_query.super_query_on ? "On" : "Off" }
+  %td= print_value(blur_query.blur_table.table_name)
   %td.start= print_value(blur_query.start)
   %td.fetch_num= print_value(blur_query.fetch_num)
-  %td= print_value(blur_query.complete) {number_to_percentage(100 * blur_query.complete, :precision => 0)}
+  %td
+    - if blur_query.state == 0
+      = print_value(blur_query.complete) {number_to_percentage(100 * blur_query.complete, :precision => 0)}
+    - elsif blur_query.state == 1
+      = print_value(blur_query.complete) {number_to_percentage(100 * blur_query.complete, :precision => 0)}
+      (Interrupted)
+    - else
+      Complete
   - if can? :update, :blur_queries
     %td
-      - if blur_query.state == "Running"
+      - if blur_query.state == 0
         = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do
           = tag :input, :type => :button, :value => 'Cancel', :class => :cancel_query_button
   %td= link_to "More Info", more_info_blur_query_path(blur_query), :class => 'more_info', :remote => true

@@ -11,14 +11,12 @@ $(document).ready ->
       filters += " | super query on"
     else if $('#super_query_on').val() == 'false'
       filters += " | super query off"
-    if $('#running').val() == 'true'
+    if $('#state').val() == "0"
       filters += " | running"
-    else if $('#running').val() == 'false'
-      filters += " | not running"
-    if $('#interrupted').val() == 'true'
+    else if $('#state').val() == "1"
       filters += " | interrupted"
-    else if $('#interrupted').val() == 'false'
-      filters += " | not interrupted"
+    else if $('#state').val() == "2"
+      filters += " | completed"
     $('#current #filters').html(filters)
 
   # adds time to data-age of selected elements, and 
@@ -35,15 +33,13 @@ $(document).ready ->
         $(row).attr 'data-age', "#{current_age}"
 
     if retired_rows.length isnt 0
-      $(retired_rows).effect 'highlight', {color: remove_color}, 'slow', ->
-          $(this).remove()
+      $(retired_rows).remove()
 
   # set default filter options
   # keeps track of previous filter options
   super_query_filter = ""
   created_at_filter = "1"
-  running_filter = ""
-  interrupted_filter = ""
+  state_filter = ""
   blur_table_id = ""
   last_refresh = new Date()
   replace_table = null
@@ -69,18 +65,14 @@ $(document).ready ->
 
       replace_table = super_query_filter != $('#super_query_on').val() or
                       created_at_filter  != $('#created_at_time').val() or
-                      running_filter     != $('#running').val() or
-                      interrupted_filter != $('#interrupted').val() or
+                      state_filter       != $('#state').val() or
                       blur_table_id      != $('#blur_table_id').val() or
-                      'true'             == $('#running').val() or
-                      'false'            == $('#interrupted').val()
 
       if replace_table
         # reset last filter options
         super_query_filter = $('#super_query_on').val()
         created_at_filter  = $('#created_at_time').val()
-        interrupted_filter = $('#interrupted').val()
-        running_filter     = $('#running').val()
+        state_filter       = $('#state').val()
         blur_table_id      = $('#blur_table_id').val()
         $('#time_since_refresh').val ''
       else
@@ -118,8 +110,7 @@ $(document).ready ->
             for existing_row in existing_rows
               if rows.filter('#' + $(existing_row).attr('id')).length is 0
                 stale_rows.push(existing_row)
-            $(stale_rows).effect 'highlight', {color: remove_color}, 'slow', ->
-                $(this).remove()
+            $(stale_rows).remove()
 
           # if there are existing rows, then check for updates
           updated_rows = $.map rows, (row) ->
@@ -130,13 +121,12 @@ $(document).ready ->
             else
               null
           if updated_rows.length isnt 0
-            $(updated_rows).effect 'highlight', {color: update_color}, 'slow'
+            #$(updated_rows).effect 'highlight', {color: update_color}, 'slow'
             new_rows = rows.not updated_rows
 
         # if not already filtered of updated rows, every row is a new row
         new_rows ?= rows
         new_rows.prependTo($('#queries-table > tbody'))
-          .effect 'highlight', {color: add_color}, 'slow'
 
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: Add error handling

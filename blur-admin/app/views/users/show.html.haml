@@ -45,7 +45,7 @@
       %h3
         Blur Queries Filter Preferences
       =form_tag(user_preference_path(@user, :filter), :method => :put, :id => 'filters', :remote => true)
-      - filter_pref = @filter_preference.value || {'created_at_time'=>'', 'super_query_on'=>'', 'running'=>'', 'interrupted'=>'', 'refresh_period'=>''}
+      - filter_pref = @filter_preference.value || {'created_at_time'=>'', 'super_query_on'=>'', 'state'=>'', 'refresh_period'=>''}
       .query_filter
         = label_tag "value[created_at_time]", 'Within past:'
         = select_tag "value[created_at_time]",
@@ -55,13 +55,9 @@
         = select_tag "value[super_query_on]",
           options_for_all_yes_no(filter_pref['super_query_on'])
       .query_filter
-        = label_tag "value[running]", 'Running:'
-        = select_tag "value[running]",
-          options_for_all_yes_no(filter_pref['running'])
-      .query_filter
-        = label_tag "value[interrupted]", 'Interrupted:'
-        = select_tag "value[interrupted]",
-          options_for_all_yes_no(filter_pref['interrupted'])
+        = label_tag "value[state]", 'Query Status:'
+        = select_tag "value[state]",
+          options_for_select([['All', ''], ['Running', 0], ['Interrupted', 1], ['Completed', 2]], filter_pref['state'])
       .query_filter
         = label_tag "value[refresh_period]", 'Refresh:'
         = select_tag "value[refresh_period]",

@@ -97,6 +97,7 @@ end
 #create a valid user
 Factory.define :user do |t|
   t.sequence (:username)  {|n| "user#{n}"}
+  t.sequence (:name)      {|n| "user#{n}"}
   t.sequence (:email)     {|n| "user#{n}@example.com"}
   t.password              "password"
   t.password_confirmation "password"

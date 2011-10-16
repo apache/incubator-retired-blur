@@ -12,7 +12,7 @@
     -# - content_for :javascript do
     -#   = javascript_include_tag 'compiled/runtime'
     = yield :javascript
-    - if @current_zookeeper.blank?
+    - if @current_zookeeper.blank? && @zookeepers
       :javascript
         var Zookeeper = {};
         Zookeeper.instances = #{@zookeepers.collect{|z| {:id=>z.id, :name=>z.name}}.to_json}

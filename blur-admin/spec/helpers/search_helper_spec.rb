@@ -11,7 +11,7 @@ describe SearchHelper do
     end    
     
     it "returns false when the search is not a subset of the table schema" do
-      @invalid_search = Factory.stub :search, :columns => ["column_blah_ack", "column_blah_blah"]
+      @invalid_search = Factory.stub :search, :columns => ["column_-sep-_blah_-sep-_ack", "column_-sep-_blah_-sep-_blah"]
       is_valid_search?(@invalid_search).should == false
     end
   end

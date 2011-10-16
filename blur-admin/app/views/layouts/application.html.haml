@@ -12,6 +12,10 @@
     -# - content_for :javascript do
     -#   = javascript_include_tag 'compiled/runtime'
     = yield :javascript
+    - if @current_zookeeper.blank?
+      :javascript
+        var Zookeeper = {};
+        Zookeeper.instances = #{@zookeepers.collect{|z| {:id=>z.id, :name=>z.name}}.to_json}
     %title
       = yield(:title)
       | Blur Admin
@@ -59,17 +63,17 @@
               = link_to 'Dashboard', root_path
 
             %li{:class => controller == 'zookeepers' && action == 'show_current' && 'active'}
-              = link_to 'Environment Status', zookeeper_path
+              = link_to 'Environment Status', zookeeper_path, :id => 'env_link'
 
             %li{:class => controller == 'blur_tables' && 'active'}
-              = link_to 'Blur Tables', blur_tables_path
+              = link_to 'Blur Tables', blur_tables_path, :id => 'tables_link'
 
             %li{:class => controller == 'blur_queries' && 'active'}
-              = link_to 'Blur Queries', blur_queries_path
+              = link_to 'Blur Queries', blur_queries_path, :id => 'queries_link'
 
             - if can? :show, :search
               %li{:class => controller == 'search' && 'active', :id => "left"}
-                = link_to 'Search', search_path
+                = link_to 'Search', search_path, :id => 'search_link'
 
             %li{:class => controller == 'hdfs' && 'active'}
               = link_to 'HDFS', hdfs_path

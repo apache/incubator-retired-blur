@@ -3,13 +3,10 @@ package com.nearinfinity.blur.store;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
-import org.apache.commons.collections.map.LRUMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -35,11 +32,10 @@ import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
-import com.nearinfinity.blur.store.blockcache.Cache;
 
 public class BenchmarkDirectory {
 
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("deprecation")
   public static void main(String[] args) throws IOException {
     int numberOfBlocksPerBank = 8192;
     int blockSize = BlockDirectory.BLOCK_SIZE;
@@ -54,37 +50,6 @@ public class BenchmarkDirectory {
 
     final HdfsDirectory dir = new HdfsDirectory(p);
     dir.setLockFactory(new NoLockFactory());
-
-    final Map<String, byte[]> map = Collections.synchronizedMap(new LRUMap(8192));
-
-//    Cache cache = new Cache() {
-//
-//      @Override
-//      public void update(String name, long blockId, byte[] buffer) {
-//        map.put(name + blockId, copy(buffer));
-//      }
-//      
-//      private byte[] copy(byte[] buffer) {
-//        byte[] b = new byte[buffer.length];
-//        System.arraycopy(buffer, 0, b, 0, buffer.length);
-//        return b;
-//      }
-//
-//      @Override
-//      public boolean fetch(String name, long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {
-//        byte[] data = map.get(name + blockId);
-//        if (data == null) {
-//          return false;
-//        }
-//        System.arraycopy(data, blockOffset, b, off, lengthToReadInBlock);
-//        return true;
-//      }
-//
-//      @Override
-//      public void delete(String name) {
-//        
-//      }
-//    };
     
     BlockDirectory directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), cache);
 

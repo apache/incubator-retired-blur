@@ -29,6 +29,10 @@ public class Executors {
         return new ThreadPoolExecutor(threadCount, threadCount, 60L, TimeUnit.SECONDS, 
                 new LinkedBlockingQueue<Runnable>(), new BlurThreadFactory(prefix));
     }
+    
+    public static ExecutorService newSingleThreadExecutor(String prefix) {
+      return java.util.concurrent.Executors.newSingleThreadExecutor(new BlurThreadFactory(prefix));
+    }
 
     public static class BlurThreadFactory implements ThreadFactory {
         private AtomicInteger threadNumber = new AtomicInteger(0);

@@ -32,9 +32,7 @@ public class BlockDirectoryCache implements Cache {
     BlockCacheKey blockCacheKey = new BlockCacheKey();
     blockCacheKey.setBlock(blockId);
     blockCacheKey.setFile(file);
-    synchronized (_blockCache) {
-      _blockCache.store(blockCacheKey, buffer);  
-    }
+    _blockCache.store(blockCacheKey, buffer);  
   }
 
   @Override
@@ -46,10 +44,7 @@ public class BlockDirectoryCache implements Cache {
     BlockCacheKey blockCacheKey = new BlockCacheKey();
     blockCacheKey.setBlock(blockId);
     blockCacheKey.setFile(file);
-    boolean fetch;
-    synchronized (_blockCache) {
-      fetch = _blockCache.fetch(blockCacheKey, b, blockOffset, off, lengthToReadInBlock);
-    }
+    boolean fetch = _blockCache.fetch(blockCacheKey, b, blockOffset, off, lengthToReadInBlock);
     if (fetch) {
       _blurMetrics.hdfsCacheHit.inc();
     } else {

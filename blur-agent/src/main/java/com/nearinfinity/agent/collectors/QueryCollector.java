@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONValue;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,6 +21,8 @@ import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class QueryCollector {
+	private static final Log log = LogFactory.getLog(QueryCollector.class);
+	
 	public static void startCollecting(String connection, final JdbcTemplate jdbc) {
 		try {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
@@ -95,7 +99,7 @@ public class QueryCollector {
 				}
 			});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.debug(e);
 		}
 		
 	}

@@ -3,6 +3,8 @@ package com.nearinfinity.agent.zookeeper;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -18,6 +20,8 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	private ZooKeeper zk;
 	private Watcher watcher;
 	private Properties props;
+	
+	private static final Log log = LogFactory.getLog(ZookeeperInstance.class);
 	
 	public ZookeeperInstance(String name, String url, JdbcTemplate jdbc, Properties props) {
 		this.name = name;
@@ -63,12 +67,12 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 			}
 			
 			if (zk == null) {
-				System.out.println("Instance is not online.  Going to sleep for 30 seconds and try again.");
+				log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
 				updateZookeeperStatus(false);
 				try {
 					Thread.sleep(30000);
 				} catch (InterruptedException e) {
-					System.out.println("Exiting Zookeeper instance");
+					log.info("Exiting Zookeeper instance");
 					return;
 				}
 			} else {
@@ -78,9 +82,9 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 					synchronized(watcher) {
 						watcher.wait();
 					}
-						System.out.println("Zookeeper Watcher was woken up, time to do work.");
+					log.info("Zookeeper Watcher was woken up, time to do work.");
 				} catch (InterruptedException e) {
-					System.out.println("Exiting Zookeeper instance");
+					log.info("Exiting Zookeeper instance");
 					return;
 				}
 			}

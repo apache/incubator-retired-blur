@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +17,8 @@ public class ShardCollector {
 	private int clusterId;
 	private String clusterName;
 	private JdbcTemplate jdbc;
+	
+	private static final Log log = LogFactory.getLog(ShardCollector.class);
 	
 	private ShardCollector(InstanceManager manager, JdbcTemplate jdbc, int clusterId, String clusterName) {
 		this.zk = manager.getInstance();
@@ -35,9 +39,9 @@ public class ShardCollector {
 		try {
 			return zk.getChildren("/blur/clusters/" + clusterName + "/online/shard-nodes", true);
 		} catch (KeeperException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		return new ArrayList<String>();
 	}

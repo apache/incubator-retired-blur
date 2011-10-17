@@ -1,5 +1,7 @@
 package com.nearinfinity.agent.zookeeper;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -10,6 +12,8 @@ import com.nearinfinity.agent.zookeeper.collectors.ControllerCollector;
 
 public class ZookeeperWatcher implements Watcher {
 	private InstanceManager manager;
+	
+	private static final Log log = LogFactory.getLog(ZookeeperWatcher.class);
 
 	public ZookeeperWatcher(InstanceManager manager) {
 		this.manager = manager;
@@ -54,11 +58,9 @@ public class ZookeeperWatcher implements Watcher {
 				break;
 			}
 		} catch (KeeperException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error(e);
 		}
 	}
 

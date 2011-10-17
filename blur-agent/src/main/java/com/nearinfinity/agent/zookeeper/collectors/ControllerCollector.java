@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -14,6 +16,8 @@ public class ControllerCollector {
 	private ZooKeeper zk;
 	private int instanceId;
 	private JdbcTemplate jdbc;
+	
+	private static final Log log = LogFactory.getLog(ControllerCollector.class);
 	
 	private ControllerCollector(InstanceManager manager) {
 		this.zk = manager.getInstance();
@@ -56,9 +60,9 @@ public class ControllerCollector {
 		try {
 			return zk.getChildren("/blur/online-controller-nodes", true);
 		} catch (KeeperException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		return new ArrayList<String>();
 	}

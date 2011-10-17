@@ -18,6 +18,8 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
@@ -30,7 +32,8 @@ import com.nearinfinity.license.CryptoServicesException;
 import com.nearinfinity.license.IssuingKey;
 
 public class Agent {
-
+	private static final Log log = LogFactory.getLog(Agent.class);
+	
 	public static void main(String[] args) {
 		writePidFile();		
 		Properties configProps = loadConfigParams(args);
@@ -39,14 +42,14 @@ public class Agent {
 
 	private static Properties loadConfigParams(String[] args) {
 		if (args.length == 0) {
-			System.out.println("Config file location must be the first argument.");
+			log.fatal("Config file location must be the first argument.");
 			System.exit(1);
 		} 
 		
 		File configFile = new File(args[0]);
 		
 		if (!configFile.exists() || !configFile.isFile()) {
-			System.out.println("Unable to find config file at " + configFile.getAbsolutePath());
+			log.fatal("Unable to find config file at " + configFile.getAbsolutePath());
 			System.exit(1);
 		}
 		
@@ -54,7 +57,7 @@ public class Agent {
 		try {
 			configProps.load(new FileInputStream(configFile));
 		} catch (Exception e) {
-			System.out.println("Config File is not a valid properties file: " + e.getMessage());
+			log.fatal("Config File is not a valid properties file: " + e.getMessage());
 			System.exit(1);
 		}
 		return configProps;
@@ -64,14 +67,14 @@ public class Agent {
 		try {
 			File pidFile = new File("agent.pid");
 			PrintWriter pidOut = new PrintWriter(pidFile);
-			System.out.println("Wrote pid file to: " + pidFile.getAbsolutePath());
+			log.info("Wrote pid file to: " + pidFile.getAbsolutePath());
 			String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();  
 		    int p = nameOfRunningVM.indexOf('@');  
 		    String pid = nameOfRunningVM.substring(0, p);
 		    pidOut.write(pid);
 		    pidOut.close();
 		} catch (FileNotFoundException e) {
-			System.out.println("Unable to find pid file. " + e.getMessage());
+			log.fatal("Unable to find pid file. " + e.getMessage());
 			System.exit(1);
 		}
 	}
@@ -103,14 +106,14 @@ public class Agent {
 			}
 		}
 		
-		System.out.println("Exiting agent");
+		log.info("Exiting agent");
 	}
 	
 	private void verifyLicense(Properties props, JdbcTemplate jdbc) {
 		String licenseFilePath = props.getProperty("license.file");
 		
 		if (StringUtils.isBlank(licenseFilePath)) {
-			System.out.println("Missing license.file configuration property.  Exiting.");
+			log.fatal("Missing license.file configuration property.  Exiting.");
 			System.exit(1);
 		}
 		
@@ -119,10 +122,10 @@ public class Agent {
 		try {
 			licenseFileLines = IOUtils.readLines(new FileInputStream(licenseFile));
 		} catch (FileNotFoundException e) {
-			System.out.println("Unable to find license file (" + licenseFile.getAbsolutePath() + ").  Exiting.");
+			log.fatal("Unable to find license file (" + licenseFile.getAbsolutePath() + ").  Exiting.");
 			System.exit(1);
 		} catch (IOException e) {
-			System.out.println("There was a problem reading the license file: " + e.getMessage() + ". Exiting");
+			log.fatal("There was a problem reading the license file: " + e.getMessage() + ". Exiting");
 			System.exit(1);
 		}
 		
@@ -137,11 +140,11 @@ public class Agent {
 		
 		try {
 			if (!cryptoServices.verify(licenseData.toString().getBytes(), cryptoServices.decodeBase64(signature), cryptoServices.getPublicKey(issuingKey.getPublicKey()))) {
-				System.out.println("Invalid license.  Exiting");
+				log.fatal("Invalid license.  Exiting");
 				System.exit(1);
 			}
 		} catch (CryptoServicesException e) {
-			System.out.println("There was a problem decrypting license.  Exiting.");
+			log.fatal("There was a problem decrypting license.  Exiting.");
 			System.exit(1);
 		}
 		
@@ -151,7 +154,7 @@ public class Agent {
 		try {
 			jdbc.update("insert into licenses (org, issued_date, expires_date) values (?,?,?)", licenseFileLines.get(1), sdf.parse(licenseFileLines.get(4)), sdf.parse(licenseFileLines.get(5)));
 		} catch (Exception e) {
-			System.out.println("Bad date formats in license.  Exiting.");
+			log.fatal("Bad date formats in license.  Exiting.");
 			System.exit(1);
 		}
 	}
@@ -175,7 +178,7 @@ public class Agent {
 						}
 					}).start();
 				} catch (Exception e) {
-					System.out.println("Unable to collect Query status, will try again next pass: " + e.getMessage());
+					log.warn("Unable to collect Query status, will try again next pass: " + e.getMessage());
 				}
 			}
 		}
@@ -196,7 +199,7 @@ public class Agent {
 						}
 					}).start();
 				} catch (Exception e) {
-					System.out.println("Unable to collect Table information, will try again next pass: " + e.getMessage());
+					log.warn("Unable to collect Table information, will try again next pass: " + e.getMessage());
 				}
 			}
 		}
@@ -226,7 +229,7 @@ public class Agent {
 						}
 					}).start();
 				} catch (Exception e) {
-					System.out.println("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
+					log.warn("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
 				}
 			}
 		}
@@ -238,7 +241,7 @@ public class Agent {
 		try {
 			dataSource = new SimpleDriverDataSource(DriverManager.getDriver(url), url, props.getProperty("store.user"), props.getProperty("store.password"));
 		} catch (SQLException e) {
-			System.out.println("Unable to connect to the collector store: " + e.getMessage());
+			log.fatal("Unable to connect to the collector store: " + e.getMessage());
 			System.exit(1);
 		}
 		

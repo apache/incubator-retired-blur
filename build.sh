@@ -33,6 +33,8 @@ rm -r rails/app/stylesheets
 
 echo "Copying config"
 cp -r ../blur-admin/config rails
+rm rails/config/environments/development.rb
+rm rails/config/environments/test.rb
 
 echo "Copying db"
 cp -r ../blur-admin/db rails
@@ -50,6 +52,14 @@ mkdir rails/tmp
 
 echo "Copying vendor"
 cp -r ../blur-admin/vendor rails
+
+if [ $1 = "--certs" ]; then
+  echo "Overlaying Cert Auth"
+  cp -r ../etc/cert-auth/proof-0.1.0 rails/vendor/gems/
+  cp ../etc/cert-auth/certificate-authentication.rb rails/config/initializers/
+  cp ../etc/cert-auth/Gemfile rails/
+  cp ../etc/cert-auth/production.rb rails/config/environments/
+fi
 
 echo "Vendor gems"
 cd rails

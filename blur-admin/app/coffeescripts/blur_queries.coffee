@@ -17,6 +17,8 @@ $(document).ready ->
       filters += " | interrupted"
     else if $('#state').val() == "2"
       filters += " | completed"
+    if $("#userid").val() != ""
+      filters += " | #{$('#userid').val()}"
     $('#current #filters').html(filters)
 
   # adds time to data-age of selected elements, and 
@@ -40,6 +42,7 @@ $(document).ready ->
   super_query_filter = ""
   created_at_filter = "1"
   state_filter = ""
+  username_filter = ""
   blur_table_id = ""
   last_refresh = new Date()
   replace_table = null
@@ -67,12 +70,14 @@ $(document).ready ->
                       created_at_filter  != $('#created_at_time').val() or
                       state_filter       != $('#state').val() or
                       blur_table_id      != $('#blur_table_id').val() or
+                      username_filter    != $('#userid').val()
 
       if replace_table
         # reset last filter options
         super_query_filter = $('#super_query_on').val()
         created_at_filter  = $('#created_at_time').val()
         state_filter       = $('#state').val()
+        username_filter    = $('#userid').val()
         blur_table_id      = $('#blur_table_id').val()
         $('#time_since_refresh').val ''
       else

@@ -22,6 +22,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
@@ -132,6 +133,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setIndexServer(indexServer);
     indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
+    indexManager.setBlurFilterCacheClass(configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS));
     indexManager.init();
 
     final BlurShardServer shardServer = new BlurShardServer();

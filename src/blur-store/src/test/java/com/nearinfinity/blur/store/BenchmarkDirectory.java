@@ -25,13 +25,16 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
+import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 
 public class BenchmarkDirectory {
 
@@ -43,13 +46,22 @@ public class BenchmarkDirectory {
     BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize);
     BlurMetrics metrics = new BlurMetrics(new Configuration());
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, metrics);
+    
+    ZooKeeper zooKeeper = new ZooKeeper("localhost", 30000, new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+        
+      }
+    });
+    
+    ZookeeperLockFactory factory = new ZookeeperLockFactory(zooKeeper, "/test-zk-lock");
 
     Path p = new Path("hdfs://localhost:9000/bench");
     FileSystem fs = FileSystem.get(p.toUri(), new Configuration());
     fs.delete(p, true);
 
     final HdfsDirectory dir = new HdfsDirectory(p);
-    dir.setLockFactory(new NoLockFactory());
+    dir.setLockFactory(factory);
     
     BlockDirectory directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), cache);
 
@@ -62,6 +74,7 @@ public class BenchmarkDirectory {
       mergePolicy.setUseCompoundFile(false);
       IndexWriter writer = new IndexWriter(directory, conf);
       for (int i = 0; i < 1000000; i++) {
+        System.out.println("Indexing [" + i + "]");
         writer.addDocument(getDoc());
       }
       writer.close();

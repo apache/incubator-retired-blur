@@ -110,7 +110,9 @@ public class IndexManager {
   private QueryStatusManager _statusManager = new QueryStatusManager();
   private boolean _closed;
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
-
+  private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
+  private String _blurFilterCacheClass;
+  
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
   }
@@ -119,6 +121,16 @@ public class IndexManager {
     LOG.info("init - start");
     _executor = Executors.newThreadPool("index-manager", _threadCount);
     _statusManager.init();
+    
+    if (_blurFilterCacheClass != null) {
+      try {
+        Class<?> clazz = Class.forName(_blurFilterCacheClass);
+        _filterCache = (BlurFilterCache) clazz.newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    
     LOG.info("init - complete");
   }
 
@@ -277,8 +289,8 @@ public class IndexManager {
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;
-        Filter preFilter = parseFilter(table, simpleQuery.preSuperFilter, false, ScoreType.CONSTANT, analyzer);
-        Filter postFilter = parseFilter(table, simpleQuery.postSuperFilter, true, ScoreType.CONSTANT, analyzer);
+        Filter preFilter = parseFilter(table, simpleQuery.preSuperFilter, false, analyzer);
+        Filter postFilter = parseFilter(table, simpleQuery.postSuperFilter, true, analyzer);
         Query userQuery = parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
         call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
@@ -348,11 +360,26 @@ public class IndexManager {
     return _statusManager.currentQueries(table);
   }
 
-  private Filter parseFilter(String table, String filter, boolean superQueryOn, ScoreType scoreType, Analyzer analyzer) throws ParseException, BlurException {
-    if (filter == null) {
+  private Filter parseFilter(String table, String filterStr, boolean superQueryOn, Analyzer analyzer) throws ParseException, BlurException {
+    if (filterStr == null) {
       return null;
     }
-    return new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, scoreType).parse(filter));
+    Filter filter;
+    if (superQueryOn) {
+      filter = _filterCache.fetchPostFilter(table,filterStr);
+    } else {
+      filter = _filterCache.fetchPreFilter(table,filterStr);
+    }
+    if (filter != null) {
+      return filter;
+    }
+    filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, ScoreType.CONSTANT).parse(filterStr));
+    if (superQueryOn) {
+      filter = _filterCache.storePostFilter(table,filterStr,filter);
+    } else {
+      filter = _filterCache.storePreFilter(table,filterStr,filter);
+    }
+    return filter;
   }
 
   private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException {
@@ -739,5 +766,9 @@ public class IndexManager {
 
   public void setThreadCount(int threadCount) {
     this._threadCount = threadCount;
+  }
+  
+  public void setBlurFilterCacheClass(String blurFilterCacheClass) {
+    _blurFilterCacheClass = blurFilterCacheClass;
   }
 }

@@ -55,6 +55,7 @@ By default if the `blur.*.hostname` properties are left blank, the default value
     blur.shard.opener.thread.count=16
     blur.shard.cache.max.querycache.elements=128
     blur.shard.cache.max.timetolive=60000
+    blur.shard.filter.cache.class=com.nearinfinity.blur.manager.DefaultBlurFilterCache
     blur.max.clause.count=1024
     blur.indexmanager.search.thread.count=32
     

@@ -9,7 +9,7 @@ class Ability
       can [:show, :edit, :destroy], :users, :id => user.id
 
       # edit own username, email, password
-      can :update, :users, [:username, :email, :password, :password_confirmation], :id => user.id
+      can :update, :users, [:username, :name, :email, :password, :password_confirmation], :id => user.id
 
       # logout
       can :destroy, :user_sessions
@@ -74,7 +74,7 @@ class Ability
     else  # not logged in
       can :new, [:users, :user_sessions]
       can :create, :user_sessions
-      can :create, :users, [:username, :email, :password, :password_confirmation]
+      can :create, :users, [:username, :name, :email, :password, :password_confirmation]
     end
   end
 end

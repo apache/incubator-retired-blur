@@ -15,7 +15,7 @@
         margin-bottom: .75em;
         label{ @include columns(3, 10); }
       }
-      input { float: right; }
+      input[type=submit] { float: right; }
     }
 
     #selector_wrapper {

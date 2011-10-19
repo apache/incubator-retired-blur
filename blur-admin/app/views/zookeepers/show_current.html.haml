@@ -1,6 +1,4 @@
 - content_for :title, 'Environment Status'
-- content_for :javascript do
-  = javascript_include_tag 'compiled/zookeeper'
 
 #zookeeper_wrapper
   - if @zookeeper
@@ -37,7 +35,7 @@
                   .warning
                     = "Controllers are not running the same blur version"
                 %ul
-                  - @zookeeper.controllers.sort_by{|c| c.node_name}.each do |controller|
+                  - @zookeeper.controllers.sort_by{|c| [c.status, c.node_name]}.each do |controller|
                     %li<
                       = "#{controller.node_name}"
                       - if @controller_nodes > 1
@@ -66,7 +64,7 @@
                   %li
                     = cluster.name
                     %ul
-                      - cluster.shards.sort_by{|s| s.node_name}.each do |shard|
+                      - cluster.shards.sort_by{|s| [s.status, s.node_name]}.each do |shard|
                         %li
                           = shard.node_name
                           - if @shard_nodes > 1
@@ -77,7 +75,7 @@
                           - else
                             .ui-state-error.ui-corner-all
                               Offline
-                              = link_to 'Forget Offline Node', destroy_shard_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
+                            = link_to 'Forget Offline Node', destroy_shard_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
             - else
               %h3 Shards
               %p Not Available

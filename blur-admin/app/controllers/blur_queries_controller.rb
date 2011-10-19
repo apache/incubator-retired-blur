@@ -9,10 +9,8 @@ class BlurQueriesController < ApplicationController
     filters['created_at'] = (now - @filters['created_at_time'].to_i.minutes)..now
     @filters.each {|k, v| filters[k] = v unless v == '' or k == 'created_at_time' or k == 'refresh_period'}
     # convert string bools into real bools
-    ['super_query_on', 'running', 'interrupted'].each do |category|
-      filters[category] = true  if filters[category] == 'true'
-      filters[category] = false if filters[category] == 'false'
-    end
+    filters['super_query_on'] = true  if filters['super_query_on'] == 'true'
+    filters['super_query_on'] = false if filters['super_query_on'] == 'false'
     filters.delete('refresh_period')
     filters.delete('created_at_time')
 
@@ -32,9 +30,12 @@ class BlurQueriesController < ApplicationController
     params[:super_query_on] = false if params[:super_query_on] == 'false'
 
     # filters for columns
-    [:blur_table_id, :super_query_on, :state].each do |category|
+    [:blur_table_id, :super_query_on, :state, :userid].each do |category|
       filters[category] = params[category] unless params[category] == nil or params[category] == ''
     end
+    
+    # filter on null for userid
+    filters[:userid] = nil if filters[:userid] == 'Not Available'
     
     # filter for time
     now = Time.now

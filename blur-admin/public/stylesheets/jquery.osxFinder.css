@@ -1,0 +1,26 @@
+div.osxFinder {
+    border: 1px solid black;
+    overflow-x: auto;
+    width: 100%;
+    height: 300px;
+    position: relative;
+}
+
+div.osxFinder div.innerWindow {
+    height: 99%;
+    border: 1px solid green;
+    overflow: auto;
+    position: absolute;
+    top: 0;
+}
+
+div.osxFinder div.innerWindow ul {
+    list-style-type: none;
+}
+div.osxFinder div.innerWindow ul li {
+    cursor: pointer;
+}
+
+div.osxFinder div.innerWindow ul li.osxSelected {
+    background-color: #77F;
+}

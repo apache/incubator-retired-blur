@@ -95,7 +95,7 @@ describe BlurQueriesController do
       @blur_query = Factory.stub :blur_query, :created_at => mock_time
 
       @zookeeper.stub(:blur_tables).and_return([@blur_table])
-      BlurQuery.stub_chain(:joins, :where, :where, :includes, :order).and_return([@blur_query])
+      BlurQuery.stub_chain(:joins, :where, :where, :where, :includes, :order).and_return([@blur_query])
       @blur_query.stub(:zookeeper).and_return(@zookeeper)
 
       # ApplicationController.current_zookeeper

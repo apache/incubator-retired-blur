@@ -3,7 +3,7 @@
   - if can? :index, :blur_queries, :query_string
     - if blur_query.query_string
       %td.query_string{:title => format_title(blur_query.query_string)}
-        = truncate(blur_query.query_string, :length => 20, :ommision => "...")
+        = truncate(blur_query.query_string, :length => 50, :ommision => "...")
     - else
       %td.query_string
         = 'Not Available'
@@ -18,10 +18,10 @@
       (Interrupted)
     - else
       Complete
-  - if can? :update, :blur_queries
-    %td
+  %td.actions
+    - if can? :update, :blur_queries
       - if blur_query.state == 0
         = form_tag "/blur_queries/#{blur_query.id}", :method => :put, :remote => true, :class => :cancel do
           = tag :input, :type => :button, :value => 'Cancel', :class => :cancel_query_button
-  %td= link_to "More Info", more_info_blur_query_path(blur_query), :class => 'more_info', :remote => true
-  %td.info= link_to "Times", times_blur_query_path(blur_query), :class => 'times', :remote => true
+    = link_to "More Info", more_info_blur_query_path(blur_query), :class => 'more_info', :remote => true, :style => 'margin-right: 3px'
+    = link_to "Times", times_blur_query_path(blur_query), :class => 'times', :remote => true

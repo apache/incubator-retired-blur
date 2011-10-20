@@ -322,21 +322,25 @@ module Blur
       UUID = 11
       USERCONTEXT = 12
       CACHERESULT = 13
+      STARTTIME = 14
+      MODIFYFILECACHES = 15
 
       FIELDS = {
         SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => Blur::SimpleQuery},
         EXPERTQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'expertQuery', :class => Blur::ExpertQuery},
         FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Facet}},
         SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => Blur::Selector},
-        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'},
-        USECACHEIFPRESENT => {:type => ::Thrift::Types::BOOL, :name => 'useCacheIfPresent'},
+        ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData', :default => false},
+        USECACHEIFPRESENT => {:type => ::Thrift::Types::BOOL, :name => 'useCacheIfPresent', :default => true},
         START => {:type => ::Thrift::Types::I64, :name => 'start', :default => 0},
         FETCH => {:type => ::Thrift::Types::I32, :name => 'fetch', :default => 10},
         MINIMUMNUMBEROFRESULTS => {:type => ::Thrift::Types::I64, :name => 'minimumNumberOfResults', :default => 9223372036854775807},
         MAXQUERYTIME => {:type => ::Thrift::Types::I64, :name => 'maxQueryTime', :default => 9223372036854775807},
         UUID => {:type => ::Thrift::Types::I64, :name => 'uuid'},
         USERCONTEXT => {:type => ::Thrift::Types::STRING, :name => 'userContext'},
-        CACHERESULT => {:type => ::Thrift::Types::BOOL, :name => 'cacheResult'}
+        CACHERESULT => {:type => ::Thrift::Types::BOOL, :name => 'cacheResult', :default => true},
+        STARTTIME => {:type => ::Thrift::Types::I64, :name => 'startTime', :default => 0},
+        MODIFYFILECACHES => {:type => ::Thrift::Types::BOOL, :name => 'modifyFileCaches', :default => true}
       }
 
       def struct_fields; FIELDS; end

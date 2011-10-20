@@ -1,9 +1,15 @@
 package com.nearinfinity.blur.utils;
 
+import java.util.List;
+
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
+import com.nearinfinity.blur.thrift.generated.ExpertQuery;
+import com.nearinfinity.blur.thrift.generated.Facet;
+import com.nearinfinity.blur.thrift.generated.Selector;
+import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 
 public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
     
@@ -19,11 +25,12 @@ public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
     
     public BlurQuery getNormalizedBlurQuery(BlurQuery blurQuery) {
         BlurQuery newBlurQuery = new BlurQuery(blurQuery);
-        newBlurQuery.userContext = null;
         newBlurQuery.allowStaleData = false;
+        newBlurQuery.useCacheIfPresent = false;
         newBlurQuery.userContext = null;
-        newBlurQuery.uuid = 0;
         newBlurQuery.maxQueryTime = 0;
+        newBlurQuery.uuid = 0;
+        newBlurQuery.cacheResult = false;
         return newBlurQuery;
     }
     

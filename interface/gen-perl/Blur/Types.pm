@@ -1193,7 +1193,7 @@ sub write {
 
 package Blur::BlurQuery;
 use base qw(Class::Accessor);
-Blur::BlurQuery->mk_accessors( qw( simpleQuery expertQuery facets selector allowStaleData useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult ) );
+Blur::BlurQuery->mk_accessors( qw( simpleQuery expertQuery facets selector allowStaleData useCacheIfPresent start fetch minimumNumberOfResults maxQueryTime uuid userContext cacheResult startTime modifyFileCaches ) );
 
 sub new {
   my $classname = shift;
@@ -1203,15 +1203,17 @@ sub new {
   $self->{expertQuery} = undef;
   $self->{facets} = undef;
   $self->{selector} = undef;
-  $self->{allowStaleData} = undef;
-  $self->{useCacheIfPresent} = undef;
+  $self->{allowStaleData} = 0;
+  $self->{useCacheIfPresent} = 1;
   $self->{start} = 0;
   $self->{fetch} = 10;
   $self->{minimumNumberOfResults} = 9223372036854775807;
   $self->{maxQueryTime} = 9223372036854775807;
   $self->{uuid} = undef;
   $self->{userContext} = undef;
-  $self->{cacheResult} = undef;
+  $self->{cacheResult} = 1;
+  $self->{startTime} = 0;
+  $self->{modifyFileCaches} = 1;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{simpleQuery}) {
       $self->{simpleQuery} = $vals->{simpleQuery};
@@ -1251,6 +1253,12 @@ sub new {
     }
     if (defined $vals->{cacheResult}) {
       $self->{cacheResult} = $vals->{cacheResult};
+    }
+    if (defined $vals->{startTime}) {
+      $self->{startTime} = $vals->{startTime};
+    }
+    if (defined $vals->{modifyFileCaches}) {
+      $self->{modifyFileCaches} = $vals->{modifyFileCaches};
     }
   }
   return bless ($self, $classname);
@@ -1369,6 +1377,18 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^14$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{startTime});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^15$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{modifyFileCaches});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -1453,6 +1473,16 @@ sub write {
   if (defined $self->{cacheResult}) {
     $xfer += $output->writeFieldBegin('cacheResult', TType::BOOL, 13);
     $xfer += $output->writeBool($self->{cacheResult});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{startTime}) {
+    $xfer += $output->writeFieldBegin('startTime', TType::I64, 14);
+    $xfer += $output->writeI64($self->{startTime});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{modifyFileCaches}) {
+    $xfer += $output->writeFieldBegin('modifyFileCaches', TType::BOOL, 15);
+    $xfer += $output->writeBool($self->{modifyFileCaches});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

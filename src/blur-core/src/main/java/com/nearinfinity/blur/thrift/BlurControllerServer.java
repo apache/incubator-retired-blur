@@ -130,6 +130,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                 }
             }
             
+            BlurUtil.setStartTime(original);
+            
             Selector selector = blurQuery.getSelector();
             blurQuery.setSelector(null);
 

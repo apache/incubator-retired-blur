@@ -97,6 +97,7 @@ public class BlurShardServer extends ExecutionContextIface {
                     return queryCacheEntry.getBlurResults(blurQuery);
                 }
             }
+            BlurUtil.setStartTime(original);
             try {
                 AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
                 BlurResultIterable hitsIterable = _indexManager.query(table, blurQuery, facetCounts);

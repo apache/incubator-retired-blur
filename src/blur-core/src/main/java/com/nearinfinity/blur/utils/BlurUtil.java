@@ -247,6 +247,7 @@ public class BlurUtil {
             }
         }
         results.query = query;
+        results.query.selector = selector;
         return results;
     }
     
@@ -311,5 +312,11 @@ public class BlurUtil {
                 }
             }
         }
+    }
+
+    public static void setStartTime(BlurQuery query) {
+      if (query.startTime == 0) {
+        query.startTime = System.currentTimeMillis();
+      }
     }
 }

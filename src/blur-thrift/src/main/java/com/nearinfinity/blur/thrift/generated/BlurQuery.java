@@ -36,6 +36,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)11);
   private static final org.apache.thrift.protocol.TField USER_CONTEXT_FIELD_DESC = new org.apache.thrift.protocol.TField("userContext", org.apache.thrift.protocol.TType.STRING, (short)12);
   private static final org.apache.thrift.protocol.TField CACHE_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("cacheResult", org.apache.thrift.protocol.TType.BOOL, (short)13);
+  private static final org.apache.thrift.protocol.TField START_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("startTime", org.apache.thrift.protocol.TType.I64, (short)14);
+  private static final org.apache.thrift.protocol.TField MODIFY_FILE_CACHES_FIELD_DESC = new org.apache.thrift.protocol.TField("modifyFileCaches", org.apache.thrift.protocol.TType.BOOL, (short)15);
 
   public SimpleQuery simpleQuery; // required
   public ExpertQuery expertQuery; // required
@@ -50,6 +52,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   public long uuid; // required
   public String userContext; // required
   public boolean cacheResult; // required
+  public long startTime; // required
+  public boolean modifyFileCaches; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -65,7 +69,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     MAX_QUERY_TIME((short)10, "maxQueryTime"),
     UUID((short)11, "uuid"),
     USER_CONTEXT((short)12, "userContext"),
-    CACHE_RESULT((short)13, "cacheResult");
+    CACHE_RESULT((short)13, "cacheResult"),
+    START_TIME((short)14, "startTime"),
+    MODIFY_FILE_CACHES((short)15, "modifyFileCaches");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -106,6 +112,10 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
           return USER_CONTEXT;
         case 13: // CACHE_RESULT
           return CACHE_RESULT;
+        case 14: // START_TIME
+          return START_TIME;
+        case 15: // MODIFY_FILE_CACHES
+          return MODIFY_FILE_CACHES;
         default:
           return null;
       }
@@ -154,7 +164,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   private static final int __MAXQUERYTIME_ISSET_ID = 5;
   private static final int __UUID_ISSET_ID = 6;
   private static final int __CACHERESULT_ISSET_ID = 7;
-  private BitSet __isset_bit_vector = new BitSet(8);
+  private static final int __STARTTIME_ISSET_ID = 8;
+  private static final int __MODIFYFILECACHES_ISSET_ID = 9;
+  private BitSet __isset_bit_vector = new BitSet(10);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -186,11 +198,19 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CACHE_RESULT, new org.apache.thrift.meta_data.FieldMetaData("cacheResult", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.START_TIME, new org.apache.thrift.meta_data.FieldMetaData("startTime", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+    tmpMap.put(_Fields.MODIFY_FILE_CACHES, new org.apache.thrift.meta_data.FieldMetaData("modifyFileCaches", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(BlurQuery.class, metaDataMap);
   }
 
   public BlurQuery() {
+    this.allowStaleData = false;
+
+    this.useCacheIfPresent = true;
+
     this.start = 0L;
 
     this.fetch = 10;
@@ -198,6 +218,12 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.minimumNumberOfResults = 9223372036854775807L;
 
     this.maxQueryTime = 9223372036854775807L;
+
+    this.cacheResult = true;
+
+    this.startTime = 0L;
+
+    this.modifyFileCaches = true;
 
   }
 
@@ -214,7 +240,9 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     long maxQueryTime,
     long uuid,
     String userContext,
-    boolean cacheResult)
+    boolean cacheResult,
+    long startTime,
+    boolean modifyFileCaches)
   {
     this();
     this.simpleQuery = simpleQuery;
@@ -238,6 +266,10 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.userContext = userContext;
     this.cacheResult = cacheResult;
     setCacheResultIsSet(true);
+    this.startTime = startTime;
+    setStartTimeIsSet(true);
+    this.modifyFileCaches = modifyFileCaches;
+    setModifyFileCachesIsSet(true);
   }
 
   /**
@@ -273,6 +305,8 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       this.userContext = other.userContext;
     }
     this.cacheResult = other.cacheResult;
+    this.startTime = other.startTime;
+    this.modifyFileCaches = other.modifyFileCaches;
   }
 
   public BlurQuery deepCopy() {
@@ -285,10 +319,10 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     this.expertQuery = null;
     this.facets = null;
     this.selector = null;
-    setAllowStaleDataIsSet(false);
     this.allowStaleData = false;
-    setUseCacheIfPresentIsSet(false);
-    this.useCacheIfPresent = false;
+
+    this.useCacheIfPresent = true;
+
     this.start = 0L;
 
     this.fetch = 10;
@@ -300,8 +334,12 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     setUuidIsSet(false);
     this.uuid = 0;
     this.userContext = null;
-    setCacheResultIsSet(false);
-    this.cacheResult = false;
+    this.cacheResult = true;
+
+    this.startTime = 0L;
+
+    this.modifyFileCaches = true;
+
   }
 
   public SimpleQuery getSimpleQuery() {
@@ -623,6 +661,52 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     __isset_bit_vector.set(__CACHERESULT_ISSET_ID, value);
   }
 
+  public long getStartTime() {
+    return this.startTime;
+  }
+
+  public BlurQuery setStartTime(long startTime) {
+    this.startTime = startTime;
+    setStartTimeIsSet(true);
+    return this;
+  }
+
+  public void unsetStartTime() {
+    __isset_bit_vector.clear(__STARTTIME_ISSET_ID);
+  }
+
+  /** Returns true if field startTime is set (has been assigned a value) and false otherwise */
+  public boolean isSetStartTime() {
+    return __isset_bit_vector.get(__STARTTIME_ISSET_ID);
+  }
+
+  public void setStartTimeIsSet(boolean value) {
+    __isset_bit_vector.set(__STARTTIME_ISSET_ID, value);
+  }
+
+  public boolean isModifyFileCaches() {
+    return this.modifyFileCaches;
+  }
+
+  public BlurQuery setModifyFileCaches(boolean modifyFileCaches) {
+    this.modifyFileCaches = modifyFileCaches;
+    setModifyFileCachesIsSet(true);
+    return this;
+  }
+
+  public void unsetModifyFileCaches() {
+    __isset_bit_vector.clear(__MODIFYFILECACHES_ISSET_ID);
+  }
+
+  /** Returns true if field modifyFileCaches is set (has been assigned a value) and false otherwise */
+  public boolean isSetModifyFileCaches() {
+    return __isset_bit_vector.get(__MODIFYFILECACHES_ISSET_ID);
+  }
+
+  public void setModifyFileCachesIsSet(boolean value) {
+    __isset_bit_vector.set(__MODIFYFILECACHES_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SIMPLE_QUERY:
@@ -729,6 +813,22 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       }
       break;
 
+    case START_TIME:
+      if (value == null) {
+        unsetStartTime();
+      } else {
+        setStartTime((Long)value);
+      }
+      break;
+
+    case MODIFY_FILE_CACHES:
+      if (value == null) {
+        unsetModifyFileCaches();
+      } else {
+        setModifyFileCaches((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -773,6 +873,12 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     case CACHE_RESULT:
       return Boolean.valueOf(isCacheResult());
 
+    case START_TIME:
+      return Long.valueOf(getStartTime());
+
+    case MODIFY_FILE_CACHES:
+      return Boolean.valueOf(isModifyFileCaches());
+
     }
     throw new IllegalStateException();
   }
@@ -810,6 +916,10 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       return isSetUserContext();
     case CACHE_RESULT:
       return isSetCacheResult();
+    case START_TIME:
+      return isSetStartTime();
+    case MODIFY_FILE_CACHES:
+      return isSetModifyFileCaches();
     }
     throw new IllegalStateException();
   }
@@ -941,6 +1051,24 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
       if (!(this_present_cacheResult && that_present_cacheResult))
         return false;
       if (this.cacheResult != that.cacheResult)
+        return false;
+    }
+
+    boolean this_present_startTime = true;
+    boolean that_present_startTime = true;
+    if (this_present_startTime || that_present_startTime) {
+      if (!(this_present_startTime && that_present_startTime))
+        return false;
+      if (this.startTime != that.startTime)
+        return false;
+    }
+
+    boolean this_present_modifyFileCaches = true;
+    boolean that_present_modifyFileCaches = true;
+    if (this_present_modifyFileCaches || that_present_modifyFileCaches) {
+      if (!(this_present_modifyFileCaches && that_present_modifyFileCaches))
+        return false;
+      if (this.modifyFileCaches != that.modifyFileCaches)
         return false;
     }
 
@@ -1090,6 +1218,26 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetStartTime()).compareTo(typedOther.isSetStartTime());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetStartTime()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.startTime, typedOther.startTime);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetModifyFileCaches()).compareTo(typedOther.isSetModifyFileCaches());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetModifyFileCaches()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.modifyFileCaches, typedOther.modifyFileCaches);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1220,6 +1368,22 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 14: // START_TIME
+          if (field.type == org.apache.thrift.protocol.TType.I64) {
+            this.startTime = iprot.readI64();
+            setStartTimeIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 15: // MODIFY_FILE_CACHES
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.modifyFileCaches = iprot.readBool();
+            setModifyFileCachesIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1290,6 +1454,12 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
     oprot.writeFieldBegin(CACHE_RESULT_FIELD_DESC);
     oprot.writeBool(this.cacheResult);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(START_TIME_FIELD_DESC);
+    oprot.writeI64(this.startTime);
+    oprot.writeFieldEnd();
+    oprot.writeFieldBegin(MODIFY_FILE_CACHES_FIELD_DESC);
+    oprot.writeBool(this.modifyFileCaches);
     oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
@@ -1370,6 +1540,14 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     if (!first) sb.append(", ");
     sb.append("cacheResult:");
     sb.append(this.cacheResult);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("startTime:");
+    sb.append(this.startTime);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("modifyFileCaches:");
+    sb.append(this.modifyFileCaches);
     first = false;
     sb.append(")");
     return sb.toString();

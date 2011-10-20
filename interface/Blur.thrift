@@ -239,15 +239,17 @@ struct BlurQuery {
   2:ExpertQuery expertQuery,
   3:list<Facet> facets,
   4:Selector selector,
-  5:bool allowStaleData,
-  6:bool useCacheIfPresent,
+  5:bool allowStaleData = 0,
+  6:bool useCacheIfPresent = 1,
   7:i64 start = 0,
   8:i32 fetch = 10, 
   9:i64 minimumNumberOfResults = 9223372036854775807,
   10:i64 maxQueryTime = 9223372036854775807,
   11:i64 uuid,
   12:string userContext,
-  13:bool cacheResult
+  13:bool cacheResult = 1,
+  14:i64 startTime = 0,
+  15:bool modifyFileCaches = 1
 }
 
 struct BlurResult {

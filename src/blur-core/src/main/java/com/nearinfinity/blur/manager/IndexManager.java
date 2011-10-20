@@ -763,7 +763,7 @@ public class IndexManager {
       } finally {
         // this will allow for closing of index
         reader.decRef();
-        BlockDirectory.setModifyFileCache(false);
+        BlockDirectory.setModifyFileCache(true);
         _status.deattachThread();
       }
     }

@@ -54,7 +54,7 @@ public class BlockDirectory extends DirectIODirectory {
   private static ThreadLocal<Boolean> _modifyFileCache = new ThreadLocal<Boolean>() {
     @Override
     protected Boolean initialValue() {
-      return false;
+      return true;
     }
   };
   

@@ -15,18 +15,23 @@ public class HdfsFileReader extends DataInput {
 
   private static final int VERSION = -1;
 
-  private final FSDataInputStream _inputStream;
   private final long _length;
   private final long _hdfsLength;
   private final List<HdfsMetaBlock> _metaBlocks;
+  private final FileSystem _fileSystem;
+  private final Path _path;
+  private FSDataInputStream _inputStream;
   private long _logicalPos;
   private long _boundary;
+  
 
   public HdfsFileReader(FileSystem fileSystem, Path path) throws IOException {
     if (!fileSystem.exists(path)) {
       throw new FileNotFoundException(path.toString());
     }
     FileStatus fileStatus = fileSystem.getFileStatus(path);
+    _path = path;
+    _fileSystem = fileSystem;
     _hdfsLength = fileStatus.getLen();
     _inputStream = fileSystem.open(path);
 
@@ -48,7 +53,7 @@ public class HdfsFileReader extends DataInput {
     }
     seek(0);
   }
-
+  
   public long getPosition() {
     return _logicalPos;
   }
@@ -148,6 +153,17 @@ public class HdfsFileReader extends DataInput {
         inputStream.close();
       }
     }
+  }
+
+  @Override
+  public Object clone() {
+    HdfsFileReader reader = (HdfsFileReader) super.clone();
+    try {
+      reader._inputStream = _fileSystem.open(_path);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+    return reader;
   }
 
 }

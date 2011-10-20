@@ -38,7 +38,6 @@ import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 
 public class BenchmarkDirectory {
 
-  @SuppressWarnings("deprecation")
   public static void main(String[] args) throws IOException {
     int numberOfBlocksPerBank = 8192;
     int blockSize = BlockDirectory.BLOCK_SIZE;
@@ -74,7 +73,6 @@ public class BenchmarkDirectory {
       mergePolicy.setUseCompoundFile(false);
       IndexWriter writer = new IndexWriter(directory, conf);
       for (int i = 0; i < 1000000; i++) {
-        System.out.println("Indexing [" + i + "]");
         writer.addDocument(getDoc());
       }
       writer.close();

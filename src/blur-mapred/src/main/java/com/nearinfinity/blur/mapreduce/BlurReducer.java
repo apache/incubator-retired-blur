@@ -309,7 +309,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return document;
   }
 
-  private void report(Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src) {
+  private static void report(Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src) {
     long now = System.currentTimeMillis();
     double seconds = (now - startTime) / 1000.0;
     double rate = totalBytesCopied / seconds;
@@ -320,15 +320,11 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     context.setStatus(status);
   }
   
-  private double getMb(double b) {
+  private static double getMb(double b) {
     return b / MB;
   }
 
-  private double getMb(long b) {
-    return b / MB;
-  }
-
-  private String estimateTimeToComplete(double rate, long totalBytesCopied, long totalBytesToCopy) {
+  private static String estimateTimeToComplete(double rate, long totalBytesCopied, long totalBytesToCopy) {
     long whatsLeft = totalBytesToCopy - totalBytesCopied;
     long secondsLeft = (long) (whatsLeft / rate);
     return Long.toString(secondsLeft);

@@ -265,13 +265,13 @@ require 'blur_types'
             return
           end
 
-          def createTable(table, tableDescriptor)
-            send_createTable(table, tableDescriptor)
+          def createTable(tableDescriptor)
+            send_createTable(tableDescriptor)
             recv_createTable()
           end
 
-          def send_createTable(table, tableDescriptor)
-            send_message('createTable', CreateTable_args, :table => table, :tableDescriptor => tableDescriptor)
+          def send_createTable(tableDescriptor)
+            send_message('createTable', CreateTable_args, :tableDescriptor => tableDescriptor)
           end
 
           def recv_createTable()
@@ -510,7 +510,7 @@ require 'blur_types'
             args = read_args(iprot, CreateTable_args)
             result = CreateTable_result.new()
             begin
-              @handler.createTable(args.table, args.tableDescriptor)
+              @handler.createTable(args.tableDescriptor)
             rescue Blur::BlurException => ex
               result.ex = ex
             end
@@ -1111,11 +1111,9 @@ require 'blur_types'
 
         class CreateTable_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
-          TABLE = 1
-          TABLEDESCRIPTOR = 2
+          TABLEDESCRIPTOR = 1
 
           FIELDS = {
-            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
             TABLEDESCRIPTOR => {:type => ::Thrift::Types::STRUCT, :name => 'tableDescriptor', :class => Blur::TableDescriptor}
           }
 

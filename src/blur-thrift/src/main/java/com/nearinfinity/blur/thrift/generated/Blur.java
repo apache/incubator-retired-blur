@@ -56,7 +56,7 @@ public class Blur {
 
     public void mutateBatch(List<RowMutation> mutations) throws BlurException, org.apache.thrift.TException;
 
-    public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException;
+    public void createTable(TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException;
 
     public void enableTable(String table) throws BlurException, org.apache.thrift.TException;
 
@@ -100,7 +100,7 @@ public class Blur {
 
     public void mutateBatch(List<RowMutation> mutations, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.mutateBatch_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void createTable(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createTable_call> resultHandler) throws org.apache.thrift.TException;
+    public void createTable(TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.createTable_call> resultHandler) throws org.apache.thrift.TException;
 
     public void enableTable(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.enableTable_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -544,16 +544,15 @@ public class Blur {
       return;
     }
 
-    public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException
+    public void createTable(TableDescriptor tableDescriptor) throws BlurException, org.apache.thrift.TException
     {
-      send_createTable(table, tableDescriptor);
+      send_createTable(tableDescriptor);
       recv_createTable();
     }
 
-    public void send_createTable(String table, TableDescriptor tableDescriptor) throws org.apache.thrift.TException
+    public void send_createTable(TableDescriptor tableDescriptor) throws org.apache.thrift.TException
     {
       createTable_args args = new createTable_args();
-      args.setTable(table);
       args.setTableDescriptor(tableDescriptor);
       sendBase("createTable", args);
     }
@@ -1189,26 +1188,23 @@ public class Blur {
       }
     }
 
-    public void createTable(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler) throws org.apache.thrift.TException {
+    public void createTable(TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      createTable_call method_call = new createTable_call(table, tableDescriptor, resultHandler, this, ___protocolFactory, ___transport);
+      createTable_call method_call = new createTable_call(tableDescriptor, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
     public static class createTable_call extends org.apache.thrift.async.TAsyncMethodCall {
-      private String table;
       private TableDescriptor tableDescriptor;
-      public createTable_call(String table, TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public createTable_call(TableDescriptor tableDescriptor, org.apache.thrift.async.AsyncMethodCallback<createTable_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
-        this.table = table;
         this.tableDescriptor = tableDescriptor;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
         prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("createTable", org.apache.thrift.protocol.TMessageType.CALL, 0));
         createTable_args args = new createTable_args();
-        args.setTable(table);
         args.setTableDescriptor(tableDescriptor);
         args.write(prot);
         prot.writeMessageEnd();
@@ -1692,7 +1688,7 @@ public class Blur {
       protected createTable_result getResult(I iface, createTable_args args) throws org.apache.thrift.TException {
         createTable_result result = new createTable_result();
         try {
-          iface.createTable(args.table, args.tableDescriptor);
+          iface.createTable(args.tableDescriptor);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -13332,16 +13328,13 @@ public class Blur {
   public static class createTable_args implements org.apache.thrift.TBase<createTable_args, createTable_args._Fields>, java.io.Serializable, Cloneable   {
     private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("createTable_args");
 
-    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
-    private static final org.apache.thrift.protocol.TField TABLE_DESCRIPTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("tableDescriptor", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+    private static final org.apache.thrift.protocol.TField TABLE_DESCRIPTOR_FIELD_DESC = new org.apache.thrift.protocol.TField("tableDescriptor", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
-    public String table; // required
     public TableDescriptor tableDescriptor; // required
 
     /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-      TABLE((short)1, "table"),
-      TABLE_DESCRIPTOR((short)2, "tableDescriptor");
+      TABLE_DESCRIPTOR((short)1, "tableDescriptor");
 
       private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -13356,9 +13349,7 @@ public class Blur {
        */
       public static _Fields findByThriftId(int fieldId) {
         switch(fieldId) {
-          case 1: // TABLE
-            return TABLE;
-          case 2: // TABLE_DESCRIPTOR
+          case 1: // TABLE_DESCRIPTOR
             return TABLE_DESCRIPTOR;
           default:
             return null;
@@ -13404,8 +13395,6 @@ public class Blur {
     public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
     static {
       Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
       tmpMap.put(_Fields.TABLE_DESCRIPTOR, new org.apache.thrift.meta_data.FieldMetaData("tableDescriptor", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TableDescriptor.class)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
@@ -13416,11 +13405,9 @@ public class Blur {
     }
 
     public createTable_args(
-      String table,
       TableDescriptor tableDescriptor)
     {
       this();
-      this.table = table;
       this.tableDescriptor = tableDescriptor;
     }
 
@@ -13428,9 +13415,6 @@ public class Blur {
      * Performs a deep copy on <i>other</i>.
      */
     public createTable_args(createTable_args other) {
-      if (other.isSetTable()) {
-        this.table = other.table;
-      }
       if (other.isSetTableDescriptor()) {
         this.tableDescriptor = new TableDescriptor(other.tableDescriptor);
       }
@@ -13442,32 +13426,7 @@ public class Blur {
 
     @Override
     public void clear() {
-      this.table = null;
       this.tableDescriptor = null;
-    }
-
-    public String getTable() {
-      return this.table;
-    }
-
-    public createTable_args setTable(String table) {
-      this.table = table;
-      return this;
-    }
-
-    public void unsetTable() {
-      this.table = null;
-    }
-
-    /** Returns true if field table is set (has been assigned a value) and false otherwise */
-    public boolean isSetTable() {
-      return this.table != null;
-    }
-
-    public void setTableIsSet(boolean value) {
-      if (!value) {
-        this.table = null;
-      }
     }
 
     public TableDescriptor getTableDescriptor() {
@@ -13496,14 +13455,6 @@ public class Blur {
 
     public void setFieldValue(_Fields field, Object value) {
       switch (field) {
-      case TABLE:
-        if (value == null) {
-          unsetTable();
-        } else {
-          setTable((String)value);
-        }
-        break;
-
       case TABLE_DESCRIPTOR:
         if (value == null) {
           unsetTableDescriptor();
@@ -13517,9 +13468,6 @@ public class Blur {
 
     public Object getFieldValue(_Fields field) {
       switch (field) {
-      case TABLE:
-        return getTable();
-
       case TABLE_DESCRIPTOR:
         return getTableDescriptor();
 
@@ -13534,8 +13482,6 @@ public class Blur {
       }
 
       switch (field) {
-      case TABLE:
-        return isSetTable();
       case TABLE_DESCRIPTOR:
         return isSetTableDescriptor();
       }
@@ -13554,15 +13500,6 @@ public class Blur {
     public boolean equals(createTable_args that) {
       if (that == null)
         return false;
-
-      boolean this_present_table = true && this.isSetTable();
-      boolean that_present_table = true && that.isSetTable();
-      if (this_present_table || that_present_table) {
-        if (!(this_present_table && that_present_table))
-          return false;
-        if (!this.table.equals(that.table))
-          return false;
-      }
 
       boolean this_present_tableDescriptor = true && this.isSetTableDescriptor();
       boolean that_present_tableDescriptor = true && that.isSetTableDescriptor();
@@ -13589,16 +13526,6 @@ public class Blur {
       int lastComparison = 0;
       createTable_args typedOther = (createTable_args)other;
 
-      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-      if (isSetTable()) {
-        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
-        if (lastComparison != 0) {
-          return lastComparison;
-        }
-      }
       lastComparison = Boolean.valueOf(isSetTableDescriptor()).compareTo(typedOther.isSetTableDescriptor());
       if (lastComparison != 0) {
         return lastComparison;
@@ -13626,14 +13553,7 @@ public class Blur {
           break;
         }
         switch (field.id) {
-          case 1: // TABLE
-            if (field.type == org.apache.thrift.protocol.TType.STRING) {
-              this.table = iprot.readString();
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
-            }
-            break;
-          case 2: // TABLE_DESCRIPTOR
+          case 1: // TABLE_DESCRIPTOR
             if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
               this.tableDescriptor = new TableDescriptor();
               this.tableDescriptor.read(iprot);
@@ -13656,11 +13576,6 @@ public class Blur {
       validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (this.table != null) {
-        oprot.writeFieldBegin(TABLE_FIELD_DESC);
-        oprot.writeString(this.table);
-        oprot.writeFieldEnd();
-      }
       if (this.tableDescriptor != null) {
         oprot.writeFieldBegin(TABLE_DESCRIPTOR_FIELD_DESC);
         this.tableDescriptor.write(oprot);
@@ -13675,14 +13590,6 @@ public class Blur {
       StringBuilder sb = new StringBuilder("createTable_args(");
       boolean first = true;
 
-      sb.append("table:");
-      if (this.table == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.table);
-      }
-      first = false;
-      if (!first) sb.append(", ");
       sb.append("tableDescriptor:");
       if (this.tableDescriptor == null) {
         sb.append("null");

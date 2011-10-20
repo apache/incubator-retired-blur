@@ -2551,18 +2551,14 @@ sub write {
 
 package Blur::Blur_createTable_args;
 use base qw(Class::Accessor);
-Blur::Blur_createTable_args->mk_accessors( qw( table tableDescriptor ) );
+Blur::Blur_createTable_args->mk_accessors( qw( tableDescriptor ) );
 
 sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{table} = undef;
   $self->{tableDescriptor} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
-    if (defined $vals->{table}) {
-      $self->{table} = $vals->{table};
-    }
     if (defined $vals->{tableDescriptor}) {
       $self->{tableDescriptor} = $vals->{tableDescriptor};
     }
@@ -2589,13 +2585,7 @@ sub read {
     }
     SWITCH: for($fid)
     {
-      /^1$/ && do{      if ($ftype == TType::STRING) {
-        $xfer += $input->readString(\$self->{table});
-      } else {
-        $xfer += $input->skip($ftype);
-      }
-      last; };
-      /^2$/ && do{      if ($ftype == TType::STRUCT) {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
         $self->{tableDescriptor} = new Blur::TableDescriptor();
         $xfer += $self->{tableDescriptor}->read($input);
       } else {
@@ -2614,13 +2604,8 @@ sub write {
   my ($self, $output) = @_;
   my $xfer   = 0;
   $xfer += $output->writeStructBegin('Blur_createTable_args');
-  if (defined $self->{table}) {
-    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
-    $xfer += $output->writeString($self->{table});
-    $xfer += $output->writeFieldEnd();
-  }
   if (defined $self->{tableDescriptor}) {
-    $xfer += $output->writeFieldBegin('tableDescriptor', TType::STRUCT, 2);
+    $xfer += $output->writeFieldBegin('tableDescriptor', TType::STRUCT, 1);
     $xfer += $self->{tableDescriptor}->write($output);
     $xfer += $output->writeFieldEnd();
   }
@@ -3222,7 +3207,6 @@ sub mutateBatch{
 
 sub createTable{
   my $self = shift;
-  my $table = shift;
   my $tableDescriptor = shift;
 
   die 'implement interface';
@@ -3384,9 +3368,8 @@ sub mutateBatch{
 sub createTable{
   my ($self, $request) = @_;
 
-  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $tableDescriptor = ($request->{'tableDescriptor'}) ? $request->{'tableDescriptor'} : undef;
-  return $self->{impl}->createTable($table, $tableDescriptor);
+  return $self->{impl}->createTable($tableDescriptor);
 }
 
 sub enableTable{
@@ -4174,21 +4157,18 @@ sub recv_mutateBatch{
 }
 sub createTable{
   my $self = shift;
-  my $table = shift;
   my $tableDescriptor = shift;
 
-    $self->send_createTable($table, $tableDescriptor);
+    $self->send_createTable($tableDescriptor);
   $self->recv_createTable();
 }
 
 sub send_createTable{
   my $self = shift;
-  my $table = shift;
   my $tableDescriptor = shift;
 
   $self->{output}->writeMessageBegin('createTable', TMessageType::CALL, $self->{seqid});
   my $args = new Blur::Blur_createTable_args();
-  $args->{table} = $table;
   $args->{tableDescriptor} = $tableDescriptor;
   $args->write($self->{output});
   $self->{output}->writeMessageEnd();
@@ -4663,7 +4643,7 @@ sub process_createTable {
     $input->readMessageEnd();
     my $result = new Blur::Blur_createTable_result();
     eval {
-      $self->{handler}->createTable($args->table, $args->tableDescriptor);
+      $self->{handler}->createTable($args->tableDescriptor);
     }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
       $result->{ex} = $@;
     }

@@ -19,12 +19,14 @@ package com.nearinfinity.blur.thrift;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.ExecutionContext;
+import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
@@ -59,10 +61,12 @@ public class BlurShardServer extends ExecutionContextIface {
     private QueryCache _queryCache;
     private BlurQueryChecker _queryChecker;
     private ClusterStatus _clusterStatus;
+    private ExecutorService _dataFetch;
     
     public void init() {
         super.init();
         _queryCache = new QueryCache("shard-cache",_maxQueryCacheElements,_maxTimeToLive);
+        _dataFetch = Executors.newThreadPool("data-fetch-", 32);
     }
 
     public enum Metrics {
@@ -101,7 +105,7 @@ public class BlurShardServer extends ExecutionContextIface {
             try {
                 AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
                 BlurResultIterable hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
-                return _queryCache.cache(original,BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, null, null, null, null));
+                return _queryCache.cache(original,BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
             } catch (Exception e) {
                 LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
                 throw new BException(e.getMessage(), e);
@@ -186,6 +190,7 @@ public class BlurShardServer extends ExecutionContextIface {
         if (!_closed) {
             _closed = true;
             _indexManager.close();
+            _dataFetch.shutdownNow();
         }
     }
 

@@ -21,18 +21,18 @@ public abstract class TableAdmin implements Iface {
     protected DistributedManager _dm;
 
     @Override
-    public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, TException {
+    public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
         try {
             BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
-            CreateTable.createTable(_dm,table,analyzer,tableDescriptor.tableUri,
+            CreateTable.createTable(_dm,tableDescriptor.name,analyzer,tableDescriptor.tableUri,
                     tableDescriptor.shardCount,CreateTable.getInstance(tableDescriptor.compressionClass),
                     tableDescriptor.compressionBlockSize);
         } catch (Exception e) {
-            LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, table, tableDescriptor);
+            LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, tableDescriptor.name, tableDescriptor);
             throw new BException(e.getMessage(), e);
         }
         if (tableDescriptor.isEnabled) {
-            enableTable(table);
+            enableTable(tableDescriptor.name);
         }
     }
 

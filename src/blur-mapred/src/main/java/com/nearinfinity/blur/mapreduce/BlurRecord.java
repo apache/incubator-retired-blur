@@ -25,81 +25,81 @@ import java.util.List;
 import org.apache.hadoop.io.Writable;
 
 public class BlurRecord implements Writable {
-    
-    private String _rowId;
-    private String _recordId;
-    private String _columnFamily;
-    private List<BlurColumn> _columns = new ArrayList<BlurColumn>();
 
-    @Override
-    public void readFields(DataInput in) throws IOException {
-        _rowId = IOUtil.readString(in);
-        _recordId = IOUtil.readString(in);
-        _columnFamily = IOUtil.readString(in);
-        int size = IOUtil.readVInt(in);
-        _columns.clear();
-        for (int i = 0; i < size; i++) {
-            BlurColumn column = new BlurColumn();
-            column.readFields(in);
-            _columns.add(column);
-        }
-    }
+  private String _rowId;
+  private String _recordId;
+  private String _columnFamily;
+  private List<BlurColumn> _columns = new ArrayList<BlurColumn>();
 
-    @Override
-    public void write(DataOutput out) throws IOException {
-        IOUtil.writeString(out, _rowId);
-        IOUtil.writeString(out, _recordId);
-        IOUtil.writeString(out, _columnFamily);
-        IOUtil.writeVInt(out, _columns.size());
-        for (BlurColumn column : _columns) {
-            column.write(out);
-        }
+  @Override
+  public void readFields(DataInput in) throws IOException {
+    _rowId = IOUtil.readString(in);
+    _recordId = IOUtil.readString(in);
+    _columnFamily = IOUtil.readString(in);
+    int size = IOUtil.readVInt(in);
+    _columns.clear();
+    for (int i = 0; i < size; i++) {
+      BlurColumn column = new BlurColumn();
+      column.readFields(in);
+      _columns.add(column);
     }
+  }
 
-    public String getRowId() {
-        return _rowId;
+  @Override
+  public void write(DataOutput out) throws IOException {
+    IOUtil.writeString(out, _rowId);
+    IOUtil.writeString(out, _recordId);
+    IOUtil.writeString(out, _columnFamily);
+    IOUtil.writeVInt(out, _columns.size());
+    for (BlurColumn column : _columns) {
+      column.write(out);
     }
+  }
 
-    public void setRowId(String rowId) {
-        this._rowId = rowId;
-    }
+  public String getRowId() {
+    return _rowId;
+  }
 
-    public String getRecordId() {
-        return _recordId;
-    }
+  public void setRowId(String rowId) {
+    this._rowId = rowId;
+  }
 
-    public void setRecordId(String recordId) {
-        this._recordId = recordId;
-    }
+  public String getRecordId() {
+    return _recordId;
+  }
 
-    public String getColumnFamily() {
-        return _columnFamily;
-    }
+  public void setRecordId(String recordId) {
+    this._recordId = recordId;
+  }
 
-    public void setColumnFamily(String columnFamily) {
-        this._columnFamily = columnFamily;
-    }
+  public String getColumnFamily() {
+    return _columnFamily;
+  }
 
-    public List<BlurColumn> getColumns() {
-        return _columns;
-    }
+  public void setColumnFamily(String columnFamily) {
+    this._columnFamily = columnFamily;
+  }
 
-    public void setColumns(List<BlurColumn> columns) {
-        this._columns = columns;
-    }
-    
-    public void clearColumns() {
-        _columns.clear();
-    }
+  public List<BlurColumn> getColumns() {
+    return _columns;
+  }
 
-    public void addColumn(BlurColumn column) {
-        _columns.add(column);
-    }
-    
-    public void addColumn(String name, String value) {
-        BlurColumn blurColumn = new BlurColumn();
-        blurColumn.setName(name);
-        blurColumn.setValue(value);
-        addColumn(blurColumn);
-    }
+  public void setColumns(List<BlurColumn> columns) {
+    this._columns = columns;
+  }
+
+  public void clearColumns() {
+    _columns.clear();
+  }
+
+  public void addColumn(BlurColumn column) {
+    _columns.add(column);
+  }
+
+  public void addColumn(String name, String value) {
+    BlurColumn blurColumn = new BlurColumn();
+    blurColumn.setName(name);
+    blurColumn.setValue(value);
+    addColumn(blurColumn);
+  }
 }

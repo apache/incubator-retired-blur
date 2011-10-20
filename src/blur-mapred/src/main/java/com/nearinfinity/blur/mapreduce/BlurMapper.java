@@ -22,37 +22,37 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public abstract class BlurMapper<KEY,VALUE> extends Mapper<KEY, VALUE, BytesWritable, BlurRecord> {
+public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, BytesWritable, BlurRecord> {
 
-    protected BlurRecord record;
-    protected BytesWritable key;
-    protected BlurTask blurTask;
-    protected Counter recordCounter;
-    protected Counter fieldCounter;
+  protected BlurRecord _record;
+  protected BytesWritable _key;
+  protected BlurTask _blurTask;
+  protected Counter _recordCounter;
+  protected Counter _fieldCounter;
 
-    @Override
-    public void run(Context context) throws IOException, InterruptedException {
-        setup(context);
-        long maxRecordCount = blurTask.getMaxRecordCount();
-        if (maxRecordCount == -1) {
-            maxRecordCount = Long.MAX_VALUE;
-        }
-        for (long l = 0; l < maxRecordCount && context.nextKeyValue(); l++) {
-            map(context.getCurrentKey(), context.getCurrentValue(), context);
-        }
-        cleanup(context);
+  @Override
+  public void run(Context context) throws IOException, InterruptedException {
+    setup(context);
+    long maxRecordCount = _blurTask.getMaxRecordCount();
+    if (maxRecordCount == -1) {
+      maxRecordCount = Long.MAX_VALUE;
     }
-
-    @Override
-    protected void setup(Context context) throws IOException, InterruptedException {
-        blurTask = new BlurTask(context);
-        record = new BlurRecord();
-        key = new BytesWritable();
-        recordCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getRecordCounterName());
-        fieldCounter = context.getCounter(blurTask.getCounterGroupName(), blurTask.getFieldCounterName());
+    for (long l = 0; l < maxRecordCount && context.nextKeyValue(); l++) {
+      map(context.getCurrentKey(), context.getCurrentValue(), context);
     }
+    cleanup(context);
+  }
 
-    @Override
-    protected abstract void map(KEY key, VALUE value, Context context) throws IOException, InterruptedException;
+  @Override
+  protected void setup(Context context) throws IOException, InterruptedException {
+    _blurTask = BlurTask.read(context.getConfiguration());
+    _record = new BlurRecord();
+    _key = new BytesWritable();
+    _recordCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getRecordCounterName());
+    _fieldCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getFieldCounterName());
+  }
+
+  @Override
+  protected abstract void map(KEY key, VALUE value, Context context) throws IOException, InterruptedException;
 
 }

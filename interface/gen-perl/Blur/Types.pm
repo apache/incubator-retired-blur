@@ -2948,7 +2948,7 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name ) );
 
 sub new {
   my $classname = shift;
@@ -2961,6 +2961,7 @@ sub new {
   $self->{compressionClass} = "org.apache.hadoop.io.compress.DefaultCodec";
   $self->{compressionBlockSize} = 32768;
   $self->{cluster} = undef;
+  $self->{name} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {
       $self->{isEnabled} = $vals->{isEnabled};
@@ -2982,6 +2983,9 @@ sub new {
     }
     if (defined $vals->{cluster}) {
       $self->{cluster} = $vals->{cluster};
+    }
+    if (defined $vals->{name}) {
+      $self->{name} = $vals->{name};
     }
   }
   return bless ($self, $classname);
@@ -3049,6 +3053,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^8$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{name});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3094,6 +3104,11 @@ sub write {
   if (defined $self->{cluster}) {
     $xfer += $output->writeFieldBegin('cluster', TType::STRING, 7);
     $xfer += $output->writeString($self->{cluster});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{name}) {
+    $xfer += $output->writeFieldBegin('name', TType::STRING, 8);
+    $xfer += $output->writeString($self->{name});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

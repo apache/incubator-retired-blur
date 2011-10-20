@@ -341,7 +341,8 @@ struct TableDescriptor {
   4:string tableUri,
   5:string compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec',
   6:i32 compressionBlockSize = 32768,
-  7:string cluster
+  7:string cluster,
+  8:string name
 }
 
 service Blur {
@@ -368,7 +369,7 @@ service Blur {
   void mutate(1:RowMutation mutation) throws (1:BlurException ex)
   void mutateBatch(1:list<RowMutation> mutations) throws (1:BlurException ex)
 
-  void createTable(1:string table, 2:TableDescriptor tableDescriptor) throws (1:BlurException ex)
+  void createTable(1:TableDescriptor tableDescriptor) throws (1:BlurException ex)
   void enableTable(1:string table) throws (1:BlurException ex)
   void disableTable(1:string table) throws (1:BlurException ex)
   void removeTable(1:string table, 2:bool deleteIndexFiles) throws (1:BlurException ex)

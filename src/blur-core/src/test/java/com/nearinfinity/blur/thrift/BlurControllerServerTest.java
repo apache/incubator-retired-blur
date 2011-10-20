@@ -298,7 +298,7 @@ public class BlurControllerServerTest {
             }
 
             @Override
-            public void createTable(String table, TableDescriptor tableDescriptor)
+            public void createTable(TableDescriptor tableDescriptor)
                     throws BlurException, TException {
                 throw new RuntimeException("not impl");
             }

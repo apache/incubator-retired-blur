@@ -45,6 +45,7 @@ public class BlurShardServerTest {
         blurShardServer = new BlurShardServer();
         blurShardServer.setIndexManager(indexManager);
         blurShardServer.setIndexServer(indexServer);
+        blurShardServer.init();
     }
     
     @After

@@ -24,24 +24,24 @@ import org.apache.hadoop.io.Text;
 
 import com.nearinfinity.blur.mapreduce.BlurMapper;
 
-public class BlurExampleMapper extends BlurMapper<LongWritable,Text> {
+public class BlurExampleMapper extends BlurMapper<LongWritable, Text> {
 
-    @Override
-    protected void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException {
-        record.clearColumns();
-        String str = value.toString();
-        String[] split = str.split("\\t");
-        record.setRowId(UUID.randomUUID().toString());
-        record.setRecordId(UUID.randomUUID().toString());
-        record.setColumnFamily("cf1");
-        for (int i = 0; i < split.length; i++) {
-            record.addColumn("c"+i,split[i]);
-            fieldCounter.increment(1);
-        }
-        byte[] bs = record.getRowId().getBytes();
-        key.set(bs, 0, bs.length);
-        context.write(key, record);
-        recordCounter.increment(1);
-        context.progress();
+  @Override
+  protected void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException {
+    _record.clearColumns();
+    String str = value.toString();
+    String[] split = str.split("\\t");
+    _record.setRowId(UUID.randomUUID().toString());
+    _record.setRecordId(UUID.randomUUID().toString());
+    _record.setColumnFamily("cf1");
+    for (int i = 0; i < split.length; i++) {
+      _record.addColumn("c" + i, split[i]);
+      _fieldCounter.increment(1);
     }
+    byte[] bs = _record.getRowId().getBytes();
+    _key.set(bs, 0, bs.length);
+    context.write(_key, _record);
+    _recordCounter.increment(1);
+    context.progress();
+  }
 }

@@ -16,6 +16,12 @@
 
 package com.nearinfinity.blur.mapreduce;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 import java.io.IOException;
 
 import org.apache.commons.codec.binary.Base64;
@@ -23,144 +29,177 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.BytesWritable;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.transport.TIOStreamTransport;
 
 import com.nearinfinity.blur.BlurShardName;
-import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 
-public class BlurTask {
-	
-	private static final Log log = LogFactory.getLog(BlurTask.class);
+public class BlurTask implements Writable {
 
-    public static final String BLUR_TABLE_NAME = "blur.table.name";
-    public static final String BLUR_BASE_PATH = "blur.base.path";
-    public static final String BLUR_ANALYZER_JSON = "blur.analyzer.json";
-    public static final String BLUR_RAM_BUFFER_SIZE = "blur.ram.buffer.size";
-    public static final String BLUR_MAPPER_MAX_RECORD_COUNT = "blur.mapper.max.record.count";
-    
-    private Configuration configuration;
-    private String shardName;
+  private static final String BLUR_BLURTASK = "blur.blurtask";
+  private static final Log LOG = LogFactory.getLog(BlurTask.class);
+  
+  public static String getCounterGroupName() {
+    return "Blur";
+  }
 
-    public BlurTask(TaskAttemptContext context) {
-        this(context.getConfiguration());
-        //need to figure out shard name
-        TaskAttemptID taskAttemptID = context.getTaskAttemptID();
-        int id = taskAttemptID.getTaskID().getId();
-        shardName = BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, id);
-    }
-    
-    public BlurTask(Configuration configuration) {
-        this.configuration = configuration;
-    }
+  public static String getRowCounterName() {
+    return "Rows";
+  }
 
-    public String getShardName() {
-        return shardName;
-    }
+  public static String getFieldCounterName() {
+    return "Fields";
+  }
 
-    public Path getDirectoryPath() {
-        String basePath = getBasePath();
-        String tableName = getTableName();
-        String shardName = getShardName();
-        return new Path(new Path(basePath, tableName), shardName);
-    }
-    
-    public int getNumReducers(int num) {
-    	Path shardPath = new Path(getBasePath(), getTableName());
-    	try {
-			FileSystem fileSystem = FileSystem.get(this.configuration);
-			FileStatus[] files = fileSystem.listStatus(shardPath);
-			int shardCount = 0;
-			for (FileStatus fileStatus : files) {
-				if(fileStatus.isDir()) {
-					shardCount++;
-				}
-			}
-			if(shardCount == 0) {
-				return num;
-			}
-			if(shardCount != num) {
-				log.warn("asked for " + num + " reducers, but existing table " + getTableName() + " has " + shardCount + " shards. Using " + shardCount + " reducers");
-			}
-			return shardCount;
-		} catch (IOException e) {
-			throw new RuntimeException("unable to connect to filesystem", e);
-		}
-    }
+  public static String getRecordCounterName() {
+    return "Records";
+  }
 
-    public BlurAnalyzer getAnalyzer() {
-        try {
-            return BlurAnalyzer.create(new String(Base64.decodeBase64(configuration.get(BLUR_ANALYZER_JSON))));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+  public static String getRowBreakCounterName() {
+    return "Row Retries";
+  }
+
+  public static String getRowFailureCounterName() {
+    return "Row Failures";
+  }
+  
+  private int _ramBufferSizeMB = 256;
+  private long _maxRecordCount = Long.MAX_VALUE;
+  private TableDescriptor _tableDescriptor;
+  private int _maxRecordsPerRow = 16384;
+
+  public String getShardName(TaskAttemptContext context) {
+    TaskAttemptID taskAttemptID = context.getTaskAttemptID();
+    int id = taskAttemptID.getTaskID().getId();
+    return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, id);
+  }
+
+  public Path getDirectoryPath(TaskAttemptContext context) {
+    String shardName = getShardName(context);
+    return new Path(new Path(new Path(_tableDescriptor.tableUri), _tableDescriptor.name), shardName);
+  }
+
+  public int getNumReducers(Configuration configuration) {
+    Path shardPath = new Path(new Path(_tableDescriptor.tableUri), _tableDescriptor.name);
+    try {
+      FileSystem fileSystem = FileSystem.get(configuration);
+      FileStatus[] files = fileSystem.listStatus(shardPath);
+      int shardCount = 0;
+      for (FileStatus fileStatus : files) {
+        if (fileStatus.isDir()) {
+          shardCount++;
         }
+      }
+      int num = _tableDescriptor.shardCount;
+      if (shardCount == 0) {
+        return num;
+      }
+      if (shardCount != num) {
+        LOG.warn("Asked for " + num + " reducers, but existing table " + _tableDescriptor.name + " has " + shardCount + " shards. Using " + shardCount + " reducers");
+      }
+      return shardCount;
+    } catch (IOException e) {
+      throw new RuntimeException("Unable to connect to filesystem", e);
     }
+  }
+  
+  public int getRamBufferSizeMB() {
+    return _ramBufferSizeMB;
+  }
 
-    public int getRamBufferSizeMB() {
-        return configuration.getInt(BLUR_RAM_BUFFER_SIZE,256);
-    }
+  public void setRamBufferSizeMB(int ramBufferSizeMB) {
+    _ramBufferSizeMB = ramBufferSizeMB;
+  }
+
+  public long getMaxRecordCount() {
+    return _maxRecordCount;
+  }
+
+  public void setMaxRecordCount(long maxRecordCount) {
+    _maxRecordCount = maxRecordCount;
+  }
+
+  public void setTableDescriptor(TableDescriptor tableDescriptor) {
+    _tableDescriptor = tableDescriptor;
+  }
+
+  public TableDescriptor getTableDescriptor() {
+    return _tableDescriptor;
+  }
+
+  public Job configureJob(Configuration configuration) throws IOException {
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    DataOutputStream output = new DataOutputStream(os);
+    write(output);
+    output.close();
+    String blurTask = new String(Base64.encodeBase64(os.toByteArray()));
+    configuration.set(BLUR_BLURTASK, blurTask);
     
-    public void setRamBufferSizeMB(int ramBufferSizeMB) {
-        configuration.setInt(BLUR_RAM_BUFFER_SIZE, ramBufferSizeMB);
-    }
+    Job job = new Job(configuration, "Blur Indexer");
+    job.setReducerClass(BlurReducer.class);
+    job.setOutputKeyClass(BytesWritable.class);
+    job.setOutputValueClass(BlurRecord.class);
+    job.setNumReduceTasks(getNumReducers(configuration));
+    return job;
+  }
 
-    public String getBlurAnalyzerStr() {
-        return configuration.get(BLUR_ANALYZER_JSON);
-    }
+  public static BlurTask read(Configuration configuration) throws IOException {  
+    byte[] blurTaskBs = Base64.decodeBase64(configuration.get(BLUR_BLURTASK));
+    BlurTask blurTask = new BlurTask();
+    blurTask.readFields(new DataInputStream(new ByteArrayInputStream(blurTaskBs)));
+    return blurTask;
+  }
 
-    public void setBlurAnalyzer(BlurAnalyzer blurAnalyzer) {
-        configuration.set(BLUR_ANALYZER_JSON, new String(Base64.encodeBase64(blurAnalyzer.toJSON().getBytes())));
+  @Override
+  public void readFields(DataInput input) throws IOException {
+    _maxRecordCount = input.readLong();
+    _ramBufferSizeMB = input.readInt();
+    byte[] data = new byte[input.readInt()];
+    input.readFully(data);
+    ByteArrayInputStream is = new ByteArrayInputStream(data);
+    TIOStreamTransport trans = new TIOStreamTransport(is);
+    TBinaryProtocol protocol = new TBinaryProtocol(trans);
+    _tableDescriptor = new TableDescriptor();
+    try {
+      _tableDescriptor.read(protocol);
+    } catch (TException e) {
+      throw new IOException(e);
     }
-    
-    public String getTableName() {
-        return configuration.get(BLUR_TABLE_NAME);
-    }
+  }
 
-    public void setTableName(String tableName) {
-        configuration.set(BLUR_TABLE_NAME, tableName);
+  @Override
+  public void write(DataOutput output) throws IOException {
+    output.writeLong(_maxRecordCount);
+    output.writeInt(_ramBufferSizeMB);
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    TIOStreamTransport trans = new TIOStreamTransport(os);
+    TBinaryProtocol protocol = new TBinaryProtocol(trans);
+    try {
+      _tableDescriptor.write(protocol);
+    } catch (TException e) {
+      throw new IOException(e);
     }
-    
-    public String getBasePath() {
-        return configuration.get(BLUR_BASE_PATH);
-    }
+    os.close();
+    byte[] bs = os.toByteArray();
+    output.writeInt(bs.length);
+    output.write(bs);
+  }
 
-    public void setBasePath(String tableName) {
-        configuration.set(BLUR_BASE_PATH, tableName);
-    }
-    
-    public long getMaxRecordCount() {
-        return configuration.getLong(BLUR_MAPPER_MAX_RECORD_COUNT,-1L);
-    }
+  public int getMaxRecordsPerRow() {
+    return _maxRecordsPerRow;
+  }
 
-    public void setMaxRecordCount(long maxRecordCount) {
-        configuration.setLong(BLUR_MAPPER_MAX_RECORD_COUNT, maxRecordCount);
-    }
-    
-    public String getCounterGroupName() {
-        return "Blur";
-    }
-
-    public String getRowCounterName() {
-        return "Rows";
-    }
-
-    public String getFieldCounterName() {
-        return "Fields";
-    }
-
-    public String getRecordCounterName() {
-        return "Records";
-    }
-
-    public String getRowBreakCounterName() {
-        return "Row Retries";
-    }
-
-    public String getRowFailureCounterName() {
-        return "Row Failures";
-    }
-
+  public void setMaxRecordsPerRow(int maxRecordsPerRow) {
+    _maxRecordsPerRow = maxRecordsPerRow;
+  }
 }

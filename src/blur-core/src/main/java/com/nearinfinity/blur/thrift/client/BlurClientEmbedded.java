@@ -140,8 +140,8 @@ public class BlurClientEmbedded extends BlurClient {
             face.mutate(mutation);
         }
 
-        public void createTable(String table, TableDescriptor tableDescriptor) throws BlurException, TException {
-            face.createTable(table, tableDescriptor);
+        public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
+            face.createTable(tableDescriptor);
         }
 
         public void disableTable(String table) throws BlurException, TException {

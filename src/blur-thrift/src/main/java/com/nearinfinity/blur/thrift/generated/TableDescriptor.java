@@ -30,6 +30,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final org.apache.thrift.protocol.TField COMPRESSION_CLASS_FIELD_DESC = new org.apache.thrift.protocol.TField("compressionClass", org.apache.thrift.protocol.TType.STRING, (short)5);
   private static final org.apache.thrift.protocol.TField COMPRESSION_BLOCK_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("compressionBlockSize", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField CLUSTER_FIELD_DESC = new org.apache.thrift.protocol.TField("cluster", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)8);
 
   public boolean isEnabled; // required
   public AnalyzerDefinition analyzerDefinition; // required
@@ -38,6 +39,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   public String compressionClass; // required
   public int compressionBlockSize; // required
   public String cluster; // required
+  public String name; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -47,7 +49,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     TABLE_URI((short)4, "tableUri"),
     COMPRESSION_CLASS((short)5, "compressionClass"),
     COMPRESSION_BLOCK_SIZE((short)6, "compressionBlockSize"),
-    CLUSTER((short)7, "cluster");
+    CLUSTER((short)7, "cluster"),
+    NAME((short)8, "name");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -76,6 +79,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
           return COMPRESSION_BLOCK_SIZE;
         case 7: // CLUSTER
           return CLUSTER;
+        case 8: // NAME
+          return NAME;
         default:
           return null;
       }
@@ -138,6 +143,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     tmpMap.put(_Fields.CLUSTER, new org.apache.thrift.meta_data.FieldMetaData("cluster", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
   }
@@ -160,7 +167,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     String tableUri,
     String compressionClass,
     int compressionBlockSize,
-    String cluster)
+    String cluster,
+    String name)
   {
     this();
     this.isEnabled = isEnabled;
@@ -173,6 +181,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.compressionBlockSize = compressionBlockSize;
     setCompressionBlockSizeIsSet(true);
     this.cluster = cluster;
+    this.name = name;
   }
 
   /**
@@ -196,6 +205,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     if (other.isSetCluster()) {
       this.cluster = other.cluster;
     }
+    if (other.isSetName()) {
+      this.name = other.name;
+    }
   }
 
   public TableDescriptor deepCopy() {
@@ -215,6 +227,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.compressionBlockSize = 32768;
 
     this.cluster = null;
+    this.name = null;
   }
 
   public boolean isIsEnabled() {
@@ -382,6 +395,30 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  public String getName() {
+    return this.name;
+  }
+
+  public TableDescriptor setName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  public void unsetName() {
+    this.name = null;
+  }
+
+  /** Returns true if field name is set (has been assigned a value) and false otherwise */
+  public boolean isSetName() {
+    return this.name != null;
+  }
+
+  public void setNameIsSet(boolean value) {
+    if (!value) {
+      this.name = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case IS_ENABLED:
@@ -440,6 +477,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       break;
 
+    case NAME:
+      if (value == null) {
+        unsetName();
+      } else {
+        setName((String)value);
+      }
+      break;
+
     }
   }
 
@@ -466,6 +511,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     case CLUSTER:
       return getCluster();
 
+    case NAME:
+      return getName();
+
     }
     throw new IllegalStateException();
   }
@@ -491,6 +539,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       return isSetCompressionBlockSize();
     case CLUSTER:
       return isSetCluster();
+    case NAME:
+      return isSetName();
     }
     throw new IllegalStateException();
   }
@@ -568,6 +618,15 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       if (!(this_present_cluster && that_present_cluster))
         return false;
       if (!this.cluster.equals(that.cluster))
+        return false;
+    }
+
+    boolean this_present_name = true && this.isSetName();
+    boolean that_present_name = true && that.isSetName();
+    if (this_present_name || that_present_name) {
+      if (!(this_present_name && that_present_name))
+        return false;
+      if (!this.name.equals(that.name))
         return false;
     }
 
@@ -657,6 +716,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetName()).compareTo(typedOther.isSetName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.name, typedOther.name);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -727,6 +796,13 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 8: // NAME
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.name = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -769,6 +845,11 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     if (this.cluster != null) {
       oprot.writeFieldBegin(CLUSTER_FIELD_DESC);
       oprot.writeString(this.cluster);
+      oprot.writeFieldEnd();
+    }
+    if (this.name != null) {
+      oprot.writeFieldBegin(NAME_FIELD_DESC);
+      oprot.writeString(this.name);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -821,6 +902,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       sb.append("null");
     } else {
       sb.append(this.cluster);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("name:");
+    if (this.name == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.name);
     }
     first = false;
     sb.append(")");

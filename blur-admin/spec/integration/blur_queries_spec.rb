@@ -29,7 +29,7 @@ describe "blur queries" do
   end
 
   it "shows table and refresh options" do
-    find("#filter_form").should have_content "Blur Table:"
-    find("#filter_form").should have_content "Refresh:"
+    find("#table_wrapper").should have_content "Blur Table:"
+    find("#refresh_wrapper").should have_content "Refresh:"
   end
 end

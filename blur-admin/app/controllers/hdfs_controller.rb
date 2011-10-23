@@ -10,7 +10,7 @@ class HdfsController < ApplicationController
     if @hdfs
       render :partial => 'info'
     else
-      render :text => "<div>Stats for hdfs ##{params[:id]} not found</div>"
+      render :text => "<div>Stats for hdfs ##{params[:id]} not found, is the blur tools agent running?</div>"
     end
   end
   
@@ -39,19 +39,19 @@ class HdfsController < ApplicationController
   end
   
   def move_file
-    instance = Hdfs.find params[:hdfs]
+    instance = Hdfs.find params[:id]
     client = HdfsThriftClient.client(instance.host, instance.port)
     
-    client.mv(params[:target], params[:location])
+    client.mv(params[:from], params[:to])
     render :nothing => true
   end
   
   def delete_file
-    instance = Hdfs.find params[:hdfs]
+    instance = Hdfs.find params[:id]
     client = HdfsThriftClient.client(instance.host, instance.port)
     
-    uri = URI.parse params[:fs_path]
-    client.rm uri.path
+    path = params[:_path]
+    client.rm path
     render :nothing => true
   end
 end

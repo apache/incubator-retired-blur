@@ -10,5 +10,6 @@
     %ul#top_level
       - @instances.each do |instance|
         %li.hdfs_instance{:hdfs_id=>instance.id, :hdfs_name=>instance.name}
+          =image_tag('database16.png')
           =link_to(instance.name, hdfs_expand_path(instance.id))
 

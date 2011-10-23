@@ -15,7 +15,7 @@
         var divWrapper = self._createInnerWindow();
         $(this).wrap(divWrapper);
       });
-      $('#'+el[0].id+' div.innerWindow>ul>li').live('click', function() {
+      $('div.innerWindow>ul>li',$('#'+el[0].id)).live('click', function() {
         var evtEl = $(this);
         if(!evtEl.hasClass('osxSelected')) {
           evtEl.parents('div.innerWindow').nextAll().remove();

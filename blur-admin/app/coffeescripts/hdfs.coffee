@@ -36,16 +36,18 @@ $(document).ready ->
     ")
           
   cut_file = (file, location) ->
-    file_data = $(file).data()
-    location_data = $(location).data()
-    if file_data.hdfs_id == location_data.hdfs_id
-      target_file = file_data.fs_path
-      target_location = location_data.fs_path
-      $.post Routes.hdfs_cut_file_path(), { 'target': target_file, 'location': target_location, 'hdfs': file_data.hdfs_id}
+    from_id = file.attr('hdfs_id')
+    from_path = file.attr('hdfs_path')
+    to_id = location.attr('hdfs_id')
+    to_path = location.attr('hdfs_path')
+    if from_id == to_id
+      $.post Routes.hdfs_move_path(to_id), { 'from': from_path, 'to': to_path}
     
   delete_file = (file) ->
-    data = $(file).data()
-    $.post hdfs_delete_file_path, { 'fs_path': data.fs_path, 'hdfs': data.hdfs_id}
+    id = file.attr('hdfs_id');
+    path = file.attr('hdfs_path');
+    if(confirm("Are you sure you wish to delete " + path + "? This action can not be undone."))
+      $.post Routes.hdfs_delete_path(id), { 'path': path}
     
   show_hdfs_props = (el) ->
     try

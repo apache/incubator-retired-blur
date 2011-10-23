@@ -1,33 +1,8 @@
-#toolbar_wrapper {
-  background: #eee;
-  width: 100%;
-  @include standard-font;
-
-  #toolbar {
-    @include full;
-    padding: 5px 0;
-    .ui-widget{ font-size: 0.9em; }
-    #location, #search {
-      padding-top: 0.5em;
-      vertical-align: middle;
-      display: inline-block;
-    }
-    #location {
-      width: 70%;
-      #location_string{ width: 90%; height: 1.5em; }
-    }
-    #search {
-      width: 29%;
-      #search_string { width: 70%; height: 1.5em; }
-    }
-    #go_button, #search_button { vertical-align: top; height: 22px; }
-  }
-}
-
 #hdfs_wrapper{
-  padding-bottom: 165px;
   @include full;
   @include standard-font;
+  margin-top: 20px;
+  height: 300px;
 
   #hdfs_files_layout {
     @include columns(8,$total-cols);
@@ -88,8 +63,6 @@
   }
 
   .ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
-  a:hover { color: #06C; }
-  .jstree-search { color: $base-theme-color; }
 
   .icon { height: 32px; width: 32px; }
 }

@@ -2,13 +2,13 @@ div.osxFinder {
     border: 1px solid black;
     overflow-x: auto;
     width: 100%;
-    height: 300px;
+    height: 100%;
     position: relative;
 }
 
 div.osxFinder div.innerWindow {
     height: 99%;
-    border: 1px solid green;
+    border: 1px solid black;
     overflow: auto;
     position: absolute;
     top: 0;
@@ -16,11 +16,24 @@ div.osxFinder div.innerWindow {
 
 div.osxFinder div.innerWindow ul {
     list-style-type: none;
+    margin: 0;
+    padding: 0;
 }
-div.osxFinder div.innerWindow ul li {
+div.osxFinder div.innerWindow>ul>li {
     cursor: pointer;
+    border:  1px solid transparent;
+    padding-left: 5px;
+}
+div.osxFinder div.innerWindow>ul>li img {
+    vertical-align: middle;
 }
 
-div.osxFinder div.innerWindow ul li.osxSelected {
-    background-color: #77F;
+div.osxFinder div.innerWindow>ul>li:hover {
+    background-color: #F1F6FD;
+    border:  1px solid #B8D6FD;
+}
+
+div.osxFinder div.innerWindow>ul>li.osxSelected {
+    background-color: #CFE3FC;
+    border:  1px solid #7DA2CE
 }

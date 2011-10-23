@@ -7,7 +7,11 @@ class HdfsController < ApplicationController
 
   def info
     @hdfs = HdfsStat.where('hdfs_id = ?', params[:id]).order("created_at desc").first
-    render :partial => 'info'
+    if @hdfs
+      render :partial => 'info'
+    else
+      render :text => "<div>Stats for hdfs ##{params[:id]} not found</div>"
+    end
   end
   
   def expand
@@ -25,16 +29,16 @@ class HdfsController < ApplicationController
 
     render :layout => false
   end
+
   
   def file_info
     instance = Hdfs.find params[:id]
-    
     client = HdfsThriftClient.client(instance.host, instance.port)
     @stat = client.stat params[:fs_path]
     render :layout => false
   end
   
-  def cut_file
+  def move_file
     instance = Hdfs.find params[:hdfs]
     client = HdfsThriftClient.client(instance.host, instance.port)
     

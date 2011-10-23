@@ -1,6 +1,6 @@
 - content_for :title, 'HDFS'
 - content_for :javascript do
-  =javascript_include_tag 'jquery.contextMenu', 'jquery.osxFinder'
+  =javascript_include_tag 'jquery.contextMenu', 'jquery.osxFinder', 'compiled/hdfs'
 - content_for :stylesheets do
   =stylesheet_link_tag 'jquery.contextMenu.css', 'jquery.osxFinder'
 
@@ -9,8 +9,6 @@
   #hdfs_browser
     %ul#top_level
       - @instances.each do |instance|
-        %li=link_to(instance.name, hdfs_expand_path(instance.id))
+        %li.hdfs_instance{:hdfs_id=>instance.id, :hdfs_name=>instance.name}
+          =link_to(instance.name, hdfs_expand_path(instance.id))
 
-
-:javascript
-  $('#hdfs_browser').osxFinder();

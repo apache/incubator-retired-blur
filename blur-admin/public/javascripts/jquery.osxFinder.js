@@ -1,98 +1,59 @@
 (function( $ ){
-  var nameSpace = "osxFinder";
+  $.widget('ui.osxFinder',{
+    options: {
+        lockFirst : true,
+        width : 250
+      },
+    _create: function() {
+      var self = this,
+        o = self.options,
+        el = self.element;
 
-  var methods = {
-    init : function( options ) {
-      var settings = {
-        'lockFirst'         : true,
-        'width' : 250
-      };
-      if ( options ) {
-        $.extend( settings, options );
-      }
+      el.addClass('osxFinder');
 
-      return this.each(function(){
-         
-        var $this = $(this),
-            data = $this.data(nameSpace);
+      el.children('ul').each(function() {
+        var divWrapper = self._createInnerWindow();
+        $(this).wrap(divWrapper);
+      });
+      $('#'+el[0].id+' div.innerWindow>ul>li').live('click', function() {
+        var evtEl = $(this);
+        if(!evtEl.hasClass('osxSelected')) {
+          evtEl.parents('div.innerWindow').nextAll().remove();
+          evtEl.addClass('osxSelected').siblings().removeClass('osxSelected');
+          var innerWindow = self._createInnerWindow();
+          el.append(innerWindow);
+          self._ensureLastWindowVisible();
 
-        // If the plugin hasn't been initialized yet
-        if ( ! data ) {
-          $(this).data(nameSpace, {
-            target : $this,
-            settings : settings
+          var url = evtEl.children('a').attr('href');
+          $.ajax(url, {
+            success:function(data) {
+              innerWindow.append(data);
+              self._trigger("added", null, innerWindow);
+            },
+            error: function(data) {
+              innerWindow.html(data);
+            }
           });
-          $this.addClass('osxFinder');
-
-          var uls = $this.children('ul')
-          $this.children('ul').each(function(ul) {
-            var divWrapper = methods._createInnerWindow($this);
-            $(this).wrap(divWrapper);
-            methods._postProcessInnerWindow($this, $(this).parent('div'));
-          });
-
         }
+        return false;
       });
     },
-    _createInnerWindow: function($this) {
-      var currentCount = $this.children('div').size();
-      var width = $this.data(nameSpace).settings.width;
+    _createInnerWindow: function() {
+      var currentCount = this.element.children('div').size();
+      var width = this.options.width;
       return $('<div/>').addClass('innerWindow').css({
         'width': width,
         'left': currentCount*(width+2)
       });
     },
-    _ensureLastWindowVisible: function($this) {
-      var currentCount = $this.children('div').size();
-      var innerWidth = currentCount * ($this.data(nameSpace).settings.width+2)
-      var pluginWidth = $this.innerWidth();
+    _ensureLastWindowVisible: function() {
+      var currentCount = this.element.children('div').size();
+      var innerWidth = currentCount * (this.options.width+2)
+      var pluginWidth = this.element.innerWidth();
       if(innerWidth > pluginWidth) {
-        $this.animate({scrollLeft:innerWidth-pluginWidth}, 'slow');
+        this.element.animate({scrollLeft:innerWidth-pluginWidth}, 'slow');
       }
-    },
-    _postProcessInnerWindow: function($this, innerWindow) {
-      innerWindow.find('ul li').click(function(evt){
-        $(this).parents('div.innerWindow').nextAll().remove();
-        $(this).addClass('osxSelected').siblings().removeClass('osxSelected');
-        var innerWindow = methods._createInnerWindow($this);
-        $this.append(innerWindow);
-        methods._ensureLastWindowVisible($this);
-
-        $.ajax($(this).children('a').attr('href'), {
-          'success':function(data) {
-            innerWindow.append(data);
-            methods._postProcessInnerWindow($this, innerWindow);
-          },
-          'error': function(data) {
-            innerWindow.html(data);
-          }
-        });
-        return false;
-      });
-      
-    },
-    destroy : function( ) {
-      return this.each(function(){
-        var $this = $(this),
-            data = $this.data(nameSpace);
-
-        // Namespacing FTW
-        data.tooltip.remove();
-        $this.removeData(nameSpace);
-      })
     }
-  };
-
-  $.fn.osxFinder = function( method ) {
-    
-    if ( methods[method] ) {
-      return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
-    } else if ( typeof method === 'object' || ! method ) {
-      return methods.init.apply( this, arguments );
-    } else {
-      $.error( 'Method ' +  method + ' does not exist on jQuery.' + nameSpace );
-    }    
-  
-  };
+  });
 
 })( jQuery );

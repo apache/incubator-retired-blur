@@ -52,10 +52,9 @@ import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
-import com.nearinfinity.blur.manager.indexserver.HdfsIndexServer;
+import com.nearinfinity.blur.manager.indexserver.NewSimpleIndexServer;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
-import com.nearinfinity.blur.manager.indexserver.ManagedDistributedIndexServer.NODE_TYPE;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.metrics.BlurMetrics;
@@ -115,18 +114,21 @@ public class ThriftBlurShardServer extends ThriftServer {
     final BlurIndexCommiter commiter = new BlurIndexCommiter();
     commiter.init();
 
-    final HdfsIndexServer indexServer = new HdfsIndexServer();
+    final NewSimpleIndexServer indexServer = new NewSimpleIndexServer();
+    
+//    final HdfsIndexServer indexServer = new HdfsIndexServer();
+//    indexServer.setType(NODE_TYPE.SHARD);
+//    indexServer.setDistributedManager(dzk);
+    
+    indexServer.setBlurMetrics(blurMetrics);
+    indexServer.setCache(cache);
+    indexServer.setClusterStatus(clusterStatus);
     indexServer.setCommiter(commiter);
-    indexServer.setType(NODE_TYPE.SHARD);
-    indexServer.setZookeeper(zooKeeper);
+    indexServer.setConfiguration(config);
     indexServer.setNodeName(nodeName);
-    indexServer.setDistributedManager(dzk);
     indexServer.setRefresher(refresher);
     indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
-    indexServer.setClusterStatus(clusterStatus);
-    indexServer.setCache(cache);
-    indexServer.setConfiguration(config);
-    indexServer.setBlurMetrics(blurMetrics);
+    indexServer.setZookeeper(zooKeeper);
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();

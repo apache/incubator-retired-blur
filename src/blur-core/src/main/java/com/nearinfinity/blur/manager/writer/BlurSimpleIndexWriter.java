@@ -42,7 +42,6 @@ public class BlurSimpleIndexWriter extends BlurIndex {
     ((TieredMergePolicy) config.getMergePolicy()).setUseCompoundFile(false);
     _writer = new IndexWriter(_directory, config);
     _writer.commit();
-//    _indexReaderRef.set(IndexReader.open(_directory));
     _indexReaderRef.set(IndexReader.open(_writer,true));
     _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
     _lastCommit.set(System.currentTimeMillis());

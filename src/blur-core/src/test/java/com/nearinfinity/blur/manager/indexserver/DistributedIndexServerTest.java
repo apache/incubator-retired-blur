@@ -259,6 +259,16 @@ public class DistributedIndexServerTest {
         public List<String> getTableList() {
             throw new RuntimeException("not impl");
         }
+
+        @Override
+        public boolean exists(String table) {
+          return false;
+        }
+
+        @Override
+        public boolean isEnabled(String table) {
+          return false;
+        }
         
     }
 

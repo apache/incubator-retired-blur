@@ -36,6 +36,10 @@ public abstract class ClusterStatus {
     public abstract List<String> getTableList();
 
     public abstract String getCluster(String table);
+    
+    public abstract boolean isEnabled(String table);
+    
+    public abstract boolean exists(String table);
 
     public List<String> getOfflineShardServers(String cluster) {
         List<String> shardServerList = new ArrayList<String>(getShardServerList(cluster));

@@ -119,6 +119,34 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         }
         return shards.get();
     }
+    
+    @Override
+    public boolean exists(String table) {
+      String cluster = getCluster(table);
+      if (cluster == null) {
+          return false;
+      }
+      return true;
+    }
+
+    @Override
+    public boolean isEnabled(String table) {
+      String cluster = getCluster(table);
+      if (cluster == null) {
+          return false;
+      }
+      String tablePathIsEnabled = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/tables/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled();
+      try {
+        if (_zk.exists(tablePathIsEnabled, false) == null) {
+          return false;
+        }
+      } catch (KeeperException e) {
+        throw new RuntimeException(e);
+      } catch (InterruptedException e) {
+          throw new RuntimeException(e);
+      }
+      return true;
+    }
 
     @Override
     public TableDescriptor getTableDescriptor(String table) {

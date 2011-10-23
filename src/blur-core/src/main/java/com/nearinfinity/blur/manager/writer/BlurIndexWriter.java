@@ -93,17 +93,22 @@ public class BlurIndexWriter extends BlurIndex {
       completionService.submit(new Callable<WalIndexWriter>() {
         @Override
         public WalIndexWriter call() throws Exception {
-          return new WalIndexWriter(_directory, conf, _blurMetrics, new WalOutputFactory() {
-            @Override
-            public IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException {
-              return directory.createOutputDirectIO(name);
-            }
-          }, new WalInputFactory() {
-            @Override
-            public IndexInput getWalInput(DirectIODirectory directory, String name) throws IOException {
-              return directory.openInputDirectIO(name);
-            }
-          });
+          try {
+            return new WalIndexWriter(_directory, conf, _blurMetrics, new WalOutputFactory() {
+              @Override
+              public IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException {
+                return directory.createOutputDirectIO(name);
+              }
+            }, new WalInputFactory() {
+              @Override
+              public IndexInput getWalInput(DirectIODirectory directory, String name) throws IOException {
+                return directory.openInputDirectIO(name);
+              }
+            });
+          } catch (Exception e) {
+            LOG.error("Error trying to open table [{0}] shard [{1}]",e,_table,_shard);
+            throw e;
+          }
         }
       });
       

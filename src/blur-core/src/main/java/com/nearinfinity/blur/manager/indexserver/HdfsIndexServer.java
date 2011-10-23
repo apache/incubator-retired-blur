@@ -96,7 +96,7 @@ public class HdfsIndexServer extends ManagedDistributedIndexServer {
     Path hdfsDirPath = new Path(tablePath, shard);
 
     String shardPath = ZookeeperPathConstants.getBlurLockPath(table) + "/" + shard;
-    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, shardPath);
+    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, getNodeName(), shardPath);
 
     DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);

@@ -120,6 +120,16 @@ public class BlurControllerServerTest {
             public String getCluster(String table) {
                 return "default";
             }
+
+            @Override
+            public boolean exists(String table) {
+              return false;
+            }
+
+            @Override
+            public boolean isEnabled(String table) {
+              return false;
+            }
             
         };
     }

@@ -202,7 +202,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     if (zkCon != null && path != null) {
       try {
         SpinLock spinLock = new SpinLock(context,zkCon,name,path);
-        spinLock.copyLock();
+        spinLock.copyLock(context);
       } catch (KeeperException e) {
         throw new RuntimeException(e);
       }

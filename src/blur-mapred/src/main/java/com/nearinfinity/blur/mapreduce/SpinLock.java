@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.mapreduce.Reducer.Context;
 import org.apache.hadoop.util.Progressable;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -37,7 +38,7 @@ public class SpinLock {
     };
     String zkConnectionStr = "localhost";
     SpinLock lock = new SpinLock(progressable,zkConnectionStr,"test","/test-spin-lock");
-    lock.copyLock();
+    lock.copyLock(null);
   }
   
   public SpinLock(Progressable progressable, String zkConnectionStr, String name, String path) throws IOException, KeeperException, InterruptedException {
@@ -64,7 +65,8 @@ public class SpinLock {
     }
   }
 
-  public void copyLock() {
+  @SuppressWarnings("unchecked")
+  public void copyLock(Context context) {
     if (_maxCopies == Integer.MAX_VALUE) {
       return;
     }
@@ -80,7 +82,8 @@ public class SpinLock {
             return;
           }
         }
-        LOG.info("Waiting for lock");
+        LOG.info("Waiting for copy lock");
+        context.setStatus("Waiting for copy lock");
         Thread.sleep(_delay);
       }
     } catch (KeeperException e) {

@@ -93,7 +93,7 @@ public class QueryCollector {
 				}
 
 				private boolean queryHasChanged(BlurQueryStatus blurQueryStatus, String timesJSON, Map<String, Object> map) {
-					return !(timesJSON.equals(map.get("TIMES")) && 
+					return blurQueryStatus.getState().getValue() == 0 || !(timesJSON.equals(map.get("TIMES")) && 
 							blurQueryStatus.getCompleteShards() == (Integer)map.get("COMPLETE_SHARDS") &&
 							blurQueryStatus.getState().getValue() == (Integer)map.get("STATE"));
 				}

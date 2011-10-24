@@ -28,7 +28,7 @@
       %td{:class => "more-info-label"} Created At
       %td
         -if blur_query.created_at
-          =blur_query.created_at
+          =blur_query.created_at.in_time_zone("Eastern Time (US & Canada)")
         -else
           =empty_message
     %tr

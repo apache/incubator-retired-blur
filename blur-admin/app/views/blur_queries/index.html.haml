@@ -37,9 +37,10 @@
     = select_tag "state",
         options_for_select([['All', ''], ['Running', 0], ['Interrupted', 1], ['Completed', 2]], @filters['state'])
   .query_filter
-    = label_tag "userid", "User Id:"
-    = text_field_tag "userid", @filters['userid']
-    = label_tag "unknown_user", "Not Available?"
+    = label_tag "users", "Users:"
+    = select_tag "users", options_for_select([['All Users', ''], ['Only Users', 'only'], ['Exclude Users', 'exclude']])
+  #user_filters.query_filter{:style => 'display:none'}
+    = label_tag "userid", ''
+    = text_field_tag "userid", ''
+    = label_tag "unknown_user", "Add Unknown?"
     = check_box_tag "unknown_user", "true"
-    = label_tag "exclude_user", "Exclude Users?"
-    = check_box_tag "exclude_user", "true"

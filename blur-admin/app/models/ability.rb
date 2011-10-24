@@ -28,6 +28,7 @@ class Ability
         attributes = BlurQuery.new.attribute_names.collect{|att| att.to_sym}
         attributes.delete :query_string
         can :index, :blur_queries, attributes
+        can :long_running, :blur_queries, attributes
 
         # view more info on queries with everything but query_string
         can :more_info, :blur_queries, attributes

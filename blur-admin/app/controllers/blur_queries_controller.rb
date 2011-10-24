@@ -4,71 +4,77 @@ class BlurQueriesController < ApplicationController
 
   def index
     @filters = current_user.filter_preference.value || {}
-    filters = {}
     now = Time.now
-    filters['created_at'] = (now - @filters['created_at_time'].to_i.minutes)..now
-    @filters.each {|k, v| filters[k] = v unless v == '' or k == 'created_at_time' or k == 'refresh_period'}
-    # convert string bools into real bools
-    filters['super_query_on'] = true  if filters['super_query_on'] == 'true'
-    filters['super_query_on'] = false if filters['super_query_on'] == 'false'
-    filters.delete('refresh_period')
-    filters.delete('created_at_time')
+    super_query = true  if @filters['super_query_on'] == 'true'
+    super_query = false  if @filters['super_query_on'] == 'false'
 
     @blur_tables = @current_zookeeper.blur_tables
-
-    @blur_queries = BlurQuery.joins(:blur_table => :cluster).
-                             where(:blur_table =>{:clusters => {:zookeeper_id => @current_zookeeper.id}}).
-                             where(filters).
-                             includes(:blur_table).
-                             order("created_at DESC")
+    @blur_queries = BlurQuery.where_zookeeper(@current_zookeeper.id).filter_on_time_range((now - @filters['created_at_time'].to_i.minutes)..now)
+    
+    # Add super query filter
+    @blur_queries = @blur_queries.where(:super_query_on => super_query) unless super_query.nil?
+    
+    # Add state filter
+    @blur_queries = @blur_queries.where(:state => @filters['state']) unless @filters['state'].blank?
+    @blur_queries
   end
 
   def refresh
-    filters = {}
-    # convert string bools into real bools
-    params[:super_query_on] = true  if params[:super_query_on] == 'true'
-    params[:super_query_on] = false if params[:super_query_on] == 'false'
-
-    # filters for columns
-    [:blur_table_id, :super_query_on, :state].each do |category|
-      filters[category] = params[category] unless params[category] == nil or params[category] == ''
-    end
-    
-    # filters for userid
-    user_filter = params[:userid] || ''
-    unknown_user = params[:unknown_user] == 'true'
-    exclude_user = params[:exclude_user] == 'true'
-    
-    userids = user_filter.split(' ')
-    user_where_clause = []
-    user_where_params = []
-    user_where_clause << "userid is #{exclude_user ? 'not' : ''} null" if unknown_user
-    if userids.size == 1
-      user_where_clause << "userid #{exclude_user ? '!' : ''}=?"
-      user_where_params << user_filter
-    elsif userids.size > 1
-      user_where_clause << "userid #{exclude_user ? 'not' : ''} in (#{Array.new(userids.size, '?').join(',')})"
-      user_where_params << userids
-    end
-        
+    super_query = true  if params[:super_query_on] == 'true'
+    super_query = false if params[:super_query_on] == 'false'
+            
     # filter for time
     now = Time.now
     past_time = params[:created_at_time] ? now - params[:created_at_time].to_i.minutes : now - 1.minutes
-    filters[:created_at] = past_time..now
+    time_range = past_time..now
 
     # filter for refresh period
     unless params[:time_since_refresh].empty?
       previous_filter_time = now - params[:time_since_refresh].to_i.seconds
-      filters[:updated_at] = previous_filter_time..now
+      time_range = previous_filter_time..now
     end
 
     # filter by zookeeper
-    @blur_queries = BlurQuery.joins(:blur_table => :cluster).
-                             where(:blur_table =>{:clusters => {:zookeeper_id => @current_zookeeper.id}}).
-                             where(filters).
-                             where([user_where_clause.join(exclude_user ? ' and ' : ' or '), user_where_params].flatten.compact).
-                             includes(:blur_table).
-                             order("created_at DESC")
+    @blur_queries = BlurQuery.where_zookeeper(@current_zookeeper.id).filter_on_time_range(time_range)
+    
+    #filter by table
+    @blur_queries = @blur_queries.where(:blur_table_id => params[:blur_table_id]) unless params[:blur_table_id].blank?
+    
+    # Add super query filter
+    @blur_queries = @blur_queries.where(:super_query_on => super_query) unless super_query.nil?
+    
+    # Add state filter
+    @blur_queries = @blur_queries.where(:state => params['state']) unless params['state'].blank?
+    
+    # Add user filter
+    unless params[:userid].blank? || params[:users].blank?
+      users = params[:userid].split(' ').compact
+      users_without_unknown = users.reject{|u| u == 'unknown'}      
+      user_params_without_unknown = Array.new(users_without_unknown.size, '?').join(',')
+      
+      where_clause = ""
+      if params[:users] == 'only'
+        where_parts = []
+        if users.include? 'unknown'
+          where_parts << 'userid is null'
+        end
+        if users_without_unknown.size > 0
+          where_parts << "userid in (#{user_params_without_unknown})"
+        end
+        where_clause = where_parts.join(' or ')
+      else
+        where_parts = []
+        if users.include? 'unknown'
+          where_parts << 'userid is not null'
+        end
+        if users_without_unknown.size > 0
+          where_parts << "userid not in (#{user_params_without_unknown})"
+        end
+        where_clause = where_parts.join(' and ')
+      end
+      @blur_queries = @blur_queries.where([where_clause, users_without_unknown].flatten)
+    end
+
     respond_to do |format|
       format.html {render @blur_queries}
     end
@@ -93,9 +99,15 @@ class BlurQueriesController < ApplicationController
 
   def times
     times = BlurQuery.find(params[:id]).times
-    puts times
     respond_to do |format|
       format.html { render :partial => 'times', :locals => {:times => times} }
     end
+  end
+  
+  def long_running
+    Time.zone = 'Eastern'
+    @blur_queries = BlurQuery.where_zookeeper(params[:zookeeper_id]).where(:state => 0).where('created_at < date_sub(utc_timestamp(), interval 1 minute)')
+    
+    render :partial => 'long_running'
   end
 end

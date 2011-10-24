@@ -12,12 +12,12 @@ $(document).ready ->
       filters += " | interrupted"
     else if $('#state').val() == "2"
       filters += " | completed"
-    if $("#userid").val() != ""
-      filters += " | User Id(s) #{$('#userid').val()}"
-    if $("#unknown_user").is(':checked')
-      filters += " | User Id Not Available"
-    if $("#exclude_user").is(':checked')
-      filters += " (Excluded)"
+    if $("#users").val() == "only"
+      filters += " | Only users "
+    else if $("#users").val() == "exclude"
+      filters += " | Exclude users "
+    if $("#users").val() != ""
+      filters += $('#userid').val()
     $('#filters').html(filters)
 
   # adds time to data-age of selected elements, and 
@@ -41,9 +41,8 @@ $(document).ready ->
   super_query_filter = ""
   created_at_filter = "1"
   state_filter = ""
+  user_filter = ""
   username_filter = ""
-  not_available = false
-  exclude = false
   blur_table_id = ""
   last_refresh = new Date()
   replace_table = null
@@ -54,17 +53,15 @@ $(document).ready ->
                     created_at_filter  != $('#created_at_time').val() or
                     state_filter       != $('#state').val() or
                     blur_table_id      != $('#blur_table_id').val() or
-                    username_filter    != $('#userid').val() or
-                    not_available      != $('#unknown_user').is(':checked') or
-                    exclude            != $('#exclude_user').is(':checked')
+                    user_filter        != $('#users').val() or
+                    username_filter    != $('#userid').val()
     if replace_table
       # reset last filter options
       super_query_filter = $('#super_query_on').val()
       created_at_filter  = $('#created_at_time').val()
       state_filter       = $('#state').val()
+      user_filter        = $('#users').val()
       username_filter    = $('#userid').val()
-      not_available      = $('#unknown_user').is(':checked')
-      exclude            = $('#exclude_user').is(':checked')
       blur_table_id      = $('#blur_table_id').val()
       $('#time_since_refresh').val ''
     else
@@ -233,3 +230,19 @@ $(document).ready ->
           $(this).dialog 'close'
         "Cancel": ->
           $(this).dialog 'close'
+          
+  $('#users').change ()->
+    if $('#users').val() == ''
+      $('#user_filters').hide()
+    else
+      $('#user_filters').show()
+      
+  $('#unknown_user').click ()->
+    user_field = $('#userid')
+    user_field.val(user_field.val().replace('unknown', '').trim())
+    
+    if $(this).is(':checked') && user_field.val() == ''
+      user_field.val('unknown')
+    else if $(this).is(':checked')
+      user_field.val(user_field.val() + " unknown")
+    true

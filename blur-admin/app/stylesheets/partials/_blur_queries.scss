@@ -82,6 +82,9 @@
        }
        &.actions {
          white-space: nowrap;
+         form.cancel {
+           @include inline-block;
+         }
        }
       }
     }
@@ -122,7 +125,8 @@
   .query_filter{ 
     margin-bottom: .75em;
     label{ 
-      width: 200px;
+      width: 100px;
+      @include inline-block;
     }
   }
 }

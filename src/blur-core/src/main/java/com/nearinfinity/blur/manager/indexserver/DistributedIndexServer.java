@@ -59,6 +59,7 @@ import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public class DistributedIndexServer extends AbstractIndexServer {
 
@@ -133,7 +134,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
         LOG.info("Node [{0}] already registered, waiting for path [{1}] to be released", nodeName, onlineShardsPath);
         Thread.sleep(3000);
       }
-      _zookeeper.create(onlineShardsPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+      String version = BlurUtil.getVersion();
+      _zookeeper.create(onlineShardsPath, version.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

@@ -110,7 +110,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         LOG.info("Node [{0}] already registered, waiting for path [{1}] to be released", _nodeName, onlineControllerPath);
         Thread.sleep(3000);
       }
-      _zookeeper.create(onlineControllerPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+      String version = BlurUtil.getVersion();
+      _zookeeper.create(onlineControllerPath, version.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

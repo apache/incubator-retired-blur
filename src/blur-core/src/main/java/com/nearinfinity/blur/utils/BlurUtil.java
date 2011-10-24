@@ -19,6 +19,7 @@ package com.nearinfinity.blur.utils;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -41,6 +43,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.BException;
+import com.nearinfinity.blur.thrift.GetVersion;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
@@ -59,6 +62,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 public class BlurUtil {
 
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
+  private static final String UNKNOWN = "UNKNOWN";
 
   public static BlurQuery newSimpleQuery(String query) {
     BlurQuery blurQuery = new BlurQuery();
@@ -319,5 +323,25 @@ public class BlurUtil {
     if (query.startTime == 0) {
       query.startTime = System.currentTimeMillis();
     }
+  }
+
+  public static String getVersion() {
+    String path = "/META-INF/maven/com.nearinfinity.blur/blur-core/pom.properties";
+    InputStream inputStream = GetVersion.class.getResourceAsStream(path);
+    if (inputStream == null) {
+      return UNKNOWN;
+    }
+    Properties prop = new Properties();
+    try {
+      prop.load(inputStream);
+    } catch (IOException e) {
+      LOG.error("Unknown error while getting version.", e);
+      return UNKNOWN;
+    }
+    Object verison = prop.get("version");
+    if (verison == null) {
+      return UNKNOWN;
+    }
+    return verison.toString();
   }
 }

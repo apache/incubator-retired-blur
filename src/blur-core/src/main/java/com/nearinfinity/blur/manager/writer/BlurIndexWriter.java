@@ -134,6 +134,8 @@ public class BlurIndexWriter extends BlurIndex {
               throw (LockObtainFailedException) cause;
             } else if (cause instanceof IOException) {
               throw (IOException) cause;
+            } else {
+              throw new RuntimeException(cause);
             }
           }
         }

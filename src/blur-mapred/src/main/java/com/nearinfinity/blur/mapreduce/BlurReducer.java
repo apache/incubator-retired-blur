@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -192,7 +193,12 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
   private CompressionCodec getInstance(String compressionClass) throws IOException {
     try {
-      return (CompressionCodec) Class.forName(compressionClass).newInstance();
+      CompressionCodec codec = (CompressionCodec) Class.forName(compressionClass).newInstance();
+      if (codec instanceof Configurable) {
+        Configurable configurable = (Configurable) codec;
+        configurable.setConf(_configuration);
+      }
+      return codec;
     } catch (Exception e) {
       throw new IOException(e);
     }

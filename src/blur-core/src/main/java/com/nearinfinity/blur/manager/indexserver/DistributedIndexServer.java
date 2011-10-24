@@ -84,13 +84,15 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private ZooKeeper _zookeeper;
 
   // set internally
-  private Timer _timer;
+  private Timer _timerCacheFlush;
   private ExecutorService _openerService;
   private BlurIndexCloser _closer;
 
+  private Timer _timerTableWarmer;
+
   public void init() {
-    _timer = new Timer("Flush-IndexServer-Caches", true);
-    _timer.schedule(new TimerTask() {
+    _timerCacheFlush = new Timer("Flush-IndexServer-Caches", true);
+    _timerCacheFlush.schedule(new TimerTask() {
       @Override
       public void run() {
         clearMapOfOldTables(_tableAnalyzers);
@@ -98,11 +100,16 @@ public class DistributedIndexServer extends AbstractIndexServer {
         clearMapOfOldTables(_layoutManagers);
         clearMapOfOldTables(_layoutCache);
         Map<String, Map<String, BlurIndex>> oldIndexesThatNeedToBeClosed = clearMapOfOldTables(_indexes);
-        for (Entry<String, Map<String, BlurIndex>> tableEntry : oldIndexesThatNeedToBeClosed.entrySet()) {
-          for (Entry<String, BlurIndex> indexEntry : tableEntry.getValue().entrySet()) {
-            String table = tableEntry.getKey();
-            String shard = indexEntry.getKey();
-            BlurIndex index = indexEntry.getValue();
+        for (String table : oldIndexesThatNeedToBeClosed.keySet()) {
+          Map<String, BlurIndex> indexes = oldIndexesThatNeedToBeClosed.get(table);
+          if (indexes == null) {
+            continue;
+          }
+          for (String shard : indexes.keySet()) {
+            BlurIndex index = indexes.get(shard);
+            if (index == null) {
+              continue;
+            }
             LOG.info("Closing index [{0}] from table [{1}] shard [{2}]", index, table, shard);
             try {
               index.close();
@@ -132,6 +139,21 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+    _timerTableWarmer = new Timer("Table-Warmer", true);
+    _timerTableWarmer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        List<String> tableList = _clusterStatus.getTableList();
+        for (String table : tableList) {
+          try {
+            int count = getIndexes(table).size();
+            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.",table,count);
+          } catch (IOException e) {
+            LOG.error("Unknown error trying to warm table [{0}]",e,table);
+          }
+        }
+      }
+    }, _delay, _delay);
   }
 
   protected <T> Map<String, T> clearMapOfOldTables(Map<String, T> map) {
@@ -152,8 +174,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   @Override
   public void close() {
-    _timer.purge();
-    _timer.cancel();
+    _timerCacheFlush.purge();
+    _timerCacheFlush.cancel();
   }
 
   @Override

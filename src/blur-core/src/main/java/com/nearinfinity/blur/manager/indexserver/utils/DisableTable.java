@@ -55,7 +55,7 @@ public class DisableTable {
 
   private static void waitForWriteLocksToClear(ZooKeeper zookeeper, String table) throws KeeperException, InterruptedException {
     final Object object = new Object();
-    String path = ZookeeperPathConstants.getBlurTablesPath() + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesLocksPath();
+    String path = ZookeeperPathConstants.getBlurLockPath(table);
     while (true) {
       synchronized (object) {
         List<String> list = zookeeper.getChildren(path, new Watcher() {

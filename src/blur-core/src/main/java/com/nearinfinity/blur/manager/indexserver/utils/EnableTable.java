@@ -72,7 +72,7 @@ public class EnableTable {
 
   private static void waitForWriteLocksToEngage(ZooKeeper zookeeper, String table, int shardCount) throws KeeperException, InterruptedException {
     final Object object = new Object();
-    String path = ZookeeperPathConstants.getBlurTablesPath() + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesLocksPath();
+    String path = ZookeeperPathConstants.getBlurLockPath(table);
     while (true) {
       synchronized (object) {
         List<String> list = zookeeper.getChildren(path, new Watcher() {

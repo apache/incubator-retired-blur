@@ -15,6 +15,7 @@
  */
 
 package com.nearinfinity.blur.search;
+
 /**
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -53,65 +54,60 @@ import com.nearinfinity.blur.lucene.search.IterablePaging.TotalHitsRef;
 
 /**
  * Testing the paging collector.
+ * 
  * @author Aaron McCurry
  */
 public class TestingPagingCollector {
-    
-    @Test
-    public void testNothingYet() {
-        
+
+  @Test
+  public void testNothingYet() {
+
+  }
+
+  public static void main(String[] args) throws Exception {
+    IndexReader reader = getReaderFlatScore(13245);
+    IndexSearcher searcher = new IndexSearcher(reader);
+
+    TotalHitsRef totalHitsRef = new TotalHitsRef();
+    ProgressRef progressRef = new ProgressRef();
+
+    TermQuery query = new TermQuery(new Term("f1", "value"));
+    IterablePaging paging = new IterablePaging(searcher, query, 100);
+
+    for (ScoreDoc sd : paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef)) {
+
+      System.out.println("time [" + progressRef.queryTime() + "] " + "total hits [" + totalHitsRef.totalHits() + "] " + "searches [" + progressRef.searchesPerformed() + "] "
+          + "position [" + progressRef.currentHitPosition() + "] " + "doc id [" + sd.doc + "] " + "score [" + sd.score + "]");
     }
+  }
 
-	public static void main(String[] args) throws Exception {
-		IndexReader reader = getReaderFlatScore(13245);
-		IndexSearcher searcher = new IndexSearcher(reader);
-		
-		TotalHitsRef totalHitsRef = new TotalHitsRef();
-		ProgressRef progressRef = new ProgressRef();
-		
-		TermQuery query = new TermQuery(new Term("f1", "value"));
-		IterablePaging paging = new IterablePaging(searcher, query, 100);
-		
-		for (ScoreDoc sd : 	paging.skipTo(90).
-							gather(20).
-							totalHits(totalHitsRef).
-							progress(progressRef)) {
-			
-			System.out.println(
-					"time [" + progressRef.queryTime() + "] " +
-					"total hits [" + totalHitsRef.totalHits() + "] " +
-					"searches [" + progressRef.searchesPerformed() + "] " +
-					"position [" + progressRef.currentHitPosition() + "] " +
-					"doc id [" + sd.doc + "] " +
-					"score [" + sd.score + "]");
-		}
-	}
+  private static IndexReader getReaderFlatScore(int length) throws Exception {
+    RAMDirectory directory = new RAMDirectory();
+    IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer()));
+    for (int i = 0; i < length; i++) {
+      Document document = new Document();
+      document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
+      indexWriter.addDocument(document);
+    }
+    indexWriter.close();
+    return IndexReader.open(directory);
+  }
 
-	private static IndexReader getReaderFlatScore(int length) throws Exception {
-		RAMDirectory directory = new RAMDirectory();
-		IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer()));
-		for (int i = 0; i < length; i++) {
-			Document document = new Document();
-			document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
-			indexWriter.addDocument(document);
-		}
-		indexWriter.close();
-		return IndexReader.open(directory);
-	}
-	
-//	private static IndexReader getReaderDifferentScores(int length) throws Exception {
-//		RAMDirectory directory = new RAMDirectory();
-//		IndexWriter indexWriter = new IndexWriter(directory, new KeywordAnalyzer(), MaxFieldLength.UNLIMITED);
-//		for (int i = 0; i < length; i++) {
-//			Document document = new Document();
-//			int totalAdded = i % 9;
-//			for (int j = 0; j < totalAdded; j++) {
-//				document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
-//			}
-//			indexWriter.addDocument(document);
-//		}
-//		indexWriter.close();
-//		return IndexReader.open(directory);
-//	}
+  // private static IndexReader getReaderDifferentScores(int length) throws
+  // Exception {
+  // RAMDirectory directory = new RAMDirectory();
+  // IndexWriter indexWriter = new IndexWriter(directory, new KeywordAnalyzer(),
+  // MaxFieldLength.UNLIMITED);
+  // for (int i = 0; i < length; i++) {
+  // Document document = new Document();
+  // int totalAdded = i % 9;
+  // for (int j = 0; j < totalAdded; j++) {
+  // document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
+  // }
+  // indexWriter.addDocument(document);
+  // }
+  // indexWriter.close();
+  // return IndexReader.open(directory);
+  // }
 
 }

@@ -20,40 +20,36 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public interface IfaceExtended extends Iface {
 
-    void cancelQuery(ExecutionContext context, String table, long uuid) throws BlurException, TException;
+  void cancelQuery(ExecutionContext context, String table, long uuid) throws BlurException, TException;
 
-    List<String> controllerServerList(ExecutionContext context) throws BlurException, TException;
+  List<String> controllerServerList(ExecutionContext context) throws BlurException, TException;
 
-    List<BlurQueryStatus> currentQueries(ExecutionContext context, String table) throws BlurException, TException;
-    
-    TableStats getTableStats(ExecutionContext context, String table) throws BlurException, TException;
+  List<BlurQueryStatus> currentQueries(ExecutionContext context, String table) throws BlurException, TException;
 
-    TableDescriptor describe(ExecutionContext context, String table) throws BlurException, TException;
+  TableStats getTableStats(ExecutionContext context, String table) throws BlurException, TException;
 
-    FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException, TException;
+  TableDescriptor describe(ExecutionContext context, String table) throws BlurException, TException;
 
-    void mutate(ExecutionContext context, RowMutation mutation) throws BlurException, TException;
-    
-    void mutateBatch(ExecutionContext context, List<RowMutation> mutations) throws BlurException, TException;
+  FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException, TException;
 
-    BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException, TException;
+  void mutate(ExecutionContext context, RowMutation mutation) throws BlurException, TException;
 
-    long recordFrequency(ExecutionContext context, String table, String columnFamily, String columnName, String value)
-            throws BlurException, TException;
+  void mutateBatch(ExecutionContext context, List<RowMutation> mutations) throws BlurException, TException;
 
-    Schema schema(ExecutionContext context, String table) throws BlurException, TException;
+  BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException, TException;
 
-    Map<String, String> shardServerLayout(ExecutionContext context, String table) throws BlurException, TException;
+  long recordFrequency(ExecutionContext context, String table, String columnFamily, String columnName, String value) throws BlurException, TException;
 
-    List<String> shardServerList(ExecutionContext context, String cluster) throws BlurException, TException;
+  Schema schema(ExecutionContext context, String table) throws BlurException, TException;
 
-    List<String> tableList(ExecutionContext context) throws BlurException, TException;
+  Map<String, String> shardServerLayout(ExecutionContext context, String table) throws BlurException, TException;
 
-    List<String> terms(ExecutionContext context, String table, String columnFamily, String columnName,
-            String startWith, short size) throws BlurException, TException;
-    
-    List<String> shardClusterList(ExecutionContext context) throws BlurException, org.apache.thrift.TException;
-    
-    
+  List<String> shardServerList(ExecutionContext context, String cluster) throws BlurException, TException;
+
+  List<String> tableList(ExecutionContext context) throws BlurException, TException;
+
+  List<String> terms(ExecutionContext context, String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException;
+
+  List<String> shardClusterList(ExecutionContext context) throws BlurException, org.apache.thrift.TException;
 
 }

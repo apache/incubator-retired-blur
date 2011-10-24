@@ -39,78 +39,76 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TermDocIterableTest {
-    
-    private static final int BLOCKS = 10;
-    private static final int COUNT_PER_BLOCK = 100;
-    private IndexReader reader;
-    
-    @Before
-    public void setup() throws IOException {
-        reader = createIndexReader();
-    }
 
-    @SuppressWarnings("serial")
-    @Test
-    public void testTermDocIterable() throws IOException {
-        for (int pass = 0; pass < 1; pass++) {
-            for (int id = 0; id < BLOCKS; id++) {
-                TermDocs termDocs = reader.termDocs(new Term("id",Integer.toString(id)));
-                TermDocIterable iterable = new TermDocIterable(termDocs, reader, new FieldSelector() {
-                    @Override
-                    public FieldSelectorResult accept(String fieldName) {
-                        return FieldSelectorResult.LOAD;
-                    }
-                });
-                int count = 0;
-                int i = 0;
-                long s = System.nanoTime();
-                for (Document document : iterable) {
-                    count++;
-                    assertEquals(i, Integer.parseInt(document.get("field")));
-                    i++;
-                }
-                long time = System.nanoTime() - s;
-                System.out.println(time / 1000000.0 + " " + id + " " + pass);
-                assertEquals(COUNT_PER_BLOCK,count);
-            }
+  private static final int BLOCKS = 10;
+  private static final int COUNT_PER_BLOCK = 100;
+  private IndexReader reader;
+
+  @Before
+  public void setup() throws IOException {
+    reader = createIndexReader();
+  }
+
+  @SuppressWarnings("serial")
+  @Test
+  public void testTermDocIterable() throws IOException {
+    for (int pass = 0; pass < 1; pass++) {
+      for (int id = 0; id < BLOCKS; id++) {
+        TermDocs termDocs = reader.termDocs(new Term("id", Integer.toString(id)));
+        TermDocIterable iterable = new TermDocIterable(termDocs, reader, new FieldSelector() {
+          @Override
+          public FieldSelectorResult accept(String fieldName) {
+            return FieldSelectorResult.LOAD;
+          }
+        });
+        int count = 0;
+        int i = 0;
+        long s = System.nanoTime();
+        for (Document document : iterable) {
+          count++;
+          assertEquals(i, Integer.parseInt(document.get("field")));
+          i++;
         }
+        long time = System.nanoTime() - s;
+        System.out.println(time / 1000000.0 + " " + id + " " + pass);
+        assertEquals(COUNT_PER_BLOCK, count);
+      }
     }
-    
-    private IndexReader createIndexReader() throws IOException {
-        FSDirectory directory = FSDirectory.open(new File("./tmp/termdociterable"));
-        if (!IndexReader.indexExists(directory)) {
-            rm(new File("./tmp/termdociterable"));
-            IndexWriter writer = new IndexWriter(directory,new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34)));
-            for (int i = 0; i < BLOCKS; i++) {
-                addDocumentBlock(i, COUNT_PER_BLOCK, writer);
-            }
-            writer.close();
-        }
-        return IndexReader.open(directory);
+  }
+
+  private IndexReader createIndexReader() throws IOException {
+    FSDirectory directory = FSDirectory.open(new File("./tmp/termdociterable"));
+    if (!IndexReader.indexExists(directory)) {
+      rm(new File("./tmp/termdociterable"));
+      IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34)));
+      for (int i = 0; i < BLOCKS; i++) {
+        addDocumentBlock(i, COUNT_PER_BLOCK, writer);
+      }
+      writer.close();
     }
+    return IndexReader.open(directory);
+  }
 
-
-    private File rm(File file) {
-        if (file.isDirectory()) {
-            for (File f : file.listFiles()) {
-                rm(f);
-            }
-        }
-        file.delete();
-        return file;
+  private File rm(File file) {
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rm(f);
+      }
     }
+    file.delete();
+    return file;
+  }
 
-
-    private void addDocumentBlock(int id, int count, IndexWriter writer) throws IOException {
-        for (int i = 0; i < count; i++) {
-            Document document = new Document();
-            document.add(new Field("id",Integer.toString(id),Store.YES,Index.NOT_ANALYZED_NO_NORMS));
-            document.add(new Field("field",Integer.toString(i),Store.YES,Index.NOT_ANALYZED_NO_NORMS));
-            for (int j = 0; j < 100; j++) {
-                document.add(new Field("field"+j,"testing here testing here testing here testing here testing here testing here testing here",Store.YES,Index.NO));
-            }
-            writer.addDocument(document);
-        }
+  private void addDocumentBlock(int id, int count, IndexWriter writer) throws IOException {
+    for (int i = 0; i < count; i++) {
+      Document document = new Document();
+      document.add(new Field("id", Integer.toString(id), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+      document.add(new Field("field", Integer.toString(i), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
+      for (int j = 0; j < 100; j++) {
+        document.add(new Field("field" + j, "testing here testing here testing here testing here testing here testing here testing here", Store.YES, Index.NO));
+      }
+      writer.addDocument(document);
     }
+  }
 
 }

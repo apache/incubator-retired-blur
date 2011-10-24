@@ -26,66 +26,66 @@ import org.apache.lucene.index.TermDocs;
 
 public class TermDocIterable implements Iterable<Document> {
 
-	private TermDocs termDocs;
-	private IndexReader reader;
-    private FieldSelector fieldSelector;
-	
-	public TermDocIterable(TermDocs termDocs, IndexReader reader, FieldSelector fieldSelector) {
-		this.termDocs = termDocs;
-		this.reader = reader;
-		this.fieldSelector = fieldSelector;
-	}
+  private TermDocs termDocs;
+  private IndexReader reader;
+  private FieldSelector fieldSelector;
 
-	@Override
-	public Iterator<Document> iterator() {
-		return new Iterator<Document>() {
-			private boolean hasNext = getNext();
+  public TermDocIterable(TermDocs termDocs, IndexReader reader, FieldSelector fieldSelector) {
+    this.termDocs = termDocs;
+    this.reader = reader;
+    this.fieldSelector = fieldSelector;
+  }
 
-			@Override
-			public boolean hasNext() {
-				return hasNext;
-			}
+  @Override
+  public Iterator<Document> iterator() {
+    return new Iterator<Document>() {
+      private boolean hasNext = getNext();
 
-			@Override
-			public Document next() {
-				Document doc;
-				try {
-					doc = getDoc();
-					hasNext = getNext();
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-				return doc;
-			}
+      @Override
+      public boolean hasNext() {
+        return hasNext;
+      }
 
-			@Override
-			public void remove() {
+      @Override
+      public Document next() {
+        Document doc;
+        try {
+          doc = getDoc();
+          hasNext = getNext();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+        return doc;
+      }
 
-			}
-		};
-	}
-	
-	private Document getDoc() throws IOException {
-		return reader.document(termDocs.doc(),fieldSelector);
-	}
+      @Override
+      public void remove() {
 
-	private boolean getNext() {
-		try {
-			boolean next = termDocs.next();
-			if (!next) {
-                termDocs.close();
-                return next;
-            }
-			while (reader.isDeleted(termDocs.doc())) {
-				next = termDocs.next();
-			}
-			if (!next) {
-				termDocs.close();
-			}
-			return next;
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+      }
+    };
+  }
+
+  private Document getDoc() throws IOException {
+    return reader.document(termDocs.doc(), fieldSelector);
+  }
+
+  private boolean getNext() {
+    try {
+      boolean next = termDocs.next();
+      if (!next) {
+        termDocs.close();
+        return next;
+      }
+      while (reader.isDeleted(termDocs.doc())) {
+        next = termDocs.next();
+      }
+      if (!next) {
+        termDocs.close();
+      }
+      return next;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
 
 }

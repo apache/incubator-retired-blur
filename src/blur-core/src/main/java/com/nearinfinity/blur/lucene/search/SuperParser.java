@@ -41,172 +41,174 @@ import org.apache.lucene.util.Version;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 
 public class SuperParser extends QueryParser {
-	
-	private Map<Query,String> fieldNames = new HashMap<Query, String>();
-	private boolean superSearch = true;
-	private Filter queryFilter;
-	private final ScoreType scoreType;
-	
-	public SuperParser(Version matchVersion, Analyzer a, boolean superSearch, Filter queryFilter, ScoreType scoreType) {
-		super(matchVersion, SUPER, a);
-		this.setAllowLeadingWildcard(true);
-		this.superSearch = superSearch;
-		this.queryFilter = queryFilter;
-		this.scoreType = scoreType;
-	}
-	
-	@Override
-	public Query parse(String query) throws ParseException {
-		return reprocess(super.parse(query));
-	}
 
-	@Override
-	protected Query newFuzzyQuery(Term term, float minimumSimilarity, int prefixLength) {
-		return addField(super.newFuzzyQuery(term, minimumSimilarity, prefixLength),term.field());
-	}
+  private Map<Query, String> fieldNames = new HashMap<Query, String>();
+  private boolean superSearch = true;
+  private Filter queryFilter;
+  private final ScoreType scoreType;
 
-	@Override
-	protected Query newMatchAllDocsQuery() {
-		return addField(super.newMatchAllDocsQuery(),UUID.randomUUID().toString());
-	}
+  public SuperParser(Version matchVersion, Analyzer a, boolean superSearch, Filter queryFilter, ScoreType scoreType) {
+    super(matchVersion, SUPER, a);
+    this.setAllowLeadingWildcard(true);
+    this.superSearch = superSearch;
+    this.queryFilter = queryFilter;
+    this.scoreType = scoreType;
+  }
 
-	@Override
-	protected MultiPhraseQuery newMultiPhraseQuery() {
-		return new MultiPhraseQuery() {
-			private static final long serialVersionUID = 2743009696906520410L;
-			@Override
-			public void add(Term[] terms, int position) {
-				super.add(terms, position);
-				for (Term term : terms) {
-					addField(this, term.field());
-				}
-			}
-		};
-	}
+  @Override
+  public Query parse(String query) throws ParseException {
+    return reprocess(super.parse(query));
+  }
 
-	@Override
-	protected PhraseQuery newPhraseQuery() {
-		return new PhraseQuery() {
-			private static final long serialVersionUID = 1927750709523859808L;
-			@Override
-			public void add(Term term, int position) {
-				super.add(term, position);
-				addField(this, term.field());
-			}
-		};
-	}
-	
-	@Override
-	protected Query newPrefixQuery(Term prefix) {
-		return addField(super.newPrefixQuery(prefix),prefix.field());
-	}
+  @Override
+  protected Query newFuzzyQuery(Term term, float minimumSimilarity, int prefixLength) {
+    return addField(super.newFuzzyQuery(term, minimumSimilarity, prefixLength), term.field());
+  }
 
-	@Override
-	protected Query newRangeQuery(String field, String part1, String part2, boolean inclusive) {
-		return addField(super.newRangeQuery(field, part1, part2, inclusive),field);
-	}
+  @Override
+  protected Query newMatchAllDocsQuery() {
+    return addField(super.newMatchAllDocsQuery(), UUID.randomUUID().toString());
+  }
 
-	@Override
-	protected Query newTermQuery(Term term) {
-		return addField(super.newTermQuery(term),term.field());
-	}
+  @Override
+  protected MultiPhraseQuery newMultiPhraseQuery() {
+    return new MultiPhraseQuery() {
+      private static final long serialVersionUID = 2743009696906520410L;
 
-	@Override
-	protected Query newWildcardQuery(Term t) {
-		if (SUPER.equals(t.field()) && "*".equals(t.text())) {
-			return new MatchAllDocsQuery();
-		}
-		return addField(super.newWildcardQuery(t),t.field());
-	}
+      @Override
+      public void add(Term[] terms, int position) {
+        super.add(terms, position);
+        for (Term term : terms) {
+          addField(this, term.field());
+        }
+      }
+    };
+  }
 
-	private Query reprocess(Query query) {
-		if (query == null || !isSuperSearch()) {
-			return wrapFilter(query);
-		}
-		if (query instanceof BooleanQuery) {
-			BooleanQuery booleanQuery = (BooleanQuery) query;
-			if (isSameGroupName(booleanQuery)) {
-			    return newSuperQuery(query);
-			} else {
-				List<BooleanClause> clauses = booleanQuery.clauses();
-				for (BooleanClause clause : clauses) {
-					clause.setQuery(reprocess(clause.getQuery()));
-				}
-				return booleanQuery;
-			}
-		} else {
-			return newSuperQuery(query);
-		}
-	}
-	
-	private SuperQuery newSuperQuery(Query query) {
-	    return new SuperQuery(wrapFilter(query), scoreType);
-	}
+  @Override
+  protected PhraseQuery newPhraseQuery() {
+    return new PhraseQuery() {
+      private static final long serialVersionUID = 1927750709523859808L;
 
-	private Query wrapFilter(Query query) {
-		if (queryFilter == null) {
-			return query;
-		}
-		return new FilteredQuery(query,queryFilter);
-	}
+      @Override
+      public void add(Term term, int position) {
+        super.add(term, position);
+        addField(this, term.field());
+      }
+    };
+  }
 
-	private boolean isSameGroupName(BooleanQuery booleanQuery) {
-		String groupName = findFirstGroupName(booleanQuery);
-		if (groupName == null) {
-			return false;
-		}
-		return isSameGroupName(booleanQuery,groupName);
-	}
-	
-	private boolean isSameGroupName(Query query, String groupName) {
-		if (query instanceof BooleanQuery) {
-			BooleanQuery booleanQuery = (BooleanQuery) query;
-			for (BooleanClause clause : booleanQuery.clauses()) {
-				if (!isSameGroupName(clause.getQuery(), groupName)) {
-					return false;
-				}
-			}
-			return true;
-		} else {
-			String fieldName = fieldNames.get(query);
-			String currentGroupName = getGroupName(fieldName);
-			if (groupName.equals(currentGroupName)) {
-				return true;
-			}
-			return false;
-		}
-	}
+  @Override
+  protected Query newPrefixQuery(Term prefix) {
+    return addField(super.newPrefixQuery(prefix), prefix.field());
+  }
 
-	private String getGroupName(String fieldName) {
-		if (fieldName == null) {
-			return null;
-		}
-		int index = fieldName.indexOf(SEP);
-		if (index < 0) {
-			return null;
-		}
-		return fieldName.substring(0,index);
-	}
+  @Override
+  protected Query newRangeQuery(String field, String part1, String part2, boolean inclusive) {
+    return addField(super.newRangeQuery(field, part1, part2, inclusive), field);
+  }
 
-	private String findFirstGroupName(Query query) {
-		if (query instanceof BooleanQuery) {
-			BooleanQuery booleanQuery = (BooleanQuery) query;
-			for (BooleanClause clause : booleanQuery.clauses()) {
-				return findFirstGroupName(clause.getQuery());
-			}
-			return null;
-		} else {
-			String fieldName = fieldNames.get(query);
-			return getGroupName(fieldName);
-		}
-	}
+  @Override
+  protected Query newTermQuery(Term term) {
+    return addField(super.newTermQuery(term), term.field());
+  }
 
-	private Query addField(Query q, String field) {
-		fieldNames.put(q, field);
-		return q;
-	}
+  @Override
+  protected Query newWildcardQuery(Term t) {
+    if (SUPER.equals(t.field()) && "*".equals(t.text())) {
+      return new MatchAllDocsQuery();
+    }
+    return addField(super.newWildcardQuery(t), t.field());
+  }
 
-	public boolean isSuperSearch() {
-		return superSearch;
-	}
+  private Query reprocess(Query query) {
+    if (query == null || !isSuperSearch()) {
+      return wrapFilter(query);
+    }
+    if (query instanceof BooleanQuery) {
+      BooleanQuery booleanQuery = (BooleanQuery) query;
+      if (isSameGroupName(booleanQuery)) {
+        return newSuperQuery(query);
+      } else {
+        List<BooleanClause> clauses = booleanQuery.clauses();
+        for (BooleanClause clause : clauses) {
+          clause.setQuery(reprocess(clause.getQuery()));
+        }
+        return booleanQuery;
+      }
+    } else {
+      return newSuperQuery(query);
+    }
+  }
+
+  private SuperQuery newSuperQuery(Query query) {
+    return new SuperQuery(wrapFilter(query), scoreType);
+  }
+
+  private Query wrapFilter(Query query) {
+    if (queryFilter == null) {
+      return query;
+    }
+    return new FilteredQuery(query, queryFilter);
+  }
+
+  private boolean isSameGroupName(BooleanQuery booleanQuery) {
+    String groupName = findFirstGroupName(booleanQuery);
+    if (groupName == null) {
+      return false;
+    }
+    return isSameGroupName(booleanQuery, groupName);
+  }
+
+  private boolean isSameGroupName(Query query, String groupName) {
+    if (query instanceof BooleanQuery) {
+      BooleanQuery booleanQuery = (BooleanQuery) query;
+      for (BooleanClause clause : booleanQuery.clauses()) {
+        if (!isSameGroupName(clause.getQuery(), groupName)) {
+          return false;
+        }
+      }
+      return true;
+    } else {
+      String fieldName = fieldNames.get(query);
+      String currentGroupName = getGroupName(fieldName);
+      if (groupName.equals(currentGroupName)) {
+        return true;
+      }
+      return false;
+    }
+  }
+
+  private String getGroupName(String fieldName) {
+    if (fieldName == null) {
+      return null;
+    }
+    int index = fieldName.indexOf(SEP);
+    if (index < 0) {
+      return null;
+    }
+    return fieldName.substring(0, index);
+  }
+
+  private String findFirstGroupName(Query query) {
+    if (query instanceof BooleanQuery) {
+      BooleanQuery booleanQuery = (BooleanQuery) query;
+      for (BooleanClause clause : booleanQuery.clauses()) {
+        return findFirstGroupName(clause.getQuery());
+      }
+      return null;
+    } else {
+      String fieldName = fieldNames.get(query);
+      return getGroupName(fieldName);
+    }
+  }
+
+  private Query addField(Query q, String field) {
+    fieldNames.put(q, field);
+    return q;
+  }
+
+  public boolean isSuperSearch() {
+    return superSearch;
+  }
 }

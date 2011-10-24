@@ -93,20 +93,25 @@ public class BlurIndexWriter extends BlurIndex {
       completionService.submit(new Callable<WalIndexWriter>() {
         @Override
         public WalIndexWriter call() throws Exception {
-          return new WalIndexWriter(_directory, conf, _blurMetrics, new WalOutputFactory() {
-            @Override
-            public IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException {
-              return directory.createOutputDirectIO(name);
-            }
-          }, new WalInputFactory() {
-            @Override
-            public IndexInput getWalInput(DirectIODirectory directory, String name) throws IOException {
-              return directory.openInputDirectIO(name);
-            }
-          });
+          try {
+            return new WalIndexWriter(_directory, conf, _blurMetrics, new WalOutputFactory() {
+              @Override
+              public IndexOutput getWalOutput(DirectIODirectory directory, String name) throws IOException {
+                return directory.createOutputDirectIO(name);
+              }
+            }, new WalInputFactory() {
+              @Override
+              public IndexInput getWalInput(DirectIODirectory directory, String name) throws IOException {
+                return directory.openInputDirectIO(name);
+              }
+            });
+          } catch (Exception e) {
+            LOG.error("Error trying to open table [{0}] shard [{1}]", e, _table, _shard);
+            throw e;
+          }
         }
       });
-      
+
       while (_open.get()) {
         Future<WalIndexWriter> future;
         try {
@@ -115,7 +120,7 @@ public class BlurIndexWriter extends BlurIndex {
           throw new RuntimeException(e);
         }
         if (future == null) {
-          LOG.info("Still trying to open shard for writing table [{0}] shard [{1}]",_table,_shard);
+          LOG.info("Still trying to open shard for writing table [{0}] shard [{1}]", _table, _shard);
         } else {
           try {
             return future.get();
@@ -134,7 +139,7 @@ public class BlurIndexWriter extends BlurIndex {
         }
       }
       throw new IOException("Table [" + _table + "] shard [" + _shard + "] not opened");
-    }finally {
+    } finally {
       service.shutdownNow();
     }
   }
@@ -225,6 +230,5 @@ public class BlurIndexWriter extends BlurIndex {
   public void setShard(String shard) {
     this._shard = shard;
   }
-  
-  
+
 }

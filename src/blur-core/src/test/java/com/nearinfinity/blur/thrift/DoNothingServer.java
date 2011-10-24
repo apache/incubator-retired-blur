@@ -36,106 +36,103 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class DoNothingServer implements Iface {
 
-    @Override
-    public TableDescriptor describe(String table) throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public TableDescriptor describe(String table) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public List<String> tableList() throws BlurException, TException {
-        return Arrays.asList("donothing");
-    }
+  @Override
+  public List<String> tableList() throws BlurException, TException {
+    return Arrays.asList("donothing");
+  }
 
-    @Override
-    public List<String> controllerServerList() throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public List<String> controllerServerList() throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public List<String> shardServerList(String cluster) throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public List<String> shardServerList(String cluster) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public void cancelQuery(String table, long providedUuid) throws BlurException, TException {
-        
-    }
+  @Override
+  public void cancelQuery(String table, long providedUuid) throws BlurException, TException {
 
-    @Override
-    public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
-        return null;
-    }
+  }
 
-    @Override
-    public List<BlurQueryStatus> currentQueries(String arg0) throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public long recordFrequency(String arg0, String arg1, String arg2, String arg3) throws BlurException, TException {
-        return 0;
-    }
+  @Override
+  public List<BlurQueryStatus> currentQueries(String arg0) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public Schema schema(String arg0) throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public long recordFrequency(String arg0, String arg1, String arg2, String arg3) throws BlurException, TException {
+    return 0;
+  }
 
-    @Override
-    public List<String> terms(String arg0, String arg1, String arg2, String arg3, short arg4) throws BlurException,
-            TException {
-        return null;
-    }
+  @Override
+  public Schema schema(String arg0) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public void createTable(TableDescriptor tableDescriptor)
-            throws BlurException, TException {
-        
-    }
+  @Override
+  public List<String> terms(String arg0, String arg1, String arg2, String arg3, short arg4) throws BlurException, TException {
+    return null;
+  }
 
-    @Override
-    public void disableTable(String table) throws BlurException, TException {
-        
-    }
+  @Override
+  public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
 
-    @Override
-    public void enableTable(String table) throws BlurException, TException {
-        
-    }
+  }
 
-    @Override
-    public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
-        
-    }
+  @Override
+  public void disableTable(String table) throws BlurException, TException {
 
-	@Override
-	public TableStats getTableStats(String table) throws BlurException,
-			TException {
-		return null;
-	}
+  }
 
-    @Override
-    public void mutate(RowMutation mutation) throws BlurException, TException {
-        
-    }
+  @Override
+  public void enableTable(String table) throws BlurException, TException {
 
-    @Override
-    public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
-        
-    }
+  }
 
-    @Override
-    public List<String> shardClusterList() throws BlurException, TException {
-        return null;
-    }
+  @Override
+  public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
+
+  }
+
+  @Override
+  public TableStats getTableStats(String table) throws BlurException, TException {
+    return null;
+  }
+
+  @Override
+  public void mutate(RowMutation mutation) throws BlurException, TException {
+
+  }
+
+  @Override
+  public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+
+  }
+
+  @Override
+  public List<String> shardClusterList() throws BlurException, TException {
+    return null;
+  }
 }

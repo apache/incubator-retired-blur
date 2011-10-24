@@ -52,376 +52,355 @@ import com.nearinfinity.blur.utils.QueryCacheEntry;
 
 public class BlurShardServer extends ExecutionContextIface {
 
-    private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
-    private IndexManager _indexManager;
-    private IndexServer _indexServer;
-    private boolean _closed;
-    private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);
-    private int _maxQueryCacheElements = 128;
-    private QueryCache _queryCache;
-    private BlurQueryChecker _queryChecker;
-    private ClusterStatus _clusterStatus;
-    private ExecutorService _dataFetch;
-    
-    public void init() {
-        super.init();
-        _queryCache = new QueryCache("shard-cache",_maxQueryCacheElements,_maxTimeToLive);
-        _dataFetch = Executors.newThreadPool("data-fetch-", 32);
-    }
+  private static final Log LOG = LogFactory.getLog(BlurShardServer.class);
+  private IndexManager _indexManager;
+  private IndexServer _indexServer;
+  private boolean _closed;
+  private long _maxTimeToLive = TimeUnit.MINUTES.toMillis(1);
+  private int _maxQueryCacheElements = 128;
+  private QueryCache _queryCache;
+  private BlurQueryChecker _queryChecker;
+  private ClusterStatus _clusterStatus;
+  private ExecutorService _dataFetch;
 
-    public enum Metrics {
-        GET_TABLE_STATUS, 
-        QUERY, 
-        FETCH_ROW, 
-        SHARD_SERVER_LAYOUT, 
-        CANCEL_QUERY, 
-        CURRENT_QUERIES, 
-        RECORD_FREQUENCY, 
-        SCHEMA, 
-        TERMS, 
-        DESCRIBE, 
-        MUTATE, 
-        GET_TABLE_STATS
-    }
+  public void init() {
+    super.init();
+    _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
+    _dataFetch = Executors.newThreadPool("data-fetch-", 32);
+  }
 
-    @Override
-    public BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException,
-            TException {
-        _queryChecker.checkQuery(blurQuery);
-        long start = context.startTime();
-        try {
-            checkTableStatus(context, table);
-            BlurQuery original = new BlurQuery(blurQuery);
-            if (blurQuery.useCacheIfPresent) {
-                LOG.debug("Using cache for query [{0}] on table [{1}].",blurQuery, table);
-                BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
-                QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
-                if (_queryCache.isValid(queryCacheEntry)) {
-                    LOG.debug("Cache hit for query [{0}] on table [{1}].",blurQuery, table);
-                    return queryCacheEntry.getBlurResults(blurQuery);
-                }
-            }
-            BlurUtil.setStartTime(original);
-            try {
-                AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
-                BlurResultIterable hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
-                return _queryCache.cache(original,BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
-            } catch (Exception e) {
-                LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.QUERY, start, table, blurQuery);
+  public enum Metrics {
+    GET_TABLE_STATUS, QUERY, FETCH_ROW, SHARD_SERVER_LAYOUT, CANCEL_QUERY, CURRENT_QUERIES, RECORD_FREQUENCY, SCHEMA, TERMS, DESCRIBE, MUTATE, GET_TABLE_STATS
+  }
+
+  @Override
+  public BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException, TException {
+    _queryChecker.checkQuery(blurQuery);
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      BlurQuery original = new BlurQuery(blurQuery);
+      if (blurQuery.useCacheIfPresent) {
+        LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
+        BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
+        QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
+        if (_queryCache.isValid(queryCacheEntry)) {
+          LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
+          return queryCacheEntry.getBlurResults(blurQuery);
         }
+      }
+      BlurUtil.setStartTime(original);
+      try {
+        AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
+        BlurResultIterable hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
+        return _queryCache.cache(original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
+      } catch (Exception e) {
+        LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.QUERY, start, table, blurQuery);
     }
+  }
 
-    @Override
-    public FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException,
-            TException {
-        long start = context.startTime();
-        try {
-            checkTableStatus(context, table);
-            try {
-                FetchResult fetchResult = new FetchResult();
-                _indexManager.fetchRow(table, selector, fetchResult);
-                return fetchResult;
-            } catch (Exception e) {
-                LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]", e, table, selector);
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.FETCH_ROW, start, table, selector);
+  @Override
+  public FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      try {
+        FetchResult fetchResult = new FetchResult();
+        _indexManager.fetchRow(table, selector, fetchResult);
+        return fetchResult;
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to get fetch row [table={0},selector={1}]", e, table, selector);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.FETCH_ROW, start, table, selector);
+    }
+  }
+
+  @Override
+  public void cancelQuery(ExecutionContext context, String table, long uuid) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      _indexManager.cancelQuery(table, uuid);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to cancel search [uuid={0}]", e, uuid);
+      throw new BException(e.getMessage(), e);
+    } finally {
+      context.recordTime(Metrics.CANCEL_QUERY, start, table, uuid);
+    }
+  }
+
+  @Override
+  public List<BlurQueryStatus> currentQueries(ExecutionContext context, String table) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      try {
+        return _indexManager.currentQueries(table);
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to get current search status [table={0}]", e, table);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.CURRENT_QUERIES, start, table);
+    }
+  }
+
+  @Override
+  public TableStats getTableStats(ExecutionContext context, String table) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      try {
+        TableStats tableStats = new TableStats();
+        tableStats.tableName = table;
+        tableStats.recordCount = _indexServer.getRecordCount(table);
+        tableStats.rowCount = _indexServer.getRowCount(table);
+        tableStats.bytes = _indexServer.getTableSize(table);
+        tableStats.queries = 0;
+        return tableStats;
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to get table stats [table={0}]", e, table);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.GET_TABLE_STATS, start, table);
+    }
+  }
+
+  public synchronized void close() {
+    if (!_closed) {
+      _closed = true;
+      _indexManager.close();
+      _dataFetch.shutdownNow();
+    }
+  }
+
+  @Override
+  public Map<String, String> shardServerLayout(ExecutionContext context, String table) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      try {
+        Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
+        Map<String, String> result = new TreeMap<String, String>();
+        String nodeName = _indexServer.getNodeName();
+        for (String shard : blurIndexes.keySet()) {
+          result.put(shard, nodeName);
         }
-    }
-
-    @Override
-    public void cancelQuery(ExecutionContext context, String table, long uuid) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            _indexManager.cancelQuery(table, uuid);
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to cancel search [uuid={0}]", e, uuid);
-            throw new BException(e.getMessage(), e);
-        } finally {
-            context.recordTime(Metrics.CANCEL_QUERY, start, table, uuid);
+        return result;
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to getting shardServerLayout for table [" + table + "]", e);
+        if (e instanceof BlurException) {
+          throw (BlurException) e;
         }
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.SHARD_SERVER_LAYOUT, start, table);
     }
+  }
 
-    @Override
-    public List<BlurQueryStatus> currentQueries(ExecutionContext context, String table) throws BlurException,
-            TException {
-        long start = context.startTime();
-        try {
-            checkTableStatus(context, table);
-            try {
-                return _indexManager.currentQueries(table);
-            } catch (Exception e) {
-                LOG.error("Unknown error while trying to get current search status [table={0}]", e, table);
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.CURRENT_QUERIES, start, table);
-        }
+  private void checkTableStatus(ExecutionContext context, String table) throws BlurException, TException {
+    if (!isTableEnabled(context, table)) {
+      List<String> tableList = tableList();
+      if (tableList.contains(table)) {
+        throw new BlurException("Table [" + table + "] is disabled.", null);
+      } else {
+        throw new BlurException("Table [" + table + "] does not exist.", null);
+      }
     }
-    
-    @Override
-    public TableStats getTableStats(ExecutionContext context, String table) throws BlurException, TException {
-    	long start = context.startTime();
-    	try {
-    		checkTableStatus(context, table);
-    		try {
-	    		TableStats tableStats = new TableStats();
-	    		tableStats.tableName = table;
-	    		tableStats.recordCount = _indexServer.getRecordCount(table);
-	    		tableStats.rowCount = _indexServer.getRowCount(table);
-	    		tableStats.bytes = _indexServer.getTableSize(table);
-	    		tableStats.queries = 0;
-	    		return tableStats;
-    		} catch(Exception e){
-    			LOG.error("Unknown error while trying to get table stats [table={0}]", e, table);
-                throw new BException(e.getMessage(), e);
-    		}
-    	} finally {
-    		context.recordTime(Metrics.GET_TABLE_STATS, start, table);
-    	}
-    }
+  }
 
-    public synchronized void close() {
-        if (!_closed) {
-            _closed = true;
-            _indexManager.close();
-            _dataFetch.shutdownNow();
-        }
-    }
+  public IndexManager getIndexManager() {
+    return _indexManager;
+  }
 
-    @Override
-    public Map<String, String> shardServerLayout(ExecutionContext context, String table) throws BlurException,
-            TException {
-        long start = context.startTime();
-        try {
-            checkTableStatus(context, table);
-            try {
-                Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
-                Map<String, String> result = new TreeMap<String, String>();
-                String nodeName = _indexServer.getNodeName();
-                for (String shard : blurIndexes.keySet()) {
-                    result.put(shard, nodeName);
-                }
-                return result;
-            } catch (Exception e) {
-                LOG.error("Unknown error while trying to getting shardServerLayout for table [" + table + "]", e);
-                if (e instanceof BlurException) {
-                    throw (BlurException) e;
-                }
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.SHARD_SERVER_LAYOUT, start, table);
-        }
-    }
+  public BlurShardServer setIndexManager(IndexManager indexManager) {
+    this._indexManager = indexManager;
+    return this;
+  }
 
-    private void checkTableStatus(ExecutionContext context, String table) throws BlurException, TException {
-        if (!isTableEnabled(context, table)) {
-            List<String> tableList = tableList();
-            if (tableList.contains(table)) {
-                throw new BlurException("Table [" + table + "] is disabled.", null);
-            } else {
-                throw new BlurException("Table [" + table + "] does not exist.", null);
-            }
-        }
+  @Override
+  public long recordFrequency(ExecutionContext context, String table, String columnFamily, String columnName, String value) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      try {
+        return _indexManager.recordFrequency(table, columnFamily, columnName, value);
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]", e, table, columnFamily, columnName, value);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.RECORD_FREQUENCY, start, table, columnFamily, columnName, value);
     }
+  }
 
-    public IndexManager getIndexManager() {
-        return _indexManager;
+  @Override
+  public Schema schema(ExecutionContext context, String table) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      try {
+        return _indexManager.schema(table);
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to get schema for table [{0}={1}]", e, "table", table);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.SCHEMA, start, table);
     }
+  }
 
-    public BlurShardServer setIndexManager(IndexManager indexManager) {
-        this._indexManager = indexManager;
-        return this;
+  @Override
+  public List<String> terms(ExecutionContext context, String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      checkTableStatus(context, table);
+      try {
+        return _indexManager.terms(table, columnFamily, columnName, startWith, size);
+      } catch (Exception e) {
+        LOG.error("Unknown error while trying to get terms list for [table={0},columnFamily={1},columnName={2},startWith={3},size={4}]", e, table, columnFamily, columnName,
+            startWith, size);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.TERMS, start, table, columnFamily, columnName, startWith, size);
     }
+  }
 
-    @Override
-    public long recordFrequency(ExecutionContext context, String table, String columnFamily, String columnName,
-            String value) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            checkTableStatus(context, table);
-            try {
-                return _indexManager.recordFrequency(table, columnFamily, columnName, value);
-            } catch (Exception e) {
-                LOG.error("Unknown error while trying to get record frequency for [table={0},columnFamily={1},columnName={2},value={3}]",
-                                e, table, columnFamily, columnName, value);
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.RECORD_FREQUENCY, start, table, columnFamily, columnName, value);
-        }
+  @Override
+  public List<String> tableList(ExecutionContext context) throws BlurException, TException {
+    try {
+      return _clusterStatus.getTableList();
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get a table list.", e);
+      throw new BException("Unknown error while trying to get a table list.", e);
     }
+  }
 
-    @Override
-    public Schema schema(ExecutionContext context, String table) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            checkTableStatus(context, table);
-            try {
-                return _indexManager.schema(table);
-            } catch (Exception e) {
-                LOG.error("Unknown error while trying to get schema for table [{0}={1}]", e, "table", table);
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.SCHEMA, start, table);
-        }
+  @Override
+  public TableDescriptor describe(ExecutionContext context, String table) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      return _clusterStatus.getTableDescriptor(table);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to describe table [" + table + "]", e);
+      throw new BException(e.getMessage(), e);
+    } finally {
+      context.recordTime(Metrics.DESCRIBE, start, table);
     }
+  }
 
-    @Override
-    public List<String> terms(ExecutionContext context, String table, String columnFamily, String columnName,
-            String startWith, short size) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            checkTableStatus(context, table);
-            try {
-                return _indexManager.terms(table, columnFamily, columnName, startWith, size);
-            } catch (Exception e) {
-                LOG
-                        .error(
-                                "Unknown error while trying to get terms list for [table={0},columnFamily={1},columnName={2},startWith={3},size={4}]",
-                                e, table, columnFamily, columnName, startWith, size);
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.TERMS, start, table, columnFamily, columnName, startWith, size);
-        }
+  public boolean isTableEnabled(ExecutionContext context, String table) {
+    long start = context.startTime();
+    try {
+      TABLE_STATUS tableStatus = _indexServer.getTableStatus(table);
+      if (tableStatus == TABLE_STATUS.ENABLED) {
+        return true;
+      } else {
+        return false;
+      }
+    } finally {
+      context.recordTime(Metrics.GET_TABLE_STATUS, start, table);
     }
+  }
 
-    @Override
-    public List<String> tableList(ExecutionContext context) throws BlurException, TException {
-        try {
-            return _clusterStatus.getTableList();
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to get a table list.", e);
-            throw new BException("Unknown error while trying to get a table list.", e);
-        }
-    }
+  public IndexServer getIndexServer() {
+    return _indexServer;
+  }
 
-    @Override
-    public TableDescriptor describe(ExecutionContext context, String table) throws BlurException, TException {
-        long start = context.startTime();
-        try {
-            return _clusterStatus.getTableDescriptor(table);
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to describe table [" + table + "]", e);
-            throw new BException(e.getMessage(), e);
-        } finally {
-            context.recordTime(Metrics.DESCRIBE, start, table);
-        }
-    }
+  public void setIndexServer(IndexServer indexServer) {
+    this._indexServer = indexServer;
+  }
 
-    public boolean isTableEnabled(ExecutionContext context, String table) {
-        long start = context.startTime();
-        try {
-            TABLE_STATUS tableStatus = _indexServer.getTableStatus(table);
-            if (tableStatus == TABLE_STATUS.ENABLED) {
-                return true;
-            } else {
-                return false;
-            }
-        } finally {
-            context.recordTime(Metrics.GET_TABLE_STATUS, start, table);
-        }
+  @Override
+  public List<String> controllerServerList(ExecutionContext context) throws BlurException, TException {
+    try {
+      return _clusterStatus.getControllerServerList();
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get a controller list.", e);
+      throw new BException("Unknown error while trying to get a controller list.", e);
     }
+  }
 
-    public IndexServer getIndexServer() {
-        return _indexServer;
+  @Override
+  public List<String> shardServerList(ExecutionContext context, String cluster) throws BlurException, TException {
+    try {
+      return _clusterStatus.getShardServerList(cluster);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get a shard server list.", e);
+      throw new BException("Unknown error while trying to get a shard server list.", e);
     }
+  }
 
-    public void setIndexServer(IndexServer indexServer) {
-        this._indexServer = indexServer;
+  @Override
+  public void mutate(ExecutionContext context, RowMutation mutation) throws BlurException, TException {
+    long start = context.startTime();
+    try {
+      MutationHelper.validateMutation(mutation);
+      checkTableStatus(context, mutation.table);
+      try {
+        _indexManager.mutate(mutation);
+      } catch (Exception e) {
+        LOG.error("Unknown error during processing of [mutation={0}]", e, mutation);
+        throw new BException(e.getMessage(), e);
+      }
+    } finally {
+      context.recordTime(Metrics.MUTATE, start, mutation);
     }
+  }
 
-    @Override
-    public List<String> controllerServerList(ExecutionContext context) throws BlurException, TException {
-        try {
-            return _clusterStatus.getControllerServerList();
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to get a controller list.", e);
-            throw new BException("Unknown error while trying to get a controller list.", e);
-        }
+  @Override
+  public void mutateBatch(ExecutionContext context, List<RowMutation> mutations) throws BlurException, TException {
+    for (RowMutation mutation : mutations) {
+      MutationHelper.validateMutation(mutation);
     }
-    
-    @Override
-    public List<String> shardServerList(ExecutionContext context, String cluster) throws BlurException, TException {
-        try {
-            return _clusterStatus.getShardServerList(cluster);
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to get a shard server list.", e);
-            throw new BException("Unknown error while trying to get a shard server list.", e);
-        }
+    for (RowMutation mutation : mutations) {
+      mutate(context, mutation);
     }
+  }
 
-    @Override
-    public void mutate(ExecutionContext context, RowMutation mutation) throws BlurException,
-            TException {
-        long start = context.startTime();
-        try {
-            MutationHelper.validateMutation(mutation);
-            checkTableStatus(context, mutation.table);
-            try {
-                _indexManager.mutate(mutation);
-            } catch (Exception e) {
-                LOG.error("Unknown error during processing of [mutation={0}]", e, mutation);
-                throw new BException(e.getMessage(), e);
-            }
-        } finally {
-            context.recordTime(Metrics.MUTATE, start, mutation);
-        }
+  @Override
+  public List<String> shardClusterList(ExecutionContext context) throws BlurException, TException {
+    try {
+      return _clusterStatus.getClusterList();
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get a cluster list.", e);
+      throw new BException("Unknown error while trying to get a cluster list.", e);
     }
+  }
 
-    @Override
-    public void mutateBatch(ExecutionContext context, List<RowMutation> mutations) throws BlurException, TException {
-        for (RowMutation mutation : mutations) {
-            MutationHelper.validateMutation(mutation);
-        }
-        for (RowMutation mutation : mutations) {
-            mutate(context, mutation);
-        }
-    }
+  public long getMaxTimeToLive() {
+    return _maxTimeToLive;
+  }
 
-    @Override
-    public List<String> shardClusterList(ExecutionContext context) throws BlurException, TException {
-        try {
-            return _clusterStatus.getClusterList();
-        } catch (Exception e) {
-            LOG.error("Unknown error while trying to get a cluster list.", e);
-            throw new BException("Unknown error while trying to get a cluster list.", e);
-        }
-    }
+  public void setMaxTimeToLive(long maxTimeToLive) {
+    _maxTimeToLive = maxTimeToLive;
+  }
 
-    public long getMaxTimeToLive() {
-        return _maxTimeToLive;
-    }
+  public int getMaxQueryCacheElements() {
+    return _maxQueryCacheElements;
+  }
 
-    public void setMaxTimeToLive(long maxTimeToLive) {
-        _maxTimeToLive = maxTimeToLive;
-    }
+  public void setMaxQueryCacheElements(int maxQueryCacheElements) {
+    _maxQueryCacheElements = maxQueryCacheElements;
+  }
 
-    public int getMaxQueryCacheElements() {
-        return _maxQueryCacheElements;
-    }
+  public void setQueryChecker(BlurQueryChecker queryChecker) {
+    _queryChecker = queryChecker;
+  }
 
-    public void setMaxQueryCacheElements(int maxQueryCacheElements) {
-        _maxQueryCacheElements = maxQueryCacheElements;
-    }
+  public ClusterStatus getClusterStatus() {
+    return _clusterStatus;
+  }
 
-    public void setQueryChecker(BlurQueryChecker queryChecker) {
-        _queryChecker = queryChecker;
-    }
-
-    public ClusterStatus getClusterStatus() {
-        return _clusterStatus;
-    }
-
-    public void setClusterStatus(ClusterStatus clusterStatus) {
-        _clusterStatus = clusterStatus;
-    }
+  public void setClusterStatus(ClusterStatus clusterStatus) {
+    _clusterStatus = clusterStatus;
+  }
 }

@@ -30,81 +30,81 @@ import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 
 public class QueryStatusManager {
-    
-    private static final Log LOG = LogFactory.getLog(QueryStatusManager.class);
-    private static final Object CONSTANT_VALUE = new Object();
-    
-    private Timer statusCleanupTimer;
-    private long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(60);
-    private ConcurrentHashMap<QueryStatus, Object> currentQueryStatusCollection = new ConcurrentHashMap<QueryStatus, Object>();
 
-    public void init() {
-        statusCleanupTimer = new Timer("Query-Status-Cleanup",true);
-        statusCleanupTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                try {
-                    cleanupFinishedQueryStatuses();
-                } catch (Exception e) {
-                    LOG.error("Unknown error while trying to cleanup finished queries.",e);
-                }
-            }
-        }, statusCleanupTimerDelay, statusCleanupTimerDelay);
-    }
-    
-    public void close() {
-        statusCleanupTimer.cancel();
-        statusCleanupTimer.purge();
-    }
-    
-    public QueryStatus newQueryStatus(String table, BlurQuery blurQuery) {
-        return addStatus(new QueryStatus(statusCleanupTimerDelay,table,blurQuery).attachThread());
-    }
-    
-    private QueryStatus addStatus(QueryStatus status) {
-        currentQueryStatusCollection.put(status,CONSTANT_VALUE);
-        return status;
-    }
-    
-    public void removeStatus(QueryStatus status) {
-        status.setFinished(true);
-    }
-    
-    private void cleanupFinishedQueryStatuses() {
-        LOG.debug("QueryStatus Start count [{0}].",currentQueryStatusCollection.size());
-        Iterator<QueryStatus> iterator = currentQueryStatusCollection.keySet().iterator();
-        while (iterator.hasNext()) {
-            QueryStatus status = iterator.next();
-            if (status.isValidForCleanUp()) {
-                currentQueryStatusCollection.remove(status);
-            }
+  private static final Log LOG = LogFactory.getLog(QueryStatusManager.class);
+  private static final Object CONSTANT_VALUE = new Object();
+
+  private Timer statusCleanupTimer;
+  private long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(60);
+  private ConcurrentHashMap<QueryStatus, Object> currentQueryStatusCollection = new ConcurrentHashMap<QueryStatus, Object>();
+
+  public void init() {
+    statusCleanupTimer = new Timer("Query-Status-Cleanup", true);
+    statusCleanupTimer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        try {
+          cleanupFinishedQueryStatuses();
+        } catch (Exception e) {
+          LOG.error("Unknown error while trying to cleanup finished queries.", e);
         }
-        LOG.debug("QueryStatus Finish count [{0}].",currentQueryStatusCollection.size());
-    }
+      }
+    }, statusCleanupTimerDelay, statusCleanupTimerDelay);
+  }
 
-    public long getStatusCleanupTimerDelay() {
-        return statusCleanupTimerDelay;
-    }
+  public void close() {
+    statusCleanupTimer.cancel();
+    statusCleanupTimer.purge();
+  }
 
-    public void setStatusCleanupTimerDelay(long statusCleanupTimerDelay) {
-        this.statusCleanupTimerDelay = statusCleanupTimerDelay;
-    }
+  public QueryStatus newQueryStatus(String table, BlurQuery blurQuery) {
+    return addStatus(new QueryStatus(statusCleanupTimerDelay, table, blurQuery).attachThread());
+  }
 
-    public void cancelQuery(String table, long uuid) {
-        for (QueryStatus status : currentQueryStatusCollection.keySet()) {
-            if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
-                status.cancelQuery();
-            }
-        }
-    }
+  private QueryStatus addStatus(QueryStatus status) {
+    currentQueryStatusCollection.put(status, CONSTANT_VALUE);
+    return status;
+  }
 
-    public List<BlurQueryStatus> currentQueries(String table) {
-        List<BlurQueryStatus> result = new ArrayList<BlurQueryStatus>();
-        for (QueryStatus status : currentQueryStatusCollection.keySet()) {
-            if (status.getTable().equals(table)) {
-                result.add(status.getQueryStatus());
-            }
-        }
-        return result;
+  public void removeStatus(QueryStatus status) {
+    status.setFinished(true);
+  }
+
+  private void cleanupFinishedQueryStatuses() {
+    LOG.debug("QueryStatus Start count [{0}].", currentQueryStatusCollection.size());
+    Iterator<QueryStatus> iterator = currentQueryStatusCollection.keySet().iterator();
+    while (iterator.hasNext()) {
+      QueryStatus status = iterator.next();
+      if (status.isValidForCleanUp()) {
+        currentQueryStatusCollection.remove(status);
+      }
     }
+    LOG.debug("QueryStatus Finish count [{0}].", currentQueryStatusCollection.size());
+  }
+
+  public long getStatusCleanupTimerDelay() {
+    return statusCleanupTimerDelay;
+  }
+
+  public void setStatusCleanupTimerDelay(long statusCleanupTimerDelay) {
+    this.statusCleanupTimerDelay = statusCleanupTimerDelay;
+  }
+
+  public void cancelQuery(String table, long uuid) {
+    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+      if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
+        status.cancelQuery();
+      }
+    }
+  }
+
+  public List<BlurQueryStatus> currentQueries(String table) {
+    List<BlurQueryStatus> result = new ArrayList<BlurQueryStatus>();
+    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+      if (status.getTable().equals(table)) {
+        result.add(status.getQueryStatus());
+      }
+    }
+    return result;
+  }
 }

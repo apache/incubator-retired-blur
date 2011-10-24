@@ -37,140 +37,134 @@ import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurClientEmbedded extends BlurClient {
-    
-    private Map<String,Client> nodes = new HashMap<String,Client>();
+
+  private Map<String, Client> nodes = new HashMap<String, Client>();
+
+  @Override
+  public <T> T execute(String node, BlurCommand<T> command) throws Exception {
+    Client client = nodes.get(node);
+    return command.call(client);
+  }
+
+  public Map<String, Client> getNodes() {
+    return nodes;
+  }
+
+  public BlurClientEmbedded setNodes(Map<String, Client> nodes) {
+    this.nodes = nodes;
+    return this;
+  }
+
+  public BlurClientEmbedded putNode(String node, Client client) {
+    nodes.put(node, client);
+    return this;
+  }
+
+  public BlurClientEmbedded putNode(String node, Iface face) {
+    return putNode(node, new EmbeddedClient(face));
+  }
+
+  public static class EmbeddedClient extends Client {
+
+    private Iface face;
+
+    public EmbeddedClient(Iface face) {
+      super(null);
+      this.face = face;
+    }
 
     @Override
-    public <T> T execute(String node, BlurCommand<T> command) throws Exception {
-        Client client = nodes.get(node);
-        return command.call(client);
+    public void cancelQuery(String table, long uuid) throws BlurException, TException {
+      face.cancelQuery(table, uuid);
     }
 
-    public Map<String, Client> getNodes() {
-        return nodes;
+    @Override
+    public List<String> controllerServerList() throws BlurException, TException {
+      return face.controllerServerList();
     }
 
-    public BlurClientEmbedded setNodes(Map<String, Client> nodes) {
-        this.nodes = nodes;
-        return this;
+    @Override
+    public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
+      return face.currentQueries(table);
     }
-    
-    public BlurClientEmbedded putNode(String node, Client client) {
-        nodes.put(node, client);
-        return this;
+
+    @Override
+    public TableDescriptor describe(String table) throws BlurException, TException {
+      return face.describe(table);
     }
-    
-    public BlurClientEmbedded putNode(String node, Iface face) {
-        return putNode(node, new EmbeddedClient(face));
+
+    @Override
+    public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
+      return face.fetchRow(table, selector);
     }
-    
-    public static class EmbeddedClient extends Client {
 
-        private Iface face;
-
-        public EmbeddedClient(Iface face) {
-            super(null);
-            this.face = face;
-        }
-        
-        @Override
-        public void cancelQuery(String table, long uuid) throws BlurException, TException {
-            face.cancelQuery(table, uuid);
-        }
-
-        @Override
-        public List<String> controllerServerList() throws BlurException, TException {
-            return face.controllerServerList();
-        }
-
-        @Override
-        public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
-            return face.currentQueries(table);
-        }
-
-        @Override
-        public TableDescriptor describe(String table) throws BlurException, TException {
-            return face.describe(table);
-        }
-
-        @Override
-        public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
-            return face.fetchRow(table, selector);
-        }
-
-        @Override
-        public long recordFrequency(String table, String columnFamily, String columnName, String value)
-                throws BlurException, TException {
-            return face.recordFrequency(table, columnFamily, columnName, value);
-        }
-
-        @Override
-        public Schema schema(String table) throws BlurException, TException {
-            return face.schema(table);
-        }
-
-        @Override
-        public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
-            return face.query(table, blurQuery);
-        }
-
-        @Override
-        public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-            return face.shardServerLayout(table);
-        }
-
-        @Override
-        public List<String> shardServerList(String cluster) throws BlurException, TException {
-            return face.shardServerList(cluster);
-        }
-
-        @Override
-        public List<String> tableList() throws BlurException, TException {
-            return face.tableList();
-        }
-
-        @Override
-        public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size)
-                throws BlurException, TException {
-            return face.terms(table, columnFamily, columnName, startWith, size);
-        }
-
-        @Override
-        public void mutate(RowMutation mutation) throws BlurException, TException {
-            face.mutate(mutation);
-        }
-
-        public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
-            face.createTable(tableDescriptor);
-        }
-
-        public void disableTable(String table) throws BlurException, TException {
-            face.disableTable(table);
-        }
-
-        public void enableTable(String table) throws BlurException, TException {
-            face.enableTable(table);
-        }
-
-        public TableStats getTableStats(String table) throws BlurException, TException {
-            return face.getTableStats(table);
-        }
-
-        public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
-            face.removeTable(table, deleteIndexFiles);
-        }
-
-
-
-        public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
-            face.mutateBatch(mutations);
-        }
-
-
-
-        public List<String> shardClusterList() throws BlurException, TException {
-            return face.shardClusterList();
-        }
-
+    @Override
+    public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
+      return face.recordFrequency(table, columnFamily, columnName, value);
     }
+
+    @Override
+    public Schema schema(String table) throws BlurException, TException {
+      return face.schema(table);
+    }
+
+    @Override
+    public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
+      return face.query(table, blurQuery);
+    }
+
+    @Override
+    public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+      return face.shardServerLayout(table);
+    }
+
+    @Override
+    public List<String> shardServerList(String cluster) throws BlurException, TException {
+      return face.shardServerList(cluster);
+    }
+
+    @Override
+    public List<String> tableList() throws BlurException, TException {
+      return face.tableList();
+    }
+
+    @Override
+    public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
+      return face.terms(table, columnFamily, columnName, startWith, size);
+    }
+
+    @Override
+    public void mutate(RowMutation mutation) throws BlurException, TException {
+      face.mutate(mutation);
+    }
+
+    public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
+      face.createTable(tableDescriptor);
+    }
+
+    public void disableTable(String table) throws BlurException, TException {
+      face.disableTable(table);
+    }
+
+    public void enableTable(String table) throws BlurException, TException {
+      face.enableTable(table);
+    }
+
+    public TableStats getTableStats(String table) throws BlurException, TException {
+      return face.getTableStats(table);
+    }
+
+    public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
+      face.removeTable(table, deleteIndexFiles);
+    }
+
+    public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+      face.mutateBatch(mutations);
+    }
+
+    public List<String> shardClusterList() throws BlurException, TException {
+      return face.shardClusterList();
+    }
+
+  }
 }

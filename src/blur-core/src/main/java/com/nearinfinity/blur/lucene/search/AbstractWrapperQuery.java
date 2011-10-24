@@ -28,55 +28,55 @@ import org.apache.lucene.search.Weight;
 
 @SuppressWarnings("deprecation")
 public abstract class AbstractWrapperQuery extends Query {
-	private static final long serialVersionUID = -4512813621542220044L;
-	protected Query query;
-	protected boolean rewritten;
-	
-	public AbstractWrapperQuery(Query query) {
-		this(query,false);
-	}
-	
-	public AbstractWrapperQuery(Query query, boolean rewritten) {
-		this.query = query;
-		this.rewritten = rewritten;
-	}
+  private static final long serialVersionUID = -4512813621542220044L;
+  protected Query query;
+  protected boolean rewritten;
 
-	public abstract Object clone();
+  public AbstractWrapperQuery(Query query) {
+    this(query, false);
+  }
 
-	public Query combine(Query[] queries) {
-		return query.combine(queries);
-	}
+  public AbstractWrapperQuery(Query query, boolean rewritten) {
+    this.query = query;
+    this.rewritten = rewritten;
+  }
 
-    public abstract Weight createWeight(Searcher searcher) throws IOException;
+  public abstract Object clone();
 
-	public boolean equals(Object obj) {
-		return query.equals(obj);
-	}
+  public Query combine(Query[] queries) {
+    return query.combine(queries);
+  }
 
-	public void extractTerms(Set<Term> terms) {
-		query.extractTerms(terms);
-	}
+  public abstract Weight createWeight(Searcher searcher) throws IOException;
 
-	public float getBoost() {
-		return query.getBoost();
-	}
+  public boolean equals(Object obj) {
+    return query.equals(obj);
+  }
 
-	public Similarity getSimilarity(Searcher searcher) {
-		return query.getSimilarity(searcher);
-	}
+  public void extractTerms(Set<Term> terms) {
+    query.extractTerms(terms);
+  }
 
-	public int hashCode() {
-		return query.hashCode();
-	}
+  public float getBoost() {
+    return query.getBoost();
+  }
 
-	public abstract Query rewrite(IndexReader reader) throws IOException;
+  public Similarity getSimilarity(Searcher searcher) {
+    return query.getSimilarity(searcher);
+  }
 
-	public void setBoost(float b) {
-		query.setBoost(b);
-	}
+  public int hashCode() {
+    return query.hashCode();
+  }
 
-	public abstract String toString();
+  public abstract Query rewrite(IndexReader reader) throws IOException;
 
-	public abstract String toString(String field);
+  public void setBoost(float b) {
+    query.setBoost(b);
+  }
+
+  public abstract String toString();
+
+  public abstract String toString(String field);
 
 }

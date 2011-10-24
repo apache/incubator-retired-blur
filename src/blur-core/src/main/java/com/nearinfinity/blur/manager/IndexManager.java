@@ -113,7 +113,7 @@ public class IndexManager {
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
   private String _blurFilterCacheClass;
-  
+
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
   }
@@ -122,7 +122,7 @@ public class IndexManager {
     LOG.info("init - start");
     _executor = Executors.newThreadPool("index-manager", _threadCount);
     _statusManager.init();
-    
+
     if (_blurFilterCacheClass != null) {
       try {
         Class<?> clazz = Class.forName(_blurFilterCacheClass);
@@ -131,7 +131,7 @@ public class IndexManager {
         throw new RuntimeException(e);
       }
     }
-    
+
     LOG.info("init - complete");
   }
 
@@ -367,18 +367,18 @@ public class IndexManager {
     }
     Filter filter;
     if (superQueryOn) {
-      filter = _filterCache.fetchPostFilter(table,filterStr);
+      filter = _filterCache.fetchPostFilter(table, filterStr);
     } else {
-      filter = _filterCache.fetchPreFilter(table,filterStr);
+      filter = _filterCache.fetchPreFilter(table, filterStr);
     }
     if (filter != null) {
       return filter;
     }
     filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, ScoreType.CONSTANT).parse(filterStr));
     if (superQueryOn) {
-      filter = _filterCache.storePostFilter(table,filterStr,filter);
+      filter = _filterCache.storePostFilter(table, filterStr, filter);
     } else {
-      filter = _filterCache.storePreFilter(table,filterStr,filter);
+      filter = _filterCache.storePreFilter(table, filterStr, filter);
     }
     return filter;
   }
@@ -772,7 +772,7 @@ public class IndexManager {
   public void setThreadCount(int threadCount) {
     this._threadCount = threadCount;
   }
-  
+
   public void setBlurFilterCacheClass(String blurFilterCacheClass) {
     _blurFilterCacheClass = blurFilterCacheClass;
   }

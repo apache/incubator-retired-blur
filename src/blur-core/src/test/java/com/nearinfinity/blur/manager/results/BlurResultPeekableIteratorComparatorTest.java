@@ -28,27 +28,27 @@ import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurResultPeekableIteratorComparatorTest {
-    
-    @Test
-    public void testResultPeekableIteratorComparator() {
-        List<PeekableIterator<BlurResult>> results = new ArrayList<PeekableIterator<BlurResult>>();
-        results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("5",5))).iterator()));
-        results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
-        results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
-        results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("2",2))).iterator()));
-        results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("1",1))).iterator()));
-        results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("9",1))).iterator()));
-        results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
-        
-        Collections.sort(results,BlurConstants.HITS_PEEKABLE_ITERATOR_COMPARATOR);
-        
-        for (PeekableIterator<BlurResult> iterator : results) {
-            System.out.println(iterator.peek());
-        }
-    }
 
-    private BlurResult newResult(String id, double score) {
-        return new BlurResult(id, score, null);
+  @Test
+  public void testResultPeekableIteratorComparator() {
+    List<PeekableIterator<BlurResult>> results = new ArrayList<PeekableIterator<BlurResult>>();
+    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("5", 5))).iterator()));
+    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
+    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
+    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("2", 2))).iterator()));
+    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("1", 1))).iterator()));
+    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>(Arrays.asList(newResult("9", 1))).iterator()));
+    results.add(new PeekableIterator<BlurResult>(new ArrayList<BlurResult>().iterator()));
+
+    Collections.sort(results, BlurConstants.HITS_PEEKABLE_ITERATOR_COMPARATOR);
+
+    for (PeekableIterator<BlurResult> iterator : results) {
+      System.out.println(iterator.peek());
     }
+  }
+
+  private BlurResult newResult(String id, double score) {
+    return new BlurResult(id, score, null);
+  }
 
 }

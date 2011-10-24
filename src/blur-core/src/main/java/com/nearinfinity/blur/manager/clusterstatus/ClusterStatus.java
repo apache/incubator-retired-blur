@@ -23,24 +23,28 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public abstract class ClusterStatus {
 
-    public abstract List<String> getOnlineShardServers(String cluster);
+  public abstract List<String> getOnlineShardServers(String cluster);
 
-    public abstract List<String> getControllerServerList();
+  public abstract List<String> getControllerServerList();
 
-    public abstract List<String> getShardServerList(String cluster);
-    
-    public abstract List<String> getClusterList();
+  public abstract List<String> getShardServerList(String cluster);
 
-    public abstract TableDescriptor getTableDescriptor(String table);
+  public abstract List<String> getClusterList();
 
-    public abstract List<String> getTableList();
+  public abstract TableDescriptor getTableDescriptor(String table);
 
-    public abstract String getCluster(String table);
+  public abstract List<String> getTableList();
 
-    public List<String> getOfflineShardServers(String cluster) {
-        List<String> shardServerList = new ArrayList<String>(getShardServerList(cluster));
-        shardServerList.removeAll(getOnlineShardServers(cluster));
-        return shardServerList;
-    }
+  public abstract String getCluster(String table);
+
+  public abstract boolean isEnabled(String table);
+
+  public abstract boolean exists(String table);
+
+  public List<String> getOfflineShardServers(String cluster) {
+    List<String> shardServerList = new ArrayList<String>(getShardServerList(cluster));
+    shardServerList.removeAll(getOnlineShardServers(cluster));
+    return shardServerList;
+  }
 
 }

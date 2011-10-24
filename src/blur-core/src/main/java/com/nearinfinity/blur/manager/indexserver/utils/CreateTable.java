@@ -27,100 +27,116 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.manager.indexserver.DistributedManager;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class CreateTable {
-    
-    private static Log LOG = LogFactory.getLog(CreateTable.class);
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-        String zkConnectionStr = args[0];
-        String table = args[1];
-        BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
-        String uri = args[3];
-        String shardCount = args[4];
-        CompressionCodec codec = getInstance(args[5]);
-        String blockSize = args[6];
+  private static Log LOG = LogFactory.getLog(CreateTable.class);
 
-        ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-        ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
-        dm.setZooKeeper(zooKeeper);
-        createTable(dm,table,analyzer,uri,Integer.parseInt(shardCount),codec,Integer.parseInt(blockSize));
-    }
-    
-    public static CompressionCodec getInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        Class<?> clazz = Class.forName(className);
-        return configure((CompressionCodec) clazz.newInstance());
-    }
+  public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, NumberFormatException, KeeperException,
+      InterruptedException {
+    String zkConnectionStr = args[0];
+    String table = args[1];
+    BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
+    String uri = args[3];
+    String shardCount = args[4];
+    CompressionCodec codec = getInstance(args[5]);
+    String blockSize = args[6];
 
-    private static CompressionCodec configure(CompressionCodec codec) {
-        if (codec instanceof Configurable) {
-            Configurable configurable = (Configurable) codec;
-            configurable.setConf(new Configuration());
-        }
-        return codec;
-    }
+    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
+    createTable(zooKeeper, table, analyzer, uri, Integer.parseInt(shardCount), codec, Integer.parseInt(blockSize));
+  }
 
-    public static void createTable(DistributedManager dm, String table, BlurAnalyzer analyzer, String uri, int shardCount, CompressionCodec compressionCodec, int compressionBlockSize) throws IOException {
-        if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
-            throw new IOException("Table [" + table + "] already exists.");
-        }
-        setupFileSystem(uri,shardCount);
-        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table);
-        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
-        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
-        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
-        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
-        dm.saveData(analyzer.toJSON().getBytes(),             ZookeeperPathConstants.getBlurTablesPath(), table);
-        dm.saveData(uri.getBytes(),                           ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesUri());
-        dm.saveData(Integer.toString(shardCount).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesShardCount());
-        dm.saveData(compressionCodec.getClass().getName().getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
-        dm.saveData(Integer.toString(compressionBlockSize).getBytes() , ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
-        dm.createPath(ZookeeperPathConstants.getBlurLockPath(table));
-    }
+  public static CompressionCodec getInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    Class<?> clazz = Class.forName(className);
+    return configure((CompressionCodec) clazz.newInstance());
+  }
 
-    private static void setupFileSystem(String uri, int shardCount) throws IOException {
-        Path tablePath = new Path(uri);
-        FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
-        if (createPath(fileSystem,tablePath)) {
-            LOG.info("Table uri existed.");
-            validateShardCount(shardCount,fileSystem,tablePath);
-        }
-        for (int i = 0; i < shardCount; i++) {
-            String shardName = BlurShardName.getShardName(SHARD_PREFIX, i);
-            Path shardPath = new Path(tablePath, shardName);
-            createPath(fileSystem, shardPath);
-        }
+  private static CompressionCodec configure(CompressionCodec codec) {
+    if (codec instanceof Configurable) {
+      Configurable configurable = (Configurable) codec;
+      configurable.setConf(new Configuration());
     }
+    return codec;
+  }
 
-    private static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {
-        FileStatus[] listStatus = fileSystem.listStatus(tablePath);
-        if (listStatus.length != shardCount) {
-            LOG.error("Number of directories in table path [" + tablePath + 
-            		"] does not match definition of [" + shardCount + 
-            		"] shard count.");
-            throw new RuntimeException("Number of directories in table path [" + tablePath + 
-                    "] does not match definition of [" + shardCount + 
-                    "] shard count.");
-        }
+  public static void createTable(ZooKeeper zookeeper, String table, BlurAnalyzer analyzer, String uri, int shardCount, CompressionCodec compressionCodec, int compressionBlockSize)
+      throws IOException, KeeperException, InterruptedException {
+    String blurTablesPath = ZookeeperPathConstants.getBlurTablesPath();
+    if (zookeeper.exists(blurTablesPath + "/" + table, false) != null) {
+      throw new IOException("Table [" + table + "] already exists.");
     }
+    setupFileSystem(uri, shardCount);
+    createPath(zookeeper, analyzer.toJSON().getBytes(), blurTablesPath, table);
+    createPath(zookeeper, uri.getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesUri());
+    createPath(zookeeper, Integer.toString(shardCount).getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesShardCount());
+    createPath(zookeeper, compressionCodec.getClass().getName().getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
+    createPath(zookeeper, Integer.toString(compressionBlockSize).getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
+    createPath(zookeeper, null, ZookeeperPathConstants.getBlurLockPath(table));
+  }
 
-    private static boolean createPath(FileSystem fileSystem, Path path) throws IOException {
-        if (!fileSystem.exists(path)) {
-            LOG.info("Path [{0}] does not exist, creating.",path);
-            fileSystem.mkdirs(path);
-            return false;
-        }
-        return true;
+  private static void createPath(ZooKeeper zookeeper, byte[] data, String... pathes) throws KeeperException, InterruptedException {
+    String path = getPath(pathes);
+    zookeeper.create(path, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+  }
+
+  private static String getPath(String... pathes) {
+    StringBuilder builder = new StringBuilder();
+    for (String p : pathes) {
+      builder.append('/').append(removeLeadingAndTrailingSlashes(p));
     }
+    return builder.toString();
+  }
+
+  private static Object removeLeadingAndTrailingSlashes(String p) {
+    if (p.startsWith("/")) {
+      p = p.substring(1);
+    }
+    if (p.endsWith("/")) {
+      return p.substring(0, p.length() - 1);
+    }
+    return p;
+  }
+
+  private static void setupFileSystem(String uri, int shardCount) throws IOException {
+    Path tablePath = new Path(uri);
+    FileSystem fileSystem = FileSystem.get(tablePath.toUri(), new Configuration());
+    if (createPath(fileSystem, tablePath)) {
+      LOG.info("Table uri existed.");
+      validateShardCount(shardCount, fileSystem, tablePath);
+    }
+    for (int i = 0; i < shardCount; i++) {
+      String shardName = BlurShardName.getShardName(SHARD_PREFIX, i);
+      Path shardPath = new Path(tablePath, shardName);
+      createPath(fileSystem, shardPath);
+    }
+  }
+
+  private static void validateShardCount(int shardCount, FileSystem fileSystem, Path tablePath) throws IOException {
+    FileStatus[] listStatus = fileSystem.listStatus(tablePath);
+    if (listStatus.length != shardCount) {
+      LOG.error("Number of directories in table path [" + tablePath + "] does not match definition of [" + shardCount + "] shard count.");
+      throw new RuntimeException("Number of directories in table path [" + tablePath + "] does not match definition of [" + shardCount + "] shard count.");
+    }
+  }
+
+  private static boolean createPath(FileSystem fileSystem, Path path) throws IOException {
+    if (!fileSystem.exists(path)) {
+      LOG.info("Path [{0}] does not exist, creating.", path);
+      fileSystem.mkdirs(path);
+      return false;
+    }
+    return true;
+  }
 
 }

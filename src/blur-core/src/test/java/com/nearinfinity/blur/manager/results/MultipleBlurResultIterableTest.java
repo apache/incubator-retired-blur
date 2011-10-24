@@ -28,27 +28,27 @@ import com.nearinfinity.blur.manager.results.BlurResultIterableSimple;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class MultipleBlurResultIterableTest {
-    
-    @Test
-    public void testMultipleHitsIterable() {
-        BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
-        iterable.addBlurResultIterable(newBlurResultIterable(0,0.1,3,2,9,10,2));
-        iterable.addBlurResultIterable(newBlurResultIterable(7,2,9,1,34,53,12));
-        iterable.addBlurResultIterable(newBlurResultIterable(4,3));
-        iterable.addBlurResultIterable(newBlurResultIterable(7,2,34,132));
-        iterable.addBlurResultIterable(newBlurResultIterable());
-        
-        for (BlurResult hit : iterable) {
-            System.out.println(hit);
-        }
-    }
 
-    private BlurResultIterable newBlurResultIterable(double... ds) {
-        List<BlurResult> results = new ArrayList<BlurResult>();
-        for (double d : ds) {
-            results.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d),d,null));
-        }
-        return new BlurResultIterableSimple(UUID.randomUUID().toString(), results);
+  @Test
+  public void testMultipleHitsIterable() {
+    BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
+    iterable.addBlurResultIterable(newBlurResultIterable(0, 0.1, 3, 2, 9, 10, 2));
+    iterable.addBlurResultIterable(newBlurResultIterable(7, 2, 9, 1, 34, 53, 12));
+    iterable.addBlurResultIterable(newBlurResultIterable(4, 3));
+    iterable.addBlurResultIterable(newBlurResultIterable(7, 2, 34, 132));
+    iterable.addBlurResultIterable(newBlurResultIterable());
+
+    for (BlurResult hit : iterable) {
+      System.out.println(hit);
     }
+  }
+
+  private BlurResultIterable newBlurResultIterable(double... ds) {
+    List<BlurResult> results = new ArrayList<BlurResult>();
+    for (double d : ds) {
+      results.add(new BlurResult(UUID.randomUUID().toString() + "-" + Double.toString(d), d, null));
+    }
+    return new BlurResultIterableSimple(UUID.randomUUID().toString(), results);
+  }
 
 }

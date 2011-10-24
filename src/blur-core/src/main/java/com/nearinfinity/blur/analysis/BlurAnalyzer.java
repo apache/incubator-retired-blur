@@ -59,236 +59,235 @@ import com.nearinfinity.blur.thrift.generated.ColumnFamilyDefinition;
 
 public class BlurAnalyzer extends Analyzer {
 
-    private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+  private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
 
-    public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer());
-    
-    private static Map<String, Class<? extends Analyzer>> aliases = new HashMap<String, Class<? extends Analyzer>>();
+  public static final BlurAnalyzer BLANK_ANALYZER = new BlurAnalyzer(new KeywordAnalyzer());
 
-    private Map<String, Store> _storeMap = new HashMap<String, Store>();
-    private Map<String, Set<String>> _subIndexNameLookups = new HashMap<String, Set<String>>();
-    private Set<String> _fullTextFields = new HashSet<String>();
-    private AnalyzerDefinition _analyzerDefinition;
-    private PerFieldAnalyzerWrapper _wrapper;
-    private Analyzer _fullTextAnalyzer = new StandardAnalyzer(Version.LUCENE_34);
+  private static Map<String, Class<? extends Analyzer>> aliases = new HashMap<String, Class<? extends Analyzer>>();
 
-    public void addSubField(String name) {
-        int lastIndexOf = name.lastIndexOf('.');
-        String mainFieldName = name.substring(0, lastIndexOf);
-        Set<String> set = _subIndexNameLookups.get(mainFieldName);
-        if (set == null) {
-            set = new TreeSet<String>();
-            _subIndexNameLookups.put(mainFieldName, set);
-        }
-        set.add(name);
+  private Map<String, Store> _storeMap = new HashMap<String, Store>();
+  private Map<String, Set<String>> _subIndexNameLookups = new HashMap<String, Set<String>>();
+  private Set<String> _fullTextFields = new HashSet<String>();
+  private AnalyzerDefinition _analyzerDefinition;
+  private PerFieldAnalyzerWrapper _wrapper;
+  private Analyzer _fullTextAnalyzer = new StandardAnalyzer(Version.LUCENE_34);
+
+  public void addSubField(String name) {
+    int lastIndexOf = name.lastIndexOf('.');
+    String mainFieldName = name.substring(0, lastIndexOf);
+    Set<String> set = _subIndexNameLookups.get(mainFieldName);
+    if (set == null) {
+      set = new TreeSet<String>();
+      _subIndexNameLookups.put(mainFieldName, set);
     }
+    set.add(name);
+  }
 
-    public Set<String> getSubIndexNames(String indexName) {
-        return _subIndexNameLookups.get(indexName);
-    }
+  public Set<String> getSubIndexNames(String indexName) {
+    return _subIndexNameLookups.get(indexName);
+  }
 
-    public BlurAnalyzer(Analyzer analyzer) {
-        _analyzerDefinition = new AnalyzerDefinition();
-        _wrapper = new PerFieldAnalyzerWrapper(analyzer);
-    }
+  public BlurAnalyzer(Analyzer analyzer) {
+    _analyzerDefinition = new AnalyzerDefinition();
+    _wrapper = new PerFieldAnalyzerWrapper(analyzer);
+  }
 
-    public BlurAnalyzer(AnalyzerDefinition analyzerDefinition) {
-        _analyzerDefinition = analyzerDefinition;
-        ColumnDefinition defaultDefinition = analyzerDefinition.getDefaultDefinition();
-        String fullTextAnalyzerClassName = analyzerDefinition.fullTextAnalyzerClassName;
-        if (fullTextAnalyzerClassName != null) {
-            _fullTextAnalyzer = getAnalyzerByClassName(fullTextAnalyzerClassName, aliases);
-        }
-        if (defaultDefinition == null) {
-            defaultDefinition = new ColumnDefinition(STANDARD, true, null);
-            analyzerDefinition.setDefaultDefinition(defaultDefinition);
-        }
-        Analyzer defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases);
-        _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer);
-        KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
-        _wrapper.addAnalyzer(ROW_ID, keywordAnalyzer);
-        _wrapper.addAnalyzer(RECORD_ID, keywordAnalyzer);
-        _wrapper.addAnalyzer(PRIME_DOC, keywordAnalyzer);
-        _wrapper.addAnalyzer(SUPER, _fullTextAnalyzer);
-        load();
+  public BlurAnalyzer(AnalyzerDefinition analyzerDefinition) {
+    _analyzerDefinition = analyzerDefinition;
+    ColumnDefinition defaultDefinition = analyzerDefinition.getDefaultDefinition();
+    String fullTextAnalyzerClassName = analyzerDefinition.fullTextAnalyzerClassName;
+    if (fullTextAnalyzerClassName != null) {
+      _fullTextAnalyzer = getAnalyzerByClassName(fullTextAnalyzerClassName, aliases);
     }
+    if (defaultDefinition == null) {
+      defaultDefinition = new ColumnDefinition(STANDARD, true, null);
+      analyzerDefinition.setDefaultDefinition(defaultDefinition);
+    }
+    Analyzer defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases);
+    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer);
+    KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
+    _wrapper.addAnalyzer(ROW_ID, keywordAnalyzer);
+    _wrapper.addAnalyzer(RECORD_ID, keywordAnalyzer);
+    _wrapper.addAnalyzer(PRIME_DOC, keywordAnalyzer);
+    _wrapper.addAnalyzer(SUPER, _fullTextAnalyzer);
+    load();
+  }
 
-    private void load() {
-        Map<String, ColumnFamilyDefinition> familyDefinitions = _analyzerDefinition.columnFamilyDefinitions;
-        if (familyDefinitions != null) {
-            for (String family : familyDefinitions.keySet()) {
-                ColumnFamilyDefinition familyDefinition = familyDefinitions.get(family);
-                load(family, familyDefinition);
-            }
-        }
+  private void load() {
+    Map<String, ColumnFamilyDefinition> familyDefinitions = _analyzerDefinition.columnFamilyDefinitions;
+    if (familyDefinitions != null) {
+      for (String family : familyDefinitions.keySet()) {
+        ColumnFamilyDefinition familyDefinition = familyDefinitions.get(family);
+        load(family, familyDefinition);
+      }
     }
+  }
 
-    private void load(String family, ColumnFamilyDefinition familyDefinition) {
-        Map<String, ColumnDefinition> columnDefinitions = familyDefinition.columnDefinitions;
-        for (String column : columnDefinitions.keySet()) {
-            ColumnDefinition columnDefinition = columnDefinitions.get(column);
-            load(family, familyDefinition, column, columnDefinition);
-        }
+  private void load(String family, ColumnFamilyDefinition familyDefinition) {
+    Map<String, ColumnDefinition> columnDefinitions = familyDefinition.columnDefinitions;
+    for (String column : columnDefinitions.keySet()) {
+      ColumnDefinition columnDefinition = columnDefinitions.get(column);
+      load(family, familyDefinition, column, columnDefinition);
     }
+  }
 
-    private void load(String family, ColumnFamilyDefinition familyDefinition, String column,
-            ColumnDefinition columnDefinition) {
-        Map<String, AlternateColumnDefinition> alternateColumnDefinitions = columnDefinition.alternateColumnDefinitions;
-        if (alternateColumnDefinitions != null) {
-            for (String subColumn : alternateColumnDefinitions.keySet()) {
-                AlternateColumnDefinition alternateColumnDefinition = alternateColumnDefinitions.get(subColumn);
-                load(family, familyDefinition, column, columnDefinition, subColumn, alternateColumnDefinition);
-            }
-        }
-        String fieldName = family + "." + column;
-        Analyzer analyzer = getAnalyzerByClassName(columnDefinition.getAnalyzerClassName(), aliases);
-        _wrapper.addAnalyzer(fieldName, analyzer);
-        if (columnDefinition.isFullTextIndex()) {
-            _fullTextFields.add(fieldName);
-        }
+  private void load(String family, ColumnFamilyDefinition familyDefinition, String column, ColumnDefinition columnDefinition) {
+    Map<String, AlternateColumnDefinition> alternateColumnDefinitions = columnDefinition.alternateColumnDefinitions;
+    if (alternateColumnDefinitions != null) {
+      for (String subColumn : alternateColumnDefinitions.keySet()) {
+        AlternateColumnDefinition alternateColumnDefinition = alternateColumnDefinitions.get(subColumn);
+        load(family, familyDefinition, column, columnDefinition, subColumn, alternateColumnDefinition);
+      }
     }
+    String fieldName = family + "." + column;
+    Analyzer analyzer = getAnalyzerByClassName(columnDefinition.getAnalyzerClassName(), aliases);
+    _wrapper.addAnalyzer(fieldName, analyzer);
+    if (columnDefinition.isFullTextIndex()) {
+      _fullTextFields.add(fieldName);
+    }
+  }
 
-    private void load(String family, ColumnFamilyDefinition familyDefinition, String column,
-            ColumnDefinition columnDefinition, String subColumn, AlternateColumnDefinition alternateColumnDefinition) {
-        String fieldName = family + "." + column + "." + subColumn;
-        Analyzer analyzer = getAnalyzerByClassName(alternateColumnDefinition.getAnalyzerClassName(), aliases);
-        _wrapper.addAnalyzer(fieldName, analyzer);
-        putStore(fieldName, Store.NO);
-        addSubField(fieldName);
-    }
+  private void load(String family, ColumnFamilyDefinition familyDefinition, String column, ColumnDefinition columnDefinition, String subColumn,
+      AlternateColumnDefinition alternateColumnDefinition) {
+    String fieldName = family + "." + column + "." + subColumn;
+    Analyzer analyzer = getAnalyzerByClassName(alternateColumnDefinition.getAnalyzerClassName(), aliases);
+    _wrapper.addAnalyzer(fieldName, analyzer);
+    putStore(fieldName, Store.NO);
+    addSubField(fieldName);
+  }
 
-    public void putStore(String name, Store store) {
-        _storeMap.put(name, store);
-    }
+  public void putStore(String name, Store store) {
+    _storeMap.put(name, store);
+  }
 
-    @SuppressWarnings("unchecked")
-    private static Analyzer getAnalyzerByClassName(String className, Map<String, Class<? extends Analyzer>> aliases) {
-        try {
-            Class<? extends Analyzer> clazz = aliases.get(className);
-            if (clazz == null) {
-                clazz = (Class<? extends Analyzer>) Class.forName(className);
-            }
-            try {
-                return (Analyzer) clazz.newInstance();
-            } catch (Exception e) {
-                Constructor<?> constructor = clazz.getConstructor(new Class[] { Version.class });
-                return (Analyzer) constructor.newInstance(Version.LUCENE_30);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+  @SuppressWarnings("unchecked")
+  private static Analyzer getAnalyzerByClassName(String className, Map<String, Class<? extends Analyzer>> aliases) {
+    try {
+      Class<? extends Analyzer> clazz = aliases.get(className);
+      if (clazz == null) {
+        clazz = (Class<? extends Analyzer>) Class.forName(className);
+      }
+      try {
+        return (Analyzer) clazz.newInstance();
+      } catch (Exception e) {
+        Constructor<?> constructor = clazz.getConstructor(new Class[] { Version.class });
+        return (Analyzer) constructor.newInstance(Version.LUCENE_30);
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+  }
 
-    public Store getStore(String indexName) {
-        Store store = _storeMap.get(indexName);
-        if (store == null) {
-            return Store.YES;
-        }
-        return store;
+  public Store getStore(String indexName) {
+    Store store = _storeMap.get(indexName);
+    if (store == null) {
+      return Store.YES;
     }
+    return store;
+  }
 
-    public Index getIndex(String indexName) {
-        return Index.ANALYZED_NO_NORMS;
-    }
+  public Index getIndex(String indexName) {
+    return Index.ANALYZED_NO_NORMS;
+  }
 
-    public String toJSON() {
-        TMemoryBuffer trans = new TMemoryBuffer(1024);
-        TJSONProtocol protocol = new TJSONProtocol(trans);
-        try {
-            _analyzerDefinition.write(protocol);
-        } catch (TException e) {
-            throw new RuntimeException(e);
-        }
-        trans.close();
-        return new String(trans.getArray());
+  public String toJSON() {
+    TMemoryBuffer trans = new TMemoryBuffer(1024);
+    TJSONProtocol protocol = new TJSONProtocol(trans);
+    try {
+      _analyzerDefinition.write(protocol);
+    } catch (TException e) {
+      throw new RuntimeException(e);
     }
+    trans.close();
+    return new String(trans.getArray());
+  }
 
-    public boolean isFullTextField(String fieldName) {
-        ColumnDefinition defaultDefinition = _analyzerDefinition.getDefaultDefinition();
-        if (defaultDefinition != null && defaultDefinition.fullTextIndex) {
-            return true;
-        }
-        return _fullTextFields.contains(fieldName);
+  public boolean isFullTextField(String fieldName) {
+    ColumnDefinition defaultDefinition = _analyzerDefinition.getDefaultDefinition();
+    if (defaultDefinition != null && defaultDefinition.fullTextIndex) {
+      return true;
     }
+    return _fullTextFields.contains(fieldName);
+  }
 
-    public AnalyzerDefinition getAnalyzerDefinition() {
-        return _analyzerDefinition;
-    }
+  public AnalyzerDefinition getAnalyzerDefinition() {
+    return _analyzerDefinition;
+  }
 
-    public void addAnalyzer(String fieldName, Analyzer analyzer) {
-        _wrapper.addAnalyzer(fieldName, analyzer);
-    }
+  public void addAnalyzer(String fieldName, Analyzer analyzer) {
+    _wrapper.addAnalyzer(fieldName, analyzer);
+  }
 
-    public void close() {
-        _wrapper.close();
-    }
+  public void close() {
+    _wrapper.close();
+  }
 
-    public int getOffsetGap(Fieldable field) {
-        return _wrapper.getOffsetGap(field);
-    }
+  public int getOffsetGap(Fieldable field) {
+    return _wrapper.getOffsetGap(field);
+  }
 
-    public int getPositionIncrementGap(String fieldName) {
-        return _wrapper.getPositionIncrementGap(fieldName);
-    }
+  public int getPositionIncrementGap(String fieldName) {
+    return _wrapper.getPositionIncrementGap(fieldName);
+  }
 
-    public TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
-        return _wrapper.reusableTokenStream(fieldName, reader);
-    }
+  public TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
+    return _wrapper.reusableTokenStream(fieldName, reader);
+  }
 
-    public TokenStream tokenStream(String fieldName, Reader reader) {
-        return _wrapper.tokenStream(fieldName, reader);
-    }
+  public TokenStream tokenStream(String fieldName, Reader reader) {
+    return _wrapper.tokenStream(fieldName, reader);
+  }
 
-    public static BlurAnalyzer create(File file) throws IOException {
-        FileInputStream inputStream = new FileInputStream(file);
-        try {
-            return create(inputStream);
-        } finally {
-            inputStream.close();
-        }
+  public static BlurAnalyzer create(File file) throws IOException {
+    FileInputStream inputStream = new FileInputStream(file);
+    try {
+      return create(inputStream);
+    } finally {
+      inputStream.close();
     }
+  }
 
-    public static BlurAnalyzer create(InputStream inputStream) throws IOException {
-        TMemoryInputTransport trans = new TMemoryInputTransport(getBytes(inputStream));
-        TJSONProtocol protocol = new TJSONProtocol(trans);
-        AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition();
-        try {
-            analyzerDefinition.read(protocol);
-        } catch (TException e) {
-            throw new RuntimeException(e);
-        }
-        trans.close();
-        return new BlurAnalyzer(analyzerDefinition);
+  public static BlurAnalyzer create(InputStream inputStream) throws IOException {
+    TMemoryInputTransport trans = new TMemoryInputTransport(getBytes(inputStream));
+    TJSONProtocol protocol = new TJSONProtocol(trans);
+    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition();
+    try {
+      analyzerDefinition.read(protocol);
+    } catch (TException e) {
+      throw new RuntimeException(e);
     }
+    trans.close();
+    return new BlurAnalyzer(analyzerDefinition);
+  }
 
-    private static byte[] getBytes(InputStream inputStream) throws IOException {
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int num;
-        while ((num = inputStream.read(buffer)) != -1) {
-            outputStream.write(buffer,0,num);
-        }
-        inputStream.close();
-        outputStream.close();
-        return outputStream.toByteArray();
+  private static byte[] getBytes(InputStream inputStream) throws IOException {
+    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    byte[] buffer = new byte[1024];
+    int num;
+    while ((num = inputStream.read(buffer)) != -1) {
+      outputStream.write(buffer, 0, num);
     }
+    inputStream.close();
+    outputStream.close();
+    return outputStream.toByteArray();
+  }
 
-    public static BlurAnalyzer create(String jsonStr) throws IOException {
-        InputStream inputStream = new ByteArrayInputStream(jsonStr.getBytes());
-        try {
-            return create(inputStream);
-        } finally {
-            inputStream.close();
-        }
+  public static BlurAnalyzer create(String jsonStr) throws IOException {
+    InputStream inputStream = new ByteArrayInputStream(jsonStr.getBytes());
+    try {
+      return create(inputStream);
+    } finally {
+      inputStream.close();
     }
+  }
 
-    public static BlurAnalyzer create(Path path) throws IOException {
-        FileSystem fileSystem = FileSystem.get(path.toUri(), new Configuration());
-        FSDataInputStream inputStream = fileSystem.open(path);
-        try {
-            return create(inputStream);
-        } finally {
-            inputStream.close();
-        }
+  public static BlurAnalyzer create(Path path) throws IOException {
+    FileSystem fileSystem = FileSystem.get(path.toUri(), new Configuration());
+    FSDataInputStream inputStream = fileSystem.open(path);
+    try {
+      return create(inputStream);
+    } finally {
+      inputStream.close();
     }
+  }
 }

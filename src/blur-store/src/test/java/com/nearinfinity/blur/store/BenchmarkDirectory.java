@@ -53,7 +53,7 @@ public class BenchmarkDirectory {
       }
     });
     
-    ZookeeperLockFactory factory = new ZookeeperLockFactory(zooKeeper, "localhost:40020", "/test-zk-lock");
+    ZookeeperLockFactory factory = new ZookeeperLockFactory(zooKeeper, "/test-zk-lock", "shard-0", "localhost:40020");
 
     Path p = new Path("hdfs://localhost:9000/bench");
     FileSystem fs = FileSystem.get(p.toUri(), new Configuration());

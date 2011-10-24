@@ -22,13 +22,13 @@ import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class BlurResultComparator implements Comparator<BlurResult> {
 
-    @Override
-    public int compare(BlurResult o1, BlurResult o2) {
-        int compare = Double.compare(o2.score, o1.score);
-        if (compare == 0) {
-            return o2.locationId.compareTo(o1.locationId);
-        }
-        return compare;
+  @Override
+  public int compare(BlurResult o1, BlurResult o2) {
+    int compare = Double.compare(o2.score, o1.score);
+    if (compare == 0) {
+      return o2.locationId.compareTo(o1.locationId);
     }
+    return compare;
+  }
 
 }

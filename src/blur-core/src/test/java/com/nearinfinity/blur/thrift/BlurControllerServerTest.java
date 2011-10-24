@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
-import org.apache.zookeeper.Watcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +36,6 @@ import org.junit.Test;
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
-import com.nearinfinity.blur.manager.indexserver.DistributedManager;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientEmbedded;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -59,376 +57,308 @@ import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurControllerServerTest {
-    
-    private static final String TABLE = "test";
-    private Map<String,Iface> shardServers = new HashMap<String, Iface>();
-    private BlurControllerServer server;
-    
-    @Before
-    public void setup() throws IOException {
-        addShardServer("shard-00000000");
-        addShardServer("shard-00000001");
-        addShardServer("shard-00000002");
-        BlurQueryChecker queryChecker = new BlurQueryChecker(new BlurConfiguration());
-        server = new BlurControllerServer();
-        server.setClient(getClient());
-        server.setClusterStatus(getClusterStatus());
-        server.setDistributedManager(getDistributedManager());
-        server.setQueryChecker(queryChecker);
-        server.init();
+
+  private static final String TABLE = "test";
+  private Map<String, Iface> shardServers = new HashMap<String, Iface>();
+  private BlurControllerServer server;
+
+  @Before
+  public void setup() throws IOException {
+    addShardServer("shard-00000000");
+    addShardServer("shard-00000001");
+    addShardServer("shard-00000002");
+    BlurQueryChecker queryChecker = new BlurQueryChecker(new BlurConfiguration());
+    server = new BlurControllerServer();
+    server.setClient(getClient());
+    server.setClusterStatus(getClusterStatus());
+    // server.setDistributedManager(getDistributedManager());
+    server.setQueryChecker(queryChecker);
+    server.init();
+  }
+
+  private ClusterStatus getClusterStatus() {
+    return new ClusterStatus() {
+
+      @Override
+      public List<String> getClusterList() {
+        return Arrays.asList("default");
+      }
+
+      @Override
+      public List<String> getControllerServerList() {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public List<String> getOnlineShardServers(String cluster) {
+        return getShardServerList(cluster);
+      }
+
+      @Override
+      public List<String> getShardServerList(String cluster) {
+        List<String> nodes = new ArrayList<String>(shardServers.keySet());
+        Collections.sort(nodes);
+        return nodes;
+      }
+
+      @Override
+      public TableDescriptor getTableDescriptor(String table) {
+        TableDescriptor tableDescriptor = new TableDescriptor();
+        tableDescriptor.cluster = "default";
+        tableDescriptor.shardCount = 3;
+        return tableDescriptor;
+      }
+
+      @Override
+      public List<String> getTableList() {
+        return Arrays.asList(TABLE);
+      }
+
+      @Override
+      public String getCluster(String table) {
+        return "default";
+      }
+
+      @Override
+      public boolean exists(String table) {
+        return false;
+      }
+
+      @Override
+      public boolean isEnabled(String table) {
+        return false;
+      }
+
+    };
+  }
+
+  @After
+  public void tearDown() {
+    server.close();
+  }
+
+  @Test
+  public void testQuery() throws BlurException, TException {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    BlurResults results = server.query(TABLE, blurQuery);
+    assertNotNull(results);
+  }
+
+  @Test
+  public void testQueryWithFacets() throws BlurException, TException {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.facets = new ArrayList<Facet>();
+    blurQuery.facets.add(new Facet());
+    blurQuery.facets.add(new Facet());
+    BlurResults results = server.query(TABLE, blurQuery);
+    assertNotNull(results);
+    assertNotNull(results.facetCounts);
+    for (int i = 0; i < results.facetCounts.size(); i++) {
+      long count = results.facetCounts.get(i);
+      assertEquals(shardServers.size() * (i + 1), count);
     }
-    
-    private ClusterStatus getClusterStatus() {
-        return new ClusterStatus() {
+  }
 
-            @Override
-            public List<String> getClusterList() {
-                return Arrays.asList("default");
-            }
+  @Test
+  public void testRecordFrequency() throws BlurException, TException {
+    long recordFrequency = server.recordFrequency(TABLE, "cf", "cn", "value");
+    assertEquals(shardServers.size(), recordFrequency);
+  }
 
-            @Override
-            public List<String> getControllerServerList() {
-                throw new RuntimeException("no impl");
-            }
+  @Test
+  public void testMutate() throws BlurException, TException {
+    RowMutation mutation = new RowMutation();
+    mutation.setRowId("1234");
+    RecordMutation recMut = new RecordMutation();
+    Record record = new Record();
+    record.setFamily("test");
+    record.setRecordId("5678");
+    record.addToColumns(new Column("name", "value"));
+    mutation.addToRecordMutations(recMut);
+    mutation.table = TABLE;
+    server.mutate(mutation);
 
-            @Override
-            public List<String> getOnlineShardServers(String cluster) {
-                return getShardServerList(cluster);
-            }
+    Selector selector = new Selector();
+    selector.rowId = "1234";
 
-            @Override
-            public List<String> getShardServerList(String cluster) {
-                List<String> nodes = new ArrayList<String>(shardServers.keySet());
-                Collections.sort(nodes);
-                return nodes;
-            }
+    FetchResult fetchRow = server.fetchRow(TABLE, selector);
+    assertNotNull(fetchRow.rowResult);
+  }
 
-            @Override
-            public TableDescriptor getTableDescriptor(String table) {
-                TableDescriptor tableDescriptor = new TableDescriptor();
-                tableDescriptor.cluster = "default";
-                tableDescriptor.shardCount = 3;
-                return tableDescriptor;
-            }
-
-            @Override
-            public List<String> getTableList() {
-                return Arrays.asList(TABLE);
-            }
-
-            @Override
-            public String getCluster(String table) {
-                return "default";
-            }
-
-            @Override
-            public boolean exists(String table) {
-              return false;
-            }
-
-            @Override
-            public boolean isEnabled(String table) {
-              return false;
-            }
-            
-        };
+  private BlurClient getClient() {
+    BlurClientEmbedded blurClientEmbedded = new BlurClientEmbedded();
+    for (String node : shardServers.keySet()) {
+      blurClientEmbedded.putNode(node, shardServers.get(node));
     }
+    return blurClientEmbedded;
+  }
 
-    @After
-    public void tearDown() {
-        server.close();
-    }
+  private Iface getShardServer(final String node) {
+    return new Iface() {
 
-    @Test
-    public void testQuery() throws BlurException, TException {
-        BlurQuery blurQuery = new BlurQuery();
-        blurQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
-        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        BlurResults results = server.query(TABLE, blurQuery);
-        assertNotNull(results);
-    }
-    
-    @Test
-    public void testQueryWithFacets() throws BlurException, TException {
-        BlurQuery blurQuery = new BlurQuery();
-        blurQuery.maxQueryTime = TimeUnit.SECONDS.toMillis(5);
-        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        blurQuery.facets = new ArrayList<Facet>();
-        blurQuery.facets.add(new Facet());
-        blurQuery.facets.add(new Facet());
-        BlurResults results = server.query(TABLE, blurQuery);
-        assertNotNull(results);
-        assertNotNull(results.facetCounts);
-        for (int i = 0; i < results.facetCounts.size(); i++) {
-            long count = results.facetCounts.get(i);
-            assertEquals(shardServers.size() * (i+1), count);
+      private Map<String, Map<String, Row>> rows = new HashMap<String, Map<String, Row>>();
+
+      @Override
+      public List<String> terms(String arg0, String arg1, String arg2, String arg3, short arg4) throws BlurException, TException {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public List<String> tableList() throws BlurException, TException {
+        List<String> table = new ArrayList<String>();
+        table.add(TABLE);
+        return table;
+      }
+
+      @Override
+      public List<String> shardServerList(String cluster) throws BlurException, TException {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+        Map<String, String> layout = new HashMap<String, String>();
+        layout.put(node, node);
+        return layout;
+      }
+
+      @Override
+      public BlurResults query(String table, BlurQuery query) throws BlurException, TException {
+        BlurResults results = new BlurResults();
+        results.putToShardInfo(node, 0);
+        results.setFacetCounts(getFacetCounts(query));
+        return results;
+      }
+
+      private List<Long> getFacetCounts(BlurQuery query) {
+        if (query.facets != null) {
+          int size = query.facets.size();
+          List<Long> results = new ArrayList<Long>();
+          for (int i = 0; i < size; i++) {
+            results.add(i + 1L);
+          }
+          return results;
         }
-    }
-    
-    @Test
-    public void testRecordFrequency() throws BlurException, TException {
-        long recordFrequency = server.recordFrequency(TABLE, "cf", "cn", "value");
-        assertEquals(shardServers.size(),recordFrequency);
-    }
-    
-    @Test
-    public void testMutate() throws BlurException, TException {
-        RowMutation mutation = new RowMutation();
-        mutation.setRowId("1234");
-        RecordMutation recMut = new RecordMutation();
-        Record record = new Record();
-        record.setFamily("test");
-        record.setRecordId("5678");
-        record.addToColumns(new Column("name","value"));
-        mutation.addToRecordMutations(recMut);
-        mutation.table = TABLE;
-        server.mutate(mutation);
-        
-        Selector selector = new Selector();
-        selector.rowId = "1234";
-        
-        FetchResult fetchRow = server.fetchRow(TABLE, selector);
-        assertNotNull(fetchRow.rowResult);
-    }
+        return null;
+      }
 
-    private BlurClient getClient() {
-        BlurClientEmbedded blurClientEmbedded = new BlurClientEmbedded();
-        for (String node : shardServers.keySet()) {
-            blurClientEmbedded.putNode(node, shardServers.get(node));
+      @Override
+      public Schema schema(String arg0) throws BlurException, TException {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public long recordFrequency(String arg0, String arg1, String arg2, String arg3) throws BlurException, TException {
+        return 1l;
+      }
+
+      @Override
+      public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
+        Map<String, Row> map = rows.get(table);
+        Row row = map.get(selector.rowId);
+        FetchResult fetchResult = new FetchResult();
+        fetchResult.setRowResult(new FetchRowResult(row));
+        return fetchResult;
+      }
+
+      @Override
+      public TableDescriptor describe(String arg0) throws BlurException, TException {
+        TableDescriptor descriptor = new TableDescriptor();
+        descriptor.isEnabled = true;
+        descriptor.shardCount = 3;
+        return descriptor;
+      }
+
+      @Override
+      public List<BlurQueryStatus> currentQueries(String arg0) throws BlurException, TException {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public List<String> controllerServerList() throws BlurException, TException {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public void cancelQuery(String table, long arg0) throws BlurException, TException {
+        throw new RuntimeException("no impl");
+      }
+
+      private Row toRow(RowMutation mutation) {
+        Row row = new Row();
+        row.id = mutation.rowId;
+        row.records = toRecords(mutation.recordMutations);
+        return row;
+      }
+
+      private List<Record> toRecords(List<RecordMutation> recordMutations) {
+        List<Record> records = new ArrayList<Record>();
+        for (RecordMutation mutation : recordMutations) {
+          records.add(mutation.record);
         }
-        return blurClientEmbedded;
-    }
+        return records;
+      }
 
-    
-    private Iface getShardServer(final String node) {
-        return new Iface() {
-            
-            private Map<String,Map<String,Row>> rows = new HashMap<String, Map<String,Row>>();
-            
-            @Override
-            public List<String> terms(String arg0, String arg1, String arg2, String arg3, short arg4) throws BlurException,
-                    TException {
-                throw new RuntimeException("no impl");
-            }
-            
-            @Override
-            public List<String> tableList() throws BlurException, TException {
-                List<String> table = new ArrayList<String>();
-                table.add(TABLE);
-                return table;
-            }
-            
-            @Override
-            public List<String> shardServerList(String cluster) throws BlurException, TException {
-                throw new RuntimeException("no impl");
-            }
-            
-            @Override
-            public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-                Map<String,String> layout = new HashMap<String, String>();
-                layout.put(node, node);
-                return layout;
-            }
-            
-            @Override
-            public BlurResults query(String table, BlurQuery query) throws BlurException, TException {
-                BlurResults results = new BlurResults();
-                results.putToShardInfo(node, 0);
-                results.setFacetCounts(getFacetCounts(query));
-                return results;
-            }
-            
-            private List<Long> getFacetCounts(BlurQuery query) {
-                if (query.facets != null) {
-                    int size = query.facets.size();
-                    List<Long> results = new ArrayList<Long>();
-                    for (int i = 0; i < size; i++) {
-                        results.add(i + 1L);
-                    }
-                    return results;
-                }
-                return null;
-            }
+      @Override
+      public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
+        throw new RuntimeException("not impl");
+      }
 
-            @Override
-            public Schema schema(String arg0) throws BlurException, TException {
-                throw new RuntimeException("no impl");
-            }
-            
-            @Override
-            public long recordFrequency(String arg0, String arg1, String arg2, String arg3) throws BlurException, TException {
-                return 1l;
-            }
-            
-            @Override
-            public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
-                Map<String, Row> map = rows.get(table);
-                Row row = map.get(selector.rowId);
-                FetchResult fetchResult = new FetchResult();
-                fetchResult.setRowResult(new FetchRowResult(row));
-                return fetchResult;
-            }
-            
-            @Override
-            public TableDescriptor describe(String arg0) throws BlurException, TException {
-                TableDescriptor descriptor = new TableDescriptor();
-                descriptor.isEnabled = true;
-                descriptor.shardCount = 3;
-                return descriptor;
-            }
-            
-            @Override
-            public List<BlurQueryStatus> currentQueries(String arg0) throws BlurException, TException {
-                throw new RuntimeException("no impl");
-            }
-            
-            @Override
-            public List<String> controllerServerList() throws BlurException, TException {
-                throw new RuntimeException("no impl");
-            }
-            
-            @Override
-            public void cancelQuery(String table, long arg0) throws BlurException, TException {
-                throw new RuntimeException("no impl");                
-            }
+      @Override
+      public void disableTable(String table) throws BlurException, TException {
+        throw new RuntimeException("not impl");
+      }
 
-            private Row toRow(RowMutation mutation) {
-                Row row = new Row();
-                row.id = mutation.rowId;
-                row.records = toRecords(mutation.recordMutations);
-                return row;
-            }
+      @Override
+      public void enableTable(String table) throws BlurException, TException {
+        throw new RuntimeException("not impl");
+      }
 
-            private List<Record> toRecords(List<RecordMutation> recordMutations) {
-                List<Record> records = new ArrayList<Record>();
-                for (RecordMutation mutation : recordMutations) {
-                    records.add(mutation.record);
-                }
-                return records;
-            }
+      @Override
+      public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
+        throw new RuntimeException("not impl");
+      }
 
-            @Override
-            public void createTable(TableDescriptor tableDescriptor)
-                    throws BlurException, TException {
-                throw new RuntimeException("not impl");
-            }
+      @Override
+      public TableStats getTableStats(String table) throws BlurException, TException {
+        return new TableStats();
+      }
 
-            @Override
-            public void disableTable(String table) throws BlurException, TException {
-                throw new RuntimeException("not impl");
-            }
+      @Override
+      public void mutate(RowMutation mutation) throws BlurException, TException {
+        String table = mutation.table;
+        Map<String, Row> map = rows.get(table);
+        if (map == null) {
+          map = new HashMap<String, Row>();
+          rows.put(table, map);
+        }
+        Row row = toRow(mutation);
+        map.put(row.id, row);
+      }
 
-            @Override
-            public void enableTable(String table) throws BlurException, TException {
-                throw new RuntimeException("not impl");
-            }
+      @Override
+      public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
+        for (RowMutation mutation : mutations) {
+          MutationHelper.validateMutation(mutation);
+        }
+        for (RowMutation mutation : mutations) {
+          mutate(mutation);
+        }
+      }
 
-            @Override
-            public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
-                throw new RuntimeException("not impl");
-            }
+      @Override
+      public List<String> shardClusterList() throws BlurException, TException {
+        throw new RuntimeException("no impl");
+      }
+    };
+  }
 
-			@Override
-			public TableStats getTableStats(String table) throws BlurException, TException {
-				return new TableStats();
-			}
+  private void addShardServer(String node) {
+    shardServers.put(node, getShardServer(node));
+  }
 
-            @Override
-            public void mutate(RowMutation mutation) throws BlurException,
-                    TException {
-                String table = mutation.table;
-                Map<String, Row> map = rows.get(table);
-                if (map == null) {
-                    map = new HashMap<String, Row>();
-                    rows.put(table, map);
-                }
-                Row row = toRow(mutation);
-                map.put(row.id, row);
-            }
-
-            @Override
-            public void mutateBatch(List<RowMutation> mutations) throws BlurException, TException {
-                for (RowMutation mutation : mutations) {
-                    MutationHelper.validateMutation(mutation);
-                }
-                for (RowMutation mutation : mutations) {
-                    mutate(mutation);
-                }                
-            }
-
-            @Override
-            public List<String> shardClusterList() throws BlurException, TException {
-                throw new RuntimeException("no impl");
-            }
-        };
-    }
-    
-    private void addShardServer(String node) {
-        shardServers.put(node, getShardServer(node));
-    }
-    
-    private DistributedManager getDistributedManager() {
-        return new DistributedManager() {
-            
-            @Override
-            protected void unlockInternal(String path) {
-                
-            }
-            
-            @Override
-            protected boolean saveDataInternal(byte[] data, String path) {
-                return false;
-            }
-            
-            @Override
-            protected void removePath(String path) {
-                
-            }
-            
-            @Override
-            protected void removeEphemeralPathOnShutdownInternal(String path) {
-                
-            }
-            
-            @Override
-            protected void registerCallableOnChangeInternal(Watcher watcher, String path) {
-                
-            }
-            
-            @Override
-            protected void lockInternal(String path) {
-                
-            }
-            
-            @Override
-            protected List<String> listInternal(String path) {
-                return null;
-            }
-            
-            @Override
-            protected void fetchDataInternal(Value value, String path) {
-                
-            }
-            
-            @Override
-            protected boolean existsInternal(String path) {
-                return false;
-            }
-            
-            @Override
-            protected void createPathInternal(String path) {
-                
-            }
-            
-            @Override
-            protected void createEphemeralPathInternal(String path) {
-                
-            }
-            
-            @Override
-            public void close() {
-                
-            }
-        };
-    }
 }

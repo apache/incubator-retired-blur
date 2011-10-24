@@ -36,145 +36,150 @@ import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnFamilyDefinition;
 
 public class BlurAnalyzerTest {
-    
-    private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
-    
-//    private String old = "{" +
-//    "\"aliases\":[{\"standard\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}]," +
-//    "\"fulltext\":{\"a\":[\"b\"],\"b\":[\"c\"]}," +
-//    "\"default\":\"standard\"," +
-//    "\"fields\":{" +
-//        "\"a\":{" +
-//            "\"b\":\"standard\"" +
-//        "}," +
-//        "\"b\":{" +
-//            "\"c\":[" +
-//                "\"standard\"," +
-//                "{\"sub1\":\"standard\"}," +
-//                "{\"sub2\":\"standard\"}" +
-//            "]" +
-//        "}" +
-//    "}" +
-//    "}";
-    
-//    private String s = "{" +
-//    "   \"defaultDefinition\":{" +
-//    "       \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"," +
-//    "       \"fullTextIndex\":1" +
-//    "   }," +
-//    "   \"fullTextAnalyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"," +
-//    "   \"columnFamilyDefinitions\":{" +
-//    "       \"b\":{" +
-//    "           \"columnDefinitions\":{" +
-//    "               \"c\":{" +
-//    "                   \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"," +
-//    "                   \"fullTextIndex\":1," +
-//    "                   \"alternateColumnDefinitions\":{" +
-//    "                       \"sub2\":{" +
-//    "                           \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"" +
-//    "                       }," +
-//    "                       \"sub1\":{" +
-//    "                           \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"" +
-//    "                       }" +
-//    "                   }" +
-//    "               }" +
-//    "           }" +
-//    "       }," +
-//    "       \"a\":{" +
-//    "           \"columnDefinitions\":{" +
-//    "               \"b\":{" +
-//    "                   \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"," +
-//    "                   \"fullTextIndex\":1" +
-//    "               }" +
-//    "           }" +
-//    "       }" +
-//    "   }" +
-//    "}";
-    
-    private AnalyzerDefinition analyzerDefinition = getDef();
-    
-//    @Test
-//    public void testString() throws IOException {
-//        BlurAnalyzer.create(s);
-//    }
-//    
-//    @Test
-//    public void testInputStream() throws IOException {
-//        BlurAnalyzer.create(new ByteArrayInputStream(s.getBytes()));
-//    }
-//    
-//    @Test
-//    public void testFile() throws IOException {
-//        File file = newFile(s);
-//        BlurAnalyzer.create(file);
-//        file.delete();
-//    }
-//    
-//    @Test
-//    public void testPath() throws IOException {
-//        File file = newFile(s);
-//        BlurAnalyzer.create(new Path(file.getAbsolutePath()));
-//        file.delete();
-//    }
-    
-    @Test
-    public void testToAndFromJSON() throws IOException {
-        BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
-        String json = analyzer.toJSON();
-        BlurAnalyzer analyzer2 = BlurAnalyzer.create(json);
-        assertEquals(analyzer.getAnalyzerDefinition(), analyzer2.getAnalyzerDefinition());
-    }
-    
-    @Test
-    public void testStoringOfField() throws IOException {
-        BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
-        assertEquals(Store.NO,analyzer.getStore("b.c.sub1"));
-        assertEquals(Store.YES,analyzer.getStore("b.c"));
-    }
-    
-    @Test
-    public void testGetSubFields() throws IOException {
-        BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
-        assertNull(analyzer.getSubIndexNames("b.d"));
-        Set<String> subIndexNames = analyzer.getSubIndexNames("b.c");
-        TreeSet<String> set = new TreeSet<String>();
-        set.add("b.c.sub1");
-        set.add("b.c.sub2");
-        assertEquals(set, subIndexNames);
-    }
-    
-    @Test
-    public void testFullTextFields() throws IOException {
-        BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
-        assertTrue(analyzer.isFullTextField("a.b"));
-        assertFalse(analyzer.isFullTextField("a.d"));
-    }
 
-    private AnalyzerDefinition getDef() {
-        
-        AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().
-            setDefaultDefinition(new ColumnDefinition(STANDARD, false, null)).
-            setFullTextAnalyzerClassName(STANDARD);
-        Map<String, ColumnFamilyDefinition> columnFamilyDefinitions = new HashMap<String, ColumnFamilyDefinition>();
-        
-        ColumnFamilyDefinition aColumnFamilyDefinition = new ColumnFamilyDefinition();
-        
-        Map<String, ColumnDefinition> aColumnDefinitions = new HashMap<String, ColumnDefinition>();
-        aColumnDefinitions.put("b", new ColumnDefinition(STANDARD, true, null));
-        aColumnFamilyDefinition.setColumnDefinitions(aColumnDefinitions);
-        columnFamilyDefinitions.put("a", aColumnFamilyDefinition);
+  private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";
 
-        Map<String, ColumnDefinition> bColumnDefinitions = new HashMap<String, ColumnDefinition>();
-        Map<String, AlternateColumnDefinition> alternates = new HashMap<String, AlternateColumnDefinition>();
-        alternates.put("sub1", new AlternateColumnDefinition(STANDARD));
-        alternates.put("sub2", new AlternateColumnDefinition(STANDARD));
-        bColumnDefinitions.put("c", new ColumnDefinition(STANDARD, true, alternates));
-        ColumnFamilyDefinition bColumnFamilyDefinition = new ColumnFamilyDefinition();
-        bColumnFamilyDefinition.setColumnDefinitions(bColumnDefinitions);
-        columnFamilyDefinitions.put("b", bColumnFamilyDefinition);
-        
-        analyzerDefinition.setColumnFamilyDefinitions(columnFamilyDefinitions);
-        return analyzerDefinition;
-    }
+  // private String old = "{" +
+  // "\"aliases\":[{\"standard\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\"}],"
+  // +
+  // "\"fulltext\":{\"a\":[\"b\"],\"b\":[\"c\"]}," +
+  // "\"default\":\"standard\"," +
+  // "\"fields\":{" +
+  // "\"a\":{" +
+  // "\"b\":\"standard\"" +
+  // "}," +
+  // "\"b\":{" +
+  // "\"c\":[" +
+  // "\"standard\"," +
+  // "{\"sub1\":\"standard\"}," +
+  // "{\"sub2\":\"standard\"}" +
+  // "]" +
+  // "}" +
+  // "}" +
+  // "}";
+
+  // private String s = "{" +
+  // "   \"defaultDefinition\":{" +
+  // "       \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+  // +
+  // "       \"fullTextIndex\":1" +
+  // "   }," +
+  // "   \"fullTextAnalyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+  // +
+  // "   \"columnFamilyDefinitions\":{" +
+  // "       \"b\":{" +
+  // "           \"columnDefinitions\":{" +
+  // "               \"c\":{" +
+  // "                   \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+  // +
+  // "                   \"fullTextIndex\":1," +
+  // "                   \"alternateColumnDefinitions\":{" +
+  // "                       \"sub2\":{" +
+  // "                           \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\""
+  // +
+  // "                       }," +
+  // "                       \"sub1\":{" +
+  // "                           \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\""
+  // +
+  // "                       }" +
+  // "                   }" +
+  // "               }" +
+  // "           }" +
+  // "       }," +
+  // "       \"a\":{" +
+  // "           \"columnDefinitions\":{" +
+  // "               \"b\":{" +
+  // "                   \"analyzerClassName\":\"org.apache.lucene.analysis.standard.StandardAnalyzer\","
+  // +
+  // "                   \"fullTextIndex\":1" +
+  // "               }" +
+  // "           }" +
+  // "       }" +
+  // "   }" +
+  // "}";
+
+  private AnalyzerDefinition analyzerDefinition = getDef();
+
+  // @Test
+  // public void testString() throws IOException {
+  // BlurAnalyzer.create(s);
+  // }
+  //    
+  // @Test
+  // public void testInputStream() throws IOException {
+  // BlurAnalyzer.create(new ByteArrayInputStream(s.getBytes()));
+  // }
+  //    
+  // @Test
+  // public void testFile() throws IOException {
+  // File file = newFile(s);
+  // BlurAnalyzer.create(file);
+  // file.delete();
+  // }
+  //    
+  // @Test
+  // public void testPath() throws IOException {
+  // File file = newFile(s);
+  // BlurAnalyzer.create(new Path(file.getAbsolutePath()));
+  // file.delete();
+  // }
+
+  @Test
+  public void testToAndFromJSON() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+    String json = analyzer.toJSON();
+    BlurAnalyzer analyzer2 = BlurAnalyzer.create(json);
+    assertEquals(analyzer.getAnalyzerDefinition(), analyzer2.getAnalyzerDefinition());
+  }
+
+  @Test
+  public void testStoringOfField() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+    assertEquals(Store.NO, analyzer.getStore("b.c.sub1"));
+    assertEquals(Store.YES, analyzer.getStore("b.c"));
+  }
+
+  @Test
+  public void testGetSubFields() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+    assertNull(analyzer.getSubIndexNames("b.d"));
+    Set<String> subIndexNames = analyzer.getSubIndexNames("b.c");
+    TreeSet<String> set = new TreeSet<String>();
+    set.add("b.c.sub1");
+    set.add("b.c.sub2");
+    assertEquals(set, subIndexNames);
+  }
+
+  @Test
+  public void testFullTextFields() throws IOException {
+    BlurAnalyzer analyzer = new BlurAnalyzer(analyzerDefinition);
+    assertTrue(analyzer.isFullTextField("a.b"));
+    assertFalse(analyzer.isFullTextField("a.d"));
+  }
+
+  private AnalyzerDefinition getDef() {
+
+    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition().setDefaultDefinition(new ColumnDefinition(STANDARD, false, null)).setFullTextAnalyzerClassName(STANDARD);
+    Map<String, ColumnFamilyDefinition> columnFamilyDefinitions = new HashMap<String, ColumnFamilyDefinition>();
+
+    ColumnFamilyDefinition aColumnFamilyDefinition = new ColumnFamilyDefinition();
+
+    Map<String, ColumnDefinition> aColumnDefinitions = new HashMap<String, ColumnDefinition>();
+    aColumnDefinitions.put("b", new ColumnDefinition(STANDARD, true, null));
+    aColumnFamilyDefinition.setColumnDefinitions(aColumnDefinitions);
+    columnFamilyDefinitions.put("a", aColumnFamilyDefinition);
+
+    Map<String, ColumnDefinition> bColumnDefinitions = new HashMap<String, ColumnDefinition>();
+    Map<String, AlternateColumnDefinition> alternates = new HashMap<String, AlternateColumnDefinition>();
+    alternates.put("sub1", new AlternateColumnDefinition(STANDARD));
+    alternates.put("sub2", new AlternateColumnDefinition(STANDARD));
+    bColumnDefinitions.put("c", new ColumnDefinition(STANDARD, true, alternates));
+    ColumnFamilyDefinition bColumnFamilyDefinition = new ColumnFamilyDefinition();
+    bColumnFamilyDefinition.setColumnDefinitions(bColumnDefinitions);
+    columnFamilyDefinitions.put("b", bColumnFamilyDefinition);
+
+    analyzerDefinition.setColumnFamilyDefinitions(columnFamilyDefinitions);
+    return analyzerDefinition;
+  }
 
 }

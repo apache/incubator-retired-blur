@@ -17,35 +17,80 @@
 package com.nearinfinity.blur.manager.indexserver.utils;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.data.Stat;
 
-import com.nearinfinity.blur.manager.indexserver.DistributedManager;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperDistributedManager;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class EnableTable {
 
-    public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
-        String zkConnectionStr = args[0];
-        String table = args[1];
+  private final static Log LOG = LogFactory.getLog(EnableTable.class);
 
-        ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-        ZookeeperDistributedManager dm = new ZookeeperDistributedManager();
-        dm.setZooKeeper(zooKeeper);
-        enableTable(dm, table);
+  public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
+    String zkConnectionStr = args[0];
+    String table = args[1];
+
+    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
+    enableTable(zooKeeper, table);
+  }
+
+  public static void enableTable(ZooKeeper zookeeper, String table) throws IOException, KeeperException, InterruptedException {
+    String blurTablesPath = ZookeeperPathConstants.getBlurTablesPath();
+    if (zookeeper.exists(blurTablesPath + "/" + table, false) == null) {
+      throw new IOException("Table [" + table + "] does not exist.");
     }
-    
-    public static void enableTable(DistributedManager dm, String table) throws IOException {
-        if (!dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table)) {
-            throw new IOException("Table [" + table + "] does not exist.");
-        }
-        if (dm.exists(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesEnabled())) {
-            throw new IOException("Table [" + table + "] already enabled.");
-        }
-        dm.createPath(ZookeeperPathConstants.getBlurTablesPath(), table, ZookeeperPathConstants.getBlurTablesEnabled());
+    if (zookeeper.exists(blurTablesPath + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled(), false) != null) {
+      throw new IOException("Table [" + table + "] already enabled.");
     }
+    zookeeper.create(blurTablesPath + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled(), null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    int shardCount = getShardCount(zookeeper, table);
+    waitForWriteLocksToEngage(zookeeper, table, shardCount);
+  }
+
+  private static int getShardCount(ZooKeeper zookeeper, String table) throws KeeperException, InterruptedException {
+    String path = ZookeeperPathConstants.getBlurTablesPath() + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesShardCount();
+    Stat stat = zookeeper.exists(path, false);
+    if (stat == null) {
+      throw new RuntimeException("Shard count missing for table [" + table + "]");
+    }
+    byte[] data = zookeeper.getData(path, false, stat);
+    if (data == null) {
+      throw new RuntimeException("Shard count missing for table [" + table + "]");
+    }
+    return Integer.parseInt(new String(data));
+  }
+
+  private static void waitForWriteLocksToEngage(ZooKeeper zookeeper, String table, int shardCount) throws KeeperException, InterruptedException {
+    final Object object = new Object();
+    String path = ZookeeperPathConstants.getBlurTablesPath() + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesLocksPath();
+    while (true) {
+      synchronized (object) {
+        List<String> list = zookeeper.getChildren(path, new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            synchronized (object) {
+              object.notifyAll();
+            }
+          }
+        });
+        if (list.size() == shardCount) {
+          return;
+        } else {
+          LOG.info("Waiting for locks to engage [{0}] out of [{1}]", list.size(), shardCount);
+          object.wait();
+        }
+      }
+    }
+  }
 
 }

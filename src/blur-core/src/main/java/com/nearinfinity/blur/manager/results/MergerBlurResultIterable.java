@@ -25,25 +25,25 @@ import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
 public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
 
-    private long _minimumNumberOfResults;
-    private long _maxQueryTime;
+  private long _minimumNumberOfResults;
+  private long _maxQueryTime;
 
-    public MergerBlurResultIterable(BlurQuery blurQuery) {
-        _minimumNumberOfResults = blurQuery.minimumNumberOfResults;
-        _maxQueryTime = blurQuery.maxQueryTime;
-    }
+  public MergerBlurResultIterable(BlurQuery blurQuery) {
+    _minimumNumberOfResults = blurQuery.minimumNumberOfResults;
+    _maxQueryTime = blurQuery.maxQueryTime;
+  }
 
-    @Override
-    public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws Exception {
-        BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
-        while (service.getRemainingCount() > 0) {
-            Future<BlurResultIterable> future = service.poll(_maxQueryTime, TimeUnit.MILLISECONDS);
-            iterable.addBlurResultIterable(future.get());
-            if (iterable.getTotalResults() >= _minimumNumberOfResults) {
-                return iterable;
-            }
-        }
+  @Override
+  public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws Exception {
+    BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
+    while (service.getRemainingCount() > 0) {
+      Future<BlurResultIterable> future = service.poll(_maxQueryTime, TimeUnit.MILLISECONDS);
+      iterable.addBlurResultIterable(future.get());
+      if (iterable.getTotalResults() >= _minimumNumberOfResults) {
         return iterable;
+      }
     }
+    return iterable;
+  }
 
 }

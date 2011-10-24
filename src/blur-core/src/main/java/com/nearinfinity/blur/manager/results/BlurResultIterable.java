@@ -22,10 +22,10 @@ import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public interface BlurResultIterable extends Iterable<BlurResult> {
 
-    void skipTo(long skipTo);
+  void skipTo(long skipTo);
 
-    long getTotalResults();
+  long getTotalResults();
 
-    Map<String, Long> getShardInfo();
+  Map<String, Long> getShardInfo();
 
 }

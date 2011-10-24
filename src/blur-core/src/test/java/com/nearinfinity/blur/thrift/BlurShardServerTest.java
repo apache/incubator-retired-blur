@@ -32,117 +32,117 @@ import com.nearinfinity.blur.manager.IndexServer;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 
 public class BlurShardServerTest {
-    
-    private BlurShardServer blurShardServer;
 
-    @Before
-    public void setUp() {
-        IndexServer indexServer = getIndexServer();
-        IndexManager indexManager = getIndexManager();
-        indexManager.setIndexServer(indexServer);
-        indexManager.setThreadCount(1);
-        indexManager.init();
-        blurShardServer = new BlurShardServer();
-        blurShardServer.setIndexManager(indexManager);
-        blurShardServer.setIndexServer(indexServer);
-        blurShardServer.init();
-    }
-    
-    @After
-    public void tearDown() throws InterruptedException {
-        blurShardServer.close();
-    }
-    
-    @Test
-    public void testNothingYet() {
-        
-    }
-    
-    private IndexServer getIndexServer() {
-        return new IndexServer() {
+  private BlurShardServer blurShardServer;
 
-            @Override
-            public void close() {
-                
-            }
+  @Before
+  public void setUp() {
+    IndexServer indexServer = getIndexServer();
+    IndexManager indexManager = getIndexManager();
+    indexManager.setIndexServer(indexServer);
+    indexManager.setThreadCount(1);
+    indexManager.init();
+    blurShardServer = new BlurShardServer();
+    blurShardServer.setIndexManager(indexManager);
+    blurShardServer.setIndexServer(indexServer);
+    blurShardServer.init();
+  }
 
-            @Override
-            public BlurAnalyzer getAnalyzer(String table) {
-                throw new RuntimeException("not impl");
-            }
+  @After
+  public void tearDown() throws InterruptedException {
+    blurShardServer.close();
+  }
 
-            @Override
-            public Map<String, BlurIndex> getIndexes(String table) throws IOException {
-                throw new RuntimeException("not impl");
-            }
+  @Test
+  public void testNothingYet() {
 
-            @Override
-            public List<String> getShardList(String table) {
-                throw new RuntimeException("not impl");
-            }
+  }
 
-            @Override
-            public Similarity getSimilarity(String table) {
-                throw new RuntimeException("not impl");
-            }
+  private IndexServer getIndexServer() {
+    return new IndexServer() {
 
-            @Override
-            public List<String> getTableList() {
-                throw new RuntimeException("not impl");
-            }
+      @Override
+      public void close() {
 
-            @Override
-            public TABLE_STATUS getTableStatus(String table) {
-                throw new RuntimeException("not impl");
-            }
+      }
 
-            @Override
-            public String getNodeName() {
-                throw new RuntimeException("no impl");
-            }
+      @Override
+      public BlurAnalyzer getAnalyzer(String table) {
+        throw new RuntimeException("not impl");
+      }
 
-            @Override
-            public String getTableUri(String table) {
-                throw new RuntimeException("no impl");
-            }
+      @Override
+      public Map<String, BlurIndex> getIndexes(String table) throws IOException {
+        throw new RuntimeException("not impl");
+      }
 
-            @Override
-            public int getShardCount(String table) {
-                throw new RuntimeException("no impl");
-            }
+      @Override
+      public List<String> getShardList(String table) {
+        throw new RuntimeException("not impl");
+      }
 
-            @Override
-            public int getCompressionBlockSize(String table) {
-                throw new RuntimeException("no impl");
-            }
+      @Override
+      public Similarity getSimilarity(String table) {
+        throw new RuntimeException("not impl");
+      }
 
-            @Override
-            public CompressionCodec getCompressionCodec(String table) {
-                throw new RuntimeException("no impl");
-            }
+      @Override
+      public List<String> getTableList() {
+        throw new RuntimeException("not impl");
+      }
 
-			@Override
-			public long getRecordCount(String table) throws IOException {
-				throw new RuntimeException("no impl");
-			}
+      @Override
+      public TABLE_STATUS getTableStatus(String table) {
+        throw new RuntimeException("not impl");
+      }
 
-			@Override
-			public long getRowCount(String table) throws IOException {
-				throw new RuntimeException("no impl");
-			}
+      @Override
+      public String getNodeName() {
+        throw new RuntimeException("no impl");
+      }
 
-			@Override
-			public long getTableSize(String table) throws IOException {
-				throw new RuntimeException("no impl");
-			}
+      @Override
+      public String getTableUri(String table) {
+        throw new RuntimeException("no impl");
+      }
 
-        };
-    }
+      @Override
+      public int getShardCount(String table) {
+        throw new RuntimeException("no impl");
+      }
 
-    private IndexManager getIndexManager() {
-        return new IndexManager() {
-            
-        };
-    }
+      @Override
+      public int getCompressionBlockSize(String table) {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public CompressionCodec getCompressionCodec(String table) {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public long getRecordCount(String table) throws IOException {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public long getRowCount(String table) throws IOException {
+        throw new RuntimeException("no impl");
+      }
+
+      @Override
+      public long getTableSize(String table) throws IOException {
+        throw new RuntimeException("no impl");
+      }
+
+    };
+  }
+
+  private IndexManager getIndexManager() {
+    return new IndexManager() {
+
+    };
+  }
 
 }

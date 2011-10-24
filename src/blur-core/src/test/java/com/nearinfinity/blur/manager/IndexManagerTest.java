@@ -65,365 +65,341 @@ import com.nearinfinity.blur.utils.BlurConstants;
 
 public class IndexManagerTest {
 
-    private static final String SHARD_NAME = BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, 0);
-    private static final String TABLE = "table";
-    private LocalIndexServer server;
-    private IndexManager indexManager;
-    private BlurIndexRefresher refresher;
-    private BlurIndexCommiter commiter;
+  private static final String SHARD_NAME = BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, 0);
+  private static final String TABLE = "table";
+  private LocalIndexServer server;
+  private IndexManager indexManager;
+  private BlurIndexRefresher refresher;
+  private BlurIndexCommiter commiter;
 
-    @Before
-    public void setUp() throws BlurException, IOException {
-        File file = new File("./tmp/indexer-manager-test");
-        rm(file);
-        new File(new File(file, TABLE), SHARD_NAME).mkdirs();
-        BlurMetrics metrics = new BlurMetrics(new Configuration());
-        refresher = new BlurIndexRefresher();
-        refresher.init();
-        commiter = new BlurIndexCommiter();
-        commiter.init();
-        server = new LocalIndexServer(file);
-        server.setRefresher(refresher);
-        server.setCommiter(commiter);
-        server.setBlurMetrics(metrics);
-        
-        indexManager = new IndexManager();
-        indexManager.setStatusCleanupTimerDelay(1000);
-        indexManager.setIndexServer(server);
-        indexManager.setThreadCount(1);
-        indexManager.init();
-        
-        setupData();
+  @Before
+  public void setUp() throws BlurException, IOException {
+    File file = new File("./tmp/indexer-manager-test");
+    rm(file);
+    new File(new File(file, TABLE), SHARD_NAME).mkdirs();
+    BlurMetrics metrics = new BlurMetrics(new Configuration());
+    refresher = new BlurIndexRefresher();
+    refresher.init();
+    commiter = new BlurIndexCommiter();
+    commiter.init();
+    server = new LocalIndexServer(file);
+    server.setRefresher(refresher);
+    server.setCommiter(commiter);
+    server.setBlurMetrics(metrics);
+
+    indexManager = new IndexManager();
+    indexManager.setStatusCleanupTimerDelay(1000);
+    indexManager.setIndexServer(server);
+    indexManager.setThreadCount(1);
+    indexManager.init();
+
+    setupData();
+  }
+
+  @After
+  public void teardown() {
+    commiter.close();
+    refresher.close();
+    indexManager.close();
+  }
+
+  private void rm(File file) {
+    if (file.isDirectory()) {
+      for (File f : file.listFiles()) {
+        rm(f);
+      }
     }
-    
-    @After
-    public void teardown() {
-        commiter.close();
-        refresher.close();
-        indexManager.close();
+    file.delete();
+  }
+
+  private void setupData() throws BlurException, IOException {
+    RowMutation mutation1 = newRowMutation(TABLE, "row-1", newRecordMutation("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+        newColumn("testcol3", "value3")));
+    RowMutation mutation2 = newRowMutation(TABLE, "row-2", newRecordMutation("test-family", "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"),
+        newColumn("testcol3", "value6")));
+    RowMutation mutation3 = newRowMutation(TABLE, "row-3", newRecordMutation("test-family", "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"),
+        newColumn("testcol3", "value9")));
+    RowMutation mutation4 = newRowMutation(TABLE, "row-4", newRecordMutation("test-family", "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"),
+        newColumn("testcol3", "value9")));
+    indexManager.mutate(mutation1);
+    indexManager.mutate(mutation2);
+    indexManager.mutate(mutation3);
+    indexManager.mutate(mutation4);
+  }
+
+  @After
+  public void tearDown() throws InterruptedException {
+    indexManager.close();
+  }
+
+  @Test
+  public void testFetchRowByLocationId() throws Exception {
+    Selector selector = new Selector().setLocationId(SHARD_NAME + "/0");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+    row.recordCount = 1;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchMissingRowByLocationId() throws Exception {
+    try {
+      Selector selector = new Selector().setLocationId("shard4/0");
+      FetchResult fetchResult = new FetchResult();
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      fail("Should throw exception");
+    } catch (BlurException e) {
     }
+  }
 
-    private void rm(File file) {
-        if (file.isDirectory()) {
-            for (File f : file.listFiles()) {
-                rm(f);
-            }
-        }
-        file.delete();
+  @Test
+  public void testFetchRecordByLocationId() throws Exception {
+    Selector selector = new Selector().setLocationId(SHARD_NAME + "/0").setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNull(fetchResult.rowResult);
+    assertNotNull(fetchResult.recordResult.record);
+
+    assertEquals("row-1", fetchResult.recordResult.rowid);
+    assertEquals("record-1", fetchResult.recordResult.record.recordId);
+    assertEquals("test-family", fetchResult.recordResult.record.family);
+
+    Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+    assertEquals(record, fetchResult.recordResult.record);
+  }
+
+  @Test
+  public void testFetchRowByRowId() throws Exception {
+    Selector selector = new Selector().setRowId("row-1");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+    row.recordCount = 1;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testFetchRowByRecordIdOnly() throws Exception {
+    Selector selector = new Selector().setRecordId("record-1");
+    FetchResult fetchResult = new FetchResult();
+    try {
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      fail("Invalid selector should throw exception.");
+    } catch (BlurException e) {
+      // do nothing, this is a pass
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
     }
+  }
 
-    private void setupData() throws BlurException, IOException {
-        RowMutation mutation1 = newRowMutation(TABLE,"row-1", 
-                newRecordMutation("test-family", "record-1", 
-                        newColumn("testcol1", "value1"), 
-                        newColumn("testcol2", "value2"), 
-                        newColumn("testcol3", "value3"))); 
-        RowMutation mutation2 = newRowMutation(TABLE,"row-2", 
-                newRecordMutation("test-family", "record-2", 
-                        newColumn("testcol1", "value4"), 
-                        newColumn("testcol2", "value5"), 
-                        newColumn("testcol3", "value6")));
-        RowMutation mutation3 = newRowMutation(TABLE,"row-3", 
-                newRecordMutation("test-family", "record-3", 
-                        newColumn("testcol1", "value7"),
-                        newColumn("testcol2", "value8"), 
-                        newColumn("testcol3", "value9")));
-        RowMutation mutation4 = newRowMutation(TABLE,"row-4", 
-                newRecordMutation("test-family", "record-4", 
-                        newColumn("testcol1", "value1"),
-                        newColumn("testcol2", "value5"), 
-                        newColumn("testcol3", "value9")));
-        indexManager.mutate(mutation1);
-        indexManager.mutate(mutation2);
-        indexManager.mutate(mutation3);
-        indexManager.mutate(mutation4);
+  @Test
+  public void testFetchRowByRecordIdOnlyNoRecordOnly() throws Exception {
+    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1");
+    FetchResult fetchResult = new FetchResult();
+    try {
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      fail("Invalid selector should throw exception.");
+    } catch (BlurException e) {
+      // do nothing, this is a pass
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
     }
+  }
 
-    @After
-    public void tearDown() throws InterruptedException {
-        indexManager.close();
-    }
+  @Test
+  public void testFetchRowByRecordId() throws Exception {
+    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1").setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertFalse(fetchResult.deleted);
+    assertTrue(fetchResult.exists);
+    assertEquals(TABLE, fetchResult.table);
+    assertNull(fetchResult.rowResult);
+    assertNotNull(fetchResult.recordResult);
+    FetchRecordResult recordResult = fetchResult.recordResult;
+    assertEquals("test-family", recordResult.record.family);
+    assertEquals("record-1", recordResult.record.recordId);
+    assertEquals("row-1", recordResult.rowid);
 
-    @Test
-    public void testFetchRowByLocationId() throws Exception {
-        Selector selector = new Selector().setLocationId(SHARD_NAME + "/0");
-        FetchResult fetchResult = new FetchResult();
-        indexManager.fetchRow(TABLE, selector, fetchResult);
-        assertNotNull(fetchResult.rowResult.row);
-        Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
-                newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
-        row.recordCount = 1;
-        assertEquals(row, fetchResult.rowResult.row);
-    }
+    Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+    assertEquals(record, recordResult.record);
 
-    @Test
-    public void testFetchMissingRowByLocationId() throws Exception {
-        try {
-            Selector selector = new Selector().setLocationId("shard4/0");
-            FetchResult fetchResult = new FetchResult();
-            indexManager.fetchRow(TABLE, selector, fetchResult);
-            fail("Should throw exception");
-        } catch (BlurException e) {
-        }
-    }
+  }
 
-    @Test
-    public void testFetchRecordByLocationId() throws Exception {
-        Selector selector = new Selector().setLocationId(SHARD_NAME + "/0").setRecordOnly(true);
-        FetchResult fetchResult = new FetchResult();
-        indexManager.fetchRow(TABLE, selector, fetchResult);
-        assertNull(fetchResult.rowResult);
-        assertNotNull(fetchResult.recordResult.record);
+  @Test
+  public void testRecordFrequency() throws Exception {
+    assertEquals(2, indexManager.recordFrequency(TABLE, "test-family", "testcol1", "value1"));
+    assertEquals(0, indexManager.recordFrequency(TABLE, "test-family", "testcol1", "NO VALUE"));
+  }
 
-        assertEquals("row-1", fetchResult.recordResult.rowid);
-        assertEquals("record-1", fetchResult.recordResult.record.recordId);
-        assertEquals("test-family", fetchResult.recordResult.record.family);
+  @Test
+  public void testSchema() throws Exception {
+    Schema schema = indexManager.schema(TABLE);
+    assertEquals(TABLE, schema.table);
+    Map<String, Set<String>> columnFamilies = schema.columnFamilies;
+    assertEquals(new TreeSet<String>(Arrays.asList("test-family")), new TreeSet<String>(columnFamilies.keySet()));
+    assertEquals(new TreeSet<String>(Arrays.asList("testcol1", "testcol2", "testcol3")), new TreeSet<String>(columnFamilies.get("test-family")));
+  }
 
-        Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
-                newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
-        assertEquals(record, fetchResult.recordResult.record);
-    }
+  @Test
+  public void testQuerySuperQueryTrue() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+    blurQuery.simpleQuery.superQueryOn = true;
+    blurQuery.simpleQuery.type = ScoreType.SUPER;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = 1;
 
-    @Test
-    public void testFetchRowByRowId() throws Exception {
-        Selector selector = new Selector().setRowId("row-1");
-        FetchResult fetchResult = new FetchResult();
-        indexManager.fetchRow(TABLE, selector, fetchResult);
-        assertNotNull(fetchResult.rowResult.row);
-        Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
-                newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
-        row.recordCount = 1;
-        assertEquals(row, fetchResult.rowResult.row);
-    }
-
-    @Test
-    public void testFetchRowByRecordIdOnly() throws Exception {
-        Selector selector = new Selector().setRecordId("record-1");
-        FetchResult fetchResult = new FetchResult();
-        try {
-            indexManager.fetchRow(TABLE, selector, fetchResult);
-            fail("Invalid selector should throw exception.");
-        } catch (BlurException e) {
-            // do nothing, this is a pass
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
-    }
-
-    @Test
-    public void testFetchRowByRecordIdOnlyNoRecordOnly() throws Exception {
-        Selector selector = new Selector().setRowId("row-1").setRecordId("record-1");
-        FetchResult fetchResult = new FetchResult();
-        try {
-            indexManager.fetchRow(TABLE, selector, fetchResult);
-            fail("Invalid selector should throw exception.");
-        } catch (BlurException e) {
-            // do nothing, this is a pass
-        } catch (Exception e) {
-            e.printStackTrace();
-            fail();
-        }
-    }
-
-    @Test
-    public void testFetchRowByRecordId() throws Exception {
-        Selector selector = new Selector().setRowId("row-1").setRecordId("record-1").setRecordOnly(true);
-        FetchResult fetchResult = new FetchResult();
-        indexManager.fetchRow(TABLE, selector, fetchResult);
-        assertFalse(fetchResult.deleted);
-        assertTrue(fetchResult.exists);
-        assertEquals(TABLE, fetchResult.table);
-        assertNull(fetchResult.rowResult);
-        assertNotNull(fetchResult.recordResult);
-        FetchRecordResult recordResult = fetchResult.recordResult;
-        assertEquals("test-family", recordResult.record.family);
-        assertEquals("record-1", recordResult.record.recordId);
-        assertEquals("row-1", recordResult.rowid);
-
-        Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"),
-                newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
-        assertEquals(record, recordResult.record);
-
-    }
-
-    @Test
-    public void testRecordFrequency() throws Exception {
-        assertEquals(2, indexManager.recordFrequency(TABLE, "test-family", "testcol1", "value1"));
-        assertEquals(0, indexManager.recordFrequency(TABLE, "test-family", "testcol1", "NO VALUE"));
-    }
-
-    @Test
-    public void testSchema() throws Exception {
-        Schema schema = indexManager.schema(TABLE);
-        assertEquals(TABLE,schema.table);
-        Map<String, Set<String>> columnFamilies = schema.columnFamilies;
-        assertEquals(new TreeSet<String>(Arrays.asList("test-family")),new TreeSet<String>(columnFamilies.keySet()));
-        assertEquals(new TreeSet<String>(Arrays.asList("testcol1","testcol2","testcol3")),new TreeSet<String>(columnFamilies.get("test-family")));
-    }
-
-    @Test
-    public void testQuerySuperQueryTrue() throws Exception {
-        BlurQuery blurQuery = new BlurQuery();
-        blurQuery.simpleQuery = new SimpleQuery();
-        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.simpleQuery.superQueryOn = true;
-        blurQuery.simpleQuery.type = ScoreType.SUPER;
-        blurQuery.fetch = 10;
-        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        blurQuery.maxQueryTime = Long.MAX_VALUE;
-        blurQuery.uuid = 1;
-
-        BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
-        assertEquals(iterable.getTotalResults(), 2);
-        for (BlurResult result : iterable) {
-            Selector selector = new Selector().setLocationId(result.getLocationId());
-            FetchResult fetchResult = new FetchResult();
-            indexManager.fetchRow(TABLE, selector, fetchResult);
-            assertNotNull(fetchResult.rowResult);
-            assertNull(fetchResult.recordResult);
-        }
-
-        assertFalse(indexManager.currentQueries(TABLE).isEmpty());
-        Thread.sleep(2000);// wait for cleanup to fire
-        assertTrue(indexManager.currentQueries(TABLE).isEmpty());
-    }
-    
-    @Test
-    public void testQuerySuperQueryTrueWithSelector() throws Exception {
-        BlurQuery blurQuery = new BlurQuery();
-        blurQuery.simpleQuery = new SimpleQuery();
-        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.simpleQuery.superQueryOn = true;
-        blurQuery.simpleQuery.type = ScoreType.SUPER;
-        blurQuery.fetch = 10;
-        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        blurQuery.maxQueryTime = Long.MAX_VALUE;
-        blurQuery.uuid = 1;
-        blurQuery.selector = new Selector();
-
-        BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
-        assertEquals(iterable.getTotalResults(), 2);
-        for (BlurResult result : iterable) {
-            assertNotNull(result.fetchResult.rowResult);
-            assertNull(result.fetchResult.recordResult);
-        }
-
-        assertFalse(indexManager.currentQueries(TABLE).isEmpty());
-        Thread.sleep(2000);// wait for cleanup to fire
-        assertTrue(indexManager.currentQueries(TABLE).isEmpty());
-    }
-    
-    @Test
-    public void testQuerySuperQueryFalse() throws Exception {
-        BlurQuery blurQuery = new BlurQuery();
-        blurQuery.simpleQuery = new SimpleQuery();
-        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.simpleQuery.superQueryOn = false;
-        blurQuery.fetch = 10;
-        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        blurQuery.maxQueryTime = Long.MAX_VALUE;
-        blurQuery.uuid = 1;
-
-        BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
-        assertEquals(iterable.getTotalResults(), 2);
-        for (BlurResult result : iterable) {
-            Selector selector = new Selector().setLocationId(result.getLocationId()).setRecordOnly(true);
-            FetchResult fetchResult = new FetchResult();
-            indexManager.fetchRow(TABLE, selector, fetchResult);
-            assertNull(fetchResult.rowResult);
-            assertNotNull(fetchResult.recordResult);
-        }
-
-        assertFalse(indexManager.currentQueries(TABLE).isEmpty());
-        Thread.sleep(2000);// wait for cleanup to fire
-        assertTrue(indexManager.currentQueries(TABLE).isEmpty());
-    }
-    
-    @Test
-    public void testQuerySuperQueryFalseWithSelector() throws Exception {
-        BlurQuery blurQuery = new BlurQuery();
-        blurQuery.simpleQuery = new SimpleQuery();
-        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.simpleQuery.superQueryOn = false;
-        blurQuery.fetch = 10;
-        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        blurQuery.maxQueryTime = Long.MAX_VALUE;
-        blurQuery.uuid = 1;
-        blurQuery.selector = new Selector();
-        blurQuery.selector.setRecordOnly(true);
-
-        BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
-        assertEquals(iterable.getTotalResults(), 2);
-        for (BlurResult result : iterable) {
-            assertNull(result.fetchResult.rowResult);
-            assertNotNull(result.fetchResult.recordResult);
-        }
-
-        assertFalse(indexManager.currentQueries(TABLE).isEmpty());
-        Thread.sleep(2000);// wait for cleanup to fire
-        assertTrue(indexManager.currentQueries(TABLE).isEmpty());
-    }
-    
-    @Test
-    public void testQueryWithFacets() throws Exception {
-        BlurQuery blurQuery = new BlurQuery();
-        blurQuery.simpleQuery = new SimpleQuery();
-        blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
-        blurQuery.simpleQuery.superQueryOn = true;
-        blurQuery.simpleQuery.type = ScoreType.SUPER;
-        blurQuery.fetch = 10;
-        blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
-        blurQuery.maxQueryTime = Long.MAX_VALUE;
-        blurQuery.uuid = 1;
-        blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value1", Long.MAX_VALUE), 
-                new Facet("test-family.testcol1:value-nohit", Long.MAX_VALUE));
-
-        AtomicLongArray facetedCounts = new AtomicLongArray(2);
-        BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, facetedCounts);
-        assertEquals(iterable.getTotalResults(), 2);
-        for (BlurResult result : iterable) {
-            Selector selector = new Selector().setLocationId(result.getLocationId());
-            FetchResult fetchResult = new FetchResult();
-            indexManager.fetchRow(TABLE, selector, fetchResult);
-            assertNotNull(fetchResult.rowResult);
-            assertNull(fetchResult.recordResult);
-        }
-
-        assertEquals(2, facetedCounts.get(0));
-        assertEquals(0, facetedCounts.get(1));
-
-        assertFalse(indexManager.currentQueries(TABLE).isEmpty());
-        Thread.sleep(2000);// wait for cleanup to fire
-        assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+    assertEquals(iterable.getTotalResults(), 2);
+    for (BlurResult result : iterable) {
+      Selector selector = new Selector().setLocationId(result.getLocationId());
+      FetchResult fetchResult = new FetchResult();
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      assertNotNull(fetchResult.rowResult);
+      assertNull(fetchResult.recordResult);
     }
 
-    @Test
-    public void testTerms() throws Exception {
-        List<String> terms = indexManager.terms(TABLE, "test-family", "testcol1", "", (short) 100);
-        assertEquals(Arrays.asList("value1","value4","value7"), terms);
+    assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+    Thread.sleep(2000);// wait for cleanup to fire
+    assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+  }
+
+  @Test
+  public void testQuerySuperQueryTrueWithSelector() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+    blurQuery.simpleQuery.superQueryOn = true;
+    blurQuery.simpleQuery.type = ScoreType.SUPER;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = 1;
+    blurQuery.selector = new Selector();
+
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+    assertEquals(iterable.getTotalResults(), 2);
+    for (BlurResult result : iterable) {
+      assertNotNull(result.fetchResult.rowResult);
+      assertNull(result.fetchResult.recordResult);
     }
 
-    @Test
-    public void testMutationReplaceRow() throws Exception {
-        RowMutation mutation = newRowMutation(TABLE,"row-4", 
-                newRecordMutation("test-family", "record-4", 
-                        newColumn("testcol1", "value2"),
-                        newColumn("testcol2", "value3"), 
-                        newColumn("testcol3", "value4")));
-        indexManager.mutate(mutation);
-        
-        Selector selector = new Selector().setRowId("row-4");
-        FetchResult fetchResult = new FetchResult();
-        indexManager.fetchRow(TABLE, selector, fetchResult);
-        assertNotNull(fetchResult.rowResult.row);
-        Row row = newRow("row-4", 
-                newRecord("test-family", "record-4", 
-                            newColumn("testcol1", "value2"),
-                            newColumn("testcol2", "value3"), 
-                            newColumn("testcol3", "value4")));
-        row.recordCount = 1;
-        assertEquals(row, fetchResult.rowResult.row);
+    assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+    Thread.sleep(2000);// wait for cleanup to fire
+    assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+  }
+
+  @Test
+  public void testQuerySuperQueryFalse() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+    blurQuery.simpleQuery.superQueryOn = false;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = 1;
+
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+    assertEquals(iterable.getTotalResults(), 2);
+    for (BlurResult result : iterable) {
+      Selector selector = new Selector().setLocationId(result.getLocationId()).setRecordOnly(true);
+      FetchResult fetchResult = new FetchResult();
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      assertNull(fetchResult.rowResult);
+      assertNotNull(fetchResult.recordResult);
     }
+
+    assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+    Thread.sleep(2000);// wait for cleanup to fire
+    assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+  }
+
+  @Test
+  public void testQuerySuperQueryFalseWithSelector() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+    blurQuery.simpleQuery.superQueryOn = false;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = 1;
+    blurQuery.selector = new Selector();
+    blurQuery.selector.setRecordOnly(true);
+
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+    assertEquals(iterable.getTotalResults(), 2);
+    for (BlurResult result : iterable) {
+      assertNull(result.fetchResult.rowResult);
+      assertNotNull(result.fetchResult.recordResult);
+    }
+
+    assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+    Thread.sleep(2000);// wait for cleanup to fire
+    assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+  }
+
+  @Test
+  public void testQueryWithFacets() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+    blurQuery.simpleQuery.superQueryOn = true;
+    blurQuery.simpleQuery.type = ScoreType.SUPER;
+    blurQuery.fetch = 10;
+    blurQuery.minimumNumberOfResults = Long.MAX_VALUE;
+    blurQuery.maxQueryTime = Long.MAX_VALUE;
+    blurQuery.uuid = 1;
+    blurQuery.facets = Arrays.asList(new Facet("test-family.testcol1:value1", Long.MAX_VALUE), new Facet("test-family.testcol1:value-nohit", Long.MAX_VALUE));
+
+    AtomicLongArray facetedCounts = new AtomicLongArray(2);
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, facetedCounts);
+    assertEquals(iterable.getTotalResults(), 2);
+    for (BlurResult result : iterable) {
+      Selector selector = new Selector().setLocationId(result.getLocationId());
+      FetchResult fetchResult = new FetchResult();
+      indexManager.fetchRow(TABLE, selector, fetchResult);
+      assertNotNull(fetchResult.rowResult);
+      assertNull(fetchResult.recordResult);
+    }
+
+    assertEquals(2, facetedCounts.get(0));
+    assertEquals(0, facetedCounts.get(1));
+
+    assertFalse(indexManager.currentQueries(TABLE).isEmpty());
+    Thread.sleep(2000);// wait for cleanup to fire
+    assertTrue(indexManager.currentQueries(TABLE).isEmpty());
+  }
+
+  @Test
+  public void testTerms() throws Exception {
+    List<String> terms = indexManager.terms(TABLE, "test-family", "testcol1", "", (short) 100);
+    assertEquals(Arrays.asList("value1", "value4", "value7"), terms);
+  }
+
+  @Test
+  public void testMutationReplaceRow() throws Exception {
+    RowMutation mutation = newRowMutation(TABLE, "row-4", newRecordMutation("test-family", "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn(
+        "testcol3", "value4")));
+    indexManager.mutate(mutation);
+
+    Selector selector = new Selector().setRowId("row-4");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull(fetchResult.rowResult.row);
+    Row row = newRow("row-4", newRecord("test-family", "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
+    row.recordCount = 1;
+    assertEquals(row, fetchResult.rowResult.row);
+  }
 
 }

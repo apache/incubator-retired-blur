@@ -26,42 +26,42 @@ import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.utils.BlurConstants;
 
 public class BlurResultIterableSimple implements BlurResultIterable {
-    
-    private List<BlurResult> results;
-    private Map<String, Long> shardInfo;
-    private long skipTo;
 
-    public BlurResultIterableSimple(String shard, List<BlurResult> hits) {
-        Collections.sort(hits,BlurConstants.HITS_COMPARATOR);
-        this.results = hits;
-        this.shardInfo = new TreeMap<String, Long>();
-        this.shardInfo.put(shard, (long) hits.size());
-    }
+  private List<BlurResult> results;
+  private Map<String, Long> shardInfo;
+  private long skipTo;
 
-    @Override
-    public Map<String, Long> getShardInfo() {
-        return shardInfo;
-    }
+  public BlurResultIterableSimple(String shard, List<BlurResult> hits) {
+    Collections.sort(hits, BlurConstants.HITS_COMPARATOR);
+    this.results = hits;
+    this.shardInfo = new TreeMap<String, Long>();
+    this.shardInfo.put(shard, (long) hits.size());
+  }
 
-    @Override
-    public long getTotalResults() {
-        return results.size();
-    }
+  @Override
+  public Map<String, Long> getShardInfo() {
+    return shardInfo;
+  }
 
-    @Override
-    public void skipTo(long skipTo) {
-        this.skipTo = skipTo;
-    }
+  @Override
+  public long getTotalResults() {
+    return results.size();
+  }
 
-    @Override
-    public Iterator<BlurResult> iterator() {
-        long start = 0;
-        Iterator<BlurResult> iterator = results.iterator();
-        while (iterator.hasNext() && start < skipTo) {
-            iterator.next();
-            start++;
-        }
-        return iterator;
+  @Override
+  public void skipTo(long skipTo) {
+    this.skipTo = skipTo;
+  }
+
+  @Override
+  public Iterator<BlurResult> iterator() {
+    long start = 0;
+    Iterator<BlurResult> iterator = results.iterator();
+    while (iterator.hasNext() && start < skipTo) {
+      iterator.next();
+      start++;
     }
+    return iterator;
+  }
 
 }

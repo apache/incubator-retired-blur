@@ -23,9 +23,9 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.RowIndexWriter;
 
 public class BlurSimpleIndexWriter extends BlurIndex {
-  
+
   private static final Log LOG = LogFactory.getLog(BlurSimpleIndexWriter.class);
-  
+
   private Directory _directory;
   private IndexWriter _writer;
   private BlurAnalyzer _analyzer;
@@ -42,11 +42,11 @@ public class BlurSimpleIndexWriter extends BlurIndex {
     ((TieredMergePolicy) config.getMergePolicy()).setUseCompoundFile(false);
     _writer = new IndexWriter(_directory, config);
     _writer.commit();
-    _indexReaderRef.set(IndexReader.open(_writer,true));
+    _indexReaderRef.set(IndexReader.open(_writer, true));
     _rowIndexWriter = new RowIndexWriter(_writer, _analyzer);
     _lastCommit.set(System.currentTimeMillis());
   }
-  
+
   private void checkForCommit() throws IOException {
     long now = System.currentTimeMillis();
     if (_lastCommit.get() + _commitDelay < now) {
@@ -68,7 +68,7 @@ public class BlurSimpleIndexWriter extends BlurIndex {
     indexReader.incRef();
     return indexReader;
   }
-  
+
   @Override
   public void close() throws IOException {
     _writer.close();
@@ -78,7 +78,7 @@ public class BlurSimpleIndexWriter extends BlurIndex {
   public void deleteRow(boolean wal, String rowId) throws IOException {
     checkForCommit();
     synchronized (_writer) {
-      _writer.deleteDocuments(new Term(BlurConstants.ROW_ID,rowId));
+      _writer.deleteDocuments(new Term(BlurConstants.ROW_ID, rowId));
     }
   }
 
@@ -91,7 +91,7 @@ public class BlurSimpleIndexWriter extends BlurIndex {
         return;
       }
       try {
-        IndexReader reader = oldReader.reopen(_writer,true);
+        IndexReader reader = oldReader.reopen(_writer, true);
         if (oldReader != reader) {
           _indexReaderRef.set(reader);
           _closer.close(oldReader);

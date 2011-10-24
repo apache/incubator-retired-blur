@@ -43,7 +43,6 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.BException;
-import com.nearinfinity.blur.thrift.GetVersion;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
@@ -327,7 +326,7 @@ public class BlurUtil {
 
   public static String getVersion() {
     String path = "/META-INF/maven/com.nearinfinity.blur/blur-core/pom.properties";
-    InputStream inputStream = GetVersion.class.getResourceAsStream(path);
+    InputStream inputStream = BlurUtil.class.getResourceAsStream(path);
     if (inputStream == null) {
       return UNKNOWN;
     }

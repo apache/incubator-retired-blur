@@ -21,7 +21,6 @@ public class BlurIndexCommiter {
   private long _delay = TimeUnit.MINUTES.toMillis(5);
 
   public void init() {
-    LOG.info("init - start");
     _running.set(true);
     _commitDaemon = new Thread(new Runnable() {
       @Override
@@ -39,7 +38,7 @@ public class BlurIndexCommiter {
     _commitDaemon.setDaemon(true);
     _commitDaemon.setName("Commit Thread");
     _commitDaemon.start();
-    LOG.info("init - complete");
+    LOG.info("Init Complete");
   }
 
   public void commit() {

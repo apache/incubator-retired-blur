@@ -158,7 +158,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       server.setIface(shardServer);
     }
     server.setConfiguration(configuration);
-
+    
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override

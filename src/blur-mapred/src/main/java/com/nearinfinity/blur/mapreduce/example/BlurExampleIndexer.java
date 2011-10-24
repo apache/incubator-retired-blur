@@ -58,6 +58,9 @@ public class BlurExampleIndexer {
     
     BlurTask blurTask = new BlurTask();
     blurTask.setTableDescriptor(descriptor);
+    blurTask.setSpinLockPath("/copy-locks");
+    blurTask.setZookeeperConnectionStr("localhost");
+    blurTask.setMaxNumberOfConcurrentCopies(10);
     Job job = blurTask.configureJob(configuration);
     job.setJarByClass(BlurExampleIndexer.class);
     job.setMapperClass(BlurExampleMapper.class);

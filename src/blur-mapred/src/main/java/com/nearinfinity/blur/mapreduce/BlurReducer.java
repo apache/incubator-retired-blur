@@ -52,6 +52,7 @@ import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.util.IOUtils;
 import org.apache.lucene.util.Version;
+import org.apache.zookeeper.KeeperException;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
@@ -167,10 +168,11 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   protected void cleanup(Context context) throws IOException, InterruptedException {
     _writer.commit();
     _writer.close();
+    TableDescriptor descriptor = _blurTask.getTableDescriptor();
+    
     Path directoryPath = _blurTask.getDirectoryPath(context);
     remove(directoryPath);
     
-    TableDescriptor descriptor = _blurTask.getTableDescriptor();
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.getCompressionBlockSize();
     if (compressionClass == null) {
@@ -180,6 +182,8 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       compressionBlockSize = 32768;
     }
     
+    copyLock(context,descriptor);
+    
     HdfsDirectory dir = new HdfsDirectory(directoryPath);
     CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(dir, getInstance(compressionClass), compressionBlockSize);
     List<String> files = getFilesOrderedBySize(_directory);
@@ -188,6 +192,22 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     long startTime = System.currentTimeMillis();
     for (String file : files) {
       totalBytesCopied += copy(_directory, directory, file, file, context, totalBytesCopied, totalBytesToCopy, startTime);
+    }
+  }
+
+  private void copyLock(Context context, TableDescriptor descriptor) throws IOException, InterruptedException {
+    String zkCon = _blurTask.getZookeeperConnectionStr();
+    String path = _blurTask.getSpinLockPath();
+    String name = descriptor.name + "_" + _blurTask.getShardName(context);
+    if (zkCon != null && path != null) {
+      try {
+        SpinLock spinLock = new SpinLock(context,zkCon,name,path);
+        spinLock.copyLock();
+      } catch (KeeperException e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+      LOG.info("Spin lock not used because zookeeper connection str [{0}] or spin lock path not set [{1}]",zkCon,path);
     }
   }
 

@@ -37,6 +37,21 @@ public class BlurServerShutDown implements Watcher {
 
   private BlurShutdown shutdown;
   private ZooKeeper zooKeeper;
+  
+  public BlurServerShutDown() {
+    Runtime runtime = Runtime.getRuntime();
+    runtime.addShutdownHook(new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          LOG.info("Closing zookeeper.");
+          zooKeeper.close();
+        } catch (InterruptedException e) {
+          LOG.error("Unknown error while closing zookeeper.",e);
+        }
+      }
+    }));
+  }
 
   public void register(final BlurShutdown shutdown, ZooKeeper zooKeeper) {
     this.shutdown = shutdown;

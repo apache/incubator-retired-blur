@@ -184,6 +184,7 @@ public class BlurIndexWriter extends BlurIndex {
     _open.set(false);
     _refresher.unregister(this);
     _writer.close();
+    LOG.info("Writer for table [{0}] shard [{1}] closed.",_table,_shard);
   }
 
   @Override

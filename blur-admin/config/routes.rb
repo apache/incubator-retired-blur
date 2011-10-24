@@ -48,11 +48,10 @@ BlurAdmin::Application.routes.draw do
 
   match 'hdfs' => 'hdfs#index', :via => :get
   match 'hdfs/:id/info' => 'hdfs#info', :via => :get, :as => :hdfs_info
-  match 'hdfs/expand' => 'hdfs#expand', :via => :get, :as => :expand_hdfs
-  match 'hdfs/view_node' => 'hdfs#view_node', :via => :get, :as => :view_node
-  match 'hdfs/cut_file' => 'hdfs#cut_file', :via => :post
-  match 'hdfs/copy_file' => 'hdfs#copy_file', :via => :post
-  match 'hdfs/delete_file' => 'hdfs#delete_file', :via => :post
+  match 'hdfs/:id/expand(*fs_path)' => 'hdfs#expand', :via => :get, :as => :hdfs_expand
+  match 'hdfs/:id/file_info(*fs_path)' => 'hdfs#file_info', :via => :get, :as => :hdfs_file_info
+  match 'hdfs/:id/move' => 'hdfs#move_file', :via => :post, :as => :hdfs_move
+  match 'hdfs/:id/delete_file' => 'hdfs#delete_file', :via => :post, :as => :hdfs_delete
 
   root :to => 'zookeepers#index'
 

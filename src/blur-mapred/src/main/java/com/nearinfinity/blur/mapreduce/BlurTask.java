@@ -86,11 +86,11 @@ public class BlurTask implements Writable {
 
   public Path getDirectoryPath(TaskAttemptContext context) {
     String shardName = getShardName(context);
-    return new Path(new Path(new Path(_tableDescriptor.tableUri), _tableDescriptor.name), shardName);
+    return new Path(new Path(_tableDescriptor.tableUri), shardName);
   }
 
   public int getNumReducers(Configuration configuration) {
-    Path shardPath = new Path(new Path(_tableDescriptor.tableUri), _tableDescriptor.name);
+    Path shardPath = new Path(_tableDescriptor.tableUri);
     try {
       FileSystem fileSystem = FileSystem.get(configuration);
       FileStatus[] files = fileSystem.listStatus(shardPath);

@@ -90,17 +90,21 @@ public class BlurTask implements Writable {
   }
 
   public int getNumReducers(Configuration configuration) {
-    Path shardPath = new Path(_tableDescriptor.tableUri);
+    Path tablePath = new Path(_tableDescriptor.tableUri);
     try {
+      int num = _tableDescriptor.shardCount;
       FileSystem fileSystem = FileSystem.get(configuration);
-      FileStatus[] files = fileSystem.listStatus(shardPath);
+      if (!fileSystem.exists(tablePath)) {
+        return num;
+      }
+      FileStatus[] files = fileSystem.listStatus(tablePath);
       int shardCount = 0;
       for (FileStatus fileStatus : files) {
         if (fileStatus.isDir()) {
           shardCount++;
         }
       }
-      int num = _tableDescriptor.shardCount;
+      
       if (shardCount == 0) {
         return num;
       }

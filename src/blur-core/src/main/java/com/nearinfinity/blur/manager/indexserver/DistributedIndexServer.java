@@ -7,6 +7,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,8 +37,11 @@ import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
@@ -64,8 +68,8 @@ import com.nearinfinity.blur.utils.BlurUtil;
 public class DistributedIndexServer extends AbstractIndexServer {
 
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
-
   private static final long _delay = TimeUnit.SECONDS.toMillis(5);
+  private static final long SAFE_MODE_DELAY = TimeUnit.SECONDS.toMillis(20);
 
   private Map<String, BlurAnalyzer> _tableAnalyzers = new ConcurrentHashMap<String, BlurAnalyzer>();
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
@@ -91,7 +95,130 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private Timer _timerTableWarmer;
 
-  public void init() {
+  public void init() throws KeeperException, InterruptedException {
+    _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
+    _closer = new BlurIndexCloser();
+    setupFlushCacheTimer();
+    String lockPath = lockForSafeMode();
+    try {
+      registerMyself();
+      setupSafeMode();
+    } finally {
+      unlockForSafeMode(lockPath);
+    }
+    waitInSafeModeIfNeeded();
+    setupTableWarmer();
+  }
+
+  private void waitInSafeModeIfNeeded() throws KeeperException, InterruptedException {
+    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+    Stat stat = _zookeeper.exists(blurSafemodePath, false);
+    if (stat == null) {
+      throw new RuntimeException("Safemode path missing [" + blurSafemodePath + "]");
+    }
+    byte[] data = _zookeeper.getData(blurSafemodePath, false, stat);
+    if (data == null) {
+      throw new RuntimeException("Safemode data missing [" + blurSafemodePath + "]");
+    }
+    long timestamp = Long.parseLong(new String(data));
+    long waitTime = timestamp - System.currentTimeMillis();
+    if (waitTime > 0) {
+      LOG.info("Waiting in safe mode for [{0}] seconds",waitTime/1000.0);
+      Thread.sleep(waitTime);
+    }
+  }
+
+  private void setupSafeMode() throws KeeperException, InterruptedException {
+    String shardsPath = ZookeeperPathConstants.getBlurOnlineShardsPath();
+    List<String> children = _zookeeper.getChildren(shardsPath, false);
+    if (children.size() == 0) {
+      throw new RuntimeException("No shards registered!");
+    }
+    if (children.size() != 1) {
+      return;
+    }
+    LOG.info("First node online, setting up safe mode.");
+    long timestamp = System.currentTimeMillis() + SAFE_MODE_DELAY;
+    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+    Stat stat = _zookeeper.exists(blurSafemodePath, false);
+    if (stat == null) {
+      _zookeeper.create(blurSafemodePath, Long.toString(timestamp).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    } else {
+      _zookeeper.setData(blurSafemodePath, Long.toString(timestamp).getBytes(), -1);
+    }
+  }
+
+  private void unlockForSafeMode(String lockPath) throws InterruptedException, KeeperException {
+    _zookeeper.delete(lockPath, -1);
+    LOG.info("Lock released.");
+  }
+
+  private String lockForSafeMode() throws KeeperException, InterruptedException {
+    LOG.info("Getting safe mode lock.");
+    final Object lock = new Object();
+    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+    String newPath = _zookeeper.create(blurSafemodePath + "/safemode-", getNodeName().getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+    while (true) {
+      synchronized (lock) {
+        List<String> children = new ArrayList<String>(_zookeeper.getChildren(blurSafemodePath, new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            synchronized (lock) {
+              lock.notifyAll();
+            }
+          }
+        }));
+        Collections.sort(children);
+        if (newPath.equals(blurSafemodePath + "/" + children.get(0))) {
+          LOG.info("Lock aquired.");
+          return newPath;
+        } else {
+          lock.wait();
+        }
+      }
+    }
+  }
+
+  private void setupTableWarmer() {
+    _timerTableWarmer = new Timer("Table-Warmer", true);
+    _timerTableWarmer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        List<String> tableList = _clusterStatus.getTableList();
+        for (String table : tableList) {
+          try {
+            int count = getIndexes(table).size();
+            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.",table,count);
+          } catch (IOException e) {
+            LOG.error("Unknown error trying to warm table [{0}]",e,table);
+          }
+        }
+      }
+    }, _delay, _delay);
+  }
+
+  private void registerMyself() {
+    String nodeName = getNodeName();
+    String registeredShardsPath = ZookeeperPathConstants.getBlurRegisteredShardsPath() + "/" + nodeName;
+    String onlineShardsPath = ZookeeperPathConstants.getBlurOnlineShardsPath() + "/" + nodeName;
+    try {
+      if (_zookeeper.exists(registeredShardsPath, false) == null) {
+        _zookeeper.create(registeredShardsPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      }
+      while (_zookeeper.exists(onlineShardsPath, false) != null) {
+        LOG.info("Node [{0}] already registered, waiting for path [{1}] to be released", nodeName, onlineShardsPath);
+        Thread.sleep(3000);
+      }
+      String version = BlurUtil.getVersion();
+      _zookeeper.create(onlineShardsPath, version.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private void setupFlushCacheTimer() {
     _timerCacheFlush = new Timer("Flush-IndexServer-Caches", true);
     _timerCacheFlush.schedule(new TimerTask() {
       @Override
@@ -117,41 +244,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
             } catch (IOException e) {
               LOG.error("Error while closing index [{0}] from table [{1}] shard [{2}]", e, index, table, shard);
             }
-          }
-        }
-      }
-    }, _delay, _delay);
-    _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
-    _closer = new BlurIndexCloser();
-    String nodeName = getNodeName();
-    String registeredShardsPath = ZookeeperPathConstants.getBlurRegisteredShardsPath() + "/" + nodeName;
-    String onlineShardsPath = ZookeeperPathConstants.getBlurOnlineShardsPath() + "/" + nodeName;
-    try {
-      if (_zookeeper.exists(registeredShardsPath, false) == null) {
-        _zookeeper.create(registeredShardsPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-      }
-      while (_zookeeper.exists(onlineShardsPath, false) != null) {
-        LOG.info("Node [{0}] already registered, waiting for path [{1}] to be released", nodeName, onlineShardsPath);
-        Thread.sleep(3000);
-      }
-      String version = BlurUtil.getVersion();
-      _zookeeper.create(onlineShardsPath, version.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-    } catch (KeeperException e) {
-      throw new RuntimeException(e);
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
-    _timerTableWarmer = new Timer("Table-Warmer", true);
-    _timerTableWarmer.schedule(new TimerTask() {
-      @Override
-      public void run() {
-        List<String> tableList = _clusterStatus.getTableList();
-        for (String table : tableList) {
-          try {
-            int count = getIndexes(table).size();
-            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.",table,count);
-          } catch (IOException e) {
-            LOG.error("Unknown error trying to warm table [{0}]",e,table);
           }
         }
       }

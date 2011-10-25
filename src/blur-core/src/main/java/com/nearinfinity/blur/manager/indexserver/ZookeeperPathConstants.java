@@ -32,7 +32,6 @@ public class ZookeeperPathConstants {
   private static final String BLUR_TABLES = getBlurBasePath() + "/tables";
 
   private static final String BLUR_SAFEMODE = getBlurBasePath() + "/safemode";
-  private static final String BLUR_SAFEMODE_LOCK = getBlurBasePath() + "/safemode/lock";
   private static final String BLUR_SAFEMODE_SHUTDOWN = getBlurBasePath() + "/safemode/shutdown";
   private static final String BLUR_REGISTERED_SHARDS_PATH = getBlurBasePath() + "/shard-nodes";
   private static final String BLUR_TABLE_LOCK_PATH = "locks";
@@ -75,10 +74,6 @@ public class ZookeeperPathConstants {
 
   public static String getBlurSafemodePath() {
     return BLUR_SAFEMODE;
-  }
-
-  public static String getBlurSafemodeLockPath() {
-    return BLUR_SAFEMODE_LOCK;
   }
 
   public static String getBlurSafemodeShutdownPath() {

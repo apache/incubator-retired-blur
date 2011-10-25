@@ -205,14 +205,15 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     private byte[] _compressedBuffer;
     private IndexOutput _tmpOutput;
     private Directory _directory;
-    private CompressionCodec _compression;
     private String _name;
     private int _blockCount;
     private Compressor _compressor;
 
-    public CompressedIndexOutput(String name, Directory directory, CompressionCodec compression, int blockSize) throws IOException {
-      _compression = compression;
-      _compressor = _compression.createCompressor();
+    public CompressedIndexOutput(String name, Directory directory, CompressionCodec codec, int blockSize) throws IOException {
+      _compressor = codec.createCompressor();
+      if (_compressor == null) {
+        throw new RuntimeException("CompressionCodec [" + codec + "] does not support compressor on this platform.");
+      }
       _directory = directory;
       _name = name;
       _output = directory.createOutput(name);
@@ -336,6 +337,9 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
 
     public CompressedIndexInput(String name, Directory directory, CompressionCodec codec) throws IOException {
       _decompressor = codec.createDecompressor();
+      if (_decompressor == null) {
+        throw new RuntimeException("CompressionCodec [" + codec + "] does not support decompressor on this platform.");
+      }
       _indexInput = directory.openInput(name);
       _realLength = _indexInput.length();
       

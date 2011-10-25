@@ -36,86 +36,86 @@ import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 
 public class BlurClientManager {
-    
-    private static final Log LOG = LogFactory.getLog(BlurClientManager.class);
-    private static final int MAX_RETIRES = 10;
-    private static final long BACK_OFF_TIME = TimeUnit.MILLISECONDS.toMillis(250);
-    
-    private static Map<String,BlockingQueue<Client>> clientPool = new ConcurrentHashMap<String, BlockingQueue<Client>>();
-    
-    @SuppressWarnings("unchecked")
-    public static <CLIENT,T> T execute(String connectionStr, AbstractCommand<CLIENT,T> command) throws Exception {
-        int retries = 0;
-        while (true) {
-            Blur.Client client = getClient(connectionStr);
-            if (client == null) {
-                throw new BlurException("Host [" + connectionStr + "] can not be contacted.",null);
-            }
-            try {
-                return command.call((CLIENT) client);
-            } catch (Exception e) {
-                trashClient(connectionStr, client);
-                client = null;
-                if (retries >= MAX_RETIRES) {
-                    LOG.error("No more retries [{0}] out of [{1}]",retries,MAX_RETIRES);
-                    throw e;
-                }
-                retries++;
-                LOG.error("Retrying call [{0}] retry [{1}] out of [{2}] message [{3}]",command,retries,MAX_RETIRES,e.getMessage());
-                Thread.sleep(BACK_OFF_TIME);
-            } finally {
-                if (client != null) {
-                    returnClient(connectionStr, client);
-                }
-            }
+
+  private static final Log LOG = LogFactory.getLog(BlurClientManager.class);
+  private static final int MAX_RETIRES = 2;
+  private static final long BACK_OFF_TIME = TimeUnit.MILLISECONDS.toMillis(250);
+
+  private static Map<String, BlockingQueue<Client>> clientPool = new ConcurrentHashMap<String, BlockingQueue<Client>>();
+
+  @SuppressWarnings("unchecked")
+  public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command) throws Exception {
+    int retries = 0;
+    while (true) {
+      Blur.Client client = getClient(connectionStr);
+      if (client == null) {
+        throw new BlurException("Host [" + connectionStr + "] can not be contacted.", null);
+      }
+      try {
+        return command.call((CLIENT) client);
+      } catch (Exception e) {
+        trashClient(connectionStr, client);
+        client = null;
+        if (retries >= MAX_RETIRES) {
+          LOG.error("No more retries [{0}] out of [{1}]", retries, MAX_RETIRES);
+          throw e;
         }
-    }
-
-    private static void returnClient(String connectionStr, Client client) throws InterruptedException {
-        clientPool.get(connectionStr).put(client);
-    }
-
-    private static void trashClient(String connectionStr, Client client) {
-        client.getInputProtocol().getTransport().close();
-        client.getOutputProtocol().getTransport().close();
-    }
-
-    private static Client getClient(String connectionStr) throws InterruptedException, TTransportException {
-        BlockingQueue<Client> blockingQueue;
-        synchronized (clientPool) {
-            blockingQueue = clientPool.get(connectionStr);
-            if (blockingQueue == null) {
-                blockingQueue = new LinkedBlockingQueue<Client>();
-                clientPool.put(connectionStr, blockingQueue);
-            }
+        retries++;
+        LOG.error("Retrying call [{0}] retry [{1}] out of [{2}] message [{3}]", command, retries, MAX_RETIRES, e.getMessage());
+        Thread.sleep(BACK_OFF_TIME);
+      } finally {
+        if (client != null) {
+          returnClient(connectionStr, client);
         }
-        if (blockingQueue.isEmpty()) {
-            return newClient(connectionStr);
-        }
-        return blockingQueue.take();
+      }
     }
+  }
 
-    private static Client newClient(String connectionStr) throws TTransportException {
-        String host = getHost(connectionStr);
-        int port = getPort(connectionStr);
-        TTransport trans = new TSocket(host, port);
-        TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
-        Client client = new Client(proto);
-        try {
-            trans.open();
-        } catch (Exception e) {
-            LOG.error("Error trying to open connection to [{0}]",connectionStr);
-            return null;
-        }
-        return client;
-    }
+  private static void returnClient(String connectionStr, Client client) throws InterruptedException {
+    clientPool.get(connectionStr).put(client);
+  }
 
-    private static int getPort(String connectionStr) {
-        return Integer.parseInt(connectionStr.substring(connectionStr.indexOf(':') + 1));
-    }
+  private static void trashClient(String connectionStr, Client client) {
+    client.getInputProtocol().getTransport().close();
+    client.getOutputProtocol().getTransport().close();
+  }
 
-    private static String getHost(String connectionStr) {
-        return connectionStr.substring(0,connectionStr.indexOf(':'));
+  private static Client getClient(String connectionStr) throws InterruptedException, TTransportException {
+    BlockingQueue<Client> blockingQueue;
+    synchronized (clientPool) {
+      blockingQueue = clientPool.get(connectionStr);
+      if (blockingQueue == null) {
+        blockingQueue = new LinkedBlockingQueue<Client>();
+        clientPool.put(connectionStr, blockingQueue);
+      }
     }
+    if (blockingQueue.isEmpty()) {
+      return newClient(connectionStr);
+    }
+    return blockingQueue.take();
+  }
+
+  private static Client newClient(String connectionStr) throws TTransportException {
+    String host = getHost(connectionStr);
+    int port = getPort(connectionStr);
+    TTransport trans = new TSocket(host, port);
+    TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
+    Client client = new Client(proto);
+    try {
+      trans.open();
+    } catch (Exception e) {
+      LOG.error("Error trying to open connection to [{0}]", connectionStr);
+      return null;
+    }
+    return client;
+  }
+
+  private static int getPort(String connectionStr) {
+    return Integer.parseInt(connectionStr.substring(connectionStr.indexOf(':') + 1));
+  }
+
+  private static String getHost(String connectionStr) {
+    return connectionStr.substring(0, connectionStr.indexOf(':'));
+  }
 
 }

@@ -99,12 +99,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     setupFlushCacheTimer();
-    String lockPath = lockForSafeMode();
+    String lockPath = BlurUtil.lockForSafeMode(_zookeeper,getNodeName());
     try {
       registerMyself();
       setupSafeMode();
     } finally {
-      unlockForSafeMode(lockPath);
+      BlurUtil.unlockForSafeMode(_zookeeper,lockPath);
     }
     waitInSafeModeIfNeeded();
     setupTableWarmer();
@@ -145,37 +145,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       _zookeeper.create(blurSafemodePath, Long.toString(timestamp).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     } else {
       _zookeeper.setData(blurSafemodePath, Long.toString(timestamp).getBytes(), -1);
-    }
-  }
-
-  private void unlockForSafeMode(String lockPath) throws InterruptedException, KeeperException {
-    _zookeeper.delete(lockPath, -1);
-    LOG.info("Lock released.");
-  }
-
-  private String lockForSafeMode() throws KeeperException, InterruptedException {
-    LOG.info("Getting safe mode lock.");
-    final Object lock = new Object();
-    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
-    String newPath = _zookeeper.create(blurSafemodePath + "/safemode-", getNodeName().getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-    while (true) {
-      synchronized (lock) {
-        List<String> children = new ArrayList<String>(_zookeeper.getChildren(blurSafemodePath, new Watcher() {
-          @Override
-          public void process(WatchedEvent event) {
-            synchronized (lock) {
-              lock.notifyAll();
-            }
-          }
-        }));
-        Collections.sort(children);
-        if (newPath.equals(blurSafemodePath + "/" + children.get(0))) {
-          LOG.info("Lock aquired.");
-          return newPath;
-        } else {
-          lock.wait();
-        }
-      }
     }
   }
 

@@ -93,7 +93,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private QueryCache _queryCache;
   private BlurQueryChecker _queryChecker;
 
-  public void init() {
+  public void init() throws KeeperException, InterruptedException {
+    registerMyself();
     _queryCache = new QueryCache("controller-cache", _maxQueryCacheElements, _maxTimeToLive);
     _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
     updateShardLayout();
@@ -104,6 +105,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         updateShardLayout();
       }
     }, _layoutDelay, _layoutDelay);
+  }
+
+  private void registerMyself() {
     try {
       String onlineControllerPath = ZookeeperPathConstants.getBlurOnlineControllersPath() + "/" + _nodeName;
       while (_zookeeper.exists(onlineControllerPath, false) != null) {
@@ -351,7 +355,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             return _client.execute(hostnamePort, new BlurCommand<Map<String, String>>() {
               @Override
               public Map<String, String> call(Client client) throws Exception {
-                return client.shardServerLayout(table);
+                try {
+                  return client.shardServerLayout(table);
+                } catch (Exception e) {
+                  LOG.error("Error while getting layout from [{0}]",e,hostnamePort);
+                  throw e;
+                }
               }
             });
           }

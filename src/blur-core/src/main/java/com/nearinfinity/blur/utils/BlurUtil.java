@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -38,9 +39,16 @@ import java.util.concurrent.atomic.AtomicLongArray;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
@@ -342,5 +350,36 @@ public class BlurUtil {
       return UNKNOWN;
     }
     return verison.toString();
+  }
+  
+  public static void unlockForSafeMode(ZooKeeper zookeeper, String lockPath) throws InterruptedException, KeeperException {
+    zookeeper.delete(lockPath, -1);
+    LOG.info("Lock released.");
+  }
+
+  public static String lockForSafeMode(ZooKeeper zookeeper, String nodeName) throws KeeperException, InterruptedException {
+    LOG.info("Getting safe mode lock.");
+    final Object lock = new Object();
+    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+    String newPath = zookeeper.create(blurSafemodePath + "/safemode-", nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+    while (true) {
+      synchronized (lock) {
+        List<String> children = new ArrayList<String>(zookeeper.getChildren(blurSafemodePath, new Watcher() {
+          @Override
+          public void process(WatchedEvent event) {
+            synchronized (lock) {
+              lock.notifyAll();
+            }
+          }
+        }));
+        Collections.sort(children);
+        if (newPath.equals(blurSafemodePath + "/" + children.get(0))) {
+          LOG.info("Lock aquired.");
+          return newPath;
+        } else {
+          lock.wait();
+        }
+      }
+    }
   }
 }

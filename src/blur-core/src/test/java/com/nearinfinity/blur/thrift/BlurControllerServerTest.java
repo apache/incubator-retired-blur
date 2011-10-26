@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.thrift.TException;
+import org.apache.zookeeper.KeeperException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -63,7 +64,7 @@ public class BlurControllerServerTest {
   private BlurControllerServer server;
 
   @Before
-  public void setup() throws IOException {
+  public void setup() throws IOException, KeeperException, InterruptedException {
     addShardServer("shard-00000000");
     addShardServer("shard-00000001");
     addShardServer("shard-00000002");

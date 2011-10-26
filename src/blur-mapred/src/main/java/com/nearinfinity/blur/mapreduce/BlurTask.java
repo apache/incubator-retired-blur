@@ -103,7 +103,7 @@ public class BlurTask implements Writable {
     Path tablePath = new Path(_tableDescriptor.tableUri);
     try {
       int num = _tableDescriptor.shardCount;
-      FileSystem fileSystem = FileSystem.get(configuration);
+      FileSystem fileSystem = FileSystem.get(tablePath.toUri(), configuration);
       if (!fileSystem.exists(tablePath)) {
         return num;
       }

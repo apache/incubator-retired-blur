@@ -132,8 +132,13 @@ public class ZookeeperLockFactory extends LockFactory {
         Stat stat = _zk.exists(_instanceIndexLockPath, false);
         if (stat != null) {
           byte[] data = _zk.getData(_instanceIndexLockPath, false, stat);
-          LOG.info("Lock [{0}] cannot be obtained, being held by [{1}]",_instanceIndexLockPath,new String(data));
-          return false;
+          if (_nodeName.equals(new String(data))) {
+            LOG.warn("This node was holding the lock [{0}], deleteing and retrying.",_instanceIndexLockPath);
+            _zk.delete(_instanceIndexLockPath, -1);
+          } else {
+            LOG.info("Lock [{0}] cannot be obtained, being held by [{1}]",_instanceIndexLockPath,new String(data));
+            return false;
+          }
         }
         _zk.create(_instanceIndexLockPath, _nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
         _stat = stat;

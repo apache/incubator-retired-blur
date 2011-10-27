@@ -129,8 +129,14 @@ public class ZookeeperLockFactory extends LockFactory {
     public boolean obtain() throws IOException {
       try {
         LOG.info("Obtaining lock [{0}]", _instanceIndexLockPath);
+        Stat stat = _zk.exists(_instanceIndexLockPath, false);
+        if (stat != null) {
+          byte[] data = _zk.getData(_instanceIndexLockPath, false, stat);
+          LOG.info("Lock [{0}] cannot be obtained, being held by [{1}]",_instanceIndexLockPath,new String(data));
+          return false;
+        }
         _zk.create(_instanceIndexLockPath, _nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-        _stat = _zk.exists(_instanceIndexLockPath, false);
+        _stat = stat;
         return true;
       } catch (KeeperException e) {
         if (e.code() == Code.NODEEXISTS) {

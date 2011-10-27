@@ -33,7 +33,7 @@ public class HdfsFileReader extends DataInput {
     _path = path;
     _fileSystem = fileSystem;
     _hdfsLength = fileStatus.getLen();
-    _inputStream = fileSystem.open(path);
+    _inputStream = fileSystem.open(path,Constants.BUFFER_SIZE);
 
     // read meta blocks
     _inputStream.seek(_hdfsLength - 16);

@@ -78,11 +78,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     int numberOfBlocksPerBank = 8192;
     int blockSize = BlockDirectory.BLOCK_SIZE;
     int numberOfBanks = getNumberOfBanks(0.5f, numberOfBlocksPerBank, blockSize);
-    BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize);
-
     Configuration config = new Configuration();
-
     BlurMetrics blurMetrics = new BlurMetrics(config);
+    BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize, blurMetrics);
 
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, blurMetrics);
 
@@ -132,6 +130,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
     indexManager.setBlurFilterCacheClass(configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS));
+    indexManager.setBlurMetrics(blurMetrics);
     indexManager.init();
 
     final BlurShardServer shardServer = new BlurShardServer();

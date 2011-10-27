@@ -49,6 +49,11 @@ public class BlockDirectory extends DirectIODirectory {
     public void delete(String name) {
       
     }
+
+    @Override
+    public long size() {
+      return 0;
+    }
   };
   
   private static ThreadLocal<Boolean> _modifyFileCache = new ThreadLocal<Boolean>() {

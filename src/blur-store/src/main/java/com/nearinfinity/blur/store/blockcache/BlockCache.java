@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.EvictionListener;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 
 public class BlockCache {
 
@@ -15,8 +16,10 @@ public class BlockCache {
   private final int _blockSize;
   private final int _numberOfBlocksPerBank;
   private final int _maxEntries;
+  private final BlurMetrics _metrics;
 
-  public BlockCache(final int numberOfBanks, final int numberOfBlocksPerBank, int blockSize) {
+  public BlockCache(final int numberOfBanks, final int numberOfBlocksPerBank, int blockSize, BlurMetrics metrics) {
+    _metrics = metrics;
     _numberOfBlocksPerBank = numberOfBlocksPerBank;
     _banks = new byte[numberOfBanks][];
     _locks = new BlockLocks[numberOfBanks];
@@ -38,6 +41,7 @@ public class BlockCache {
           _locks[bankId].clear(block);
           _lockCounters[bankId].decrementAndGet();
         }
+        _metrics.blockCacheEviction.inc();
       }
     };
     _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>()

@@ -1,15 +1,9 @@
 package com.nearinfinity.blur.utils;
 
-import java.util.List;
-
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
-import com.nearinfinity.blur.thrift.generated.ExpertQuery;
-import com.nearinfinity.blur.thrift.generated.Facet;
-import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 
 public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
 

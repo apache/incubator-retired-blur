@@ -76,6 +76,11 @@ public class BlockDirectoryTest {
       public void delete(String name) {
         
       }
+
+      @Override
+      public long size() {
+        return map.size();
+      }
     };
   }
 

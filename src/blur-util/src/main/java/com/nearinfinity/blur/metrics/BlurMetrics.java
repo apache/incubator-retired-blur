@@ -16,20 +16,22 @@ public class BlurMetrics implements Updater {
   private MetricsRecord metricsRecord;
   private MetricsRegistry registry = new MetricsRegistry();
   
-  public MetricsTimeVaryingLong hdfsCacheHit = new MetricsTimeVaryingLong("hdfs.cache.hit",registry);
-  public MetricsTimeVaryingLong hdfsCacheMiss = new MetricsTimeVaryingLong("hdfs.cache.miss",registry);
-  public MetricsTimeVaryingRate rowsReadRate = new MetricsTimeVaryingRate("blur.rows.read.rate", registry);
-  public MetricsTimeVaryingRate rowsWriteRate = new MetricsTimeVaryingRate("blur.rows.written.rate", registry);
-  public MetricsTimeVaryingRate recordsReadRate = new MetricsTimeVaryingRate("blur.records.read.rate", registry);
-  public MetricsTimeVaryingRate recordsWritenRate = new MetricsTimeVaryingRate("blur.records.written.rate", registry);
+  public MetricsTimeVaryingLong blockCacheHit = new MetricsTimeVaryingLong("blockcache.cache.hit",registry);
+  public MetricsTimeVaryingLong blockCacheMiss = new MetricsTimeVaryingLong("blockcache.cache.miss",registry);
+  public MetricsTimeVaryingLong blockCacheEviction = new MetricsTimeVaryingLong("blockcache.eviction", registry);
+  public MetricsTimeVaryingRate rowsReadRate = new MetricsTimeVaryingRate("rows.read.rate", registry);
+  public MetricsTimeVaryingRate rowsWriteRate = new MetricsTimeVaryingRate("rows.written.rate", registry);
+  public MetricsTimeVaryingRate recordsReadRate = new MetricsTimeVaryingRate("records.read.rate", registry);
+  public MetricsTimeVaryingRate recordsWritenRate = new MetricsTimeVaryingRate("records.written.rate", registry);
+  
   
   public static void main(String[] args) throws InterruptedException {
     Configuration conf = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(conf);
     long start = System.nanoTime();
     for (int i = 0; i < 100; i++) {
-      blurMetrics.hdfsCacheHit.inc();
-      blurMetrics.hdfsCacheMiss.inc();
+      blurMetrics.blockCacheHit.inc();
+      blurMetrics.blockCacheMiss.inc();
       blurMetrics.recordsReadRate.inc(1,(System.nanoTime()-start)/1000000);
       start = System.nanoTime();
       Thread.sleep(1000);

@@ -73,6 +73,7 @@ import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.status.QueryStatus;
 import com.nearinfinity.blur.manager.status.QueryStatusManager;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.MutationHelper;
@@ -113,6 +114,7 @@ public class IndexManager {
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
   private String _blurFilterCacheClass;
+  private BlurMetrics _blurMetrics;
 
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
@@ -177,7 +179,18 @@ public class IndexManager {
     IndexReader reader = null;
     try {
       reader = index.getIndexReader(!selector.allowStaleData);
+      long s = System.nanoTime();
       fetchRow(reader, table, selector, fetchResult);
+      long e = System.nanoTime();
+      long time = (e-s)/1000000;
+      if (_blurMetrics != null) {
+        if (fetchResult.rowResult != null) {
+          _blurMetrics.recordsReadRate.inc(fetchResult.rowResult.row.records.size(), time);
+          _blurMetrics.rowsReadRate.inc(1, time);
+        } else if (fetchResult.recordResult != null) {
+          _blurMetrics.recordsReadRate.inc(1, time);
+        }
+      }
     } catch (Exception e) {
       LOG.error("Unknown error while trying to fetch row.", e);
       throw new BException(e.getMessage(), e);
@@ -773,5 +786,9 @@ public class IndexManager {
 
   public void setBlurFilterCacheClass(String blurFilterCacheClass) {
     _blurFilterCacheClass = blurFilterCacheClass;
+  }
+
+  public void setBlurMetrics(BlurMetrics blurMetrics) {
+    _blurMetrics = blurMetrics;
   }
 }

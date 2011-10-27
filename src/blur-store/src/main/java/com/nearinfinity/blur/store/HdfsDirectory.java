@@ -16,8 +16,6 @@
 
 package com.nearinfinity.blur.store;
 
-import static com.nearinfinity.blur.store.Constants.BUFFER_SIZE;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,7 +84,7 @@ public class HdfsDirectory extends DirectIODirectory {
 
   @Override
   public IndexInput openInput(final String name, int bufferSize) throws IOException {
-    HdfsFileReader reader = new HdfsFileReader(getFileSystem(), new Path(_hdfsDirPath, name));
+    HdfsFileReader reader = new HdfsFileReader(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
     return new HdfsIndexInput(reader);
   }
 

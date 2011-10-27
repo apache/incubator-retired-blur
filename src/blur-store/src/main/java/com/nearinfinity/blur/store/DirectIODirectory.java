@@ -8,6 +8,8 @@ import org.apache.lucene.store.IndexOutput;
 
 public abstract class DirectIODirectory extends Directory {
   
+  public static final int BUFFER_SIZE = 8192;
+  
   public abstract IndexOutput createOutputDirectIO(String name) throws IOException;
 
   public abstract IndexInput openInputDirectIO(String name) throws IOException;

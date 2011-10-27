@@ -14,8 +14,8 @@ import com.nearinfinity.blur.store.DirectIODirectory;
 
 public class BlockDirectory extends DirectIODirectory {
   
-  public static final long BLOCK_SHIFT = 14; // 2^14 = 16,384 bytes per block
-  public static final long BLOCK_MOD = 0x3FFF;
+  public static final long BLOCK_SHIFT = 13; // 2^13 = 8,192 bytes per block
+  public static final long BLOCK_MOD = 0x1FFF;
   public static final int BLOCK_SIZE = 1 << BLOCK_SHIFT;
 
   public static long getBlock(long pos) {

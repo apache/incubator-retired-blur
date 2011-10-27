@@ -73,9 +73,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
     // setup block cache
-    // 134,217,728 is the bank size, therefore there are 8,192 block
-    // in a bank when using a block of 16,384
-    int numberOfBlocksPerBank = 8192;
+    // 134,217,728 is the bank size, therefore there are 16,384 block
+    // in a bank when using a block of 8,192
+    int numberOfBlocksPerBank = 16384;
     int blockSize = BlockDirectory.BLOCK_SIZE;
     int numberOfBanks = getNumberOfBanks(0.5f, numberOfBlocksPerBank, blockSize);
     Configuration config = new Configuration();

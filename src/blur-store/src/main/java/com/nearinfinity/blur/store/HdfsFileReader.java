@@ -25,7 +25,7 @@ public class HdfsFileReader extends DataInput {
   private long _boundary;
   
 
-  public HdfsFileReader(FileSystem fileSystem, Path path) throws IOException {
+  public HdfsFileReader(FileSystem fileSystem, Path path, int bufferSize) throws IOException {
     if (!fileSystem.exists(path)) {
       throw new FileNotFoundException(path.toString());
     }
@@ -33,7 +33,7 @@ public class HdfsFileReader extends DataInput {
     _path = path;
     _fileSystem = fileSystem;
     _hdfsLength = fileStatus.getLen();
-    _inputStream = fileSystem.open(path,Constants.BUFFER_SIZE);
+    _inputStream = fileSystem.open(path,bufferSize);
 
     // read meta blocks
     _inputStream.seek(_hdfsLength - 16);
@@ -54,6 +54,10 @@ public class HdfsFileReader extends DataInput {
     seek(0);
   }
   
+  public HdfsFileReader(FileSystem fileSystem, Path path) throws IOException {
+    this(fileSystem,path,DirectIODirectory.BUFFER_SIZE);
+  }
+
   public long getPosition() {
     return _logicalPos;
   }

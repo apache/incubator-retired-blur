@@ -13,6 +13,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.logging.Log;
@@ -44,6 +45,8 @@ public class WalIndexWriter extends IndexWriter {
   private WalOutputFactory _walOutputFactory;
   private WalInputFactory _walInputFactory;
   private BlurMetrics _blurMetrics;
+  private AtomicLong _dirty = new AtomicLong(0);
+  private long _lastCommit = -1;
   private static ExecutorService _service;
 
   public static interface WalOutputFactory {
@@ -86,6 +89,7 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void deleteDocuments(boolean wal, Query... queries) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     if (wal) {
       Future<Boolean> valid = walWriterDelete(queries);
       super.deleteDocuments(queries);
@@ -104,6 +108,7 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void deleteDocuments(boolean wal, Term... terms) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     if (wal) {
       Future<Boolean> valid = walWriterDelete(terms);
       super.deleteDocuments(terms);
@@ -122,6 +127,7 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void updateDocument(boolean wal, Term term, Document doc, Analyzer analyzer) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     long start = System.nanoTime();
     if (term == null) {
       addDocument(wal, doc, analyzer);
@@ -146,6 +152,7 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void updateDocuments(boolean wal, Term term, Collection<Document> docs, Analyzer analyzer) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     long start = System.nanoTime();
     if (term == null) {
       addDocuments(wal, docs, analyzer);
@@ -170,14 +177,17 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void deleteDocuments(boolean wal, Query query) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     deleteDocuments(wal, query);
   }
 
   public void deleteDocuments(boolean wal, Term term) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     deleteDocuments(wal, term);
   }
 
   public void addDocument(boolean wal, Document doc, Analyzer analyzer) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     long start = System.nanoTime();
     if (wal) {
       Future<Boolean> valid = walWriterAdd(doc);
@@ -198,6 +208,7 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void addDocuments(boolean wal, Collection<Document> docs, Analyzer analyzer) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     long start = System.nanoTime();
     if (wal) {
       Future<Boolean> valid = walWriterAdd(docs);
@@ -231,9 +242,15 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void commitAndRollWal() throws CorruptIndexException, IOException {
-    List<String> oldLogs = rollWal();
-    commit();
-    removeOldWals(oldLogs);
+    long commit = _dirty.get();
+    if (commit != _lastCommit) {
+      List<String> oldLogs = rollWal();
+      commit();
+      removeOldWals(oldLogs);
+      _lastCommit = commit;
+    } else {
+      LOG.info("No commit needed");
+    }
   }
 
   private void replayWal() throws IOException {
@@ -374,18 +391,22 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void addDocument(boolean wal, Document doc) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     addDocument(wal, doc, getAnalyzer());
   }
 
   public void addDocuments(boolean wal, Collection<Document> docs) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     addDocuments(wal, docs, getAnalyzer());
   }
 
   public void updateDocument(boolean wal, Term term, Document doc) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     updateDocument(wal, term, doc, getAnalyzer());
   }
 
   public void updateDocuments(boolean wal, Term delTerm, Collection<Document> docs) throws CorruptIndexException, IOException {
+    _dirty.incrementAndGet();
     updateDocuments(wal, delTerm, docs, getAnalyzer());
   }
 }

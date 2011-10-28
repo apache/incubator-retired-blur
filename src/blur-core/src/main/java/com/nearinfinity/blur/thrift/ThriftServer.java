@@ -11,6 +11,7 @@ import org.apache.thrift.transport.TTransportException;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
@@ -25,24 +26,25 @@ public class ThriftServer {
   private String nodeName;
   private Iface iface;
   private THsHaServer server;
-  private boolean closed;
-  private BlurConfiguration configuration;
-  private int threadCount;
+  private boolean _closed;
+  private BlurConfiguration _configuration;
+  private int _threadCount;
+  private ThreadWatcher _threadWatcher;
 
   public synchronized void close() {
-    if (!closed) {
-      closed = true;
+    if (!_closed) {
+      _closed = true;
       server.stop();
     }
   }
 
   public void start() throws TTransportException {
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(iface);
-    TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(configuration));
+    TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
 
     Args args = new Args(serverTransport);
     args.processor(processor);
-    args.executorService(Executors.newThreadPool("thrift-processors", threadCount));
+    args.executorService(Executors.newThreadPool(_threadWatcher, "thrift-processors", _threadCount));
 
     server = new THsHaServer(args);
     LOG.info("Starting server [{0}]", nodeName);
@@ -79,7 +81,7 @@ public class ThriftServer {
   }
 
   public void setConfiguration(BlurConfiguration configuration) {
-    this.configuration = configuration;
+    this._configuration = configuration;
   }
 
   public void setAddressPropertyName(String addressPropertyName) {
@@ -103,6 +105,10 @@ public class ThriftServer {
   }
 
   public void setThreadCount(int threadCount) {
-    this.threadCount = threadCount;
+    this._threadCount = threadCount;
+  }
+
+  public void setThreadWatcher(ThreadWatcher threadWatcher) {
+    _threadWatcher = threadWatcher;
   }
 }

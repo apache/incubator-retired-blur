@@ -42,6 +42,7 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -91,9 +92,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndexCloser _closer;
 
   private Timer _timerTableWarmer;
+  
+  private ThreadWatcher _threadWatcher;
 
   public void init() throws KeeperException, InterruptedException {
-    _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
+    _openerService = Executors.newThreadPool(_threadWatcher, "shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     setupFlushCacheTimer();
     String lockPath = BlurUtil.lockForSafeMode(_zookeeper,getNodeName());
@@ -588,5 +591,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setZookeeper(ZooKeeper zookeeper) {
     _zookeeper = zookeeper;
+  }
+
+  public void setThreadWatcher(ThreadWatcher threadWatcher) {
+    _threadWatcher = threadWatcher;
   }
 }

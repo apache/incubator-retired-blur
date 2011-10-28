@@ -37,6 +37,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
+import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
@@ -75,6 +76,9 @@ public class ThriftBlurControllerServer extends ThriftServer {
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 
     BlurClient client = new BlurClientRemote();
+    
+    final ThreadWatcher threadWatcher = new ThreadWatcher();
+    threadWatcher.init();
 
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);
@@ -85,6 +89,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     controllerServer.setMaxQueryCacheElements(configuration.getInt(BLUR_CONTROLLER_CACHE_MAX_QUERYCACHE_ELEMENTS, 128));
     controllerServer.setMaxTimeToLive(configuration.getLong(BLUR_CONTROLLER_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     controllerServer.setQueryChecker(queryChecker);
+    controllerServer.setThreadWatcher(threadWatcher);
     controllerServer.init();
 
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
@@ -95,6 +100,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setAddressPropertyName(BLUR_CONTROLLER_BIND_ADDRESS);
     server.setPortPropertyName(BLUR_CONTROLLER_BIND_PORT);
     server.setThreadCount(threadCount);
+    server.setThreadWatcher(threadWatcher);
     if (crazyMode) {
       System.err.println("Crazy mode!!!!!");
       server.setIface(ThriftBlurShardServer.crazyMode(controllerServer));
@@ -106,7 +112,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override
       public void shutdown() {
-        quietClose(server, controllerServer, clusterStatus, zooKeeper);
+        quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher);
         System.exit(0);
       }
     }, zooKeeper);

@@ -46,6 +46,7 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
+import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
@@ -108,12 +109,10 @@ public class ThriftBlurShardServer extends ThriftServer {
     final BlurIndexCommiter commiter = new BlurIndexCommiter();
     commiter.init();
 
+    final ThreadWatcher threadWatcher = new ThreadWatcher();
+    threadWatcher.init();
+    
     final DistributedIndexServer indexServer = new DistributedIndexServer();
-
-    // final HdfsIndexServer indexServer = new HdfsIndexServer();
-    // indexServer.setType(NODE_TYPE.SHARD);
-    // indexServer.setDistributedManager(dzk);
-
     indexServer.setBlurMetrics(blurMetrics);
     indexServer.setCache(cache);
     indexServer.setClusterStatus(clusterStatus);
@@ -123,6 +122,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setRefresher(refresher);
     indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
     indexServer.setZookeeper(zooKeeper);
+    indexServer.setThreadWatcher(threadWatcher);
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();
@@ -131,8 +131,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
     indexManager.setBlurFilterCacheClass(configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS));
     indexManager.setBlurMetrics(blurMetrics);
+    indexManager.setThreadWatcher(threadWatcher);
     indexManager.init();
-
+    
     final BlurShardServer shardServer = new BlurShardServer();
     shardServer.setIndexServer(indexServer);
     shardServer.setIndexManager(indexManager);
@@ -141,6 +142,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setMaxQueryCacheElements(configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128));
     shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     shardServer.setQueryChecker(queryChecker);
+    shardServer.setThreadWatcher(threadWatcher);
     shardServer.init();
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
@@ -150,6 +152,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setAddressPropertyName(BLUR_SHARD_BIND_ADDRESS);
     server.setPortPropertyName(BLUR_SHARD_BIND_PORT);
     server.setThreadCount(threadCount);
+    server.setThreadWatcher(threadWatcher);
     if (crazyMode) {
       System.err.println("Crazy mode!!!!!");
       server.setIface(crazyMode(shardServer));
@@ -162,7 +165,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override
       public void shutdown() {
-        quietClose(commiter, refresher, server, shardServer, indexManager, indexServer);
+        quietClose(commiter, refresher, server, shardServer, indexManager, indexServer, threadWatcher);
         System.exit(0);
       }
     }, zooKeeper);

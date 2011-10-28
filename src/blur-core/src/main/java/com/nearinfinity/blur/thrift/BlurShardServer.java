@@ -27,6 +27,7 @@ import org.apache.thrift.TException;
 
 import com.nearinfinity.blur.concurrent.ExecutionContext;
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
@@ -59,11 +60,12 @@ public class BlurShardServer extends ExecutionContextIface {
   private QueryCache _queryCache;
   private BlurQueryChecker _queryChecker;
   private ExecutorService _dataFetch;
+  private ThreadWatcher _threadWatcher;
 
   public void init() {
     super.init();
     _queryCache = new QueryCache("shard-cache", _maxQueryCacheElements, _maxTimeToLive);
-    _dataFetch = Executors.newThreadPool("data-fetch-", 32);
+    _dataFetch = Executors.newThreadPool(_threadWatcher, "data-fetch-", 32);
   }
 
   public enum Metrics {
@@ -386,5 +388,9 @@ public class BlurShardServer extends ExecutionContextIface {
 
   public void setQueryChecker(BlurQueryChecker queryChecker) {
     _queryChecker = queryChecker;
+  }
+
+  public void setThreadWatcher(ThreadWatcher threadWatcher) {
+    _threadWatcher = threadWatcher;
   }
 }

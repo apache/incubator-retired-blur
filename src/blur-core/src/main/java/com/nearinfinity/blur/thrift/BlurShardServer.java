@@ -32,8 +32,6 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.IndexServer;
-import com.nearinfinity.blur.manager.IndexServer.TABLE_STATUS;
-import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -60,7 +58,6 @@ public class BlurShardServer extends ExecutionContextIface {
   private int _maxQueryCacheElements = 128;
   private QueryCache _queryCache;
   private BlurQueryChecker _queryChecker;
-  private ClusterStatus _clusterStatus;
   private ExecutorService _dataFetch;
 
   public void init() {
@@ -75,6 +72,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public BlurResults query(ExecutionContext context, String table, BlurQuery blurQuery) throws BlurException, TException {
+    checkTable(table);
     _queryChecker.checkQuery(blurQuery);
     long start = context.startTime();
     try {
@@ -105,6 +103,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public FetchResult fetchRow(ExecutionContext context, String table, Selector selector) throws BlurException, TException {
+    checkTable(table);
     long start = context.startTime();
     try {
       checkTableStatus(context, table);
@@ -123,6 +122,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public void cancelQuery(ExecutionContext context, String table, long uuid) throws BlurException, TException {
+    checkTable(table);
     long start = context.startTime();
     try {
       _indexManager.cancelQuery(table, uuid);
@@ -136,6 +136,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public List<BlurQueryStatus> currentQueries(ExecutionContext context, String table) throws BlurException, TException {
+    checkTable(table);
     long start = context.startTime();
     try {
       checkTableStatus(context, table);
@@ -182,6 +183,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public Map<String, String> shardServerLayout(ExecutionContext context, String table) throws BlurException, TException {
+    checkTable(table);
     long start = context.startTime();
     try {
       checkTableStatus(context, table);
@@ -206,7 +208,7 @@ public class BlurShardServer extends ExecutionContextIface {
   }
 
   private void checkTableStatus(ExecutionContext context, String table) throws BlurException, TException {
-    if (!isTableEnabled(context, table)) {
+    if (!isTableEnabled(table)) {
       List<String> tableList = tableList();
       if (tableList.contains(table)) {
         throw new BlurException("Table [" + table + "] is disabled.", null);
@@ -227,6 +229,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public long recordFrequency(ExecutionContext context, String table, String columnFamily, String columnName, String value) throws BlurException, TException {
+    checkTable(table);
     long start = context.startTime();
     try {
       checkTableStatus(context, table);
@@ -243,6 +246,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public Schema schema(ExecutionContext context, String table) throws BlurException, TException {
+    checkTable(table);
     long start = context.startTime();
     try {
       checkTableStatus(context, table);
@@ -259,6 +263,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public List<String> terms(ExecutionContext context, String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
+    checkTable(table);
     long start = context.startTime();
     try {
       checkTableStatus(context, table);
@@ -297,20 +302,6 @@ public class BlurShardServer extends ExecutionContextIface {
     }
   }
 
-  public boolean isTableEnabled(ExecutionContext context, String table) {
-    long start = context.startTime();
-    try {
-      TABLE_STATUS tableStatus = _indexServer.getTableStatus(table);
-      if (tableStatus == TABLE_STATUS.ENABLED) {
-        return true;
-      } else {
-        return false;
-      }
-    } finally {
-      context.recordTime(Metrics.GET_TABLE_STATUS, start, table);
-    }
-  }
-
   public IndexServer getIndexServer() {
     return _indexServer;
   }
@@ -341,6 +332,7 @@ public class BlurShardServer extends ExecutionContextIface {
 
   @Override
   public void mutate(ExecutionContext context, RowMutation mutation) throws BlurException, TException {
+    checkTable(mutation.table);
     long start = context.startTime();
     try {
       MutationHelper.validateMutation(mutation);
@@ -394,13 +386,5 @@ public class BlurShardServer extends ExecutionContextIface {
 
   public void setQueryChecker(BlurQueryChecker queryChecker) {
     _queryChecker = queryChecker;
-  }
-
-  public ClusterStatus getClusterStatus() {
-    return _clusterStatus;
-  }
-
-  public void setClusterStatus(ClusterStatus clusterStatus) {
-    _clusterStatus = clusterStatus;
   }
 }

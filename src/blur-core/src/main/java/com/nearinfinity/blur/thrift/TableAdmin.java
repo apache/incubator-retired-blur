@@ -6,6 +6,7 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
 import com.nearinfinity.blur.manager.indexserver.utils.DisableTable;
 import com.nearinfinity.blur.manager.indexserver.utils.EnableTable;
@@ -18,6 +19,7 @@ public abstract class TableAdmin implements Iface {
 
   private static final Log LOG = LogFactory.getLog(TableAdmin.class);
   protected ZooKeeper _zookeeper;
+  protected ClusterStatus _clusterStatus;
 
   @Override
   public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
@@ -66,5 +68,32 @@ public abstract class TableAdmin implements Iface {
 
   public void setZookeeper(ZooKeeper zookeeper) {
     _zookeeper = zookeeper;
+  }
+  
+  public boolean isTableEnabled(String table) {
+    return _clusterStatus.isEnabled(table);
+  }
+  
+  public void checkTable(String table) throws BlurException {
+    if (tableExists(table)) {
+      if (isTableEnabled(table)) {
+        return;
+      }
+      throw new BlurException("Table [" + table + "] exists, but is not enabled",null);
+    } else {
+      throw new BlurException("Table [" + table + "] does not exist",null);
+    }
+  }
+
+  public boolean tableExists(String table) {
+    return _clusterStatus.exists(table);
+  }
+  
+  public ClusterStatus getClusterStatus() {
+    return _clusterStatus;
+  }
+
+  public void setClusterStatus(ClusterStatus clusterStatus) {
+    _clusterStatus = clusterStatus;
   }
 }

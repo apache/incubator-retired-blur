@@ -42,7 +42,6 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
-import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
@@ -81,7 +80,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private BlurClient _client;
   private long _layoutDelay = TimeUnit.SECONDS.toMillis(5);
   private Timer _shardLayoutTimer;
-  private ClusterStatus _clusterStatus;
   private int _threadCount = 64;
   private boolean _closed;
   private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
@@ -133,6 +131,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
+    checkTable(table);
     _queryChecker.checkQuery(blurQuery);
     try {
       final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
@@ -168,6 +167,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public FetchResult fetchRow(final String table, final Selector selector) throws BlurException, TException {
+    checkTable(table);
     IndexManager.validSelector(selector);
     String clientHostnamePort = null;
     try {
@@ -186,6 +186,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public void cancelQuery(final String table, final long uuid) throws BlurException, TException {
+    checkTable(table);
     try {
       scatter(getCluster(table), new BlurCommand<Void>() {
         @Override
@@ -202,6 +203,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public List<BlurQueryStatus> currentQueries(final String table) throws BlurException, TException {
+    checkTable(table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<List<BlurQueryStatus>>() {
         @Override
@@ -234,6 +236,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
+    checkTable(table);
     Map<String, Map<String, String>> layout = _shardServerLayout.get();
     Map<String, String> tableLayout = layout.get(table);
     if (tableLayout == null) {
@@ -244,6 +247,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value) throws BlurException, TException {
+    checkTable(table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<Long>() {
         @Override
@@ -268,6 +272,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public Schema schema(final String table) throws BlurException, TException {
+    checkTable(table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<Schema>() {
         @Override
@@ -297,6 +302,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public List<String> terms(final String table, final String columnFamily, final String columnName, final String startWith, final short size) throws BlurException, TException {
+    checkTable(table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<List<String>>() {
         @Override
@@ -349,6 +355,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       Map<String, Map<String, String>> layout = new HashMap<String, Map<String, String>>();
       for (String t : tableList()) {
         final String table = t;
+        if (!isTableEnabled(table)) {
+          continue;
+        }
         layout.put(table, ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(getCluster(table)), new ParallelCall<String, Map<String, String>>() {
           @Override
           public Map<String, String> call(final String hostnamePort) throws Exception {
@@ -466,16 +475,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
-  public ClusterStatus getClusterStatus() {
-    return _clusterStatus;
-  }
-
-  public void setClusterStatus(ClusterStatus clusterStatus) {
-    this._clusterStatus = clusterStatus;
-  }
-
   @Override
   public void mutate(final RowMutation mutation) throws BlurException, TException {
+    checkTable(mutation.table);
     try {
       MutationHelper.validateMutation(mutation);
       String table = mutation.getTable();

@@ -46,6 +46,7 @@ import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
+import com.nearinfinity.blur.manager.BlurFilterCache;
 import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
@@ -94,6 +95,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private Timer _timerTableWarmer;
   
   private ThreadWatcher _threadWatcher;
+  private BlurFilterCache _filterCache;
 
   public void init() throws KeeperException, InterruptedException {
     _openerService = Executors.newThreadPool(_threadWatcher, "shard-opener", _shardOpenerThreadCount);
@@ -209,6 +211,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
             }
             LOG.info("Closing index [{0}] from table [{1}] shard [{2}]", index, table, shard);
             try {
+              _filterCache.closing(table,shard,index);
               index.close();
             } catch (IOException e) {
               LOG.error("Error while closing index [{0}] from table [{1}] shard [{2}]", e, index, table, shard);
@@ -321,6 +324,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     writer.setShard(shard);
     writer.setTable(table);
     writer.init();
+    _filterCache.opening(table,shard,writer);
     return warmUp(writer);
   }
 
@@ -595,5 +599,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setThreadWatcher(ThreadWatcher threadWatcher) {
     _threadWatcher = threadWatcher;
+  }
+
+  public void setFilterCache(BlurFilterCache filterCache) {
+    _filterCache = filterCache;
   }
 }

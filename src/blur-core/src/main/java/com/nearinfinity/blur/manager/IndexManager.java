@@ -113,7 +113,6 @@ public class IndexManager {
   private boolean _closed;
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
-  private String _blurFilterCacheClass;
   private BlurMetrics _blurMetrics;
   private ThreadWatcher _threadWatcher;
 
@@ -124,15 +123,6 @@ public class IndexManager {
   public void init() {
     _executor = Executors.newThreadPool(_threadWatcher, "index-manager", _threadCount);
     _statusManager.init();
-
-    if (_blurFilterCacheClass != null) {
-      try {
-        Class<?> clazz = Class.forName(_blurFilterCacheClass);
-        _filterCache = (BlurFilterCache) clazz.newInstance();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
     LOG.info("Init Complete");
   }
 
@@ -183,7 +173,7 @@ public class IndexManager {
       long s = System.nanoTime();
       fetchRow(reader, table, selector, fetchResult);
       long e = System.nanoTime();
-      long time = (e-s)/1000000;
+      long time = (e - s) / 1000000;
       if (_blurMetrics != null) {
         if (fetchResult.rowResult != null) {
           _blurMetrics.recordsReadRate.inc(fetchResult.rowResult.row.records.size(), time);
@@ -781,15 +771,16 @@ public class IndexManager {
     this._threadCount = threadCount;
   }
 
-  public void setBlurFilterCacheClass(String blurFilterCacheClass) {
-    _blurFilterCacheClass = blurFilterCacheClass;
-  }
-
   public void setBlurMetrics(BlurMetrics blurMetrics) {
     _blurMetrics = blurMetrics;
   }
-  
+
   public void setThreadWatcher(ThreadWatcher threadWatcher) {
     _threadWatcher = threadWatcher;
   }
+
+  public void setFilterCache(BlurFilterCache filterCache) {
+    _filterCache = filterCache;
+  }
+
 }

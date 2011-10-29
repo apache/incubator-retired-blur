@@ -49,7 +49,9 @@ import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.BlurFilterCache;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
+import com.nearinfinity.blur.manager.DefaultBlurFilterCache;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
@@ -112,6 +114,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     final ThreadWatcher threadWatcher = new ThreadWatcher();
     threadWatcher.init();
     
+    BlurFilterCache filterCache = getFilterCache(configuration);
+    
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
     indexServer.setCache(cache);
@@ -123,15 +127,16 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
     indexServer.setZookeeper(zooKeeper);
     indexServer.setThreadWatcher(threadWatcher);
+    indexServer.setFilterCache(filterCache);
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();
     indexManager.setIndexServer(indexServer);
     indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
-    indexManager.setBlurFilterCacheClass(configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS));
     indexManager.setBlurMetrics(blurMetrics);
     indexManager.setThreadWatcher(threadWatcher);
+    indexManager.setFilterCache(filterCache);
     indexManager.init();
     
     final BlurShardServer shardServer = new BlurShardServer();
@@ -170,6 +175,19 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }, zooKeeper);
     server.start();
+  }
+
+  private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {
+    String _blurFilterCacheClass = configuration.get(BLUR_SHARD_FILTER_CACHE_CLASS);
+    if (_blurFilterCacheClass != null) {
+      try {
+        Class<?> clazz = Class.forName(_blurFilterCacheClass);
+        return (BlurFilterCache) clazz.newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return new DefaultBlurFilterCache();
   }
 
   public static int getNumberOfBanks(float heapPercentage, int numberOfBlocksPerBank, int blockSize) {

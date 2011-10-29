@@ -367,22 +367,24 @@ public class IndexManager {
     if (filterStr == null) {
       return null;
     }
-    Filter filter;
-    if (superQueryOn) {
-      filter = _filterCache.fetchPostFilter(table, filterStr);
-    } else {
-      filter = _filterCache.fetchPreFilter(table, filterStr);
+    synchronized (_filterCache) {
+      Filter filter;
+      if (superQueryOn) {
+        filter = _filterCache.fetchPostFilter(table, filterStr);
+      } else {
+        filter = _filterCache.fetchPreFilter(table, filterStr);
+      }
+      if (filter != null) {
+        return filter;
+      }
+      filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, ScoreType.CONSTANT).parse(filterStr));
+      if (superQueryOn) {
+        filter = _filterCache.storePostFilter(table, filterStr, filter);
+      } else {
+        filter = _filterCache.storePreFilter(table, filterStr, filter);
+      }
+      return filter;      
     }
-    if (filter != null) {
-      return filter;
-    }
-    filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, ScoreType.CONSTANT).parse(filterStr));
-    if (superQueryOn) {
-      filter = _filterCache.storePostFilter(table, filterStr, filter);
-    } else {
-      filter = _filterCache.storePreFilter(table, filterStr, filter);
-    }
-    return filter;
   }
 
   private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException {

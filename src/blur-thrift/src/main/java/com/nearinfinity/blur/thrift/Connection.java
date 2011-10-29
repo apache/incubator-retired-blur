@@ -47,4 +47,44 @@ public class Connection {
   public String getProxyHost() {
     return _proxyHost;
   }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((_host == null) ? 0 : _host.hashCode());
+    result = prime * result + _port;
+    result = prime * result + (_proxy ? 1231 : 1237);
+    result = prime * result + ((_proxyHost == null) ? 0 : _proxyHost.hashCode());
+    result = prime * result + _proxyPort;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    Connection other = (Connection) obj;
+    if (_host == null) {
+      if (other._host != null)
+        return false;
+    } else if (!_host.equals(other._host))
+      return false;
+    if (_port != other._port)
+      return false;
+    if (_proxy != other._proxy)
+      return false;
+    if (_proxyHost == null) {
+      if (other._proxyHost != null)
+        return false;
+    } else if (!_proxyHost.equals(other._proxyHost))
+      return false;
+    if (_proxyPort != other._proxyPort)
+      return false;
+    return true;
+  }
 }

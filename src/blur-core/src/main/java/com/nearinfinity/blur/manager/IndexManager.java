@@ -75,7 +75,6 @@ import com.nearinfinity.blur.manager.status.QueryStatus;
 import com.nearinfinity.blur.manager.status.QueryStatusManager;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.MutationHelper;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -307,7 +306,7 @@ public class IndexManager {
         Filter postFilter = parseFilter(table, simpleQuery.postSuperFilter, true, analyzer);
         Query userQuery = parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, blurQuery.modifyFileCaches);
+        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -318,7 +317,7 @@ public class IndexManager {
           userQuery = query;
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, blurQuery.modifyFileCaches);
+        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call).merge(merger);
@@ -750,22 +749,19 @@ public class IndexManager {
     private Query _query;
     private Selector _selector;
     private boolean _forceRefresh;
-    private boolean _modifyFileCaches;
 
-    public SimpleQueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh, boolean modifyFileCaches) {
+    public SimpleQueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh) {
       _table = table;
       _status = status;
       _indexServer = indexServer;
       _query = query;
       _selector = selector;
       _forceRefresh = forceRefresh;
-      _modifyFileCaches = modifyFileCaches;
     }
 
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
       _status.attachThread();
-      BlockDirectory.setModifyFileCache(_modifyFileCaches);
       BlurIndex index = entry.getValue();
       IndexReader reader = index.getIndexReader(_forceRefresh);
       try {
@@ -776,7 +772,6 @@ public class IndexManager {
       } finally {
         // this will allow for closing of index
         reader.decRef();
-        BlockDirectory.setModifyFileCache(true);
         _status.deattachThread();
       }
     }

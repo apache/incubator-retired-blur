@@ -13,7 +13,7 @@ import org.apache.lucene.store.LockFactory;
 import com.nearinfinity.blur.store.DirectIODirectory;
 
 public class BlockDirectory extends DirectIODirectory {
-  
+
   public static final long BLOCK_SHIFT = 13; // 2^13 = 8,192 bytes per block
   public static final long BLOCK_MOD = 0x1FFF;
   public static final int BLOCK_SIZE = 1 << BLOCK_SHIFT;
@@ -34,12 +34,12 @@ public class BlockDirectory extends DirectIODirectory {
   private int _blockSize;
   private String _dirName;
   private Cache _cache = new Cache() {
-    
+
     @Override
     public void update(String name, long blockId, byte[] buffer) {
-      
+
     }
-    
+
     @Override
     public boolean fetch(String name, long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {
       return false;
@@ -47,7 +47,7 @@ public class BlockDirectory extends DirectIODirectory {
 
     @Override
     public void delete(String name) {
-      
+
     }
 
     @Override
@@ -55,18 +55,7 @@ public class BlockDirectory extends DirectIODirectory {
       return 0;
     }
   };
-  
-  private static ThreadLocal<Boolean> _modifyFileCache = new ThreadLocal<Boolean>() {
-    @Override
-    protected Boolean initialValue() {
-      return true;
-    }
-  };
-  
-  public static void setModifyFileCache(boolean b) {
-    _modifyFileCache.set(b);
-  }
-  
+
   public BlockDirectory(String dirName, DirectIODirectory directory) throws IOException {
     _dirName = dirName;
     _directory = directory;
@@ -81,12 +70,12 @@ public class BlockDirectory extends DirectIODirectory {
     _cache = cache;
     setLockFactory(directory.getLockFactory());
   }
-  
+
   public IndexInput openInput(String name, int bufferSize) throws IOException {
     final IndexInput source = _directory.openInput(name, _blockSize);
     return new CachedIndexInput(source, _blockSize, _dirName, name, _cache, bufferSize);
   }
-  
+
   @Override
   public IndexInput openInput(final String name) throws IOException {
     final IndexInput source = _directory.openInput(name, _blockSize);
@@ -101,7 +90,6 @@ public class BlockDirectory extends DirectIODirectory {
     private byte[] _buffer;
     private String _cacheName;
     private Cache _cache;
-    private boolean _updateCache;
 
     public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache) {
       _source = source;
@@ -111,7 +99,7 @@ public class BlockDirectory extends DirectIODirectory {
       _cache = cache;
       _buffer = new byte[_blockSize];
     }
-    
+
     public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache, int bufferSize) {
       super(bufferSize);
       _source = source;
@@ -120,7 +108,6 @@ public class BlockDirectory extends DirectIODirectory {
       _cacheName = dirName + "/" + name;
       _cache = cache;
       _buffer = new byte[_blockSize];
-      _updateCache = _modifyFileCache.get();
     }
 
     @Override
@@ -128,7 +115,6 @@ public class BlockDirectory extends DirectIODirectory {
       CachedIndexInput clone = (CachedIndexInput) super.clone();
       clone._source = (IndexInput) _source.clone();
       clone._buffer = new byte[_blockSize];
-      clone._updateCache = _modifyFileCache.get();
       return clone;
     }
 
@@ -158,35 +144,29 @@ public class BlockDirectory extends DirectIODirectory {
     }
 
     private int fetchBlock(long position, byte[] b, int off, int len) throws IOException {
-      if (_updateCache) {
-        //read whole block into cache and then provide needed data
-        long blockId = getBlock(position);
-        int blockOffset = (int) getPosition(position);
-        int lengthToReadInBlock = Math.min(len, _blockSize - blockOffset);
-        if (checkCache(blockId, blockOffset, b, off, lengthToReadInBlock)) {
-          return lengthToReadInBlock;
-        } else {
-          readIntoCacheAndResult(blockId, blockOffset, b, off, lengthToReadInBlock);
-        }
+      // read whole block into cache and then provide needed data
+      long blockId = getBlock(position);
+      int blockOffset = (int) getPosition(position);
+      int lengthToReadInBlock = Math.min(len, _blockSize - blockOffset);
+      if (checkCache(blockId, blockOffset, b, off, lengthToReadInBlock)) {
         return lengthToReadInBlock;
       } else {
-        _source.seek(position);
-        _source.readBytes(b, off, len);
-        return len;
+        readIntoCacheAndResult(blockId, blockOffset, b, off, lengthToReadInBlock);
       }
+      return lengthToReadInBlock;
     }
 
     private void readIntoCacheAndResult(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) throws IOException {
-      long position = getRealPosition(blockId,0);
+      long position = getRealPosition(blockId, 0);
       int length = (int) Math.min(_blockSize, _fileLength - position);
       _source.seek(position);
       _source.readBytes(_buffer, 0, length);
       System.arraycopy(_buffer, blockOffset, b, off, lengthToReadInBlock);
-      _cache.update(_cacheName,blockId,_buffer);
+      _cache.update(_cacheName, blockId, _buffer);
     }
 
     private boolean checkCache(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {
-      return _cache.fetch(_cacheName,blockId,blockOffset,b,off,lengthToReadInBlock);
+      return _cache.fetch(_cacheName, blockId, blockOffset, b, off, lengthToReadInBlock);
     }
   }
 

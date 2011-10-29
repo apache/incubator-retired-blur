@@ -72,9 +72,10 @@ public class ThriftBlurShardServer extends ThriftServer {
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
 
   public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
+    int shardServerIndex = getShardServerIndex(args);
     LOG.info("Setting up Shard Server");
+    
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
-
     // setup block cache
     // 134,217,728 is the bank size, therefore there are 16,384 block
     // in a bank when using a block of 8,192
@@ -88,9 +89,15 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, blurMetrics);
 
     BlurConfiguration configuration = new BlurConfiguration();
+    
+    String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
+    int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT,-1);
+    bindPort += shardServerIndex;
+    
+    LOG.info("Shard Server using index [{0}] bind address [{1}]",shardServerIndex,bindAddress + ":" + bindPort);
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
-    String nodeName = nodeNameHostName + ":" + configuration.get(BLUR_SHARD_BIND_PORT);
+    String nodeName = nodeNameHostName + ":" + bindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
@@ -154,8 +161,8 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     final ThriftBlurShardServer server = new ThriftBlurShardServer();
     server.setNodeName(nodeName);
-    server.setAddressPropertyName(BLUR_SHARD_BIND_ADDRESS);
-    server.setPortPropertyName(BLUR_SHARD_BIND_PORT);
+    server.setBindAddress(bindAddress);
+    server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
     server.setThreadWatcher(threadWatcher);
     if (crazyMode) {
@@ -175,6 +182,17 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }, zooKeeper);
     server.start();
+  }
+
+  private static int getShardServerIndex(String[] args) {
+    for (int i = 0; i < args.length; i++) {
+      if ("-s".equals(args[i])) {
+        if (i + 1 < args.length) {
+          return Integer.parseInt(args[i+1]);
+        }
+      }
+    }
+    return 0;
   }
 
   private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {

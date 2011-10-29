@@ -1,8 +1,5 @@
 package com.nearinfinity.blur.demo;
 
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -35,8 +32,8 @@ public class DemoServer {
 
         final ThriftBlurShardServer server = new ThriftBlurShardServer();
         server.setNodeName("demo-server");
-        server.setAddressPropertyName(BLUR_SHARD_BIND_ADDRESS);
-        server.setPortPropertyName(BLUR_SHARD_BIND_PORT);
+        server.setBindAddress("0.0.0.0");
+        server.setBindPort(40020);
         server.setIface(shardServer);
         server.setConfiguration(configuration);
         server.start();

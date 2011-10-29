@@ -21,40 +21,38 @@ public class ThriftServer {
 
   private static final Log LOG = LogFactory.getLog(ThriftServer.class);
 
-  private String addressPropertyName;
-  private String portPropertyName;
-  private String nodeName;
-  private Iface iface;
-  private THsHaServer server;
+  private String _nodeName;
+  private Iface _iface;
+  private THsHaServer _server;
   private boolean _closed;
   private BlurConfiguration _configuration;
   private int _threadCount;
   private ThreadWatcher _threadWatcher;
+  private int _bindPort;
+  private String _bindAddress;
 
   public synchronized void close() {
     if (!_closed) {
       _closed = true;
-      server.stop();
+      _server.stop();
     }
   }
 
   public void start() throws TTransportException {
-    Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(iface);
+    Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);
     TNonblockingServerSocket serverTransport = new TNonblockingServerSocket(getBindInetSocketAddress(_configuration));
 
     Args args = new Args(serverTransport);
     args.processor(processor);
     args.executorService(Executors.newThreadPool(_threadWatcher, "thrift-processors", _threadCount));
 
-    server = new THsHaServer(args);
-    LOG.info("Starting server [{0}]", nodeName);
-    server.serve();
+    _server = new THsHaServer(args);
+    LOG.info("Starting server [{0}]", _nodeName);
+    _server.serve();
   }
 
   public InetSocketAddress getBindInetSocketAddress(BlurConfiguration configuration) {
-    String hostName = isEmpty(configuration.get(addressPropertyName), addressPropertyName);
-    String portStr = isEmpty(configuration.get(portPropertyName), portPropertyName);
-    return new InetSocketAddress(hostName, Integer.parseInt(portStr));
+    return new InetSocketAddress(_bindAddress, _bindPort);
   }
 
   public static String isEmpty(String str, String name) {
@@ -65,31 +63,23 @@ public class ThriftServer {
   }
 
   public Iface getIface() {
-    return iface;
+    return _iface;
   }
 
   public void setIface(Iface iface) {
-    this.iface = iface;
+    this._iface = iface;
   }
 
   public String getNodeName() {
-    return nodeName;
+    return _nodeName;
   }
 
   public void setNodeName(String nodeName) {
-    this.nodeName = nodeName;
+    this._nodeName = nodeName;
   }
 
   public void setConfiguration(BlurConfiguration configuration) {
     this._configuration = configuration;
-  }
-
-  public void setAddressPropertyName(String addressPropertyName) {
-    this.addressPropertyName = addressPropertyName;
-  }
-
-  public void setPortPropertyName(String portPropertyName) {
-    this.portPropertyName = portPropertyName;
   }
 
   public static String getNodeName(BlurConfiguration configuration, String hostNameProperty) throws UnknownHostException {
@@ -102,6 +92,14 @@ public class ThriftServer {
       return InetAddress.getLocalHost().getHostName();
     }
     return hostName;
+  }
+  
+  public void setBindPort(int bindPort) {
+    _bindPort = bindPort;
+  }
+
+  public void setBindAddress(String bindAddress) {
+    _bindAddress = bindAddress;
   }
 
   public void setThreadCount(int threadCount) {

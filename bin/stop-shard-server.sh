@@ -19,15 +19,19 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-PID_FILE=$BLUR_HOME/pids/shard.pid
+INSTANCE=0
+while [  $INSTANCE -lt $BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE ]; do
+  PID_FILE=$BLUR_HOME/pids/shard-$INSTANCE.pid
 
-if [ -f $PID_FILE ]; then
-  if kill -0 `cat $PID_FILE` > /dev/null 2>&1; then
-    echo Stopping Shard server with pid [`cat $PID_FILE`].
-    kill `cat $PID_FILE`
+  if [ -f $PID_FILE ]; then
+    if kill -0 `cat $PID_FILE` > /dev/null 2>&1; then
+      echo Stopping Shard [$INSTANCE] server with pid [`cat $PID_FILE`].
+      kill `cat $PID_FILE`
+    else
+      echo No Shard [$INSTANCE] server to stop
+    fi
   else
-    echo No Shard server to stop
+    echo No Shard [$INSTANCE] server to stop
   fi
-else
-  echo No Shard server to stop
-fi
+  let INSTANCE=INSTANCE+1 
+done

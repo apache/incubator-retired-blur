@@ -21,3 +21,6 @@ export BLUR_SHARD_SLEEP=0.1
 # Time to sleep between controller server commands.
 export BLUR_CONTROLLER_SLEEP=0.1
 
+# The of shard servers to spawn per machine
+export BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE=1
+

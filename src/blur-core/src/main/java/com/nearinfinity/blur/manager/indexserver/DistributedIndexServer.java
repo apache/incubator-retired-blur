@@ -159,7 +159,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         for (String table : tableList) {
           try {
             int count = getIndexes(table).size();
-            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.",table,count);
+            LOG.info("Table [{0}] has [{1}] number of shards online in this node.",table,count);
           } catch (IOException e) {
             LOG.error("Unknown error trying to warm table [{0}]",e,table);
           }

@@ -58,9 +58,12 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
     BlurConfiguration configuration = new BlurConfiguration();
+    
+    String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
+    int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT,-1);
 
     String nodeName = ThriftBlurShardServer.getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
-    nodeName = nodeName + ":" + configuration.get(BLUR_CONTROLLER_BIND_PORT);
+    nodeName = nodeName + ":" + bindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
@@ -97,8 +100,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
     final ThriftBlurControllerServer server = new ThriftBlurControllerServer();
     server.setNodeName(nodeName);
     server.setConfiguration(configuration);
-    server.setAddressPropertyName(BLUR_CONTROLLER_BIND_ADDRESS);
-    server.setPortPropertyName(BLUR_CONTROLLER_BIND_PORT);
+    server.setBindAddress(bindAddress);
+    server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
     server.setThreadWatcher(threadWatcher);
     if (crazyMode) {

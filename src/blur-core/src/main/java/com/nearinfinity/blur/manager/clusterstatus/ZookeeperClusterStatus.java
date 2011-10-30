@@ -277,4 +277,20 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
     return null;
   }
+
+  @Override
+  public void clearLocks(String table) {
+    String lockPath = ZookeeperPathConstants.getBlurLockPath(table);
+    try {
+      List<String> children = _zk.getChildren(lockPath, false);
+      for (String c : children) {
+        LOG.warn("Removing lock [{0}] for table [{1}]",c,table);
+        _zk.delete(lockPath + "/" + c, -1);
+      }
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

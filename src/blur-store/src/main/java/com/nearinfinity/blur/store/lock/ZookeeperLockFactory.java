@@ -100,7 +100,6 @@ public class ZookeeperLockFactory extends LockFactory {
 
     private ZooKeeper _zk;
     private String _instanceIndexLockPath;
-    private Stat _stat;
     private String _nodeName;
 
     public ZookeeperLock(ZooKeeper zk, String lockPath, String shard, String lockName, String nodeName) throws IOException {
@@ -141,7 +140,6 @@ public class ZookeeperLockFactory extends LockFactory {
           }
         }
         _zk.create(_instanceIndexLockPath, _nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-        _stat = stat;
         return true;
       } catch (KeeperException e) {
         if (e.code() == Code.NODEEXISTS) {
@@ -156,7 +154,7 @@ public class ZookeeperLockFactory extends LockFactory {
     @Override
     public void release() throws IOException {
       try {
-        _zk.delete(_instanceIndexLockPath, _stat.getVersion());
+        _zk.delete(_instanceIndexLockPath, -1);
       } catch (InterruptedException e) {
         throw new IOException(e);
       } catch (KeeperException e) {

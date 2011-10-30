@@ -130,6 +130,10 @@ public class BlurControllerServerTest {
         return false;
       }
 
+      @Override
+      public void clearLocks(String table) {
+        
+      }
     };
   }
 

@@ -47,4 +47,6 @@ public abstract class ClusterStatus {
     return shardServerList;
   }
 
+  public abstract void clearLocks(String table);
+
 }

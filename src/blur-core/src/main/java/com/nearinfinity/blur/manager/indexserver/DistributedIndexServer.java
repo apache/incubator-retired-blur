@@ -185,6 +185,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } else {
       _zookeeper.setData(blurSafemodePath, Long.toString(timestamp).getBytes(), -1);
     }
+    removeAnyTableLocks();
+  }
+
+  private void removeAnyTableLocks() {
+    List<String> tableList = _clusterStatus.getTableList();
+    for (String table : tableList) {
+      _clusterStatus.clearLocks(table);
+    }
   }
 
   private void setupTableWarmer() {
@@ -196,7 +204,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         for (String table : tableList) {
           try {
             int count = getIndexes(table).size();
-            LOG.info("Table [{0}] has [{1}] number of shards online in this node.",table,count);
+            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.",table,count);
           } catch (IOException e) {
             LOG.error("Unknown error trying to warm table [{0}]",e,table);
           }
@@ -246,17 +254,38 @@ public class DistributedIndexServer extends AbstractIndexServer {
             if (index == null) {
               continue;
             }
-            LOG.info("Closing index [{0}] from table [{1}] shard [{2}]", index, table, shard);
-            try {
-              _filterCache.closing(table,shard,index);
-              index.close();
-            } catch (IOException e) {
-              LOG.error("Error while closing index [{0}] from table [{1}] shard [{2}]", e, index, table, shard);
+            close(index,table,shard);
+          }
+        }
+        for (String table : _indexes.keySet()) {
+          Map<String, BlurIndex> shardMap = _indexes.get(table);
+          if (shardMap != null) {
+            Set<String> shards = new HashSet<String>(shardMap.keySet());
+            Set<String> shardsToServe = getShardsToServe(table);
+            shards.removeAll(shardsToServe);
+            if (!shards.isEmpty()) {
+              LOG.info("Need to close indexes for table [{0}] indexes [{1}]",table,shards);
+            }
+            for (String shard : shards) {
+              LOG.info("Closing index for table [{0}] shard [{1}]",table,shard);
+              BlurIndex index = shardMap.remove(shard);
+              close(index, table, shard);
             }
           }
         }
+        
       }
     }, _delay, _delay);
+  }
+
+  protected void close(BlurIndex index, String table, String shard) {
+    LOG.info("Closing index [{0}] from table [{1}] shard [{2}]", index, table, shard);
+    try {
+      _filterCache.closing(table,shard,index);
+      index.close();
+    } catch (IOException e) {
+      LOG.error("Error while closing index [{0}] from table [{1}] shard [{2}]", e, index, table, shard);
+    }
   }
 
   protected <T> Map<String, T> clearMapOfOldTables(Map<String, T> map) {

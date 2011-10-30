@@ -36,17 +36,15 @@ import org.apache.lucene.store.IndexOutput;
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class HdfsDirectory extends DirectIODirectory {
 
+  protected static final String SEGMENTS_GEN = "segments.gen";
+  protected static final IndexOutput NULL_WRITER = new NullIndexOutput();
   protected Path _hdfsDirPath;
   protected AtomicReference<FileSystem> _fileSystemRef = new AtomicReference<FileSystem>();
   protected Configuration _configuration;
 
   public HdfsDirectory(Path hdfsDirPath) throws IOException {
     _hdfsDirPath = hdfsDirPath;
-
     _configuration = new Configuration();
-    String disableCacheName = String.format("fs.%s.impl.disable.cache", _hdfsDirPath.toUri().getScheme());
-    _configuration.setBoolean(disableCacheName, true);
-
     reopenFileSystem();
     try {
       if (!getFileSystem().exists(hdfsDirPath)) {
@@ -73,6 +71,9 @@ public class HdfsDirectory extends DirectIODirectory {
 
   @Override
   public IndexOutput createOutput(String name) throws IOException {
+    if (SEGMENTS_GEN.equals(name)) {
+      return NULL_WRITER;
+    }
     HdfsFileWriter writer = new HdfsFileWriter(getFileSystem(), new Path(_hdfsDirPath,name));
     return new HdfsIndexOutput(writer);
   }

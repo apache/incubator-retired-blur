@@ -41,7 +41,7 @@ public class BlockCache {
           _locks[bankId].clear(block);
           _lockCounters[bankId].decrementAndGet();
         }
-        _metrics.blockCacheEviction.inc();
+        _metrics.blockCacheEviction.incrementAndGet();
       }
     };
     _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>()

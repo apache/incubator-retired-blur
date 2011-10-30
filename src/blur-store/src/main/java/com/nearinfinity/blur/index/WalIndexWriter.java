@@ -128,7 +128,6 @@ public class WalIndexWriter extends IndexWriter {
 
   public void updateDocument(boolean wal, Term term, Document doc, Analyzer analyzer) throws CorruptIndexException, IOException {
     _dirty.incrementAndGet();
-    long start = System.nanoTime();
     if (term == null) {
       addDocument(wal, doc, analyzer);
       return;
@@ -148,12 +147,11 @@ public class WalIndexWriter extends IndexWriter {
     } else {
       super.updateDocument(term, doc, analyzer);
     }
-    _blurMetrics.recordsWritenRate.inc(1, System.nanoTime()-start);
+    _blurMetrics.recordWrites.incrementAndGet();
   }
 
   public void updateDocuments(boolean wal, Term term, Collection<Document> docs, Analyzer analyzer) throws CorruptIndexException, IOException {
     _dirty.incrementAndGet();
-    long start = System.nanoTime();
     if (term == null) {
       addDocuments(wal, docs, analyzer);
       return;
@@ -173,7 +171,7 @@ public class WalIndexWriter extends IndexWriter {
     } else {
       super.updateDocuments(term, docs, analyzer);
     }
-    _blurMetrics.recordsWritenRate.inc(docs.size(), System.nanoTime()-start);
+    _blurMetrics.recordWrites.incrementAndGet();
   }
 
   public void deleteDocuments(boolean wal, Query query) throws CorruptIndexException, IOException {
@@ -188,7 +186,6 @@ public class WalIndexWriter extends IndexWriter {
 
   public void addDocument(boolean wal, Document doc, Analyzer analyzer) throws CorruptIndexException, IOException {
     _dirty.incrementAndGet();
-    long start = System.nanoTime();
     if (wal) {
       Future<Boolean> valid = walWriterAdd(doc);
       super.addDocument(doc, analyzer);
@@ -204,12 +201,11 @@ public class WalIndexWriter extends IndexWriter {
     } else {
       super.addDocument(doc, analyzer);
     }
-    _blurMetrics.recordsWritenRate.inc(1, System.nanoTime()-start);
+    _blurMetrics.recordWrites.incrementAndGet();
   }
 
   public void addDocuments(boolean wal, Collection<Document> docs, Analyzer analyzer) throws CorruptIndexException, IOException {
     _dirty.incrementAndGet();
-    long start = System.nanoTime();
     if (wal) {
       Future<Boolean> valid = walWriterAdd(docs);
       super.addDocuments(docs, analyzer);
@@ -225,7 +221,7 @@ public class WalIndexWriter extends IndexWriter {
     } else {
       super.addDocuments(docs, analyzer);
     }
-    _blurMetrics.recordsWritenRate.inc(docs.size(), System.nanoTime()-start);
+    _blurMetrics.recordWrites.incrementAndGet();
   }
 
   @Override

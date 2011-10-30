@@ -46,9 +46,9 @@ public class BlockDirectoryCache implements Cache {
     blockCacheKey.setFile(file);
     boolean fetch = _blockCache.fetch(blockCacheKey, b, blockOffset, off, lengthToReadInBlock);
     if (fetch) {
-      _blurMetrics.blockCacheHit.inc();
+      _blurMetrics.blockCacheHit.incrementAndGet();
     } else {
-      _blurMetrics.blockCacheMiss.inc();
+      _blurMetrics.blockCacheMiss.incrementAndGet();
     }
     return fetch;
   }

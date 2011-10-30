@@ -170,16 +170,13 @@ public class IndexManager {
     IndexReader reader = null;
     try {
       reader = index.getIndexReader(!selector.allowStaleData);
-      long s = System.nanoTime();
       fetchRow(reader, table, selector, fetchResult);
-      long e = System.nanoTime();
-      long time = (e - s) / 1000000;
       if (_blurMetrics != null) {
         if (fetchResult.rowResult != null) {
-          _blurMetrics.recordsReadRate.inc(fetchResult.rowResult.row.records.size(), time);
-          _blurMetrics.rowsReadRate.inc(1, time);
+          _blurMetrics.recordReads.addAndGet(fetchResult.rowResult.row.records.size());
+          _blurMetrics.rowReads.incrementAndGet();
         } else if (fetchResult.recordResult != null) {
-          _blurMetrics.recordsReadRate.inc(1, time);
+          _blurMetrics.recordReads.incrementAndGet();
         }
       }
     } catch (Exception e) {

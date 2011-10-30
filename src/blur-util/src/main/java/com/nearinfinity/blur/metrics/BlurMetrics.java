@@ -1,39 +1,32 @@
 package com.nearinfinity.blur.metrics;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.metrics.MetricsContext;
 import org.apache.hadoop.metrics.MetricsRecord;
 import org.apache.hadoop.metrics.MetricsUtil;
 import org.apache.hadoop.metrics.Updater;
 import org.apache.hadoop.metrics.jvm.JvmMetrics;
-import org.apache.hadoop.metrics.util.MetricsBase;
-import org.apache.hadoop.metrics.util.MetricsRegistry;
-import org.apache.hadoop.metrics.util.MetricsTimeVaryingLong;
-import org.apache.hadoop.metrics.util.MetricsTimeVaryingRate;
 
 public class BlurMetrics implements Updater {
 
   private MetricsRecord metricsRecord;
-  private MetricsRegistry registry = new MetricsRegistry();
   
-  public MetricsTimeVaryingLong blockCacheHit = new MetricsTimeVaryingLong("blockcache.cache.hit",registry);
-  public MetricsTimeVaryingLong blockCacheMiss = new MetricsTimeVaryingLong("blockcache.cache.miss",registry);
-  public MetricsTimeVaryingLong blockCacheEviction = new MetricsTimeVaryingLong("blockcache.eviction", registry);
-  public MetricsTimeVaryingRate rowsReadRate = new MetricsTimeVaryingRate("rows.read.rate", registry);
-  public MetricsTimeVaryingRate rowsWriteRate = new MetricsTimeVaryingRate("rows.written.rate", registry);
-  public MetricsTimeVaryingRate recordsReadRate = new MetricsTimeVaryingRate("records.read.rate", registry);
-  public MetricsTimeVaryingRate recordsWritenRate = new MetricsTimeVaryingRate("records.written.rate", registry);
-  
+  public AtomicLong blockCacheHit = new AtomicLong(0);
+  public AtomicLong blockCacheMiss = new AtomicLong(0);
+  public AtomicLong blockCacheEviction = new AtomicLong(0);
+  public AtomicLong rowReads = new AtomicLong(0);
+  public AtomicLong rowWrites = new AtomicLong(0);
+  public AtomicLong recordReads = new AtomicLong(0);
+  public AtomicLong recordWrites = new AtomicLong(0);
   
   public static void main(String[] args) throws InterruptedException {
     Configuration conf = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(conf);
-    long start = System.nanoTime();
     for (int i = 0; i < 100; i++) {
-      blurMetrics.blockCacheHit.inc();
-      blurMetrics.blockCacheMiss.inc();
-      blurMetrics.recordsReadRate.inc(1,(System.nanoTime()-start)/1000000);
-      start = System.nanoTime();
+      blurMetrics.blockCacheHit.incrementAndGet();
+      blurMetrics.blockCacheMiss.incrementAndGet();
       Thread.sleep(1000);
     }
   }
@@ -48,9 +41,13 @@ public class BlurMetrics implements Updater {
   @Override
   public void doUpdates(MetricsContext context) {
     synchronized (this) {
-      for (MetricsBase m : registry.getMetricsList()) {
-        m.pushMetric(metricsRecord);
-      }
+      metricsRecord.setMetric("blockcache.hit", blockCacheHit.getAndSet(0));
+      metricsRecord.setMetric("blockcache.miss", blockCacheMiss.getAndSet(0));
+      metricsRecord.setMetric("blockcache.eviction", blockCacheEviction.getAndSet(0));
+      metricsRecord.setMetric("row.reads", rowReads.getAndSet(0));
+      metricsRecord.setMetric("row.writes", rowWrites.getAndSet(0));
+      metricsRecord.setMetric("record.reads", recordReads.getAndSet(0));
+      metricsRecord.setMetric("record.writes", recordWrites.getAndSet(0));
     }
     metricsRecord.update();
   }

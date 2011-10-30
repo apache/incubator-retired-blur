@@ -1,6 +1,7 @@
 package com.nearinfinity.agent.collectors;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -51,6 +52,15 @@ public class QueryCollector {
 									
 									SimpleQuery query = blurQueryStatus.getQuery().getSimpleQuery();
 									
+									Date startTime = cal.getTime();
+									long startTimeLong = blurQueryStatus.getQuery().getStartTime();
+									if (startTimeLong > 0) {
+										Calendar startCal = Calendar.getInstance();
+										TimeZone startz = startCal.getTimeZone();
+										startCal.add(Calendar.MILLISECOND, -(startz.getOffset(startTimeLong)));
+										startTime = startCal.getTime();
+									}
+									
 									jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
 												new Object[]{query.getQueryStr(), 
 													times,
@@ -58,7 +68,7 @@ public class QueryCollector {
 													blurQueryStatus.getTotalShards(),
 													blurQueryStatus.getState().getValue(),
 													blurQueryStatus.getUuid(),
-													cal.getTime(),
+													startTime,
 													cal.getTime(),
 													TableMap.get().get(table),
 													query.isSuperQueryOn(),

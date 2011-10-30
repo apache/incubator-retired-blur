@@ -56,7 +56,17 @@ public class ShardCollector {
 	
 	private void updateOnlineShards(List<String> shards) {
 		for (String shard : shards) {
-			String blurVersion = "1.0";			
+			String blurVersion = "UNKNOWN";
+			
+			try {
+				byte[] b = zk.getData("/blur/clusters/" + clusterName + "/online/shard-nodes", true, null);
+				if (b != null && b.length > 0) {
+					blurVersion = new String(b);
+				}
+			} catch (Exception e) {
+				log.warn("Unable to figure out shard blur version", e);
+			}
+						
 			
 			int updatedCount = jdbc.update("update shards set status=1, blur_version=? where node_name=? and cluster_id=?", blurVersion, shard, clusterId);
 			

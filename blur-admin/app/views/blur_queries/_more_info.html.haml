@@ -72,14 +72,16 @@
       %td{:class => "more-info-label"} Pre Filters
       %td
         -if blur_query.pre_filters
-          =blur_query.pre_filters
+          %span{:title=>blur_query.pre_filters}
+            =truncate(blur_query.pre_filters, :length => 50, :ommision => "...")
         -else
           =empty_message
     %tr
       %td{:class => "more-info-label"} Post Filters
       %td
         -if blur_query.post_filters
-          =blur_query.post_filters
+          %span{:title=>blur_query.post_filters}
+            =truncate(blur_query.post_filters, :length => 50, :ommision => "...")
         -else
           =empty_message
     %tr

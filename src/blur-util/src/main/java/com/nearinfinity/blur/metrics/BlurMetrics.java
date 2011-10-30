@@ -16,6 +16,7 @@ public class BlurMetrics implements Updater {
   public AtomicLong blockCacheHit = new AtomicLong(0);
   public AtomicLong blockCacheMiss = new AtomicLong(0);
   public AtomicLong blockCacheEviction = new AtomicLong(0);
+  public AtomicLong blockCacheSize = new AtomicLong(0);
   public AtomicLong rowReads = new AtomicLong(0);
   public AtomicLong rowWrites = new AtomicLong(0);
   public AtomicLong recordReads = new AtomicLong(0);
@@ -44,6 +45,7 @@ public class BlurMetrics implements Updater {
       metricsRecord.setMetric("blockcache.hit", blockCacheHit.getAndSet(0));
       metricsRecord.setMetric("blockcache.miss", blockCacheMiss.getAndSet(0));
       metricsRecord.setMetric("blockcache.eviction", blockCacheEviction.getAndSet(0));
+      metricsRecord.setMetric("blockcache.size", blockCacheSize.getAndSet(0));
       metricsRecord.setMetric("row.reads", rowReads.getAndSet(0));
       metricsRecord.setMetric("row.writes", rowWrites.getAndSet(0));
       metricsRecord.setMetric("record.reads", recordReads.getAndSet(0));

@@ -42,6 +42,7 @@ public class BlockCache {
           _lockCounters[bankId].decrementAndGet();
         }
         _metrics.blockCacheEviction.incrementAndGet();
+        _metrics.blockCacheSize.decrementAndGet();
       }
     };
     _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>()
@@ -72,6 +73,7 @@ public class BlockCache {
       System.arraycopy(data, 0, bank, offset, _blockSize);
       if (newLocation) {
         _cache.put(blockCacheKey.clone(), location);
+        _metrics.blockCacheSize.incrementAndGet();
       }
       return true;
     }

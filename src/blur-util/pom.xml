@@ -30,7 +30,7 @@
 			<version>1.6.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.hadoop</groupId>
+			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
 			<version>3.3.3-cdh3u2</version>
 		</dependency>

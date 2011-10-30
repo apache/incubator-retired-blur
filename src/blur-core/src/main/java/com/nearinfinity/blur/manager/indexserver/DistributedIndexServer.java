@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -36,6 +37,8 @@ import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
@@ -91,11 +94,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private Timer _timerCacheFlush;
   private ExecutorService _openerService;
   private BlurIndexCloser _closer;
-
   private Timer _timerTableWarmer;
-  
   private ThreadWatcher _threadWatcher;
   private BlurFilterCache _filterCache;
+  private Thread _shardServerWatcherDaemon;
+  private AtomicBoolean _running = new AtomicBoolean();
 
   public void init() throws KeeperException, InterruptedException {
     _openerService = Executors.newThreadPool(_threadWatcher, "shard-opener", _shardOpenerThreadCount);
@@ -109,7 +112,41 @@ public class DistributedIndexServer extends AbstractIndexServer {
       BlurUtil.unlockForSafeMode(_zookeeper,lockPath);
     }
     waitInSafeModeIfNeeded();
+    _running.set(true);
     setupTableWarmer();
+    watchForShardServerChanges();
+  }
+
+  private void watchForShardServerChanges() {
+    _shardServerWatcherDaemon = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (_running.get()) {
+          synchronized (_layoutManagers) {
+            try {
+              _zookeeper.getChildren(ZookeeperPathConstants.getBlurOnlineShardsPath(), new Watcher() {
+                @Override
+                public void process(WatchedEvent event) {
+                  synchronized (_layoutManagers) {
+                    _layoutManagers.notifyAll();
+                  }
+                }
+              });
+              _layoutManagers.clear();
+              _layoutCache.clear();
+              _layoutManagers.wait();
+            } catch (KeeperException e) {
+              LOG.error("Unknown Error",e);
+            } catch (InterruptedException e) {
+              LOG.error("Unknown Error",e);
+            }
+          }
+        }
+      }
+    });
+    _shardServerWatcherDaemon.setName("Shard-Server-Watcher-Daemon");
+    _shardServerWatcherDaemon.setDaemon(true);
+    _shardServerWatcherDaemon.start();
   }
 
   private void waitInSafeModeIfNeeded() throws KeeperException, InterruptedException {

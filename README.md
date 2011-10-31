@@ -219,8 +219,55 @@ This is the shorter way of creating the same RowMutation.
     client.mutate(mutation);
 
 ### Map/Reduce Bulk Load
+    // Driver Class
+    public class BlurMapReduce {
+      public static void main(String[] args) {
+        BlurTask blurTask = new BlurTask();
+        blurTask.setTableDescriptor(getTableDescriptor());
+        blurTask.setSpinLockPath("/copy-locks");
+        blurTask.setZookeeperConnectionStr("localhost");
+        blurTask.setMaxNumberOfConcurrentCopies(10);
 
-Example coming.
+        // The copy locks are used to throttle how many concurrent 
+        // copies from the reducers are occuring at the same time.
+        // This is normally needed because the indexing cluster is 
+        // typically larger in size than the blur cluster.
+
+        Job job = blurTask.configureJob(configuration);  
+        job.setJarByClass(BlurExampleIndexer.class);
+        job.setMapperClass(BlurExampleMapper.class);
+        job.setInputFormatClass(TextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+    
+        FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
+        FileOutputFormat.setOutputPath(job, new Path(otherArgs[1], "job-" + System.currentTimeMillis()));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+      }
+
+      public static class BlurExampleMapper extends BlurMapper<LongWritable, Text> {
+        @Override
+        protected void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException {
+          // Reset record
+          _record.clearColumns();
+        
+          // Set row id
+          _record.setRowId("rowid");
+        
+          // Set record id
+          _record.setRecordId("recordid");
+        
+          // Set column family
+          _record.setColumnFamily("cf1");
+
+          // Set the key which is usual the rowid
+          byte[] bs = _record.getRowId().getBytes().
+          _key.set(bs, 0, bs.length);
+          context.write(_key, _record);
+          _recordCounter.increment(1);
+          context.progress();
+        }
+      }
+    }
 
 Fetching Data
 ----

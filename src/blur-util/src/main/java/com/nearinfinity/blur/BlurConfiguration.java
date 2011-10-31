@@ -71,4 +71,12 @@ public class BlurConfiguration {
         set(name,Short.toString(value));
     }
 
+    public boolean getBoolean(String name, boolean defaultValue) {
+      return Boolean.parseBoolean(get(name,Boolean.toString(defaultValue)));
+    }
+    
+    public void setBoolean(String name, boolean value) {
+      set(name,Boolean.toString(value));
+    }
+
 }

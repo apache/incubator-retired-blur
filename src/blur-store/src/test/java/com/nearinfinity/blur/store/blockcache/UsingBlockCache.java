@@ -14,7 +14,7 @@ public class UsingBlockCache {
     int numberOfBlocksPerBank = 1048576;
     int blocksInTest = 2000000;
     int blockSize = 1024;
-    BlockCache blockCache = new BlockCache(8, numberOfBlocksPerBank / 8, blockSize, new BlurMetrics(new Configuration()));
+    BlockCache blockCache = new BlockCache(8, numberOfBlocksPerBank / 8, blockSize, new BlurMetrics(new Configuration()),true);
     byte[] buffer = new byte[1024];
     Random random = new Random();
 

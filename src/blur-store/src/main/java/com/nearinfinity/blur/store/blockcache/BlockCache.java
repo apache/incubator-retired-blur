@@ -1,5 +1,6 @@
 package com.nearinfinity.blur.store.blockcache;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,7 +11,7 @@ import com.nearinfinity.blur.metrics.BlurMetrics;
 public class BlockCache {
 
   private final ConcurrentMap<BlockCacheKey, BlockCacheLocation> _cache;
-  private final byte[][] _banks;
+  private final ByteBuffer[] _banks;
   private final BlockLocks[] _locks;
   private final AtomicInteger[] _lockCounters;
   private final int _blockSize;
@@ -18,15 +19,19 @@ public class BlockCache {
   private final int _maxEntries;
   private final BlurMetrics _metrics;
 
-  public BlockCache(final int numberOfBanks, final int numberOfBlocksPerBank, int blockSize, BlurMetrics metrics) {
+  public BlockCache(final int numberOfBanks, final int numberOfBlocksPerBank, int blockSize, BlurMetrics metrics, boolean directAllocation) {
     _metrics = metrics;
     _numberOfBlocksPerBank = numberOfBlocksPerBank;
-    _banks = new byte[numberOfBanks][];
+    _banks = new ByteBuffer[numberOfBanks];
     _locks = new BlockLocks[numberOfBanks];
     _lockCounters = new AtomicInteger[numberOfBanks];
     _maxEntries = (numberOfBlocksPerBank * numberOfBanks) - 1;
     for (int i = 0; i < numberOfBanks; i++) {
-      _banks[i] = new byte[numberOfBlocksPerBank * blockSize];
+      if (directAllocation) {
+        _banks[i] = ByteBuffer.allocateDirect(numberOfBlocksPerBank * blockSize);
+      } else {
+        _banks[i] = ByteBuffer.allocate(numberOfBlocksPerBank * blockSize);
+      }
       _locks[i] = new BlockLocks(numberOfBlocksPerBank);
       _lockCounters[i] = new AtomicInteger();
     }
@@ -69,8 +74,9 @@ public class BlockCache {
       }
       int bankId = location.getBankId();
       int offset = location.getBlock() * _blockSize;
-      byte[] bank = getBank(bankId);
-      System.arraycopy(data, 0, bank, offset, _blockSize);
+      ByteBuffer bank = getBank(bankId);
+      bank.position(offset);
+      bank.put(data, 0, _blockSize);
       if (newLocation) {
         _cache.put(blockCacheKey.clone(), location);
         _metrics.blockCacheSize.incrementAndGet();
@@ -91,8 +97,9 @@ public class BlockCache {
       int bankId = location.getBankId();
       int offset = location.getBlock() * _blockSize;
       location.touch();
-      byte[] bank = getBank(bankId);
-      System.arraycopy(bank, offset + blockOffset, buffer, off, length);
+      ByteBuffer bank = getBank(bankId);
+      bank.position(offset + blockOffset);
+      bank.get(buffer, off, length);
       return true;
     }
   }
@@ -142,8 +149,8 @@ public class BlockCache {
     }
   }
 
-  private byte[] getBank(int bankId) {
-    return _banks[bankId];
+  private ByteBuffer getBank(int bankId) {
+    return _banks[bankId].duplicate();
   }
 
   public int getSize() {

@@ -42,7 +42,7 @@ public class BenchmarkDirectory {
     int numberOfBlocksPerBank = 8192;
     int blockSize = BlockDirectory.BLOCK_SIZE;
     int numberOfBanks = getNumberOfBanks(0.5f, numberOfBlocksPerBank, blockSize);
-    BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize, new BlurMetrics(new Configuration()));
+    BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize, new BlurMetrics(new Configuration()),true);
     BlurMetrics metrics = new BlurMetrics(new Configuration());
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, metrics);
     

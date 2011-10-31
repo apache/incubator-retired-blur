@@ -20,6 +20,8 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_INDEXMANAGER_SEARCH
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_MAX_CLAUSE_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_ADDRESS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BIND_PORT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_BLOCKCACHE_SLAB_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
@@ -32,7 +34,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -76,19 +77,23 @@ public class ThriftBlurShardServer extends ThriftServer {
     LOG.info("Setting up Shard Server");
     
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
+    BlurConfiguration configuration = new BlurConfiguration();
     // setup block cache
     // 134,217,728 is the bank size, therefore there are 16,384 block
     // in a bank when using a block of 8,192
     int numberOfBlocksPerBank = 16384;
     int blockSize = BlockDirectory.BLOCK_SIZE;
-    int numberOfBanks = getNumberOfBanks(0.5f, numberOfBlocksPerBank, blockSize);
+    int bankCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, 1);
     Configuration config = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(config);
-    BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize, blurMetrics);
-
+    boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION,true);
+    
+    int slabSize = numberOfBlocksPerBank * blockSize;
+    LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]",bankCount,directAllocation);
+    LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes",slabSize,bankCount,((long) bankCount * (long) slabSize));
+    
+    BlockCache blockCache = new BlockCache(bankCount, numberOfBlocksPerBank, blockSize, blurMetrics, directAllocation);
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, blurMetrics);
-
-    BlurConfiguration configuration = new BlurConfiguration();
     
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT,-1);
@@ -206,19 +211,6 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }
     return new DefaultBlurFilterCache();
-  }
-
-  public static int getNumberOfBanks(float heapPercentage, int numberOfBlocksPerBank, int blockSize) {
-    long max = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
-    long targetBytes = (long) (max * heapPercentage);
-    int slabSize = numberOfBlocksPerBank * blockSize;
-    int slabs = (int) (targetBytes / slabSize);
-    if (slabs == 0) {
-      throw new RuntimeException("Minimum heap size is 512m!");
-    }
-    LOG.info("Block cache parameters, target heap usage [" + heapPercentage + "] slab size of [" + slabSize + "] will allocate [" + slabs + "] slabs and use ~["
-        + ((long) slabs * (long) slabSize) + "] bytes");
-    return slabs;
   }
 
   public static Iface crazyMode(final Iface iface) {

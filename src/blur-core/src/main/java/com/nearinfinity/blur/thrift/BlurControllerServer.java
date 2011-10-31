@@ -37,7 +37,6 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
@@ -91,12 +90,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private int _maxQueryCacheElements = 128;
   private QueryCache _queryCache;
   private BlurQueryChecker _queryChecker;
-  private ThreadWatcher _threadWatcher;
 
   public void init() throws KeeperException, InterruptedException {
     registerMyself();
     _queryCache = new QueryCache("controller-cache", _maxQueryCacheElements, _maxTimeToLive);
-    _executor = Executors.newThreadPool(_threadWatcher, CONTROLLER_THREAD_POOL, _threadCount);
+    _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
     updateShardLayout();
     _shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
     _shardLayoutTimer.scheduleAtFixedRate(new TimerTask() {
@@ -565,9 +563,5 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   public void setQueryChecker(BlurQueryChecker queryChecker) {
     _queryChecker = queryChecker;
-  }
-
-  public void setThreadWatcher(ThreadWatcher threadWatcher) {
-    _threadWatcher = threadWatcher;
   }
 }

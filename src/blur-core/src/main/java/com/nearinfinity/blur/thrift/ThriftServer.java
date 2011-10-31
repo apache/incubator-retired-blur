@@ -11,7 +11,6 @@ import org.apache.thrift.transport.TTransportException;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Blur;
@@ -27,7 +26,6 @@ public class ThriftServer {
   private boolean _closed;
   private BlurConfiguration _configuration;
   private int _threadCount;
-  private ThreadWatcher _threadWatcher;
   private int _bindPort;
   private String _bindAddress;
 
@@ -44,7 +42,7 @@ public class ThriftServer {
 
     Args args = new Args(serverTransport);
     args.processor(processor);
-    args.executorService(Executors.newThreadPool(_threadWatcher, "thrift-processors", _threadCount));
+    args.executorService(Executors.newThreadPool("thrift-processors", _threadCount));
 
     _server = new THsHaServer(args);
     LOG.info("Starting server [{0}]", _nodeName);
@@ -104,9 +102,5 @@ public class ThriftServer {
 
   public void setThreadCount(int threadCount) {
     this._threadCount = threadCount;
-  }
-
-  public void setThreadWatcher(ThreadWatcher threadWatcher) {
-    _threadWatcher = threadWatcher;
   }
 }

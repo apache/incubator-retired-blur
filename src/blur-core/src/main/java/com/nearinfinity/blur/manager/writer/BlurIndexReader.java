@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.manager.writer;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.index.IndexReader;
 
@@ -9,6 +10,7 @@ import com.nearinfinity.blur.thrift.generated.Row;
 public class BlurIndexReader extends BlurIndex {
 
   private IndexReader reader;
+  private AtomicBoolean isClosed = new AtomicBoolean(false);
 
   public BlurIndexReader(IndexReader reader) {
     this.reader = reader;
@@ -16,7 +18,7 @@ public class BlurIndexReader extends BlurIndex {
 
   @Override
   public void close() {
-
+    isClosed.set(true);
   }
 
   @Override
@@ -38,5 +40,10 @@ public class BlurIndexReader extends BlurIndex {
   @Override
   public void deleteRow(boolean wal, String rowId) {
 
+  }
+
+  @Override
+  public AtomicBoolean isClosed() {
+    return isClosed;
   }
 }

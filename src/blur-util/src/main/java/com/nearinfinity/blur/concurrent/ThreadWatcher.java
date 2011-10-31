@@ -21,6 +21,7 @@ import com.nearinfinity.blur.log.LogFactory;
 public class ThreadWatcher {
   
   private static final Log LOG = LogFactory.getLog(ThreadWatcher.class);
+  private static ThreadWatcher _instance;
 
   public static void main(String[] args) {
 
@@ -36,6 +37,8 @@ public class ThreadWatcher {
   
   private ConcurrentMap<Thread,Watch> _threads = new ConcurrentHashMap<Thread, Watch>();
   private Timer _timer;
+  
+  private ThreadWatcher() {}
   
   public void watch(Thread thread) {
     _threads.put(thread, new Watch(thread));
@@ -184,8 +187,14 @@ public class ThreadWatcher {
     public Future<?> submit(Runnable task) {
       return _executorService.submit(wrap(task));
     }
+  }
 
-    
+  public synchronized static ThreadWatcher instance() {
+    if (_instance == null) {
+      _instance = new ThreadWatcher();
+      _instance.init();
+    }
+    return _instance;
   }
 
 }

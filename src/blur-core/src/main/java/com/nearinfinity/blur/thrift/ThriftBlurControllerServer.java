@@ -80,9 +80,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     BlurClient client = new BlurClientRemote();
     
-    final ThreadWatcher threadWatcher = new ThreadWatcher();
-    threadWatcher.init();
-
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);
     controllerServer.setClusterStatus(clusterStatus);
@@ -92,7 +89,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
     controllerServer.setMaxQueryCacheElements(configuration.getInt(BLUR_CONTROLLER_CACHE_MAX_QUERYCACHE_ELEMENTS, 128));
     controllerServer.setMaxTimeToLive(configuration.getLong(BLUR_CONTROLLER_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     controllerServer.setQueryChecker(queryChecker);
-    controllerServer.setThreadWatcher(threadWatcher);
     controllerServer.init();
 
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
@@ -103,7 +99,6 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setBindAddress(bindAddress);
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
-    server.setThreadWatcher(threadWatcher);
     if (crazyMode) {
       System.err.println("Crazy mode!!!!!");
       server.setIface(ThriftBlurShardServer.crazyMode(controllerServer));
@@ -115,6 +110,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override
       public void shutdown() {
+        ThreadWatcher threadWatcher = ThreadWatcher.instance();
         quietClose(server, controllerServer, clusterStatus, zooKeeper, threadWatcher);
         System.exit(0);
       }

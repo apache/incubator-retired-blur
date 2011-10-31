@@ -70,6 +70,7 @@ public class BlurIndexWriter extends BlurIndex {
   private BlurMetrics _blurMetrics;
   private String _table;
   private String _shard;
+  private AtomicBoolean isClosed = new AtomicBoolean(false);
 
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, _analyzer);
@@ -184,6 +185,7 @@ public class BlurIndexWriter extends BlurIndex {
     _open.set(false);
     _refresher.unregister(this);
     _writer.close();
+    isClosed.set(true);
     LOG.info("Writer for table [{0}] shard [{1}] closed.",_table,_shard);
   }
 
@@ -232,6 +234,11 @@ public class BlurIndexWriter extends BlurIndex {
 
   public void setShard(String shard) {
     this._shard = shard;
+  }
+
+  @Override
+  public AtomicBoolean isClosed() {
+    return isClosed;
   }
 
 }

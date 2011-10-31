@@ -62,7 +62,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
@@ -114,14 +113,13 @@ public class IndexManager {
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
   private BlurMetrics _blurMetrics;
-  private ThreadWatcher _threadWatcher;
 
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
   }
 
   public void init() {
-    _executor = Executors.newThreadPool(_threadWatcher, "index-manager", _threadCount);
+    _executor = Executors.newThreadPool("index-manager", _threadCount);
     _statusManager.init();
     LOG.info("Init Complete");
   }
@@ -772,10 +770,6 @@ public class IndexManager {
 
   public void setBlurMetrics(BlurMetrics blurMetrics) {
     _blurMetrics = blurMetrics;
-  }
-
-  public void setThreadWatcher(ThreadWatcher threadWatcher) {
-    _threadWatcher = threadWatcher;
   }
 
   public void setFilterCache(BlurFilterCache filterCache) {

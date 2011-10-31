@@ -26,6 +26,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUE
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
@@ -56,7 +57,9 @@ import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.DefaultBlurFilterCache;
 import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
+import com.nearinfinity.blur.manager.indexserver.BlurIndexWarmup;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
+import com.nearinfinity.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import com.nearinfinity.blur.manager.indexserver.DistributedIndexServer;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
@@ -124,10 +127,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     final BlurIndexCommiter commiter = new BlurIndexCommiter();
     commiter.init();
 
-    final ThreadWatcher threadWatcher = new ThreadWatcher();
-    threadWatcher.init();
-    
     BlurFilterCache filterCache = getFilterCache(configuration);
+    BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
     
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
@@ -139,9 +140,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setRefresher(refresher);
     indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
     indexServer.setZookeeper(zooKeeper);
-    indexServer.setThreadWatcher(threadWatcher);
     indexServer.setFilterCache(filterCache);
     indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY,60000));
+    indexServer.setWarmup(indexWarmup);
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();
@@ -149,7 +150,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setMaxClauseCount(configuration.getInt(BLUR_MAX_CLAUSE_COUNT, 1024));
     indexManager.setThreadCount(configuration.getInt(BLUR_INDEXMANAGER_SEARCH_THREAD_COUNT, 32));
     indexManager.setBlurMetrics(blurMetrics);
-    indexManager.setThreadWatcher(threadWatcher);
     indexManager.setFilterCache(filterCache);
     indexManager.init();
     
@@ -161,7 +161,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setMaxQueryCacheElements(configuration.getInt(BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS, 128));
     shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     shardServer.setQueryChecker(queryChecker);
-    shardServer.setThreadWatcher(threadWatcher);
     shardServer.init();
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
@@ -171,7 +170,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setBindAddress(bindAddress);
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
-    server.setThreadWatcher(threadWatcher);
     if (crazyMode) {
       System.err.println("Crazy mode!!!!!");
       server.setIface(crazyMode(shardServer));
@@ -184,6 +182,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override
       public void shutdown() {
+        ThreadWatcher threadWatcher = ThreadWatcher.instance();
         quietClose(commiter, refresher, server, shardServer, indexManager, indexServer, threadWatcher);
         System.exit(0);
       }
@@ -213,6 +212,19 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }
     return new DefaultBlurFilterCache();
+  }
+  
+  private static BlurIndexWarmup getIndexWarmup(BlurConfiguration configuration) {
+    String _blurFilterCacheClass = configuration.get(BLUR_SHARD_INDEX_WARMUP_CLASS);
+    if (_blurFilterCacheClass != null) {
+      try {
+        Class<?> clazz = Class.forName(_blurFilterCacheClass);
+        return (BlurIndexWarmup) clazz.newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return new DefaultBlurIndexWarmup();
   }
 
   public static Iface crazyMode(final Iface iface) {

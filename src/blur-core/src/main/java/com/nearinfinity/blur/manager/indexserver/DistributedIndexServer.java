@@ -45,7 +45,6 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
-import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -94,14 +93,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private ExecutorService _openerService;
   private BlurIndexCloser _closer;
   private Timer _timerTableWarmer;
-  private ThreadWatcher _threadWatcher;
   private BlurFilterCache _filterCache;
   private Thread _shardServerWatcherDaemon;
   private AtomicBoolean _running = new AtomicBoolean();
   private long _safeModeDelay;
+  private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
 
   public void init() throws KeeperException, InterruptedException {
-    _openerService = Executors.newThreadPool(_threadWatcher, "shard-opener", _shardOpenerThreadCount);
+    _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     setupFlushCacheTimer();
     String lockPath = BlurUtil.lockForSafeMode(_zookeeper,getNodeName());
@@ -391,10 +390,10 @@ public class DistributedIndexServer extends AbstractIndexServer {
     writer.setTable(table);
     writer.init();
     _filterCache.opening(table,shard,writer);
-    return warmUp(writer);
+    return warmUp(writer,table,shard);
   }
 
-  private BlurIndex warmUp(BlurIndex index) throws IOException {
+  private BlurIndex warmUp(BlurIndex index, String table, String shard) throws IOException {
     IndexReader reader = index.getIndexReader(true);
     try {
       warmUpAllSegments(reader);
@@ -402,6 +401,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       // this will allow for closing of index
       reader.decRef();
     }
+    _warmup.warmBlurIndex(table,shard,reader,index.isClosed());
     return index;
   }
 
@@ -663,15 +663,15 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _zookeeper = zookeeper;
   }
 
-  public void setThreadWatcher(ThreadWatcher threadWatcher) {
-    _threadWatcher = threadWatcher;
-  }
-
   public void setFilterCache(BlurFilterCache filterCache) {
     _filterCache = filterCache;
   }
 
   public void setSafeModeDelay(long safeModeDelay) {
     _safeModeDelay = safeModeDelay;
+  }
+
+  public void setWarmup(BlurIndexWarmup warmup) {
+    _warmup = warmup;
   }
 }

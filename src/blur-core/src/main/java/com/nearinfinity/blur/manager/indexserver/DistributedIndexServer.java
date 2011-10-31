@@ -71,7 +71,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(5);
-  private static final long SAFE_MODE_DELAY = TimeUnit.SECONDS.toMillis(20);
 
   private Map<String, BlurAnalyzer> _tableAnalyzers = new ConcurrentHashMap<String, BlurAnalyzer>();
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
@@ -99,6 +98,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurFilterCache _filterCache;
   private Thread _shardServerWatcherDaemon;
   private AtomicBoolean _running = new AtomicBoolean();
+  private long _safeModeDelay;
 
   public void init() throws KeeperException, InterruptedException {
     _openerService = Executors.newThreadPool(_threadWatcher, "shard-opener", _shardOpenerThreadCount);
@@ -177,7 +177,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       return;
     }
     LOG.info("First node online, setting up safe mode.");
-    long timestamp = System.currentTimeMillis() + SAFE_MODE_DELAY;
+    long timestamp = System.currentTimeMillis() + _safeModeDelay;
     String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
     Stat stat = _zookeeper.exists(blurSafemodePath, false);
     if (stat == null) {
@@ -669,5 +669,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setFilterCache(BlurFilterCache filterCache) {
     _filterCache = filterCache;
+  }
+
+  public void setSafeModeDelay(long safeModeDelay) {
+    _safeModeDelay = safeModeDelay;
   }
 }

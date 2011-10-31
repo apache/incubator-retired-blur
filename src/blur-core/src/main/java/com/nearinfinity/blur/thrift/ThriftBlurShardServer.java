@@ -27,6 +27,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIM
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
@@ -140,6 +141,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setZookeeper(zooKeeper);
     indexServer.setThreadWatcher(threadWatcher);
     indexServer.setFilterCache(filterCache);
+    indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY,60000));
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();

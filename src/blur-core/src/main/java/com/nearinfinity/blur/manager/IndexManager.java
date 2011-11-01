@@ -274,6 +274,7 @@ public class IndexManager {
 
   public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
     final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery);
+    _blurMetrics.queriesExternal.incrementAndGet();
     try {
       Map<String, BlurIndex> blurIndexes;
       try {
@@ -291,7 +292,7 @@ public class IndexManager {
         Filter postFilter = parseFilter(table, simpleQuery.postSuperFilter, true, analyzer);
         Query userQuery = parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
+        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -302,7 +303,7 @@ public class IndexManager {
           userQuery = query;
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData);
+        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call).merge(merger);
@@ -736,14 +737,16 @@ public class IndexManager {
     private Query _query;
     private Selector _selector;
     private boolean _forceRefresh;
+    private BlurMetrics _blurMetrics;
 
-    public SimpleQueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh) {
+    public SimpleQueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh, BlurMetrics blurMetrics) {
       _table = table;
       _status = status;
       _indexServer = indexServer;
       _query = query;
       _selector = selector;
       _forceRefresh = forceRefresh;
+      _blurMetrics = blurMetrics;
     }
 
     @Override
@@ -757,6 +760,7 @@ public class IndexManager {
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         return new BlurResultIterableSearcher((Query) _query.clone(), _table, shard, searcher, _selector);
       } finally {
+        _blurMetrics.queriesInternal.incrementAndGet();
         // this will allow for closing of index
         reader.decRef();
         _status.deattachThread();

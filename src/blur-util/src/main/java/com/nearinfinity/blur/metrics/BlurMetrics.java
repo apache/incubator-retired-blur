@@ -11,8 +11,6 @@ import org.apache.hadoop.metrics.jvm.JvmMetrics;
 
 public class BlurMetrics implements Updater {
 
-  private MetricsRecord metricsRecord;
-  
   public AtomicLong blockCacheHit = new AtomicLong(0);
   public AtomicLong blockCacheMiss = new AtomicLong(0);
   public AtomicLong blockCacheEviction = new AtomicLong(0);
@@ -21,6 +19,11 @@ public class BlurMetrics implements Updater {
   public AtomicLong rowWrites = new AtomicLong(0);
   public AtomicLong recordReads = new AtomicLong(0);
   public AtomicLong recordWrites = new AtomicLong(0);
+  public AtomicLong queriesExternal = new AtomicLong(0);
+  public AtomicLong queriesInternal = new AtomicLong(0);
+
+  private MetricsRecord _metricsRecord;
+  private long _previous = System.nanoTime();
   
   public static void main(String[] args) throws InterruptedException {
     Configuration conf = new Configuration();
@@ -35,23 +38,32 @@ public class BlurMetrics implements Updater {
   public BlurMetrics(Configuration conf) {
     JvmMetrics.init("blur", Long.toString(System.currentTimeMillis()));
     MetricsContext metricsContext = MetricsUtil.getContext("blur");
-    metricsRecord = MetricsUtil.createRecord(metricsContext, "metrics");
+    _metricsRecord = MetricsUtil.createRecord(metricsContext, "metrics");
     metricsContext.registerUpdater(this);
   }
 
   @Override
   public void doUpdates(MetricsContext context) {
     synchronized (this) {
-      metricsRecord.setMetric("blockcache.hit", blockCacheHit.getAndSet(0));
-      metricsRecord.setMetric("blockcache.miss", blockCacheMiss.getAndSet(0));
-      metricsRecord.setMetric("blockcache.eviction", blockCacheEviction.getAndSet(0));
-      metricsRecord.setMetric("blockcache.size", blockCacheSize.getAndSet(0));
-      metricsRecord.setMetric("row.reads", rowReads.getAndSet(0));
-      metricsRecord.setMetric("row.writes", rowWrites.getAndSet(0));
-      metricsRecord.setMetric("record.reads", recordReads.getAndSet(0));
-      metricsRecord.setMetric("record.writes", recordWrites.getAndSet(0));
+      long now = System.nanoTime();
+      double seconds = (now - _previous) / 1000000000.0;
+      _metricsRecord.setMetric("blockcache.hit", getPerSecond(blockCacheHit.getAndSet(0),seconds));
+      _metricsRecord.setMetric("blockcache.miss", getPerSecond(blockCacheMiss.getAndSet(0),seconds));
+      _metricsRecord.setMetric("blockcache.eviction", getPerSecond(blockCacheEviction.getAndSet(0),seconds));
+      _metricsRecord.setMetric("blockcache.size", blockCacheSize.get());
+      _metricsRecord.setMetric("row.reads", getPerSecond(rowReads.getAndSet(0),seconds));
+      _metricsRecord.setMetric("row.writes", getPerSecond(rowWrites.getAndSet(0),seconds));
+      _metricsRecord.setMetric("record.reads", getPerSecond(recordReads.getAndSet(0),seconds));
+      _metricsRecord.setMetric("record.writes", getPerSecond(recordWrites.getAndSet(0),seconds));
+      _metricsRecord.setMetric("query.external", getPerSecond(queriesExternal.getAndSet(0),seconds));
+      _metricsRecord.setMetric("query.internal", getPerSecond(queriesInternal.getAndSet(0),seconds));
+      _previous = now;
     }
-    metricsRecord.update();
+    _metricsRecord.update();
+  }
+
+  private long getPerSecond(long value, double seconds) {
+    return (long) (value / seconds);
   }
 
 }

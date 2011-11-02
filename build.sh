@@ -15,6 +15,7 @@ rm -r build/*
 ##########################
 echo "Assembling Rails app"
 cd blur-admin
+bundle install
 
 echo "Compiling assets"
 bundle exec rake barista:brew
@@ -65,7 +66,7 @@ echo "Vendor gems"
 cd rails
 RAILS_ENV=production bundle package
 
-find /rails -name .DS_Store | xargs rm
+find rails -name .DS_Store | xargs rm
 
 echo "Compressing and zipping rails dir"
 cd ..
@@ -82,7 +83,7 @@ cd ../build
 
 echo "Copy jar"
 mkdir agent
-cp ../blur-agent/target/blur-agent-1.0-SNAPSHOT-jar-with-dependencies.jar agent/agent.jar
+cp ../blur-agent/target/blur-agent-*-jar-with-dependencies.jar agent/agent.jar
 
 echo "Copy extra pieces"
 cp ../etc/agent.config.sample agent

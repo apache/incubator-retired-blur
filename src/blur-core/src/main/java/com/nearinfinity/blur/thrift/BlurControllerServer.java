@@ -316,7 +316,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           while (service.getRemainingCount() > 0) {
             terms.addAll(service.take().get());
           }
-          return new ArrayList<String>(terms).subList(0, size);
+          return new ArrayList<String>(terms).subList(0, Math.min(terms.size(),size));
         }
       });
     } catch (Exception e) {

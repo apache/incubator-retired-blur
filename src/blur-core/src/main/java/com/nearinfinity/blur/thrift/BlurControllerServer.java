@@ -21,12 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -34,14 +33,19 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.thrift.TException;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 
+import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.manager.indexserver.DistributedLayoutManager;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
@@ -62,6 +66,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
@@ -78,10 +83,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private ExecutorService _executor;
   private AtomicReference<Map<String, Map<String, String>>> _shardServerLayout = new AtomicReference<Map<String, Map<String, String>>>(new HashMap<String, Map<String, String>>());
   private BlurClient _client;
-  private long _layoutDelay = TimeUnit.SECONDS.toMillis(5);
-  private Timer _shardLayoutTimer;
   private int _threadCount = 64;
-  private boolean _closed;
+  private AtomicBoolean _closed = new AtomicBoolean();
   private Map<String, Integer> _tableShardCountMap = new ConcurrentHashMap<String, Integer>();
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private String _nodeName;
@@ -90,19 +93,85 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private int _maxQueryCacheElements = 128;
   private QueryCache _queryCache;
   private BlurQueryChecker _queryChecker;
+  private AtomicBoolean _running = new AtomicBoolean();
+  private List<Thread> _shardServerWatcherDaemons = new ArrayList<Thread>();
 
   public void init() throws KeeperException, InterruptedException {
     registerMyself();
     _queryCache = new QueryCache("controller-cache", _maxQueryCacheElements, _maxTimeToLive);
     _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
-    updateShardLayout();
-    _shardLayoutTimer = new Timer("Shard-Layout-Timer", true);
-    _shardLayoutTimer.scheduleAtFixedRate(new TimerTask() {
+    _running.set(true);
+    List<String> clusterList = _clusterStatus.getClusterList();
+    for (String cluster : clusterList) {
+      watchForLayoutChanges(cluster);
+    }
+  }
+
+  private void watchForLayoutChanges(final String cluster) {
+    Thread shardServerWatcherDaemon = new Thread(new Runnable() {
       @Override
       public void run() {
-        updateShardLayout();
+        while (_running.get()) {
+          synchronized (_shardServerLayout) {
+            try {
+              String path = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/online/shard-nodes";
+              List<String> onlineNodes = _zookeeper.getChildren(path, new Watcher() {
+                @Override
+                public void process(WatchedEvent event) {
+                  synchronized (_shardServerLayout) {
+                    _shardServerLayout.notifyAll();
+                  }
+                }
+              });
+              LOG.info("Layout changing for cluster [{0}]",cluster);
+              updateLayout(onlineNodes);
+              _shardServerLayout.wait();
+            } catch (KeeperException e) {
+              if (e.code() == Code.SESSIONEXPIRED) {
+                LOG.error("Zookeeper session expired.");
+                _running.set(false);
+                return;
+              }
+              LOG.error("Unknown Error",e);
+            } catch (InterruptedException e) {
+              LOG.error("Unknown Error",e);
+            }
+          }
+        }
       }
-    }, _layoutDelay, _layoutDelay);
+    });
+    shardServerWatcherDaemon.setName("Shard-Server-Watcher-Daemon-Cluster[" + cluster + "]");
+    shardServerWatcherDaemon.setDaemon(true);
+    shardServerWatcherDaemon.start();
+    _shardServerWatcherDaemons.add(shardServerWatcherDaemon);
+  }
+
+  private synchronized void updateLayout(List<String> onlineNodes) {
+    List<String> tableList = _clusterStatus.getTableList();
+    HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
+    for (String table : tableList) {
+      DistributedLayoutManager layoutManager = new DistributedLayoutManager();
+      String cluster = _clusterStatus.getCluster(table);
+      List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
+      List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(cluster);
+      List<String> shardList = getShardList(table);
+      layoutManager.setNodes(shardServerList);
+      layoutManager.setNodesOffline(offlineShardServers);
+      layoutManager.setShards(shardList);
+      layoutManager.init();
+      Map<String, String> layout = layoutManager.getLayout();
+      newLayout.put(table, layout);
+    }
+    _shardServerLayout.set(newLayout);    
+  }
+
+  private List<String> getShardList(String table) {
+    List<String> shards = new ArrayList<String>();
+    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(table);
+    for (int i = 0; i < tableDescriptor.shardCount; i++) {
+      shards.add(BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, i));
+    }
+    return shards;
   }
 
   private void registerMyself() {
@@ -122,9 +191,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   public synchronized void close() {
-    if (!_closed) {
-      _closed = true;
-      _shardLayoutTimer.cancel();
+    if (!_closed.get()) {
+      _closed.set(true);
+      _running.set(false);
       _executor.shutdownNow();
     }
   }
@@ -348,46 +417,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       return layout.get(shardName);
     }
     throw new BlurException("Selector is missing both a locationid and a rowid, one is needed.", null);
-  }
-
-  private void updateShardLayout() {
-    try {
-      Map<String, Map<String, String>> layout = new HashMap<String, Map<String, String>>();
-      for (String t : tableList()) {
-        final String table = t;
-        if (!isTableEnabled(table)) {
-          continue;
-        }
-        layout.put(table, ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(getCluster(table)), new ParallelCall<String, Map<String, String>>() {
-          @Override
-          public Map<String, String> call(final String hostnamePort) throws Exception {
-            return _client.execute(hostnamePort, new BlurCommand<Map<String, String>>() {
-              @Override
-              public Map<String, String> call(Client client) throws Exception {
-                try {
-                  return client.shardServerLayout(table);
-                } catch (Exception e) {
-                  LOG.error("Error while getting layout from [{0}]",e,hostnamePort);
-                  throw e;
-                }
-              }
-            });
-          }
-        }).merge(new Merger<Map<String, String>>() {
-          @Override
-          public Map<String, String> merge(BlurExecutorCompletionService<Map<String, String>> service) throws Exception {
-            Map<String, String> result = new HashMap<String, String>();
-            while (service.getRemainingCount() > 0) {
-              result.putAll(service.take().get());
-            }
-            return result;
-          }
-        }));
-      }
-      _shardServerLayout.set(layout);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to update shard layout.", e);
-    }
   }
 
   private <R> R scatterGather(String cluster, final BlurCommand<R> command, Merger<R> merger) throws Exception {

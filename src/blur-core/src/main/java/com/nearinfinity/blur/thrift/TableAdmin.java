@@ -24,6 +24,10 @@ public abstract class TableAdmin implements Iface {
   @Override
   public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
+      
+      //@todo Remove this once issue #27 is resolved
+      tableDescriptor.compressionBlockSize = 32768;
+      
       BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
       CreateTable.createTable(_zookeeper, tableDescriptor.name, analyzer, tableDescriptor.tableUri, tableDescriptor.shardCount, CreateTable
           .getInstance(tableDescriptor.compressionClass), tableDescriptor.compressionBlockSize);

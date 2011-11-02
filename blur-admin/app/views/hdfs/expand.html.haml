@@ -1,0 +1,12 @@
+%ul
+  - @children.each do |child|
+    -if child[:is_dir]
+      %li.folder{:hdfs_id=>@hdfs_id, :hdfs_path=>@path + child[:name]}
+        =image_tag('folder16.png')
+        =link_to(child[:name], hdfs_expand_path(@hdfs_id, @path + child[:name]))
+        =image_tag('expand_folder.png',:style=>'float:right;')
+    -else
+      %li.file{:hdfs_id=>@hdfs_id, :hdfs_path=>@path + child[:name]}
+        =image_tag('file16.png')
+        =link_to(child[:name], hdfs_file_info_path(@hdfs_id, @path + child[:name]))
+

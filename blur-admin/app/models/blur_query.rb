@@ -9,8 +9,8 @@ class BlurQuery < ActiveRecord::Base
       BlurThriftClient.client.cancelQuery self.blur_table.table_name, self.uuid
       return true
     rescue Exception
-      puts "Exception in BlurQueries.cancel:"
-      puts $!, $@
+      logger.error "Exception in BlurQueries.cancel:"
+      logger.error $!, $@
       return false
     end
   end
@@ -26,7 +26,7 @@ class BlurQuery < ActiveRecord::Base
     end
   end
 
-  def state
+  def state_str
     case read_attribute(:state)
       when 0 then "Running"
       when 1 then "Interrupted"
@@ -37,5 +37,13 @@ class BlurQuery < ActiveRecord::Base
 
   def complete
     self.complete_shards / self.total_shards.to_f
+  end
+  
+  def self.where_zookeeper(zookeeper_id)
+    joins(:blur_table => :cluster).where(:blur_table =>{:clusters => {:zookeeper_id => zookeeper_id}}).includes(:blur_table).order("created_at DESC")
+  end
+  
+  def self.filter_on_time_range(range)
+    where(:updated_at => range)
   end
 end

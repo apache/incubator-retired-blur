@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -18,6 +20,8 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
 
 public class TableCollector {
+	private static final Log log = LogFactory.getLog(TableCollector.class);
+	
 	public static void startCollecting(String connection, final JdbcTemplate jdbc) {
 		try {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
@@ -73,7 +77,7 @@ public class TableCollector {
 				}
 			});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.debug(e);
 		}
 	}
 }

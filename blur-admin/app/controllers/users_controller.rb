@@ -12,7 +12,7 @@ class UsersController < ApplicationController
   def show
     @column_preference = @user.column_preference
     @filter_preference = @user.filter_preference
-    @choices = BlurTable.all.collect {|table| table.schema.keys}.flatten.uniq
+    @choices = BlurTable.select('table_schema').collect {|table| table.schema.keys}.flatten.uniq
   end
 
   def new

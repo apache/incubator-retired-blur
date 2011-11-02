@@ -4,16 +4,13 @@
       %th User ID
       - if can? :index, :blur_queries, :query_string
         %th Query
-      %th Super Query
+      %th Table Name
       %th Start
       %th Fetch
       %th Status
-      - if can? :update, :blur_queries
-        %th Actions
-      %th
-      %th
+      %th Actions/Info
   %tbody
     = render blur_queries
     %tr#no-queries-row
-      %td{:colspan => 9}
+      %td{:colspan => can?(:index, :blur_queries, :query_string) ? 7 : 6}
         %b No Available Queries

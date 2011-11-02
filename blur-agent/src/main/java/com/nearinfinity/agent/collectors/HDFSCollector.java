@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsStatus;
@@ -16,6 +18,8 @@ import org.apache.hadoop.hdfs.protocol.FSConstants.DatanodeReportType;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class HDFSCollector {
+	private static final Log log = LogFactory.getLog(HDFSCollector.class);
+	
 	public static void startCollecting(final String uriString, final String name, final JdbcTemplate jdbc) {
 		try {
 			new Thread(new Runnable(){
@@ -42,17 +46,6 @@ public class HDFSCollector {
 							long remaining = ds.getRemaining();
 							long presentCapacity = used + remaining;
 	
-//							System.out.println("Configured Capacity: " + capacity);
-//							System.out.println("Present Capacity: " + presentCapacity);
-//							System.out.println("DFS Remaining: " + remaining);
-//							System.out.println("DFS Used: " + used);
-//							System.out.println("DFS Used%: " + (((1.0 * used) / presentCapacity) * 100) + "%");
-//							System.out.println("Under replicated blocks: " + dfs.getUnderReplicatedBlocksCount());
-//							System.out.println("Blocks with corrupt replicas: " + dfs.getCorruptBlocksCount());
-//							System.out.println("Missing blocks: " + dfs.getMissingBlocksCount());
-//							System.out.println();
-//							System.out.println("-------------------------------------------------");
-							
 							long liveNodes = -1;
 							long deadNodes = -1;
 							long totalNodes = -1;
@@ -60,13 +53,12 @@ public class HDFSCollector {
 							try {
 								DatanodeInfo[] live = dfs.getClient().datanodeReport(DatanodeReportType.LIVE);
 								DatanodeInfo[] dead = dfs.getClient().datanodeReport(DatanodeReportType.DEAD);
-//								System.out.println("Datanodes available: " + live.length + " ("	+ (live.length + dead.length) + " total, " + dead.length + " dead)\n");
 								
 								liveNodes = live.length;
 								deadNodes = dead.length;
 								totalNodes = liveNodes + deadNodes;
 							} catch (Exception e) {
-								System.out.println("Access denied for user. Skipping node information.");
+								log.warn("Access denied for user. Skipping node information.");
 							}
 							
 							Calendar cal = Calendar.getInstance();
@@ -91,12 +83,12 @@ public class HDFSCollector {
 										hdfsId);
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						log.debug(e);
 					}
 				}
 			}).start();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.debug(e);
 		}
 	}
 	
@@ -109,7 +101,7 @@ public class HDFSCollector {
 				uri = new URI(uriString);
 				jdbc.update("insert into hdfs (name, host, port) values (?, ?, ?)", name, uri.getHost(), uri.getPort());
 			} catch (URISyntaxException e) {
-				e.printStackTrace();
+				log.debug(e);
 			}
 		} else {
 			URI uri;
@@ -117,7 +109,7 @@ public class HDFSCollector {
 				uri = new URI(uriString);
 				jdbc.update("update hdfs set host=?, port=? where id=?", uri.getHost(), uri.getPort(), existingHdfs.get(0).get("ID"));
 			} catch (URISyntaxException e) {
-				e.printStackTrace();
+				log.debug(e);
 			}
 		}
 	}

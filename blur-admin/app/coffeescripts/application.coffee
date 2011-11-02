@@ -59,3 +59,42 @@ $(document).ready ->
       
   $('.help-section').live 'click', ->
     $(this).children('.help-content').toggle('fast')
+    
+  # Fix menus with no zookeeper context
+  if typeof Zookeeper != 'undefined' && Zookeeper.instances
+    $('#env_link, #tables_link, #queries_link, #search_link').click (evt)->
+      if Zookeeper.instances.length == 0
+        alert 'There are no Zookeeper Instances registered yet.  This page will not work until then.'
+        return false
+      else if Zookeeper.instances.length == 1
+        self = this
+        $.ajax Routes.make_current_zookeeper_path(), 
+          type: 'put',
+          data:
+            id: Zookeeper.instances[0].id
+          success: () ->
+            window.location = self.href
+        return false
+      else
+        self = this
+        select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>"
+        $.each Zookeeper.instances, () ->
+          select_box += "<option value='#{this.id}'>#{this.name}</option>"
+        select_box += "</select></div>"
+        $(select_box).dialog
+          autoOpen: true
+          height: 100
+          width: 350
+          modal: true
+          title: 'Select a Zookeeper Instance to use:'
+          open: ()->
+            dialog = $(this)
+            $('#zookeeper_selector').change ()->
+              $.ajax Routes.make_current_zookeeper_path(), 
+                type: 'put',
+                data:
+                  id: $(this).val()
+                success: () ->
+                  window.location = self.href
+              dialog.dialog("close")
+        return false

@@ -1,0 +1,22 @@
+%table#queries-table
+  %thead
+    %tr.header
+      %th User ID
+      - if can? :index, :blur_queries, :query_string
+        %th Query
+      %th Table Name
+      %th Start
+      %th Fetch
+      %th Status
+      %th Start Time
+  %tbody
+    - @blur_queries.each do |blur_query|
+      %tr
+        %td= print_value(blur_query.userid)
+        - if can? :index, :blur_queries, :query_string
+          %td= print_value(blur_query.query_string)
+        %td= print_value(blur_query.blur_table.table_name)
+        %td= print_value(blur_query.start)
+        %td= print_value(blur_query.fetch_num)
+        %td= print_value(blur_query.complete) {number_to_percentage(100 * blur_query.complete, :precision => 0)}
+        %td= blur_query.created_at.in_time_zone("Eastern Time (US & Canada)").strftime('%m/%d/%Y %H:%M')

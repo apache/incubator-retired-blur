@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -15,6 +17,8 @@ public class TableCollector {
 	private JdbcTemplate jdbc;
 	private String clusterName;
 	private int clusterId;
+	
+	private static final Log log = LogFactory.getLog(TableCollector.class);
 	
 	private TableCollector(InstanceManager manager, JdbcTemplate jdbc, int clusterId, String clusterName) {
 		this.zk = manager.getInstance();
@@ -35,9 +39,9 @@ public class TableCollector {
 		try {
 			return zk.getChildren("/blur/clusters/" + clusterName + "/tables", true);
 		} catch (KeeperException e) {
-			e.printStackTrace();
+			log.error(e);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error(e);
 		}
 		return new ArrayList<String>();
 	}
@@ -59,9 +63,9 @@ public class TableCollector {
 				uri = new String(zk.getData("/blur/clusters/" + clusterName + "/tables/" + table + "/uri", true, null));
 				enabled = zk.getChildren("/blur/clusters/" + clusterName + "/tables/" + table, true).contains("enabled");
 			} catch (KeeperException e) {
-				e.printStackTrace();
+				log.error(e);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				log.error(e);
 			}
 			
 			int updatedCount = jdbc.update("update blur_tables set table_uri=?, status=? where table_name=? and cluster_id=?", uri, (enabled ? 4 : 2), table, clusterId);

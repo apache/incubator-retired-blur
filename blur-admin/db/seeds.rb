@@ -5,3 +5,5 @@
 #
 #   cities = City.create([{ :name => 'Chicago' }, { :name => 'Copenhagen' }])
 #   Mayor.create(:name => 'Daley', :city => cities.first)
+
+User.create(:username => 'admin', :name => 'Delete Me', :password => 'password', :password_confirmation => 'password', :email => 'admin@blurtools.io', :roles_mask => 31)

@@ -9,7 +9,7 @@ class Ability
       can [:show, :edit, :destroy], :users, :id => user.id
 
       # edit own username, email, password
-      can :update, :users, [:username, :email, :password, :password_confirmation], :id => user.id
+      can :update, :users, [:username, :name, :email, :password, :password_confirmation], :id => user.id
 
       # logout
       can :destroy, :user_sessions
@@ -21,13 +21,14 @@ class Ability
         can :show, [:zookeepers, :help]
         can [:show_current, :make_current], :zookeepers
         can :dashboard, :zookeepers
-        can [:expand, :view_node, :info], :hdfs
+        can [:expand, :file_info, :info], :hdfs
         can :help, :application
 
         # can view everything but query_string on blur_tables:
         attributes = BlurQuery.new.attribute_names.collect{|att| att.to_sym}
         attributes.delete :query_string
         can :index, :blur_queries, attributes
+        can :long_running, :blur_queries, attributes
 
         # view more info on queries with everything but query_string
         can :more_info, :blur_queries, attributes
@@ -50,7 +51,7 @@ class Ability
         can [:update, :destroy, :update_all, :delete_all], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller], :zookeepers
-        can [:cut_file, :delete_file, :copy_file], :hdfs
+        can [:move_file, :delete_file, :mkdir], :hdfs
       end
 
       if user.has_role? :auditor
@@ -74,7 +75,7 @@ class Ability
     else  # not logged in
       can :new, [:users, :user_sessions]
       can :create, :user_sessions
-      can :create, :users, [:username, :email, :password, :password_confirmation]
+      can :create, :users, [:username, :name, :email, :password, :password_confirmation]
     end
   end
 end

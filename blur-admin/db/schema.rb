@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,10 +11,10 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111011041727) do
+ActiveRecord::Schema.define(:version => 20111030120430) do
 
   create_table "blur_queries", :force => true do |t|
-    t.string   "query_string"
+    t.text     "query_string"
     t.integer  "complete_shards"
     t.integer  "uuid",                     :limit => 8
     t.datetime "created_at"
@@ -63,7 +64,6 @@ ActiveRecord::Schema.define(:version => 20111011041727) do
     t.integer "status"
     t.string  "blur_version"
     t.string  "node_name"
-    t.string  "node_location"
     t.integer "zookeeper_id"
   end
 
@@ -132,7 +132,6 @@ ActiveRecord::Schema.define(:version => 20111011041727) do
     t.integer "status"
     t.string  "blur_version"
     t.string  "node_name"
-    t.string  "node_location"
     t.integer "cluster_id"
   end
 
@@ -164,6 +163,7 @@ ActiveRecord::Schema.define(:version => 20111011041727) do
     t.datetime "created_at"
     t.datetime "updated_at"
     t.integer  "roles_mask"
+    t.string   "name"
   end
 
   create_table "zookeepers", :force => true do |t|

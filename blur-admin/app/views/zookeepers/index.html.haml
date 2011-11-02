@@ -5,7 +5,7 @@
 #zookeepers_wrapper
   %h2 Zookeepers
 
-  - if @zookeepers
+  - if @zookeepers.any?
     #zookeepers
       = render @zookeepers
   - else

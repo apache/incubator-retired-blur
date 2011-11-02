@@ -1,11 +1,14 @@
 package com.nearinfinity.agent.collectors;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONValue;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -19,6 +22,8 @@ import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public class QueryCollector {
+	private static final Log log = LogFactory.getLog(QueryCollector.class);
+	
 	public static void startCollecting(String connection, final JdbcTemplate jdbc) {
 		try {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
@@ -47,6 +52,15 @@ public class QueryCollector {
 									
 									SimpleQuery query = blurQueryStatus.getQuery().getSimpleQuery();
 									
+									Date startTime = cal.getTime();
+									long startTimeLong = blurQueryStatus.getQuery().getStartTime();
+									if (startTimeLong > 0) {
+										Calendar startCal = Calendar.getInstance();
+										TimeZone startz = startCal.getTimeZone();
+										startCal.add(Calendar.MILLISECOND, -(startz.getOffset(startTimeLong)));
+										startTime = startCal.getTime();
+									}
+									
 									jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
 												new Object[]{query.getQueryStr(), 
 													times,
@@ -54,7 +68,7 @@ public class QueryCollector {
 													blurQueryStatus.getTotalShards(),
 													blurQueryStatus.getState().getValue(),
 													blurQueryStatus.getUuid(),
-													cal.getTime(),
+													startTime,
 													cal.getTime(),
 													TableMap.get().get(table),
 													query.isSuperQueryOn(),
@@ -89,13 +103,13 @@ public class QueryCollector {
 				}
 
 				private boolean queryHasChanged(BlurQueryStatus blurQueryStatus, String timesJSON, Map<String, Object> map) {
-					return !(timesJSON.equals(map.get("TIMES")) && 
+					return blurQueryStatus.getState().getValue() == 0 || !(timesJSON.equals(map.get("TIMES")) && 
 							blurQueryStatus.getCompleteShards() == (Integer)map.get("COMPLETE_SHARDS") &&
 							blurQueryStatus.getState().getValue() == (Integer)map.get("STATE"));
 				}
 			});
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.debug(e);
 		}
 		
 	}

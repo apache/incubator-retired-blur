@@ -247,4 +247,29 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     }
   }
+
+  @Override
+  public boolean isInSafeMode(String cluster) {
+    try {
+      String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+      Stat stat = _zk.exists(blurSafemodePath, false);
+      if (stat == null) {
+        return false;
+      }
+      byte[] data = _zk.getData(blurSafemodePath, false, stat);
+      if (data == null) {
+        return false;
+      }
+      long timestamp = Long.parseLong(new String(data));
+      long waitTime = timestamp - System.currentTimeMillis();
+      if (waitTime > 0) {
+        return true;
+      }
+      return false;
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
 }

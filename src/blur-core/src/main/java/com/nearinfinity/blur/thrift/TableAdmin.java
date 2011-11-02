@@ -79,6 +79,9 @@ public abstract class TableAdmin implements Iface {
   }
   
   public void checkTable(String table) throws BlurException {
+    if (inSafeMode(table)) {
+      throw new BlurException("Cluster for [" + table + "] is in safe mode",null);
+    }
     if (tableExists(table)) {
       if (isTableEnabled(table)) {
         return;
@@ -87,6 +90,11 @@ public abstract class TableAdmin implements Iface {
     } else {
       throw new BlurException("Table [" + table + "] does not exist",null);
     }
+  }
+
+  private boolean inSafeMode(String table) {
+    String cluster = _clusterStatus.getCluster(table);
+    return _clusterStatus.isInSafeMode(cluster);
   }
 
   public boolean tableExists(String table) {

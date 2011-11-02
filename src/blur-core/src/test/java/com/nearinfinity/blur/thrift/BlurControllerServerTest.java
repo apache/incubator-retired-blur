@@ -134,6 +134,11 @@ public class BlurControllerServerTest {
       public void clearLocks(String table) {
         
       }
+
+      @Override
+      public boolean isInSafeMode(String cluster) {
+        return false;
+      }
     };
   }
 

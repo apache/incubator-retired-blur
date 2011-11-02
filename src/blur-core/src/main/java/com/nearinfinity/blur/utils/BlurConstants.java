@@ -61,6 +61,7 @@ public class BlurConstants {
   public static final String BLUR_MAX_CLAUSE_COUNT = "blur.max.clause.count";
   public static final String BLUR_SHARD_CACHE_MAX_QUERYCACHE_ELEMENTS = "blur.shard.cache.max.querycache.elements";
   public static final String BLUR_SHARD_OPENER_THREAD_COUNT = "blur.shard.opener.thread.count";
+  public static final String BLUR_SHARD_INDEX_DELETION_POLICY_CLASS = "blur.shard.index.deletion.policy.class";
   public static final String BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE = "blur.zookeeper.system.time.tolerance";
 
   public static final String BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT = "blur.controller.server.thrift.thread.count";

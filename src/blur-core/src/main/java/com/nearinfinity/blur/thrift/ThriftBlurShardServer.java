@@ -26,6 +26,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUE
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
@@ -43,6 +44,8 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.lucene.index.IndexDeletionPolicy;
+import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
@@ -129,6 +132,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
+    IndexDeletionPolicy indexDeletionPolicy = getIndexDeletionPolicy(configuration);
     
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
@@ -143,6 +147,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setFilterCache(filterCache);
     indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY,60000));
     indexServer.setWarmup(indexWarmup);
+    indexServer.setIndexDeletionPolicy(indexDeletionPolicy);
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();
@@ -188,6 +193,19 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }, zooKeeper);
     server.start();
+  }
+
+  private static IndexDeletionPolicy getIndexDeletionPolicy(BlurConfiguration configuration) {
+    String _class = configuration.get(BLUR_SHARD_INDEX_DELETION_POLICY_CLASS);
+    if (_class != null) {
+      try {
+        Class<?> clazz = Class.forName(_class);
+        return (IndexDeletionPolicy) clazz.newInstance();
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return new KeepOnlyLastCommitDeletionPolicy();
   }
 
   private static int getShardServerIndex(String[] args) {

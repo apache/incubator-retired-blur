@@ -30,8 +30,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.AlreadyClosedException;
@@ -70,12 +72,14 @@ public class BlurIndexWriter extends BlurIndex {
   private BlurMetrics _blurMetrics;
   private String _table;
   private String _shard;
-  private AtomicBoolean isClosed = new AtomicBoolean(false);
+  private AtomicBoolean _isClosed = new AtomicBoolean(false);
+  private IndexDeletionPolicy _indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
 
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, _analyzer);
     conf.setSimilarity(new FairSimilarity());
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
+    conf.setIndexDeletionPolicy(_indexDeletionPolicy);
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _open.set(true);
@@ -185,7 +189,7 @@ public class BlurIndexWriter extends BlurIndex {
     _open.set(false);
     _refresher.unregister(this);
     _writer.close();
-    isClosed.set(true);
+    _isClosed.set(true);
     LOG.info("Writer for table [{0}] shard [{1}] closed.",_table,_shard);
   }
 
@@ -238,7 +242,11 @@ public class BlurIndexWriter extends BlurIndex {
 
   @Override
   public AtomicBoolean isClosed() {
-    return isClosed;
+    return _isClosed;
+  }
+
+  public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
+    _indexDeletionPolicy = indexDeletionPolicy;
   }
 
 }

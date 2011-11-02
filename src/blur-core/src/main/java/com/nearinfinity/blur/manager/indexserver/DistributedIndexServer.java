@@ -29,6 +29,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -99,6 +100,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private AtomicBoolean _running = new AtomicBoolean();
   private long _safeModeDelay;
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
+  private IndexDeletionPolicy _indexDeletionPolicy;
 
   public void init() throws KeeperException, InterruptedException {
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
@@ -395,6 +397,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     writer.setBlurMetrics(_blurMetrics);
     writer.setShard(shard);
     writer.setTable(table);
+    writer.setIndexDeletionPolicy(_indexDeletionPolicy);
     writer.init();
     _filterCache.opening(table,shard,writer);
     return warmUp(writer,table,shard);
@@ -680,5 +683,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setWarmup(BlurIndexWarmup warmup) {
     _warmup = warmup;
+  }
+
+  public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
+    _indexDeletionPolicy = indexDeletionPolicy;
   }
 }

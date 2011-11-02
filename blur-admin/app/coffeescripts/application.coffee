@@ -77,26 +77,24 @@ $(document).ready ->
         return false
       else
         self = this
-        select_box = "<div style='text-align:center'><select id='zookeeper_selector'>"
+        select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>"
         $.each Zookeeper.instances, () ->
           select_box += "<option value='#{this.id}'>#{this.name}</option>"
         select_box += "</select></div>"
         $(select_box).dialog
           autoOpen: true
-          height: 150
+          height: 100
           width: 350
           modal: true
           title: 'Select a Zookeeper Instance to use:'
-          buttons: {
-        	  "Go": ()->
-        	    $.ajax Routes.make_current_zookeeper_path(), 
+          open: ()->
+            dialog = $(this)
+            $('#zookeeper_selector').change ()->
+              $.ajax Routes.make_current_zookeeper_path(), 
                 type: 'put',
                 data:
-                  id: $('#zookeeper_selector').val()
+                  id: $(this).val()
                 success: () ->
                   window.location = self.href
-              $(this).dialog("close")
-            "Cancel": () ->
-              $(this).dialog("close")
-          }
+              dialog.dialog("close")
         return false

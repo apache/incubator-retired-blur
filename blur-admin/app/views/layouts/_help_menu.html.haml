@@ -1,6 +1,6 @@
 = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
 = javascript_include_tag 'jquery','jquery-ui','rails','compiled/application'
-.help-section#navigation
+.help-section
   %h3.help-label Navigation Help
   .help-content{:style => 'display: none'}
     .head
@@ -20,7 +20,7 @@
           %ul
             %li This is located in the top right, next to the "logout" button.
 
-.help-section#zookeepers
+.help-section
   %h3.help-label Dashboard Help
   .help-content{ :style =>  tab != 'dashboard' && 'display: none' }
     .head
@@ -33,16 +33,16 @@
           %ul
             %li If the system detects that any of the controllers or shards are using inconsistent versions of Blur, then the status changes to "Inconsistent Blur Versions".
         %li
-          The next three rows of the box are an aggregation of all the different states of all the controllers and shards respectively.
+          The next two rows of the box are an aggregation of all the different states of all the controllers and shards respectively.
           %ul
-            %li The "online", "disabled", and "offline" bars display the number of shards/controllers that are currently online, disabled, and offline.
+            %li The "online" and "offline" bars display the number of shards/controllers that are currently online and offline.
         %li Clicking on a Zookeeper box will take the user to the Environment page of that particular blur instance.
         %li
           A warning will appear at the bottom of the box if there are any "long running" queries.
           %ul
-            %li This warning is a count of the number queries that have been running for more than a minute.
+            %li This warning is a count of the number queries that have been running for more than a minute. Clicking the number will bring up a dialog with the list of long running queries.
 
-.help-section#environment
+.help-section
   %h3.help-label Environment Help
   .help-content{ :style =>  tab != 'environment' && 'display: none' }
     .head
@@ -53,31 +53,28 @@
         %li The "controllers" box lists each controller with its name, blur version, and status.
         %li The "shards" box lists each shard with its name, blur version, and status.
 
-.help-section#blur_tables
+.help-section
   %h3.help-label Blur Tables Help
   .help-content{ :style =>  tab != 'blur_tables' && 'display: none' }
     .head
-      The "Blur Tables" page is a list of all the BlurTables associated with the current zookeeper. Each row contains information describing a BlurTable.
+      The "Blur Tables" page is a list of all the Blur Tables associated with the current zookeeper. The tabs represent each cluster of shards. The tables are broken into Active, Disabled, Deleted statuses.  Each row contains information describing a Blur Table.
     .body
       %ol
         %li The "Hosts/Shards" column is a link that displays a dialog with a list of all the hosts and shards for that BlurTable when clicked.
+        %li "Row Count" is the number of rows in that particular table.
         %li "Record Count" is the number of records in that particular table.
-        %li "Size" is the total size of the table on disk.
-        %li "Queries/Second" is a calculated metric for the overall throughput of that table.
-        %li "Status" indicates whether the table is enabled or disabled.
         %li
           "Schema" is a link that displays a list of Column families and their columns when clicked.
           %ul
             %li Each entry also shows the name of its analyzer.
     .head
-      Clicking a row displays additional information, including the location of the table on disk.
+      Depending on access, various actions will be available per status.
     .body
       %ul
-        %li If the user has the editor role, then 'enable', 'disable', and 'delete' buttons will be available depending on the current state of the table.
-    .head
-      The bottom of the table displays the total number of BlurTables in this Zookeeper instance.
+        %li Active tables will have the option to disable the table
+        %li Disabled tables will have the option to activate the table or delete the table.
 
-.help-section#blur_queries
+.help-section
   %h3.help-label Blur Queries Help
   .help-content{ :style =>  tab != 'blur_queries' && 'display: none' }
     .head
@@ -89,8 +86,8 @@
           %ul
             %li The "Within past" selector allows you to limit the queries based on how long ago the query was submitted.
             %li The "Super Query" option allows to show or hide queries based on whether they were run with super query on or off.
-            %li The "Running" option allows users to filter the queries by their running state.
-            %li The "Interrupted" option allows users to filter the queries by whether or not they have been interrupted.
+            %li The "State" option allows users to filter the queries by their state (Running, Interrupted, Completed).
+            %li The "User" option allows users to filter the queries by the user that performed the query (separated by a space). This filter can optionally include or exclude the listed users and include or exclude any unknown users.
         %li The "Blur Table" selector filters the queries list what table the query was ran against.
         %li
           The "Refresh" selector allows the user to choose how often the table information is refreshed.
@@ -110,16 +107,14 @@
         %li
           The "Query" column is the text of the executed query. This is only visible to users with the auditor role.
           %ul
-            %li Only the first 20 characters of the query text are displayed on the table. The full text can be seen by hovering your mouse over the query column.
-        %li The "Super Query" column shows whether super query was used to execute the query.
+            %li Only the first 50 characters of the query text are displayed on the table. The full text can be seen by hovering your mouse over the query column.
+        %li The "Table Name" column shows the table that the query was executed against.
         %li The "Start" column shows the starting offset for the executed query.
         %li The "Fetch" column shows the amount of records fetched for the executed query.
-        %li The "CPU time / Real time (ms)" column is a calculated metric for the total life span of the executed query.
-        %li The "Status" column shows the percent of shards that have completed the query.
-        %li The "Actions" column gives users the ability to cancel queries that are still in the running state. This is only visible for users with the editor role.
-        %li The "More Info" link displays details associated with the executed query. This is only visible to users with the auditor role.
+        %li The "Status" column shows the percent of shards that have completed the query and whether or not the query is still running or was interrupted.
+        %li The "Actions/Info" column gives users the ability to cancel queries that are still in the running state (editor role only) and display details associated with the query (auditor role only).
 
-.help-section#search
+.help-section
   %h3.help-label Search Help
   .help-content{ :style =>  tab != 'search' && 'display: none' }
     .help_list#saved_help
@@ -163,16 +158,17 @@
         %ul
           %li The "Name" field is used to name your saved searches.
 
-.help-section#hdfs
+.help-section
   %h3.help-label HDFS help
   .help-content{ :style =>  tab != 'hdfs' && 'display: none' }
-
-.help-section#admin
+    .head
+      The HDFS page presents a simple file viewer of an HDFS file system.  Right clicking on the root node will expose properties about the file system as a whole.  Right clicking on any of the children nodes will allow for various editing actions (cut, paste, delete).
+.help-section
   %h3.help-label Admin help
   .help-content{ :style =>  tab != 'admin' && 'display: none' }
     .head
       The "Admin Page" contains a list of all the current users registered in the system. Users with the admin role may edit the roles and information for users on this page. It is only visible to users with the admin role.
-.help-section#users
+.help-section
   %h3.help-label Users help
   .help-content{ :style =>  tab != 'users' && 'display: none' }
     .head

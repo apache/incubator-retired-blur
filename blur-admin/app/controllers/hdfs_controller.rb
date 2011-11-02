@@ -30,6 +30,14 @@ class HdfsController < ApplicationController
     render :layout => false
   end
 
+  def mkdir
+    instance = Hdfs.find params[:id]
+    client = HdfsThriftClient.client(instance.host, instance.port)
+    path = "#{params[:fs_path]}/#{params[:folder]}/"
+    path.gsub!(/\/\//, "/")
+    client.mkdir(path)
+    render :nothing => true
+  end
   
   def file_info
     instance = Hdfs.find params[:id]
@@ -51,7 +59,7 @@ class HdfsController < ApplicationController
     client = HdfsThriftClient.client(instance.host, instance.port)
     
     path = params[:_path]
-    client.rm path
+    client.rm path, false
     render :nothing => true
   end
 end

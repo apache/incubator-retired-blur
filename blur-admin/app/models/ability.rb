@@ -51,7 +51,7 @@ class Ability
         can [:update, :destroy, :update_all, :delete_all], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller], :zookeepers
-        can [:cut_file, :delete_file, :copy_file], :hdfs
+        can [:move_file, :delete_file, :mkdir], :hdfs
       end
 
       if user.has_role? :auditor

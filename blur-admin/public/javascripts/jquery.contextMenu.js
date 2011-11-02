@@ -112,7 +112,7 @@ if(jQuery)( function() {
           $(document).click( function() {
             //$(document).unbind('click').unbind('keypress');
             $(menu).fadeOut(o.outSpeed);
-            return false;
+            //return false;
           });
         }, 0);
 

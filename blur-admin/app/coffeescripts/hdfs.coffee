@@ -20,17 +20,19 @@ $(document).ready ->
   tree_context_menu = () ->
     $("<div class='context_menus'>
       <ul id='hdfs-root-context-menu' class='contextMenu'>
+      <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
       <li class='props separator'><a href='#props'>Properties</a></li>
       </ul>
       <ul id='hdfs-dir-context-menu' class='contextMenu'>
+      <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
-      <li class='delete'><a href='#delete'>Delete</a></li>
+      <!--li class='delete'><a href='#delete'>Delete</a></li-->
       </ul>
       <ul id='hdfs-file-context-menu' class='contextMenu'>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
-      <li class='delete'><a href='#delete'>Delete</a></li>
+      <!--li class='delete'><a href='#delete'>Delete</a></li-->
       </ul>
       </div>
     ")
@@ -48,24 +50,51 @@ $(document).ready ->
     path = file.attr('hdfs_path');
     if(confirm("Are you sure you wish to delete " + path + "? This action can not be undone."))
       $.post Routes.hdfs_delete_path(id), { 'path': path}
-    
+
+  make_dir = (el) ->
+    id = el.attr('hdfs_id')
+    path = el.attr('hdfs_path');
+    $('<div id="newFolder"><input></input></div>').dialog
+      modal: true
+      draggable: true
+      resizable: false
+      width: 'auto'
+      title: 'New Folder'
+      open: ()->
+        $('#newFolder input').focus()
+      buttons:
+        "Create": ()->
+          $.ajax Routes.hdfs_mkdir_path(id),
+            type: 'post',
+            data:
+              fs_path: path
+              folder: $('#newFolder input').val()
+            success: () ->
+              if(el.hasClass('osxSelected'))
+                nextWin = el.parents('.innerWindow').next()
+                display_href = el.find('a').attr('href')
+                nextWin.load(display_href)
+              else
+                el.click()
+          $(this).dialog("close")
+        "Cancel": () ->
+          $(this).dialog("close")
+      close: (event, ui) ->
+          $(this).remove()
+
   show_hdfs_props = (el) ->
-    try
-      id = el.attr('hdfs_id')
-      title = "HDFS Information (#{el.attr('hdfs_name')})"
-      $.get Routes.hdfs_info_path(id), (data) ->
-        $(data).dialog
-          modal: true
-          draggable: false
-          resizable: false
-          width: 'auto'
-          title: title
-          close: (event, ui) ->
-            $(this).remove()
-          open: (event, ui)->
-    catch error
-      alert(error)
-  
+    id = el.attr('hdfs_id')
+    title = "HDFS Information (#{el.attr('hdfs_name')})"
+    $.get Routes.hdfs_info_path(id), (data) ->
+      $(data).dialog
+        modal: true
+        draggable: false
+        resizable: false
+        width: 'auto'
+        title: title
+        close: (event, ui) ->
+          $(this).remove()
+
   perform_action = (action, el) ->
     switch action
       when "delete"
@@ -79,6 +108,8 @@ $(document).ready ->
             cut_file(paste_buffer.location, el)
       when "props"
         show_hdfs_props el
+      when "mkdir"
+        make_dir el
 
 
   # Methods to call on page load
@@ -86,4 +117,8 @@ $(document).ready ->
   setup_context_menus();
   paste_buffer = {}
   $('#hdfs_browser').osxFinder();
-  $('#hdfs_wrapper').resizable({handles:'s'})
+  $('#hdfs_wrapper').resizable
+    handles:'s'
+    stop: () ->
+      $(this).css('width', '')
+

@@ -7,7 +7,7 @@ div.osxFinder {
 }
 
 div.osxFinder div.innerWindow {
-    height: 99%;
+    height: 98%;
     border: 1px solid black;
     overflow: auto;
     position: absolute;
@@ -23,17 +23,8 @@ div.osxFinder div.innerWindow>ul>li {
     cursor: pointer;
     border:  1px solid transparent;
     padding-left: 5px;
+    line-height: 19px;
 }
 div.osxFinder div.innerWindow>ul>li img {
     vertical-align: middle;
-}
-
-div.osxFinder div.innerWindow>ul>li:hover {
-    background-color: #F1F6FD;
-    border:  1px solid #B8D6FD;
-}
-
-div.osxFinder div.innerWindow>ul>li.osxSelected {
-    background-color: #CFE3FC;
-    border:  1px solid #7DA2CE
 }

@@ -6,10 +6,11 @@
 
 
 #hdfs_wrapper
-  #hdfs_browser
+  #hdfs_browser.ui-corner-top.ui-corner-bottom
     %ul#top_level
       - @instances.each do |instance|
-        %li.hdfs_instance{:hdfs_id=>instance.id, :hdfs_name=>instance.name}
+        %li.hdfs_instance{:hdfs_id=>instance.id, :hdfs_name=>instance.name, :hdfs_path=>'/'}
           =image_tag('database16.png')
           =link_to(instance.name, hdfs_expand_path(instance.id))
+          =image_tag('expand_folder.png',:style=>'float:right;')
 

@@ -1,45 +1,36 @@
+#newFolder {
+  text-align: center;
+  input {
+    width: 20em;
+  }
+}
+
+
 #hdfs_wrapper{
   @include full;
   @include standard-font;
   margin-top: 20px;
   height: 300px;
 
-  #hdfs_files_layout {
-    @include columns(8,$total-cols);
-    overflow: auto;
-    margin-top: 2em;
-    #hdfs_files { margin-bottom: 95px; }
-  }
-
-  #data_wrapper {
-    @include columns(22,$total-cols);
-    @include omega($total-cols);
-
-    #hdfs_bar{
-      @include columns(1,22);
-      width: 1em;
-      height: 100%;
-      background-color: #eee;
-      position: fixed;
-      z-index: -5;
-    }
-
-    #data_container_display {
-      @include columns(21,22);
-      @include omega(22);
-      padding-top: 2em;
-      margin-bottom: 95px;
-      ul { list-style: none; margin-left: -1.5em; }
-      #search_results, #file_info { margin-bottom: 1em; }
-    }
-  }
-
-  #file_tiles {
-    .ui-button {
-      margin: 5px;
-      width: 150px;
-      display: inline-block;
-      word-wrap: break-word;
+  #hdfs_browser {
+    background-color: $grey-div-color;
+    @include border;
+    @include border-radius;
+    div.innerWindow {
+      @include border;
+      background-color: white;
+      >ul>li {
+        &:hover {
+          border:  1px solid #B8D6FD;
+        }
+        &.osxSelected {
+          background-color:#3875D7;
+          border:  1px solid #3875D7;
+          a {
+            color: white;
+          }
+        }
+      }
     }
   }
 

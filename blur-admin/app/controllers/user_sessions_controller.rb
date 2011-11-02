@@ -14,6 +14,7 @@ class UserSessionsController < ApplicationController
 
   def destroy
     current_user_session.destroy
+    reset_session
     redirect_to login_path, :notice => "Successfully Logged Out"
   end
 

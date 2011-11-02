@@ -43,7 +43,8 @@
       var width = this.options.width;
       return $('<div/>').addClass('innerWindow').css({
         'width': width,
-        'left': currentCount*(width+2)
+        'left': (currentCount*(width+1))+2,
+        'top' : 2
       });
     },
     _ensureLastWindowVisible: function() {

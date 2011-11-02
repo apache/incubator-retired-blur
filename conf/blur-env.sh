@@ -12,6 +12,9 @@ export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m"
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
 export BLUR_CONTROLLER_JVM_OPTIONS="-Xmx1024m"
 
+# JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
+export BLUR_COMMAND="-Xmx1024m"
+
 # Any SSH Options to be used during startup or shutdown commands.
 export BLUR_SSH_OPTS=
 

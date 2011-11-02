@@ -115,16 +115,16 @@ public class BlurClientManager {
       trans = new TSocket(socket);
     } else {
       trans = new TSocket(host, port);
+      try {
+        trans.open();
+      } catch (Exception e) {
+        LOG.error("Error trying to open connection to [{0}]", connection);
+        return null;
+      }
     }
     
     TProtocol proto = new TBinaryProtocol(new TFramedTransport(trans));
     Client client = new Client(proto);
-    try {
-      trans.open();
-    } catch (Exception e) {
-      LOG.error("Error trying to open connection to [{0}]", connection);
-      return null;
-    }
     return client;
   }
 

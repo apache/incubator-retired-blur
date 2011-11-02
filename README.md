@@ -222,8 +222,16 @@ This is the shorter way of creating the same RowMutation.
     // Driver Class
     public class BlurMapReduce {
       public static void main(String[] args) {
+      
+        AnalyzerDefinition ad = new AnalyzerDefinition();
+
+        TableDescriptor td = new TableDescriptor();
+        td.setShardCount(16);
+        td.setTableUri("hdfs://<namenode>:<port>/blur/tables/test-table"); // Location in HDFS
+        td.setAnalyzerDefinition(ad);
+      
         BlurTask blurTask = new BlurTask();
-        blurTask.setTableDescriptor(getTableDescriptor());
+        blurTask.setTableDescriptor(td);
         blurTask.setSpinLockPath("/copy-locks");
         blurTask.setZookeeperConnectionStr("localhost");
         blurTask.setMaxNumberOfConcurrentCopies(10);

@@ -564,4 +564,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public void setQueryChecker(BlurQueryChecker queryChecker) {
     _queryChecker = queryChecker;
   }
+
+  public void setThreadCount(int threadCount) {
+    _threadCount = threadCount;
+  }
 }

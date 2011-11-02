@@ -40,6 +40,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
@@ -135,6 +136,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
               _layoutCache.clear();
               _layoutManagers.wait();
             } catch (KeeperException e) {
+              if (e.code() == Code.SESSIONEXPIRED) {
+                LOG.error("Zookeeper session expired.");
+                _running.set(false);
+                return;
+              }
               LOG.error("Unknown Error",e);
             } catch (InterruptedException e) {
               LOG.error("Unknown Error",e);
@@ -305,6 +311,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   @Override
   public void close() {
+    _running.set(false);
     _timerCacheFlush.purge();
     _timerCacheFlush.cancel();
   }

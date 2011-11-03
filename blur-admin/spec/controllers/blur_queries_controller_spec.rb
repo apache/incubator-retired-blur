@@ -30,7 +30,7 @@ describe BlurQueriesController do
       @blur_table = Factory.stub :blur_table
       @blur_query = Factory.stub :blur_query, :created_at => mock_time
 
-      @zookeeper.stub(:blur_tables).and_return([@blur_table])
+      @zookeeper.stub_chain(:blur_tables, :where).and_return([@blur_table])
       BlurQuery.stub_chain(:joins, :where, :includes, :order, :filter_on_time_range).and_return([@blur_query])
 
       # ApplicationController.current_zookeeper

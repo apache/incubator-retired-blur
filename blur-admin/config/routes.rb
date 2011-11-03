@@ -21,6 +21,7 @@ BlurAdmin::Application.routes.draw do
     get 'reload', :on => :collection, :as => :reload
     put 'update_all', :on => :collection
     delete 'delete_all', :on => :collection
+    delete 'forget', :on => :member, :as => :forget
   end
 
   match 'blur_queries/refresh' => 'blur_queries#refresh', :via => :get, :as => :refresh

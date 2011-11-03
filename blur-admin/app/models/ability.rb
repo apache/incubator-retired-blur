@@ -48,7 +48,7 @@ class Ability
       end
 
       if user.has_role? :editor
-        can [:update, :destroy, :update_all, :delete_all], :blur_tables
+        can [:update, :destroy, :update_all, :delete_all, :forget], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller], :zookeepers
         can [:move_file, :delete_file, :mkdir], :hdfs

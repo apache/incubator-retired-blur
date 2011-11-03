@@ -2,7 +2,7 @@ class BlurTablesController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:index, :update, :destroy, :reload, :update_all, :delete_all]
   before_filter :zookeepers, :only => :index
-  before_filter :table, :except => [:index, :reload, :update_all, :delete_all]
+  before_filter :table, :except => [:index, :reload, :update_all, :delete_all, :forget]
 
   def index
     @blur_tables = @current_zookeeper.blur_tables.order('status DESC, table_name ASC').includes('cluster')
@@ -55,7 +55,12 @@ class BlurTablesController < ApplicationController
     @table.status = STATUS[:deleting]
     @table.save
     destroy_index = params[:delete_index] == 'true'
-    @table.destroy destroy_index, @current_zookeeper.host, @current_zookeeper.port
+    @table.blur_destroy destroy_index, @current_zookeeper.host, @current_zookeeper.port
+    render :text => ''
+  end
+  
+  def forget
+    BlurTable.destroy params[:id]
     render :text => ''
   end
   
@@ -65,7 +70,7 @@ class BlurTablesController < ApplicationController
     tables.each do |table|
       table.status = STATUS[:deleting]
       table.save
-      table.destroy(destroy_index, @current_zookeeper.host, @current_zookeeper.port)
+      table.blur_destroy(destroy_index, @current_zookeeper.host, @current_zookeeper.port)
     end
     render :text => ''
   end

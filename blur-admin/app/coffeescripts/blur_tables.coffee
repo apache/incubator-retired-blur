@@ -104,6 +104,27 @@ $(document).ready ->
       close: ->
         $(this).remove()
         
+  # Listener for forget button (launches dialog box)
+  $('.forget_blur_table_button').live 'click', ->
+    #array of buttons, so that they are dynamic
+    btns = {}
+    btns[$(this).val()] = -> 
+      form.submit()
+      $(this).dialog 'close'
+    btns["Cancel"] = -> 
+      $(this).dialog 'close'
+
+    form = $(this).closest 'form.delete'
+
+    confirm_msg = 'Are you sure you want to forget this table?'
+    $("<div class='confirm_forget'>#{confirm_msg}</div>").dialog
+      modal: true,
+      draggable: false,
+      resizable: false,
+      buttons: btns,        
+      close: ->
+        $(this).remove()
+        
   # Listener for enable button (launches dialog box)
   $('.enable_table_button').live 'click', ->
     #array of buttons, so that they are dynamic

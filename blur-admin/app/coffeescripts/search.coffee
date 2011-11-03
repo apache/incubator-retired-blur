@@ -52,20 +52,19 @@ $(document).ready ->
 
   # listener that Hides/Shows filter section
   $('#bar_section').live 'click', ->
-    $('#filter_section').toggle('fast')
-
-    if $('#filter_section').is ':hidden'
-      $('#arrow').removeClass('ui-icon-triangle-1-e')
-      $('#arrow').addClass('ui-icon-triangle-1-w')
-      $('#results_wrapper').addClass('open_filters')
-      $('#results_wrapper').removeClass('collapsed_filters')
-      $('#bar_section').width('1em')
-    else
-      $('#arrow').removeClass('ui-icon-triangle-1-w')
-      $('#arrow').addClass('ui-icon-triangle-1-e')
-      $('#results_wrapper').removeClass('open_filters')
-      $('#results_wrapper').addClass('collapsed_filters')
-      $('#bar_section').width('2em')
+    $('#filter_section').toggle 'fast', ()->
+      if $('#filter_section').is ':hidden'
+        $('#arrow').addClass('ui-icon-triangle-1-e')
+        $('#arrow').removeClass('ui-icon-triangle-1-w')
+        $('#results_wrapper').removeClass('open_filters')
+        $('#results_wrapper').addClass('collapsed_filters')
+        $('#bar_section').width('2em')
+      else
+        $('#arrow').addClass('ui-icon-triangle-1-w')
+        $('#arrow').removeClass('ui-icon-triangle-1-e')
+        $('#results_wrapper').addClass('open_filters')
+        $('#results_wrapper').removeClass('collapsed_filters')
+        $('#bar_section').width('1em')
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->

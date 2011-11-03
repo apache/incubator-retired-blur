@@ -20,6 +20,8 @@ import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.SEP;
 
+import java.util.ArrayList;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 
@@ -59,6 +61,9 @@ public class RowDocumentUtil {
     }
     if (empty) {
       return null;
+    }
+    if (row.records == null) {
+      row.records = new ArrayList<Record>();
     }
     return row;
   }

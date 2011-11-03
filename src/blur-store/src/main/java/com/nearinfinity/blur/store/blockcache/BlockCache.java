@@ -110,33 +110,37 @@ public class BlockCache {
   }
 
   private boolean findEmptyLocation(BlockCacheLocation location) {
-    OUTER:
-    for (int bankId = 0; bankId < _banks.length; bankId++) {
-      AtomicInteger bitSetCounter = _lockCounters[bankId];
-      BlockLocks bitSet = _locks[bankId];
-      if (bitSetCounter.get() == _numberOfBlocksPerBank) {
-        //if bitset is full
-        continue OUTER;
-      }
-      //this check needs to spin, if a lock was attempted but not obtained the rest of the bank should not be skipped
-      int bit = bitSet.nextClearBit(0);
-      INNER:
-      while (bit != -1) {
-        if (bit >= _numberOfBlocksPerBank) {
-          //bit set is full
+    // This is a tight loop that will try and find a location to 
+    // place the block before giving up
+    for (int j = 0; j < 10; j++) {
+      OUTER:
+      for (int bankId = 0; bankId < _banks.length; bankId++) {
+        AtomicInteger bitSetCounter = _lockCounters[bankId];
+        BlockLocks bitSet = _locks[bankId];
+        if (bitSetCounter.get() == _numberOfBlocksPerBank) {
+          //if bitset is full
           continue OUTER;
         }
-        if (!bitSet.set(bit)) {
-          //lock was not obtained
-          //this restarts at 0 because another block could have been unlocked while this was executing
-          bit = bitSet.nextClearBit(0);
-          continue INNER;
-        } else {
-          //lock obtained
-          location.setBankId(bankId);
-          location.setBlock(bit);
-          bitSetCounter.incrementAndGet();
-          return true;
+        //this check needs to spin, if a lock was attempted but not obtained the rest of the bank should not be skipped
+        int bit = bitSet.nextClearBit(0);
+        INNER:
+        while (bit != -1) {
+          if (bit >= _numberOfBlocksPerBank) {
+            //bit set is full
+            continue OUTER;
+          }
+          if (!bitSet.set(bit)) {
+            //lock was not obtained
+            //this restarts at 0 because another block could have been unlocked while this was executing
+            bit = bitSet.nextClearBit(0);
+            continue INNER;
+          } else {
+            //lock obtained
+            location.setBankId(bankId);
+            location.setBlock(bit);
+            bitSetCounter.incrementAndGet();
+            return true;
+          }
         }
       }
     }

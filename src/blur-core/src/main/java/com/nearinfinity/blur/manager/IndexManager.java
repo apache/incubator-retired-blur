@@ -171,7 +171,9 @@ public class IndexManager {
       fetchRow(reader, table, selector, fetchResult);
       if (_blurMetrics != null) {
         if (fetchResult.rowResult != null) {
-          _blurMetrics.recordReads.addAndGet(fetchResult.rowResult.row.records.size());
+          if (fetchResult.rowResult.row != null && fetchResult.rowResult.row.records != null) {
+            _blurMetrics.recordReads.addAndGet(fetchResult.rowResult.row.records.size());
+          }
           _blurMetrics.rowReads.incrementAndGet();
         } else if (fetchResult.recordResult != null) {
           _blurMetrics.recordReads.incrementAndGet();

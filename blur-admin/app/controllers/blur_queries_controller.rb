@@ -8,7 +8,7 @@ class BlurQueriesController < ApplicationController
     super_query = true  if @filters['super_query_on'] == 'true'
     super_query = false  if @filters['super_query_on'] == 'false'
 
-    @blur_tables = @current_zookeeper.blur_tables
+    @blur_tables = @current_zookeeper.blur_tables.where('state = 4')
     @blur_queries = BlurQuery.where_zookeeper(@current_zookeeper.id).filter_on_time_range((now - @filters['created_at_time'].to_i.minutes)..now)
     
     # Add super query filter

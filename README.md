@@ -47,7 +47,7 @@ Then you will need to setup the `config/blur.properties` file.  The default site
 Other options:
 
 By default if the `blur.*.hostname` properties are left blank, the default value is the result of `InetAddress.getLocalHost().getHostName();`.  Hostname is required to be unique for every server.
-
+    
     blur.shard.hostname=
     blur.shard.bind.address=0.0.0.0
     blur.shard.bind.port=40020
@@ -56,17 +56,23 @@ By default if the `blur.*.hostname` properties are left blank, the default value
     blur.shard.cache.max.querycache.elements=128
     blur.shard.cache.max.timetolive=60000
     blur.shard.filter.cache.class=com.nearinfinity.blur.manager.DefaultBlurFilterCache
+    blur.shard.index.warmup.class=com.nearinfinity.blur.manager.indexserver.DefaultBlurIndexWarmup
+    blur.shard.index.deletion.policy.class=org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy
+    blur.shard.blockcache.direct.memory.allocation=true
+    blur.shard.blockcache.slab.count=1
+    blur.shard.safemodedelay=60000
     blur.max.clause.count=1024
     blur.indexmanager.search.thread.count=32
-    
+
     blur.controller.hostname=
     blur.controller.bind.address=0.0.0.0
     blur.controller.bind.port=40010
     blur.controller.server.thrift.thread.count=32
+    blur.controller.server.remote.thread.count=64
     blur.controller.remote.fetch.count=100
     blur.controller.cache.max.querycache.elements=128
     blur.controller.cache.max.timetolive=60000
-    
+
     blur.zookeeper.system.time.tolerance=3000
 
 

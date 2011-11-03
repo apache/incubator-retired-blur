@@ -38,6 +38,7 @@ public class WalIndexWriter extends IndexWriter {
   private static final String PREFIX = "__";
 
   private static final Log LOG = LogFactory.getLog(WalIndexWriter.class);
+  private static final long MAX_COMMIT_LOG_TIME = TimeUnit.HOURS.toMillis(1);
 
   private DirectIODirectory _directory;
   private AtomicReference<IndexOutput> _walOutput = new AtomicReference<IndexOutput>();
@@ -47,6 +48,7 @@ public class WalIndexWriter extends IndexWriter {
   private BlurMetrics _blurMetrics;
   private AtomicLong _dirty = new AtomicLong(0);
   private long _lastCommit = -1;
+  private long _lastCommitTime = 0;
   private static ExecutorService _service;
 
   public static interface WalOutputFactory {
@@ -239,11 +241,12 @@ public class WalIndexWriter extends IndexWriter {
 
   public void commitAndRollWal() throws CorruptIndexException, IOException {
     long commit = _dirty.get();
-    if (commit != _lastCommit) {
+    if (commit != _lastCommit || _lastCommitTime + MAX_COMMIT_LOG_TIME < System.currentTimeMillis()) {
       List<String> oldLogs = rollWal();
       commit();
       removeOldWals(oldLogs);
       _lastCommit = commit;
+      _lastCommitTime = System.currentTimeMillis();
     } else {
       LOG.info("No commit needed");
     }

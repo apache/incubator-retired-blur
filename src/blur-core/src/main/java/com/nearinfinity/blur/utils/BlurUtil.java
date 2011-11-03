@@ -44,6 +44,7 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.log.Log;
@@ -78,6 +79,19 @@ public class BlurUtil {
     blurQuery.setSimpleQuery(simpleQuery);
     blurQuery.setSelector(new Selector());
     return blurQuery;
+  }
+  
+  public static void createIfMissing(ZooKeeper zookeeper, String path) throws KeeperException, InterruptedException {
+    if (zookeeper.exists(path, false) == null) {
+      try {
+        zookeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      } catch (KeeperException e) {
+        if (e.code() == Code.NODEEXISTS) {
+          return;
+        }
+        throw e;
+      }
+    }
   }
 
   public static List<Long> getList(AtomicLongArray atomicLongArray) {

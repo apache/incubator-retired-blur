@@ -103,6 +103,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private IndexDeletionPolicy _indexDeletionPolicy;
 
   public void init() throws KeeperException, InterruptedException {
+    setupZookeeper();
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     setupFlushCacheTimer();
@@ -117,6 +118,18 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _running.set(true);
     setupTableWarmer();
     watchForShardServerChanges();
+  }
+  
+  private void setupZookeeper() throws KeeperException, InterruptedException {
+    BlurUtil.createIfMissing(_zookeeper,"/blur");
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlineControllersPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurClusterPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurBasePath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurSafemodePath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurRegisteredShardsPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlinePath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlineShardsPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurTablesPath());
   }
 
   private void watchForShardServerChanges() {

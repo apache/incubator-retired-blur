@@ -97,6 +97,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private List<Thread> _shardServerWatcherDaemons = new ArrayList<Thread>();
 
   public void init() throws KeeperException, InterruptedException {
+    setupZookeeper();
     registerMyself();
     _queryCache = new QueryCache("controller-cache", _maxQueryCacheElements, _maxTimeToLive);
     _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
@@ -105,6 +106,12 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     for (String cluster : clusterList) {
       watchForLayoutChanges(cluster);
     }
+  }
+
+  private void setupZookeeper() throws KeeperException, InterruptedException {
+    BlurUtil.createIfMissing(_zookeeper,"/blur");
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlineControllersPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurClusterPath());
   }
 
   private void watchForLayoutChanges(final String cluster) {

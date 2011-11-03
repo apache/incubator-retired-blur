@@ -19,6 +19,11 @@
     div.innerWindow {
       @include border;
       background-color: white;
+      .noFiles {
+        font-size: 1.2em;
+        font-style: italic;
+        text-align: center;
+      }
       >ul>li {
         &:hover {
           border:  1px solid #B8D6FD;

@@ -102,6 +102,10 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private long _safeModeDelay;
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
+  
+  public static interface ReleaseReader {
+    void release() throws IOException;
+  }
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -423,14 +427,16 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private BlurIndex warmUp(BlurIndex index, String table, String shard) throws IOException {
-    IndexReader reader = index.getIndexReader(true);
-    try {
-      warmUpAllSegments(reader);
-    } finally {
-      // this will allow for closing of index
-      reader.decRef();
-    }
-    _warmup.warmBlurIndex(table,shard,reader,index.isClosed());
+    final IndexReader reader = index.getIndexReader(true);
+    warmUpAllSegments(reader);
+    _warmup.warmBlurIndex(table,shard,reader,index.isClosed(), new ReleaseReader() {
+      @Override
+      public void release() throws IOException {
+        // this will allow for closing of index
+        reader.decRef();          
+      }
+    });
+    
     return index;
   }
 

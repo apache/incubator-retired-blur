@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
@@ -355,6 +356,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
     checkTable(table);
     TableDescriptor descriptor = getTableDescriptor(table);
     return getInstance(descriptor.compressionClass);
+  }
+  
+  @Override
+  public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
+    return new TreeSet<String>(getShardsToServe(table));
   }
 
   @Override

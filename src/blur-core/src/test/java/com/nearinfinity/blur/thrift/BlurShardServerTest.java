@@ -19,6 +19,7 @@ package com.nearinfinity.blur.thrift;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.Similarity;
@@ -136,6 +137,10 @@ public class BlurShardServerTest {
         throw new RuntimeException("no impl");
       }
 
+      @Override
+      public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
+        throw new RuntimeException("no impl");
+      }
     };
   }
 

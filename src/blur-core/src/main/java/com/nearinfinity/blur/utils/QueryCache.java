@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.utils;
 
+import java.util.SortedSet;
+
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
@@ -29,6 +31,16 @@ public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
     return newBlurQuery;
   }
 
+  public boolean isValid(QueryCacheEntry entry, SortedSet<String> currentShards) {
+    if (!isValid(entry)) {
+      return false;
+    }
+    if (!entry.shards.equals(currentShards)) {
+      return false;
+    }
+    return true;
+  }
+  
   public boolean isValid(QueryCacheEntry entry) {
     if (entry == null) {
       return false;

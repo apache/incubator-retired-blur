@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
@@ -74,6 +77,18 @@ public class LocalIndexServer extends AbstractIndexServer {
   @Override
   public BlurAnalyzer getAnalyzer(String table) {
     return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30, new HashSet<String>()));
+  }
+  
+  @Override
+  public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
+    Map<String, BlurIndex> tableMap = _readersMap.get(table);
+    Set<String> shardsSet;
+    if (tableMap == null) {
+      shardsSet = getIndexes(table).keySet();
+    } else {
+      shardsSet = tableMap.keySet();
+    }
+    return new TreeSet<String>(shardsSet);
   }
 
   @Override

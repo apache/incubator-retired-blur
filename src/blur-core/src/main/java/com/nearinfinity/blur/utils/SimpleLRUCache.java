@@ -47,7 +47,7 @@ public class SimpleLRUCache<K, V> extends LinkedHashMap<K, V> {
   protected boolean removeEldestEntry(java.util.Map.Entry<K, V> eldest) {
     boolean b = size() > _cachedElements;
     if (b) {
-      LOG.info("Cache [{0}], evicting eldest element [{1}]", _name, eldest);
+      LOG.debug("Cache [{0}], evicting eldest element [{1}]", _name, eldest);
     }
     return b;
   }

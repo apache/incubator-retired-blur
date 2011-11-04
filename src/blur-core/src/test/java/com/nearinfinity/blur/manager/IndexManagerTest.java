@@ -91,6 +91,7 @@ public class IndexManagerTest {
     indexManager.setStatusCleanupTimerDelay(1000);
     indexManager.setIndexServer(server);
     indexManager.setThreadCount(1);
+    indexManager.setBlurMetrics(new BlurMetrics(new Configuration()));
     indexManager.init();
 
     setupData();

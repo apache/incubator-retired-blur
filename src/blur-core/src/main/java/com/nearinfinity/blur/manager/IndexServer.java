@@ -19,6 +19,7 @@ package com.nearinfinity.blur.manager;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.search.Similarity;
@@ -33,6 +34,13 @@ public interface IndexServer {
   }
 
   // Server state
+  
+  /**
+   * Gets a sorted list of shards being served by this server.
+   * @param table the table name
+   * @return the sorted list of shards.
+   */
+  SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException;
 
   /**
    * Gets a map of the index readers for current running node.

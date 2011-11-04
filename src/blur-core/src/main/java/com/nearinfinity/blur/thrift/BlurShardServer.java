@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.thrift;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -82,9 +83,11 @@ public class BlurShardServer extends ExecutionContextIface {
         LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
         BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
         QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
-        if (_queryCache.isValid(queryCacheEntry)) {
+        if (_queryCache.isValid(queryCacheEntry,_indexServer.getShardListCurrentServerOnly(table))) {
           LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
           return queryCacheEntry.getBlurResults(blurQuery);
+        } else {
+          _queryCache.remove(noralizedBlurQuery);
         }
       }
       BlurUtil.setStartTime(original);
@@ -96,6 +99,9 @@ public class BlurShardServer extends ExecutionContextIface {
         LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
         throw new BException(e.getMessage(), e);
       }
+    } catch (IOException e) {
+      LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
+      throw new BException(e.getMessage(), e);
     } finally {
       context.recordTime(Metrics.QUERY, start, table, blurQuery);
     }

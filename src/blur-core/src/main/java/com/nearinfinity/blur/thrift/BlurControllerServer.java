@@ -220,6 +220,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         if (_queryCache.isValid(queryCacheEntry)) {
           LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
           return queryCacheEntry.getBlurResults(blurQuery);
+        } else {
+          _queryCache.remove(noralizedBlurQuery);
         }
       }
 

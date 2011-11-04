@@ -24,7 +24,8 @@ public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
     newBlurQuery.userContext = null;
     newBlurQuery.maxQueryTime = 0;
     newBlurQuery.uuid = 0;
-    newBlurQuery.cacheResult = false;
+    newBlurQuery.startTime = 0;
+    newBlurQuery.modifyFileCaches = false;
     return newBlurQuery;
   }
 

@@ -7,6 +7,12 @@
 # export HADOOP_HOME=/var/hadoop-0.20.2
 
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.
+#
+# This is an example of JVM options on a large heap and how to setup large pages and max direct memory size.
+# export BLUR_SHARD_JVM_OPTIONS="-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages -Xms12g -Xmx12g -Xmn2g -XX:+UseCompressedOops \
+#-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:CMSIncrementalDutyCycleMin=10 -XX:CMSIncrementalDutyCycle=50 \
+#-XX:ParallelGCThreads=8 -XX:+UseParNewGC -XX:MaxGCPauseMillis=200 -XX:GCTimeRatio=10 -XX:+DisableExplicitGC \
+#-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDetailsStamps -Xloggc:$BLUR_HOME/logs/gc-blur-shard-server.log
 export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m"
 
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.

@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.index;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -27,6 +28,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockObtainFailedException;
 
 import com.nearinfinity.blur.metrics.BlurMetrics;
@@ -228,6 +230,7 @@ public class WalIndexWriter extends IndexWriter {
 
   @Override
   public void close() throws CorruptIndexException, IOException {
+    checkLock();
     LOG.info("Starting close");
     super.close();
     LOG.info("Shutting down executor pool");
@@ -240,6 +243,7 @@ public class WalIndexWriter extends IndexWriter {
   }
 
   public void commitAndRollWal() throws CorruptIndexException, IOException {
+    checkLock();
     long commit = _dirty.get();
     if (commit != _lastCommit || _lastCommitTime + MAX_COMMIT_LOG_TIME < System.currentTimeMillis()) {
       List<String> oldLogs = rollWal();
@@ -249,6 +253,22 @@ public class WalIndexWriter extends IndexWriter {
       _lastCommitTime = System.currentTimeMillis();
     } else {
       LOG.info("No commit needed");
+    }
+  }
+
+  private void checkLock() {
+    //private Lock writeLock;
+    try {
+      Field field = IndexWriter.class.getDeclaredField("writeLock");
+      field.setAccessible(true);
+      Lock lock = (Lock) field.get(this);
+      if (!lock.isLocked()) {
+        LOG.error("Lock for directory [" + _directory + "] has been lost, data cannot be commited.");
+        throw new RuntimeException("Lock for directory [" + _directory + "] has been lost, data cannot be commited.");
+      }
+    } catch (Exception e) {
+      LOG.error("Unknown error",e);
+      throw new RuntimeException(e);
     }
   }
 

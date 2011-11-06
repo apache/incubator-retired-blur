@@ -40,6 +40,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ThreadExecutionTimeout;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
@@ -95,12 +96,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
   private List<Thread> _shardServerWatcherDaemons = new ArrayList<Thread>();
+  private ThreadExecutionTimeout _threadExecutionTimeout;
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
     registerMyself();
     _queryCache = new QueryCache("controller-cache", _maxQueryCacheElements, _maxTimeToLive);
     _executor = Executors.newThreadPool(CONTROLLER_THREAD_POOL, _threadCount);
+    _threadExecutionTimeout = new ThreadExecutionTimeout();
+    _threadExecutionTimeout.init();
     _running.set(true);
     List<String> clusterList = _clusterStatus.getClusterList();
     for (String cluster : clusterList) {
@@ -201,6 +205,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     if (!_closed.get()) {
       _closed.set(true);
       _running.set(false);
+      _threadExecutionTimeout.close();
       _executor.shutdownNow();
     }
   }
@@ -233,6 +238,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       BlurResultIterable hitsIterable = scatterGather(getCluster(table), new BlurCommand<BlurResultIterable>() {
         @Override
         public BlurResultIterable call(Client client) throws BlurException, TException {
+          _threadExecutionTimeout.timeout(blurQuery.maxQueryTime);
           return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
         }
       }, new MergerBlurResultIterable(blurQuery));

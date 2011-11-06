@@ -62,6 +62,7 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.concurrent.Executors;
+import com.nearinfinity.blur.concurrent.ThreadExecutionTimeout;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
@@ -113,6 +114,7 @@ public class IndexManager {
   private BlurPartitioner<BytesWritable, Void> _blurPartitioner = new BlurPartitioner<BytesWritable, Void>();
   private BlurFilterCache _filterCache = new DefaultBlurFilterCache();
   private BlurMetrics _blurMetrics;
+  private ThreadExecutionTimeout _threadExecutionTimeout;
 
   public void setMaxClauseCount(int maxClauseCount) {
     BooleanQuery.setMaxClauseCount(maxClauseCount);
@@ -120,6 +122,8 @@ public class IndexManager {
 
   public void init() {
     _executor = Executors.newThreadPool("index-manager", _threadCount);
+    _threadExecutionTimeout = new ThreadExecutionTimeout();
+    _threadExecutionTimeout.init();
     _statusManager.init();
     LOG.info("Init Complete");
   }
@@ -129,6 +133,7 @@ public class IndexManager {
       _closed = true;
       _statusManager.close();
       _executor.shutdownNow();
+      _threadExecutionTimeout.close();
       _indexServer.close();
     }
   }
@@ -294,7 +299,7 @@ public class IndexManager {
         Filter postFilter = parseFilter(table, simpleQuery.postSuperFilter, true, analyzer);
         Query userQuery = parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
+        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics, _threadExecutionTimeout, blurQuery.maxQueryTime);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -305,7 +310,7 @@ public class IndexManager {
           userQuery = query;
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
+        call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics, _threadExecutionTimeout, blurQuery.maxQueryTime);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call).merge(merger);
@@ -740,8 +745,10 @@ public class IndexManager {
     private Selector _selector;
     private boolean _forceRefresh;
     private BlurMetrics _blurMetrics;
+    private ThreadExecutionTimeout _threadExecutionTimeout;
+    private long _timeout;
 
-    public SimpleQueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh, BlurMetrics blurMetrics) {
+    public SimpleQueryParallelCall(String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh, BlurMetrics blurMetrics, ThreadExecutionTimeout threadExecutionTimeout, long timeout) {
       _table = table;
       _status = status;
       _indexServer = indexServer;
@@ -749,11 +756,14 @@ public class IndexManager {
       _selector = selector;
       _forceRefresh = forceRefresh;
       _blurMetrics = blurMetrics;
+      _threadExecutionTimeout = threadExecutionTimeout;
+      _timeout = timeout;
     }
 
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
       _status.attachThread();
+      _threadExecutionTimeout.timeout(_timeout);
       BlurIndex index = entry.getValue();
       IndexReader reader = index.getIndexReader(_forceRefresh);
       try {

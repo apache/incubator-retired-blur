@@ -2,14 +2,18 @@ package com.nearinfinity.blur.concurrent;
 
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.mortbay.log.Log;
 
 public class ThreadExecutionTimeout {
   
   private Timer _timer;
   private long _delay = TimeUnit.SECONDS.toMillis(1);
-  private ConcurrentSkipListSet<ThreadTimeout> _threads = new ConcurrentSkipListSet<ThreadTimeout>();
+  private ConcurrentMap<Thread, ThreadTimeout> _threads = new ConcurrentHashMap<Thread, ThreadTimeout>();
   
   private static class ThreadTimeout implements Comparable<ThreadTimeout> {
     public ThreadTimeout(long timeToInterrupt, Thread thread) {
@@ -18,6 +22,7 @@ public class ThreadExecutionTimeout {
     }
     Thread _thread;
     long _timeToInterrupt;
+    AtomicBoolean finished = new AtomicBoolean(false);
     
     @Override
     public int compareTo(ThreadTimeout o) {
@@ -34,9 +39,13 @@ public class ThreadExecutionTimeout {
     public String toString() {
       return "ThreadTimeout [_thread=" + _thread + ", _timeToInterrupt=" + _timeToInterrupt + "]";
     }
+
+    public void finished() {
+      finished.set(true);
+    }
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
     final ThreadExecutionTimeout t = new ThreadExecutionTimeout();
     t.init();
     new Thread(new Runnable() {
@@ -45,14 +54,17 @@ public class ThreadExecutionTimeout {
         t.timeout(TimeUnit.SECONDS.toMillis(3));
         System.out.println("Running");
         try {
-          Thread.sleep(10000);
+          Thread.sleep(1000);
         } catch (InterruptedException e) {
           e.printStackTrace();
           return;
         }
         System.out.println("DONE");
+        t.finished();
       }
     }).start();
+    
+    Thread.sleep(10000);
   }
 
   public void init() {
@@ -71,7 +83,7 @@ public class ThreadExecutionTimeout {
   }
 
   private void tryToInterrupt() {
-    for (ThreadTimeout threadTimeout : _threads) {
+    for (ThreadTimeout threadTimeout : _threads.values()) {
       if (threadTimeout._timeToInterrupt < System.currentTimeMillis()) {
         interrupt(threadTimeout);
       }
@@ -80,10 +92,11 @@ public class ThreadExecutionTimeout {
 
   private void interrupt(ThreadTimeout threadTimeout) {
     Thread thread = threadTimeout._thread;
-    if (thread.isAlive()) {
+    if (thread.isAlive() && !threadTimeout.finished.get()) {
+      Log.info("Interrupting thread [" + thread.getName() + "] had timeout of [" + threadTimeout._timeToInterrupt + "]");
       thread.interrupt();
     } else {
-      _threads.remove(threadTimeout);
+      _threads.remove(threadTimeout._thread);
     }
   }
 
@@ -91,10 +104,19 @@ public class ThreadExecutionTimeout {
     Thread thread = Thread.currentThread();
     timeout(timeout,thread);
   }
+  
+  public void finished(Thread thread) {
+    ThreadTimeout threadTimeout = _threads.get(thread);
+    threadTimeout.finished();
+  }
+  
+  public void finished() {
+    finished(Thread.currentThread());
+  }
 
   public void timeout(long timeout, Thread thread) {
     ThreadTimeout threadTimeout = new ThreadTimeout(timeout + System.currentTimeMillis(),thread);
-    _threads.add(threadTimeout);
+    _threads.put(thread,threadTimeout);
   }
 
   public void setDelay(long delay) {

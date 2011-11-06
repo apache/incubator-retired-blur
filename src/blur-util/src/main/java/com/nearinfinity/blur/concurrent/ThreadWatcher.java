@@ -23,10 +23,6 @@ public class ThreadWatcher {
   private static final Log LOG = LogFactory.getLog(ThreadWatcher.class);
   private static ThreadWatcher _instance;
 
-  public static void main(String[] args) {
-
-  }
-  
   static class Watch {
     public Watch(Thread thread) {
       _thread = thread;

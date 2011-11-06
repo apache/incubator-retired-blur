@@ -239,7 +239,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         @Override
         public BlurResultIterable call(Client client) throws BlurException, TException {
           _threadExecutionTimeout.timeout(blurQuery.maxQueryTime);
-          return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
+          try {
+            return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
+          } finally {
+            _threadExecutionTimeout.finished();
+          }
         }
       }, new MergerBlurResultIterable(blurQuery));
       return _queryCache.cache(original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table));

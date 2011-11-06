@@ -775,6 +775,7 @@ public class IndexManager {
         _blurMetrics.queriesInternal.incrementAndGet();
         // this will allow for closing of index
         reader.decRef();
+        _threadExecutionTimeout.finished();
         _status.deattachThread();
       }
     }

@@ -87,4 +87,9 @@ public class Connection {
       return false;
     return true;
   }
+
+  @Override
+  public String toString() {
+    return "Connection [_host=" + _host + ", _port=" + _port + ", _proxy=" + _proxy + ", _proxyHost=" + _proxyHost + ", _proxyPort=" + _proxyPort + "]";
+  }
 }

@@ -16,8 +16,12 @@
 
 package com.nearinfinity.blur.thrift;
 
+import org.apache.thrift.TException;
+
+import com.nearinfinity.blur.thrift.generated.BlurException;
+
 public abstract class AbstractCommand<CLIENT,T> implements Cloneable {
-    public abstract T call(CLIENT client) throws Exception;
+    public abstract T call(CLIENT client) throws BlurException,TException;
 
     @Override
     protected Object clone() throws CloneNotSupportedException {

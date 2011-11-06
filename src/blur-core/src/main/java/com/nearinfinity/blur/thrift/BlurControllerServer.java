@@ -232,7 +232,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
       BlurResultIterable hitsIterable = scatterGather(getCluster(table), new BlurCommand<BlurResultIterable>() {
         @Override
-        public BlurResultIterable call(Client client) throws Exception {
+        public BlurResultIterable call(Client client) throws BlurException, TException {
           return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
         }
       }, new MergerBlurResultIterable(blurQuery));
@@ -252,7 +252,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       clientHostnamePort = getNode(table, selector);
       return _client.execute(clientHostnamePort, new BlurCommand<FetchResult>() {
         @Override
-        public FetchResult call(Client client) throws Exception {
+        public FetchResult call(Client client) throws BlurException, TException {
           return client.fetchRow(table, selector);
         }
       });
@@ -268,7 +268,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     try {
       scatter(getCluster(table), new BlurCommand<Void>() {
         @Override
-        public Void call(Client client) throws Exception {
+        public Void call(Client client) throws BlurException, TException {
           client.cancelQuery(table, uuid);
           return null;
         }
@@ -285,7 +285,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     try {
       return scatterGather(getCluster(table), new BlurCommand<List<BlurQueryStatus>>() {
         @Override
-        public List<BlurQueryStatus> call(Client client) throws Exception {
+        public List<BlurQueryStatus> call(Client client) throws BlurException, TException {
           return client.currentQueries(table);
         }
       }, new MergerQueryStatus());
@@ -301,7 +301,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       return scatterGather(getCluster(table), new BlurCommand<TableStats>() {
 
         @Override
-        public TableStats call(Client client) throws Exception {
+        public TableStats call(Client client) throws BlurException, TException {
           return client.getTableStats(table);
         }
 
@@ -329,7 +329,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     try {
       return scatterGather(getCluster(table), new BlurCommand<Long>() {
         @Override
-        public Long call(Client client) throws Exception {
+        public Long call(Client client) throws BlurException, TException {
           return client.recordFrequency(table, columnFamily, columnName, value);
         }
       }, new Merger<Long>() {
@@ -354,7 +354,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     try {
       return scatterGather(getCluster(table), new BlurCommand<Schema>() {
         @Override
-        public Schema call(Client client) throws Exception {
+        public Schema call(Client client) throws BlurException, TException {
           return client.schema(table);
         }
       }, new Merger<Schema>() {
@@ -384,7 +384,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     try {
       return scatterGather(getCluster(table), new BlurCommand<List<String>>() {
         @Override
-        public List<String> call(Client client) throws Exception {
+        public List<String> call(Client client) throws BlurException, TException {
           return client.terms(table, columnFamily, columnName, startWith, size);
         }
       }, new Merger<List<String>>() {
@@ -530,7 +530,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       String node = tableLayout.get(shardName);
       _client.execute(node, new BlurCommand<Void>() {
         @Override
-        public Void call(Client client) throws Exception {
+        public Void call(Client client) throws BlurException, TException {
           client.mutate(mutation);
           return null;
         }

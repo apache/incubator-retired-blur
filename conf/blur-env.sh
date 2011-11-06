@@ -12,7 +12,7 @@
 # export BLUR_SHARD_JVM_OPTIONS="-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages -Xms12g -Xmx12g -Xmn2g -XX:+UseCompressedOops \
 #-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:CMSIncrementalDutyCycleMin=10 -XX:CMSIncrementalDutyCycle=50 \
 #-XX:ParallelGCThreads=8 -XX:+UseParNewGC -XX:MaxGCPauseMillis=200 -XX:GCTimeRatio=10 -XX:+DisableExplicitGC \
-#-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDetailsStamps -Xloggc:$BLUR_HOME/logs/gc-blur-shard-server.log
+#-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$BLUR_HOME/logs/gc-blur-shard-server_`date +%Y%m%d_%H%M%S`.log
 export BLUR_SHARD_JVM_OPTIONS="-Xmx1024m"
 
 # JAVA JVM OPTIONS for the shard servers, jvm tuning parameters are placed here.

@@ -15,6 +15,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,7 +43,7 @@ public class HdfsDirectoryTest {
 //    seed = 2118339533000937288L;
     random = new Random(seed);
   }
-
+  
   @Test
   public void testWritingAndReadingAFile() throws IOException {
     

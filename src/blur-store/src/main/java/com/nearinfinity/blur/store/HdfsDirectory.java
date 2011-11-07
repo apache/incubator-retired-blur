@@ -36,6 +36,7 @@ import org.apache.lucene.store.IndexOutput;
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class HdfsDirectory extends DirectIODirectory {
 
+  private static final String LF_EXT = ".lf";
   protected static final String SEGMENTS_GEN = "segments.gen";
   protected static final IndexOutput NULL_WRITER = new NullIndexOutput();
   protected Path _hdfsDirPath;
@@ -55,15 +56,6 @@ public class HdfsDirectory extends DirectIODirectory {
     }
   }
 
-  protected void reopenFileSystem() throws IOException {
-    FileSystem fileSystem = FileSystem.get(_hdfsDirPath.toUri(), _configuration);
-    FileSystem oldFs = _fileSystemRef.get();
-    _fileSystemRef.set(fileSystem);
-    if (oldFs != null) {
-      oldFs.close();
-    }
-  }
-
   @Override
   public void close() throws IOException {
 
@@ -74,8 +66,32 @@ public class HdfsDirectory extends DirectIODirectory {
     if (SEGMENTS_GEN.equals(name)) {
       return NULL_WRITER;
     }
+    name = getRealName(name);
     HdfsFileWriter writer = new HdfsFileWriter(getFileSystem(), new Path(_hdfsDirPath,name));
-    return new HdfsIndexOutput(writer);
+    return new HdfsLayeredIndexOutput(writer);
+  }
+
+  private String getRealName(String name) throws IOException {
+    if (getFileSystem().exists(new Path(_hdfsDirPath, name))) {
+      return name;
+    }
+    return name + LF_EXT;
+  }
+  
+  private String[] getNormalNames(List<String> files) {
+    int size = files.size();
+    for (int i = 0; i < size; i++) {
+      String str = files.get(i);
+      files.set(i, toNormalName(str));
+    }
+    return files.toArray(new String[]{});
+  }
+
+  private String toNormalName(String name) {
+    if (name.endsWith(LF_EXT)) {
+      return name.substring(0,name.length() - 3);
+    }
+    return name;
   }
 
   @Override
@@ -84,13 +100,26 @@ public class HdfsDirectory extends DirectIODirectory {
   }
 
   @Override
-  public IndexInput openInput(final String name, int bufferSize) throws IOException {
-    HdfsFileReader reader = new HdfsFileReader(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
-    return new HdfsIndexInput(reader);
+  public IndexInput openInput(String name, int bufferSize) throws IOException {
+    name = getRealName(name);
+    if (isLayeredFile(name)) {
+      HdfsFileReader reader = new HdfsFileReader(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
+      return new HdfsLayeredIndexInput(reader);
+    } else {
+      return new HdfsNormalIndexInput(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
+    }
+  }
+  
+  private boolean isLayeredFile(String name) {
+    if (name.endsWith(LF_EXT)) {
+      return true;
+    }
+    return false;
   }
 
   @Override
   public void deleteFile(String name) throws IOException {
+    name = getRealName(name);
     if (!fileExists(name)) {
       throw new FileNotFoundException(name);
     }
@@ -99,11 +128,13 @@ public class HdfsDirectory extends DirectIODirectory {
 
   @Override
   public boolean fileExists(String name) throws IOException {
+    name = getRealName(name);
     return getFileSystem().exists(new Path(_hdfsDirPath, name));
   }
 
   @Override
   public long fileLength(String name) throws IOException {
+    name = getRealName(name);
     if (!fileExists(name)) {
       throw new FileNotFoundException(name);
     }
@@ -112,6 +143,7 @@ public class HdfsDirectory extends DirectIODirectory {
 
   @Override
   public long fileModified(String name) throws IOException {
+    name = getRealName(name);
     if (!fileExists(name)) {
       throw new FileNotFoundException(name);
     }
@@ -128,8 +160,9 @@ public class HdfsDirectory extends DirectIODirectory {
         files.add(status.getPath().getName());
       }
     }
-    return files.toArray(new String[] {});
+    return getNormalNames(files);
   }
+
 
   @Override
   public void touchFile(String name) throws IOException {
@@ -143,15 +176,24 @@ public class HdfsDirectory extends DirectIODirectory {
   public FileSystem getFileSystem() {
     return _fileSystemRef.get();
   }
+  
+  protected void reopenFileSystem() throws IOException {
+    FileSystem fileSystem = FileSystem.get(_hdfsDirPath.toUri(), _configuration);
+    FileSystem oldFs = _fileSystemRef.get();
+    _fileSystemRef.set(fileSystem);
+    if (oldFs != null) {
+      oldFs.close();
+    }
+  }
 
-  static class HdfsIndexInput extends IndexInput {
+  static class HdfsLayeredIndexInput extends IndexInput {
     
     private HdfsFileReader _reader;
     private long _length;
     private long _pos;
     private boolean isClone;
     
-    public HdfsIndexInput(HdfsFileReader reader) {
+    public HdfsLayeredIndexInput(HdfsFileReader reader) {
       _reader = reader;
       _length = _reader.length();
     }
@@ -204,17 +246,59 @@ public class HdfsDirectory extends DirectIODirectory {
 
     @Override
     public Object clone() {
-      HdfsIndexInput input = (HdfsIndexInput) super.clone();
+      HdfsLayeredIndexInput input = (HdfsLayeredIndexInput) super.clone();
       input.isClone = true;
       return input;
     }
   }
+
+  static class HdfsNormalIndexInput extends BufferedIndexInput {
+
+    private final FSDataInputStream _inputStream;
+    private final long _length;
+    private boolean _clone = false;
+
+    public HdfsNormalIndexInput(FileSystem fileSystem, Path path, int bufferSize) throws IOException {
+      FileStatus fileStatus = fileSystem.getFileStatus(path);
+      _length = fileStatus.getLen();
+      _inputStream = fileSystem.open(path,bufferSize);
+    }
+
+    @Override
+    protected void readInternal(byte[] b, int offset, int length) throws IOException {
+      _inputStream.read(getFilePointer(), b, offset, length);
+    }
+
+    @Override
+    protected void seekInternal(long pos) throws IOException {
+      
+    }
+
+    @Override
+    public void close() throws IOException {
+      if (!_clone) {
+        _inputStream.close();
+      }
+    }
+
+    @Override
+    public long length() {
+      return _length;
+    }
+
+    @Override
+    public Object clone() {
+      HdfsNormalIndexInput clone = (HdfsNormalIndexInput) super.clone();
+      clone._clone = true;
+      return clone;
+    }
+  }
   
-  static class HdfsIndexOutput extends IndexOutput {
+  static class HdfsLayeredIndexOutput extends IndexOutput {
     
     private HdfsFileWriter _writer;
     
-    public HdfsIndexOutput(HdfsFileWriter writer) {
+    public HdfsLayeredIndexOutput(HdfsFileWriter writer) {
       _writer = writer;
     }
 

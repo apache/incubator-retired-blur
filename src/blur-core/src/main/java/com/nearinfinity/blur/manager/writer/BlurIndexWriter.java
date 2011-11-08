@@ -36,6 +36,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
@@ -74,12 +75,14 @@ public class BlurIndexWriter extends BlurIndex {
   private String _shard;
   private AtomicBoolean _isClosed = new AtomicBoolean(false);
   private IndexDeletionPolicy _indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
+  private Similarity _similarity;
 
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, _analyzer);
     conf.setSimilarity(new FairSimilarity());
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setIndexDeletionPolicy(_indexDeletionPolicy);
+    conf.setSimilarity(_similarity);
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
     _open.set(true);
@@ -247,6 +250,10 @@ public class BlurIndexWriter extends BlurIndex {
 
   public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
     _indexDeletionPolicy = indexDeletionPolicy;
+  }
+
+  public void setSimilarity(Similarity similarity) {
+    _similarity = similarity;
   }
 
 }

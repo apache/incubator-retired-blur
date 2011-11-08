@@ -342,7 +342,8 @@ struct TableDescriptor {
   5:string compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec',
   6:i32 compressionBlockSize = 32768,
   7:string cluster,
-  8:string name
+  8:string name,
+  9:string similarityClass
 }
 
 service Blur {

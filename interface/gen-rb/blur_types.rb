@@ -618,6 +618,7 @@ module Blur
       COMPRESSIONBLOCKSIZE = 6
       CLUSTER = 7
       NAME = 8
+      SIMILARITYCLASS = 9
 
       FIELDS = {
         ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
@@ -627,7 +628,8 @@ module Blur
         COMPRESSIONCLASS => {:type => ::Thrift::Types::STRING, :name => 'compressionClass', :default => %q"org.apache.hadoop.io.compress.DefaultCodec"},
         COMPRESSIONBLOCKSIZE => {:type => ::Thrift::Types::I32, :name => 'compressionBlockSize', :default => 32768},
         CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'},
-        NAME => {:type => ::Thrift::Types::STRING, :name => 'name'}
+        NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+        SIMILARITYCLASS => {:type => ::Thrift::Types::STRING, :name => 'similarityClass'}
       }
 
       def struct_fields; FIELDS; end

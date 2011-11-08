@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Column;
@@ -53,6 +54,7 @@ public class BlurIndexWriterTest {
     writer.setAnalyzer(analyzer);
     writer.setRefresher(refresher);
     writer.setCommiter(commiter);
+    writer.setSimilarity(new FairSimilarity());
     writer.setBlurMetrics(new BlurMetrics(new Configuration()));
     writer.init();
   }

@@ -151,6 +151,7 @@ public class LocalIndexServer extends AbstractIndexServer {
     writer.setRefresher(_refresher);
     writer.setCommiter(_commiter);
     writer.setBlurMetrics(_metrics);
+    writer.setSimilarity(getSimilarity(table));
     writer.init();
     return writer;
   }

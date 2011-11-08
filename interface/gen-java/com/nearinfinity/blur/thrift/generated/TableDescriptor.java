@@ -31,6 +31,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final org.apache.thrift.protocol.TField COMPRESSION_BLOCK_SIZE_FIELD_DESC = new org.apache.thrift.protocol.TField("compressionBlockSize", org.apache.thrift.protocol.TType.I32, (short)6);
   private static final org.apache.thrift.protocol.TField CLUSTER_FIELD_DESC = new org.apache.thrift.protocol.TField("cluster", org.apache.thrift.protocol.TType.STRING, (short)7);
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)8);
+  private static final org.apache.thrift.protocol.TField SIMILARITY_CLASS_FIELD_DESC = new org.apache.thrift.protocol.TField("similarityClass", org.apache.thrift.protocol.TType.STRING, (short)9);
 
   public boolean isEnabled; // required
   public AnalyzerDefinition analyzerDefinition; // required
@@ -40,6 +41,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   public int compressionBlockSize; // required
   public String cluster; // required
   public String name; // required
+  public String similarityClass; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -50,7 +52,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     COMPRESSION_CLASS((short)5, "compressionClass"),
     COMPRESSION_BLOCK_SIZE((short)6, "compressionBlockSize"),
     CLUSTER((short)7, "cluster"),
-    NAME((short)8, "name");
+    NAME((short)8, "name"),
+    SIMILARITY_CLASS((short)9, "similarityClass");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -81,6 +84,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
           return CLUSTER;
         case 8: // NAME
           return NAME;
+        case 9: // SIMILARITY_CLASS
+          return SIMILARITY_CLASS;
         default:
           return null;
       }
@@ -145,6 +150,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.SIMILARITY_CLASS, new org.apache.thrift.meta_data.FieldMetaData("similarityClass", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
   }
@@ -168,7 +175,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     String compressionClass,
     int compressionBlockSize,
     String cluster,
-    String name)
+    String name,
+    String similarityClass)
   {
     this();
     this.isEnabled = isEnabled;
@@ -182,6 +190,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     setCompressionBlockSizeIsSet(true);
     this.cluster = cluster;
     this.name = name;
+    this.similarityClass = similarityClass;
   }
 
   /**
@@ -208,6 +217,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     if (other.isSetName()) {
       this.name = other.name;
     }
+    if (other.isSetSimilarityClass()) {
+      this.similarityClass = other.similarityClass;
+    }
   }
 
   public TableDescriptor deepCopy() {
@@ -228,6 +240,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
     this.cluster = null;
     this.name = null;
+    this.similarityClass = null;
   }
 
   public boolean isIsEnabled() {
@@ -419,6 +432,30 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  public String getSimilarityClass() {
+    return this.similarityClass;
+  }
+
+  public TableDescriptor setSimilarityClass(String similarityClass) {
+    this.similarityClass = similarityClass;
+    return this;
+  }
+
+  public void unsetSimilarityClass() {
+    this.similarityClass = null;
+  }
+
+  /** Returns true if field similarityClass is set (has been assigned a value) and false otherwise */
+  public boolean isSetSimilarityClass() {
+    return this.similarityClass != null;
+  }
+
+  public void setSimilarityClassIsSet(boolean value) {
+    if (!value) {
+      this.similarityClass = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case IS_ENABLED:
@@ -485,6 +522,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       break;
 
+    case SIMILARITY_CLASS:
+      if (value == null) {
+        unsetSimilarityClass();
+      } else {
+        setSimilarityClass((String)value);
+      }
+      break;
+
     }
   }
 
@@ -514,6 +559,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     case NAME:
       return getName();
 
+    case SIMILARITY_CLASS:
+      return getSimilarityClass();
+
     }
     throw new IllegalStateException();
   }
@@ -541,6 +589,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       return isSetCluster();
     case NAME:
       return isSetName();
+    case SIMILARITY_CLASS:
+      return isSetSimilarityClass();
     }
     throw new IllegalStateException();
   }
@@ -627,6 +677,15 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       if (!(this_present_name && that_present_name))
         return false;
       if (!this.name.equals(that.name))
+        return false;
+    }
+
+    boolean this_present_similarityClass = true && this.isSetSimilarityClass();
+    boolean that_present_similarityClass = true && that.isSetSimilarityClass();
+    if (this_present_similarityClass || that_present_similarityClass) {
+      if (!(this_present_similarityClass && that_present_similarityClass))
+        return false;
+      if (!this.similarityClass.equals(that.similarityClass))
         return false;
     }
 
@@ -726,6 +785,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetSimilarityClass()).compareTo(typedOther.isSetSimilarityClass());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetSimilarityClass()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.similarityClass, typedOther.similarityClass);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -803,6 +872,13 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 9: // SIMILARITY_CLASS
+          if (field.type == org.apache.thrift.protocol.TType.STRING) {
+            this.similarityClass = iprot.readString();
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -850,6 +926,11 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     if (this.name != null) {
       oprot.writeFieldBegin(NAME_FIELD_DESC);
       oprot.writeString(this.name);
+      oprot.writeFieldEnd();
+    }
+    if (this.similarityClass != null) {
+      oprot.writeFieldBegin(SIMILARITY_CLASS_FIELD_DESC);
+      oprot.writeString(this.similarityClass);
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -910,6 +991,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       sb.append("null");
     } else {
       sb.append(this.name);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("similarityClass:");
+    if (this.similarityClass == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.similarityClass);
     }
     first = false;
     sb.append(")");

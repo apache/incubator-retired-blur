@@ -2948,7 +2948,7 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass ) );
 
 sub new {
   my $classname = shift;
@@ -2962,6 +2962,7 @@ sub new {
   $self->{compressionBlockSize} = 32768;
   $self->{cluster} = undef;
   $self->{name} = undef;
+  $self->{similarityClass} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {
       $self->{isEnabled} = $vals->{isEnabled};
@@ -2986,6 +2987,9 @@ sub new {
     }
     if (defined $vals->{name}) {
       $self->{name} = $vals->{name};
+    }
+    if (defined $vals->{similarityClass}) {
+      $self->{similarityClass} = $vals->{similarityClass};
     }
   }
   return bless ($self, $classname);
@@ -3059,6 +3063,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^9$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{similarityClass});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3109,6 +3119,11 @@ sub write {
   if (defined $self->{name}) {
     $xfer += $output->writeFieldBegin('name', TType::STRING, 8);
     $xfer += $output->writeString($self->{name});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{similarityClass}) {
+    $xfer += $output->writeFieldBegin('similarityClass', TType::STRING, 9);
+    $xfer += $output->writeString($self->{similarityClass});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

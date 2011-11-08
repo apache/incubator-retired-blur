@@ -76,6 +76,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private Map<String, BlurAnalyzer> _tableAnalyzers = new ConcurrentHashMap<String, BlurAnalyzer>();
   private Map<String, TableDescriptor> _tableDescriptors = new ConcurrentHashMap<String, TableDescriptor>();
+  private Map<String, Similarity> _tableSimilarity = new ConcurrentHashMap<String, Similarity>();
   private Map<String, DistributedLayoutManager> _layoutManagers = new ConcurrentHashMap<String, DistributedLayoutManager>();
   private Map<String, Set<String>> _layoutCache = new ConcurrentHashMap<String, Set<String>>();
   private ConcurrentHashMap<String, Map<String, BlurIndex>> _indexes = new ConcurrentHashMap<String, Map<String, BlurIndex>>();
@@ -268,6 +269,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         clearMapOfOldTables(_tableDescriptors);
         clearMapOfOldTables(_layoutManagers);
         clearMapOfOldTables(_layoutCache);
+        clearMapOfOldTables(_tableSimilarity);
         Map<String, Map<String, BlurIndex>> oldIndexesThatNeedToBeClosed = clearMapOfOldTables(_indexes);
         for (String table : oldIndexesThatNeedToBeClosed.keySet()) {
           Map<String, BlurIndex> indexes = oldIndexesThatNeedToBeClosed.get(table);
@@ -359,7 +361,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   public CompressionCodec getCompressionCodec(String table) {
     checkTable(table);
     TableDescriptor descriptor = getTableDescriptor(table);
-    return getInstance(descriptor.compressionClass);
+    return getInstance(descriptor.compressionClass,CompressionCodec.class);
   }
   
   @Override
@@ -421,6 +423,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     writer.setShard(shard);
     writer.setTable(table);
     writer.setIndexDeletionPolicy(_indexDeletionPolicy);
+    writer.setSimilarity(getSimilarity(table));
     writer.init();
     _filterCache.opening(table,shard,writer);
     return warmUp(writer,table,shard);
@@ -595,7 +598,18 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public Similarity getSimilarity(String table) {
     checkTable(table);
-    return new FairSimilarity();
+    Similarity similarity = _tableSimilarity.get(table);
+    if (similarity == null) {
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(table);
+      String similarityClass = tableDescriptor.similarityClass;
+      if (similarityClass == null) {
+        similarity = new FairSimilarity();
+      } else {
+        similarity = getInstance(similarityClass,Similarity.class);
+      }
+      _tableSimilarity.put(table, similarity);
+    }
+    return similarity;
   }
 
   @Override
@@ -644,15 +658,16 @@ public class DistributedIndexServer extends AbstractIndexServer {
     return tableDescriptor;
   }
 
-  private CompressionCodec getInstance(String compressionClass) {
+  @SuppressWarnings("unchecked")
+  private <T> T getInstance(String className, Class<T> c) {
     try {
-      Class<?> clazz = Class.forName(compressionClass);
+      Class<? extends T> clazz = (Class<? extends T>) Class.forName(className);
       Object object = clazz.newInstance();
       if (object instanceof Configurable) {
         Configurable configurable = (Configurable) object;
         configurable.setConf(_configuration);
       }
-      return (CompressionCodec) object;
+      return (T) object;
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

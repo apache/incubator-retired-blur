@@ -58,7 +58,7 @@ class HdfsController < ApplicationController
     instance = Hdfs.find params[:id]
     client = HdfsThriftClient.client(instance.host, instance.port)
     
-    path = params[:_path]
+    path = params[:path]
     client.rm path, false
     render :nothing => true
   end

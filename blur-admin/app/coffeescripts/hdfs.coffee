@@ -27,12 +27,12 @@ $(document).ready ->
       <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
-      <!--li class='delete'><a href='#delete'>Delete</a></li-->
+      <li class='delete'><a href='#delete'>Delete</a></li>
       </ul>
       <ul id='hdfs-file-context-menu' class='contextMenu'>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
-      <!--li class='delete'><a href='#delete'>Delete</a></li-->
+      <li class='delete'><a href='#delete'>Delete</a></li>
       </ul>
       </div>
     ")

@@ -57,7 +57,7 @@ public class ControllerCollector {
 			int updatedCount = jdbc.update("update controllers set status=1, blur_version=? where node_name=? and zookeeper_id =?", blurVersion, controller, instanceId);
 
 			if (updatedCount == 0) {
-				jdbc.update("insert into controllers (node_name, status, zookeeper_id, blur_version) values (?, 1, ?, ?, ?)", controller, instanceId, blurVersion);
+				jdbc.update("insert into controllers (node_name, status, zookeeper_id, blur_version) values (?, 1, ?, ?)", controller, instanceId, blurVersion);
 			}
 		}
 	}

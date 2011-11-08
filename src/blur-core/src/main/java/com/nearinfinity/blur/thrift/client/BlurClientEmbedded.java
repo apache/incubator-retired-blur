@@ -41,7 +41,7 @@ public class BlurClientEmbedded extends BlurClient {
   private Map<String, Client> nodes = new HashMap<String, Client>();
 
   @Override
-  public <T> T execute(String node, BlurCommand<T> command) throws Exception {
+  public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws Exception {
     Client client = nodes.get(node);
     return command.call(client);
   }

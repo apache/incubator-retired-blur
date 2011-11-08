@@ -22,8 +22,8 @@ import com.nearinfinity.blur.thrift.commands.BlurCommand;
 public class BlurClientRemote extends BlurClient {
 
   @Override
-  public <T> T execute(String node, BlurCommand<T> command) throws Exception {
-    return BlurClientManager.execute(node, command);
+  public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws Exception {
+    return BlurClientManager.execute(node,command,maxRetries,backOffTime,maxBackOffTime);
   }
 
 }

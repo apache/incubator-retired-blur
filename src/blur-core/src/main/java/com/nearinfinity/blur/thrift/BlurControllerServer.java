@@ -97,6 +97,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private AtomicBoolean _running = new AtomicBoolean();
   private List<Thread> _shardServerWatcherDaemons = new ArrayList<Thread>();
   private ThreadExecutionTimeout _threadExecutionTimeout;
+  private int _maxFetchRetries = 1;
+  private int _maxMutateRetries = 1;
+  private int _maxDefaultRetries = 1;
+  private long _fetchDelay = 500;
+  private long _mutateDelay = 500;
+  private long _defaultDelay = 500;
+  private long _maxFetchDelay = 2000;
+  private long _maxMutateDelay = 2000;
+  private long _maxDefaultDelay = 2000;
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -265,7 +274,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         public FetchResult call(Client client) throws BlurException, TException {
           return client.fetchRow(table, selector);
         }
-      });
+      },_maxFetchRetries,_fetchDelay,_maxFetchDelay);
     } catch (Exception e) {
       LOG.error("Unknown error during fetch of row from table [{0}] selector [{1}] node [{2}]", e, table, selector, clientHostnamePort);
       throw new BException("Unknown error during fetch of row from table [{0}] selector [{1}] node [{2}]", e, table, selector, clientHostnamePort);
@@ -443,7 +452,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       @SuppressWarnings("unchecked")
       @Override
       public R call(String hostnamePort) throws Exception {
-        return _client.execute(hostnamePort, (BlurCommand<R>) command.clone());
+        return _client.execute(hostnamePort, (BlurCommand<R>) command.clone(),_maxDefaultRetries,_defaultDelay,_maxDefaultDelay);
       }
     }).merge(merger);
   }
@@ -544,7 +553,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           client.mutate(mutation);
           return null;
         }
-      });
+      },_maxMutateRetries,_mutateDelay,_maxMutateDelay);
     } catch (Exception e) {
       LOG.error("Unknown error during mutation of [{0}]", e, mutation);
       throw new BException("Unknown error during mutation of [{0}]", e, mutation);
@@ -615,5 +624,41 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   public void setThreadCount(int threadCount) {
     _threadCount = threadCount;
+  }
+
+  public void setMaxFetchRetries(int maxFetchRetries) {
+    _maxFetchRetries = maxFetchRetries;
+  }
+
+  public void setMaxMutateRetries(int maxMutateRetries) {
+    _maxMutateRetries = maxMutateRetries;
+  }
+
+  public void setMaxDefaultRetries(int maxDefaultRetries) {
+    _maxDefaultRetries = maxDefaultRetries;
+  }
+
+  public void setFetchDelay(long fetchDelay) {
+    _fetchDelay = fetchDelay;
+  }
+
+  public void setMutateDelay(long mutateDelay) {
+    _mutateDelay = mutateDelay;
+  }
+
+  public void setDefaultDelay(long defaultDelay) {
+    _defaultDelay = defaultDelay;
+  }
+
+  public void setMaxFetchDelay(long maxFetchDelay) {
+    _maxFetchDelay = maxFetchDelay;
+  }
+
+  public void setMaxMutateDelay(long maxMutateDelay) {
+    _maxMutateDelay = maxMutateDelay;
+  }
+
+  public void setMaxDefaultDelay(long maxDefaultDelay) {
+    _maxDefaultDelay = maxDefaultDelay;
   }
 }

@@ -16,6 +16,7 @@ $(document).ready ->
         (action, el, pos) ->
           perform_action action, el
           return false
+      $('#hdfs-dir-context-menu').disableContextMenuItems('#paste')
 
   tree_context_menu = () ->
     $("<div class='context_menus'>
@@ -33,7 +34,6 @@ $(document).ready ->
       <ul id='hdfs-file-context-menu' class='contextMenu'>
       <li class='rename'><a href='#rename'>Rename</a></li>
       <li class='cut'><a href='#cut'>Cut</a></li>
-      <li class='paste'><a href='#paste'>Paste</a></li>
       <li class='delete'><a href='#delete'>Delete</a></li>
       </ul>
       </div>
@@ -45,7 +45,8 @@ $(document).ready ->
     to_id = location.attr('hdfs_id')
     to_path = location.attr('hdfs_path')
     if from_id == to_id
-      $.post Routes.hdfs_move_path(to_id), { 'from': from_path, 'to': to_path}
+      $.post Routes.hdfs_move_path(to_id), { 'from': from_path, 'to': to_path}, ()->
+        $('#hdfs-dir-context-menu').disableContextMenuItems('#paste')
       
   rename = (el) ->
     id = el.attr('hdfs_id')
@@ -142,6 +143,7 @@ $(document).ready ->
       when "cut"
         paste_buffer.location = el
         paste_buffer.action = action
+        $('#hdfs-dir-context-menu').enableContextMenuItems('#paste')
       when "paste"
         if paste_buffer.action
           if paste_buffer.action == "cut"

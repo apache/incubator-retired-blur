@@ -14,11 +14,12 @@
     #pause_button {
       vertical-align: middle;
       display: inline-block;
-      margin-bottom: 4px;
-      #pause{
+      margin-bottom: -1px;
+      #pause, #refresh{
         @include border;
         cursor: pointer;
         display: none;
+        padding: 0px 1px 1px 1px;
         &:hover{
           background-color: $row-hover;
           background-image: url(/stylesheets/images/ui-icons_555555_256x240.png);
@@ -28,7 +29,10 @@
   }
   
   #spinner_wrapper {
-    #filter_spinner { display: none; }
+    #filter_spinner {
+      display: none;
+      margin-top: -2px;
+    }
   }
   
   #filter_display_wrapper {

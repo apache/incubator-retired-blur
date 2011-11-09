@@ -25,11 +25,13 @@ $(document).ready ->
       </ul>
       <ul id='hdfs-dir-context-menu' class='contextMenu'>
       <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
+      <li class='rename'><a href='#rename'>Rename</a></li>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
       <li class='delete'><a href='#delete'>Delete</a></li>
       </ul>
       <ul id='hdfs-file-context-menu' class='contextMenu'>
+      <li class='rename'><a href='#rename'>Rename</a></li>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
       <li class='delete'><a href='#delete'>Delete</a></li>
@@ -44,6 +46,44 @@ $(document).ready ->
     to_path = location.attr('hdfs_path')
     if from_id == to_id
       $.post Routes.hdfs_move_path(to_id), { 'from': from_path, 'to': to_path}
+      
+  rename = (el) ->
+    id = el.attr('hdfs_id')
+    from_path = el.attr('hdfs_path')
+    $('<div id="newName"><input></input></div>').dialog
+      modal: true
+      draggable: true
+      resizable: false
+      width: 'auto'
+      title: 'New Name'
+      open: ()->
+        $('#newName input').focus()
+      buttons:
+        "Create": ()->
+          newName = $('#newName input').val()
+          newFullPath = "#{from_path.substring(0, from_path.lastIndexOf('/')+1)}#{newName}"
+          $.ajax Routes.hdfs_move_path(id),
+            type: 'post',
+            data:
+              from: from_path
+              to: newFullPath
+            success: () ->
+              el.attr('hdfs_path', newFullPath)
+              link = el.find('a')
+              link.html(newName)
+              href = link.attr('href')
+              link.attr('href', href.replace(from_path, newFullPath))
+              if(el.hasClass('osxSelected'))
+                nextWin = el.parents('.innerWindow').next()
+                display_href = el.find('a').attr('href')
+                nextWin.load(display_href)
+              else
+                el.click()
+          $(this).dialog("close")
+        "Cancel": () ->
+          $(this).dialog("close")
+      close: (event, ui) ->
+          $(this).remove()
     
   delete_file = (file) ->
     id = file.attr('hdfs_id');
@@ -110,6 +150,8 @@ $(document).ready ->
         show_hdfs_props el
       when "mkdir"
         make_dir el
+      when "rename"
+        rename el
 
 
   # Methods to call on page load

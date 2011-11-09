@@ -1,7 +1,6 @@
 package com.nearinfinity.blur.index;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -259,7 +258,7 @@ public class WalIndexWriter extends IndexWriter {
   private void checkLock() {
     //private Lock writeLock;
     try {
-      Field field = IndexWriter.class.getDeclaredField("writeLock");
+      java.lang.reflect.Field field = IndexWriter.class.getDeclaredField("writeLock");
       field.setAccessible(true);
       Lock lock = (Lock) field.get(this);
       if (!lock.isLocked()) {

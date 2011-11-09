@@ -50,7 +50,6 @@ import com.nearinfinity.blur.index.WalIndexWriter.WalInputFactory;
 import com.nearinfinity.blur.index.WalIndexWriter.WalOutputFactory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -79,7 +78,6 @@ public class BlurIndexWriter extends BlurIndex {
 
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, _analyzer);
-    conf.setSimilarity(new FairSimilarity());
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setIndexDeletionPolicy(_indexDeletionPolicy);
     conf.setSimilarity(_similarity);

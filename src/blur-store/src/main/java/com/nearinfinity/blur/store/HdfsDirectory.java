@@ -179,6 +179,7 @@ public class HdfsDirectory extends DirectIODirectory {
   
   protected void reopenFileSystem() throws IOException {
     FileSystem fileSystem = FileSystem.get(_hdfsDirPath.toUri(), _configuration);
+    System.out.println("AAAAAAAAAAAAAAAAAAAAA " + _configuration.get("dfs.support.append"));
     FileSystem oldFs = _fileSystemRef.get();
     _fileSystemRef.set(fileSystem);
     if (oldFs != null) {

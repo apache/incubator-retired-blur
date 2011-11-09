@@ -36,8 +36,6 @@
                         :title => column}
                       = record[column]
 
-                - elsif i == result[column_family].length # fill in the remaining space with a big cell
+                - else # fill in the remaining space with a big cell
                   %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} family_-sep-_#{column_family} family_-sep-_#{column_family}_-sep-_empty",
-                      :colspan => columns.length,
-                      :rowspan => max_record_count - result[column_family].length}
-                  - next
+                      :colspan => columns.length}

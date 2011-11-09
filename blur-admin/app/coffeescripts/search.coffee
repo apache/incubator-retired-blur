@@ -38,11 +38,14 @@ $(document).ready ->
     $('.body#saved').load 'reload/' + $(this).val()
       
   # listener that checks if the submit button should be enabled on keystrokes
-  $('#query_string, #save_name').live "keypress keydown keyup", (name) ->
+  $('#query_string, #save_name').live "keydown", (name) ->
+    if name.keyCode == 13 && !name.shiftKey
+      name.preventDefault()
+  $('#query_string, #save_name').live "keyup", (name) ->
     #if it is enter then submit else check to see if we can enable the button
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
-      if $(':submit').attr 'disabled'
+      if $('#search_submit').attr 'disabled'
         error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
         $('#results_container').html(error_content)
       else
@@ -52,19 +55,16 @@ $(document).ready ->
 
   # listener that Hides/Shows filter section
   $('#bar_section').live 'click', ->
-    $('#filter_section').toggle 'fast', ()->
-      if $('#filter_section').is ':hidden'
-        $('#arrow').addClass('ui-icon-triangle-1-e')
-        $('#arrow').removeClass('ui-icon-triangle-1-w')
-        $('#results_wrapper').removeClass('open_filters')
-        $('#results_wrapper').addClass('collapsed_filters')
-        $('#bar_section').width('2em')
-      else
-        $('#arrow').addClass('ui-icon-triangle-1-w')
-        $('#arrow').removeClass('ui-icon-triangle-1-e')
-        $('#results_wrapper').addClass('open_filters')
-        $('#results_wrapper').removeClass('collapsed_filters')
-        $('#bar_section').width('1em')
+    if !$('#filter_section').is ':hidden'
+      $('#filter_section').hide 'fast'
+      $('#arrow').addClass('ui-icon-triangle-1-e').removeClass('ui-icon-triangle-1-w')
+      $('#results_wrapper').removeClass('open_filters').addClass('collapsed_filters')
+      $('#bar_section').addClass('leftbar')
+    else
+      $('#filter_section').show 'fast'
+      $('#arrow').addClass('ui-icon-triangle-1-w').removeClass('ui-icon-triangle-1-e')
+      $('#results_wrapper').addClass('open_filters').removeClass('collapsed_filters')
+      $('#bar_section').removeClass('leftbar')
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
@@ -201,14 +201,9 @@ $(document).ready ->
   # fetch the result of a new search
   $('#search_form')
     .live 'ajax:success', (evt, data, status, xhr) ->
+      console.debug(evt)
       if data
-        #shows number of results option if there are results
-        #if data is returned properly process it
-        #if the data is from a save then display the html in the filter section
-        if $(data).attr("id") == 'searches'
-          $('.body#saved').html(data)
-        else
-          $('#results_container').html data
+        $('#results_container').html data
       else
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'

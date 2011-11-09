@@ -4,14 +4,18 @@
 
   // styles for filters
   #filter_section {
-    @include columns(5.5,$total-cols);
+    width: 260px;
     @include standard-font;
     padding-top: 1em;
     position: fixed;
     top: $nav-height + $header-height;
-    display: inline-block;
+    left:0;
+    padding-left:20px;
+    padding-right: 15px;
+    background-color: #FFF;
     overflow-y: auto;
-    max-height: 70%;
+    height: 100%;
+    z-index: 0;
     
     .partial-section, .body { padding: 0.5em; }
     .filter { padding: 0.5em 0 0; }
@@ -35,36 +39,41 @@
     }
   }
 
-  // styles for the collapse bar & results section
-  .collapsed_filters{ @include columns(30,$total-cols); @include omega($total-cols); }
-  .open_filters{ @include columns(24,$total-cols); @include omega($total-cols); @include prefix(.5) }
-  #results_wrapper{
-    #bar_section:hover { background-color: $bar-hover; }
-
-    #bar_section{
-      @include columns(1,$total-cols);
-      width: 1em;
-      height: 100%;
-      position: fixed;
-      background-color: #eee;
-      cursor: pointer;
-
-      #arrow{
-        position: relative;
-        top: 50%;
-        border:none;
-      }
+  #bar_section {
+    &:hover { background-color: $bar-hover; }
+    width: 1em;
+    height: 100%;
+    position: fixed;
+    background-color: #eee;
+    cursor: pointer;
+    left: 290px;
+    z-index:0;
+    &.leftbar {
+      left: 0;
     }
+    #arrow{
+      position: relative;
+      top: 50%;
+      border:none;
+    }
+  }
 
+  #results_wrapper{
+    position: relative;
+    z-index: -2;
+    &.open_filters {
+      left: 285px;
+    }
+    &.collapsed_filters {
+      left: -5px;
+    }
     #results_container{
-      @include columns(29,$total-cols);
-      @include omega($total-cols);
+      margin-right: 1em;
       position: relative;
       padding-top: 1em;
+      z-index: -2;
 
       #results_section{
-        @include border;
-        overflow-x: scroll;
         background-color : white;
         margin-bottom: 5em;
         width: auto;
@@ -74,11 +83,9 @@
 
   // styles for results table
   table {
-    margin: 0;
+    @include border;
     table-layout: strict;
-    width: 100%;
     empty-cells: show;
-    display: inline-block;
     thead {
       background-color: $table-hd-color;
       

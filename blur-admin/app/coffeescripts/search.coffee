@@ -201,7 +201,6 @@ $(document).ready ->
   # fetch the result of a new search
   $('#search_form')
     .live 'ajax:success', (evt, data, status, xhr) ->
-      console.debug(evt)
       if data
         $('#results_container').html data
       else

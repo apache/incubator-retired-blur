@@ -25,6 +25,31 @@
         text-align: center;
       }
       >ul>li {
+        &.file, &.folder, &.hdfs_instance {
+          a {
+            -moz-box-sizing: border-box;
+            display: block;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 20px;
+          }
+        }
+        &.folder, &.hdfs_instance {
+          background: url("../../images/expand_folder.png") no-repeat scroll right center transparent;
+        }
+        &.file a {
+          background: url("../../images/file16.png") no-repeat scroll left center transparent;
+          padding-left: 20px;
+        }
+        &.hdfs_instance a {
+          background: url("../../images/database16.png") no-repeat scroll left center transparent;
+          padding-left: 20px;
+        }
+        &.folder a {
+          background: url("../../images/folder16.png") no-repeat scroll left center transparent;
+          padding-left: 20px;
+        }
         &:hover {
           border:  1px solid #B8D6FD;
         }

@@ -1,6 +1,8 @@
 $(document).ready ->
   $('#blur_tables').tabs()
-  $('.table_accordion').accordion()
+  $('.table_accordion').accordion
+    collapsible: true
+    autoHeight: false
   $('#blur_tables').bind "tabsshow", (event, ui)->
     $(ui.panel).find('.table_accordion').accordion('refresh')
   

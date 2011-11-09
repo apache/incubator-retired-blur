@@ -115,6 +115,41 @@ $(document).ready ->
           new_rows ?= rows
           new_rows.prependTo($('#queries-table > tbody'))
     }
+  
+  refresh_queries = ->
+    $.ajax Routes.refresh_path(), {
+      type: 'GET'
+      data: $('#blur_table_id, #time_since_refresh, #refresh_period, #filter_form select, #filter_form input').serialize()
+      success: (data) ->
+        rows = $($.trim(data)) # rails renders whitespace if there are no rows
+        # Updates rows if pause button is not pressed***
+        if $('#pause').hasClass 'ui-icon-pause'
+          existing_rows = $("#queries-table > tbody > tr.blur_query")
+          if existing_rows.length isnt 0
+            # if completely replacing the table, check for stale rows
+            if replace_table
+              stale_rows = []
+              for existing_row in existing_rows
+                if rows.filter('#' + $(existing_row).attr('id')).length is 0
+                  stale_rows.push(existing_row)
+              $(stale_rows).remove()
+
+            # if there are existing rows, then check for updates
+            updated_rows = $.map rows, (row) ->
+              if existing_rows.filter('#' + $(row).attr('id')).length isnt 0
+                # update existing row
+                existing_rows.filter('#' + $(row).attr('id')).replaceWith(row)
+                row
+              else
+                null
+            if updated_rows.length isnt 0
+              #$(updated_rows).effect 'highlight', {color: update_color}, 'slow'
+              new_rows = rows.not updated_rows
+
+          # if not already filtered of updated rows, every row is a new row
+          new_rows ?= rows
+          new_rows.prependTo($('#queries-table > tbody'))
+    }
     
   # Ajax request handling for cancel form
   $('form.cancel')
@@ -173,16 +208,25 @@ $(document).ready ->
   # Listener for auto refresh queries
   $('#refresh_period').live 'change', ->
     clearTimeout(timer)
-    if $(this).val() is 'continuous'
-      filter_queries()
-      $('#pause').show()
-    else if $(this).val() isnt 'false'
-      period = $(this).val() * 1000
-      set_timer()
-    if $(this).val() isnt 'continuous'
-      $('#pause').hide()
-      $('#pause').removeClass 'ui-icon-play'
-      $('#pause').addClass 'ui-icon-pause'
+    switch $(this).val()
+      when "false"
+        $('#refresh').show()
+      when "continuous"
+        filter_queries()
+        $('#refresh').hide()
+        $('#pause').show()
+        return
+      when "10"
+        period = $(this).val() * 1000
+        set_timer()
+        $('#refresh').hide()
+      when "60", "600"
+        $('#refresh').show()
+        period = $(this).val() * 1000
+        set_timer()
+    $('#pause').hide()
+    $('#pause').removeClass 'ui-icon-play'
+    $('#pause').addClass 'ui-icon-pause'
 
   # Listener for pause/play button
   $('#pause').live 'click', ->
@@ -195,6 +239,9 @@ $(document).ready ->
       $(this).addClass 'ui-icon-pause'
       if $('#refresh_period').val() is 'continuous' and $('#pause').hasClass 'ui-icon-pause'
         filter_queries()
+        
+  $('#refresh').live 'click', ->
+    refresh_queries()
 
   # Listener for cancel button (launches dialog box)
   $('.cancel_query_button').live 'click', ->

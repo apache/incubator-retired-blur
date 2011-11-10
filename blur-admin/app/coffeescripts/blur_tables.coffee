@@ -65,22 +65,24 @@ $(document).ready ->
     button_1 = if global_delete then 'Delete tables and indicies' else 'Delete table/index'
     button_2 = if global_delete then 'Delete tables only' else 'Delete table only'
     
+    buttons_map = {}
+    buttons_map[button_1] = ->
+      form.find('.delete_index').val 'true'
+      form.submit()
+      $(this).dialog 'close'
+    buttons_map[button_2] = ->
+      form.submit()
+      $(this).dialog 'close'
+    buttons_map["Cancel"] = ->
+      $(this).dialog 'close'
+      
     $("<div class='confirm_delete'>#{confirm_msg}</div>").dialog
       width: 'auto',
       modal: true,
       draggable: false,
       resizable: false,
       title: title,
-      buttons:
-        button_1: ->
-          form.find('.delete_index').val 'true'
-          form.submit()
-          $(this).dialog 'close'
-        button_2: ->
-          form.submit()
-          $(this).dialog 'close'
-        "Cancel": ->
-          $(this).dialog 'close'
+      buttons:buttons_map,
       close: ->
         $(this).remove()
 

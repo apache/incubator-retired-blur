@@ -19,7 +19,7 @@ bundle install
 
 echo "Compiling assets"
 bundle exec rake barista:brew
-bundle exec rake sass:build
+#bundle exec rake sass:build
 
 cd ../build
 mkdir rails
@@ -30,7 +30,7 @@ cp ../blur-admin/Gemfile ../blur-admin/Gemfile.lock ../blur-admin/Rakefile ../bl
 echo "Copying and cleaning app"
 cp -r ../blur-admin/app rails
 rm -r rails/app/coffeescripts
-rm -r rails/app/stylesheets
+#rm -r rails/app/stylesheets
 
 echo "Copying config"
 cp -r ../blur-admin/config rails
@@ -50,6 +50,7 @@ echo "Copying script"
 cp -r ../blur-admin/script rails
 
 mkdir rails/tmp
+touch rails/tmp/placeholder.txt
 
 echo "Copying vendor"
 cp -r ../blur-admin/vendor rails

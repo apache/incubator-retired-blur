@@ -29,7 +29,19 @@ public class QueryCollector {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
 				@Override
 				public Void call(Client client) throws Exception {
-					jdbc.update("delete from blur_queries where created_at+0 < NOW() - (2*60*60);");
+					Calendar now = getUTCCal(new Date().getTime());
+					
+					Calendar twoHoursAgo = Calendar.getInstance();
+					twoHoursAgo.setTimeInMillis(now.getTimeInMillis());
+					twoHoursAgo.add(Calendar.HOUR_OF_DAY, -2);
+					
+					jdbc.update("delete from blur_queries where created_at < ?", twoHoursAgo.getTime());
+					
+					Calendar twoMinutesAgo = Calendar.getInstance();
+					twoMinutesAgo.setTimeInMillis(now.getTimeInMillis());
+					twoMinutesAgo.add(Calendar.MINUTE, -2);
+					
+					jdbc.update("update blur_queries set state=1, updated_at=? where updated_at < ? and state = 0", now.getTime(), twoMinutesAgo);
 					
 					List<String> tables = client.tableList();
 					
@@ -46,18 +58,14 @@ public class QueryCollector {
 								String times = timesMapper.writeValueAsString(blurQueryStatus.getCpuTimes());
 								
 								if (existingRow.isEmpty()) {
-									Calendar cal = Calendar.getInstance();
-									TimeZone z = cal.getTimeZone();
-									cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
+									Calendar cal = getUTCCal(new Date().getTime());
 									
 									SimpleQuery query = blurQueryStatus.getQuery().getSimpleQuery();
 									
 									Date startTime = cal.getTime();
 									long startTimeLong = blurQueryStatus.getQuery().getStartTime();
 									if (startTimeLong > 0) {
-										Calendar startCal = Calendar.getInstance();
-										TimeZone startz = startCal.getTimeZone();
-										startCal.add(Calendar.MILLISECOND, -(startz.getOffset(startTimeLong)));
+										Calendar startCal = getUTCCal(startTimeLong);
 										startTime = startCal.getTime();
 									}
 									
@@ -82,9 +90,7 @@ public class QueryCollector {
 													blurQueryStatus.getQuery().getUserContext()
 												});
 								} else if (queryHasChanged(blurQueryStatus, times, existingRow.get(0))){
-									Calendar cal = Calendar.getInstance();
-									TimeZone z = cal.getTimeZone();
-									cal.add(Calendar.MILLISECOND, -(z.getOffset(cal.getTimeInMillis())));
+									Calendar cal = getUTCCal(new Date().getTime());
 									
 									jdbc.update("update blur_queries set times=?, complete_shards=?, total_shards=?, state=?, updated_at=? where id=?", 
 												new Object[] {times,
@@ -106,6 +112,13 @@ public class QueryCollector {
 					return blurQueryStatus.getState().getValue() == 0 || !(timesJSON.equals(map.get("TIMES")) && 
 							blurQueryStatus.getCompleteShards() == (Integer)map.get("COMPLETE_SHARDS") &&
 							blurQueryStatus.getState().getValue() == (Integer)map.get("STATE"));
+				}
+				
+				private Calendar getUTCCal(long timeToStart) {
+					Calendar cal = Calendar.getInstance();
+					TimeZone z = cal.getTimeZone();
+					cal.add(Calendar.MILLISECOND, -(z.getOffset(timeToStart)));
+					return cal;
 				}
 			});
 		} catch (Exception e) {

@@ -1,6 +1,8 @@
 $(document).ready ->
   $('#blur_tables').tabs()
-  $('.table_accordion').accordion()
+  $('.table_accordion').accordion
+    collapsible: true
+    autoHeight: false
   $('#blur_tables').bind "tabsshow", (event, ui)->
     $(ui.panel).find('.table_accordion').accordion('refresh')
   
@@ -63,22 +65,24 @@ $(document).ready ->
     button_1 = if global_delete then 'Delete tables and indicies' else 'Delete table/index'
     button_2 = if global_delete then 'Delete tables only' else 'Delete table only'
     
+    buttons_map = {}
+    buttons_map[button_1] = ->
+      form.find('.delete_index').val 'true'
+      form.submit()
+      $(this).dialog 'close'
+    buttons_map[button_2] = ->
+      form.submit()
+      $(this).dialog 'close'
+    buttons_map["Cancel"] = ->
+      $(this).dialog 'close'
+      
     $("<div class='confirm_delete'>#{confirm_msg}</div>").dialog
       width: 'auto',
       modal: true,
       draggable: false,
       resizable: false,
       title: title,
-      buttons:
-        button_1: ->
-          form.find('.delete_index').val 'true'
-          form.submit()
-          $(this).dialog 'close'
-        button_2: ->
-          form.submit()
-          $(this).dialog 'close'
-        "Cancel": ->
-          $(this).dialog 'close'
+      buttons:buttons_map,
       close: ->
         $(this).remove()
 
@@ -97,6 +101,27 @@ $(document).ready ->
     
     confirm_msg = if global_delete then 'Are you sure you want to disable all of the tables?' else 'Are you sure you want to disable this table?'
     $("<div class='confirm_enable_disable'>#{confirm_msg}</div>").dialog
+      modal: true,
+      draggable: false,
+      resizable: false,
+      buttons: btns,        
+      close: ->
+        $(this).remove()
+        
+  # Listener for forget button (launches dialog box)
+  $('.forget_blur_table_button').live 'click', ->
+    #array of buttons, so that they are dynamic
+    btns = {}
+    btns[$(this).val()] = -> 
+      form.submit()
+      $(this).dialog 'close'
+    btns["Cancel"] = -> 
+      $(this).dialog 'close'
+
+    form = $(this).closest 'form.delete'
+
+    confirm_msg = 'Are you sure you want to forget this table?'
+    $("<div class='confirm_forget'>#{confirm_msg}</div>").dialog
       modal: true,
       draggable: false,
       resizable: false,

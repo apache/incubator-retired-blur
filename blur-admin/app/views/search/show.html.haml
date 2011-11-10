@@ -3,8 +3,8 @@
   =javascript_include_tag 'jquery.jstree', 'compiled/search'
 
 #search_page_wrapper
-  = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
-    #filter_section
+  #filter_section
+    = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
       .tab#saved
         .header#saved
           %label{:id => 'saved'} Saved Searches
@@ -52,13 +52,14 @@
 
       #search_send.partial_section
         %img{:id => "loading-spinner",
-             :src => "/images/loadinfo_24.gif",
+             :src => image_path("/images/loadinfo_24.gif"),
              :alt => "Loading...",
              :style => "display:none;" }
         = submit_tag "Search", :id => "search_submit"
+  #bar_section
+    #arrow.ui-icon.ui-icon-triangle-1-w
+
   #results_wrapper.open_filters
-    #bar_section
-      #arrow.ui-icon.ui-icon-triangle-1-w
     #results_container
 
 #dialog-confirm{:title => "Delete this saved query?", :style => "display:none"}

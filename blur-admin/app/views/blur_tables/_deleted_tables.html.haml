@@ -4,15 +4,20 @@
   %thead
     %tr
       %th Name/Location
+      %th
   %tbody
     - if tables.empty?
       %tr
-        %td{:colspan => can?(:update, :blur_tables) ? 4 : 3} No deleted tables found.
+        %td{:colspan => 2} No deleted tables found.
     - tables.each do |table|
       %tr.ui-widget-content
         %td
           = table.table_name
           %br
           = table.table_uri
+        %td
+          - if can? :delete, :blur_tables
+            = form_tag forget_blur_table_path(table), :class  => 'delete', :method => :delete, :remote => true do
+              = tag :input, :type => :button, :value => 'Forget Table', :class => :forget_blur_table_button
 :javascript
   $("#cluster_#{cluster} .table_accordion h3:eq(2) .counter").html(#{tables.size})

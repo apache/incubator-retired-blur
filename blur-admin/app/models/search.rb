@@ -37,8 +37,6 @@ class Search < ActiveRecord::Base
     columns
   end
   def selector
-    puts self.column_families
-    puts self.columns
     Blur::Selector.new :columnFamiliesToFetch => self.column_families,
                        :columnsToFetch        => self.columns
   end

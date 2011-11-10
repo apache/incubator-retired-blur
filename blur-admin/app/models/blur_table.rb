@@ -56,7 +56,7 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
-  def destroy(underlying=false, host, port)
+  def blur_destroy(underlying=false, host, port)
     begin
       #TODO: Uncomment line below when ready to delete tables in Blur
       BlurThriftClient.client(host, port).removeTable self.table_name underlying

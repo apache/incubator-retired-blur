@@ -51,7 +51,7 @@ import com.nearinfinity.blur.index.WalIndexWriter.WalOutputFactory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.store.DirectIODirectory;
+import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 

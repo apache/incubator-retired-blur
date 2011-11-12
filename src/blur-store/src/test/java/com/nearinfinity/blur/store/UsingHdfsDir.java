@@ -27,6 +27,8 @@ import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
+
 public class UsingHdfsDir {
 
   public static void main(String[] args) throws IOException {

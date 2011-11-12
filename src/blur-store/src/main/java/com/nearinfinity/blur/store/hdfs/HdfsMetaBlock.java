@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.store.hdfs;
 
 import java.io.DataInput;
 import java.io.DataOutput;

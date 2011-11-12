@@ -50,7 +50,7 @@ import com.nearinfinity.blur.index.WalIndexWriter;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.store.DirectIODirectory;
+import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;

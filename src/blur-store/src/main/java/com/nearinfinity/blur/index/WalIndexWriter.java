@@ -31,7 +31,7 @@ import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockObtainFailedException;
 
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.store.DirectIODirectory;
+import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class WalIndexWriter extends IndexWriter {
 

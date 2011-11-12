@@ -10,7 +10,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
-import com.nearinfinity.blur.store.DirectIODirectory;
+import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class BlockDirectory extends DirectIODirectory {
 

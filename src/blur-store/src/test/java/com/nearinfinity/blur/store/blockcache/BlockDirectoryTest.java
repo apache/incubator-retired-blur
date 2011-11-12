@@ -17,7 +17,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nearinfinity.blur.store.DirectIODirectory;
+import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class BlockDirectoryTest {
 

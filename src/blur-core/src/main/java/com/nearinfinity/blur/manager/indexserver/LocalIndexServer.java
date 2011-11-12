@@ -51,8 +51,8 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.store.DirectIODirectory;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
+import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class LocalIndexServer extends AbstractIndexServer {
 

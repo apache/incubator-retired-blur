@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.nearinfinity.blur.store;
+package com.nearinfinity.blur.store.hdfs;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

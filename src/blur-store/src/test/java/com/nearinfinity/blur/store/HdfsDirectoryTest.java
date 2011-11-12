@@ -8,16 +8,20 @@ import static org.junit.Assert.fail;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
-import org.junit.After;
+import org.apache.lucene.store.RAMDirectory;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 
 public class HdfsDirectoryTest {
   
@@ -40,7 +44,7 @@ public class HdfsDirectoryTest {
     Path hdfsDirPath = new Path(uri.toString());
     directory = new HdfsDirectory(hdfsDirPath);
     seed = new Random().nextLong();
-//    seed = 2118339533000937288L;
+//    seed = 7392202912208392081L;
     random = new Random(seed);
   }
   
@@ -103,11 +107,15 @@ public class HdfsDirectoryTest {
   public void testRandomAccessWrites() throws IOException {
     int i = 0;
     try {
+      Set<String> names = new HashSet<String>();
       for (; i< 10; i++) {
-        Directory fsDir = FSDirectory.open(new File(file,"normal"));
+        Directory fsDir = new RAMDirectory();
         String name = getName();
+        System.out.println("Working on pass [" + i  +"] seed [" + seed + "] contains [" + names.contains(name) + "]");
+        names.add(name);
         createFile(name,fsDir,directory);
         assertInputsEquals(name,fsDir,directory);
+        fsDir.close();
       }
     } catch (Exception e) {
       e.printStackTrace();

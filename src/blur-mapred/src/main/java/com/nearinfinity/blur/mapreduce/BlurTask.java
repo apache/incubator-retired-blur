@@ -45,11 +45,11 @@ import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
-import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurTask implements Writable {
 
@@ -91,7 +91,7 @@ public class BlurTask implements Writable {
   public String getShardName(TaskAttemptContext context) {
     TaskAttemptID taskAttemptID = context.getTaskAttemptID();
     int id = taskAttemptID.getTaskID().getId();
-    return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, id);
+    return BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, id);
   }
 
   public Path getDirectoryPath(TaskAttemptContext context) {

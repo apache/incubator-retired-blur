@@ -38,7 +38,6 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 
-import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.concurrent.ThreadExecutionTimeout;
 import com.nearinfinity.blur.log.Log;
@@ -189,7 +188,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     List<String> shards = new ArrayList<String>();
     TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(table);
     for (int i = 0; i < tableDescriptor.shardCount; i++) {
-      shards.add(BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, i));
+      shards.add(BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
     }
     return shards;
   }

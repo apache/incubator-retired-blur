@@ -32,11 +32,11 @@ import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
 
-import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
+import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class CreateTable {
@@ -116,7 +116,7 @@ public class CreateTable {
       validateShardCount(shardCount, fileSystem, tablePath);
     }
     for (int i = 0; i < shardCount; i++) {
-      String shardName = BlurShardName.getShardName(SHARD_PREFIX, i);
+      String shardName = BlurUtil.getShardName(SHARD_PREFIX, i);
       Path shardPath = new Path(tablePath, shardName);
       createPath(fileSystem, shardPath);
     }

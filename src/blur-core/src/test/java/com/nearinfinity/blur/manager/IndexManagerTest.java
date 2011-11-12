@@ -42,7 +42,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
@@ -62,10 +61,11 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public class IndexManagerTest {
 
-  private static final String SHARD_NAME = BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, 0);
+  private static final String SHARD_NAME = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
   private static final String TABLE = "table";
   private LocalIndexServer server;
   private IndexManager indexManager;

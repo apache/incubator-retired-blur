@@ -80,7 +80,7 @@ public class BlurUtil {
     blurQuery.setSelector(new Selector());
     return blurQuery;
   }
-  
+
   public static void createIfMissing(ZooKeeper zookeeper, String path) throws KeeperException, InterruptedException {
     if (zookeeper.exists(path, false) == null) {
       try {
@@ -365,7 +365,7 @@ public class BlurUtil {
     }
     return verison.toString();
   }
-  
+
   public static void unlockForSafeMode(ZooKeeper zookeeper, String lockPath) throws InterruptedException, KeeperException {
     zookeeper.delete(lockPath, -1);
     LOG.info("Lock released.");
@@ -395,5 +395,17 @@ public class BlurUtil {
         }
       }
     }
+  }
+
+  public static String getShardName(String prefix, int id) {
+    return prefix + buffer(id, 8);
+  }
+
+  private static String buffer(int value, int length) {
+    String str = Integer.toString(value);
+    while (str.length() < length) {
+      str = "0" + str;
+    }
+    return str;
   }
 }

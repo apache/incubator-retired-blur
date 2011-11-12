@@ -4,20 +4,20 @@ import java.util.List;
 
 import org.apache.hadoop.io.BytesWritable;
 
-import com.nearinfinity.blur.BlurShardName;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.utils.BlurUtil;
 
 public class MutationHelper {
 
   public static String getShardName(String table, String rowId, int numberOfShards, BlurPartitioner<BytesWritable, ?> blurPartitioner) {
     BytesWritable key = getKey(rowId);
     int partition = blurPartitioner.getPartition(key, null, numberOfShards);
-    return BlurShardName.getShardName(BlurConstants.SHARD_PREFIX, partition);
+    return BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, partition);
   }
 
   public static void validateMutation(RowMutation mutation) {

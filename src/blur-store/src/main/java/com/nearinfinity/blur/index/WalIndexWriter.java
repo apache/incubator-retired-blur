@@ -261,6 +261,10 @@ public class WalIndexWriter extends IndexWriter {
       java.lang.reflect.Field field = IndexWriter.class.getDeclaredField("writeLock");
       field.setAccessible(true);
       Lock lock = (Lock) field.get(this);
+      if (lock == null) {
+        // roll back must have occurred.
+        return;
+      }
       if (!lock.isLocked()) {
         LOG.error("Lock for directory [" + _directory + "] has been lost, data cannot be commited.");
         throw new RuntimeException("Lock for directory [" + _directory + "] has been lost, data cannot be commited.");

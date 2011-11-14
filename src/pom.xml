@@ -7,10 +7,6 @@
 	<version>0.1-SNAPSHOT</version>
 	<name>Blur</name>
 	
-	<properties>
-		<blur_version>0.1.0</blur_version>
-	</properties>
-	
 	<modules>
 		<module>blur-core</module>
 		<module>blur-demo</module>

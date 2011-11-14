@@ -128,11 +128,6 @@ public class IndexManagerTest {
     indexManager.mutate(mutation4);
   }
 
-  @After
-  public void tearDown() throws InterruptedException {
-    indexManager.close();
-  }
-
   @Test
   public void testFetchRowByLocationId() throws Exception {
     Selector selector = new Selector().setLocationId(SHARD_NAME + "/0");

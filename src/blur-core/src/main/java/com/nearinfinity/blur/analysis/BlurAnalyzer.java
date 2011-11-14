@@ -230,11 +230,11 @@ public class BlurAnalyzer extends Analyzer {
     return _wrapper.getPositionIncrementGap(fieldName);
   }
 
-  public TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
+  public final TokenStream reusableTokenStream(String fieldName, Reader reader) throws IOException {
     return _wrapper.reusableTokenStream(fieldName, reader);
   }
 
-  public TokenStream tokenStream(String fieldName, Reader reader) {
+  public final TokenStream tokenStream(String fieldName, Reader reader) {
     return _wrapper.tokenStream(fieldName, reader);
   }
 

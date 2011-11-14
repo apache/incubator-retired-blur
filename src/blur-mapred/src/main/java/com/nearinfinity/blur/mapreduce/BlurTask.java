@@ -111,7 +111,10 @@ public class BlurTask implements Writable {
       int shardCount = 0;
       for (FileStatus fileStatus : files) {
         if (fileStatus.isDir()) {
-          shardCount++;
+          String name = fileStatus.getPath().getName();
+          if (name.startsWith(BlurConstants.SHARD_PREFIX)) {
+            shardCount++;
+          }
         }
       }
       

@@ -24,7 +24,7 @@ public class BlurMetrics implements Updater {
 
   private MetricsRecord _metricsRecord;
   private long _previous = System.nanoTime();
-  
+
   public static void main(String[] args) throws InterruptedException {
     Configuration conf = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(conf);
@@ -47,16 +47,16 @@ public class BlurMetrics implements Updater {
     synchronized (this) {
       long now = System.nanoTime();
       double seconds = (now - _previous) / 1000000000.0;
-      _metricsRecord.setMetric("blockcache.hit", getPerSecond(blockCacheHit.getAndSet(0),seconds));
-      _metricsRecord.setMetric("blockcache.miss", getPerSecond(blockCacheMiss.getAndSet(0),seconds));
-      _metricsRecord.setMetric("blockcache.eviction", getPerSecond(blockCacheEviction.getAndSet(0),seconds));
+      _metricsRecord.setMetric("blockcache.hit", getPerSecond(blockCacheHit.getAndSet(0), seconds));
+      _metricsRecord.setMetric("blockcache.miss", getPerSecond(blockCacheMiss.getAndSet(0), seconds));
+      _metricsRecord.setMetric("blockcache.eviction", getPerSecond(blockCacheEviction.getAndSet(0), seconds));
       _metricsRecord.setMetric("blockcache.size", blockCacheSize.get());
-      _metricsRecord.setMetric("row.reads", getPerSecond(rowReads.getAndSet(0),seconds));
-      _metricsRecord.setMetric("row.writes", getPerSecond(rowWrites.getAndSet(0),seconds));
-      _metricsRecord.setMetric("record.reads", getPerSecond(recordReads.getAndSet(0),seconds));
-      _metricsRecord.setMetric("record.writes", getPerSecond(recordWrites.getAndSet(0),seconds));
-      _metricsRecord.setMetric("query.external", getPerSecond(queriesExternal.getAndSet(0),seconds));
-      _metricsRecord.setMetric("query.internal", getPerSecond(queriesInternal.getAndSet(0),seconds));
+      _metricsRecord.setMetric("row.reads", getPerSecond(rowReads.getAndSet(0), seconds));
+      _metricsRecord.setMetric("row.writes", getPerSecond(rowWrites.getAndSet(0), seconds));
+      _metricsRecord.setMetric("record.reads", getPerSecond(recordReads.getAndSet(0), seconds));
+      _metricsRecord.setMetric("record.writes", getPerSecond(recordWrites.getAndSet(0), seconds));
+      _metricsRecord.setMetric("query.external", getPerSecond(queriesExternal.getAndSet(0), seconds));
+      _metricsRecord.setMetric("query.internal", getPerSecond(queriesInternal.getAndSet(0), seconds));
       _previous = now;
     }
     _metricsRecord.update();

@@ -11,21 +11,22 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
 public class ThreadExecutionTimeout {
-  
+
   private static final Log LOG = LogFactory.getLog(ThreadExecutionTimeout.class);
   private Timer _timer;
   private long _delay = TimeUnit.SECONDS.toMillis(1);
   private ConcurrentMap<Thread, ThreadTimeout> _threads = new ConcurrentHashMap<Thread, ThreadTimeout>();
-  
+
   private static class ThreadTimeout implements Comparable<ThreadTimeout> {
     public ThreadTimeout(long timeToInterrupt, Thread thread) {
       _thread = thread;
       _timeToInterrupt = timeToInterrupt;
     }
+
     Thread _thread;
     long _timeToInterrupt;
     AtomicBoolean finished = new AtomicBoolean(false);
-    
+
     @Override
     public int compareTo(ThreadTimeout o) {
       if (_timeToInterrupt < o._timeToInterrupt) {
@@ -65,7 +66,7 @@ public class ThreadExecutionTimeout {
         t.finished();
       }
     }).start();
-    
+
     Thread.sleep(10000);
   }
 
@@ -78,7 +79,7 @@ public class ThreadExecutionTimeout {
       }
     }, _delay, _delay);
   }
-  
+
   public void close() {
     _timer.cancel();
     _timer.purge();
@@ -104,14 +105,14 @@ public class ThreadExecutionTimeout {
 
   public void timeout(long timeout) {
     Thread thread = Thread.currentThread();
-    timeout(timeout,thread);
+    timeout(timeout, thread);
   }
-  
+
   public void finished(Thread thread) {
     ThreadTimeout threadTimeout = _threads.get(thread);
     threadTimeout.finished();
   }
-  
+
   public void finished() {
     finished(Thread.currentThread());
   }
@@ -124,8 +125,8 @@ public class ThreadExecutionTimeout {
     if (timeToInterrupt < 0) {
       timeToInterrupt = Long.MAX_VALUE;
     }
-    ThreadTimeout threadTimeout = new ThreadTimeout(timeToInterrupt,thread);
-    _threads.put(thread,threadTimeout);
+    ThreadTimeout threadTimeout = new ThreadTimeout(timeToInterrupt, thread);
+    _threads.put(thread, threadTimeout);
   }
 
   public void setDelay(long delay) {

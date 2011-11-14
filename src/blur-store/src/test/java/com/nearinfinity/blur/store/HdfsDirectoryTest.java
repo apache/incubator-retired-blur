@@ -14,7 +14,6 @@ import java.util.Set;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.RAMDirectory;
@@ -83,7 +82,7 @@ public class HdfsDirectoryTest {
   
   @Test
   public void testEOF() throws IOException {
-    Directory fsDir = FSDirectory.open(new File(file,"normal"));
+    Directory fsDir = new RAMDirectory();
     String name = "test.eof";
     createFile(name, fsDir, directory);
     long fsLength = fsDir.fileLength(name);

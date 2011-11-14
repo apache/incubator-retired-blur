@@ -18,12 +18,12 @@ package com.nearinfinity.blur.log;
 
 public class LogFactory {
 
-    public static Log getLog(Class<?> c) {
-        return new LogImpl(org.apache.commons.logging.LogFactory.getLog(c));
-    }
+  public static Log getLog(Class<?> c) {
+    return new LogImpl(org.apache.commons.logging.LogFactory.getLog(c));
+  }
 
-    public static Log getLog(String name) {
-        return new LogImpl(org.apache.commons.logging.LogFactory.getLog(name));
-    }
+  public static Log getLog(String name) {
+    return new LogImpl(org.apache.commons.logging.LogFactory.getLog(name));
+  }
 
 }

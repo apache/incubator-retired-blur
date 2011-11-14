@@ -56,6 +56,8 @@ public class BlurIndexWriterTest {
     writer.setCommiter(commiter);
     writer.setSimilarity(new FairSimilarity());
     writer.setBlurMetrics(new BlurMetrics(new Configuration()));
+    writer.setTable("testing-table");
+    writer.setShard("testing-shard");
     writer.init();
   }
 

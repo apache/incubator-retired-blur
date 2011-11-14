@@ -19,7 +19,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
 public class ThreadWatcher {
-  
+
   private static final Log LOG = LogFactory.getLog(ThreadWatcher.class);
   private static ThreadWatcher _instance;
 
@@ -27,29 +27,31 @@ public class ThreadWatcher {
     public Watch(Thread thread) {
       _thread = thread;
     }
+
     Thread _thread;
     final long _start = System.currentTimeMillis();
   }
-  
-  private ConcurrentMap<Thread,Watch> _threads = new ConcurrentHashMap<Thread, Watch>();
+
+  private ConcurrentMap<Thread, Watch> _threads = new ConcurrentHashMap<Thread, Watch>();
   private Timer _timer;
-  
-  private ThreadWatcher() {}
-  
+
+  private ThreadWatcher() {
+  }
+
   public void watch(Thread thread) {
     _threads.put(thread, new Watch(thread));
   }
-  
+
   public void release(Thread thread) {
     _threads.remove(thread);
   }
 
   public ExecutorService watch(ExecutorService executorService) {
-    return new ThreadWatcherExecutorService(executorService,this);
+    return new ThreadWatcherExecutorService(executorService, this);
   }
 
   public void init() {
-    _timer = new Timer("Thread-Watcher",true);
+    _timer = new Timer("Thread-Watcher", true);
     _timer.schedule(new TimerTask() {
       @Override
       public void run() {
@@ -57,17 +59,17 @@ public class ThreadWatcher {
       }
     }, TimeUnit.SECONDS.toMillis(5), TimeUnit.SECONDS.toMillis(5));
   }
-  
+
   private void processRunningThreads() {
-    for (Entry<Thread,Watch> entry : _threads.entrySet()) {
+    for (Entry<Thread, Watch> entry : _threads.entrySet()) {
       processWatch(entry.getValue());
     }
   }
 
   private void processWatch(Watch watch) {
-    if (hasBeenExecutingLongerThan(TimeUnit.SECONDS.toMillis(5),watch)) {
+    if (hasBeenExecutingLongerThan(TimeUnit.SECONDS.toMillis(5), watch)) {
       long now = System.currentTimeMillis();
-      LOG.info("Thread [{0}] has been executing for [{1} ms]",watch._thread,now - watch._start);
+      LOG.info("Thread [{0}] has been executing for [{1} ms]", watch._thread, now - watch._start);
     }
   }
 
@@ -83,12 +85,12 @@ public class ThreadWatcher {
     _timer.purge();
     _threads.clear();
   }
-  
+
   public static class ThreadWatcherExecutorService implements ExecutorService {
-    
+
     private ExecutorService _executorService;
     private ThreadWatcher _threadWatcher;
-    
+
     public ThreadWatcherExecutorService(ExecutorService executorService, ThreadWatcher threadWatcher) {
       _executorService = executorService;
       _threadWatcher = threadWatcher;
@@ -106,9 +108,9 @@ public class ThreadWatcher {
             _threadWatcher.release(thread);
           }
         }
-      }; 
+      };
     }
-    
+
     private <T> Collection<? extends Callable<T>> wrapCallableCollection(Collection<? extends Callable<T>> tasks) {
       List<Callable<T>> result = new ArrayList<Callable<T>>(tasks.size());
       for (Callable<T> callable : tasks) {
@@ -116,7 +118,7 @@ public class ThreadWatcher {
       }
       return result;
     }
-    
+
     private <T> Callable<T> wrapCallable(final Callable<T> task) {
       return new Callable<T>() {
         @Override

@@ -11,6 +11,10 @@
 	<packaging>jar</packaging>
 	<name>Blur Core</name>
 
+	<properties>
+		<enableAssertions>false</enableAssertions>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
@@ -66,7 +70,8 @@
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
 							<excludeTransitive>true</excludeTransitive>
-							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api</excludeArtifactIds>
+							<excludeArtifactIds>junit,commons-cli,commons-logging,hadoop-core,slf4j-api
+							</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>

@@ -7,10 +7,12 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.mortbay.log.Log;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 
 public class ThreadExecutionTimeout {
   
+  private static final Log LOG = LogFactory.getLog(ThreadExecutionTimeout.class);
   private Timer _timer;
   private long _delay = TimeUnit.SECONDS.toMillis(1);
   private ConcurrentMap<Thread, ThreadTimeout> _threads = new ConcurrentHashMap<Thread, ThreadTimeout>();
@@ -93,7 +95,7 @@ public class ThreadExecutionTimeout {
   private void interrupt(ThreadTimeout threadTimeout) {
     Thread thread = threadTimeout._thread;
     if (thread.isAlive() && !threadTimeout.finished.get()) {
-      Log.info("Interrupting thread [" + thread.getName() + "] had timeout of [" + threadTimeout._timeToInterrupt + "]");
+      LOG.info("Interrupting thread [" + thread.getName() + "] had timeout of [" + threadTimeout._timeToInterrupt + "]");
       thread.interrupt();
     } else {
       _threads.remove(threadTimeout._thread);
@@ -115,7 +117,14 @@ public class ThreadExecutionTimeout {
   }
 
   public void timeout(long timeout, Thread thread) {
-    ThreadTimeout threadTimeout = new ThreadTimeout(timeout + System.currentTimeMillis(),thread);
+    if (timeout < 0) {
+      throw new RuntimeException("Timeout cannot be less than zero.");
+    }
+    long timeToInterrupt = timeout + System.currentTimeMillis();
+    if (timeToInterrupt < 0) {
+      timeToInterrupt = Long.MAX_VALUE;
+    }
+    ThreadTimeout threadTimeout = new ThreadTimeout(timeToInterrupt,thread);
     _threads.put(thread,threadTimeout);
   }
 

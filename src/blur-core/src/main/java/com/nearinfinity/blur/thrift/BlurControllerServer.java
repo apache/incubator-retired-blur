@@ -96,6 +96,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private AtomicBoolean _running = new AtomicBoolean();
   private List<Thread> _shardServerWatcherDaemons = new ArrayList<Thread>();
   private ThreadExecutionTimeout _threadExecutionTimeout;
+  
   private int _maxFetchRetries = 1;
   private int _maxMutateRetries = 1;
   private int _maxDefaultRetries = 1;
@@ -222,43 +223,62 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
     checkTable(table);
     _queryChecker.checkQuery(blurQuery);
-    try {
-      final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
-
-      BlurQuery original = new BlurQuery(blurQuery);
-      if (blurQuery.useCacheIfPresent) {
-        LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
-        BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
-        QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
-        if (_queryCache.isValid(queryCacheEntry)) {
-          LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
-          return queryCacheEntry.getBlurResults(blurQuery);
-        } else {
-          _queryCache.remove(noralizedBlurQuery);
-        }
-      }
-
-      BlurUtil.setStartTime(original);
-
-      Selector selector = blurQuery.getSelector();
-      blurQuery.setSelector(null);
-
-      BlurResultIterable hitsIterable = scatterGather(getCluster(table), new BlurCommand<BlurResultIterable>() {
-        @Override
-        public BlurResultIterable call(Client client) throws BlurException, TException {
-          _threadExecutionTimeout.timeout(blurQuery.maxQueryTime);
-          try {
-            return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
-          } finally {
-            _threadExecutionTimeout.finished();
+    int shardCount = _clusterStatus.getShardCount(table);
+    
+    OUTER:
+    for (int retries = 0; retries < _maxDefaultRetries; retries++) {
+      try {
+        final AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
+  
+        BlurQuery original = new BlurQuery(blurQuery);
+        if (blurQuery.useCacheIfPresent) {
+          LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
+          BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
+          QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
+          if (_queryCache.isValid(queryCacheEntry)) {
+            LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
+            return queryCacheEntry.getBlurResults(blurQuery);
+          } else {
+            _queryCache.remove(noralizedBlurQuery);
           }
         }
-      }, new MergerBlurResultIterable(blurQuery));
-      return _queryCache.cache(original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table));
-    } catch (Exception e) {
-      LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
-      throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
+  
+        BlurUtil.setStartTime(original);
+  
+        Selector selector = blurQuery.getSelector();
+        blurQuery.setSelector(null);
+  
+        BlurResultIterable hitsIterable = scatterGather(getCluster(table), new BlurCommand<BlurResultIterable>() {
+          @Override
+          public BlurResultIterable call(Client client) throws BlurException, TException {
+            _threadExecutionTimeout.timeout(blurQuery.maxQueryTime);
+            try {
+              return new BlurResultIterableClient(client, table, blurQuery, facetCounts, _remoteFetchCount);
+            } finally {
+              _threadExecutionTimeout.finished();
+            }
+          }
+        }, new MergerBlurResultIterable(blurQuery));
+        BlurResults results = BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table);
+        if (!validResults(results,shardCount)) {
+          BlurClientManager.sleep(_defaultDelay,_maxDefaultDelay,retries,_maxDefaultRetries);
+          continue OUTER;
+        }
+        return _queryCache.cache(original, results);
+      } catch (Exception e) {
+        LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
+        throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
+      }
     }
+    throw new BlurException("Query could not be completed.",null);
+  }
+
+  private boolean validResults(BlurResults results, int shardCount) {
+    int shardInfoSize = results.getShardInfoSize();
+    if (shardInfoSize == shardCount) {
+      return true;
+    }
+    return false;
   }
 
   @Override

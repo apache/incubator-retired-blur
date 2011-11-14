@@ -51,4 +51,6 @@ public abstract class ClusterStatus {
 
   public abstract void clearLocks(String table);
 
+  public abstract int getShardCount(String table);
+
 }

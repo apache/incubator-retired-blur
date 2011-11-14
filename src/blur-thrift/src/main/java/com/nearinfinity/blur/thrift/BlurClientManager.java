@@ -99,7 +99,7 @@ public class BlurClientManager {
     return false;
   }
 
-  private static void sleep(long backOffTime, long maxBackOffTime, int retry, int maxRetries) {
+  public static void sleep(long backOffTime, long maxBackOffTime, int retry, int maxRetries) {
     long extra = (maxBackOffTime - backOffTime) / maxRetries;
     long sleep = backOffTime + (extra * retry);
     LOG.info("Backing off call for [{0} ms]",sleep);

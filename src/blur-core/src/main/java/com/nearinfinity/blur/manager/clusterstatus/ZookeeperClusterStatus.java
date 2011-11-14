@@ -158,7 +158,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       } else {
         tableDescriptor.isEnabled = true;
       }
-      tableDescriptor.shardCount = Integer.parseInt(new String(getData(tablePath + "/shard-count")));
+      tableDescriptor.shardCount = getShardCountFromTablePath(tablePath);
       tableDescriptor.tableUri = new String(getData(tablePath + "/uri"));
       tableDescriptor.compressionClass = new String(getData(tablePath + "/compression-codec"));
       tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(tablePath + "/compression-blocksize")));
@@ -170,6 +170,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
     tableDescriptor.cluster = cluster;
     return tableDescriptor;
+  }
+
+  private int getShardCountFromTablePath(String tablePath) throws NumberFormatException, KeeperException, InterruptedException {
+    return Integer.parseInt(new String(getData(tablePath + "/shard-count")));
   }
 
   private AnalyzerDefinition getAnalyzerDefinition(byte[] data) {
@@ -266,6 +270,24 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return true;
       }
       return false;
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public int getShardCount(String table) {
+    String cluster = getCluster(table);
+    if (cluster == null) {
+      throw new RuntimeException("Cluster not found for table [" + table + "]");
+    }
+    String tablePath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/tables/" + table;
+    try {
+      return getShardCountFromTablePath(tablePath);
+    } catch (NumberFormatException e) {
+      throw new RuntimeException(e);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

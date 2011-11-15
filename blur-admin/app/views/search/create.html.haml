@@ -28,7 +28,7 @@
                   %td{:title => "rowId"}= result[:id]
                 - if i == 1 and j == 0
                   %td{:rowspan => max_record_count - 1}
-                - record = result[column_family][i]
+                - record = result[column_family][i] if result[column_family]
 
                 - if record # then insert the record
                   - columns.each do |column|

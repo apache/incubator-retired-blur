@@ -1,6 +1,7 @@
 #search_page_wrapper {
   @include full;
   @mixin search-margin { margin: .25em 0em .25em; }
+  display: inline-block;
 
   // styles for filters
   #filter_section {

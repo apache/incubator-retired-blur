@@ -1,5 +1,11 @@
 - nil_message = "Not Available"
 
+- if !tables.empty? && can?(:update, :blur_tables)
+  %div.global_actions
+    = form_tag forget_all_blur_tables_path, :method => :delete, :remote => true, :class => 'delete' do
+      = hidden_field_tag 'cluster_id', cluster, :id => 'global_disable_cluster_id', :class => 'cluster_id'
+      = tag :input, :type => :button, :value => 'Forget All Tables', :class => :forget_all_tables_button
+
 %table.ui-widget-content.ui-corner-all
   %thead
     %tr

@@ -6,6 +6,10 @@ class BlurTable < ActiveRecord::Base
   has_many :searches
   has_one :zookeeper, :through => :cluster
 
+  scope :deleted, where("status=?", 0)
+  scope :disabled, where("status=?", 2)
+  scope :active, where("status=?", 4)
+
   # Returns a map of host => [shards] of all hosts/shards associated with the table
   def hosts
     JSON.parse read_attribute(:server)
@@ -58,7 +62,6 @@ class BlurTable < ActiveRecord::Base
 
   def blur_destroy(underlying=false, host, port)
     begin
-      #TODO: Uncomment line below when ready to delete tables in Blur
       BlurThriftClient.client(host, port).removeTable self.table_name underlying
       return true;
     rescue

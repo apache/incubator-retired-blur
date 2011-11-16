@@ -12,4 +12,7 @@
   .disabled_tables form {
     float: right;
   }
+  td input.disable_table_button, td input.forget_blur_table_button, td input.enable_table_button {
+    float:right;
+  }
 }

@@ -158,20 +158,20 @@ $(document).ready ->
 
 
   populate_form = (data) ->
+    search = data.search
     $('.column_family_filter').jstree('uncheck_all')
-    $('#result_count').val(data.saved.search.fetch)
-    $('#offset').val(data.saved.search.offset)
-    $('#query_string').val(data.saved.search.query)
-    $('#save_name').val(data.saved.search.name)
-    if data.saved.search.super_query
+    $('#result_count').val(search.fetch)
+    $('#offset').val(search.offset)
+    $('#query_string').val(search.query)
+    $('#save_name').val(search.name)
+    if search.super_query
       $('#super_query').attr('checked', 'checked')
     else
       $('#super_query').removeAttr('checked')
-    arr = data.saved.search.columns
     #uncheck everything so we only check what we saved
     $('.column_family_filter').jstree('uncheck_all')
     #check everything in the tree
-    for column in  data.saved.search.columns
+    for column in search.column_object
       $('.column_family_filter').jstree 'check_node', "##{column}"
     $('#search_submit').removeAttr('disabled')
     $('#save_button').removeAttr('disabled')

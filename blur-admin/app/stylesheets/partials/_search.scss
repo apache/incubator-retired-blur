@@ -16,7 +16,7 @@
     background-color: #FFF;
     overflow-y: auto;
     height: 100%;
-    z-index: 0;
+    z-index: 1;
     
     .partial-section, .body { padding: 0.5em; }
     .filter { padding: 0.5em 0 0; }
@@ -48,7 +48,7 @@
     background-color: #eee;
     cursor: pointer;
     left: 290px;
-    z-index:0;
+    z-index:1;
     &.leftbar {
       left: 0;
     }
@@ -61,7 +61,7 @@
 
   #results_wrapper{
     position: relative;
-    z-index: -2;
+    z-index: 0;
     &.open_filters {
       left: 285px;
     }

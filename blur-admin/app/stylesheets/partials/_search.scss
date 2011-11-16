@@ -1,6 +1,7 @@
 #search_page_wrapper {
   @include full;
   @mixin search-margin { margin: .25em 0em .25em; }
+  display: inline-block;
 
   // styles for filters
   #filter_section {
@@ -15,7 +16,7 @@
     background-color: #FFF;
     overflow-y: auto;
     height: 100%;
-    z-index: 0;
+    z-index: 1;
     
     .partial-section, .body { padding: 0.5em; }
     .filter { padding: 0.5em 0 0; }
@@ -47,7 +48,7 @@
     background-color: #eee;
     cursor: pointer;
     left: 290px;
-    z-index:0;
+    z-index:1;
     &.leftbar {
       left: 0;
     }
@@ -60,7 +61,7 @@
 
   #results_wrapper{
     position: relative;
-    z-index: -2;
+    z-index: 0;
     &.open_filters {
       left: 285px;
     }
@@ -101,17 +102,11 @@
         }
     }
     tbody {
-      tr.odd {
-        td {
-          background-color: #fff;
-          &.odd { background-color: mix(#fff, $table-hd-color, 70%); }
-        }
+      td.even {
+        background-color: $table-hd-color
       }
-      tr.even {
-        td {
-          background-color: #eee;
-          &.odd { background-color: mix(#eee, $table-hd-color, 70%); }
-        }
+      tr.first{
+        @include border-top;
       }
     }
   }

@@ -114,7 +114,7 @@ describe SearchController do
       #column           = mock 'column'           # Blur::Column
       #
 
-      schema = search.columns
+      schema = search.column_object
       column_families = []
       schema.each_key do |column_family_name|
         columns = []

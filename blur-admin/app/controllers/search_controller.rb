@@ -32,12 +32,12 @@ class SearchController < ApplicationController
     #else build a new search to be used for this specific search
     else
       params[:column_data].delete( "neighborhood")
-      search = Search.new(:super_query  =>!params[:super_query].nil?,
-                          :columns      => params[:column_data],
-                          :fetch        => params[:result_count].to_i,
-                          :offset       => params[:offset].to_i,
-                          :user_id      => current_user.id,
-                          :query        => params[:query_string])
+      search = Search.new(:super_query    =>!params[:super_query].nil?,
+                          :fetch          => params[:result_count].to_i,
+                          :offset         => params[:offset].to_i,
+                          :user_id        => current_user.id,
+                          :query          => params[:query_string])
+      search.column_object = params[:column_data]
     end
 
     #use the model to begin building the blurquery
@@ -61,7 +61,6 @@ class SearchController < ApplicationController
       blur_result = blur_result_container.fetchResult.rowResult.row
       # continue to next result if there is no returned data
       next if blur_result.records.empty?
-      # next if blur_result.columnFamilies.empty?
 
       max_record_count = blur_result.records.
         collect {|record| record.family}.
@@ -95,10 +94,9 @@ class SearchController < ApplicationController
   def load
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
-    @search = Search.find params['search_id']
-    search = JSON.parse @search.to_json
-    search["search"]["columns"] = @search.raw_columns
-    render :json => {:saved => search, :success => true }
+    search = Search.find params['search_id']
+    puts search.column_object.inspect
+    render :json => search.to_json(:methods => :column_object)
   end
 
   #Delete action used for deleting a saved search from a user's saved searches
@@ -121,13 +119,14 @@ class SearchController < ApplicationController
   end
 
   def save
-    Search.create(:name         => params[:save_name],
+    search = Search.new(:name         => params[:save_name],
                   :super_query  =>!params[:super_query].nil?,
-                  :columns      => params[:column_data],
                   :fetch        => params[:result_count].to_i,
                   :offset       => params[:offset].to_i,
                   :user_id      => current_user.id,
                   :query        => params[:query_string])
+    search.column_object = params[:column_data]
+    search.save
     @searches = current_user.searches.reverse
     @blur_table = BlurTable.find params[:blur_table]
 
@@ -138,13 +137,14 @@ class SearchController < ApplicationController
 
   def update
     search = Search.find params[:search_id]
-    search.update_attributes(:name        => params[:save_name],
-                             :super_query =>!params[:super_query].nil?,
-                             :columns     => params[:column_data],
-                             :fetch       => params[:result_count].to_i,
-                             :offset      => params[:offset].to_i,
-                             :user_id     => current_user.id,
-                             :query       => params[:query_string])
+    search.attributes(:name               => params[:save_name],
+                        :super_query =>!params[:super_query].nil?,
+                        :fetch       => params[:result_count].to_i,
+                        :offset      => params[:offset].to_i,
+                        :user_id     => current_user.id,
+                        :query       => params[:query_string])
+    search.column_object = params[:column_data]
+    search.save
 
     render :nothing => true
   end

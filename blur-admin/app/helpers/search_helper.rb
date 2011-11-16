@@ -7,7 +7,7 @@ module SearchHelper
     search_columns = {}
 
     #get all of the columns from the search and convert them to ruby objects
-    search.raw_columns.each do |value|
+    search.column_object.each do |value|
       parts = value.split('_-sep-_')
       if parts[0] == 'column'
         search_columns[parts[1]] ||= []

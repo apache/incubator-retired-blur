@@ -114,7 +114,7 @@ describe SearchController do
       #column           = mock 'column'           # Blur::Column
       #
 
-      schema = search.column_object
+      schema = search.columns_hash
       column_families = []
       schema.each_key do |column_family_name|
         columns = []
@@ -139,7 +139,7 @@ describe SearchController do
                      :result_count => @search.fetch,
                      :offset       => @search.offset,
                      :query_string => @search.query,
-                     :column_data  => ["neighborhood", @search.raw_columns].flatten
+                     :column_data  => ["neighborhood", @search.column_object].flatten
 
         response.should render_template "create"
       end
@@ -180,10 +180,8 @@ describe SearchController do
     it "renders the proper json for a search" do
       Search.stub(:find).and_return(@search)
       get :load, :search_id => 1
-      @return = {:saved => @search, :success => true}
-      search = JSON.parse @search.to_json
-      search["search"]["columns"] = @search.raw_columns
-      response.body.should == {:saved => search, :success => true}.to_json
+      @return = @search.to_json(:methods => :column_object)
+      response.body.should == @return
     end
   end
 
@@ -233,8 +231,9 @@ describe SearchController do
       @user.stub(:searches).and_return [@search]
       @user.stub(:id).and_return [1]      
       Search.stub(:find).and_return(@search)
-      Search.stub(:create).and_return @search
-      Search.should_receive(:create)
+      Search.stub(:new).and_return @search
+      @search.stub(:save)
+      Search.should_receive(:new)
       get :save, :column_data => ["family_table1", "column_table1_deptNo", "column_table1_moreThanOneDepartment", "column_table1_name"]
       response.should render_template 'saved'
     end

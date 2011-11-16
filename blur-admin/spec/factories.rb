@@ -80,7 +80,7 @@ end
 #create a valid search
 Factory.define :search do |t|
   t.super_query{ rand(1) == 0 } # 50% chance
-  t.columns { ["family_-sep-_ColumnFamily1", 
+  t.column_object { ["family_-sep-_ColumnFamily1", 
                "column_-sep-_ColumnFamily2_-sep-_Column2A",
                "column_-sep-_ColumnFamily2_-sep-_Column2B",
                "column_-sep-_ColumnFamily3_-sep-_Column3C"] }

@@ -95,7 +95,6 @@ class SearchController < ApplicationController
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
     search = Search.find params['search_id']
-    puts search.column_object.inspect
     render :json => search.to_json(:methods => :column_object)
   end
 

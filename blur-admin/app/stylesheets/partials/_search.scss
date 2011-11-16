@@ -102,17 +102,11 @@
         }
     }
     tbody {
-      tr.odd {
-        td {
-          background-color: #fff;
-          &.odd { background-color: mix(#fff, $table-hd-color, 70%); }
-        }
+      td.even {
+        background-color: $table-hd-color
       }
-      tr.even {
-        td {
-          background-color: #eee;
-          &.odd { background-color: mix(#eee, $table-hd-color, 70%); }
-        }
+      tr.first{
+        @include border-top;
       }
     }
   }

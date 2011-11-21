@@ -61,7 +61,7 @@ class Ability
 
       if user.has_role? :admin
         can [:index, :edit, :destroy, :create, :new], :users
-        can :update, :users, User.valid_roles
+        can :update, :users, [:email,User.valid_roles]
       end
 
       if user.has_role? :searcher

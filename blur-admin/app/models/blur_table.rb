@@ -62,7 +62,7 @@ class BlurTable < ActiveRecord::Base
 
   def blur_destroy(underlying=false, host, port)
     begin
-      BlurThriftClient.client(host, port).removeTable self.table_name underlying
+      BlurThriftClient.client(host, port).removeTable self.table_name, underlying
       return true;
     rescue
       return false;

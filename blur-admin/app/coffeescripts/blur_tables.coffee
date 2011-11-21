@@ -33,6 +33,7 @@ $(document).ready ->
   $('a.hosts, a.schema')
     .live 'ajax:success', (evt, data, status, xhr) ->
       title = $(this).attr('class')
+      $(data).hide()
       $(data).dialog
         modal: true
         draggable: false
@@ -42,9 +43,10 @@ $(document).ready ->
         close: (event, ui) ->
           $(this).remove()
         open: ->
-          $(data).hide()
+          $(this).children().hide()
           setup_filter_tree $(this)
-          $(data).show()
+          $(this).children.show()
+          
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: improve error handling
 

@@ -204,9 +204,12 @@ describe Ability do
 
     it "can not update other users' username, email, or password" do
       @ability.should_not be_able_to :update, @other_user, :username
-      @ability.should_not be_able_to :update, @other_user, :email
       @ability.should_not be_able_to :update, @other_user, :password
       @ability.should_not be_able_to :update, @other_user, :password_confirmation
+    end
+    
+    it "can update other users' email" do
+      @ability.should be_able_to :update, @other_user, :email
     end
 
     it "can create users with roles" do

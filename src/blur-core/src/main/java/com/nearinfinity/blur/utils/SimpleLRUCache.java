@@ -48,8 +48,9 @@ public class SimpleLRUCache<K, V> extends LinkedHashMap<K, V> {
     boolean b = size() > _cachedElements;
     if (b) {
       LOG.debug("Cache [{0}], evicting eldest element [{1}]", _name, eldest);
+      return true;
     }
-    return b;
+    return false;
   }
 
   public boolean touch(K key) {

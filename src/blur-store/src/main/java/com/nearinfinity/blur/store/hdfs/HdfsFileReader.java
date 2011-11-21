@@ -11,27 +11,29 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.store.DataInput;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
+
 public class HdfsFileReader extends DataInput {
+  
+  private static final Log LOG = LogFactory.getLog(HdfsFileReader.class);
 
   private static final int VERSION = -1;
 
   private final long _length;
   private final long _hdfsLength;
   private final List<HdfsMetaBlock> _metaBlocks;
-  private final FileSystem _fileSystem;
-  private final Path _path;
   private FSDataInputStream _inputStream;
   private long _logicalPos;
   private long _boundary;
-  
+  private long _realPos;
+  private boolean isClone;
 
   public HdfsFileReader(FileSystem fileSystem, Path path, int bufferSize) throws IOException {
     if (!fileSystem.exists(path)) {
       throw new FileNotFoundException(path.toString());
     }
     FileStatus fileStatus = fileSystem.getFileStatus(path);
-    _path = path;
-    _fileSystem = fileSystem;
     _hdfsLength = fileStatus.getLen();
     _inputStream = fileSystem.open(path,bufferSize);
 
@@ -75,20 +77,20 @@ public class HdfsFileReader extends DataInput {
   }
 
   public void close() throws IOException {
-    _inputStream.close();
+    if (!isClone) {
+      _inputStream.close();
+    }
   }
 
+  /**
+   * This method should never be used!
+   */
   @Override
   public byte readByte() throws IOException {
-    checkBoundary();
-    if (_logicalPos >= _boundary) {
-      seekInternal();
-    }
-    try {
-      return _inputStream.readByte();
-    } finally {
-      _logicalPos++;
-    }
+    LOG.warn("Should not be used!");
+    byte[] buf = new byte[1];
+    readBytes(buf, 0, 1);
+    return buf[0];
   }
 
   @Override
@@ -100,9 +102,10 @@ public class HdfsFileReader extends DataInput {
         seekInternal();
       }
       int lengthToRead = (int) Math.min(_boundary - _logicalPos, len);
-      _inputStream.read(b, offset, lengthToRead);
+      _inputStream.read(_realPos, b, offset, lengthToRead);
       offset += lengthToRead;
       _logicalPos += lengthToRead;
+      _realPos += lengthToRead;
       len -= lengthToRead;
     }
   }
@@ -122,9 +125,9 @@ public class HdfsFileReader extends DataInput {
     }
     if (block == null) {
       _boundary = -1l;
+      _realPos = -1l;
     } else {
-      long realPos = block.getRealPosition(_logicalPos);
-      _inputStream.seek(realPos);
+      _realPos = block.getRealPosition(_logicalPos);
       _boundary = getBoundary(block);
     }
   }
@@ -162,11 +165,7 @@ public class HdfsFileReader extends DataInput {
   @Override
   public Object clone() {
     HdfsFileReader reader = (HdfsFileReader) super.clone();
-    try {
-      reader._inputStream = _fileSystem.open(_path);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
+    reader.isClone = true;
     return reader;
   }
 

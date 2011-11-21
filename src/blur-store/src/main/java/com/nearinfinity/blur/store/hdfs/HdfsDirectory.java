@@ -67,7 +67,7 @@ public class HdfsDirectory extends DirectIODirectory {
       return NULL_WRITER;
     }
     name = getRealName(name);
-    HdfsFileWriter writer = new HdfsFileWriter(getFileSystem(), new Path(_hdfsDirPath,name));
+    HdfsFileWriter writer = new HdfsFileWriter(getFileSystem(), new Path(_hdfsDirPath, name));
     return new HdfsLayeredIndexOutput(writer);
   }
 
@@ -77,19 +77,19 @@ public class HdfsDirectory extends DirectIODirectory {
     }
     return name + LF_EXT;
   }
-  
+
   private String[] getNormalNames(List<String> files) {
     int size = files.size();
     for (int i = 0; i < size; i++) {
       String str = files.get(i);
       files.set(i, toNormalName(str));
     }
-    return files.toArray(new String[]{});
+    return files.toArray(new String[] {});
   }
 
   private String toNormalName(String name) {
     if (name.endsWith(LF_EXT)) {
-      return name.substring(0,name.length() - 3);
+      return name.substring(0, name.length() - 3);
     }
     return name;
   }
@@ -104,12 +104,12 @@ public class HdfsDirectory extends DirectIODirectory {
     name = getRealName(name);
     if (isLayeredFile(name)) {
       HdfsFileReader reader = new HdfsFileReader(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
-      return new HdfsLayeredIndexInput(reader);
+      return new HdfsLayeredIndexInput(reader, BUFFER_SIZE);
     } else {
       return new HdfsNormalIndexInput(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
     }
   }
-  
+
   private boolean isLayeredFile(String name) {
     if (name.endsWith(LF_EXT)) {
       return true;
@@ -163,7 +163,6 @@ public class HdfsDirectory extends DirectIODirectory {
     return getNormalNames(files);
   }
 
-
   @Override
   public void touchFile(String name) throws IOException {
     // do nothing
@@ -176,7 +175,7 @@ public class HdfsDirectory extends DirectIODirectory {
   public FileSystem getFileSystem() {
     return _fileSystemRef.get();
   }
-  
+
   protected void reopenFileSystem() throws IOException {
     FileSystem fileSystem = FileSystem.get(_hdfsDirPath.toUri(), _configuration);
     FileSystem oldFs = _fileSystemRef.get();
@@ -186,18 +185,18 @@ public class HdfsDirectory extends DirectIODirectory {
     }
   }
 
-  static class HdfsLayeredIndexInput extends IndexInput {
-    
+  static class HdfsLayeredIndexInput extends BufferedIndexInput {
+
     private HdfsFileReader _reader;
     private long _length;
-    private long _pos;
     private boolean isClone;
-    
-    public HdfsLayeredIndexInput(HdfsFileReader reader) {
+
+    public HdfsLayeredIndexInput(HdfsFileReader reader, int bufferSize) {
+      super(bufferSize);
       _reader = reader;
       _length = _reader.length();
     }
-    
+
     @Override
     public void close() throws IOException {
       if (!isClone) {
@@ -206,49 +205,28 @@ public class HdfsDirectory extends DirectIODirectory {
     }
 
     @Override
-    public long getFilePointer() {
-      return _pos;
-    }
-
-    @Override
     public long length() {
       return _length;
-    }
-
-    @Override
-    public void seek(long pos) throws IOException {
-      _pos = pos;
-    } 
-
-    @Override
-    public byte readByte() throws IOException {
-      synchronized (_reader) {
-        _reader.seek(_pos);
-        try {
-          return _reader.readByte();
-        } finally {
-          _pos++;
-        }    
-      }
-    }
-
-    @Override
-    public void readBytes(byte[] b, int offset, int len) throws IOException {
-      synchronized (_reader) {
-        _reader.seek(_pos);
-        try {
-          _reader.readBytes(b, offset, len);
-        } finally {
-          _pos += len;
-        }
-      }
     }
 
     @Override
     public Object clone() {
       HdfsLayeredIndexInput input = (HdfsLayeredIndexInput) super.clone();
       input.isClone = true;
+      input._reader = (HdfsFileReader) _reader.clone();
       return input;
+    }
+
+    @Override
+    protected void readInternal(byte[] b, int offset, int length) throws IOException {
+      long position = getFilePointer();
+      _reader.seek(position);
+      _reader.readBytes(b, offset, length);
+    }
+
+    @Override
+    protected void seekInternal(long pos) throws IOException {
+      // do nothing
     }
   }
 
@@ -261,7 +239,7 @@ public class HdfsDirectory extends DirectIODirectory {
     public HdfsNormalIndexInput(FileSystem fileSystem, Path path, int bufferSize) throws IOException {
       FileStatus fileStatus = fileSystem.getFileStatus(path);
       _length = fileStatus.getLen();
-      _inputStream = fileSystem.open(path,bufferSize);
+      _inputStream = fileSystem.open(path, bufferSize);
     }
 
     @Override
@@ -271,7 +249,7 @@ public class HdfsDirectory extends DirectIODirectory {
 
     @Override
     protected void seekInternal(long pos) throws IOException {
-      
+
     }
 
     @Override
@@ -293,11 +271,11 @@ public class HdfsDirectory extends DirectIODirectory {
       return clone;
     }
   }
-  
+
   static class HdfsLayeredIndexOutput extends IndexOutput {
-    
+
     private HdfsFileWriter _writer;
-    
+
     public HdfsLayeredIndexOutput(HdfsFileWriter writer) {
       _writer = writer;
     }
@@ -309,7 +287,7 @@ public class HdfsDirectory extends DirectIODirectory {
 
     @Override
     public void flush() throws IOException {
-      
+
     }
 
     @Override
@@ -389,9 +367,9 @@ public class HdfsDirectory extends DirectIODirectory {
   public IndexInput openInputDirectIO(String name) throws IOException {
     Path path = new Path(_hdfsDirPath, name);
     FSDataInputStream inputStream = getFileSystem().open(path);
-    return new DirectIOHdfsIndexInput(inputStream,realFileLength(path));
+    return new DirectIOHdfsIndexInput(inputStream, realFileLength(path));
   }
-  
+
   private long realFileLength(Path path) throws IOException {
     FileSystem fileSystem = getFileSystem();
     FileStatus fileStatus = fileSystem.getFileStatus(path);
@@ -399,40 +377,42 @@ public class HdfsDirectory extends DirectIODirectory {
   }
 
   static class DirectIOHdfsIndexInput extends BufferedIndexInput {
-    
+
     private long _length;
     private FSDataInputStream _inputStream;
     private boolean isClone;
 
     public DirectIOHdfsIndexInput(FSDataInputStream inputStream, long length) throws IOException {
       if (inputStream instanceof DFSDataInputStream) {
-        // This is needed because if the file was in progress of being written but
+        // This is needed because if the file was in progress of being written
+        // but
         // was not closed the
-        // length of the file is 0. This will fetch the synced length of the file.
+        // length of the file is 0. This will fetch the synced length of the
+        // file.
         _length = ((DFSDataInputStream) inputStream).getVisibleLength();
       } else {
         _length = length;
       }
       _inputStream = inputStream;
     }
-    
+
     @Override
     public long length() {
       return _length;
     }
-    
+
     @Override
     public void close() throws IOException {
       if (!isClone) {
         _inputStream.close();
       }
     }
-    
+
     @Override
     protected void seekInternal(long pos) throws IOException {
-      
+
     }
-    
+
     @Override
     protected void readInternal(byte[] b, int offset, int length) throws IOException {
       synchronized (_inputStream) {

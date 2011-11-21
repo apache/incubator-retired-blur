@@ -5,15 +5,15 @@
 #search_page_wrapper
   #filter_section
     = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
-      .tab#saved
-        .header#saved
+      #saved.tab
+        .header
           %label{:id => 'saved'} Saved Searches
-        .body#saved
+        .body
           = render "saved", :searches => @searches, :blur_table => @blur_table
-      .tab#standard
-        .header#standard
+      #standard.tab
+        .header
           %label{:id => 'standard'} Search
-        .body#standard
+        .body
           .filter= label_tag :query_string, "Query:"
           = text_area_tag :query_string, params[:query_string]
           .filter= label_tag :blur_table, "Table:"
@@ -23,10 +23,10 @@
           #filter_columns{:style => 'display: none;' }
             = render 'filters', :columns => @columns
 
-      .tab#advanced
-        .header#advanced
+      #advanced.tab
+        .header
           %label{:id => 'advanced'} Advanced Options
-        .body#advanced
+        .body
           .filter
             = label_tag :super_query, "Super Query:"
             = check_box_tag :super_query, true, true
@@ -37,10 +37,10 @@
             = label_tag :result_count, 'Fetch:'
             = number_field_tag :result_count, 10, :min => 0
 
-      .tab#store
-        .header#store
+      #store.tab
+        .header
           %label{:id => 'store'} Save Options
-        .body#store
+        .body
           .filter#save_name_wrap
             #save_label= label_tag :save_name, 'Name:'
             = text_field_tag 'save_name'

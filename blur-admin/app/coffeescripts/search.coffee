@@ -35,7 +35,7 @@ $(document).ready ->
   $('#blur_table').change ->
     $('#filter_columns').hide()
     $('#filter_columns').load Routes.search_filters_path($(this).val()), setup_filter_tree
-    $('.body#saved').load 'reload/' + $(this).val()
+    $('#saved .body').load 'reload/' + $(this).val()
       
   # listener that checks if the submit button should be enabled on keystrokes
   $('#query_string, #save_name').live "keydown", (name) ->

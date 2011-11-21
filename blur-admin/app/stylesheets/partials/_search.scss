@@ -120,8 +120,8 @@
 
   //Navigation Tab outer divs
   .tab { @include border; @include border-radius; }
-  .tab#standard, .tab#advanced { @include search-margin; }
-  .body#saved, .body#store, .body#advanced { display: none; }
+  #standard .tab, #advanced.tab { @include search-margin; }
+  #saved.body, #store.body, #advanced.body { display: none; }
 
   // Navigation Tabs labels
   .tab .header {

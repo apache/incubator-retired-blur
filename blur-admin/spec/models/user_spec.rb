@@ -33,7 +33,10 @@ describe 'User Model' do
     it 'is invalid with invalid email' do
       @user.email = 'invalid'
       @user.should_not be_valid
+      @user.email = 'invalid@'
+      @user.should_not be_valid
     end
+    
     
     it 'is invalid with duplicate username' do
       @user.save
@@ -57,6 +60,11 @@ describe 'User Model' do
       username = ''
       100.times {username += 'a'}
       @user.username = username
+      @user.should be_valid
+    end
+    
+    it 'is valid with email missing dot ending' do
+      @user.email = "tester@test"
       @user.should be_valid
     end
 

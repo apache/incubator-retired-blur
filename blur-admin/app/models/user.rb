@@ -1,8 +1,10 @@
 class User < ActiveRecord::Base
   attr_accessible :username, :email, :password, :password_confirmation,
                   :admin, :editor, :auditor, :reader, :searcher
-  acts_as_authentic
-
+  email_regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+/                
+  acts_as_authentic do |c|
+    c.merge_validates_format_of_email_field_options({:with => email_regex} )
+  end
   has_many :searches
   has_many :preferences
 

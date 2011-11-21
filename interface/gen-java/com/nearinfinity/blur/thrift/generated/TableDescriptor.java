@@ -32,6 +32,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final org.apache.thrift.protocol.TField CLUSTER_FIELD_DESC = new org.apache.thrift.protocol.TField("cluster", org.apache.thrift.protocol.TType.STRING, (short)7);
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)8);
   private static final org.apache.thrift.protocol.TField SIMILARITY_CLASS_FIELD_DESC = new org.apache.thrift.protocol.TField("similarityClass", org.apache.thrift.protocol.TType.STRING, (short)9);
+  private static final org.apache.thrift.protocol.TField BLOCK_CACHING_FIELD_DESC = new org.apache.thrift.protocol.TField("blockCaching", org.apache.thrift.protocol.TType.BOOL, (short)10);
+  private static final org.apache.thrift.protocol.TField BLOCK_CACHING_FILE_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("blockCachingFileTypes", org.apache.thrift.protocol.TType.SET, (short)11);
 
   public boolean isEnabled; // required
   public AnalyzerDefinition analyzerDefinition; // required
@@ -42,6 +44,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   public String cluster; // required
   public String name; // required
   public String similarityClass; // required
+  public boolean blockCaching; // required
+  public Set<String> blockCachingFileTypes; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -53,7 +57,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     COMPRESSION_BLOCK_SIZE((short)6, "compressionBlockSize"),
     CLUSTER((short)7, "cluster"),
     NAME((short)8, "name"),
-    SIMILARITY_CLASS((short)9, "similarityClass");
+    SIMILARITY_CLASS((short)9, "similarityClass"),
+    BLOCK_CACHING((short)10, "blockCaching"),
+    BLOCK_CACHING_FILE_TYPES((short)11, "blockCachingFileTypes");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -86,6 +92,10 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
           return NAME;
         case 9: // SIMILARITY_CLASS
           return SIMILARITY_CLASS;
+        case 10: // BLOCK_CACHING
+          return BLOCK_CACHING;
+        case 11: // BLOCK_CACHING_FILE_TYPES
+          return BLOCK_CACHING_FILE_TYPES;
         default:
           return null;
       }
@@ -129,7 +139,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final int __ISENABLED_ISSET_ID = 0;
   private static final int __SHARDCOUNT_ISSET_ID = 1;
   private static final int __COMPRESSIONBLOCKSIZE_ISSET_ID = 2;
-  private BitSet __isset_bit_vector = new BitSet(3);
+  private static final int __BLOCKCACHING_ISSET_ID = 3;
+  private BitSet __isset_bit_vector = new BitSet(4);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -152,6 +163,11 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SIMILARITY_CLASS, new org.apache.thrift.meta_data.FieldMetaData("similarityClass", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.BLOCK_CACHING, new org.apache.thrift.meta_data.FieldMetaData("blockCaching", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.BLOCK_CACHING_FILE_TYPES, new org.apache.thrift.meta_data.FieldMetaData("blockCachingFileTypes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
+            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
   }
@@ -165,6 +181,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
     this.compressionBlockSize = 32768;
 
+    this.blockCaching = true;
+
   }
 
   public TableDescriptor(
@@ -176,7 +194,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     int compressionBlockSize,
     String cluster,
     String name,
-    String similarityClass)
+    String similarityClass,
+    boolean blockCaching,
+    Set<String> blockCachingFileTypes)
   {
     this();
     this.isEnabled = isEnabled;
@@ -191,6 +211,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.cluster = cluster;
     this.name = name;
     this.similarityClass = similarityClass;
+    this.blockCaching = blockCaching;
+    setBlockCachingIsSet(true);
+    this.blockCachingFileTypes = blockCachingFileTypes;
   }
 
   /**
@@ -220,6 +243,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     if (other.isSetSimilarityClass()) {
       this.similarityClass = other.similarityClass;
     }
+    this.blockCaching = other.blockCaching;
+    if (other.isSetBlockCachingFileTypes()) {
+      Set<String> __this__blockCachingFileTypes = new HashSet<String>();
+      for (String other_element : other.blockCachingFileTypes) {
+        __this__blockCachingFileTypes.add(other_element);
+      }
+      this.blockCachingFileTypes = __this__blockCachingFileTypes;
+    }
   }
 
   public TableDescriptor deepCopy() {
@@ -241,6 +272,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.cluster = null;
     this.name = null;
     this.similarityClass = null;
+    this.blockCaching = true;
+
+    this.blockCachingFileTypes = null;
   }
 
   public boolean isIsEnabled() {
@@ -456,6 +490,68 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  public boolean isBlockCaching() {
+    return this.blockCaching;
+  }
+
+  public TableDescriptor setBlockCaching(boolean blockCaching) {
+    this.blockCaching = blockCaching;
+    setBlockCachingIsSet(true);
+    return this;
+  }
+
+  public void unsetBlockCaching() {
+    __isset_bit_vector.clear(__BLOCKCACHING_ISSET_ID);
+  }
+
+  /** Returns true if field blockCaching is set (has been assigned a value) and false otherwise */
+  public boolean isSetBlockCaching() {
+    return __isset_bit_vector.get(__BLOCKCACHING_ISSET_ID);
+  }
+
+  public void setBlockCachingIsSet(boolean value) {
+    __isset_bit_vector.set(__BLOCKCACHING_ISSET_ID, value);
+  }
+
+  public int getBlockCachingFileTypesSize() {
+    return (this.blockCachingFileTypes == null) ? 0 : this.blockCachingFileTypes.size();
+  }
+
+  public java.util.Iterator<String> getBlockCachingFileTypesIterator() {
+    return (this.blockCachingFileTypes == null) ? null : this.blockCachingFileTypes.iterator();
+  }
+
+  public void addToBlockCachingFileTypes(String elem) {
+    if (this.blockCachingFileTypes == null) {
+      this.blockCachingFileTypes = new HashSet<String>();
+    }
+    this.blockCachingFileTypes.add(elem);
+  }
+
+  public Set<String> getBlockCachingFileTypes() {
+    return this.blockCachingFileTypes;
+  }
+
+  public TableDescriptor setBlockCachingFileTypes(Set<String> blockCachingFileTypes) {
+    this.blockCachingFileTypes = blockCachingFileTypes;
+    return this;
+  }
+
+  public void unsetBlockCachingFileTypes() {
+    this.blockCachingFileTypes = null;
+  }
+
+  /** Returns true if field blockCachingFileTypes is set (has been assigned a value) and false otherwise */
+  public boolean isSetBlockCachingFileTypes() {
+    return this.blockCachingFileTypes != null;
+  }
+
+  public void setBlockCachingFileTypesIsSet(boolean value) {
+    if (!value) {
+      this.blockCachingFileTypes = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case IS_ENABLED:
@@ -530,6 +626,22 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       break;
 
+    case BLOCK_CACHING:
+      if (value == null) {
+        unsetBlockCaching();
+      } else {
+        setBlockCaching((Boolean)value);
+      }
+      break;
+
+    case BLOCK_CACHING_FILE_TYPES:
+      if (value == null) {
+        unsetBlockCachingFileTypes();
+      } else {
+        setBlockCachingFileTypes((Set<String>)value);
+      }
+      break;
+
     }
   }
 
@@ -562,6 +674,12 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     case SIMILARITY_CLASS:
       return getSimilarityClass();
 
+    case BLOCK_CACHING:
+      return Boolean.valueOf(isBlockCaching());
+
+    case BLOCK_CACHING_FILE_TYPES:
+      return getBlockCachingFileTypes();
+
     }
     throw new IllegalStateException();
   }
@@ -591,6 +709,10 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       return isSetName();
     case SIMILARITY_CLASS:
       return isSetSimilarityClass();
+    case BLOCK_CACHING:
+      return isSetBlockCaching();
+    case BLOCK_CACHING_FILE_TYPES:
+      return isSetBlockCachingFileTypes();
     }
     throw new IllegalStateException();
   }
@@ -686,6 +808,24 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       if (!(this_present_similarityClass && that_present_similarityClass))
         return false;
       if (!this.similarityClass.equals(that.similarityClass))
+        return false;
+    }
+
+    boolean this_present_blockCaching = true;
+    boolean that_present_blockCaching = true;
+    if (this_present_blockCaching || that_present_blockCaching) {
+      if (!(this_present_blockCaching && that_present_blockCaching))
+        return false;
+      if (this.blockCaching != that.blockCaching)
+        return false;
+    }
+
+    boolean this_present_blockCachingFileTypes = true && this.isSetBlockCachingFileTypes();
+    boolean that_present_blockCachingFileTypes = true && that.isSetBlockCachingFileTypes();
+    if (this_present_blockCachingFileTypes || that_present_blockCachingFileTypes) {
+      if (!(this_present_blockCachingFileTypes && that_present_blockCachingFileTypes))
+        return false;
+      if (!this.blockCachingFileTypes.equals(that.blockCachingFileTypes))
         return false;
     }
 
@@ -795,6 +935,26 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetBlockCaching()).compareTo(typedOther.isSetBlockCaching());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBlockCaching()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.blockCaching, typedOther.blockCaching);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetBlockCachingFileTypes()).compareTo(typedOther.isSetBlockCachingFileTypes());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetBlockCachingFileTypes()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.blockCachingFileTypes, typedOther.blockCachingFileTypes);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -879,6 +1039,31 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 10: // BLOCK_CACHING
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.blockCaching = iprot.readBool();
+            setBlockCachingIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 11: // BLOCK_CACHING_FILE_TYPES
+          if (field.type == org.apache.thrift.protocol.TType.SET) {
+            {
+              org.apache.thrift.protocol.TSet _set75 = iprot.readSetBegin();
+              this.blockCachingFileTypes = new HashSet<String>(2*_set75.size);
+              for (int _i76 = 0; _i76 < _set75.size; ++_i76)
+              {
+                String _elem77; // required
+                _elem77 = iprot.readString();
+                this.blockCachingFileTypes.add(_elem77);
+              }
+              iprot.readSetEnd();
+            }
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -931,6 +1116,21 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     if (this.similarityClass != null) {
       oprot.writeFieldBegin(SIMILARITY_CLASS_FIELD_DESC);
       oprot.writeString(this.similarityClass);
+      oprot.writeFieldEnd();
+    }
+    oprot.writeFieldBegin(BLOCK_CACHING_FIELD_DESC);
+    oprot.writeBool(this.blockCaching);
+    oprot.writeFieldEnd();
+    if (this.blockCachingFileTypes != null) {
+      oprot.writeFieldBegin(BLOCK_CACHING_FILE_TYPES_FIELD_DESC);
+      {
+        oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, this.blockCachingFileTypes.size()));
+        for (String _iter78 : this.blockCachingFileTypes)
+        {
+          oprot.writeString(_iter78);
+        }
+        oprot.writeSetEnd();
+      }
       oprot.writeFieldEnd();
     }
     oprot.writeFieldStop();
@@ -999,6 +1199,18 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       sb.append("null");
     } else {
       sb.append(this.similarityClass);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("blockCaching:");
+    sb.append(this.blockCaching);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("blockCachingFileTypes:");
+    if (this.blockCachingFileTypes == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.blockCachingFileTypes);
     }
     first = false;
     sb.append(")");

@@ -411,13 +411,20 @@ public class DistributedIndexServer extends AbstractIndexServer {
         throw new IOException(e);
       }
     }
-
-    BlockDirectory baseDirectory = new BlockDirectory(table + "_" + shard, directory, _cache);
+    
+    DirectIODirectory dir;
+    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(table);
+    if (blockCacheEnabled) {
+      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(table);
+      dir = new BlockDirectory(table + "_" + shard, directory, _cache, blockCacheFileTypes);
+    } else {
+      dir = directory;
+    }
     BlurIndexWriter writer = new BlurIndexWriter();
     writer.setCloser(_closer);
     writer.setCommiter(_commiter);
     writer.setAnalyzer(getAnalyzer(table));
-    writer.setDirectory(baseDirectory);
+    writer.setDirectory(dir);
     writer.setRefresher(_refresher);
     writer.setBlurMetrics(_blurMetrics);
     writer.setShard(shard);

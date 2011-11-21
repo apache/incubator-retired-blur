@@ -343,7 +343,9 @@ struct TableDescriptor {
   6:i32 compressionBlockSize = 32768,
   7:string cluster,
   8:string name,
-  9:string similarityClass
+  9:string similarityClass,
+  10:bool blockCaching = 1,
+  11:set<string> blockCachingFileTypes
 }
 
 service Blur {

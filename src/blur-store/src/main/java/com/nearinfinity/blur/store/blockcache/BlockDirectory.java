@@ -2,6 +2,7 @@ package com.nearinfinity.blur.store.blockcache;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Set;
 
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;
@@ -29,11 +30,8 @@ public class BlockDirectory extends DirectIODirectory {
   public static long getRealPosition(long block, long positionInBlock) {
     return (block << BLOCK_SHIFT) + positionInBlock;
   }
-
-  private DirectIODirectory _directory;
-  private int _blockSize;
-  private String _dirName;
-  private Cache _cache = new Cache() {
+  
+  public static Cache NO_CACHE = new Cache() {
 
     @Override
     public void update(String name, long blockId, byte[] buffer) {
@@ -56,30 +54,53 @@ public class BlockDirectory extends DirectIODirectory {
     }
   };
 
+  private DirectIODirectory _directory;
+  private int _blockSize;
+  private String _dirName;
+  private Cache _cache;
+  private Set<String> _blockCacheFileTypes;
+
   public BlockDirectory(String dirName, DirectIODirectory directory) throws IOException {
-    _dirName = dirName;
-    _directory = directory;
-    _blockSize = BLOCK_SIZE;
-    setLockFactory(directory.getLockFactory());
+    this(dirName,directory,NO_CACHE);
+  }
+  
+  public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache) throws IOException {
+    this(dirName,directory,NO_CACHE,null);
   }
 
-  public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache) throws IOException {
+  public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache, Set<String> blockCacheFileTypes) throws IOException {
     _dirName = dirName;
     _directory = directory;
     _blockSize = BLOCK_SIZE;
     _cache = cache;
+    if (_blockCacheFileTypes == null || _blockCacheFileTypes.isEmpty()) {
+      _blockCacheFileTypes = null;
+    } else {
+      _blockCacheFileTypes = blockCacheFileTypes;
+    }
     setLockFactory(directory.getLockFactory());
   }
 
   public IndexInput openInput(String name, int bufferSize) throws IOException {
     final IndexInput source = _directory.openInput(name, _blockSize);
-    return new CachedIndexInput(source, _blockSize, _dirName, name, _cache, bufferSize);
+    if (_blockCacheFileTypes == null || isCachableFile(name)) {
+      return new CachedIndexInput(source, _blockSize, _dirName, name, _cache, bufferSize);
+    }
+    return source;
+  }
+
+  private boolean isCachableFile(String name) {
+    for (String ext : _blockCacheFileTypes) {
+      if (name.endsWith(ext)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   @Override
   public IndexInput openInput(final String name) throws IOException {
-    final IndexInput source = _directory.openInput(name, _blockSize);
-    return new CachedIndexInput(source, _blockSize, _dirName, name, _cache);
+    return openInput(name,_blockSize);
   }
 
   static class CachedIndexInput extends BufferedIndexInput {

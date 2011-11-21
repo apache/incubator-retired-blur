@@ -20,6 +20,8 @@ import com.nearinfinity.blur.utils.BlurConstants;
 
 public class ZookeeperPathConstants {
 
+  private static final String BLUR_BLOCKCACHING = "blockcaching";
+  private static final String BLUR_BLOCKCACHINGFILETYPES = "blockcachingfiletypes";
   private static final String BLUR_TABLES_ENABLED = "enabled";
   // /blur/tables/<name>/enabled will indicate that the table is enabled
   private static final String BLUR_TABLES_URI = "uri";
@@ -94,5 +96,13 @@ public class ZookeeperPathConstants {
 
   public static String getBlurLockPath(String table) {
     return getBlurTablesPath() + "/" + table + "/" + BLUR_TABLE_LOCK_PATH;
+  }
+
+  public static String getBlurTablesBlockCachingFileTypes() {
+    return BLUR_BLOCKCACHINGFILETYPES;
+  }
+
+  public static String getBlurTablesBlockCaching() {
+    return BLUR_BLOCKCACHING;
   }
 }

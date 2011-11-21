@@ -2948,7 +2948,7 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes ) );
 
 sub new {
   my $classname = shift;
@@ -2963,6 +2963,8 @@ sub new {
   $self->{cluster} = undef;
   $self->{name} = undef;
   $self->{similarityClass} = undef;
+  $self->{blockCaching} = 1;
+  $self->{blockCachingFileTypes} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {
       $self->{isEnabled} = $vals->{isEnabled};
@@ -2990,6 +2992,12 @@ sub new {
     }
     if (defined $vals->{similarityClass}) {
       $self->{similarityClass} = $vals->{similarityClass};
+    }
+    if (defined $vals->{blockCaching}) {
+      $self->{blockCaching} = $vals->{blockCaching};
+    }
+    if (defined $vals->{blockCachingFileTypes}) {
+      $self->{blockCachingFileTypes} = $vals->{blockCachingFileTypes};
     }
   }
   return bless ($self, $classname);
@@ -3069,6 +3077,30 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^10$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{blockCaching});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^11$/ && do{      if ($ftype == TType::SET) {
+        {
+          my $_size133 = 0;
+          $self->{blockCachingFileTypes} = {};
+          my $_etype136 = 0;
+          $xfer += $input->readSetBegin(\$_etype136, \$_size133);
+          for (my $_i137 = 0; $_i137 < $_size133; ++$_i137)
+          {
+            my $elem138 = undef;
+            $xfer += $input->readString(\$elem138);
+            $self->{blockCachingFileTypes}->{$elem138} = 1;
+          }
+          $xfer += $input->readSetEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3124,6 +3156,25 @@ sub write {
   if (defined $self->{similarityClass}) {
     $xfer += $output->writeFieldBegin('similarityClass', TType::STRING, 9);
     $xfer += $output->writeString($self->{similarityClass});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{blockCaching}) {
+    $xfer += $output->writeFieldBegin('blockCaching', TType::BOOL, 10);
+    $xfer += $output->writeBool($self->{blockCaching});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{blockCachingFileTypes}) {
+    $xfer += $output->writeFieldBegin('blockCachingFileTypes', TType::SET, 11);
+    {
+      $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{blockCachingFileTypes}}));
+      {
+        foreach my $iter139 (@{$self->{blockCachingFileTypes}})
+        {
+          $xfer += $output->writeString($iter139);
+        }
+      }
+      $xfer += $output->writeSetEnd();
+    }
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

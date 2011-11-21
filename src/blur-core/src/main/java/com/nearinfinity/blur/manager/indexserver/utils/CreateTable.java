@@ -18,8 +18,8 @@ package com.nearinfinity.blur.manager.indexserver.utils;
 
 import static com.nearinfinity.blur.utils.BlurConstants.SHARD_PREFIX;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -36,26 +36,26 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
+import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurUtil;
-import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class CreateTable {
 
   private static Log LOG = LogFactory.getLog(CreateTable.class);
-
-  public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, NumberFormatException, KeeperException,
-      InterruptedException {
-    String zkConnectionStr = args[0];
-    String table = args[1];
-    BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
-    String uri = args[3];
-    String shardCount = args[4];
-    CompressionCodec codec = getInstance(args[5]);
-    String blockSize = args[6];
-
-    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-    createTable(zooKeeper, table, analyzer, uri, Integer.parseInt(shardCount), codec, Integer.parseInt(blockSize));
-  }
+  
+//  public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, NumberFormatException, KeeperException,
+//      InterruptedException {
+//    String zkConnectionStr = args[0];
+//    String table = args[1];
+//    BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
+//    String uri = args[3];
+//    String shardCount = args[4];
+//    CompressionCodec codec = getInstance(args[5]);
+//    String blockSize = args[6];
+//
+//    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
+//    createTable(zooKeeper, table, analyzer, uri, Integer.parseInt(shardCount), codec, Integer.parseInt(blockSize));
+//  }
 
   public static CompressionCodec getInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
     Class<?> clazz = Class.forName(className);
@@ -70,9 +70,19 @@ public class CreateTable {
     return codec;
   }
 
-  public static void createTable(ZooKeeper zookeeper, String table, BlurAnalyzer analyzer, String uri, int shardCount, CompressionCodec compressionCodec, int compressionBlockSize)
-      throws IOException, KeeperException, InterruptedException {
+  public static void createTable(ZooKeeper zookeeper, TableDescriptor tableDescriptor) throws IOException, KeeperException, InterruptedException, ClassNotFoundException, InstantiationException, IllegalAccessException {
     String blurTablesPath = ZookeeperPathConstants.getBlurTablesPath();
+    
+    String table = tableDescriptor.name;
+    BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
+    String uri = tableDescriptor.tableUri;
+    int shardCount = tableDescriptor.shardCount;
+    CompressionCodec compressionCodec = getInstance(tableDescriptor.compressionClass);
+    int compressionBlockSize = tableDescriptor.compressionBlockSize;
+    
+    boolean blockCaching = tableDescriptor.blockCaching;
+    Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
+    
     if (zookeeper.exists(blurTablesPath + "/" + table, false) != null) {
       throw new IOException("Table [" + table + "] already exists.");
     }
@@ -83,6 +93,21 @@ public class CreateTable {
     createPath(zookeeper, compressionCodec.getClass().getName().getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
     createPath(zookeeper, Integer.toString(compressionBlockSize).getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
     createPath(zookeeper, null, ZookeeperPathConstants.getBlurLockPath(table));
+    if (blockCaching) {
+      createPath(zookeeper, null, blurTablesPath, table, ZookeeperPathConstants.getBlurTablesBlockCaching());
+    }
+    createPath(zookeeper, toBytes(blockCachingFileTypes), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesBlockCachingFileTypes());
+  }
+
+  private static byte[] toBytes(Set<String> blockCachingFileTypes) {
+    if (blockCachingFileTypes == null || blockCachingFileTypes.isEmpty()) {
+      return null;
+    }
+    StringBuilder builder = new StringBuilder();
+    for (String type : blockCachingFileTypes) {
+      builder.append(type).append(',');
+    }
+    return builder.substring(0, builder.length()-1).getBytes();
   }
 
   private static void createPath(ZooKeeper zookeeper, byte[] data, String... pathes) throws KeeperException, InterruptedException {
@@ -138,5 +163,4 @@ public class CreateTable {
     }
     return true;
   }
-
 }

@@ -18,6 +18,7 @@ package com.nearinfinity.blur.manager.clusterstatus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
@@ -52,5 +53,9 @@ public abstract class ClusterStatus {
   public abstract void clearLocks(String table);
 
   public abstract int getShardCount(String table);
+  
+  public abstract boolean isBlockCacheEnabled(String table);
+  
+  public abstract Set<String> getBlockCacheFileTypes(String table);
 
 }

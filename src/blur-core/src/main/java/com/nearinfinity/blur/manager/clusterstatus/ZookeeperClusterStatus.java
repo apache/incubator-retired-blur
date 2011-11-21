@@ -18,7 +18,10 @@ package com.nearinfinity.blur.manager.clusterstatus;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
@@ -293,5 +296,56 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public Set<String> getBlockCacheFileTypes(String table) {
+    String cluster = getCluster(table);
+    if (cluster == null) {
+      throw new RuntimeException("Cluster not found for table [" + table + "]");
+    }
+    String tablePath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/tables/" + table;
+    try {
+      return getBlockCacheFileTypesFromTablePath(tablePath);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private Set<String> getBlockCacheFileTypesFromTablePath(String tablePath) throws KeeperException, InterruptedException {
+    byte[] data = getData(tablePath + "/" + ZookeeperPathConstants.getBlurTablesBlockCachingFileTypes());
+    if (data == null) {
+      return null;
+    }
+    String str = new String(data);
+    if (str.isEmpty()) {
+      return null;
+    }
+    Set<String> types = new HashSet<String>(Arrays.asList(str.split(",")));
+    if (types.isEmpty()) {
+      return null;
+    }
+    return types;
+  }
+
+  @Override
+  public boolean isBlockCacheEnabled(String table) {
+    String cluster = getCluster(table);
+    if (cluster == null) {
+      return false;
+    }
+    String tablePathIsEnabled = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/tables/" + table + "/" + ZookeeperPathConstants.getBlurTablesBlockCaching();
+    try {
+      if (_zk.exists(tablePathIsEnabled, false) == null) {
+        return false;
+      }
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    return true;
   }
 }

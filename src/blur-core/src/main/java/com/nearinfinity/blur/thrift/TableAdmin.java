@@ -3,7 +3,6 @@ package com.nearinfinity.blur.thrift;
 import org.apache.thrift.TException;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
@@ -24,13 +23,13 @@ public abstract class TableAdmin implements Iface {
   @Override
   public void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
-      
       //@todo Remove this once issue #27 is resolved
-      tableDescriptor.compressionBlockSize = 32768;
-      
-      BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
-      CreateTable.createTable(_zookeeper, tableDescriptor.name, analyzer, tableDescriptor.tableUri, tableDescriptor.shardCount, CreateTable
-          .getInstance(tableDescriptor.compressionClass), tableDescriptor.compressionBlockSize);
+      if (tableDescriptor.compressionBlockSize > 32768) {
+        tableDescriptor.compressionBlockSize = 32768;
+      } else if (tableDescriptor.compressionBlockSize < 8192) {
+        tableDescriptor.compressionBlockSize = 8192;
+      }
+      CreateTable.createTable(_zookeeper, tableDescriptor);
     } catch (Exception e) {
       LOG.error("Unknown error during create of [table={0}, tableDescriptor={1}]", e, tableDescriptor.name, tableDescriptor);
       throw new BException(e.getMessage(), e);

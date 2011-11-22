@@ -134,8 +134,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         while (_running.get()) {
           synchronized (_shardServerLayout) {
             try {
-              String path = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/online/shard-nodes";
-              List<String> onlineNodes = _zookeeper.getChildren(path, new Watcher() {
+              String shardNodesPath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/online/shard-nodes";
+              String tablesPath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/online/shard-nodes";
+              _zookeeper.getChildren(shardNodesPath, new Watcher() {
                 @Override
                 public void process(WatchedEvent event) {
                   synchronized (_shardServerLayout) {
@@ -143,8 +144,16 @@ public class BlurControllerServer extends TableAdmin implements Iface {
                   }
                 }
               });
-              LOG.info("Layout changing for cluster [{0}]",cluster);
-              updateLayout(onlineNodes);
+              _zookeeper.getChildren(tablesPath, new Watcher() {
+                @Override
+                public void process(WatchedEvent event) {
+                  synchronized (_shardServerLayout) {
+                    _shardServerLayout.notifyAll();
+                  }
+                }
+              });
+              LOG.info("Layout changing for cluster [{0}], because of table or shard server change.",cluster);
+              updateLayout();
               _shardServerLayout.wait();
             } catch (KeeperException e) {
               if (e.code() == Code.SESSIONEXPIRED) {
@@ -166,7 +175,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _shardServerWatcherDaemons.add(shardServerWatcherDaemon);
   }
 
-  private synchronized void updateLayout(List<String> onlineNodes) {
+  private synchronized void updateLayout() {
     List<String> tableList = _clusterStatus.getTableList();
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {

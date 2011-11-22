@@ -17,6 +17,8 @@ $(document).ready ->
           perform_action action, el
           return false
       $('#hdfs-dir-context-menu').disableContextMenuItems('#paste')
+      if $('#hdfs_browser').attr('hdfs_editor') == 'false'
+        $('.contextMenu').disableContextMenuItems('#paste,#mkdir,#cut,#rename,#delete')
 
   tree_context_menu = () ->
     $("<div class='context_menus'>

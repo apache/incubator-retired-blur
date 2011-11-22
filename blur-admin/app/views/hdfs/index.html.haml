@@ -6,7 +6,7 @@
 
 
 #hdfs_wrapper
-  #hdfs_browser.ui-corner-top.ui-corner-bottom
+  #hdfs_browser.ui-corner-top.ui-corner-bottom{:hdfs_editor =>current_user.editor.to_s}
     %ul#top_level
       - @instances.each do |instance|
         %li.hdfs_instance{:hdfs_id=>instance.id, :hdfs_name=>instance.name, :hdfs_path=>'/'}

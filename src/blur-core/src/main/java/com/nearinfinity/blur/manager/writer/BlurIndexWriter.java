@@ -88,12 +88,12 @@ public class BlurIndexWriter extends BlurIndex {
     _writer.commitAndRollWal();
     _indexReaderRef.set(IndexReader.open(_writer, true));
     _rowIndexWriter = new RowWalIndexWriter(_writer, _analyzer);
-    _refresher.register(this);
     _commiter.addWriter(_id, _writer);
+    _refresher.register(this);
   }
 
   private WalIndexWriter openWriter(final IndexWriterConfig conf) throws CorruptIndexException, LockObtainFailedException, IOException {
-    ExecutorService service = Executors.newSingleThreadExecutor("Writer-Opener-" + _table + "-" + _shard);
+    ExecutorService service = Executors.newSingleThreadExecutor("Writer-Opener-" + _table + "-" + _shard + "-");
     try {
       ExecutorCompletionService<WalIndexWriter> completionService = new ExecutorCompletionService<WalIndexWriter>(service);
       completionService.submit(new Callable<WalIndexWriter>() {

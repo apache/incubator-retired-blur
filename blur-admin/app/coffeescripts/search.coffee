@@ -48,6 +48,7 @@ $(document).ready ->
       if $('#search_submit').attr 'disabled'
         error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
         $('#results_container').html(error_content)
+        resultsWrapperWidth()
       else
         $('#search_form').submit()
     else
@@ -65,6 +66,7 @@ $(document).ready ->
       $('#arrow').addClass('ui-icon-triangle-1-w').removeClass('ui-icon-triangle-1-e')
       $('#results_wrapper').addClass('open_filters').removeClass('collapsed_filters')
       $('#bar_section').removeClass('leftbar')
+    resultsWrapperWidth()
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
@@ -138,11 +140,13 @@ $(document).ready ->
   fetch_error = (error) ->
     message = "<div>An error has occured: #{error}</div>"
     $('#results_container').html message
+    resultsWrapperWidth()
 
   no_results = ->
     #hides number of results option if there are no results
     message = '<div>No results for your search.</div>'
     $('#results_container').html message
+    resultsWrapperWidth()
 
   # disable buttons on load
   toggle_submit()
@@ -192,6 +196,7 @@ $(document).ready ->
           #shows number of results option if there are results
           #If data is returned properly process it
           $('#results_container').html data
+          resultsWrapperWidth()
         else
           no_results()
       error: (jqXHR, textStatus, errorThrown) ->
@@ -203,10 +208,12 @@ $(document).ready ->
     .live 'ajax:success', (evt, data, status, xhr) ->
       if data
         $('#results_container').html data
+        resultsWrapperWidth()
       else
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'
         $('#results_container').html(error_content)
+        resultsWrapperWidth()
     .live 'ajax:error', (event, xhr, status, error) ->
       fetch_error error
 
@@ -269,3 +276,9 @@ $(document).ready ->
       			buttons:
       				"Ok": ->
       				  $(this).dialog "close"
+  #function to adjust size of results container
+  resultsWrapperWidth = () ->
+    bdWidth = parseInt $('#bd').css('width')
+    leftMargin = parseInt $('#bar_section').css('left')
+    $('#results_wrapper').css('width',bdWidth - leftMargin - 30)
+  $(window).resize(resultsWrapperWidth)

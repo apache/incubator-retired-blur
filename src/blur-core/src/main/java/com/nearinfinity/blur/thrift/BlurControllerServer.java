@@ -269,7 +269,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           }
         }, new MergerBlurResultIterable(blurQuery));
         BlurResults results = BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _executor, selector, this, table);
-        if (!validResults(results,shardCount)) {
+        if (!validResults(results,shardCount,blurQuery)) {
           BlurClientManager.sleep(_defaultDelay,_maxDefaultDelay,retries,_maxDefaultRetries);
           continue OUTER;
         }
@@ -282,7 +282,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     throw new BlurException("Query could not be completed.",null);
   }
 
-  private boolean validResults(BlurResults results, int shardCount) {
+  private boolean validResults(BlurResults results, int shardCount, BlurQuery query) {
+    if (results.totalResults >= query.minimumNumberOfResults) {
+      return true;
+    }
     int shardInfoSize = results.getShardInfoSize();
     if (shardInfoSize == shardCount) {
       return true;

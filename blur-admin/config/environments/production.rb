@@ -11,10 +11,19 @@ BlurAdmin::Application.configure do
   config.action_dispatch.x_sendfile_header = "X-Sendfile"
 
   # See everything in the log (default is :info)
-  config.log_level = :warn
+  #config.log_level = :warn
 
   # Use a different logger for distributed setups
-  config.logger = Logger.new("#{RAILS_ROOT}/log/#{ENV['RAILS_ENV']}.log", 'weekly')
+  #config.logger = Logger.new("#{RAILS_ROOT}/log/#{ENV['RAILS_ENV']}.log", 'weekly')
+  
+  class LogFormatter < Logger::Formatter
+    def call(severity,time,progname,msg)
+      "#{severity} #tok1-block-tok #{msg}\n"
+    end
+  end
+  config.logger = Logger.new("#{RAILS_ROOT}/log/#{ENV['RAILS_ENV']}.log", 10,26_214_400)
+  config.logger.formatter = LogFormatter.new
+  config.logger.level = Logger::WARN
 
   # Use a different cache store in production
   # config.cache_store = :mem_cache_store

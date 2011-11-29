@@ -24,10 +24,12 @@ $(document).ready ->
     $("<div class='context_menus'>
       <ul id='hdfs-root-context-menu' class='contextMenu'>
       <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
+      <li class='edit' ><a href='#upload'>Upload File</a></li>
       <li class='props separator'><a href='#props'>Properties</a></li>
       </ul>
       <ul id='hdfs-dir-context-menu' class='contextMenu'>
       <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
+      <li class='edit' ><a href='#upload'>Upload File</a></li>
       <li class='rename'><a href='#rename'>Rename</a></li>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
@@ -93,7 +95,39 @@ $(document).ready ->
     path = file.attr('hdfs_path');
     if(confirm("Are you sure you wish to delete " + path + "? This action can not be undone."))
       $.post Routes.hdfs_delete_path(id), { 'path': path}
-
+      
+  window.uploading = false
+  finishUploading = (path)->
+    $("li[hdfs_path='" + path + "']").click();
+    $('#upload-file').dialog('close').remove();
+    window.uploading = false
+  window.finishUploading = finishUploading
+  uploadFailed = (error)->
+    $('#upload-file').html(error)
+    window.uploading = false
+  window.uploadFailed = uploadFailed
+  upload = (el) ->
+    id = el.attr('hdfs_id');
+    path = el.attr('hdfs_path');
+    $.get Routes.hdfs_upload_form_path(), (data)->
+      $(data).dialog
+        modal: true
+        draggable: true
+        resizeable: false
+        width: 'auto'
+        title: 'Upload File'
+        open: ()->
+          $('#fpath-input').val(path)
+          $('#hdfs-id-input').val(id)
+          $('#upload-button').button()
+        beforeClose: ()->
+          !window.uploading
+        close: ()->
+          $(this).remove();
+  $('#upload-form').live 'submit', ()->
+    window.uploading = true
+    $('#upload-file #status').html '<h2>Uploading...</h2>'
+    $('#upload-file #upload-button').attr('disabled','disabled')
   make_dir = (el) ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path');
@@ -156,6 +190,8 @@ $(document).ready ->
         make_dir el
       when "rename"
         rename el
+      when "upload"
+        upload el
 
 
   # Methods to call on page load

@@ -65,6 +65,32 @@ class HdfsController < ApplicationController
     client.rm path, false
     render :nothing => true
   end
+  
+  def upload_form
+    render :layout => false
+  end
+  
+  def upload
+    begin
+      if defined? params[:upload] and defined? params[:path] and defined? params[:hdfs_id]
+        f = params[:upload]
+        @path = params[:path]
+        puts f.tempfile.size
+        if f.tempfile.size > 26214400
+          @error = 'Upload is Too Large.  Files must be less than 25Mb.'
+        else
+          instance = Hdfs.find params[:hdfs_id]
+          client = HdfsThriftClient.client(instance.host, instance.port)
+          client.put(f.tempfile.path,@path + '/' + f.original_filename)
+        end
+      else
+        @error = 'Problem with File Upload'
+      end
+    rescue Exception => e
+      @error = e.to_s
+    end
+    render :layout => false
+  end
 end
 
 

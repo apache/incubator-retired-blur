@@ -3,4 +3,4 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-nohup $bin/bin/agent.sh $1 &
+nohup $bin/agent.sh $1 &

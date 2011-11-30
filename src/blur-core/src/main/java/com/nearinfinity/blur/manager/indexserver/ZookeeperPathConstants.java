@@ -28,6 +28,7 @@ public class ZookeeperPathConstants {
   private static final String BLUR_TABLES_SHARD_COUNT = "shard-count";
   private static final String BLUR_TABLES_COMPRESSION_CODEC = "compression-codec";
   private static final String BLUR_TABLES_COMPRESSION_BLOCK_SIZE = "compression-blocksize";
+  private static final String BLUR_TABLES_SIMILARITY = "similarity";
 
   private static final String BLUR_ONLINE_PATH = getBlurBasePath() + "/online";
   private static final String BLUR_ONLINE_SHARDS_PATH = getBlurBasePath() + "/online/shard-nodes";
@@ -104,5 +105,9 @@ public class ZookeeperPathConstants {
 
   public static String getBlurTablesBlockCaching() {
     return BLUR_BLOCKCACHING;
+  }
+
+  public static String getBlurTablesSimilarity() {
+    return BLUR_TABLES_SIMILARITY;
   }
 }

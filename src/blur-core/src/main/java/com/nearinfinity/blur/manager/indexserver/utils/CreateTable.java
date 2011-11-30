@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
@@ -35,6 +36,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurUtil;
@@ -57,17 +59,18 @@ public class CreateTable {
 //    createTable(zooKeeper, table, analyzer, uri, Integer.parseInt(shardCount), codec, Integer.parseInt(blockSize));
 //  }
 
-  public static CompressionCodec getInstance(String className) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+  @SuppressWarnings("unchecked")
+  public static <T> T getInstance(String className, Class<T> c) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
     Class<?> clazz = Class.forName(className);
-    return configure((CompressionCodec) clazz.newInstance());
+    return (T) configure(clazz.newInstance());
   }
 
-  private static CompressionCodec configure(CompressionCodec codec) {
-    if (codec instanceof Configurable) {
-      Configurable configurable = (Configurable) codec;
+  private static <T> T configure(T t) {
+    if (t instanceof Configurable) {
+      Configurable configurable = (Configurable) t;
       configurable.setConf(new Configuration());
     }
-    return codec;
+    return t;
   }
 
   public static void createTable(ZooKeeper zookeeper, TableDescriptor tableDescriptor) throws IOException, KeeperException, InterruptedException, ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -77,8 +80,15 @@ public class CreateTable {
     BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
     String uri = tableDescriptor.tableUri;
     int shardCount = tableDescriptor.shardCount;
-    CompressionCodec compressionCodec = getInstance(tableDescriptor.compressionClass);
+    CompressionCodec compressionCodec = getInstance(tableDescriptor.compressionClass,CompressionCodec.class);
     int compressionBlockSize = tableDescriptor.compressionBlockSize;
+    Similarity similarity = getInstance(tableDescriptor.similarityClass,Similarity.class);
+    if (tableDescriptor.similarityClass == null) {
+      similarity = new FairSimilarity();
+    } else {
+      similarity = getInstance(tableDescriptor.similarityClass,Similarity.class);
+    }
+    
     
     boolean blockCaching = tableDescriptor.blockCaching;
     Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
@@ -91,6 +101,7 @@ public class CreateTable {
     createPath(zookeeper, uri.getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesUri());
     createPath(zookeeper, Integer.toString(shardCount).getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesShardCount());
     createPath(zookeeper, compressionCodec.getClass().getName().getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
+    createPath(zookeeper, similarity.getClass().getName().getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesSimilarity());
     createPath(zookeeper, Integer.toString(compressionBlockSize).getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
     createPath(zookeeper, null, ZookeeperPathConstants.getBlurLockPath(table));
     if (blockCaching) {

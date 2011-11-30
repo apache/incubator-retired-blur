@@ -405,7 +405,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     if (compressionClass != null) {
       CompressionCodec compressionCodec;
       try {
-        compressionCodec = CreateTable.getInstance(compressionClass);
+        compressionCodec = CreateTable.getInstance(compressionClass,CompressionCodec.class);
         directory = new CompressedFieldDataDirectory(directory, compressionCodec, compressionBlockSize);
       } catch (Exception e) {
         throw new IOException(e);

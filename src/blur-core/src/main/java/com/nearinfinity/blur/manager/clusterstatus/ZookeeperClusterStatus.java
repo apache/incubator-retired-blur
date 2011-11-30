@@ -150,7 +150,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 AtomicBoolean enabled = _enabledMap.get(table);
                 if (enabled == null) {
                   enabled = new AtomicBoolean();
-                  _enabledMap.put(table,enabled);
+                  _enabledMap.put(table, enabled);
                 }
                 if (stat == null) {
                   enabled.set(false);
@@ -276,6 +276,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       tableDescriptor.compressionClass = new String(getData(tablePath + "/compression-codec"));
       tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(tablePath + "/compression-blocksize")));
       tableDescriptor.analyzerDefinition = getAnalyzerDefinition(getData(tablePath));
+      tableDescriptor.blockCaching = isBlockCacheEnabled(table);
+      tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(table);
+      tableDescriptor.name = table;
+      byte[] data = getData(tablePath + "/" + ZookeeperPathConstants.getBlurTablesSimilarity());
+      if (data != null) {
+        tableDescriptor.similarityClass = new String(data);
+      }
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {

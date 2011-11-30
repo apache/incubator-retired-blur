@@ -9,6 +9,7 @@
 Factory.define :zookeeper do |t|
   t.sequence (:name) { |n| "Test Zookeeper ##{n}" }
   t.sequence (:url)  { |n| "zookeeper#{n}.blur.example.com" }
+  t.sequence (:blur_urls) {|n| "host#{n}:40010"}
   t.status           { rand 2 }
 end
 
@@ -80,7 +81,7 @@ end
 #create a valid search
 Factory.define :search do |t|
   t.super_query{ rand(1) == 0 } # 50% chance
-  t.columns { ["family_-sep-_ColumnFamily1", 
+  t.column_object { ["family_-sep-_ColumnFamily1", 
                "column_-sep-_ColumnFamily2_-sep-_Column2A",
                "column_-sep-_ColumnFamily2_-sep-_Column2B",
                "column_-sep-_ColumnFamily3_-sep-_Column3C"] }

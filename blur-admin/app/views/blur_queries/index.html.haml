@@ -8,7 +8,7 @@
     #table_wrapper
       = label_tag :blur_table_id, 'Blur Table:'
       = select_tag :blur_table_id,
-          options_for_select([['All', nil]]) +  options_from_collection_for_select(@blur_tables, "id", "table_name")
+        options_for_select([['All', nil]]) + options_from_collection_for_select(@blur_tables.sort {|a,b|a.table_name.downcase <=> b.table_name.downcase}, "id", "table_name")
     #refresh_wrapper
       = hidden_field_tag :time_since_refresh
       = label_tag :refresh_period, 'Refresh:'

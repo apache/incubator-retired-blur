@@ -44,7 +44,7 @@ class SearchController < ApplicationController
     blur_table = BlurTable.find params[:blur_table]
 
 
-    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.host, @current_zookeeper.port)
+    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.blur_urls)
 
     # parse up the response object and reformat it to be @results.  @results holds the data
     # that will be passed to the view. @results is an array of results. Each result is a series
@@ -95,7 +95,6 @@ class SearchController < ApplicationController
     #TODO logic to check if the saved search is valid if it is render the changes to the page
     #otherwise change the state of the save and load what you can
     search = Search.find params['search_id']
-    puts search.column_object.inspect
     render :json => search.to_json(:methods => :column_object)
   end
 

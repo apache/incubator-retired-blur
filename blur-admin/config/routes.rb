@@ -15,6 +15,7 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id/controller/:controller_id' => 'zookeepers#destroy_controller', :via => :delete, :as => :destroy_controller
   match 'zookeepers/:id/shard/:shard_id' => 'zookeepers#destroy_shard', :via => :delete, :as => :destroy_shard
 
+  match 'blur_tables/forget_all' => 'blur_tables#forget_all', :via => :delete, :as => :forget_all_blur_tables
   resources :blur_tables do
     get 'hosts', :on => :member
     get 'schema', :on => :member
@@ -49,12 +50,15 @@ BlurAdmin::Application.routes.draw do
 
   match 'hdfs' => 'hdfs#index', :via => :get
   match 'hdfs/:id/info' => 'hdfs#info', :via => :get, :as => :hdfs_info
+  match 'hdfs/:id/folder_info' => 'hdfs#folder_info', :via=>:get, :as => :hdfs_folder_info
+  match 'hdfs/:id/slow_folder_info' => 'hdfs#slow_folder_info', :via=>:get, :as => :hdfs_slow_folder_info
   match 'hdfs/:id/expand(*fs_path)' => 'hdfs#expand', :via => :get, :as => :hdfs_expand
   match 'hdfs/:id/file_info(*fs_path)' => 'hdfs#file_info', :via => :get, :as => :hdfs_file_info
   match 'hdfs/:id/move' => 'hdfs#move_file', :via => :post, :as => :hdfs_move
   match 'hdfs/:id/mkdir' => 'hdfs#mkdir', :via => :post, :as => :hdfs_mkdir
   match 'hdfs/:id/delete_file' => 'hdfs#delete_file', :via => :post, :as => :hdfs_delete
-
+  match 'hdfs/upload_form' => 'hdfs#upload_form', :via => :get, :as => :hdfs_upload_form
+  match 'hdfs/upload/' => 'hdfs#upload', :via =>:post, :as => :hdfs_upload
   root :to => 'zookeepers#index'
 
   # The priority is based upon order of creation:

@@ -11,11 +11,6 @@ $(document).ready ->
   # Listener to hide dialog on click
   $('.ui-widget-overlay').live "click", -> $(".ui-dialog-content").dialog "close"
   
-  #faster tooltip for the search table
-  $('[title]:not(.action-icon)').tooltip
-    show:
-      delay: 250
-  
   #slower tooltip for the saved buttons  
   $('.action-icon').tooltip
     show:
@@ -24,11 +19,6 @@ $(document).ready ->
   $('html').live 'ajax:success', ->
     # remove old tooltips
     $('.ui-tooltip').remove()
-    
-    #faster tooltip for the search table
-    $('[title]:not(.action-icon)').tooltip
-      show:
-        delay: 250
         
     #slower tooltip for the saved buttons    
     $('.action-icon').tooltip

@@ -121,6 +121,7 @@ $(document).ready ->
       type: 'GET'
       data: $('#blur_table_id, #time_since_refresh, #refresh_period, #filter_form select, #filter_form input').serialize()
       success: (data) ->
+        $('#filter_spinner').hide()
         rows = $($.trim(data)) # rails renders whitespace if there are no rows
         # Updates rows if pause button is not pressed***
         if $('#pause').hasClass 'ui-icon-pause'
@@ -241,6 +242,7 @@ $(document).ready ->
         filter_queries()
         
   $('#refresh').live 'click', ->
+    $('#filter_spinner').show()
     refresh_queries()
 
   # Listener for cancel button (launches dialog box)

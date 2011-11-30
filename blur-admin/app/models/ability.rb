@@ -21,7 +21,7 @@ class Ability
         can :show, [:zookeepers, :help]
         can [:show_current, :make_current], :zookeepers
         can :dashboard, :zookeepers
-        can [:expand, :file_info, :info], :hdfs
+        can [:expand, :file_info, :info, :folder_info, :slow_folder_info], :hdfs
         can :help, :application
 
         # can view everything but query_string on blur_tables:
@@ -48,10 +48,10 @@ class Ability
       end
 
       if user.has_role? :editor
-        can [:update, :destroy, :update_all, :delete_all, :forget], :blur_tables
+        can [:update, :destroy, :update_all, :delete_all, :forget, :forget_all], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller], :zookeepers
-        can [:move_file, :delete_file, :mkdir], :hdfs
+        can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 
       if user.has_role? :auditor
@@ -61,7 +61,7 @@ class Ability
 
       if user.has_role? :admin
         can [:index, :edit, :destroy, :create, :new], :users
-        can :update, :users, User.valid_roles
+        can :update, :users, [:email,User.valid_roles]
       end
 
       if user.has_role? :searcher

@@ -9,7 +9,7 @@ $(document).ready ->
   reload_table_info = (cluster, state) ->
     $('#cluster_' + cluster + ' .' + state + '_tables').load "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", ->
       $(this).parents('.table_accordion').accordion('refresh')
-      setTimeout(-> 
+      setTimeout(->
         reload_table_info(cluster, state)
       10000)
   
@@ -33,6 +33,7 @@ $(document).ready ->
   $('a.hosts, a.schema')
     .live 'ajax:success', (evt, data, status, xhr) ->
       title = $(this).attr('class')
+      $(data).hide()
       $(data).dialog
         modal: true
         draggable: false
@@ -42,9 +43,10 @@ $(document).ready ->
         close: (event, ui) ->
           $(this).remove()
         open: ->
-          $(data).hide()
+          $(this).children().hide()
           setup_filter_tree $(this)
-          $(data).show()
+          $(this).children.show()
+          
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: improve error handling
 
@@ -112,9 +114,12 @@ $(document).ready ->
   $('.forget_blur_table_button').live 'click', ->
     #array of buttons, so that they are dynamic
     btns = {}
-    btns[$(this).val()] = -> 
+    _self = $(this)
+    btns[_self.val()] = ->
       form.submit()
       $(this).dialog 'close'
+      console.log(_self.parents('tr:first'))
+      _self.closest('tr').hide()
     btns["Cancel"] = -> 
       $(this).dialog 'close'
 
@@ -126,6 +131,29 @@ $(document).ready ->
       draggable: false,
       resizable: false,
       buttons: btns,        
+      close: ->
+        $(this).remove()
+
+  # Listener for forget all button (launches dialog box)
+  $('.forget_all_tables_button').live 'click', ->
+    #array of buttons, so that they are dynamic
+    btns = {}
+    _self = $(this)
+    btns[_self.val()] = ->
+      form.submit()
+      $(this).dialog 'close'
+      _self.closest('div.deleted_tables').find('tbody tr').hide()
+    btns["Cancel"] = ->
+      $(this).dialog 'close'
+
+    form = $(this).closest 'form.delete'
+
+    confirm_msg = 'Are you sure you want to forget all the table?'
+    $("<div class='confirm_forget'>#{confirm_msg}</div>").dialog
+      modal: true,
+      draggable: false,
+      resizable: false,
+      buttons: btns,
       close: ->
         $(this).remove()
         

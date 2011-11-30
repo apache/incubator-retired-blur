@@ -1,6 +1,8 @@
 class HdfsController < ApplicationController
   require 'hdfs_thrift_client'
 
+  include ActionView::Helpers::NumberHelper
+  
   def index
     @instances = Hdfs.select 'id, name'
   end
@@ -12,6 +14,28 @@ class HdfsController < ApplicationController
     else
       render :text => "<div>Stats for hdfs ##{params[:id]} not found, is the blur tools agent running?</div>"
     end
+  end
+
+  def folder_info
+    instance = Hdfs.find params[:id]
+    client = HdfsThriftClient.client(instance.host, instance.port)
+    @path = params[:fs_path]
+    @stat = client.stat @path
+    render :layout => false
+  end
+
+  def slow_folder_info
+    instance = Hdfs.find params[:id]
+    client = HdfsThriftClient.client(instance.host, instance.port)
+    @path = params[:fs_path]
+    file_stats = client.ls(@path, true, true)
+    @file_count = @folder_count = @file_size = 0
+    file_stats.each do |stat|
+      @file_size += stat.length
+      @file_count += 1 unless stat.isdir
+      @folder_count += 1 if stat.isdir
+    end
+    render :json => {:file_size=>number_to_human_size(@file_size),:file_count=>@file_count,:folder_count=>@folder_count}
   end
   
   def expand
@@ -37,13 +61,6 @@ class HdfsController < ApplicationController
     path.gsub!(/\/\//, "/")
     client.mkdir(path)
     render :nothing => true
-  end
-  
-  def file_info
-    instance = Hdfs.find params[:id]
-    client = HdfsThriftClient.client(instance.host, instance.port)
-    @stat = client.stat params[:fs_path]
-    render :layout => false
   end
   
   def move_file

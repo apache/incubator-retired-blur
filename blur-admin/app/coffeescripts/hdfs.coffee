@@ -34,6 +34,7 @@ $(document).ready ->
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>
       <li class='delete'><a href='#delete'>Delete</a></li>
+      <li class='props separator'><a href='#dirprops'>Properties</a></li>
       </ul>
       <ul id='hdfs-file-context-menu' class='contextMenu'>
       <li class='rename'><a href='#rename'>Rename</a></li>
@@ -172,6 +173,26 @@ $(document).ready ->
         close: (event, ui) ->
           $(this).remove()
 
+  show_dir_props = (el) ->
+    id = el.attr('hdfs_id')
+    path = el.attr('hdfs_path')
+    title = "Properties for #{path}"
+    $.get Routes.hdfs_folder_info_path(id),{'fs_path':path},(data) ->
+      $(data).dialog
+        modal: true
+        draggable: false
+        resizable: false
+        width: 'auto'
+        title: title
+        open: () ->
+          $.get Routes.hdfs_slow_folder_info_path(id),{'fs_path':path},(data) ->
+            $('#file_count').html(data.file_count)
+            $('#folder_count').html(data.folder_count)
+            $('#file_size').html(data.file_size)
+          return true
+        close: (event, ui) ->
+          $(this).remove()
+
   perform_action = (action, el) ->
     switch action
       when "delete"
@@ -186,6 +207,8 @@ $(document).ready ->
             cut_file(paste_buffer.location, el)
       when "props"
         show_hdfs_props el
+      when "dirprops"
+        show_dir_props el
       when "mkdir"
         make_dir el
       when "rename"

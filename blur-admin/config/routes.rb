@@ -50,6 +50,8 @@ BlurAdmin::Application.routes.draw do
 
   match 'hdfs' => 'hdfs#index', :via => :get
   match 'hdfs/:id/info' => 'hdfs#info', :via => :get, :as => :hdfs_info
+  match 'hdfs/:id/folder_info' => 'hdfs#folder_info', :via=>:get, :as => :hdfs_folder_info
+  match 'hdfs/:id/slow_folder_info' => 'hdfs#slow_folder_info', :via=>:get, :as => :hdfs_slow_folder_info
   match 'hdfs/:id/expand(*fs_path)' => 'hdfs#expand', :via => :get, :as => :hdfs_expand
   match 'hdfs/:id/file_info(*fs_path)' => 'hdfs#file_info', :via => :get, :as => :hdfs_file_info
   match 'hdfs/:id/move' => 'hdfs#move_file', :via => :post, :as => :hdfs_move

@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.PropertyConfigurator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
@@ -37,16 +38,28 @@ public class Agent {
 	public static void main(String[] args) {
 		writePidFile();		
 		Properties configProps = loadConfigParams(args);
+		setupLogger(configProps);
 		new Agent(configProps);
+	}
+	
+	private static void setupLogger(Properties props) {
+		String log4jPropsFile = props.getProperty("log4j.properties", "../conf/log4j.properties");
+		
+		if (new File(log4jPropsFile).exists()) {
+			PropertyConfigurator.configure(log4jPropsFile);
+		} else {
+			log.warn("Unable to find log4j properties file.  Using default logging");
+		}
 	}
 
 	private static Properties loadConfigParams(String[] args) {
+		String configFileName;
 		if (args.length == 0) {
-			log.fatal("Config file location must be the first argument.");
-			System.exit(1);
-		} 
-		
-		File configFile = new File(args[0]);
+			configFileName = "../conf/blur-agent.config";
+		} else {
+			configFileName = args[0];
+		}
+		File configFile = new File(configFileName);			
 		
 		if (!configFile.exists() || !configFile.isFile()) {
 			log.fatal("Unable to find config file at " + configFile.getAbsolutePath());
@@ -65,7 +78,7 @@ public class Agent {
 
 	private static void writePidFile() {
 		try {
-			File pidFile = new File("agent.pid");
+			File pidFile = new File("../agent.pid");
 			PrintWriter pidOut = new PrintWriter(pidFile);
 			log.info("Wrote pid file to: " + pidFile.getAbsolutePath());
 			String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();  

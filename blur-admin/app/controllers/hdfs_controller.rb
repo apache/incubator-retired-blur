@@ -75,7 +75,6 @@ class HdfsController < ApplicationController
       if defined? params[:upload] and defined? params[:path] and defined? params[:hdfs_id]
         f = params[:upload]
         @path = params[:path]
-        puts f.tempfile.size
         if f.tempfile.size > 26214400
           @error = 'Upload is Too Large.  Files must be less than 25Mb.'
         else

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+version=$1
+
 # Setup build directory
 if [ ! -e "build" ]; then
   echo "Creating build directory"
@@ -54,7 +56,7 @@ touch rails/tmp/placeholder.txt
 echo "Copying vendor"
 cp -r ../blur-admin/vendor rails
 
-if [ $1 = "--certs" ]; then
+if [ -n "$2" ] && [ $2 = "--certs" ]; then
   echo "Overlaying Cert Auth"
   cp -r ../etc/cert-auth/proof-0.1.0 rails/vendor/gems/
   cp ../etc/cert-auth/certificate-authentication.rb rails/config/initializers/
@@ -70,7 +72,8 @@ find rails -name .DS_Store | xargs rm
 
 echo "Compressing and zipping rails dir"
 cd ..
-tar -cvzf blur.tar.gz rails/*
+mv rails "rails-$version"
+tar -cvzf "blur-console-$version.tar.gz" "rails-$version"
 
 #################################
 # Prep Agent                    #
@@ -81,22 +84,34 @@ cd ../blur-agent
 mvn clean package -DskipTests
 cd ../build
 
-echo "Copy jar"
 mkdir agent
-cp ../blur-agent/target/blur-agent-*-jar-with-dependencies.jar agent/agent.jar
 
-echo "Copy extra pieces"
-cp ../etc/agent.config.sample agent
-cp ../etc/agent.sh agent
+echo "Create bin dir"
+mkdir agent/bin
+cp ../etc/*.sh agent/bin
+chmod 775 agent/bin/*.sh
+
+echo "Create conf dir"
+mkdir agent/conf
+cp ../etc/agent.config.sample agent/conf
+cp ../etc/log4j.properties agent/conf 
+
+echo "Create lib dir"
+mkdir agent/lib
+cp ../blur-agent/target/blur-agent-*.jar agent/lib/agent.jar
+cp ../blur-agent/target/lib/*.jar agent/lib
+rm agent/lib/junit*.jar
+rm agent/lib/hamcrest*.jar
 
 echo "Compressing and zipping agent dir"
-tar -cvzf agent.tar.gz agent/*
+mv agent "agent-$version"
+tar -cvzf "agent-$version.tar.gz" "agent-$version"
 
 #################################
 # Final packaging               #
 #################################
 
 cp ../etc/INSTALL .
-tar -cvzf blur-tools.tar.gz blur.tar.gz agent.tar.gz INSTALL
+tar -cvzf "blur-tools-$version.tar.gz" "blur-console-$version.tar.gz" "agent-$version.tar.gz" INSTALL
 
 echo "Build complete"

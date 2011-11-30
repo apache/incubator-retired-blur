@@ -5,11 +5,9 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.collections.map.LRUMap;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
@@ -17,6 +15,7 @@ import org.apache.lucene.store.IndexOutput;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class BlockDirectoryTest {
@@ -48,7 +47,7 @@ public class BlockDirectoryTest {
   @SuppressWarnings("unchecked")
   private Cache getBasicCache() {
     return new Cache() {
-      private Map<String, byte[]> map = Collections.synchronizedMap(new LRUMap(8));
+      private Map<String, byte[]> map = new ConcurrentLinkedHashMap.Builder<String, byte[]>().maximumWeightedCapacity(8).build();
 
       @Override
       public void update(String name, long blockId, byte[] buffer) {

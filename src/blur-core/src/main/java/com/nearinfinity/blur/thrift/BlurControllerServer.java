@@ -135,7 +135,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           synchronized (_shardServerLayout) {
             try {
               String shardNodesPath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/online/shard-nodes";
-              String tablesPath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/online/shard-nodes";
+              String tablesPath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/tables";
               _zookeeper.getChildren(shardNodesPath, new Watcher() {
                 @Override
                 public void process(WatchedEvent event) {

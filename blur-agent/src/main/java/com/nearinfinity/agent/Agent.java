@@ -72,6 +72,7 @@ public class Agent {
 		    int p = nameOfRunningVM.indexOf('@');  
 		    String pid = nameOfRunningVM.substring(0, p);
 		    pidOut.write(pid);
+		    pidOut.write("\n");
 		    pidOut.close();
 		} catch (FileNotFoundException e) {
 			log.fatal("Unable to find pid file. " + e.getMessage());

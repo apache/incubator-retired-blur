@@ -9,6 +9,7 @@
 Factory.define :zookeeper do |t|
   t.sequence (:name) { |n| "Test Zookeeper ##{n}" }
   t.sequence (:url)  { |n| "zookeeper#{n}.blur.example.com" }
+  t.sequence (:blur_urls) {|n| "host#{n}:40010"}
   t.status           { rand 2 }
 end
 

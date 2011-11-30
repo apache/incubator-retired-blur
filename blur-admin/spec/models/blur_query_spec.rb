@@ -7,7 +7,9 @@ describe BlurQuery do
     @client.stub :cancelQuery
     @table = Factory.create :blur_table
     @query = Factory.create :blur_query
-    @query.blur_table_id = @table.id
+    @zookeeper = Factory.create :zookeeper
+    @query.blur_table = @table
+    @table.stub(:zookeeper).and_return(@zookeeper)
   end
 
   describe "cancel" do

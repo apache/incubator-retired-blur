@@ -31,7 +31,7 @@
               self._trigger("added", null, innerWindow);
             },
             error: function(data) {
-              innerWindow.html(data);
+              innerWindow.html("error retrieving [" + url + "]");
             }
           });
         }

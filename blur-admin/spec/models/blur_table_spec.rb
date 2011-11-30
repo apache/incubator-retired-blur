@@ -11,15 +11,15 @@ describe BlurTable do
   describe "enable " do
     it "method sends the message to enable the table through thrift" do
       @client.should_receive(:enableTable).with @table.table_name
-      @table.enable 'test', 40000
+      @table.enable 'test:40000'
     end
   end
   
   describe "disable" do
     it "should send the message to disable the table through thrift" do
-      pending "Uncommenting line in model to enable disabling"
-      @table = BlurTable.new :table_name => 'blah', :status => "1git"
-      @client.should_receive(:disableTable).with('blah')
+      #@table = BlurTable.new :table_name => 'blah', :status => "1git"
+      @client.should_receive(:disableTable).with(@table.table_name)
+      @table.disable 'test:40000'
     end
   end  
   

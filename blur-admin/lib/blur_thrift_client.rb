@@ -1,8 +1,11 @@
 class BlurThriftClient
   @@connections = {}
 
-  def self.client(host, port)
-    url = "#{host}:#{port}"
-    @@connections[url] ||= ThriftClient.new Blur::Blur::Client, url, :retries => 10
+  # ["host:port","host2:port"]
+  def self.client(host_port)
+    urls = Array(host_port)
+    blacklist_timeout = urls.size
+    blacklist_timeout = -1 if blacklist_timeout < 2
+    @@connections[urls] ||= ThriftClient.new Blur::Blur::Client, urls, :server_retry_period=> blacklist_timeout, :retries => 10
   end
 end

@@ -44,25 +44,25 @@ class BlurTable < ActiveRecord::Base
     self.status = 0
   end
 
-  def enable(host, port)
+  def enable(blur_urls)
     begin
-      BlurThriftClient.client(host, port).enableTable self.table_name
+      BlurThriftClient.client(blur_urls).enableTable self.table_name
     ensure
       return self.is_enabled?
     end
   end
 
-  def disable(host, port)
+  def disable(blur_urls)
     begin
-      BlurThriftClient.client(host, port).disableTable self.table_name
+      BlurThriftClient.client(blur_urls).disableTable self.table_name
     ensure
       return self.is_enabled?
     end
   end
 
-  def blur_destroy(underlying=false, host, port)
+  def blur_destroy(underlying=false, blur_urls)
     begin
-      BlurThriftClient.client(host, port).removeTable self.table_name, underlying
+      BlurThriftClient.client(blur_urls).removeTable self.table_name, underlying
       return true;
     rescue
       return false;

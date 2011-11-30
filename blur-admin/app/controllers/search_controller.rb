@@ -44,7 +44,7 @@ class SearchController < ApplicationController
     blur_table = BlurTable.find params[:blur_table]
 
 
-    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.host, @current_zookeeper.port)
+    blur_results = search.fetch_results(blur_table.table_name, @current_zookeeper.blur_urls)
 
     # parse up the response object and reformat it to be @results.  @results holds the data
     # that will be passed to the view. @results is an array of results. Each result is a series

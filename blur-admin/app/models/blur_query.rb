@@ -8,9 +8,9 @@ class BlurQuery < ActiveRecord::Base
     begin
       BlurThriftClient.client.cancelQuery self.blur_table.table_name, self.uuid
       return true
-    rescue Exception
+    rescue Exception => e
       logger.error "Exception in BlurQueries.cancel:"
-      logger.error $!, $@
+      logger.error e
       return false
     end
   end

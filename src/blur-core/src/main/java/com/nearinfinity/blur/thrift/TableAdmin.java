@@ -73,16 +73,16 @@ public abstract class TableAdmin implements Iface {
     _zookeeper = zookeeper;
   }
   
-  public boolean isTableEnabled(String table) {
-    return _clusterStatus.isEnabled(table);
+  public boolean isTableEnabled(boolean useCache, String table) {
+    return _clusterStatus.isEnabled(useCache,table);
   }
   
   public void checkTable(String table) throws BlurException {
-    if (inSafeMode(table)) {
+    if (inSafeMode(true,table)) {
       throw new BlurException("Cluster for [" + table + "] is in safe mode",null);
     }
-    if (tableExists(table)) {
-      if (isTableEnabled(table)) {
+    if (tableExists(true,table)) {
+      if (isTableEnabled(true,table)) {
         return;
       }
       throw new BlurException("Table [" + table + "] exists, but is not enabled",null);
@@ -91,13 +91,13 @@ public abstract class TableAdmin implements Iface {
     }
   }
 
-  private boolean inSafeMode(String table) {
+  private boolean inSafeMode(boolean useCache, String table) {
     String cluster = _clusterStatus.getCluster(table);
     return _clusterStatus.isInSafeMode(cluster);
   }
 
-  public boolean tableExists(String table) {
-    return _clusterStatus.exists(table);
+  public boolean tableExists(boolean useCache, String table) {
+    return _clusterStatus.exists(useCache,table);
   }
   
   public ClusterStatus getClusterStatus() {

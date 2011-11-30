@@ -29,50 +29,50 @@ import org.apache.lucene.search.Weight;
 @SuppressWarnings("deprecation")
 public abstract class AbstractWrapperQuery extends Query {
   private static final long serialVersionUID = -4512813621542220044L;
-  protected Query query;
-  protected boolean rewritten;
+  protected Query _query;
+  protected boolean _rewritten;
 
   public AbstractWrapperQuery(Query query) {
     this(query, false);
   }
 
   public AbstractWrapperQuery(Query query, boolean rewritten) {
-    this.query = query;
-    this.rewritten = rewritten;
+    this._query = query;
+    this._rewritten = rewritten;
   }
 
   public abstract Object clone();
 
   public Query combine(Query[] queries) {
-    return query.combine(queries);
+    return _query.combine(queries);
   }
 
   public abstract Weight createWeight(Searcher searcher) throws IOException;
 
   public boolean equals(Object obj) {
-    return query.equals(obj);
+    return _query.equals(obj);
   }
 
   public void extractTerms(Set<Term> terms) {
-    query.extractTerms(terms);
+    _query.extractTerms(terms);
   }
 
   public float getBoost() {
-    return query.getBoost();
+    return _query.getBoost();
   }
 
   public Similarity getSimilarity(Searcher searcher) {
-    return query.getSimilarity(searcher);
+    return _query.getSimilarity(searcher);
   }
 
   public int hashCode() {
-    return query.hashCode();
+    return _query.hashCode();
   }
 
   public abstract Query rewrite(IndexReader reader) throws IOException;
 
   public void setBoost(float b) {
-    query.setBoost(b);
+    _query.setBoost(b);
   }
 
   public abstract String toString();

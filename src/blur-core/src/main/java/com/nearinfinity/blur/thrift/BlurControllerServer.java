@@ -196,7 +196,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   private List<String> getShardList(String table) {
     List<String> shards = new ArrayList<String>();
-    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(table);
+    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true,table);
     for (int i = 0; i < tableDescriptor.shardCount; i++) {
       shards.add(BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
     }
@@ -511,7 +511,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public TableDescriptor describe(final String table) throws BlurException, TException {
     try {
-      return _clusterStatus.getTableDescriptor(table);
+      return _clusterStatus.getTableDescriptor(true,table);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
       throw new BException("Unknown error while trying to describe a table [" + table + "].", e);

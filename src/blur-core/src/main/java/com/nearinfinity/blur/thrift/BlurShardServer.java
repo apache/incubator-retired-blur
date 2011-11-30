@@ -214,7 +214,7 @@ public class BlurShardServer extends ExecutionContextIface {
   }
 
   private void checkTableStatus(ExecutionContext context, String table) throws BlurException, TException {
-    if (!isTableEnabled(table)) {
+    if (!isTableEnabled(true,table)) {
       List<String> tableList = tableList();
       if (tableList.contains(table)) {
         throw new BlurException("Table [" + table + "] is disabled.", null);
@@ -299,7 +299,7 @@ public class BlurShardServer extends ExecutionContextIface {
   public TableDescriptor describe(ExecutionContext context, String table) throws BlurException, TException {
     long start = context.startTime();
     try {
-      return _clusterStatus.getTableDescriptor(table);
+      return _clusterStatus.getTableDescriptor(true,table);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to describe table [" + table + "]", e);
       throw new BException(e.getMessage(), e);

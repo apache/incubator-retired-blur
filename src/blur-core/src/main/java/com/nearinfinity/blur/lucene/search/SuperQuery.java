@@ -49,31 +49,31 @@ public class SuperQuery extends AbstractWrapperQuery {
   }
 
   public Object clone() {
-    return new SuperQuery((Query) query.clone(), scoreType, rewritten);
+    return new SuperQuery((Query) _query.clone(), scoreType, _rewritten);
   }
 
   public Weight createWeight(Searcher searcher) throws IOException {
     if (searcher instanceof BlurSearcher) {
       IndexReaderCache indexReaderCache = ((BlurSearcher) searcher).getIndexReaderCache();
-      Weight weight = query.createWeight(searcher);
-      return new SuperWeight(weight, query.toString(), this, indexReaderCache, scoreType);
+      Weight weight = _query.createWeight(searcher);
+      return new SuperWeight(weight, _query.toString(), this, indexReaderCache, scoreType);
     }
     throw new UnsupportedOperationException("Searcher must be a blur seacher.");
   }
 
   public Query rewrite(IndexReader reader) throws IOException {
-    if (rewritten) {
+    if (_rewritten) {
       return this;
     }
-    return new SuperQuery(query.rewrite(reader), scoreType, true);
+    return new SuperQuery(_query.rewrite(reader), scoreType, true);
   }
 
   public String toString() {
-    return "super:{" + query.toString() + "}";
+    return "super:{" + _query.toString() + "}";
   }
 
   public String toString(String field) {
-    return "super:{" + query.toString(field) + "}";
+    return "super:{" + _query.toString(field) + "}";
   }
 
   public static class SuperWeight extends Weight {

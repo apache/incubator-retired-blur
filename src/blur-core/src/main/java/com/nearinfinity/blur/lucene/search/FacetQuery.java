@@ -46,29 +46,29 @@ public class FacetQuery extends AbstractWrapperQuery {
   }
 
   public String toString() {
-    return "facet:{" + query.toString() + "}";
+    return "facet:{" + _query.toString() + "}";
   }
 
   public String toString(String field) {
-    return "facet:{" + query.toString(field) + "}";
+    return "facet:{" + _query.toString(field) + "}";
   }
 
   @Override
   public Object clone() {
-    return new FacetQuery((Query) query.clone(), facets, counts, rewritten);
+    return new FacetQuery((Query) _query.clone(), facets, counts, _rewritten);
   }
 
   @Override
   public Query rewrite(IndexReader reader) throws IOException {
-    if (rewritten) {
+    if (_rewritten) {
       return this;
     }
-    return new FacetQuery(query.rewrite(reader), facets, counts, true);
+    return new FacetQuery(_query.rewrite(reader), facets, counts, true);
   }
 
   @Override
   public Weight createWeight(Searcher searcher) throws IOException {
-    Weight weight = query.createWeight(searcher);
+    Weight weight = _query.createWeight(searcher);
     return new FacetWeight(weight, getWeights(searcher), counts);
   }
 

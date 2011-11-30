@@ -32,15 +32,15 @@ public abstract class ClusterStatus {
 
   public abstract List<String> getClusterList();
 
-  public abstract TableDescriptor getTableDescriptor(String table);
+  public abstract TableDescriptor getTableDescriptor(boolean useCache, String table);
 
   public abstract List<String> getTableList();
 
   public abstract String getCluster(String table);
 
-  public abstract boolean isEnabled(String table);
+  public abstract boolean isEnabled(boolean useCache, String table);
 
-  public abstract boolean exists(String table);
+  public abstract boolean exists(boolean useCache, String table);
   
   public abstract boolean isInSafeMode(String cluster);
 

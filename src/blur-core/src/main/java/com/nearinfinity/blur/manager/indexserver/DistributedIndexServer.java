@@ -319,12 +319,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     List<String> tables = new ArrayList<String>(map.keySet());
     Map<String, T> removed = new HashMap<String, T>();
     for (String table : tables) {
-      if (!_clusterStatus.exists(table)) {
+      if (!_clusterStatus.exists(true,table)) {
         removed.put(table, map.remove(table));
       }
     }
     for (String table : tables) {
-      if (!_clusterStatus.isEnabled(table)) {
+      if (!_clusterStatus.isEnabled(true,table)) {
         removed.put(table, map.remove(table));
       }
     }
@@ -399,7 +399,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
-    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(table);
+    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true,table);
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.compressionBlockSize;
     if (compressionClass != null) {
@@ -607,7 +607,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     checkTable(table);
     Similarity similarity = _tableSimilarity.get(table);
     if (similarity == null) {
-      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(table);
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true,table);
       String similarityClass = tableDescriptor.similarityClass;
       if (similarityClass == null) {
         similarity = new FairSimilarity();
@@ -635,7 +635,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public TABLE_STATUS getTableStatus(String table) {
     checkTable(table);
-    boolean enabled = _clusterStatus.isEnabled(table);
+    boolean enabled = _clusterStatus.isEnabled(true,table);
     if (enabled) {
       return TABLE_STATUS.ENABLED;
     }
@@ -643,7 +643,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void checkTable(String table) {
-    if (_clusterStatus.exists(table)) {
+    if (_clusterStatus.exists(true,table)) {
       return;
     }
     throw new RuntimeException("Table [" + table + "] does not exist.");
@@ -659,7 +659,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private TableDescriptor getTableDescriptor(String table) {
     TableDescriptor tableDescriptor = _tableDescriptors.get(table);
     if (tableDescriptor == null) {
-      tableDescriptor = _clusterStatus.getTableDescriptor(table);
+      tableDescriptor = _clusterStatus.getTableDescriptor(true,table);
       _tableDescriptors.put(table, tableDescriptor);
     }
     return tableDescriptor;

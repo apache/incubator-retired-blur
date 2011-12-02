@@ -35,26 +35,28 @@ public class BlockCache {
       _locks[i] = new BlockLocks(numberOfBlocksPerBank);
       _lockCounters[i] = new AtomicInteger();
     }
-    
+
     EvictionListener<BlockCacheKey, BlockCacheLocation> listener = new EvictionListener<BlockCacheKey, BlockCacheLocation>() {
-      @Override 
+      @Override
       public void onEviction(BlockCacheKey key, BlockCacheLocation location) {
-        synchronized (location) {
-          int bankId = location.getBankId();
-          int block = location.getBlock();
-          location.setRemoved(true);
-          _locks[bankId].clear(block);
-          _lockCounters[bankId].decrementAndGet();
-        }
-        _metrics.blockCacheEviction.incrementAndGet();
-        _metrics.blockCacheSize.decrementAndGet();
+        releaseLocation(location);
       }
     };
-    _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>()
-        .maximumWeightedCapacity(_maxEntries)
-        .listener(listener)
-        .build();
+    _cache = new ConcurrentLinkedHashMap.Builder<BlockCacheKey, BlockCacheLocation>().maximumWeightedCapacity(_maxEntries).listener(listener).build();
     _blockSize = blockSize;
+  }
+
+  private void releaseLocation(BlockCacheLocation location) {
+    if (location == null) {
+      return;
+    }
+    int bankId = location.getBankId();
+    int block = location.getBlock();
+    location.setRemoved(true);
+    _locks[bankId].clear(block);
+    _lockCounters[bankId].decrementAndGet();
+    _metrics.blockCacheEviction.incrementAndGet();
+    _metrics.blockCacheSize.decrementAndGet();
   }
 
   public boolean store(BlockCacheKey blockCacheKey, byte[] data) {
@@ -68,21 +70,19 @@ public class BlockCache {
         return false;
       }
     }
-    synchronized (location) {
-      if (location.isRemoved()) {
-        return false;
-      }
-      int bankId = location.getBankId();
-      int offset = location.getBlock() * _blockSize;
-      ByteBuffer bank = getBank(bankId);
-      bank.position(offset);
-      bank.put(data, 0, _blockSize);
-      if (newLocation) {
-        _cache.put(blockCacheKey.clone(), location);
-        _metrics.blockCacheSize.incrementAndGet();
-      }
-      return true;
+    if (location.isRemoved()) {
+      return false;
     }
+    int bankId = location.getBankId();
+    int offset = location.getBlock() * _blockSize;
+    ByteBuffer bank = getBank(bankId);
+    bank.position(offset);
+    bank.put(data, 0, _blockSize);
+    if (newLocation) {
+      releaseLocation(_cache.put(blockCacheKey.clone(), location));
+      _metrics.blockCacheSize.incrementAndGet();
+    }
+    return true;
   }
 
   public boolean fetch(BlockCacheKey blockCacheKey, byte[] buffer, int blockOffset, int off, int length) {
@@ -90,52 +90,50 @@ public class BlockCache {
     if (location == null) {
       return false;
     }
-    synchronized (location) {
-      if (location.isRemoved()) {
-        return false;
-      }
-      int bankId = location.getBankId();
-      int offset = location.getBlock() * _blockSize;
-      location.touch();
-      ByteBuffer bank = getBank(bankId);
-      bank.position(offset + blockOffset);
-      bank.get(buffer, off, length);
-      return true;
+    if (location.isRemoved()) {
+      return false;
     }
+    int bankId = location.getBankId();
+    int offset = location.getBlock() * _blockSize;
+    location.touch();
+    ByteBuffer bank = getBank(bankId);
+    bank.position(offset + blockOffset);
+    bank.get(buffer, off, length);
+    return true;
   }
 
   public boolean fetch(BlockCacheKey blockCacheKey, byte[] buffer) {
     checkLength(buffer);
-    return fetch(blockCacheKey,buffer,0,0,_blockSize);
+    return fetch(blockCacheKey, buffer, 0, 0, _blockSize);
   }
 
   private boolean findEmptyLocation(BlockCacheLocation location) {
-    // This is a tight loop that will try and find a location to 
+    // This is a tight loop that will try and find a location to
     // place the block before giving up
     for (int j = 0; j < 10; j++) {
-      OUTER:
-      for (int bankId = 0; bankId < _banks.length; bankId++) {
+      OUTER: for (int bankId = 0; bankId < _banks.length; bankId++) {
         AtomicInteger bitSetCounter = _lockCounters[bankId];
         BlockLocks bitSet = _locks[bankId];
         if (bitSetCounter.get() == _numberOfBlocksPerBank) {
-          //if bitset is full
+          // if bitset is full
           continue OUTER;
         }
-        //this check needs to spin, if a lock was attempted but not obtained the rest of the bank should not be skipped
+        // this check needs to spin, if a lock was attempted but not obtained
+        // the rest of the bank should not be skipped
         int bit = bitSet.nextClearBit(0);
-        INNER:
-        while (bit != -1) {
+        INNER: while (bit != -1) {
           if (bit >= _numberOfBlocksPerBank) {
-            //bit set is full
+            // bit set is full
             continue OUTER;
           }
           if (!bitSet.set(bit)) {
-            //lock was not obtained
-            //this restarts at 0 because another block could have been unlocked while this was executing
+            // lock was not obtained
+            // this restarts at 0 because another block could have been unlocked
+            // while this was executing
             bit = bitSet.nextClearBit(0);
             continue INNER;
           } else {
-            //lock obtained
+            // lock obtained
             location.setBankId(bankId);
             location.setBlock(bit);
             bitSetCounter.incrementAndGet();
@@ -145,7 +143,7 @@ public class BlockCache {
       }
     }
     return false;
-  } 
+  }
 
   private void checkLength(byte[] buffer) {
     if (buffer.length != _blockSize) {

@@ -52,6 +52,7 @@ import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 
@@ -154,8 +155,8 @@ public class SuperQueryTest {
   public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
     Directory directory = new RAMDirectory();
     BlurMetrics metrics = new BlurMetrics(new Configuration());
-    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34)), metrics);
-    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30));
+    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(BlurConstants.LUCENE_VERSION, new StandardAnalyzer(Version.LUCENE_34)), metrics);
+    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(BlurConstants.LUCENE_VERSION));
     RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, analyzer);
     indexWriter.replace(false, newRow("1", newRecord("person", UUID.randomUUID().toString(), newColumn("name", "aaron")), newRecord("person", UUID.randomUUID().toString(),
         newColumn("name", "aaron")), newRecord("address", UUID.randomUUID().toString(), newColumn("street", "sulgrave"))));

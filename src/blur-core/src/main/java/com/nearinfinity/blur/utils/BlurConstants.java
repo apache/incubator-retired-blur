@@ -19,6 +19,8 @@ package com.nearinfinity.blur.utils;
 import java.io.IOException;
 import java.util.Comparator;
 
+import org.apache.lucene.util.Version;
+
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.manager.results.BlurResultComparator;
 import com.nearinfinity.blur.manager.results.BlurResultPeekableIteratorComparator;
@@ -26,6 +28,8 @@ import com.nearinfinity.blur.manager.results.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class BlurConstants {
+  
+  public static final Version LUCENE_VERSION = Version.LUCENE_35;
 
   public static final String CONTROLLER = "controller";
   public static final String SHARD = "shard";

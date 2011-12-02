@@ -52,6 +52,7 @@ import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 
@@ -87,7 +88,7 @@ public class RandomSuperQueryTest {
     BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test").getIndexReaderCache("test"));
     long s = System.currentTimeMillis();
     for (String str : sampler) {
-      Query query = new SuperParser(Version.LUCENE_30, new StandardAnalyzer(Version.LUCENE_30), true, filter, ScoreType.AGGREGATE).parse(str);
+      Query query = new SuperParser(BlurConstants.LUCENE_VERSION, new StandardAnalyzer(BlurConstants.LUCENE_VERSION), true, filter, ScoreType.AGGREGATE).parse(str);
       TopDocs topDocs = searcher.search(query, 10);
       assertTrue("seed [" + seed + "] {" + query + "} {" + s + "}", topDocs.totalHits > 0);
     }
@@ -103,8 +104,8 @@ public class RandomSuperQueryTest {
       columns.put(columnFamilies[i], genWords(random, MIN_NUM_COLS, MAX_NUM_COLS, "col"));
     }
     BlurMetrics metrics = new BlurMetrics(new Configuration());
-    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34)), metrics);
-    RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_34)));
+    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(BlurConstants.LUCENE_VERSION, new StandardAnalyzer(Version.LUCENE_34)), metrics);
+    RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(BlurConstants.LUCENE_VERSION)));
     int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
     for (int i = 0; i < numberOfDocs; i++) {
       indexWriter.replace(false, generatSuperDoc(random, columns, sampler));

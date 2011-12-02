@@ -16,9 +16,11 @@
 
 package com.nearinfinity.blur.analysis;
 
-import static com.nearinfinity.blur.utils.BlurConstants.*;
+import static com.nearinfinity.blur.utils.BlurConstants.LUCENE_VERSION;
+import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+import static com.nearinfinity.blur.utils.BlurConstants.SUPER;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -70,7 +72,7 @@ public class BlurAnalyzer extends Analyzer {
   private Set<String> _fullTextFields = new HashSet<String>();
   private AnalyzerDefinition _analyzerDefinition;
   private PerFieldAnalyzerWrapper _wrapper;
-  private Analyzer _fullTextAnalyzer = new StandardAnalyzer(Version.LUCENE_34);
+  private Analyzer _fullTextAnalyzer = new StandardAnalyzer(LUCENE_VERSION);
 
   public void addSubField(String name) {
     int lastIndexOf = name.lastIndexOf('.');
@@ -171,7 +173,7 @@ public class BlurAnalyzer extends Analyzer {
         return (Analyzer) clazz.newInstance();
       } catch (Exception e) {
         Constructor<?> constructor = clazz.getConstructor(new Class[] { Version.class });
-        return (Analyzer) constructor.newInstance(Version.LUCENE_30);
+        return (Analyzer) constructor.newInstance(LUCENE_VERSION);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);

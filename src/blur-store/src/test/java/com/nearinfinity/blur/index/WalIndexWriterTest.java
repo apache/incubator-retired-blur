@@ -32,6 +32,7 @@ import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class WalIndexWriterTest {
 
+  private static final Version LUCENE_VERSION = Version.LUCENE_35;
   private DirectIODirectory directory;
   
   public interface Action {
@@ -49,7 +50,7 @@ public class WalIndexWriterTest {
   }
   
   private WalIndexWriter getIndexWriter() throws CorruptIndexException, LockObtainFailedException, IOException {
-    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34));
+    IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION));
     Configuration conf = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(conf);
     return new WalIndexWriter(directory, config, blurMetrics);

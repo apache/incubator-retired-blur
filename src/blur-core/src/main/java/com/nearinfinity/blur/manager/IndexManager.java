@@ -55,11 +55,9 @@ import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.QueryWrapperFilter;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.concurrent.ThreadExecutionTimeout;
@@ -67,7 +65,6 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.FacetQuery;
-import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableSearcher;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
@@ -103,7 +100,6 @@ import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 public class IndexManager {
 
   private static final String NOT_FOUND = "NOT_FOUND";
-  private static final Version LUCENE_VERSION = Version.LUCENE_34;
   private static final Log LOG = LogFactory.getLog(IndexManager.class);
 
   private IndexServer _indexServer;
@@ -295,9 +291,9 @@ public class IndexManager {
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;
-        Filter preFilter = parseFilter(table, simpleQuery.preSuperFilter, false, analyzer);
-        Filter postFilter = parseFilter(table, simpleQuery.postSuperFilter, true, analyzer);
-        Query userQuery = parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
+        Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer,_filterCache);
+        Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer,_filterCache);
+        Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
         call = new SimpleQueryParallelCall(table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics, _threadExecutionTimeout, blurQuery.maxQueryTime);
       } else {
@@ -346,7 +342,7 @@ public class IndexManager {
     int size = blurQuery.facets.size();
     Query[] queries = new Query[size];
     for (int i = 0; i < size; i++) {
-      queries[i] = parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
+      queries[i] = QueryParserUtil.parseQuery(blurQuery.facets.get(i).queryStr, blurQuery.simpleQuery.superQueryOn, analyzer, null, null, ScoreType.CONSTANT);
     }
     return queries;
   }
@@ -364,38 +360,6 @@ public class IndexManager {
 
   public List<BlurQueryStatus> currentQueries(String table) {
     return _statusManager.currentQueries(table);
-  }
-
-  private Filter parseFilter(String table, String filterStr, boolean superQueryOn, Analyzer analyzer) throws ParseException, BlurException {
-    if (filterStr == null) {
-      return null;
-    }
-    synchronized (_filterCache) {
-      Filter filter;
-      if (superQueryOn) {
-        filter = _filterCache.fetchPostFilter(table, filterStr);
-      } else {
-        filter = _filterCache.fetchPreFilter(table, filterStr);
-      }
-      if (filter != null) {
-        return filter;
-      }
-      filter = new QueryWrapperFilter(new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, null, ScoreType.CONSTANT).parse(filterStr));
-      if (superQueryOn) {
-        filter = _filterCache.storePostFilter(table, filterStr, filter);
-      } else {
-        filter = _filterCache.storePreFilter(table, filterStr, filter);
-      }
-      return filter;      
-    }
-  }
-
-  private Query parseQuery(String query, boolean superQueryOn, Analyzer analyzer, Filter postFilter, Filter preFilter, ScoreType scoreType) throws ParseException {
-    Query result = new SuperParser(LUCENE_VERSION, analyzer, superQueryOn, preFilter, scoreType).parse(query);
-    if (postFilter == null) {
-      return result;
-    }
-    return new FilteredQuery(result, postFilter);
   }
 
   public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult) throws CorruptIndexException, IOException {

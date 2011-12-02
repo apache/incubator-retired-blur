@@ -168,8 +168,9 @@ If you are running on a single node you may reference a local directory for stor
     TableDescriptor td = new TableDescriptor(); 
     td.setTableUri("file:///tmp/blur-tables/test-table"); // Location on the local machine
     td.setAnalyzerDefinition(ad);
+    td.setName("test-table");
     
-    client.createTable("test-table", td);
+    client.createTable(td);
 
 ### Cluster mode
 
@@ -181,8 +182,9 @@ If you are running in a cluster you have to use HDFS as the table storage.  The 
     td.setShardCount(16);
     td.setTableUri("hdfs://<namenode>:<port>/blur/tables/test-table"); // Location in HDFS
     td.setAnalyzerDefinition(ad);
+    td.setName("test-table");
     
-    client.createTable("test-table", td);
+    client.createTable(td);
 
 Loading Data
 ----

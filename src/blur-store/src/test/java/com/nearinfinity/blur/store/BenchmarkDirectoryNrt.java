@@ -29,11 +29,11 @@ import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.Version;
 
+import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
-import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 
 public class BenchmarkDirectoryNrt {

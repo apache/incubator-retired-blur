@@ -16,7 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
-import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
+import com.nearinfinity.blur.index.DirectIODirectory;
 
 public class BlockDirectoryTest {
 

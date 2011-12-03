@@ -21,8 +21,8 @@ import org.apache.lucene.store.RAMDirectory;
 import org.apache.lucene.util.Version;
 import org.junit.Test;
 
+import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
-import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class CompressedFieldDataDirectoryTest {
 

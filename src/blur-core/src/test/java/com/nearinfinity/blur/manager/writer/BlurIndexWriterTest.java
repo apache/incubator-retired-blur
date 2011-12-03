@@ -15,9 +15,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;

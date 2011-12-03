@@ -33,6 +33,8 @@ import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
+import com.nearinfinity.blur.index.DirectIODirectory;
+
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class HdfsDirectory extends DirectIODirectory {
 

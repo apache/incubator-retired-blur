@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.nearinfinity.blur.metrics.BlurMetrics;
-import com.nearinfinity.blur.store.hdfs.DirectIODirectory;
 
 public class WalIndexWriterTest {
 

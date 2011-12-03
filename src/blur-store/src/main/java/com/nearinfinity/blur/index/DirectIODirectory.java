@@ -1,4 +1,4 @@
-package com.nearinfinity.blur.store.hdfs;
+package com.nearinfinity.blur.index;
 
 import java.io.IOException;
 

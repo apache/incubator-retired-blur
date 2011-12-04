@@ -45,8 +45,8 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.BlurPartitioner;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.IndexManager;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.indexserver.DistributedLayoutManager;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
@@ -123,8 +123,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   private void setupZookeeper() throws KeeperException, InterruptedException {
     BlurUtil.createIfMissing(_zookeeper,"/blur");
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlineControllersPath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurClusterPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlineControllersPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getClustersPath());
   }
 
   private void watchForLayoutChanges(final String cluster) {
@@ -134,8 +134,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         while (_running.get()) {
           synchronized (_shardServerLayout) {
             try {
-              String shardNodesPath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/online/shard-nodes";
-              String tablesPath = ZookeeperPathConstants.getBlurClusterPath() + "/" + cluster + "/tables";
+              String shardNodesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes";
+              String tablesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables";
               _zookeeper.getChildren(shardNodesPath, new Watcher() {
                 @Override
                 public void process(WatchedEvent event) {
@@ -205,7 +205,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   private void registerMyself() {
     try {
-      String onlineControllerPath = ZookeeperPathConstants.getBlurOnlineControllersPath() + "/" + _nodeName;
+      String onlineControllerPath = ZookeeperPathConstants.getOnlineControllersPath() + "/" + _nodeName;
       while (_zookeeper.exists(onlineControllerPath, false) != null) {
         LOG.info("Node [{0}] already registered, waiting for path [{1}] to be released", _nodeName, onlineControllerPath);
         Thread.sleep(3000);

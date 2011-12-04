@@ -28,38 +28,29 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
-import com.nearinfinity.blur.zookeeper.ZkUtils;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 
 public class RemoveTable {
 
   private final static Log LOG = LogFactory.getLog(RemoveTable.class);
 
-  public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
-    String zkConnectionStr = args[0];
-    String table = args[1];
-
-    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-    removeTable(zooKeeper, table, false);
-  }
-
-  public static void removeTable(ZooKeeper zookeeper, String table, boolean deleteIndexFiles) throws IOException, KeeperException, InterruptedException {
-    String blurTablesPath = ZookeeperPathConstants.getBlurTablesPath();
-    if (zookeeper.exists(blurTablesPath + "/" + table, false) == null) {
+  public static void removeTable(ZooKeeper zookeeper, String cluster, String table, boolean deleteIndexFiles) throws IOException, KeeperException, InterruptedException {
+    String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
+    if (zookeeper.exists(blurTablePath, false) == null) {
       throw new IOException("Table [" + table + "] does not exist.");
     }
-    if (zookeeper.exists(blurTablesPath + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled(), false) != null) {
+    if (zookeeper.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) != null) {
       throw new IOException("Table [" + table + "] must be disabled before it can be removed.");
     }
-    String uri = getUri(zookeeper, table);
-    removeAll(zookeeper, blurTablesPath + "/" + table);
+    String uri = getUri(zookeeper, cluster, table);
+    removeAll(zookeeper, blurTablePath);
     if (deleteIndexFiles) {
       removeIndexFiles(uri);
     }
   }
 
-  private static String getUri(ZooKeeper zookeeper, String table) throws KeeperException, InterruptedException {
-    String path = ZookeeperPathConstants.getBlurTablesPath() + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesUri();
+  private static String getUri(ZooKeeper zookeeper, String cluster, String table) throws KeeperException, InterruptedException {
+    String path = ZookeeperPathConstants.getTableUriPath(cluster, table);
     Stat stat = zookeeper.exists(path, false);
     if (stat == null) {
       throw new RuntimeException("Uri missing for table [" + table + "]");

@@ -42,7 +42,8 @@ public abstract class TableAdmin implements Iface {
   @Override
   public void disableTable(String table) throws BlurException, TException {
     try {
-      DisableTable.disableTable(_zookeeper, table);
+      String cluster = _clusterStatus.getCluster(table);
+      DisableTable.disableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during disable of [table={0}]", e, table);
       throw new BException(e.getMessage(), e);
@@ -52,7 +53,8 @@ public abstract class TableAdmin implements Iface {
   @Override
   public void enableTable(String table) throws BlurException, TException {
     try {
-      EnableTable.enableTable(_zookeeper, table);
+      String cluster = _clusterStatus.getCluster(table);
+      EnableTable.enableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during enable of [table={0}]", e, table);
       throw new BException(e.getMessage(), e);
@@ -62,7 +64,8 @@ public abstract class TableAdmin implements Iface {
   @Override
   public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
     try {
-      RemoveTable.removeTable(_zookeeper, table, deleteIndexFiles);
+      String cluster = _clusterStatus.getCluster(table);
+      RemoveTable.removeTable(_zookeeper, cluster, table, deleteIndexFiles);
     } catch (Exception e) {
       LOG.error("Unknown error during remove of [table={0}]", e, table);
       throw new BException(e.getMessage(), e);

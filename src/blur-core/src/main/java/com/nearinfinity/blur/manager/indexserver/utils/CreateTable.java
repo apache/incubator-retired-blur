@@ -37,27 +37,13 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class CreateTable {
 
   private static Log LOG = LogFactory.getLog(CreateTable.class);
-  
-//  public static void main(String[] args) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, NumberFormatException, KeeperException,
-//      InterruptedException {
-//    String zkConnectionStr = args[0];
-//    String table = args[1];
-//    BlurAnalyzer analyzer = BlurAnalyzer.create(new File(args[2]));
-//    String uri = args[3];
-//    String shardCount = args[4];
-//    CompressionCodec codec = getInstance(args[5]);
-//    String blockSize = args[6];
-//
-//    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-//    createTable(zooKeeper, table, analyzer, uri, Integer.parseInt(shardCount), codec, Integer.parseInt(blockSize));
-//  }
 
   @SuppressWarnings("unchecked")
   public static <T> T getInstance(String className, Class<T> c) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -73,41 +59,41 @@ public class CreateTable {
     return t;
   }
 
-  public static void createTable(ZooKeeper zookeeper, TableDescriptor tableDescriptor) throws IOException, KeeperException, InterruptedException, ClassNotFoundException, InstantiationException, IllegalAccessException {
-    String blurTablesPath = ZookeeperPathConstants.getBlurTablesPath();
-    
+  public static void createTable(ZooKeeper zookeeper, TableDescriptor tableDescriptor) throws IOException, KeeperException, InterruptedException, ClassNotFoundException,
+      InstantiationException, IllegalAccessException {
     String table = tableDescriptor.name;
+    String cluster = tableDescriptor.cluster;
     BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
     String uri = tableDescriptor.tableUri;
     int shardCount = tableDescriptor.shardCount;
-    CompressionCodec compressionCodec = getInstance(tableDescriptor.compressionClass,CompressionCodec.class);
+    CompressionCodec compressionCodec = getInstance(tableDescriptor.compressionClass, CompressionCodec.class);
     int compressionBlockSize = tableDescriptor.compressionBlockSize;
-    Similarity similarity = getInstance(tableDescriptor.similarityClass,Similarity.class);
+    Similarity similarity = getInstance(tableDescriptor.similarityClass, Similarity.class);
     if (tableDescriptor.similarityClass == null) {
       similarity = new FairSimilarity();
     } else {
-      similarity = getInstance(tableDescriptor.similarityClass,Similarity.class);
+      similarity = getInstance(tableDescriptor.similarityClass, Similarity.class);
     }
-    
-    
     boolean blockCaching = tableDescriptor.blockCaching;
     Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
-    
-    if (zookeeper.exists(blurTablesPath + "/" + table, false) != null) {
+
+    String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
+
+    if (zookeeper.exists(blurTablePath, false) != null) {
       throw new IOException("Table [" + table + "] already exists.");
     }
     setupFileSystem(uri, shardCount);
-    createPath(zookeeper, analyzer.toJSON().getBytes(), blurTablesPath, table);
-    createPath(zookeeper, uri.getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesUri());
-    createPath(zookeeper, Integer.toString(shardCount).getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesShardCount());
-    createPath(zookeeper, compressionCodec.getClass().getName().getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionCodec());
-    createPath(zookeeper, similarity.getClass().getName().getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesSimilarity());
-    createPath(zookeeper, Integer.toString(compressionBlockSize).getBytes(), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesCompressionBlockSize());
-    createPath(zookeeper, null, ZookeeperPathConstants.getBlurLockPath(table));
+    createPath(zookeeper, blurTablePath, analyzer.toJSON().getBytes());
+    createPath(zookeeper, ZookeeperPathConstants.getTableUriPath(cluster, table), uri.getBytes());
+    createPath(zookeeper, ZookeeperPathConstants.getTableShardCountPath(cluster, table), Integer.toString(shardCount).getBytes());
+    createPath(zookeeper, ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table), compressionCodec.getClass().getName().getBytes());
+    createPath(zookeeper, ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table), Integer.toString(compressionBlockSize).getBytes());
+    createPath(zookeeper, ZookeeperPathConstants.getTableSimilarityPath(cluster, table), similarity.getClass().getName().getBytes());
+    createPath(zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), null);
     if (blockCaching) {
-      createPath(zookeeper, null, blurTablesPath, table, ZookeeperPathConstants.getBlurTablesBlockCaching());
+      createPath(zookeeper, ZookeeperPathConstants.getTableBlockCachingPath(cluster, table), null);
     }
-    createPath(zookeeper, toBytes(blockCachingFileTypes), blurTablesPath, table, ZookeeperPathConstants.getBlurTablesBlockCachingFileTypes());
+    createPath(zookeeper, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), toBytes(blockCachingFileTypes));
   }
 
   private static byte[] toBytes(Set<String> blockCachingFileTypes) {
@@ -118,30 +104,11 @@ public class CreateTable {
     for (String type : blockCachingFileTypes) {
       builder.append(type).append(',');
     }
-    return builder.substring(0, builder.length()-1).getBytes();
+    return builder.substring(0, builder.length() - 1).getBytes();
   }
 
-  private static void createPath(ZooKeeper zookeeper, byte[] data, String... pathes) throws KeeperException, InterruptedException {
-    String path = getPath(pathes);
+  private static void createPath(ZooKeeper zookeeper, String path, byte[] data) throws KeeperException, InterruptedException {
     zookeeper.create(path, data, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-  }
-
-  private static String getPath(String... pathes) {
-    StringBuilder builder = new StringBuilder();
-    for (String p : pathes) {
-      builder.append('/').append(removeLeadingAndTrailingSlashes(p));
-    }
-    return builder.toString();
-  }
-
-  private static Object removeLeadingAndTrailingSlashes(String p) {
-    if (p.startsWith("/")) {
-      p = p.substring(1);
-    }
-    if (p.endsWith("/")) {
-      return p.substring(0, p.length() - 1);
-    }
-    return p;
   }
 
   private static void setupFileSystem(String uri, int shardCount) throws IOException {

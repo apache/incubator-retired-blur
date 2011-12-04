@@ -26,36 +26,27 @@ import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
-import com.nearinfinity.blur.zookeeper.ZkUtils;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 
 public class DisableTable {
 
   private final static Log LOG = LogFactory.getLog(DisableTable.class);
 
-  public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
-    String zkConnectionStr = args[0];
-    String table = args[1];
-
-    ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-    disableTable(zooKeeper, table);
-  }
-
-  public static void disableTable(ZooKeeper zookeeper, String table) throws IOException, InterruptedException, KeeperException {
-    String blurTablesPath = ZookeeperPathConstants.getBlurTablesPath();
-    if (zookeeper.exists(blurTablesPath + "/" + table, false) == null) {
+  public static void disableTable(ZooKeeper zookeeper, String cluster, String table) throws IOException, InterruptedException, KeeperException {
+    if (zookeeper.exists(ZookeeperPathConstants.getTablePath(cluster, table) , false) == null) {
       throw new IOException("Table [" + table + "] does not exist.");
     }
-    if (zookeeper.exists(blurTablesPath + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled(), false) == null) {
+    String blurTableEnabledPath = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
+    if (zookeeper.exists(blurTableEnabledPath , false) == null) {
       throw new IOException("Table [" + table + "] already disabled.");
     }
-    zookeeper.delete(blurTablesPath + "/" + table + "/" + ZookeeperPathConstants.getBlurTablesEnabled(), -1);
-    waitForWriteLocksToClear(zookeeper, table);
+    zookeeper.delete(blurTableEnabledPath, -1);
+    waitForWriteLocksToClear(zookeeper, cluster, table);
   }
 
-  private static void waitForWriteLocksToClear(ZooKeeper zookeeper, String table) throws KeeperException, InterruptedException {
+  private static void waitForWriteLocksToClear(ZooKeeper zookeeper, String cluster, String table) throws KeeperException, InterruptedException {
     final Object object = new Object();
-    String path = ZookeeperPathConstants.getBlurLockPath(table);
+    String path = ZookeeperPathConstants.getLockPath(cluster, table);
     while (true) {
       synchronized (object) {
         List<String> list = zookeeper.getChildren(path, new Watcher() {
@@ -67,6 +58,7 @@ public class DisableTable {
           }
         });
         if (list.isEmpty()) {
+          LOG.info("All [{0}] locks for table [{1}]", list.size(), table);
           return;
         } else {
           LOG.info("Waiting for locks to be released [{0}] total [{1}]", list.size(), list);

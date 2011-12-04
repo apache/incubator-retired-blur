@@ -49,7 +49,7 @@ import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.manager.indexserver.ZookeeperPathConstants;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
@@ -371,10 +371,10 @@ public class BlurUtil {
     LOG.info("Lock released.");
   }
 
-  public static String lockForSafeMode(ZooKeeper zookeeper, String nodeName) throws KeeperException, InterruptedException {
+  public static String lockForSafeMode(ZooKeeper zookeeper, String nodeName, String cluster) throws KeeperException, InterruptedException {
     LOG.info("Getting safe mode lock.");
     final Object lock = new Object();
-    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
     String newPath = zookeeper.create(blurSafemodePath + "/safemode-", nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
     while (true) {
       synchronized (lock) {

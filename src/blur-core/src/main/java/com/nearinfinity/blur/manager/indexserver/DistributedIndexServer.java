@@ -54,6 +54,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.BlurFilterCache;
 import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
@@ -67,6 +68,7 @@ import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class DistributedIndexServer extends AbstractIndexServer {
@@ -103,6 +105,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private long _safeModeDelay;
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
+  private String cluster = BlurConstants.BLUR_CLUSTER;
   
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -113,7 +116,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     setupFlushCacheTimer();
-    String lockPath = BlurUtil.lockForSafeMode(_zookeeper,getNodeName());
+    String lockPath = BlurUtil.lockForSafeMode(_zookeeper,getNodeName(),cluster);
     try {
       registerMyself();
       setupSafeMode();
@@ -128,14 +131,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
   
   private void setupZookeeper() throws KeeperException, InterruptedException {
     BlurUtil.createIfMissing(_zookeeper,"/blur");
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlineControllersPath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurClusterPath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurBasePath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurSafemodePath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurRegisteredShardsPath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlinePath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurOnlineShardsPath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBlurTablesPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlineControllersPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getClustersPath());
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getClusterPath(cluster));
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getSafemodePath(cluster));
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getRegisteredShardsPath(cluster));
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlinePath(cluster));
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlineShardsPath(cluster));
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getTablesPath(cluster));
   }
 
   private void watchForShardServerChanges() {
@@ -145,7 +148,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
         while (_running.get()) {
           synchronized (_layoutManagers) {
             try {
-              _zookeeper.getChildren(ZookeeperPathConstants.getBlurOnlineShardsPath(), new Watcher() {
+              _zookeeper.getChildren(ZookeeperPathConstants.getOnlineShardsPath(cluster), new Watcher() {
                 @Override
                 public void process(WatchedEvent event) {
                   synchronized (_layoutManagers) {
@@ -176,7 +179,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void waitInSafeModeIfNeeded() throws KeeperException, InterruptedException {
-    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
     Stat stat = _zookeeper.exists(blurSafemodePath, false);
     if (stat == null) {
       throw new RuntimeException("Safemode path missing [" + blurSafemodePath + "]");
@@ -194,7 +197,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void setupSafeMode() throws KeeperException, InterruptedException {
-    String shardsPath = ZookeeperPathConstants.getBlurOnlineShardsPath();
+    String shardsPath = ZookeeperPathConstants.getOnlineShardsPath(cluster);
     List<String> children = _zookeeper.getChildren(shardsPath, false);
     if (children.size() == 0) {
       throw new RuntimeException("No shards registered!");
@@ -204,7 +207,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
     LOG.info("First node online, setting up safe mode.");
     long timestamp = System.currentTimeMillis() + _safeModeDelay;
-    String blurSafemodePath = ZookeeperPathConstants.getBlurSafemodePath();
+    String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
     Stat stat = _zookeeper.exists(blurSafemodePath, false);
     if (stat == null) {
       _zookeeper.create(blurSafemodePath, Long.toString(timestamp).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -241,8 +244,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void registerMyself() {
     String nodeName = getNodeName();
-    String registeredShardsPath = ZookeeperPathConstants.getBlurRegisteredShardsPath() + "/" + nodeName;
-    String onlineShardsPath = ZookeeperPathConstants.getBlurOnlineShardsPath() + "/" + nodeName;
+    String registeredShardsPath = ZookeeperPathConstants.getRegisteredShardsPath(cluster) + "/" + nodeName;
+    String onlineShardsPath = ZookeeperPathConstants.getOnlineShardsPath(cluster) + "/" + nodeName;
     try {
       if (_zookeeper.exists(registeredShardsPath, false) == null) {
         _zookeeper.create(registeredShardsPath, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -394,7 +397,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     Path tablePath = new Path(getTableDescriptor(table).tableUri);
     Path hdfsDirPath = new Path(tablePath, shard);
 
-    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getBlurLockPath(table), shard, getNodeName());
+    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(BlurConstants.BLUR_CLUSTER, table), shard, getNodeName());
 
     DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);

@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.apache.thrift.server.THsHaServer;
+import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.THsHaServer.Args;
 import org.apache.thrift.transport.TNonblockingServerSocket;
 import org.apache.thrift.transport.TTransportException;
@@ -22,7 +23,7 @@ public class ThriftServer {
 
   private String _nodeName;
   private Iface _iface;
-  private THsHaServer _server;
+  private TServer _server;
   private boolean _closed;
   private BlurConfiguration _configuration;
   private int _threadCount;

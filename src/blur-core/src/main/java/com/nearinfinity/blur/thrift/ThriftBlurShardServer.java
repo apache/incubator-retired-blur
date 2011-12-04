@@ -73,6 +73,7 @@ import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurShardServer extends ThriftServer {
@@ -167,6 +168,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     shardServer.setQueryChecker(queryChecker);
     shardServer.init();
+    
+    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(blurMetrics, shardServer, Iface.class);
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
 
@@ -177,9 +180,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setThreadCount(threadCount);
     if (crazyMode) {
       System.err.println("Crazy mode!!!!!");
-      server.setIface(crazyMode(shardServer));
+      server.setIface(crazyMode(iface));
     } else {
-      server.setIface(shardServer);
+      server.setIface(iface);
     }
     server.setConfiguration(configuration);
     

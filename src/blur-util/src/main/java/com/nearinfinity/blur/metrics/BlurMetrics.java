@@ -1,5 +1,8 @@
 package com.nearinfinity.blur.metrics;
 
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configuration;
@@ -10,6 +13,11 @@ import org.apache.hadoop.metrics.Updater;
 import org.apache.hadoop.metrics.jvm.JvmMetrics;
 
 public class BlurMetrics implements Updater {
+  
+  public static class MethodCall {
+    public AtomicLong invokes = new AtomicLong();
+    public AtomicLong times = new AtomicLong();
+  }
 
   public AtomicLong blockCacheHit = new AtomicLong(0);
   public AtomicLong blockCacheMiss = new AtomicLong(0);
@@ -21,6 +29,7 @@ public class BlurMetrics implements Updater {
   public AtomicLong recordWrites = new AtomicLong(0);
   public AtomicLong queriesExternal = new AtomicLong(0);
   public AtomicLong queriesInternal = new AtomicLong(0);
+  public Map<String,MethodCall> methodCalls = new ConcurrentHashMap<String, MethodCall>();
 
   private MetricsRecord _metricsRecord;
   private long _previous = System.nanoTime();
@@ -28,10 +37,14 @@ public class BlurMetrics implements Updater {
   public static void main(String[] args) throws InterruptedException {
     Configuration conf = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(conf);
+    MethodCall methodCall = new MethodCall();
+    blurMetrics.methodCalls.put("test",methodCall);
     for (int i = 0; i < 100; i++) {
       blurMetrics.blockCacheHit.incrementAndGet();
       blurMetrics.blockCacheMiss.incrementAndGet();
-      Thread.sleep(1000);
+      methodCall.invokes.incrementAndGet();
+      methodCall.times.addAndGet(56000000);
+      Thread.sleep(500);
     }
   }
 
@@ -46,7 +59,7 @@ public class BlurMetrics implements Updater {
   public void doUpdates(MetricsContext context) {
     synchronized (this) {
       long now = System.nanoTime();
-      double seconds = (now - _previous) / 1000000000.0;
+      float seconds = (now - _previous) / 1000000000.0f;
       _metricsRecord.setMetric("blockcache.hit", getPerSecond(blockCacheHit.getAndSet(0), seconds));
       _metricsRecord.setMetric("blockcache.miss", getPerSecond(blockCacheMiss.getAndSet(0), seconds));
       _metricsRecord.setMetric("blockcache.eviction", getPerSecond(blockCacheEviction.getAndSet(0), seconds));
@@ -57,13 +70,23 @@ public class BlurMetrics implements Updater {
       _metricsRecord.setMetric("record.writes", getPerSecond(recordWrites.getAndSet(0), seconds));
       _metricsRecord.setMetric("query.external", getPerSecond(queriesExternal.getAndSet(0), seconds));
       _metricsRecord.setMetric("query.internal", getPerSecond(queriesInternal.getAndSet(0), seconds));
+      for (Entry<String,MethodCall> entry : methodCalls.entrySet()) {
+        String key = entry.getKey();
+        MethodCall value = entry.getValue();
+        long invokes = value.invokes.getAndSet(0);
+        long times = value.times.getAndSet(0);
+        
+        float avgTimes = (times / (float) invokes) / 1000000000.0f;
+        _metricsRecord.setMetric("blur.metrics.methodcalls." + key + ".count", getPerSecond(invokes, seconds));
+        _metricsRecord.setMetric("blur.metrics.methodcalls." + key + ".time", avgTimes);
+      }
       _previous = now;
     }
     _metricsRecord.update();
   }
 
-  private long getPerSecond(long value, double seconds) {
-    return (long) (value / seconds);
+  private float getPerSecond(long value, float seconds) {
+    return (float) (value / seconds);
   }
 
 }

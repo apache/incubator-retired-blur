@@ -23,7 +23,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -51,6 +53,8 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
+import com.nearinfinity.blur.metrics.BlurMetrics;
+import com.nearinfinity.blur.metrics.BlurMetrics.MethodCall;
 import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
@@ -71,6 +75,29 @@ public class BlurUtil {
 
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
+
+  @SuppressWarnings("unchecked")
+  public static <T extends Iface> T recordMethodCallsAndAverageTimes(final BlurMetrics metrics, final T t, Class<T> clazz) {
+    InvocationHandler handler = new InvocationHandler() {
+      @Override
+      public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        long start = System.nanoTime();
+        try {
+          return method.invoke(t, args);
+        } finally {
+          long end = System.nanoTime();
+          MethodCall methodCall = metrics.methodCalls.get(method.getName());
+          if (methodCall == null) {
+            methodCall = new MethodCall();
+            metrics.methodCalls.put(method.getName(),methodCall);
+          }
+          methodCall.invokes.incrementAndGet();
+          methodCall.times.addAndGet(end-start);
+        }
+      }
+    };
+    return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[] { clazz }, handler);
+  }
 
   public static BlurQuery newSimpleQuery(String query) {
     BlurQuery blurQuery = new BlurQuery();

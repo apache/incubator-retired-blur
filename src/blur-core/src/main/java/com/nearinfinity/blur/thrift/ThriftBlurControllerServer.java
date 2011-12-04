@@ -32,6 +32,7 @@ import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
@@ -45,9 +46,12 @@ import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
+import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientRemote;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
 public class ThriftBlurControllerServer extends ThriftServer {
@@ -62,6 +66,9 @@ public class ThriftBlurControllerServer extends ThriftServer {
     
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT,-1);
+    
+    Configuration config = new Configuration();
+    BlurMetrics blurMetrics = new BlurMetrics(config);
 
     String nodeName = ThriftBlurShardServer.getNodeName(configuration, BLUR_CONTROLLER_HOSTNAME);
     nodeName = nodeName + ":" + bindPort;
@@ -92,6 +99,8 @@ public class ThriftBlurControllerServer extends ThriftServer {
     controllerServer.setQueryChecker(queryChecker);
     controllerServer.setThreadCount(configuration.getInt(BLUR_CONTROLLER_SERVER_REMOTE_THREAD_COUNT, 64));
     controllerServer.init();
+    
+    Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(blurMetrics, controllerServer, Iface.class);
 
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
 
@@ -103,9 +112,9 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setThreadCount(threadCount);
     if (crazyMode) {
       System.err.println("Crazy mode!!!!!");
-      server.setIface(ThriftBlurShardServer.crazyMode(controllerServer));
+      server.setIface(ThriftBlurShardServer.crazyMode(iface));
     } else {
-      server.setIface(controllerServer);
+      server.setIface(iface);
     }
 
     // This will shutdown the server when the correct path is set in zk

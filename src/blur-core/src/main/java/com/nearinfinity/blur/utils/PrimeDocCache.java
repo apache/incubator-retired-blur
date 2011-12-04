@@ -93,6 +93,7 @@ public class PrimeDocCache {
       while (termDocs.next()) {
         bitSet.set(termDocs.doc());
       }
+      termDocs.close();
       segmentMap.put(reader.getSegmentName(), bitSet);
       return bitSet;
     } catch (Exception e) {

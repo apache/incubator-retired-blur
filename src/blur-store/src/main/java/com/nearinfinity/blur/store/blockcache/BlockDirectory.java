@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
@@ -12,6 +11,8 @@ import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
 import com.nearinfinity.blur.index.DirectIODirectory;
+import com.nearinfinity.blur.store.BufferStore;
+import com.nearinfinity.blur.store.CustomBufferedIndexInput;
 
 public class BlockDirectory extends DirectIODirectory {
 
@@ -103,39 +104,36 @@ public class BlockDirectory extends DirectIODirectory {
     return openInput(name,_blockSize);
   }
 
-  static class CachedIndexInput extends BufferedIndexInput {
+  static class CachedIndexInput extends CustomBufferedIndexInput {
 
     private IndexInput _source;
     private int _blockSize;
     private long _fileLength;
-    private byte[] _buffer;
     private String _cacheName;
     private Cache _cache;
 
     public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache) {
+      super(name);
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();
       _cacheName = dirName + "/" + name;
       _cache = cache;
-      _buffer = new byte[_blockSize];
     }
 
     public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache, int bufferSize) {
-      super(bufferSize);
+      super(name,bufferSize);
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();
       _cacheName = dirName + "/" + name;
       _cache = cache;
-      _buffer = new byte[_blockSize];
     }
 
     @Override
     public Object clone() {
       CachedIndexInput clone = (CachedIndexInput) super.clone();
       clone._source = (IndexInput) _source.clone();
-      clone._buffer = new byte[_blockSize];
       return clone;
     }
 
@@ -144,10 +142,10 @@ public class BlockDirectory extends DirectIODirectory {
       return _source.length();
     }
 
-    @Override
-    public void close() throws IOException {
-      _source.close();
-    }
+//    @Override
+//    public void close() throws IOException {
+//      _source.close();
+//    }
 
     @Override
     protected void seekInternal(long pos) throws IOException {
@@ -181,13 +179,22 @@ public class BlockDirectory extends DirectIODirectory {
       long position = getRealPosition(blockId, 0);
       int length = (int) Math.min(_blockSize, _fileLength - position);
       _source.seek(position);
-      _source.readBytes(_buffer, 0, length);
-      System.arraycopy(_buffer, blockOffset, b, off, lengthToReadInBlock);
-      _cache.update(_cacheName, blockId, _buffer);
+      
+      
+      byte[] buf = BufferStore.takeBuffer(_blockSize);
+      _source.readBytes(buf, 0, length);
+      System.arraycopy(buf, blockOffset, b, off, lengthToReadInBlock);
+      _cache.update(_cacheName, blockId, buf);
+      BufferStore.putBuffer(buf);
     }
 
     private boolean checkCache(long blockId, int blockOffset, byte[] b, int off, int lengthToReadInBlock) {
       return _cache.fetch(_cacheName, blockId, blockOffset, b, off, lengthToReadInBlock);
+    }
+
+    @Override
+    protected void closeInternal() throws IOException {
+      _source.close();
     }
   }
 

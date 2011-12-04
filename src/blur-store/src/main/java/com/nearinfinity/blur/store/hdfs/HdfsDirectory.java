@@ -29,11 +29,11 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DFSClient.DFSDataInputStream;
-import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 
 import com.nearinfinity.blur.index.DirectIODirectory;
+import com.nearinfinity.blur.store.CustomBufferedIndexInput;
 
 /** @author Aaron McCurry (amccurry@nearinfinity.com) */
 public class HdfsDirectory extends DirectIODirectory {
@@ -106,9 +106,9 @@ public class HdfsDirectory extends DirectIODirectory {
     name = getRealName(name);
     if (isLayeredFile(name)) {
       HdfsFileReader reader = new HdfsFileReader(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
-      return new HdfsLayeredIndexInput(reader, BUFFER_SIZE);
+      return new HdfsLayeredIndexInput(name, reader, BUFFER_SIZE);
     } else {
-      return new HdfsNormalIndexInput(getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
+      return new HdfsNormalIndexInput(name, getFileSystem(), new Path(_hdfsDirPath, name), BUFFER_SIZE);
     }
   }
 
@@ -187,20 +187,20 @@ public class HdfsDirectory extends DirectIODirectory {
     }
   }
 
-  static class HdfsLayeredIndexInput extends BufferedIndexInput {
+  static class HdfsLayeredIndexInput extends CustomBufferedIndexInput {
 
     private HdfsFileReader _reader;
     private long _length;
     private boolean isClone;
 
-    public HdfsLayeredIndexInput(HdfsFileReader reader, int bufferSize) {
-      super(bufferSize);
+    public HdfsLayeredIndexInput(String name, HdfsFileReader reader, int bufferSize) {
+      super(name, bufferSize);
       _reader = reader;
       _length = _reader.length();
     }
 
     @Override
-    public void close() throws IOException {
+    protected void closeInternal() throws IOException {
       if (!isClone) {
         _reader.close();
       }
@@ -232,13 +232,14 @@ public class HdfsDirectory extends DirectIODirectory {
     }
   }
 
-  static class HdfsNormalIndexInput extends BufferedIndexInput {
+  static class HdfsNormalIndexInput extends CustomBufferedIndexInput {
 
     private final FSDataInputStream _inputStream;
     private final long _length;
     private boolean _clone = false;
 
-    public HdfsNormalIndexInput(FileSystem fileSystem, Path path, int bufferSize) throws IOException {
+    public HdfsNormalIndexInput(String name, FileSystem fileSystem, Path path, int bufferSize) throws IOException {
+      super(name);
       FileStatus fileStatus = fileSystem.getFileStatus(path);
       _length = fileStatus.getLen();
       _inputStream = fileSystem.open(path, bufferSize);
@@ -255,7 +256,7 @@ public class HdfsDirectory extends DirectIODirectory {
     }
 
     @Override
-    public void close() throws IOException {
+    protected void closeInternal() throws IOException {
       if (!_clone) {
         _inputStream.close();
       }
@@ -369,7 +370,7 @@ public class HdfsDirectory extends DirectIODirectory {
   public IndexInput openInputDirectIO(String name) throws IOException {
     Path path = new Path(_hdfsDirPath, name);
     FSDataInputStream inputStream = getFileSystem().open(path);
-    return new DirectIOHdfsIndexInput(inputStream, realFileLength(path));
+    return new DirectIOHdfsIndexInput(name, inputStream, realFileLength(path));
   }
 
   private long realFileLength(Path path) throws IOException {
@@ -378,13 +379,14 @@ public class HdfsDirectory extends DirectIODirectory {
     return fileStatus.getLen();
   }
 
-  static class DirectIOHdfsIndexInput extends BufferedIndexInput {
+  static class DirectIOHdfsIndexInput extends CustomBufferedIndexInput {
 
     private long _length;
     private FSDataInputStream _inputStream;
     private boolean isClone;
 
-    public DirectIOHdfsIndexInput(FSDataInputStream inputStream, long length) throws IOException {
+    public DirectIOHdfsIndexInput(String name, FSDataInputStream inputStream, long length) throws IOException {
+      super(name);
       if (inputStream instanceof DFSDataInputStream) {
         // This is needed because if the file was in progress of being written
         // but
@@ -404,7 +406,7 @@ public class HdfsDirectory extends DirectIODirectory {
     }
 
     @Override
-    public void close() throws IOException {
+    protected void closeInternal() throws IOException {
       if (!isClone) {
         _inputStream.close();
       }

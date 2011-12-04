@@ -35,7 +35,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
 
   private BlurQuery blurQuery;
   private String table;
-  private Map<Thread, Long> threads = new ConcurrentHashMap<Thread, Long>();
+//  private Map<Thread, Long> threads = new ConcurrentHashMap<Thread, Long>();
   private int totalThreads = 0;
   private long startingTime;
   private boolean finished = false;
@@ -54,20 +54,20 @@ public class QueryStatus implements Comparable<QueryStatus> {
   }
 
   public QueryStatus attachThread() {
-    if (CPU_TIME_SUPPORTED) {
-      threads.put(Thread.currentThread(), ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime());
-    } else {
-      threads.put(Thread.currentThread(), -1L);
-    }
+//    if (CPU_TIME_SUPPORTED) {
+//      threads.put(Thread.currentThread(), ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime());
+//    } else {
+//      threads.put(Thread.currentThread(), -1L);
+//    }
     totalThreads++;
     return this;
   }
 
   public QueryStatus deattachThread() {
     Thread thread = Thread.currentThread();
-    long startingThreadCpuTime = threads.remove(thread);
+//    long startingThreadCpuTime = threads.remove(thread);
     long currentThreadCpuTime = bean.getThreadCpuTime(thread.getId());
-    cpuTimeOfFinishedThreads.addAndGet(currentThreadCpuTime - startingThreadCpuTime);
+//    cpuTimeOfFinishedThreads.addAndGet(currentThreadCpuTime - startingThreadCpuTime);
     return this;
   }
 
@@ -77,16 +77,16 @@ public class QueryStatus implements Comparable<QueryStatus> {
 
   public void cancelQuery() {
     interrupted = true;
-    for (Thread t : threads.keySet()) {
-      t.interrupt();
-    }
+//    for (Thread t : threads.keySet()) {
+//      t.interrupt();
+//    }
   }
 
   public BlurQueryStatus getQueryStatus() {
     BlurQueryStatus queryStatus = new BlurQueryStatus();
     queryStatus.query = blurQuery;
     queryStatus.totalShards = totalThreads;
-    queryStatus.completeShards = totalThreads - threads.size();
+//    queryStatus.completeShards = totalThreads - threads.size();
     queryStatus.cpuTimes = getCpuTime();
     queryStatus.state = getQueryState();
 
@@ -111,11 +111,11 @@ public class QueryStatus implements Comparable<QueryStatus> {
     Map<String, CpuTime> cpuTimes = new HashMap<String, CpuTime>();
     if (CPU_TIME_SUPPORTED) {
       // TODO: Put cputime per shard into map
-      for (Entry<Thread, Long> threadEntry : threads.entrySet()) {
-        long startingThreadCpuTime = threadEntry.getValue();
-        long currentThreadCpuTime = bean.getThreadCpuTime(threadEntry.getKey().getId());
-        cpuTime += (currentThreadCpuTime - startingThreadCpuTime);
-      }
+//      for (Entry<Thread, Long> threadEntry : threads.entrySet()) {
+//        long startingThreadCpuTime = threadEntry.getValue();
+//        long currentThreadCpuTime = bean.getThreadCpuTime(threadEntry.getKey().getId());
+//        cpuTime += (currentThreadCpuTime - startingThreadCpuTime);
+//      }
       cpuTime = (cpuTime + cpuTimeOfFinishedThreads.get()) / 1000000; // convert
                                                                       // to ms
                                                                       // from ns

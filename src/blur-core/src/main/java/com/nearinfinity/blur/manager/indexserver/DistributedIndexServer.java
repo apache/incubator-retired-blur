@@ -377,7 +377,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
     checkTable(table);
 
     Set<String> shardsToServe = getShardsToServe(table);
-    setupReaders(table);
+    synchronized (_indexes) {
+      if (!_indexes.containsKey(table)) {
+        _indexes.putIfAbsent(table, new ConcurrentHashMap<String, BlurIndex>());
+      }
+    }
     Map<String, BlurIndex> tableIndexes = _indexes.get(table);
     Set<String> shardsBeingServed = new HashSet<String>(tableIndexes.keySet());
     if (shardsBeingServed.containsAll(shardsToServe)) {
@@ -520,10 +524,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       }
     }
     return result;
-  }
-
-  private void setupReaders(String table) {
-    _indexes.putIfAbsent(table, new ConcurrentHashMap<String, BlurIndex>());
   }
 
   private Set<String> getShardsToServe(String table) {

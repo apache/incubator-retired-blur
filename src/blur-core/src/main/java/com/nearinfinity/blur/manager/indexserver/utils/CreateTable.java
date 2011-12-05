@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
+import org.apache.hadoop.io.compress.DeflateCodec;
 import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -61,22 +62,23 @@ public class CreateTable {
 
   public static void createTable(ZooKeeper zookeeper, TableDescriptor tableDescriptor) throws IOException, KeeperException, InterruptedException, ClassNotFoundException,
       InstantiationException, IllegalAccessException {
-    String table = tableDescriptor.name;
-    String cluster = tableDescriptor.cluster;
-    BlurAnalyzer analyzer = new BlurAnalyzer(tableDescriptor.analyzerDefinition);
-    String uri = tableDescriptor.tableUri;
-    int shardCount = tableDescriptor.shardCount;
+    if (tableDescriptor.compressionClass == null) {
+      tableDescriptor.compressionClass = DeflateCodec.class.getName();
+    }
+    if (tableDescriptor.similarityClass == null) {
+      tableDescriptor.similarityClass = FairSimilarity.class.getName();
+    }
+    String table = nullCheck(tableDescriptor.name,"tableDescriptor.name cannot be null.");
+    String cluster = nullCheck(tableDescriptor.cluster,"tableDescriptor.cluster cannot be null.");
+    BlurAnalyzer analyzer = new BlurAnalyzer(nullCheck(tableDescriptor.analyzerDefinition,"tableDescriptor.analyzerDefinition cannot be null."));
+    String uri = nullCheck(tableDescriptor.tableUri,"tableDescriptor.tableUri cannot be null.");
+    int shardCount = zeroCheck(tableDescriptor.shardCount,"tableDescriptor.shardCount cannot be less than 1");
     CompressionCodec compressionCodec = getInstance(tableDescriptor.compressionClass, CompressionCodec.class);
+    //@TODO check block size
     int compressionBlockSize = tableDescriptor.compressionBlockSize;
     Similarity similarity = getInstance(tableDescriptor.similarityClass, Similarity.class);
-    if (tableDescriptor.similarityClass == null) {
-      similarity = new FairSimilarity();
-    } else {
-      similarity = getInstance(tableDescriptor.similarityClass, Similarity.class);
-    }
     boolean blockCaching = tableDescriptor.blockCaching;
     Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
-
     String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
 
     if (zookeeper.exists(blurTablePath, false) != null) {
@@ -94,6 +96,21 @@ public class CreateTable {
       createPath(zookeeper, ZookeeperPathConstants.getTableBlockCachingPath(cluster, table), null);
     }
     createPath(zookeeper, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), toBytes(blockCachingFileTypes));
+  }
+
+  private static int zeroCheck(int i, String message) {
+    if (i < 1) {
+      throw new RuntimeException(message);
+    }
+    return i;
+  }
+
+  private static <T> T nullCheck(T t, String message) {
+    if (t == null) {
+      throw new NullPointerException(message);
+    }
+    return t;
+    
   }
 
   private static byte[] toBytes(Set<String> blockCachingFileTypes) {

@@ -77,8 +77,8 @@ public class BlurMetrics implements Updater {
         long times = value.times.getAndSet(0);
         
         float avgTimes = (times / (float) invokes) / 1000000000.0f;
-        _metricsRecord.setMetric("blur.metrics.methodcalls." + key + ".count", getPerSecond(invokes, seconds));
-        _metricsRecord.setMetric("blur.metrics.methodcalls." + key + ".time", avgTimes);
+        _metricsRecord.setMetric("methodcalls." + key + ".count", getPerSecond(invokes, seconds));
+        _metricsRecord.setMetric("methodcalls." + key + ".time", avgTimes);
       }
       _previous = now;
     }

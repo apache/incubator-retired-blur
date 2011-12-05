@@ -336,6 +336,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     private Decompressor _decompressor;
 
     public CompressedIndexInput(String name, Directory directory, CompressionCodec codec) throws IOException {
+      super(name);
       _decompressor = codec.createDecompressor();
       if (_decompressor == null) {
         throw new RuntimeException("CompressionCodec [" + codec + "] does not support decompressor on this platform.");

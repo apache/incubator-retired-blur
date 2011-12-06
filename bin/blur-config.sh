@@ -22,6 +22,8 @@ export BLUR_HOME_CONF=$BLUR_HOME/conf
 
 . $BLUR_HOME/conf/blur-env.sh
 
+export BLUR_LOGS=${BLUR_LOGS:=$BLUR_HOME/logs}
+
 BLUR_CLASSPATH=$BLUR_HOME/conf
 
 for f in $HADOOP_HOME/*.jar; do

@@ -29,6 +29,6 @@ if [ -f $PID_FILE ]; then
 fi
 
 LOG_NAME=blur-controller-server-$HOSTNAME
-nohup "$JAVA_HOME"/bin/java $BLUR_CONTROLLER_JVM_OPTIONS -Dblur.logs.dir=$BLUR_HOME/logs -Dblur.log.file=$LOG_NAME.log -cp $BLUR_CLASSPATH com.nearinfinity.blur.thrift.ThriftBlurControllerServer > "$BLUR_HOME/logs/$LOG_NAME.out" 2>&1 < /dev/null &
+nohup "$JAVA_HOME"/bin/java $BLUR_CONTROLLER_JVM_OPTIONS -Dblur.logs.dir=$BLUR_LOGS -Dblur.log.file=$LOG_NAME.log -cp $BLUR_CLASSPATH com.nearinfinity.blur.thrift.ThriftBlurControllerServer > "$BLUR_LOGS/$LOG_NAME.out" 2>&1 < /dev/null &
 echo $! > $PID_FILE
 echo Controller starting as process `cat $PID_FILE`.

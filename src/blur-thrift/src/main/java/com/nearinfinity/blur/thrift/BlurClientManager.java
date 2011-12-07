@@ -21,7 +21,11 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.Socket;
 import java.net.Proxy.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -48,18 +52,30 @@ public class BlurClientManager {
   private static final int MAX_RETRIES = 5;
   private static final long BACK_OFF_TIME = TimeUnit.MILLISECONDS.toMillis(250);
   private static final long MAX_BACK_OFF_TIME = TimeUnit.SECONDS.toMillis(10);
-
+  private static Random random = new Random();
+  
   private static Map<Connection, BlockingQueue<Client>> clientPool = new ConcurrentHashMap<Connection, BlockingQueue<Client>>();
   
   public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
     return execute(connection, command, MAX_RETRIES, BACK_OFF_TIME, MAX_BACK_OFF_TIME);
   }
   
-  @SuppressWarnings("unchecked")
   public static <CLIENT, T> T execute(Connection connection, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
+    return execute(Arrays.asList(connection), command, maxRetries, backOffTime, maxBackOffTime);
+  }
+  
+  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
+    return execute(connections, command, MAX_RETRIES, BACK_OFF_TIME, MAX_BACK_OFF_TIME);
+  }
+  
+  @SuppressWarnings("unchecked")
+  public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
     AtomicInteger retries = new AtomicInteger(0);
     AtomicReference<Blur.Client> client = new AtomicReference<Client>();
+    int prevConnection = -1;
     while (true) {
+      int index = getConnection(connections,prevConnection);
+      Connection connection = connections.get(index);
       client.set(null);
       try {
         client.set(getClient(connection));
@@ -84,6 +100,23 @@ public class BlurClientManager {
     }
   }
   
+  private static int getConnection(List<Connection> connections, int prevConnection) {
+    if (connections == null || connections.isEmpty()) {
+      throw new RuntimeException("Connections are empty or null.");
+    }
+    int size = connections.size();
+    if (size == 1) {
+      return 0;
+    }
+    synchronized (random) {
+      int index;
+      do {
+        index = random.nextInt(size);
+      } while (index == prevConnection);//don't pick the last one
+      return index;
+    }
+  }
+
   private static <CLIENT,T> boolean handleError(Connection connection, AtomicReference<Blur.Client> client, AtomicInteger retries, AbstractCommand<CLIENT, T> command, Exception e, int maxRetries, long backOffTime, long maxBackOffTime) {
     if (client.get() != null) {
       trashClient(connection, client);
@@ -111,10 +144,27 @@ public class BlurClientManager {
   }
 
   public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
-    return execute(new Connection(connectionStr),command,maxRetries,backOffTime,maxBackOffTime);
+    return execute(getCommands(connectionStr),command,maxRetries,backOffTime,maxBackOffTime);
   }
+  
+  private static List<Connection> getCommands(String connectionStr) {
+    int start = 0;
+    int index = connectionStr.indexOf(',');
+    if (index >= 0) {
+      List<Connection> connections = new ArrayList<Connection>();
+      while (index >= 0) {
+        connections.add(new Connection(connectionStr.substring(start, index)));
+        start = index + 1;
+        index = connectionStr.indexOf(',', start);
+      }
+      connections.add(new Connection(connectionStr.substring(start)));
+      return connections;
+    }
+    return Arrays.asList(new Connection(connectionStr));
+  }
+
   public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
-    return execute(new Connection(connectionStr),command);
+    return execute(getCommands(connectionStr),command);
   }
 
   private static void returnClient(Connection connection, AtomicReference<Blur.Client> client) {

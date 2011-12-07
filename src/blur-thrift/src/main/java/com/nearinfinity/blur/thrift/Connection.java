@@ -11,8 +11,12 @@ public class Connection {
 
   public Connection(String connectionStr) {
     int index = connectionStr.indexOf(':');
-    _host = connectionStr.substring(0, index);
-    _port = Integer.parseInt(connectionStr.substring(index + 1));
+    if (index >= 0) {
+      _host = connectionStr.substring(0, index);
+      _port = Integer.parseInt(connectionStr.substring(index + 1));
+    } else {
+      throw new RuntimeException("Connection string of [" + connectionStr + "] does not match 'host1:port,host2:port,...'");
+    }
   }
   
   public Connection(int port, String host, String proxyHost, int proxyPort) {

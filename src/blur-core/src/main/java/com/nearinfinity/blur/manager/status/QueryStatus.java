@@ -18,15 +18,12 @@ package com.nearinfinity.blur.manager.status;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
-import com.nearinfinity.blur.thrift.generated.CpuTime;
 import com.nearinfinity.blur.thrift.generated.QueryState;
 
 public class QueryStatus implements Comparable<QueryStatus> {
@@ -35,39 +32,63 @@ public class QueryStatus implements Comparable<QueryStatus> {
 
   private BlurQuery blurQuery;
   private String table;
-//  private Map<Thread, Long> threads = new ConcurrentHashMap<Thread, Long>();
-  private int totalThreads = 0;
   private long startingTime;
   private boolean finished = false;
   private long finishedTime;
   private AtomicLong cpuTimeOfFinishedThreads = new AtomicLong();
   private ThreadMXBean bean = ManagementFactory.getThreadMXBean();
   private long ttl;
-
+  private AtomicInteger totalThreads = new AtomicInteger();
+  
+  private ThreadLocal<AtomicLong> cpuTimes = new ThreadLocal<AtomicLong>() {
+    @Override
+    protected AtomicLong initialValue() {
+      return new AtomicLong();
+    }
+  };
+  private AtomicLongArray threadsIds;
+  private AtomicInteger threadsIdCount = new AtomicInteger(-1);
+  private AtomicLongArray completedThreadsIds;
+  private AtomicInteger completedThreadsIdCount = new AtomicInteger(-1);
   private boolean interrupted;
+  
 
-  public QueryStatus(long ttl, String table, BlurQuery blurQuery) {
+  public QueryStatus(long ttl, String table, BlurQuery blurQuery, int maxNumberOfThreads) {
     this.ttl = ttl;
     this.table = table;
     this.blurQuery = blurQuery;
     this.startingTime = System.currentTimeMillis();
+    this.threadsIds = new AtomicLongArray(maxNumberOfThreads);
+    this.completedThreadsIds = setInitalValues(new AtomicLongArray(maxNumberOfThreads));
+  }
+
+  private AtomicLongArray setInitalValues(AtomicLongArray atomicLongArray) {
+    for (int i = 0; i < atomicLongArray.length(); i++) {
+      atomicLongArray.set(i, -1L);
+    }
+    return atomicLongArray;
   }
 
   public QueryStatus attachThread() {
-//    if (CPU_TIME_SUPPORTED) {
-//      threads.put(Thread.currentThread(), ManagementFactory.getThreadMXBean().getCurrentThreadCpuTime());
-//    } else {
-//      threads.put(Thread.currentThread(), -1L);
-//    }
-    totalThreads++;
+    if (CPU_TIME_SUPPORTED) {
+      cpuTimes.get().set(bean.getCurrentThreadCpuTime());
+    } else {
+      cpuTimes.get().set(-1L);
+    }
+    totalThreads.incrementAndGet();
+    Thread currentThread = Thread.currentThread();
+    long id = currentThread.getId();
+    int index = threadsIdCount.incrementAndGet();
+    threadsIds.set(index, id);
     return this;
   }
 
   public QueryStatus deattachThread() {
-    Thread thread = Thread.currentThread();
-//    long startingThreadCpuTime = threads.remove(thread);
-    long currentThreadCpuTime = bean.getThreadCpuTime(thread.getId());
-//    cpuTimeOfFinishedThreads.addAndGet(currentThreadCpuTime - startingThreadCpuTime);
+    long startingThreadCpuTime = cpuTimes.get().get();
+    long currentThreadCpuTime = bean.getCurrentThreadCpuTime();
+    cpuTimeOfFinishedThreads.addAndGet(currentThreadCpuTime - startingThreadCpuTime);
+    int count = completedThreadsIdCount.incrementAndGet();
+    completedThreadsIds.set(count, Thread.currentThread().getId());
     return this;
   }
 
@@ -76,20 +97,59 @@ public class QueryStatus implements Comparable<QueryStatus> {
   }
 
   public void cancelQuery() {
+    Thread currentThread = Thread.currentThread();
+    ThreadGroup group = currentThread.getThreadGroup();
+    int count = group.activeCount();
+    Thread[] list = new Thread[count];
+    
+    int num = group.enumerate(list);
+    int threadCount = threadsIdCount.get();
+    while (!isAllCanceled()) {
+      for (int i = 0; i < num; i++) {
+        Thread thread = list[i];
+        long id = thread.getId();
+        INNER:
+        for (int j = 0; j < threadCount; j++) {
+          long threadId = threadsIds.get(j);
+          if (threadId == -1L) {
+            continue INNER;
+          }
+          if (id == threadId && !isAlreadyFinished(id)) {
+            //blowup and remove from list;
+            thread.interrupt();
+            threadsIds.set(j, -1L);
+          }
+        }
+      }
+    }
     interrupted = true;
-//    for (Thread t : threads.keySet()) {
-//      t.interrupt();
-//    }
+  }
+
+  private boolean isAlreadyFinished(long id) {
+    for (int i = 0; i < completedThreadsIds.length(); i++) {
+      if (completedThreadsIds.get(i) == id) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean isAllCanceled() {
+    for (int i = 0; i < threadsIdCount.get(); i++) {
+      long threadId = threadsIds.get(i);
+      if (threadId != 1L) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public BlurQueryStatus getQueryStatus() {
     BlurQueryStatus queryStatus = new BlurQueryStatus();
     queryStatus.query = blurQuery;
-    queryStatus.totalShards = totalThreads;
-//    queryStatus.completeShards = totalThreads - threads.size();
-    queryStatus.cpuTimes = getCpuTime();
+    queryStatus.totalShards = totalThreads.get();
+    queryStatus.completeShards = completedThreadsIdCount.get() + 1;
     queryStatus.state = getQueryState();
-
     if (queryStatus.query != null) {
       queryStatus.uuid = queryStatus.query.uuid;
     }
@@ -104,30 +164,6 @@ public class QueryStatus implements Comparable<QueryStatus> {
     } else {
       return QueryState.RUNNING;
     }
-  }
-
-  private Map<String, CpuTime> getCpuTime() {
-    long cpuTime = 0;
-    Map<String, CpuTime> cpuTimes = new HashMap<String, CpuTime>();
-    if (CPU_TIME_SUPPORTED) {
-      // TODO: Put cputime per shard into map
-//      for (Entry<Thread, Long> threadEntry : threads.entrySet()) {
-//        long startingThreadCpuTime = threadEntry.getValue();
-//        long currentThreadCpuTime = bean.getThreadCpuTime(threadEntry.getKey().getId());
-//        cpuTime += (currentThreadCpuTime - startingThreadCpuTime);
-//      }
-      cpuTime = (cpuTime + cpuTimeOfFinishedThreads.get()) / 1000000; // convert
-                                                                      // to ms
-                                                                      // from ns
-    }
-    long realTime = 0;
-    if (!finished) {
-      realTime = System.currentTimeMillis() - startingTime;
-    } else {
-      realTime = finishedTime - startingTime;
-    }
-    cpuTimes.put("shard", new CpuTime(cpuTime, realTime));
-    return cpuTimes;
   }
 
   public String getTable() {

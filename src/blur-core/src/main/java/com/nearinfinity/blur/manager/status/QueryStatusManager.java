@@ -57,8 +57,10 @@ public class QueryStatusManager {
     statusCleanupTimer.purge();
   }
 
-  public QueryStatus newQueryStatus(String table, BlurQuery blurQuery) {
-    return addStatus(new QueryStatus(statusCleanupTimerDelay, table, blurQuery).attachThread());
+  public QueryStatus newQueryStatus(String table, BlurQuery blurQuery, int maxNumberOfThreads) {
+    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery, maxNumberOfThreads);
+    queryStatus.attachThread();
+    return addStatus(queryStatus);
   }
 
   private QueryStatus addStatus(QueryStatus status) {

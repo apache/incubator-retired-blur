@@ -276,7 +276,7 @@ public class IndexManager {
   }
 
   public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
-    final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery);
+    final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount);
     _blurMetrics.queriesExternal.incrementAndGet();
     try {
       Map<String, BlurIndex> blurIndexes;

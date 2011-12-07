@@ -19,8 +19,6 @@ package com.nearinfinity.blur.utils;
 import java.io.IOException;
 import java.util.Comparator;
 
-import org.apache.lucene.util.Version;
-
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.manager.results.BlurResultComparator;
 import com.nearinfinity.blur.manager.results.BlurResultPeekableIteratorComparator;
@@ -71,6 +69,16 @@ public class BlurConstants {
   public static final String BLUR_CONTROLLER_CACHE_MAX_TIMETOLIVE = "blur.controller.cache.max.timetolive";
   public static final String BLUR_CONTROLLER_CACHE_MAX_QUERYCACHE_ELEMENTS = "blur.controller.cache.max.querycache.elements";
   public static final String BLUR_CONTROLLER_REMOTE_FETCH_COUNT = "blur.controller.remote.fetch.count";
+  
+  public static final String BLUR_CONTROLLER_RETRY_MAX_MUTATE_RETRIES = "blur.controller.retry.max.mutate.retries";
+  public static final String BLUR_CONTROLLER_RETRY_MAX_DEFAULT_RETRIES = "blur.controller.retry.max.default.retries";
+  public static final String BLUR_CONTROLLER_RETRY_FETCH_DELAY = "blur.controller.retry.fetch.delay";
+  public static final String BLUR_CONTROLLER_RETRY_DEFAULT_DELAY = "blur.controller.retry.default.delay";
+  public static final String BLUR_CONTROLLER_RETRY_MUTATE_DELAY = "blur.controller.retry.mutate.delay";
+  public static final String BLUR_CONTROLLER_RETRY_MAX_FETCH_DELAY = "blur.controller.retry.max.fetch.delay";
+  public static final String BLUR_CONTROLLER_RETRY_MAX_MUTATE_DELAY = "blur.controller.retry.max.mutate.delay";
+  public static final String BLUR_CONTROLLER_RETRY_MAX_DEFAULT_DELAY = "blur.controller.retry.max.default.delay";
+  public static final String BLUR_CONTROLLER_RETRY_MAX_FETCH_RETRIES = "blur.controller.retry.max.fetch.retries";
 
   public static final String DEFAULT = "default";
   public static final String BLUR_CLUSTER_NAME = "blur.cluster.name";

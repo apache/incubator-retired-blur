@@ -3,10 +3,33 @@ package com.nearinfinity.blur.store;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
+import com.nearinfinity.blur.BlurConfiguration;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
+
 public class BufferStore {
   
-  private static BlockingQueue<byte[]> _1024 = new ArrayBlockingQueue<byte[]>(1024 * 8);
+  private static final Log LOG = LogFactory.getLog(BufferStore.class);
+  
+  private static BlockingQueue<byte[]> _1024;
   private static BlockingQueue<byte[]> _8192 = new ArrayBlockingQueue<byte[]>(1024 * 8);
+  
+  public static void init(BlurConfiguration configuration) {
+    int _1024Size = configuration.getInt("blur.shard.buffercache.1024", 8192);
+    int _8192Size = configuration.getInt("blur.shard.buffercache.8192", 8192);
+    LOG.info("Initializing the 1024 buffers with [{0}] buffers.",_1024Size);
+    _1024 = setupBuffers(1024,_1024Size);
+    LOG.info("Initializing the 8192 buffers with [{0}] buffers.",_8192Size);
+    _8192 = setupBuffers(8192,_8192Size);
+  }
+
+  private static BlockingQueue<byte[]> setupBuffers(int bufferSize, int count) {
+    BlockingQueue<byte[]> queue = new ArrayBlockingQueue<byte[]>(count);
+    for (int i = 0; i < count; i++) {
+      queue.add(new byte[bufferSize]);
+    }
+    return queue;
+  }
 
   public static byte[] takeBuffer(int bufferSize) {
     switch (bufferSize) {

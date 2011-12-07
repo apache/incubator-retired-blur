@@ -341,6 +341,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
       if (_decompressor == null) {
         throw new RuntimeException("CompressionCodec [" + codec + "] does not support decompressor on this platform.");
       }
+      long s1 = System.nanoTime();
       _indexInput = directory.openInput(name);
       _realLength = _indexInput.length();
       
@@ -350,17 +351,25 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
       int blockCount = _indexInput.readInt();
       _blockSize = _indexInput.readInt();
       _origLength = _indexInput.readLong();
+      long e1 = System.nanoTime();
 
       _blockLengths = new int[blockCount];
       _blockPositions = new long[blockCount];
-
+      
+      long s2 = System.nanoTime();
       _indexInput.seek(_realLength - _SIZES_META_DATA - metaDataLength);
       for (int i = 0; i < blockCount; i++) {
         _blockPositions[i] = _indexInput.readVLong();
         _blockLengths[i] = _indexInput.readVInt();
       }
+      long e2 = System.nanoTime();
       
       setupBuffers(this);
+      
+      double total = (e2-s1) / 1000000.0;
+      double _1st = (e1-s1) / 1000000.0;
+      double _2nd = (e2-s2) / 1000000.0;
+      System.out.println("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd +" with blockCount of " + blockCount + "].");
     }
 
     private static void setupBuffers(CompressedIndexInput input) {
@@ -383,8 +392,8 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     public void close() throws IOException {
       if (!_isClone) {
         _decompressor.end();
-        _indexInput.close();
       }
+      _indexInput.close();
     }
 
     public long getFilePointer() {

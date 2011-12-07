@@ -68,6 +68,7 @@ import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.metrics.BlurMetrics;
+import com.nearinfinity.blur.store.BufferStore;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
@@ -99,6 +100,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     int slabSize = numberOfBlocksPerBank * blockSize;
     LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]",bankCount,directAllocation);
     LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes",slabSize,bankCount,((long) bankCount * (long) slabSize));
+    
+    BufferStore.init(configuration);
     
     BlockCache blockCache = new BlockCache(bankCount, numberOfBlocksPerBank, blockSize, blurMetrics, directAllocation);
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, blurMetrics);

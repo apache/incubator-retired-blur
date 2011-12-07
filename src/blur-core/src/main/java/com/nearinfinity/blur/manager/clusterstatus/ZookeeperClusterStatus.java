@@ -143,7 +143,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 Stat stat = _zk.exists(tablesPath + "/" + table + "/enabled", new Watcher() {
                   @Override
                   public void process(WatchedEvent event) {
-                    _enabledMap.notifyAll();
+                    synchronized (_enabledMap) {
+                      _enabledMap.notifyAll();
+                    }
                   }
                 });
                 AtomicBoolean enabled = _enabledMap.get(table);

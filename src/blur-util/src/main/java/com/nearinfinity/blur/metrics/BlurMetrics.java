@@ -29,10 +29,18 @@ public class BlurMetrics implements Updater {
   public AtomicLong recordWrites = new AtomicLong(0);
   public AtomicLong queriesExternal = new AtomicLong(0);
   public AtomicLong queriesInternal = new AtomicLong(0);
+  public AtomicLong _blurShardBuffercacheAllocate1024 = new AtomicLong(0);
+  public AtomicLong _blurShardBuffercacheAllocate8192 = new AtomicLong(0);
+  public AtomicLong _blurShardBuffercacheAllocateOther = new AtomicLong(0);
+  public AtomicLong _blurShardBuffercacheLost = new AtomicLong(0);
   public Map<String,MethodCall> methodCalls = new ConcurrentHashMap<String, MethodCall>();
 
   private MetricsRecord _metricsRecord;
   private long _previous = System.nanoTime();
+  
+  
+  
+  
 
   public static void main(String[] args) throws InterruptedException {
     Configuration conf = new Configuration();

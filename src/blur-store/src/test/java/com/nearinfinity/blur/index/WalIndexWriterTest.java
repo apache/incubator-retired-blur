@@ -1,5 +1,6 @@
 package com.nearinfinity.blur.index;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -23,7 +24,6 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.SingleInstanceLockFactory;
-import org.apache.lucene.util.Version;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -31,7 +31,6 @@ import com.nearinfinity.blur.metrics.BlurMetrics;
 
 public class WalIndexWriterTest {
 
-  private static final Version LUCENE_VERSION = Version.LUCENE_35;
   private DirectIODirectory directory;
   
   public interface Action {

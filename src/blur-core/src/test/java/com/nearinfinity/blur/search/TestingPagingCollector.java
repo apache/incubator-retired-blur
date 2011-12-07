@@ -31,6 +31,7 @@ package com.nearinfinity.blur.search;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
@@ -45,7 +46,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.nearinfinity.blur.lucene.search.IterablePaging;
@@ -83,7 +83,7 @@ public class TestingPagingCollector {
 
   private static IndexReader getReaderFlatScore(int length) throws Exception {
     RAMDirectory directory = new RAMDirectory();
-    IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer()));
+    IndexWriter indexWriter = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer()));
     for (int i = 0; i < length; i++) {
       Document document = new Document();
       document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
@@ -92,22 +92,5 @@ public class TestingPagingCollector {
     indexWriter.close();
     return IndexReader.open(directory);
   }
-
-  // private static IndexReader getReaderDifferentScores(int length) throws
-  // Exception {
-  // RAMDirectory directory = new RAMDirectory();
-  // IndexWriter indexWriter = new IndexWriter(directory, new KeywordAnalyzer(),
-  // MaxFieldLength.UNLIMITED);
-  // for (int i = 0; i < length; i++) {
-  // Document document = new Document();
-  // int totalAdded = i % 9;
-  // for (int j = 0; j < totalAdded; j++) {
-  // document.add(new Field("f1", "value", Store.NO, Index.ANALYZED_NO_NORMS));
-  // }
-  // indexWriter.addDocument(document);
-  // }
-  // indexWriter.close();
-  // return IndexReader.open(directory);
-  // }
 
 }

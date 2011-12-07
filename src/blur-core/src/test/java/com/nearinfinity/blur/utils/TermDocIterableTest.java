@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.utils;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -34,10 +35,8 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.Before;
 import org.junit.Test;
-
 public class TermDocIterableTest {
 
   private static final int BLOCKS = 10;
@@ -80,7 +79,7 @@ public class TermDocIterableTest {
     FSDirectory directory = FSDirectory.open(new File("./tmp/termdociterable"));
     if (!IndexReader.indexExists(directory)) {
       rm(new File("./tmp/termdociterable"));
-      IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(BlurConstants.LUCENE_VERSION, new StandardAnalyzer(BlurConstants.LUCENE_VERSION)));
+      IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
       for (int i = 0; i < BLOCKS; i++) {
         addDocumentBlock(i, COUNT_PER_BLOCK, writer);
       }

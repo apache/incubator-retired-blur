@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.store;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,10 +27,8 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.NoLockFactory;
-import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
-
 public class UsingHdfsDir {
 
   public static void main(String[] args) throws IOException {
@@ -43,7 +43,7 @@ public class UsingHdfsDir {
     final HdfsDirectory directory = new HdfsDirectory(p);
     directory.setLockFactory(new NoLockFactory());
     
-    IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34)));
+    IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
     for (int i = 0; i < 100000; i++) {
       writer.addDocument(getDoc());
     }

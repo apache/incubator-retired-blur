@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.store;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Arrays;
@@ -7,10 +9,6 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,7 +25,6 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.NoLockFactory;
-import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
@@ -35,7 +32,6 @@ import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
-
 public class BenchmarkDirectoryNrt {
 
   @SuppressWarnings("unchecked")
@@ -57,7 +53,7 @@ public class BenchmarkDirectoryNrt {
     BlockDirectory directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), cache);
 
     while (true) {
-      IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34));
+      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION));
       TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);
       int count = 0;

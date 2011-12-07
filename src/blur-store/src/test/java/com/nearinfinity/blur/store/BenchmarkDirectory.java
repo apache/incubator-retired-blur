@@ -1,5 +1,7 @@
 package com.nearinfinity.blur.store;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
+
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
@@ -25,7 +27,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.util.Version;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -37,7 +38,6 @@ import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
-
 public class BenchmarkDirectory {
 
   public static void main(String[] args) throws IOException {
@@ -70,7 +70,7 @@ public class BenchmarkDirectory {
       long s, e;
 
       s = System.currentTimeMillis();
-      IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, new StandardAnalyzer(Version.LUCENE_34));
+      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION));
       TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);
       IndexWriter writer = new IndexWriter(directory, conf);

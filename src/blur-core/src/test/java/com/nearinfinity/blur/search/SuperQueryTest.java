@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.search;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
@@ -42,7 +43,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -52,10 +52,8 @@ import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
-
 public class SuperQueryTest {
 
   @Test
@@ -155,8 +153,8 @@ public class SuperQueryTest {
   public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
     Directory directory = new RAMDirectory();
     BlurMetrics metrics = new BlurMetrics(new Configuration());
-    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(BlurConstants.LUCENE_VERSION, new StandardAnalyzer(Version.LUCENE_34)), metrics);
-    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(BlurConstants.LUCENE_VERSION));
+    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)), metrics);
+    BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION));
     RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, analyzer);
     indexWriter.replace(false, newRow("1", newRecord("person", UUID.randomUUID().toString(), newColumn("name", "aaron")), newRecord("person", UUID.randomUUID().toString(),
         newColumn("name", "aaron")), newRecord("address", UUID.randomUUID().toString(), newColumn("street", "sulgrave"))));

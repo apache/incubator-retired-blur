@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.manager.indexserver;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -39,7 +41,6 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.DirectIODirectory;
@@ -53,7 +54,6 @@ import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
-
 public class LocalIndexServer extends AbstractIndexServer {
 
   private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
@@ -76,7 +76,7 @@ public class LocalIndexServer extends AbstractIndexServer {
 
   @Override
   public BlurAnalyzer getAnalyzer(String table) {
-    return new BlurAnalyzer(new StandardAnalyzer(Version.LUCENE_30, new HashSet<String>()));
+    return new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION, new HashSet<String>()));
   }
   
   @Override
@@ -132,7 +132,7 @@ public class LocalIndexServer extends AbstractIndexServer {
         if (f.isDirectory()) {
           MMapDirectory directory = new MMapDirectory(f);
           if (!IndexReader.indexExists(directory)) {
-            new IndexWriter(directory, new IndexWriterConfig(Version.LUCENE_34, new KeywordAnalyzer())).close();
+            new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer())).close();
           }
           String shardName = f.getName();
           shards.put(shardName, openIndex(table, directory));

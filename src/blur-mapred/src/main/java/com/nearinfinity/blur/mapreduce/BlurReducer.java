@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.mapreduce;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
@@ -51,7 +52,6 @@ import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.util.IOUtils;
-import org.apache.lucene.util.Version;
 import org.apache.zookeeper.KeeperException;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -65,7 +65,6 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IterableConverter;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
-
 public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritable, BlurRecord> {
 
   protected static final Log LOG = LogFactory.getLog(BlurReducer.class);
@@ -308,7 +307,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   protected void setupWriter(Context context) throws IOException {
     nullCheck(_directory);
     nullCheck(_analyzer);
-    IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_33, _analyzer);
+    IndexWriterConfig config = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
     config.setSimilarity(new FairSimilarity());
     config.setRAMBufferSizeMB(_blurTask.getRamBufferSizeMB());
     TieredMergePolicy mergePolicy = (TieredMergePolicy) config.getMergePolicy();

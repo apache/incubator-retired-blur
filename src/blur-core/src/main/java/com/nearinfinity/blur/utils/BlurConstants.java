@@ -28,8 +28,6 @@ import com.nearinfinity.blur.manager.results.PeekableIterator;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
 
 public class BlurConstants {
-  
-  public static final Version LUCENE_VERSION = Version.LUCENE_35;
 
   public static final String CONTROLLER = "controller";
   public static final String SHARD = "shard";

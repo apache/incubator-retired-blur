@@ -16,7 +16,7 @@
 
 package com.nearinfinity.blur.analysis;
 
-import static com.nearinfinity.blur.utils.BlurConstants.LUCENE_VERSION;
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
@@ -58,7 +58,6 @@ import com.nearinfinity.blur.thrift.generated.AlternateColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnFamilyDefinition;
-
 public class BlurAnalyzer extends Analyzer {
 
   private static final String STANDARD = "org.apache.lucene.analysis.standard.StandardAnalyzer";

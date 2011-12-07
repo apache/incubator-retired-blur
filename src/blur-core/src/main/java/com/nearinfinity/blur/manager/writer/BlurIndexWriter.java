@@ -16,6 +16,7 @@
 
 package com.nearinfinity.blur.manager.writer;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
 import java.io.IOException;
@@ -41,7 +42,6 @@ import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
 import org.apache.lucene.store.LockObtainFailedException;
-import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.concurrent.Executors;
@@ -54,7 +54,6 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
-
 public class BlurIndexWriter extends BlurIndex {
 
   private static final Log LOG = LogFactory.getLog(BlurIndexWriter.class);
@@ -77,7 +76,7 @@ public class BlurIndexWriter extends BlurIndex {
   private Similarity _similarity;
 
   public void init() throws IOException {
-    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_34, _analyzer);
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setIndexDeletionPolicy(_indexDeletionPolicy);
     conf.setSimilarity(_similarity);

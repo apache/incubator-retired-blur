@@ -166,6 +166,11 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   @Override
   protected void cleanup(Context context) throws IOException, InterruptedException {
     _writer.commit();
+    int maxNumSegments = _blurTask.getMaxNumSegments();
+    if (maxNumSegments > 0) {
+      _writer.forceMerge(maxNumSegments);
+      _writer.commit();
+    }
     _writer.close();
     TableDescriptor descriptor = _blurTask.getTableDescriptor();
     
@@ -294,7 +299,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
   protected void setupDirectory(Context context) throws IOException {
     File dir = new File(System.getProperty("java.io.tmpdir"));
-    _directory = FSDirectory.open(new File(dir, "index"));
+    _directory = new ProgressableDirectory(FSDirectory.open(new File(dir, "index")),context);
   }
 
   protected <T> T nullCheck(T o) {

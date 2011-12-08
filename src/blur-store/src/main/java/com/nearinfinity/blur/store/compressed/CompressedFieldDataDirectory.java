@@ -319,13 +319,13 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
   public static class CompressedIndexInput extends IndexInput {
 
     private static final int _SIZES_META_DATA = 24;
-    
+
     private final int[] _blockLengths;
     private final long[] _blockPositions;
     private final long _realLength;
     private final long _origLength;
     private final int _blockSize;
-    
+
     private IndexInput _indexInput;
     private long _pos;
     private boolean _isClone;
@@ -344,8 +344,8 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
       long s1 = System.nanoTime();
       _indexInput = directory.openInput(name);
       _realLength = _indexInput.length();
-      
-      //read meta data
+
+      // read meta data
       _indexInput.seek(_realLength - _SIZES_META_DATA); // 8 - 4 - 4 - 8
       long metaDataLength = _indexInput.readLong();
       int blockCount = _indexInput.readInt();
@@ -355,7 +355,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
 
       _blockLengths = new int[blockCount];
       _blockPositions = new long[blockCount];
-      
+
       long s2 = System.nanoTime();
       _indexInput.seek(_realLength - _SIZES_META_DATA - metaDataLength);
       for (int i = 0; i < blockCount; i++) {
@@ -363,13 +363,13 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
         _blockLengths[i] = _indexInput.readVInt();
       }
       long e2 = System.nanoTime();
-      
+
       setupBuffers(this);
-      
-      double total = (e2-s1) / 1000000.0;
-      double _1st = (e1-s1) / 1000000.0;
-      double _2nd = (e2-s2) / 1000000.0;
-      System.out.println("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd +" with blockCount of " + blockCount + "].");
+
+      double total = (e2 - s1) / 1000000.0;
+      double _1st = (e1 - s1) / 1000000.0;
+      double _2nd = (e2 - s2) / 1000000.0;
+      System.out.println("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd + " with blockCount of " + blockCount + "].");
     }
 
     private static void setupBuffers(CompressedIndexInput input) {
@@ -405,31 +405,27 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     }
 
     public byte readByte() throws IOException {
-      synchronized (_indexInput) {
+      int blockId = getBlockId();
+      if (blockId != _currentBlockId) {
+        fetchBlock(blockId);
+      }
+      int blockPosition = getBlockPosition();
+      _pos++;
+      return _blockBuffer[blockPosition];
+    }
+
+    public void readBytes(byte[] b, int offset, int len) throws IOException {
+      while (len > 0) {
         int blockId = getBlockId();
         if (blockId != _currentBlockId) {
           fetchBlock(blockId);
         }
         int blockPosition = getBlockPosition();
-        _pos++;
-        return _blockBuffer[blockPosition];
-      }
-    }
-
-    public void readBytes(byte[] b, int offset, int len) throws IOException {
-      synchronized (_indexInput) {
-        while (len > 0) {
-          int blockId = getBlockId();
-          if (blockId != _currentBlockId) {
-            fetchBlock(blockId);
-          }
-          int blockPosition = getBlockPosition();
-          int length = Math.min(_blockBufferLength - blockPosition, len);
-          System.arraycopy(_blockBuffer, blockPosition, b, offset, length);
-          _pos += length;
-          len -= length;
-          offset += length;
-        }
+        int length = Math.min(_blockBufferLength - blockPosition, len);
+        System.arraycopy(_blockBuffer, blockPosition, b, offset, length);
+        _pos += length;
+        len -= length;
+        offset += length;
       }
     }
 

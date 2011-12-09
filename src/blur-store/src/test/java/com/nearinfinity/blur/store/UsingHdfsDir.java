@@ -41,7 +41,7 @@ public class UsingHdfsDir {
     fs.delete(p, true);
     
     final HdfsDirectory directory = new HdfsDirectory(p);
-    directory.setLockFactory(new NoLockFactory());
+    directory.setLockFactory(NoLockFactory.getNoLockFactory());
     
     IndexWriter writer = new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
     for (int i = 0; i < 100000; i++) {

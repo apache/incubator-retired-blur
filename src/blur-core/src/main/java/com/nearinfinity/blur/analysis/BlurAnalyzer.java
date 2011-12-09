@@ -105,54 +105,55 @@ public class BlurAnalyzer extends Analyzer {
       analyzerDefinition.setDefaultDefinition(defaultDefinition);
     }
     Analyzer defaultAnalyzer = getAnalyzerByClassName(defaultDefinition.getAnalyzerClassName(), aliases);
-    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer);
     KeywordAnalyzer keywordAnalyzer = new KeywordAnalyzer();
-    _wrapper.addAnalyzer(ROW_ID, keywordAnalyzer);
-    _wrapper.addAnalyzer(RECORD_ID, keywordAnalyzer);
-    _wrapper.addAnalyzer(PRIME_DOC, keywordAnalyzer);
-    _wrapper.addAnalyzer(SUPER, _fullTextAnalyzer);
-    load();
+    Map<String,Analyzer> analyzers = new HashMap<String, Analyzer>();
+    analyzers.put(ROW_ID, keywordAnalyzer);
+    analyzers.put(RECORD_ID, keywordAnalyzer);
+    analyzers.put(PRIME_DOC, keywordAnalyzer);
+    analyzers.put(SUPER, _fullTextAnalyzer);
+    load(analyzers);
+    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer);
   }
 
-  private void load() {
+  private void load(Map<String, Analyzer> analyzers) {
     Map<String, ColumnFamilyDefinition> familyDefinitions = _analyzerDefinition.columnFamilyDefinitions;
     if (familyDefinitions != null) {
       for (String family : familyDefinitions.keySet()) {
         ColumnFamilyDefinition familyDefinition = familyDefinitions.get(family);
-        load(family, familyDefinition);
+        load(family, familyDefinition, analyzers);
       }
     }
   }
 
-  private void load(String family, ColumnFamilyDefinition familyDefinition) {
+  private void load(String family, ColumnFamilyDefinition familyDefinition, Map<String, Analyzer> analyzers) {
     Map<String, ColumnDefinition> columnDefinitions = familyDefinition.columnDefinitions;
     for (String column : columnDefinitions.keySet()) {
       ColumnDefinition columnDefinition = columnDefinitions.get(column);
-      load(family, familyDefinition, column, columnDefinition);
+      load(family, familyDefinition, column, columnDefinition, analyzers);
     }
   }
 
-  private void load(String family, ColumnFamilyDefinition familyDefinition, String column, ColumnDefinition columnDefinition) {
+  private void load(String family, ColumnFamilyDefinition familyDefinition, String column, ColumnDefinition columnDefinition, Map<String, Analyzer> analyzers) {
     Map<String, AlternateColumnDefinition> alternateColumnDefinitions = columnDefinition.alternateColumnDefinitions;
     if (alternateColumnDefinitions != null) {
       for (String subColumn : alternateColumnDefinitions.keySet()) {
         AlternateColumnDefinition alternateColumnDefinition = alternateColumnDefinitions.get(subColumn);
-        load(family, familyDefinition, column, columnDefinition, subColumn, alternateColumnDefinition);
+        load(family, familyDefinition, column, columnDefinition, subColumn, alternateColumnDefinition, analyzers);
       }
     }
     String fieldName = family + "." + column;
     Analyzer analyzer = getAnalyzerByClassName(columnDefinition.getAnalyzerClassName(), aliases);
-    _wrapper.addAnalyzer(fieldName, analyzer);
+    analyzers.put(fieldName, analyzer);
     if (columnDefinition.isFullTextIndex()) {
       _fullTextFields.add(fieldName);
     }
   }
 
   private void load(String family, ColumnFamilyDefinition familyDefinition, String column, ColumnDefinition columnDefinition, String subColumn,
-      AlternateColumnDefinition alternateColumnDefinition) {
+      AlternateColumnDefinition alternateColumnDefinition, Map<String, Analyzer> analyzers) {
     String fieldName = family + "." + column + "." + subColumn;
     Analyzer analyzer = getAnalyzerByClassName(alternateColumnDefinition.getAnalyzerClassName(), aliases);
-    _wrapper.addAnalyzer(fieldName, analyzer);
+    analyzers.put(fieldName, analyzer);
     putStore(fieldName, Store.NO);
     addSubField(fieldName);
   }
@@ -213,10 +214,6 @@ public class BlurAnalyzer extends Analyzer {
 
   public AnalyzerDefinition getAnalyzerDefinition() {
     return _analyzerDefinition;
-  }
-
-  public void addAnalyzer(String fieldName, Analyzer analyzer) {
-    _wrapper.addAnalyzer(fieldName, analyzer);
   }
 
   public void close() {

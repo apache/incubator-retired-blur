@@ -34,7 +34,6 @@ import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 public class BenchmarkDirectoryNrt {
 
-  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws IOException, InterruptedException {
     int numberOfBlocksPerBank = 8192;
     int blockSize = BlockDirectory.BLOCK_SIZE;
@@ -48,7 +47,7 @@ public class BenchmarkDirectoryNrt {
     fs.delete(p, true);
 
     final HdfsDirectory dir = new HdfsDirectory(p);
-    dir.setLockFactory(new NoLockFactory());
+    dir.setLockFactory(NoLockFactory.getNoLockFactory());
 
     BlockDirectory directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), cache);
 

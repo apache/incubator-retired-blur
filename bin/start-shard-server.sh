@@ -26,7 +26,8 @@ while [  $INSTANCE -lt $BLUR_NUMBER_OF_SHARD_SERVER_INSTANCES_PER_MACHINE ]; do
   if [ -f $PID_FILE ]; then
     if kill -0 `cat $PID_FILE` > /dev/null 2>&1; then
       echo Shard server already running as process `cat $PID_FILE`.  Stop it first.
-      exit 1
+      let INSTANCE=INSTANCE+1
+      continue
     fi
   fi
 

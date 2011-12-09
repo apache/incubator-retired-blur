@@ -36,6 +36,17 @@ public class ThriftServer {
       _server.stop();
     }
   }
+  
+  protected static int getServerIndex(String[] args) {
+    for (int i = 0; i < args.length; i++) {
+      if ("-s".equals(args[i])) {
+        if (i + 1 < args.length) {
+          return Integer.parseInt(args[i+1]);
+        }
+      }
+    }
+    return 0;
+  }
 
   public void start() throws TTransportException {
     Blur.Processor<Blur.Iface> processor = new Blur.Processor<Blur.Iface>(_iface);

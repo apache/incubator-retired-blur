@@ -82,7 +82,7 @@ public class ThriftBlurShardServer extends ThriftServer {
   private static final Log LOG = LogFactory.getLog(ThriftBlurShardServer.class);
 
   public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
-    int shardServerIndex = getShardServerIndex(args);
+    int serverIndex = getServerIndex(args);
     LOG.info("Setting up Shard Server");
     
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
@@ -108,9 +108,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT,-1);
-    bindPort += shardServerIndex;
+    bindPort += serverIndex;
     
-    LOG.info("Shard Server using index [{0}] bind address [{1}]",shardServerIndex,bindAddress + ":" + bindPort);
+    LOG.info("Shard Server using index [{0}] bind address [{1}]",serverIndex,bindAddress + ":" + bindPort);
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
     String nodeName = nodeNameHostName + ":" + bindPort;
@@ -212,17 +212,6 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }
     return new KeepOnlyLastCommitDeletionPolicy();
-  }
-
-  private static int getShardServerIndex(String[] args) {
-    for (int i = 0; i < args.length; i++) {
-      if ("-s".equals(args[i])) {
-        if (i + 1 < args.length) {
-          return Integer.parseInt(args[i+1]);
-        }
-      }
-    }
-    return 0;
   }
 
   private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {

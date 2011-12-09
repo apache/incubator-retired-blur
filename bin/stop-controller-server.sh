@@ -19,15 +19,19 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-PID_FILE=$BLUR_HOME/pids/controller.pid
+INSTANCE=0
+while [  $INSTANCE -lt $BLUR_NUMBER_OF_CONTROLLER_SERVER_INSTANCES_PER_MACHINE ]; do
+  PID_FILE=$BLUR_HOME/pids/controller-$INSTANCE.pid
 
-if [ -f $PID_FILE ]; then
-  if kill -0 `cat $PID_FILE` > /dev/null 2>&1; then
-    echo Stopping Controller server with pid [`cat $PID_FILE`].
-    kill `cat $PID_FILE`
+  if [ -f $PID_FILE ]; then
+    if kill -0 `cat $PID_FILE` > /dev/null 2>&1; then
+      echo Stopping Controller [$INSTANCE] server with pid [`cat $PID_FILE`].
+      kill `cat $PID_FILE`
+    else
+      echo No Controller [$INSTANCE] server to stop
+    fi
   else
-    echo No Controller server to stop
+    echo No Controller [$INSTANCE] server to stop
   fi
-else
-  echo No Controller server to stop
-fi
+  let INSTANCE=INSTANCE+1 
+done

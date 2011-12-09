@@ -68,6 +68,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
   private static final Log LOG = LogFactory.getLog(ThriftBlurControllerServer.class);
 
   public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
+    int serverIndex = getServerIndex(args);
     LOG.info("Setting up Controller Server");
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
@@ -75,6 +76,9 @@ public class ThriftBlurControllerServer extends ThriftServer {
     
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
     int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT,-1);
+    bindPort += serverIndex;
+    
+    LOG.info("Shard Server using index [{0}] bind address [{1}]",serverIndex,bindAddress + ":" + bindPort);
     
     Configuration config = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(config);

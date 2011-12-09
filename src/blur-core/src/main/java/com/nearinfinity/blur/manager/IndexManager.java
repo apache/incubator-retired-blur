@@ -311,7 +311,6 @@ public class IndexManager {
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call).merge(merger);
     } finally {
-      status.deattachThread();
       _statusManager.removeStatus(status);
     }
   }

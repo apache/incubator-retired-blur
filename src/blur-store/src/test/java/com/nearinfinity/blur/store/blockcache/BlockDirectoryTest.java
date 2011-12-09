@@ -39,12 +39,9 @@ public class BlockDirectoryTest {
     FSDirectory dir = FSDirectory.open(new File(file, "base"));
     directory = new BlockDirectory("test", DirectIODirectory.wrap(dir), getBasicCache());
     seed = new Random().nextLong();
-    seed = -7671132935535364673L;
-
     random = new Random(seed);
   }
 
-  @SuppressWarnings("unchecked")
   private Cache getBasicCache() {
     return new Cache() {
       private Map<String, byte[]> map = new ConcurrentLinkedHashMap.Builder<String, byte[]>().maximumWeightedCapacity(8).build();

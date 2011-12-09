@@ -18,9 +18,12 @@ package com.nearinfinity.blur.manager.status;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -30,125 +33,70 @@ public class QueryStatus implements Comparable<QueryStatus> {
 
   private final static boolean CPU_TIME_SUPPORTED = ManagementFactory.getThreadMXBean().isCurrentThreadCpuTimeSupported();
 
-  private BlurQuery blurQuery;
-  private String table;
-  private long startingTime;
-  private boolean finished = false;
-  private long finishedTime;
-  private AtomicLong cpuTimeOfFinishedThreads = new AtomicLong();
-  private ThreadMXBean bean = ManagementFactory.getThreadMXBean();
-  private long ttl;
-  private AtomicInteger totalThreads = new AtomicInteger();
-  
-  private ThreadLocal<AtomicLong> cpuTimes = new ThreadLocal<AtomicLong>() {
-    @Override
-    protected AtomicLong initialValue() {
-      return new AtomicLong();
-    }
-  };
-  private AtomicLongArray threadsIds;
-  private AtomicInteger threadsIdCount = new AtomicInteger(-1);
-  private AtomicLongArray completedThreadsIds;
-  private AtomicInteger completedThreadsIdCount = new AtomicInteger(-1);
-  private boolean interrupted;
-  
+  private final BlurQuery _blurQuery;
+  private final String _table;
+  private final long _startingTime;
+  private boolean _finished = false;
+  private long _finishedTime;
+  private final AtomicLong _cpuTimeOfFinishedThreads = new AtomicLong();
+  private final ThreadMXBean _bean = ManagementFactory.getThreadMXBean();
+  private final long _ttl;
+  private final ThreadLocal<Long> _cpuTimes = new ThreadLocal<Long>();
+  private final AtomicBoolean _interrupted = new AtomicBoolean(false);
+  private final AtomicInteger _totalShards = new AtomicInteger();
+  private final AtomicInteger _completeShards = new AtomicInteger();
+  private final List<Thread> _threads = Collections.synchronizedList(new ArrayList<Thread>());
 
-  public QueryStatus(long ttl, String table, BlurQuery blurQuery, int maxNumberOfThreads) {
-    this.ttl = ttl;
-    this.table = table;
-    this.blurQuery = blurQuery;
-    this.startingTime = System.currentTimeMillis();
-    this.threadsIds = new AtomicLongArray(maxNumberOfThreads);
-    this.completedThreadsIds = setInitalValues(new AtomicLongArray(maxNumberOfThreads));
-  }
-
-  private AtomicLongArray setInitalValues(AtomicLongArray atomicLongArray) {
-    for (int i = 0; i < atomicLongArray.length(); i++) {
-      atomicLongArray.set(i, -1L);
-    }
-    return atomicLongArray;
+  public QueryStatus(long ttl, String table, BlurQuery blurQuery) {
+    _ttl = ttl;
+    _table = table;
+    _blurQuery = blurQuery;
+    _startingTime = System.currentTimeMillis();
   }
 
   public QueryStatus attachThread() {
-    if (CPU_TIME_SUPPORTED) {
-      cpuTimes.get().set(bean.getCurrentThreadCpuTime());
-    } else {
-      cpuTimes.get().set(-1L);
+    if (_interrupted.get()) {
+      Thread.currentThread().interrupt();
     }
-    totalThreads.incrementAndGet();
-    Thread currentThread = Thread.currentThread();
-    long id = currentThread.getId();
-    int index = threadsIdCount.incrementAndGet();
-    threadsIds.set(index, id);
+    if (CPU_TIME_SUPPORTED) {
+      _cpuTimes.set(_bean.getCurrentThreadCpuTime());
+    } else {
+      _cpuTimes.set(-1L);
+    }
+    _totalShards.incrementAndGet();
+    _threads.add(Thread.currentThread());
     return this;
   }
 
   public QueryStatus deattachThread() {
-    long startingThreadCpuTime = cpuTimes.get().get();
-    long currentThreadCpuTime = bean.getCurrentThreadCpuTime();
-    cpuTimeOfFinishedThreads.addAndGet(currentThreadCpuTime - startingThreadCpuTime);
-    int count = completedThreadsIdCount.incrementAndGet();
-    completedThreadsIds.set(count, Thread.currentThread().getId());
+    if (_interrupted.get()) {
+      Thread.currentThread().interrupt();
+    }
+    _completeShards.incrementAndGet();
+    if (CPU_TIME_SUPPORTED) {
+      long startingThreadCpuTime = _cpuTimes.get();
+      long currentThreadCpuTime = _bean.getCurrentThreadCpuTime();
+      _cpuTimeOfFinishedThreads.addAndGet(currentThreadCpuTime - startingThreadCpuTime);
+    }
     return this;
   }
 
   public long getUserUuid() {
-    return blurQuery.uuid;
+    return _blurQuery.uuid;
   }
 
   public void cancelQuery() {
-    Thread currentThread = Thread.currentThread();
-    ThreadGroup group = currentThread.getThreadGroup();
-    int count = group.activeCount();
-    Thread[] list = new Thread[count];
-    
-    int num = group.enumerate(list);
-    int threadCount = threadsIdCount.get();
-    while (!isAllCanceled()) {
-      for (int i = 0; i < num; i++) {
-        Thread thread = list[i];
-        long id = thread.getId();
-        INNER:
-        for (int j = 0; j < threadCount; j++) {
-          long threadId = threadsIds.get(j);
-          if (threadId == -1L) {
-            continue INNER;
-          }
-          if (id == threadId && !isAlreadyFinished(id)) {
-            //blowup and remove from list;
-            thread.interrupt();
-            threadsIds.set(j, -1L);
-          }
-        }
-      }
+    _interrupted.set(true);
+    for (Thread t : _threads) {
+      t.interrupt();
     }
-    interrupted = true;
-  }
-
-  private boolean isAlreadyFinished(long id) {
-    for (int i = 0; i < completedThreadsIds.length(); i++) {
-      if (completedThreadsIds.get(i) == id) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  private boolean isAllCanceled() {
-    for (int i = 0; i < threadsIdCount.get(); i++) {
-      long threadId = threadsIds.get(i);
-      if (threadId != 1L) {
-        return false;
-      }
-    }
-    return true;
   }
 
   public BlurQueryStatus getQueryStatus() {
     BlurQueryStatus queryStatus = new BlurQueryStatus();
-    queryStatus.query = blurQuery;
-    queryStatus.totalShards = totalThreads.get();
-    queryStatus.completeShards = completedThreadsIdCount.get() + 1;
+    queryStatus.query = _blurQuery;
+    queryStatus.totalShards = _totalShards.get();
+    queryStatus.completeShards = _completeShards.get();
     queryStatus.state = getQueryState();
     if (queryStatus.query != null) {
       queryStatus.uuid = queryStatus.query.uuid;
@@ -157,9 +105,9 @@ public class QueryStatus implements Comparable<QueryStatus> {
   }
 
   private QueryState getQueryState() {
-    if (interrupted) {
+    if (_interrupted.get()) {
       return QueryState.INTERRUPTED;
-    } else if (finished) {
+    } else if (_finished) {
       return QueryState.COMPLETE;
     } else {
       return QueryState.RUNNING;
@@ -167,27 +115,27 @@ public class QueryStatus implements Comparable<QueryStatus> {
   }
 
   public String getTable() {
-    return table;
+    return _table;
   }
 
   public boolean isFinished() {
-    return finished;
+    return _finished;
   }
 
   public void setFinished(boolean finished) {
-    this.finished = finished;
-    finishedTime = System.currentTimeMillis();
+    this._finished = finished;
+    _finishedTime = System.currentTimeMillis();
   }
 
   public long getFinishedTime() {
-    return finishedTime;
+    return _finishedTime;
   }
 
   public boolean isValidForCleanUp() {
     if (!isFinished()) {
       return false;
     }
-    if (getFinishedTime() + ttl < System.currentTimeMillis()) {
+    if (getFinishedTime() + _ttl < System.currentTimeMillis()) {
       return true;
     }
     return false;
@@ -195,11 +143,11 @@ public class QueryStatus implements Comparable<QueryStatus> {
 
   @Override
   public int compareTo(QueryStatus o) {
-    long startingTime2 = o.startingTime;
-    if (startingTime == startingTime2) {
+    long startingTime2 = o._startingTime;
+    if (_startingTime == startingTime2) {
       int hashCode2 = o.hashCode();
       return hashCode() < hashCode2 ? -1 : 1;
     }
-    return startingTime < startingTime2 ? -1 : 1;
+    return _startingTime < startingTime2 ? -1 : 1;
   }
 }

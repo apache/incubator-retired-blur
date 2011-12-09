@@ -162,8 +162,8 @@ public class BlurIndexWriter extends BlurIndex {
         return;
       }
       try {
-        IndexReader reader = oldReader.reopen(_writer, true);
-        if (oldReader != reader) {
+        IndexReader reader = IndexReader.openIfChanged(oldReader, _writer, true);
+        if (reader != null && oldReader != reader) {
           _indexReaderRef.set(reader);
           _closer.close(oldReader);
         }

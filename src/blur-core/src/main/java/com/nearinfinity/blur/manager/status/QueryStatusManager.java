@@ -35,7 +35,7 @@ public class QueryStatusManager {
   private static final Object CONSTANT_VALUE = new Object();
 
   private Timer statusCleanupTimer;
-  private long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(60);
+  private long statusCleanupTimerDelay = TimeUnit.SECONDS.toMillis(10);
   private ConcurrentHashMap<QueryStatus, Object> currentQueryStatusCollection = new ConcurrentHashMap<QueryStatus, Object>();
 
   public void init() {
@@ -58,14 +58,9 @@ public class QueryStatusManager {
   }
 
   public QueryStatus newQueryStatus(String table, BlurQuery blurQuery, int maxNumberOfThreads) {
-    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery, maxNumberOfThreads);
-    queryStatus.attachThread();
-    return addStatus(queryStatus);
-  }
-
-  private QueryStatus addStatus(QueryStatus status) {
-    currentQueryStatusCollection.put(status, CONSTANT_VALUE);
-    return status;
+    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery);
+    currentQueryStatusCollection.put(queryStatus, CONSTANT_VALUE);
+    return queryStatus;
   }
 
   public void removeStatus(QueryStatus status) {

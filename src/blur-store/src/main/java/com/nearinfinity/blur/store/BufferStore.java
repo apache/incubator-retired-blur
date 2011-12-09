@@ -2,6 +2,7 @@ package com.nearinfinity.blur.store;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.log.Log;
@@ -12,9 +13,12 @@ public class BufferStore {
   
   private static final Log LOG = LogFactory.getLog(BufferStore.class);
   
-  private static BlockingQueue<byte[]> _1024;
-  private static BlockingQueue<byte[]> _8192;
-  private static BlurMetrics _metrics;
+  private static BlockingQueue<byte[]> _1024 = setupBuffers(1024,1);
+  private static BlockingQueue<byte[]> _8192 = setupBuffers(8192,1);
+  public static AtomicLong _blurShardBuffercacheLost = new AtomicLong();
+  public static AtomicLong _blurShardBuffercacheAllocate1024 = new AtomicLong();
+  public static AtomicLong _blurShardBuffercacheAllocate8192 = new AtomicLong();
+  public static AtomicLong _blurShardBuffercacheAllocateOther = new AtomicLong();
   
   public static void init(BlurConfiguration configuration, BlurMetrics metrics) {
     int _1024Size = configuration.getInt("blur.shard.buffercache.1024", 8192);
@@ -23,7 +27,10 @@ public class BufferStore {
     _1024 = setupBuffers(1024,_1024Size);
     LOG.info("Initializing the 8192 buffers with [{0}] buffers.",_8192Size);
     _8192 = setupBuffers(8192,_8192Size);
-    _metrics = metrics;
+    _blurShardBuffercacheLost = metrics._blurShardBuffercacheLost;
+    _blurShardBuffercacheAllocate1024 = metrics._blurShardBuffercacheAllocate1024;
+    _blurShardBuffercacheAllocate8192 = metrics._blurShardBuffercacheAllocate8192;
+    _blurShardBuffercacheAllocateOther = metrics._blurShardBuffercacheAllocateOther;
   }
 
   private static BlockingQueue<byte[]> setupBuffers(int bufferSize, int count) {
@@ -62,7 +69,7 @@ public class BufferStore {
 
   private static void checkReturn(boolean offer) {
     if (!offer) {
-      _metrics._blurShardBuffercacheLost.incrementAndGet();
+      _blurShardBuffercacheLost.incrementAndGet();
     }
   }
   
@@ -70,7 +77,7 @@ public class BufferStore {
     if (buf != null) {
       return buf;
     }
-    _metrics._blurShardBuffercacheAllocate1024.incrementAndGet();
+    _blurShardBuffercacheAllocate1024.incrementAndGet();
     return new byte[1024];
   }
   
@@ -78,12 +85,12 @@ public class BufferStore {
     if (buf != null) {
       return buf;
     }
-    _metrics._blurShardBuffercacheAllocate8192.incrementAndGet();
+    _blurShardBuffercacheAllocate8192.incrementAndGet();
     return new byte[8192];
   }
 
   private static byte[] newBuffer(int size) {
-    _metrics._blurShardBuffercacheAllocateOther.incrementAndGet();
+    _blurShardBuffercacheAllocateOther.incrementAndGet();
     return new byte[size];
   }
 }

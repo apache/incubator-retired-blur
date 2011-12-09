@@ -185,7 +185,9 @@ struct Row {
 
 
 
-
+/**
+ * Select carries the request for information to be retrieved from the stored columns.
+ */
 struct Selector {
   1:bool recordOnly,
   2:string locationId,

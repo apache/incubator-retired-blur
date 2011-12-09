@@ -66,7 +66,9 @@ public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
     if (s1.cpuTimes == null) {
       s1.cpuTimes = new HashMap<String, CpuTime>();
     }
-    s1.cpuTimes.putAll(s2.cpuTimes);
+    if (s2.cpuTimes != null) {
+      s1.cpuTimes.putAll(s2.cpuTimes);
+    }
     return s1;
   }
 

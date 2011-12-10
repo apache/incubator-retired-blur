@@ -47,6 +47,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.QueryCache;
 import com.nearinfinity.blur.utils.QueryCacheEntry;
+import com.nearinfinity.blur.utils.QueryCacheKey;
 
 public class BlurShardServer extends TableAdmin implements Iface {
 
@@ -73,20 +74,20 @@ public class BlurShardServer extends TableAdmin implements Iface {
       BlurQuery original = new BlurQuery(blurQuery);
       if (blurQuery.useCacheIfPresent) {
         LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
-        BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
-        QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
+        QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table, blurQuery);
+        QueryCacheEntry queryCacheEntry = _queryCache.get(key);
         if (_queryCache.isValid(queryCacheEntry, _indexServer.getShardListCurrentServerOnly(table))) {
           LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
           return queryCacheEntry.getBlurResults(blurQuery);
         } else {
-          _queryCache.remove(noralizedBlurQuery);
+          _queryCache.remove(key);
         }
       }
       BlurUtil.setStartTime(original);
       try {
         AtomicLongArray facetCounts = BlurUtil.getAtomicLongArraySameLengthAsList(blurQuery.facets);
         BlurResultIterable hitsIterable = _indexManager.query(table, blurQuery, facetCounts);
-        return _queryCache.cache(original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
+        return _queryCache.cache(table, original, BlurUtil.convertToHits(hitsIterable, blurQuery, facetCounts, _dataFetch, blurQuery.selector, this, table));
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},searchQuery={1}]", e, table, blurQuery);
         throw new BException(e.getMessage(), e);

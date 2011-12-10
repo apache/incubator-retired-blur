@@ -72,6 +72,7 @@ import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.QueryCache;
 import com.nearinfinity.blur.utils.QueryCacheEntry;
+import com.nearinfinity.blur.utils.QueryCacheKey;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 
@@ -242,13 +243,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         BlurQuery original = new BlurQuery(blurQuery);
         if (blurQuery.useCacheIfPresent) {
           LOG.debug("Using cache for query [{0}] on table [{1}].", blurQuery, table);
-          BlurQuery noralizedBlurQuery = _queryCache.getNormalizedBlurQuery(blurQuery);
-          QueryCacheEntry queryCacheEntry = _queryCache.get(noralizedBlurQuery);
+          QueryCacheKey key = QueryCache.getNormalizedBlurQueryKey(table,blurQuery);
+          QueryCacheEntry queryCacheEntry = _queryCache.get(key);
           if (_queryCache.isValid(queryCacheEntry)) {
             LOG.debug("Cache hit for query [{0}] on table [{1}].", blurQuery, table);
             return queryCacheEntry.getBlurResults(blurQuery);
           } else {
-            _queryCache.remove(noralizedBlurQuery);
+            _queryCache.remove(key);
           }
         }
   
@@ -273,7 +274,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           BlurClientManager.sleep(_defaultDelay,_maxDefaultDelay,retries,_maxDefaultRetries);
           continue OUTER;
         }
-        return _queryCache.cache(original, results);
+        return _queryCache.cache(table, original, results);
       } catch (Exception e) {
         LOG.error("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);
         throw new BException("Unknown error during search of [table={0},blurQuery={1}]", e, table, blurQuery);

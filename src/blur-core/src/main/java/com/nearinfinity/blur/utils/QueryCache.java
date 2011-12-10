@@ -7,7 +7,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResults;
 
-public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
+public class QueryCache extends SimpleLRUCache<QueryCacheKey, QueryCacheEntry> {
 
   private static final Log LOG = LogFactory.getLog(QueryCache.class);
 
@@ -19,7 +19,7 @@ public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
     _ttl = ttl;
   }
 
-  public BlurQuery getNormalizedBlurQuery(BlurQuery blurQuery) {
+  public static QueryCacheKey getNormalizedBlurQueryKey(String table, BlurQuery blurQuery) {
     BlurQuery newBlurQuery = new BlurQuery(blurQuery);
     newBlurQuery.allowStaleData = false;
     newBlurQuery.useCacheIfPresent = false;
@@ -28,7 +28,7 @@ public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
     newBlurQuery.uuid = 0;
     newBlurQuery.startTime = 0;
     newBlurQuery.modifyFileCaches = false;
-    return newBlurQuery;
+    return new QueryCacheKey(table,newBlurQuery);
   }
 
   public boolean isValid(QueryCacheEntry entry, SortedSet<String> currentShards) {
@@ -51,7 +51,7 @@ public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
     return true;
   }
 
-  public BlurResults cache(BlurQuery original, BlurResults results) {
+  public BlurResults cache(String table, BlurQuery original, BlurResults results) {
     if (results == null) {
       return null;
     }
@@ -59,7 +59,7 @@ public class QueryCache extends SimpleLRUCache<BlurQuery, QueryCacheEntry> {
       LOG.debug("Caching results for query [{0}]", original);
       BlurResults cacheResults = new BlurResults(results);
       cacheResults.query = null;
-      put(getNormalizedBlurQuery(original), new QueryCacheEntry(cacheResults));
+      put(getNormalizedBlurQueryKey(table,original), new QueryCacheEntry(cacheResults));
     }
     return results;
   }

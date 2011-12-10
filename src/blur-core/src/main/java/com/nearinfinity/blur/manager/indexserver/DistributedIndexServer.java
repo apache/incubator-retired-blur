@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -632,7 +633,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
     checkTable(table);
     Path tablePath = new Path(getTableUri(table));
     FileSystem fileSystem = FileSystem.get(tablePath.toUri(), _configuration);
-    return fileSystem.getFileStatus(tablePath).getLen();
+    ContentSummary contentSummary = fileSystem.getContentSummary(tablePath);
+    return contentSummary.getLength();
   }
 
   @Override

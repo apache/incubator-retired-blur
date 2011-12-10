@@ -33,7 +33,7 @@ public abstract class ClusterStatus {
 
   public abstract List<String> getClusterList();
 
-  public abstract TableDescriptor getTableDescriptor(boolean useCache, String table);
+  public abstract TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table);
 
   public final List<String> getTableList() {
     List<String> tables = new ArrayList<String>();
@@ -43,11 +43,11 @@ public abstract class ClusterStatus {
     return tables;
   }
 
-  public abstract String getCluster(String table);
+  public abstract String getCluster(boolean useCache, String table);
 
-  public abstract boolean isEnabled(boolean useCache, String table);
+  public abstract boolean isEnabled(boolean useCache, String cluster, String table);
 
-  public abstract boolean exists(boolean useCache, String table);
+  public abstract boolean exists(boolean useCache, String cluster, String table);
   
   public abstract boolean isInSafeMode(String cluster);
 
@@ -57,13 +57,13 @@ public abstract class ClusterStatus {
     return shardServerList;
   }
 
-  public abstract void clearLocks(String table);
+  public abstract void clearLocks(String cluster, String table);
 
-  public abstract int getShardCount(String table);
+  public abstract int getShardCount(String cluster, String table);
   
-  public abstract boolean isBlockCacheEnabled(String table);
+  public abstract boolean isBlockCacheEnabled(String cluster, String table);
   
-  public abstract Set<String> getBlockCacheFileTypes(String table);
+  public abstract Set<String> getBlockCacheFileTypes(String cluster, String table);
 
   public abstract List<String> getTableList(String cluster);
 

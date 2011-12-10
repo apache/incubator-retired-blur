@@ -44,7 +44,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void disableTable(String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(table);
+      String cluster = _clusterStatus.getCluster(true,table);
       DisableTable.disableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during disable of [table={0}]", e, table);
@@ -55,7 +55,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void enableTable(String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(table);
+      String cluster = _clusterStatus.getCluster(true,table);
       EnableTable.enableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during enable of [table={0}]", e, table);
@@ -66,7 +66,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(table);
+      String cluster = _clusterStatus.getCluster(true,table);
       RemoveTable.removeTable(_zookeeper, cluster, table, deleteIndexFiles);
     } catch (Exception e) {
       LOG.error("Unknown error during remove of [table={0}]", e, table);
@@ -74,16 +74,16 @@ public abstract class TableAdmin implements Iface {
     }
   }
 
-  public boolean isTableEnabled(boolean useCache, String table) {
-    return _clusterStatus.isEnabled(useCache,table);
+  public boolean isTableEnabled(boolean useCache, String cluster, String table) {
+    return _clusterStatus.isEnabled(useCache, cluster, table);
   }
   
-  public void checkTable(String table) throws BlurException {
+  public void checkTable(String cluster, String table) throws BlurException {
     if (inSafeMode(true,table)) {
       throw new BlurException("Cluster for [" + table + "] is in safe mode",null);
     }
-    if (tableExists(true,table)) {
-      if (isTableEnabled(true,table)) {
+    if (tableExists(true,cluster,table)) {
+      if (isTableEnabled(true,cluster,table)) {
         return;
       }
       throw new BlurException("Table [" + table + "] exists, but is not enabled",null);
@@ -125,7 +125,8 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final TableDescriptor describe(final String table) throws BlurException, TException {
     try {
-      return _clusterStatus.getTableDescriptor(true,table);
+      String cluster = _clusterStatus.getCluster(true,table);
+      return _clusterStatus.getTableDescriptor(true,cluster,table);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
       throw new BException("Unknown error while trying to describe a table [" + table + "].", e);
@@ -153,12 +154,12 @@ public abstract class TableAdmin implements Iface {
   }
 
   private boolean inSafeMode(boolean useCache, String table) {
-    String cluster = _clusterStatus.getCluster(table);
+    String cluster = _clusterStatus.getCluster(true,table);
     return _clusterStatus.isInSafeMode(cluster);
   }
 
-  public boolean tableExists(boolean useCache, String table) {
-    return _clusterStatus.exists(useCache,table);
+  public boolean tableExists(boolean useCache, String cluster, String table) {
+    return _clusterStatus.exists(useCache,cluster,table);
   }
   
   public ClusterStatus getClusterStatus() {

@@ -17,14 +17,18 @@
 package com.nearinfinity.blur.manager.clusterstatus;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
@@ -46,6 +50,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 public class ZookeeperClusterStatus extends ClusterStatus {
 
   private static final Log LOG = LogFactory.getLog(ZookeeperClusterStatus.class);
+  private static final Collection<String> EMPTY_COLLECTION = new ArrayList<String>();
 
   public static void main(String[] args) throws IOException, KeeperException, InterruptedException {
     ZooKeeper zooKeeper = new ZooKeeper("localhost", 30000, new Watcher() {
@@ -80,9 +85,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       long s7 = System.nanoTime();
 
       for (String table : status.getTableList()) {
-        System.out.println("table=" + table + " " + status.getTableDescriptor(useCache, table));
-        System.out.println(status.exists(useCache, table));
-        System.out.println(status.isEnabled(useCache, table));
+        System.out.println("table=" + table + " " + status.getTableDescriptor(useCache, "default", table));
+        System.out.println(status.exists(useCache, "default", table));
+        System.out.println(status.isEnabled(useCache, "default", table));
       }
       long s8 = System.nanoTime();
 
@@ -99,12 +104,72 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private ZooKeeper _zk;
   private AtomicBoolean _running = new AtomicBoolean();
   private ConcurrentMap<String, AtomicBoolean> _enabledMap = new ConcurrentHashMap<String, AtomicBoolean>();
+  private ConcurrentMap<String, Collection<String>> _fieldsMap = new ConcurrentHashMap<String, Collection<String>>();
+  private AtomicReference<Map<String,List<String>>> _tableToClusterCache = new AtomicReference<Map<String,List<String>>>(new HashMap<String, List<String>>());
   private Thread _enabledTables;
+  private Thread _tablesToCluster;
 
   public ZookeeperClusterStatus(ZooKeeper zooKeeper) {
     _zk = zooKeeper;
     _running.set(true);
     watchForEnabledTables();
+    watchForTables();
+  }
+
+  private void watchForTables() {
+    _tablesToCluster = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          doWatch();
+        } catch (KeeperException e) {
+          LOG.error("unknown error", e);
+        } catch (InterruptedException e) {
+          return;
+        }
+      }
+
+      private void doWatch() throws KeeperException, InterruptedException {
+        while (_running.get()) {
+          synchronized (_tableToClusterCache) {
+            String clusterPath = ZookeeperPathConstants.getClustersPath();
+            List<String> clusters = _zk.getChildren(clusterPath, new Watcher() {
+              @Override
+              public void process(WatchedEvent event) {
+                synchronized (_tableToClusterCache) {
+                  _tableToClusterCache.notifyAll();
+                }
+              }
+            });
+            for (String cluster : clusters) {
+              List<String> tables = _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), new Watcher() {
+                @Override
+                public void process(WatchedEvent event) {
+                  synchronized (_tableToClusterCache) {
+                    _tableToClusterCache.notifyAll();
+                  }
+                }
+              });
+              
+              Map<String, List<String>> newValue = new HashMap<String, List<String>>();
+              for (String table : tables) {
+                List<String> clusterList = newValue.get(table);
+                if (clusterList == null) {
+                  clusterList = new ArrayList<String>();
+                  newValue.put(table, clusterList);
+                }
+                clusterList.add(cluster);
+              }
+              _tableToClusterCache.set(newValue);
+            }
+            _tableToClusterCache.wait();
+          }
+        }
+      }
+    });
+    _tablesToCluster.setDaemon(true);
+    _tablesToCluster.setName("cluster-status-tables-to-cluster-watcher");
+    _tablesToCluster.start();
   }
 
   private void watchForEnabledTables() {
@@ -133,8 +198,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
               }
             });
             for (String cluster : clusters) {
-              String tablesPath = clusterPath + "/" + cluster + "/tables";
-              List<String> tables = _zk.getChildren(tablesPath, new Watcher() {
+              List<String> tables = _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), new Watcher() {
                 @Override
                 public void process(WatchedEvent event) {
                   synchronized (_enabledMap) {
@@ -143,7 +207,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 }
               });
               for (String table : tables) {
-                Stat stat = _zk.exists(tablesPath + "/" + table + "/enabled", new Watcher() {
+                Stat stat = _zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), new Watcher() {
                   @Override
                   public void process(WatchedEvent event) {
                     synchronized (_enabledMap) {
@@ -154,7 +218,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 AtomicBoolean enabled = _enabledMap.get(table);
                 if (enabled == null) {
                   enabled = new AtomicBoolean();
-                  _enabledMap.put(table, enabled);
+                  _enabledMap.put(getEnabledMapKey(cluster, table), enabled);
                 }
                 if (stat == null) {
                   enabled.set(false);
@@ -171,6 +235,10 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     _enabledTables.setDaemon(true);
     _enabledTables.setName("cluster-status-enabled-tables-watcher");
     _enabledTables.start();
+  }
+
+  private String getEnabledMapKey(String cluster, String table) {
+    return cluster + "." + table;
   }
 
   @Override
@@ -218,35 +286,36 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public boolean exists(boolean useCache, String table) {
+  public boolean exists(boolean useCache, String cluster, String table) {
     if (useCache) {
-      AtomicBoolean enabled = _enabledMap.get(table);
+      AtomicBoolean enabled = _enabledMap.get(getEnabledMapKey(cluster, table));
       if (enabled == null) {
         return false;
       } else {
         return true;
       }
     }
-    String cluster = getCluster(table);
-    if (cluster == null) {
-      return false;
+    try {
+      if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
+        return false;
+      }
+      return true;
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
-    return true;
   }
 
   @Override
-  public boolean isEnabled(boolean useCache, String table) {
+  public boolean isEnabled(boolean useCache, String cluster, String table) {
     if (useCache) {
-      AtomicBoolean enabled = _enabledMap.get(table);
+      AtomicBoolean enabled = _enabledMap.get(getEnabledMapKey(cluster, table));
       if (enabled == null) {
         throw new RuntimeException("Table [" + table + "] does not exist.");
       } else {
         return enabled.get();
       }
-    }
-    String cluster = getCluster(table);
-    if (cluster == null) {
-      return false;
     }
     String tablePathIsEnabled = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
     try {
@@ -262,26 +331,21 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public TableDescriptor getTableDescriptor(boolean useCache, String table) {
-    String cluster = getCluster(table);
-    if (cluster == null) {
-      return null;
-    }
-    String tablePath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables/" + table;
+  public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
-      if (_zk.exists(tablePath + "/enabled", false) == null) {
+      if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) == null) {
         tableDescriptor.isEnabled = false;
       } else {
         tableDescriptor.isEnabled = true;
       }
-      tableDescriptor.shardCount = getShardCountFromTablePath(tablePath);
-      tableDescriptor.tableUri = new String(getData(tablePath + "/uri"));
-      tableDescriptor.compressionClass = new String(getData(tablePath + "/compression-codec"));
-      tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(tablePath + "/compression-blocksize")));
-      tableDescriptor.analyzerDefinition = getAnalyzerDefinition(getData(tablePath));
-      tableDescriptor.blockCaching = isBlockCacheEnabled(table);
-      tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(table);
+      tableDescriptor.shardCount = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
+      tableDescriptor.tableUri = new String(getData(ZookeeperPathConstants.getTableUriPath(cluster, table)));
+      tableDescriptor.compressionClass = new String(getData(ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table)));
+      tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table))));
+      tableDescriptor.analyzerDefinition = getAnalyzerDefinition(getData(ZookeeperPathConstants.getTablePath(cluster, table)));
+      tableDescriptor.blockCaching = isBlockCacheEnabled(cluster, table);
+      tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(cluster, table);
       tableDescriptor.name = table;
       byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
       if (data != null) {
@@ -296,9 +360,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     return tableDescriptor;
   }
 
-  private int getShardCountFromTablePath(String tablePath) throws NumberFormatException, KeeperException, InterruptedException {
-    return Integer.parseInt(new String(getData(tablePath + "/shard-count")));
-  }
+//  private int getShardCountFromTablePath(String path) throws NumberFormatException, KeeperException, InterruptedException {
+//    return Integer.parseInt(new String(getData(path)));
+//  }
 
   private AnalyzerDefinition getAnalyzerDefinition(byte[] data) {
     TMemoryInputTransport trans = new TMemoryInputTransport(data);
@@ -337,12 +401,22 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public String getCluster(String table) {
+  public String getCluster(boolean useCache, String table) {
+    if (useCache) {
+      Map<String, List<String>> map = _tableToClusterCache.get();
+      List<String> clusters = map.get(table);
+      if (clusters == null || clusters.size() == 0) {
+        return null;
+      } else if (clusters.size() == 1) {
+        return clusters.get(0);
+      } else {
+        throw new RuntimeException("Table [" + table + "] is registered in more than 1 cluster [" + clusters + "].");
+      }
+    }
     List<String> clusterList = getClusterList();
     for (String cluster : clusterList) {
       try {
-        String path = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables/" + table;
-        Stat stat = _zk.exists(path, false);
+        Stat stat = _zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false);
         if (stat != null) {
           return cluster;
         }
@@ -356,11 +430,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public void clearLocks(String table) {
-    String cluster = getCluster(table);
-    if (cluster == null) {
-      throw new RuntimeException("Cluster not found for table [" + table + "]");
-    }
+  public void clearLocks(String cluster, String table) {
     String lockPath = ZookeeperPathConstants.getLockPath(cluster, table);
     try {
       if (_zk.exists(lockPath, false) == null) {
@@ -404,14 +474,9 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public int getShardCount(String table) {
-    String cluster = getCluster(table);
-    if (cluster == null) {
-      throw new RuntimeException("Cluster not found for table [" + table + "]");
-    }
-    String tablePath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables/" + table;
+  public int getShardCount(String cluster, String table) {
     try {
-      return getShardCountFromTablePath(tablePath);
+      return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
     } catch (NumberFormatException e) {
       throw new RuntimeException(e);
     } catch (KeeperException e) {
@@ -422,13 +487,21 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public Set<String> getBlockCacheFileTypes(String table) {
-    String cluster = getCluster(table);
-    if (cluster == null) {
-      throw new RuntimeException("Cluster not found for table [" + table + "]");
-    }
+  public Set<String> getBlockCacheFileTypes(String cluster, String table) {
     try {
-      return getBlockCacheFileTypes(cluster, table);
+      byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
+      if (data == null) {
+        return null;
+      }
+      String str = new String(data);
+      if (str.isEmpty()) {
+        return null;
+      }
+      Set<String> types = new HashSet<String>(Arrays.asList(str.split(",")));
+      if (types.isEmpty()) {
+        return null;
+      }
+      return types;
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
@@ -436,28 +509,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
   }
 
-  private Set<String> getBlockCacheFileTypes(String cluster, String table) throws KeeperException, InterruptedException {
-    byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
-    if (data == null) {
-      return null;
-    }
-    String str = new String(data);
-    if (str.isEmpty()) {
-      return null;
-    }
-    Set<String> types = new HashSet<String>(Arrays.asList(str.split(",")));
-    if (types.isEmpty()) {
-      return null;
-    }
-    return types;
-  }
-
   @Override
-  public boolean isBlockCacheEnabled(String table) {
-    String cluster = getCluster(table);
-    if (cluster == null) {
-      return false;
-    }
+  public boolean isBlockCacheEnabled(String cluster, String table) {
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), false) == null) {
         return false;
@@ -472,12 +525,20 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public Collection<String> readCacheFieldsForTable(String cluster, String table) {
-    return null;
+    Collection<String> fields = _fieldsMap.get(getEnabledMapKey(cluster,table));
+    if (fields == null) {
+      return EMPTY_COLLECTION;
+    }
+    return fields;
   }
 
   @Override
   public void writeCacheFieldsForTable(String cluster, String table, Collection<String> fieldNames) {
+    Collection<String> cachedFields = readCacheFieldsForTable(cluster,table);
     for (String fieldName : fieldNames) {
+      if (cachedFields.contains(fieldName)) {
+        continue;
+      }
       String path = ZookeeperPathConstants.getTableFieldNamesPath(cluster, table, fieldName);
       try {
         if (_zk.exists(path, false) == null) {
@@ -487,15 +548,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
             if (e.code() == Code.NODEEXISTS) {
               continue;
             }
-            LOG.error("Unknown error",e);
+            LOG.error("Unknown error", e);
           } catch (InterruptedException e) {
-            LOG.error("Unknown error",e);
+            LOG.error("Unknown error", e);
           }
         }
       } catch (KeeperException e) {
-        LOG.error("Unknown error",e);
+        LOG.error("Unknown error", e);
       } catch (InterruptedException e) {
-        LOG.error("Unknown error",e);
+        LOG.error("Unknown error", e);
       }
     }
   }

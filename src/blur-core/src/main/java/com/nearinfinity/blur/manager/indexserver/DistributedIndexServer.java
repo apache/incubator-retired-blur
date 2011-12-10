@@ -238,7 +238,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private void removeAnyTableLocks() {
     List<String> tableList = _clusterStatus.getTableList();
     for (String table : tableList) {
-      _clusterStatus.clearLocks(table);
+      _clusterStatus.clearLocks(cluster,table);
     }
   }
 
@@ -340,12 +340,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     List<String> tables = new ArrayList<String>(map.keySet());
     Map<String, T> removed = new HashMap<String, T>();
     for (String table : tables) {
-      if (!_clusterStatus.exists(true,table)) {
+      if (!_clusterStatus.exists(true,cluster,table)) {
         removed.put(table, map.remove(table));
       }
     }
     for (String table : tables) {
-      if (!_clusterStatus.isEnabled(true,table)) {
+      if (!_clusterStatus.isEnabled(true,cluster,table)) {
         removed.put(table, map.remove(table));
       }
     }
@@ -424,7 +424,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
-    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true,table);
+    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true,cluster,table);
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.compressionBlockSize;
     if (compressionClass != null) {
@@ -438,9 +438,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
     
     DirectIODirectory dir;
-    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(table);
+    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(cluster,table);
     if (blockCacheEnabled) {
-      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(table);
+      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(cluster,table);
       dir = new BlockDirectory(table + "_" + shard, directory, _cache, blockCacheFileTypes);
     } else {
       dir = directory;
@@ -561,7 +561,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private synchronized Set<String> setupLayoutManager(String table) {
     DistributedLayoutManager layoutManager = new DistributedLayoutManager();
 
-    String cluster = _clusterStatus.getCluster(table);
+    String cluster = _clusterStatus.getCluster(false,table);
 
     List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
     List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(cluster));
@@ -629,7 +629,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     checkTable(table);
     Similarity similarity = _tableSimilarity.get(table);
     if (similarity == null) {
-      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true,table);
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true,cluster,table);
       String similarityClass = tableDescriptor.similarityClass;
       if (similarityClass == null) {
         similarity = new FairSimilarity();
@@ -658,7 +658,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public TABLE_STATUS getTableStatus(String table) {
     checkTable(table);
-    boolean enabled = _clusterStatus.isEnabled(true,table);
+    boolean enabled = _clusterStatus.isEnabled(true,cluster,table);
     if (enabled) {
       return TABLE_STATUS.ENABLED;
     }
@@ -666,7 +666,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void checkTable(String table) {
-    if (_clusterStatus.exists(true,table)) {
+    if (_clusterStatus.exists(true,cluster,table)) {
       return;
     }
     throw new RuntimeException("Table [" + table + "] does not exist.");
@@ -682,7 +682,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private TableDescriptor getTableDescriptor(String table) {
     TableDescriptor tableDescriptor = _tableDescriptors.get(table);
     if (tableDescriptor == null) {
-      tableDescriptor = _clusterStatus.getTableDescriptor(true,table);
+      tableDescriptor = _clusterStatus.getTableDescriptor(true,cluster,table);
       _tableDescriptors.put(table, tableDescriptor);
     }
     return tableDescriptor;

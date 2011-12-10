@@ -181,10 +181,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {
       DistributedLayoutManager layoutManager = new DistributedLayoutManager();
-      String cluster = _clusterStatus.getCluster(table);
+      String cluster = _clusterStatus.getCluster(true,table);
       List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
       List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(cluster);
-      List<String> shardList = getShardList(table);
+      List<String> shardList = getShardList(cluster,table);
       layoutManager.setNodes(shardServerList);
       layoutManager.setNodesOffline(offlineShardServers);
       layoutManager.setShards(shardList);
@@ -195,9 +195,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _shardServerLayout.set(newLayout);    
   }
 
-  private List<String> getShardList(String table) {
+  private List<String> getShardList(String cluster, String table) {
     List<String> shards = new ArrayList<String>();
-    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true,table);
+    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true,cluster,table);
     for (int i = 0; i < tableDescriptor.shardCount; i++) {
       shards.add(BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, i));
     }
@@ -231,9 +231,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public BlurResults query(final String table, final BlurQuery blurQuery) throws BlurException, TException {
-    checkTable(table);
+    // @TODO make this faster
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     _queryChecker.checkQuery(blurQuery);
-    int shardCount = _clusterStatus.getShardCount(table);
+    int shardCount = _clusterStatus.getShardCount(cluster,table);
     
     OUTER:
     for (int retries = 0; retries < _maxDefaultRetries; retries++) {
@@ -296,7 +298,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public FetchResult fetchRow(final String table, final Selector selector) throws BlurException, TException {
-    checkTable(table);
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     IndexManager.validSelector(selector);
     String clientHostnamePort = null;
     try {
@@ -315,7 +318,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public void cancelQuery(final String table, final long uuid) throws BlurException, TException {
-    checkTable(table);
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     try {
       scatter(getCluster(table), new BlurCommand<Void>() {
         @Override
@@ -332,7 +336,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public List<BlurQueryStatus> currentQueries(final String table) throws BlurException, TException {
-    checkTable(table);
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<List<BlurQueryStatus>>() {
         @Override
@@ -365,7 +370,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-    checkTable(table);
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     Map<String, Map<String, String>> layout = _shardServerLayout.get();
     Map<String, String> tableLayout = layout.get(table);
     if (tableLayout == null) {
@@ -376,7 +382,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public long recordFrequency(final String table, final String columnFamily, final String columnName, final String value) throws BlurException, TException {
-    checkTable(table);
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<Long>() {
         @Override
@@ -401,7 +408,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public Schema schema(final String table) throws BlurException, TException {
-    checkTable(table);
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<Schema>() {
         @Override
@@ -431,7 +439,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public List<String> terms(final String table, final String columnFamily, final String columnName, final String startWith, final short size) throws BlurException, TException {
-    checkTable(table);
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<List<String>>() {
         @Override
@@ -518,7 +527,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public void mutate(final RowMutation mutation) throws BlurException, TException {
-    checkTable(mutation.table);
+    String cluster = _clusterStatus.getCluster(true,mutation.table);
+    checkTable(cluster,mutation.table);
     try {
       MutationHelper.validateMutation(mutation);
       String table = mutation.getTable();

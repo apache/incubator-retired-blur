@@ -17,7 +17,6 @@
 package com.nearinfinity.blur.manager.clusterstatus;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -280,7 +279,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       tableDescriptor.blockCaching = isBlockCacheEnabled(table);
       tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(table);
       tableDescriptor.name = table;
-      byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster,table));
+      byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
       if (data != null) {
         tableDescriptor.similarityClass = new String(data);
       }
@@ -319,18 +318,14 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public List<String> getTableList() {
-    List<String> result = new ArrayList<String>();
-    for (String cluster : getClusterList()) {
-      try {
-        result.addAll(_zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables", false));
-      } catch (KeeperException e) {
-        throw new RuntimeException(e);
-      } catch (InterruptedException e) {
-        throw new RuntimeException(e);
-      }
+  public List<String> getTableList(String cluster) {
+    try {
+      return _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
-    return result;
   }
 
   public void close() {
@@ -362,7 +357,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     if (cluster == null) {
       throw new RuntimeException("Cluster not found for table [" + table + "]");
     }
-    String lockPath = ZookeeperPathConstants.getLockPath(cluster,table);
+    String lockPath = ZookeeperPathConstants.getLockPath(cluster, table);
     try {
       if (_zk.exists(lockPath, false) == null) {
         return;
@@ -429,7 +424,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException("Cluster not found for table [" + table + "]");
     }
     try {
-      return getBlockCacheFileTypes(cluster,table);
+      return getBlockCacheFileTypes(cluster, table);
     } catch (KeeperException e) {
       throw new RuntimeException(e);
     } catch (InterruptedException e) {
@@ -438,7 +433,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   private Set<String> getBlockCacheFileTypes(String cluster, String table) throws KeeperException, InterruptedException {
-    byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster,table));
+    byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
     if (data == null) {
       return null;
     }

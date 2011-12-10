@@ -158,6 +158,7 @@ module Blur
       ::Thrift::Struct.generate_accessors self
     end
 
+    # Select carries the request for information to be retrieved from the stored columns.
     class Selector
       include ::Thrift::Struct, ::Thrift::Struct_Union
       RECORDONLY = 1

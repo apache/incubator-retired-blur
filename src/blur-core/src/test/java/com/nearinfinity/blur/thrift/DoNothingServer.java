@@ -135,4 +135,9 @@ public class DoNothingServer implements Iface {
   public List<String> shardClusterList() throws BlurException, TException {
     return null;
   }
+
+  @Override
+  public List<String> tableListByCluster(String cluster) throws BlurException, TException {
+    return null;
+  }
 }

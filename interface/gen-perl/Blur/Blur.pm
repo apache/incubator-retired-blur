@@ -787,6 +787,171 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_tableListByCluster_args;
+use base qw(Class::Accessor);
+Blur::Blur_tableListByCluster_args->mk_accessors( qw( cluster ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{cluster} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{cluster}) {
+      $self->{cluster} = $vals->{cluster};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_tableListByCluster_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{cluster});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_tableListByCluster_args');
+  if (defined $self->{cluster}) {
+    $xfer += $output->writeFieldBegin('cluster', TType::STRING, 1);
+    $xfer += $output->writeString($self->{cluster});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_tableListByCluster_result;
+use base qw(Class::Accessor);
+Blur::Blur_tableListByCluster_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_tableListByCluster_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size177 = 0;
+          $self->{success} = [];
+          my $_etype180 = 0;
+          $xfer += $input->readListBegin(\$_etype180, \$_size177);
+          for (my $_i181 = 0; $_i181 < $_size177; ++$_i181)
+          {
+            my $elem182 = undef;
+            $xfer += $input->readString(\$elem182);
+            push(@{$self->{success}},$elem182);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_tableListByCluster_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::LIST, 0);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
+      {
+        foreach my $iter183 (@{$self->{success}}) 
+        {
+          $xfer += $output->writeString($iter183);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::Blur_describe_args;
 use base qw(Class::Accessor);
 Blur::Blur_describe_args->mk_accessors( qw( table ) );
@@ -1343,16 +1508,16 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size177 = 0;
+          my $_size184 = 0;
           $self->{success} = [];
-          my $_etype180 = 0;
-          $xfer += $input->readListBegin(\$_etype180, \$_size177);
-          for (my $_i181 = 0; $_i181 < $_size177; ++$_i181)
+          my $_etype187 = 0;
+          $xfer += $input->readListBegin(\$_etype187, \$_size184);
+          for (my $_i188 = 0; $_i188 < $_size184; ++$_i188)
           {
-            my $elem182 = undef;
-            $elem182 = new Blur::BlurQueryStatus();
-            $xfer += $elem182->read($input);
-            push(@{$self->{success}},$elem182);
+            my $elem189 = undef;
+            $elem189 = new Blur::BlurQueryStatus();
+            $xfer += $elem189->read($input);
+            push(@{$self->{success}},$elem189);
           }
           $xfer += $input->readListEnd();
         }
@@ -1384,9 +1549,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{success}}));
       {
-        foreach my $iter183 (@{$self->{success}}) 
+        foreach my $iter190 (@{$self->{success}}) 
         {
-          $xfer += ${iter183}->write($output);
+          $xfer += ${iter190}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -1859,15 +2024,15 @@ sub read {
     {
       /^0$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size184 = 0;
+          my $_size191 = 0;
           $self->{success} = [];
-          my $_etype187 = 0;
-          $xfer += $input->readListBegin(\$_etype187, \$_size184);
-          for (my $_i188 = 0; $_i188 < $_size184; ++$_i188)
+          my $_etype194 = 0;
+          $xfer += $input->readListBegin(\$_etype194, \$_size191);
+          for (my $_i195 = 0; $_i195 < $_size191; ++$_i195)
           {
-            my $elem189 = undef;
-            $xfer += $input->readString(\$elem189);
-            push(@{$self->{success}},$elem189);
+            my $elem196 = undef;
+            $xfer += $input->readString(\$elem196);
+            push(@{$self->{success}},$elem196);
           }
           $xfer += $input->readListEnd();
         }
@@ -1899,9 +2064,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{success}}));
       {
-        foreach my $iter190 (@{$self->{success}}) 
+        foreach my $iter197 (@{$self->{success}}) 
         {
-          $xfer += $output->writeString($iter190);
+          $xfer += $output->writeString($iter197);
         }
       }
       $xfer += $output->writeListEnd();
@@ -2436,16 +2601,16 @@ sub read {
     {
       /^1$/ && do{      if ($ftype == TType::LIST) {
         {
-          my $_size191 = 0;
+          my $_size198 = 0;
           $self->{mutations} = [];
-          my $_etype194 = 0;
-          $xfer += $input->readListBegin(\$_etype194, \$_size191);
-          for (my $_i195 = 0; $_i195 < $_size191; ++$_i195)
+          my $_etype201 = 0;
+          $xfer += $input->readListBegin(\$_etype201, \$_size198);
+          for (my $_i202 = 0; $_i202 < $_size198; ++$_i202)
           {
-            my $elem196 = undef;
-            $elem196 = new Blur::RowMutation();
-            $xfer += $elem196->read($input);
-            push(@{$self->{mutations}},$elem196);
+            my $elem203 = undef;
+            $elem203 = new Blur::RowMutation();
+            $xfer += $elem203->read($input);
+            push(@{$self->{mutations}},$elem203);
           }
           $xfer += $input->readListEnd();
         }
@@ -2470,9 +2635,9 @@ sub write {
     {
       $xfer += $output->writeListBegin(TType::STRUCT, scalar(@{$self->{mutations}}));
       {
-        foreach my $iter197 (@{$self->{mutations}}) 
+        foreach my $iter204 (@{$self->{mutations}}) 
         {
-          $xfer += ${iter197}->write($output);
+          $xfer += ${iter204}->write($output);
         }
       }
       $xfer += $output->writeListEnd();
@@ -3118,6 +3283,13 @@ sub tableList{
   die 'implement interface';
 }
 
+sub tableListByCluster{
+  my $self = shift;
+  my $cluster = shift;
+
+  die 'implement interface';
+}
+
 sub describe{
   my $self = shift;
   my $table = shift;
@@ -3276,6 +3448,13 @@ sub tableList{
   my ($self, $request) = @_;
 
   return $self->{impl}->tableList();
+}
+
+sub tableListByCluster{
+  my ($self, $request) = @_;
+
+  my $cluster = ($request->{'cluster'}) ? $request->{'cluster'} : undef;
+  return $self->{impl}->tableListByCluster($cluster);
 }
 
 sub describe{
@@ -3627,6 +3806,52 @@ sub recv_tableList{
     die $result->{ex};
   }
   die "tableList failed: unknown result";
+}
+sub tableListByCluster{
+  my $self = shift;
+  my $cluster = shift;
+
+    $self->send_tableListByCluster($cluster);
+  return $self->recv_tableListByCluster();
+}
+
+sub send_tableListByCluster{
+  my $self = shift;
+  my $cluster = shift;
+
+  $self->{output}->writeMessageBegin('tableListByCluster', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_tableListByCluster_args();
+  $args->{cluster} = $cluster;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_tableListByCluster{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_tableListByCluster_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "tableListByCluster failed: unknown result";
 }
 sub describe{
   my $self = shift;
@@ -4444,6 +4669,23 @@ sub process_tableList {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('tableList', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_tableListByCluster {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_tableListByCluster_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_tableListByCluster_result();
+    eval {
+      $result->{success} = $self->{handler}->tableListByCluster($args->cluster);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('tableListByCluster', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Select carries the request for information to be retrieved from the stored columns.
+ */
 public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Selector");
 

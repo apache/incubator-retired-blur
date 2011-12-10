@@ -92,6 +92,22 @@ require 'blur_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'tableList failed: unknown result')
           end
 
+          def tableListByCluster(cluster)
+            send_tableListByCluster(cluster)
+            return recv_tableListByCluster()
+          end
+
+          def send_tableListByCluster(cluster)
+            send_message('tableListByCluster', TableListByCluster_args, :cluster => cluster)
+          end
+
+          def recv_tableListByCluster()
+            result = receive_message(TableListByCluster_result)
+            return result.success unless result.success.nil?
+            raise result.ex unless result.ex.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'tableListByCluster failed: unknown result')
+          end
+
           def describe(table)
             send_describe(table)
             return recv_describe()
@@ -383,6 +399,17 @@ require 'blur_types'
               result.ex = ex
             end
             write_result(result, oprot, 'tableList', seqid)
+          end
+
+          def process_tableListByCluster(seqid, iprot, oprot)
+            args = read_args(iprot, TableListByCluster_args)
+            result = TableListByCluster_result.new()
+            begin
+              result.success = @handler.tableListByCluster(args.cluster)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'tableListByCluster', seqid)
           end
 
           def process_describe(seqid, iprot, oprot)
@@ -704,6 +731,40 @@ require 'blur_types'
         end
 
         class TableList_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          EX = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class TableListByCluster_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          CLUSTER = 1
+
+          FIELDS = {
+            CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class TableListByCluster_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           EX = 1

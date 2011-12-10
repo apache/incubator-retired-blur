@@ -358,6 +358,7 @@ service Blur {
   map<string,string> shardServerLayout(1:string table) throws (1:BlurException ex)
 
   list<string> tableList() throws (1:BlurException ex)
+  list<string> tableListByCluster(1:string cluster) throws (1:BlurException ex)
   TableDescriptor describe(1:string table) throws (1:BlurException ex)
 
   BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)

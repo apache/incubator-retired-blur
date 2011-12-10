@@ -34,7 +34,13 @@ public abstract class ClusterStatus {
 
   public abstract TableDescriptor getTableDescriptor(boolean useCache, String table);
 
-  public abstract List<String> getTableList();
+  public final List<String> getTableList() {
+    List<String> tables = new ArrayList<String>();
+    for (String cluster : getClusterList()) {
+      tables.addAll(getTableList(cluster));
+    }
+    return tables;
+  }
 
   public abstract String getCluster(String table);
 
@@ -57,5 +63,7 @@ public abstract class ClusterStatus {
   public abstract boolean isBlockCacheEnabled(String table);
   
   public abstract Set<String> getBlockCacheFileTypes(String table);
+
+  public abstract List<String> getTableList(String cluster);
 
 }

@@ -42,7 +42,6 @@ import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
-import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurUtil;
@@ -178,15 +177,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
     }
   }
 
-  public IndexManager getIndexManager() {
-    return _indexManager;
-  }
-
-  public BlurShardServer setIndexManager(IndexManager indexManager) {
-    this._indexManager = indexManager;
-    return this;
-  }
-
   @Override
   public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
     checkTable(table);
@@ -222,54 +212,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public List<String> tableList() throws BlurException, TException {
-    try {
-      return _clusterStatus.getTableList();
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a table list.", e);
-      throw new BException("Unknown error while trying to get a table list.", e);
-    }
-  }
-
-  @Override
-  public TableDescriptor describe(String table) throws BlurException, TException {
-    try {
-      return _clusterStatus.getTableDescriptor(true, table);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to describe table [" + table + "]", e);
-      throw new BException(e.getMessage(), e);
-    }
-  }
-
-  public IndexServer getIndexServer() {
-    return _indexServer;
-  }
-
-  public void setIndexServer(IndexServer indexServer) {
-    this._indexServer = indexServer;
-  }
-
-  @Override
-  public List<String> controllerServerList() throws BlurException, TException {
-    try {
-      return _clusterStatus.getControllerServerList();
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a controller list.", e);
-      throw new BException("Unknown error while trying to get a controller list.", e);
-    }
-  }
-
-  @Override
-  public List<String> shardServerList(String cluster) throws BlurException, TException {
-    try {
-      return _clusterStatus.getShardServerList(cluster);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a shard server list.", e);
-      throw new BException("Unknown error while trying to get a shard server list.", e);
-    }
-  }
-
-  @Override
   public void mutate(RowMutation mutation) throws BlurException, TException {
     checkTable(mutation.table);
     MutationHelper.validateMutation(mutation);
@@ -288,16 +230,6 @@ public class BlurShardServer extends TableAdmin implements Iface {
     }
     for (RowMutation mutation : mutations) {
       mutate(mutation);
-    }
-  }
-
-  @Override
-  public List<String> shardClusterList() throws BlurException, TException {
-    try {
-      return _clusterStatus.getClusterList();
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a cluster list.", e);
-      throw new BException("Unknown error while trying to get a cluster list.", e);
     }
   }
 
@@ -320,4 +252,13 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void setQueryChecker(BlurQueryChecker queryChecker) {
     _queryChecker = queryChecker;
   }
+  
+  public void setIndexManager(IndexManager indexManager) {
+    _indexManager = indexManager;
+  }
+  
+  public void setIndexServer(IndexServer indexServer) {
+    _indexServer = indexServer;
+  }
+
 }

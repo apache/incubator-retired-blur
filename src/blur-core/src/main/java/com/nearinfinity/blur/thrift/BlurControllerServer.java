@@ -455,14 +455,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
   }
 
-  public BlurClient getClient() {
-    return _client;
-  }
-
-  public void setClient(BlurClient client) {
-    this._client = client;
-  }
-
   private String getNode(String table, Selector selector) throws BlurException, TException {
     Map<String, String> layout = shardServerLayout(table);
     String locationId = selector.locationId;
@@ -508,26 +500,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     return describe.cluster;
   }
 
-  @Override
-  public TableDescriptor describe(final String table) throws BlurException, TException {
-    try {
-      return _clusterStatus.getTableDescriptor(true,table);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
-      throw new BException("Unknown error while trying to describe a table [" + table + "].", e);
-    }
-  }
-
-  @Override
-  public List<String> tableList() throws BlurException, TException {
-    try {
-      return _clusterStatus.getTableList();
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a table list.", e);
-      throw new BException("Unknown error while trying to get a table list.", e);
-    }
-  }
-
   public static Schema merge(Schema result, Schema schema) {
     Map<String, Set<String>> destColumnFamilies = result.columnFamilies;
     Map<String, Set<String>> srcColumnFamilies = schema.columnFamilies;
@@ -541,26 +513,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       }
     }
     return result;
-  }
-
-  @Override
-  public List<String> controllerServerList() throws BlurException, TException {
-    try {
-      return _clusterStatus.getControllerServerList();
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a controller list.", e);
-      throw new BException("Unknown error while trying to get a controller list.", e);
-    }
-  }
-
-  @Override
-  public List<String> shardServerList(String cluster) throws BlurException, TException {
-    try {
-      return _clusterStatus.getShardServerList(cluster);
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a shard list.", e);
-      throw new BException("Unknown error while trying to get a shard list.", e);
-    }
   }
 
   @Override
@@ -608,16 +560,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     }
     for (RowMutation mutation : mutations) {
       mutate(mutation);
-    }
-  }
-
-  @Override
-  public List<String> shardClusterList() throws BlurException, TException {
-    try {
-      return _clusterStatus.getClusterList();
-    } catch (Exception e) {
-      LOG.error("Unknown error while trying to get a cluster list.", e);
-      throw new BException("Unknown error while trying to get a cluster list.", e);
     }
   }
 
@@ -691,5 +633,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   public void setMaxDefaultDelay(long maxDefaultDelay) {
     _maxDefaultDelay = maxDefaultDelay;
+  }
+  
+  public BlurClient getClient() {
+    return _client;
+  }
+
+  public void setClient(BlurClient client) {
+    _client = client;
   }
 }

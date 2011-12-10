@@ -18,6 +18,7 @@ package com.nearinfinity.blur.manager.clusterstatus;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,10 +29,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryInputTransport;
+import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.KeeperException.Code;
+import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
@@ -464,5 +468,35 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     }
     return true;
+  }
+
+  @Override
+  public Collection<String> readCacheFieldsForTable(String cluster, String table) {
+    return null;
+  }
+
+  @Override
+  public void writeCacheFieldsForTable(String cluster, String table, Collection<String> fieldNames) {
+    for (String fieldName : fieldNames) {
+      String path = ZookeeperPathConstants.getTableFieldNamesPath(cluster, table, fieldName);
+      try {
+        if (_zk.exists(path, false) == null) {
+          try {
+            _zk.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+          } catch (KeeperException e) {
+            if (e.code() == Code.NODEEXISTS) {
+              continue;
+            }
+            LOG.error("Unknown error",e);
+          } catch (InterruptedException e) {
+            LOG.error("Unknown error",e);
+          }
+        }
+      } catch (KeeperException e) {
+        LOG.error("Unknown error",e);
+      } catch (InterruptedException e) {
+        LOG.error("Unknown error",e);
+      }
+    }
   }
 }

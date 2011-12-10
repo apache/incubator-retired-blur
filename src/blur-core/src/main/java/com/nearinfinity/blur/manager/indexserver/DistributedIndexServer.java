@@ -131,7 +131,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
   
   private void setupZookeeper() throws KeeperException, InterruptedException {
-    BlurUtil.createIfMissing(_zookeeper,"/blur");
+    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBasePath());
     BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlineControllersPath());
     BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getClustersPath());
     BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getClusterPath(cluster));
@@ -215,7 +215,24 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } else {
       _zookeeper.setData(blurSafemodePath, Long.toString(timestamp).getBytes(), -1);
     }
+    setupAnyMissingPaths();
     removeAnyTableLocks();
+  }
+
+  private void setupAnyMissingPaths() throws KeeperException, InterruptedException {
+    String tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
+    List<String> tables = _zookeeper.getChildren(tablesPath, false);
+    for (String table : tables) {
+      createIfMissing(ZookeeperPathConstants.getLockPath(cluster, table));
+      createIfMissing(ZookeeperPathConstants.getTableFieldNamesPath(cluster, table));
+    }
+  }
+
+  private void createIfMissing(String path) throws KeeperException, InterruptedException {
+    if (_zookeeper.exists(path, false) == null) {
+      LOG.info("Creating missing path in zookeeper [{0}]",path);
+      _zookeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+    }
   }
 
   private void removeAnyTableLocks() {
@@ -439,6 +456,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     writer.setTable(table);
     writer.setIndexDeletionPolicy(_indexDeletionPolicy);
     writer.setSimilarity(getSimilarity(table));
+    writer.setClusterStatus(_clusterStatus);
     writer.init();
     _filterCache.opening(table,shard,writer);
     return warmUp(writer,table,shard);

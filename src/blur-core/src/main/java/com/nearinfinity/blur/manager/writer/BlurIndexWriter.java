@@ -20,6 +20,7 @@ import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -37,6 +38,7 @@ import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.IndexInput;
@@ -51,8 +53,10 @@ import com.nearinfinity.blur.index.WalIndexWriter.WalInputFactory;
 import com.nearinfinity.blur.index.WalIndexWriter.WalOutputFactory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.Row;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 public class BlurIndexWriter extends BlurIndex {
 
@@ -74,6 +78,7 @@ public class BlurIndexWriter extends BlurIndex {
   private AtomicBoolean _isClosed = new AtomicBoolean(false);
   private IndexDeletionPolicy _indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
   private Similarity _similarity;
+  private ClusterStatus _clusterStatus;
 
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
@@ -85,10 +90,18 @@ public class BlurIndexWriter extends BlurIndex {
     _open.set(true);
     _writer = openWriter(conf);
     _writer.commitAndRollWal();
-    _indexReaderRef.set(IndexReader.open(_writer, true));
+    _indexReaderRef.set(updateSchema(IndexReader.open(_writer, true)));
     _rowIndexWriter = new RowWalIndexWriter(_writer, _analyzer);
     _commiter.addWriter(_id, _writer);
     _refresher.register(this);
+  }
+
+  private IndexReader updateSchema(IndexReader reader) {
+    if (_clusterStatus != null) {
+      Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
+      _clusterStatus.writeCacheFieldsForTable(BlurConstants.BLUR_CLUSTER,_table,fieldNames);
+    }
+    return reader;
   }
 
   private WalIndexWriter openWriter(final IndexWriterConfig conf) throws CorruptIndexException, LockObtainFailedException, IOException {
@@ -164,7 +177,7 @@ public class BlurIndexWriter extends BlurIndex {
       try {
         IndexReader reader = IndexReader.openIfChanged(oldReader, _writer, true);
         if (reader != null && oldReader != reader) {
-          _indexReaderRef.set(reader);
+          _indexReaderRef.set(updateSchema(reader));
           _closer.close(oldReader);
         }
       } catch (AlreadyClosedException e) {
@@ -253,4 +266,8 @@ public class BlurIndexWriter extends BlurIndex {
     _similarity = similarity;
   }
 
+  public void setClusterStatus(ClusterStatus clusterStatus) {
+    _clusterStatus = clusterStatus;
+  }
+  
 }

@@ -17,6 +17,7 @@
 package com.nearinfinity.blur.manager.clusterstatus;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -66,4 +67,8 @@ public abstract class ClusterStatus {
 
   public abstract List<String> getTableList(String cluster);
 
+  public abstract void writeCacheFieldsForTable(String cluster, String table, Collection<String> fieldNames);
+  
+  public abstract Collection<String> readCacheFieldsForTable(String cluster, String table);
+  
 }

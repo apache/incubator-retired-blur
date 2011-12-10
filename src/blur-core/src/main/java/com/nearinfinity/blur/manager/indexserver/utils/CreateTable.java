@@ -92,6 +92,7 @@ public class CreateTable {
     createPath(zookeeper, ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table), Integer.toString(compressionBlockSize).getBytes());
     createPath(zookeeper, ZookeeperPathConstants.getTableSimilarityPath(cluster, table), similarity.getClass().getName().getBytes());
     createPath(zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), null);
+    createPath(zookeeper, ZookeeperPathConstants.getTableFieldNamesPath(cluster, table), null);
     if (blockCaching) {
       createPath(zookeeper, ZookeeperPathConstants.getTableBlockCachingPath(cluster, table), null);
     }

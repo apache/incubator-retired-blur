@@ -19,7 +19,7 @@ package com.nearinfinity.blur.manager.clusterstatus;
 
 public class ZookeeperPathConstants {
   
-  private static String getBasePath() {
+  public static String getBasePath() {
     return "/blur";
   }
 
@@ -93,6 +93,14 @@ public class ZookeeperPathConstants {
 
   public static String getTableSimilarityPath(String cluster, String table) {
     return getTablePath(cluster, table) + "/similarity";
+  }
+
+  public static String getTableFieldNamesPath(String cluster, String table) {
+    return getTablePath(cluster, table) + "/fieldnames";
+  }
+  
+  public static String getTableFieldNamesPath(String cluster, String table, String fieldName) {
+    return getTableFieldNamesPath(cluster, table) + "/" + fieldName;
   }
 
 }

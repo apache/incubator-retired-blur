@@ -67,6 +67,29 @@ import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IterableConverter;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritable, BlurRecord> {
+  
+  static class LuceneFileComparator implements Comparator<String> {
+    
+    private Directory _directory;
+    
+    public LuceneFileComparator(Directory directory) {
+      _directory = directory;
+    }
+
+    @Override
+    public int compare(String o1, String o2) {
+      try {
+        long fileLength1 = _directory.fileLength(o1);
+        long fileLength2 = _directory.fileLength(o2);
+        if (fileLength1 == fileLength2) {
+          return o1.compareTo(o2);
+        }
+        return (int) (fileLength2 - fileLength1);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+  };
 
   protected static final Log LOG = LogFactory.getLog(BlurReducer.class);
   protected static final Field PRIME_FIELD = new Field(PRIME_DOC, PRIME_DOC_VALUE, Store.NO, Index.ANALYZED_NO_NORMS);
@@ -83,7 +106,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   protected Counter _rowBreak;
   protected Counter _rowFailures;
   protected StringBuilder _builder = new StringBuilder();
-  protected byte[] copyBuf;
+  protected byte[] _copyBuf;
   protected Configuration _configuration;
   protected long _start;
   protected long _previousRow;
@@ -258,8 +281,8 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
   private long copyBytes(IndexInput in, IndexOutput out, long numBytes, Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src)
       throws IOException {
-    if (copyBuf == null) {
-      copyBuf = new byte[BufferedIndexInput.BUFFER_SIZE];
+    if (_copyBuf == null) {
+      _copyBuf = new byte[BufferedIndexInput.BUFFER_SIZE];
     }
     long start = System.currentTimeMillis();
     long copied = 0;
@@ -268,9 +291,9 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
         report(context, totalBytesCopied + copied, totalBytesToCopy, startTime, src);
         start = System.currentTimeMillis();
       }
-      final int toCopy = (int) (numBytes > copyBuf.length ? copyBuf.length : numBytes);
-      in.readBytes(copyBuf, 0, toCopy);
-      out.writeBytes(copyBuf, 0, toCopy);
+      final int toCopy = (int) (numBytes > _copyBuf.length ? _copyBuf.length : numBytes);
+      in.readBytes(_copyBuf, 0, toCopy);
+      out.writeBytes(_copyBuf, 0, toCopy);
       numBytes -= toCopy;
       copied += toCopy;
       context.progress();
@@ -280,21 +303,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
   private List<String> getFilesOrderedBySize(final Directory directory) throws IOException {
     List<String> files = new ArrayList<String>(Arrays.asList(directory.listAll()));
-    Collections.sort(files, new Comparator<String>() {
-      @Override
-      public int compare(String o1, String o2) {
-        try {
-          long fileLength1 = directory.fileLength(o1);
-          long fileLength2 = directory.fileLength(o2);
-          if (fileLength1 == fileLength2) {
-            return o1.compareTo(o2);
-          }
-          return (int) (fileLength2 - fileLength1);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
-        }
-      }
-    });
+    Collections.sort(files, new LuceneFileComparator(_directory));
     return files;
   }
 

@@ -4,7 +4,7 @@
 	<groupId>com.nearinfinity</groupId>
 	<artifactId>blur-agent</artifactId>
 	<packaging>jar</packaging>
-	<version>0.4</version>
+	<version>0.5</version>
 	<name>blur-agent</name>
 	<url>http://maven.apache.org</url>
 

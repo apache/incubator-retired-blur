@@ -68,7 +68,25 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
   }
 
   private IndexInput wrapInput(String name) throws IOException {
-    return new CompressedIndexInput(name, _directory, _compression);
+    IndexInput indexInput = _directory.openInput(name);
+    int version = getVersion(indexInput);
+    switch (version) {
+    case 0:
+      return new CompressedIndexInput_V0(name, indexInput, _compression);  
+    default:
+      throw new RuntimeException("Unknown version [" + version + "]");
+    }
+  }
+
+  private int getVersion(IndexInput indexInput) throws IOException {
+    long length = indexInput.length();
+    indexInput.seek(length - 8);
+    long l = indexInput.readLong();
+    if (l < 0) {
+      return (int) Math.abs(l);
+    } else {
+      return 0;
+    }
   }
 
   private IndexOutput wrapOutput(String name) throws IOException {
@@ -316,7 +334,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     }
   }
 
-  public static class CompressedIndexInput extends IndexInput {
+  public static class CompressedIndexInput_V0 extends IndexInput {
 
     private static final int _SIZES_META_DATA = 24;
 
@@ -335,14 +353,14 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     private int _blockBufferLength;
     private Decompressor _decompressor;
 
-    public CompressedIndexInput(String name, Directory directory, CompressionCodec codec) throws IOException {
+    public CompressedIndexInput_V0(String name, IndexInput indexInput, CompressionCodec codec) throws IOException {
       super(name);
       _decompressor = codec.createDecompressor();
       if (_decompressor == null) {
         throw new RuntimeException("CompressionCodec [" + codec + "] does not support decompressor on this platform.");
       }
       long s1 = System.nanoTime();
-      _indexInput = directory.openInput(name);
+      _indexInput = indexInput;
       _realLength = _indexInput.length();
 
       // read meta data
@@ -372,7 +390,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
       System.out.println("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd + " with blockCount of " + blockCount + "].");
     }
 
-    private static void setupBuffers(CompressedIndexInput input) {
+    private static void setupBuffers(CompressedIndexInput_V0 input) {
       input._blockBuffer = new byte[input._blockSize];
       int dsize = input._blockSize * 2;
       if (dsize < _MIN_BUFFER_SIZE) {
@@ -382,7 +400,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     }
 
     public Object clone() {
-      CompressedIndexInput clone = (CompressedIndexInput) super.clone();
+      CompressedIndexInput_V0 clone = (CompressedIndexInput_V0) super.clone();
       clone._isClone = true;
       clone._indexInput = (IndexInput) _indexInput.clone();
       setupBuffers(clone);

@@ -36,6 +36,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.lucene.search.Filter;
@@ -89,10 +90,10 @@ public class BlurUtil {
           MethodCall methodCall = metrics.methodCalls.get(method.getName());
           if (methodCall == null) {
             methodCall = new MethodCall();
-            metrics.methodCalls.put(method.getName(),methodCall);
+            metrics.methodCalls.put(method.getName(), methodCall);
           }
           methodCall.invokes.incrementAndGet();
-          methodCall.times.addAndGet(end-start);
+          methodCall.times.addAndGet(end - start);
         }
       }
     };
@@ -434,5 +435,46 @@ public class BlurUtil {
       str = "0" + str;
     }
     return str;
+  }
+
+  public static String humanizeTime(long time, TimeUnit unit) {
+    long seconds = unit.toSeconds(time);
+    long hours = getHours(seconds);
+    seconds = seconds - TimeUnit.HOURS.toSeconds(hours);
+    long minutes = getMinutes(seconds);
+    seconds = seconds - TimeUnit.MINUTES.toSeconds(minutes);
+    return humanizeTime(hours, minutes, seconds);
+  }
+
+  public static String humanizeTime(long hours, long minutes, long seconds) {
+    StringBuilder builder = new StringBuilder();
+    if (hours == 0 && minutes != 0) {
+      addMinutes(builder, minutes);
+    } else if (hours != 0) {
+      addHours(builder, hours);
+      addMinutes(builder, minutes);
+    }
+    addSeconds(builder, seconds);
+    return builder.toString().trim();
+  }
+
+  private static void addHours(StringBuilder builder, long hours) {
+    builder.append(hours).append(" hours ");
+  }
+
+  private static void addMinutes(StringBuilder builder, long minutes) {
+    builder.append(minutes).append(" minutes ");
+  }
+
+  private static void addSeconds(StringBuilder builder, long seconds) {
+    builder.append(seconds).append(" seconds ");
+  }
+
+  private static long getMinutes(long seconds) {
+    return seconds / TimeUnit.MINUTES.toSeconds(1);
+  }
+
+  private static long getHours(long seconds) {
+    return seconds / TimeUnit.HOURS.toSeconds(1);
   }
 }

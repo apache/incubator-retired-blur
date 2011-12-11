@@ -62,6 +62,7 @@ import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IterableConverter;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
@@ -345,11 +346,15 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     double rate = totalBytesCopied / seconds;
     String time = estimateTimeToComplete(rate, totalBytesCopied, totalBytesToCopy);
 
-    String status = String.format("Copy rate %.1f MB/s, Time Remaining %s s Total Copied %.1f MB Total To Copy %.1f MB", getMb(rate),time,getMb(totalBytesCopied),getMb(totalBytesToCopy));
+    String status = String.format("%.1f Complete - Time Remaining [%s s], Copy rate [%.1f MB/s], Total Copied [%.1f MB], Total To Copy [%.1f MB]", getPerComplete(totalBytesCopied, totalBytesToCopy),time,getMb(rate),getMb(totalBytesCopied),getMb(totalBytesToCopy));
     LOG.info(status);
     context.setStatus(status);
   }
   
+  private static double getPerComplete(long totalBytesCopied, long totalBytesToCopy) {
+    return ((double) totalBytesCopied / (double) totalBytesToCopy) * 100.0;
+  }
+
   private static double getMb(double b) {
     return b / MB;
   }
@@ -357,6 +362,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   private static String estimateTimeToComplete(double rate, long totalBytesCopied, long totalBytesToCopy) {
     long whatsLeft = totalBytesToCopy - totalBytesCopied;
     long secondsLeft = (long) (whatsLeft / rate);
-    return Long.toString(secondsLeft);
+    return BlurUtil.humanizeTime(secondsLeft, TimeUnit.SECONDS);
   }
 }

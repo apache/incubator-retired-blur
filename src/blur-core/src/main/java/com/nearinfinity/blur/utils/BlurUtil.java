@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -39,9 +40,14 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.util.PagedBytes.PagedBytesDataInput;
+import org.apache.lucene.util.packed.PackedInts;
+import org.apache.lucene.util.packed.PackedInts.Reader;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -74,6 +80,9 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public class BlurUtil {
 
+  private static final Object[] EMPTY_OBJECT_ARRAY = new Object[] {};
+  @SuppressWarnings("unchecked")
+  private static final Class[] EMPTY_PARAMETER_TYPES = new Class[] {};
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
 
@@ -148,14 +157,14 @@ public class BlurUtil {
     Class<? extends Object> clazz = object.getClass();
     Method method;
     try {
-      method = clazz.getMethod("close", new Class[] {});
+      method = clazz.getMethod("close", EMPTY_PARAMETER_TYPES);
     } catch (SecurityException e) {
       throw new RuntimeException(e);
     } catch (NoSuchMethodException e) {
       return;
     }
     try {
-      method.invoke(object, new Object[] {});
+      method.invoke(object, EMPTY_OBJECT_ARRAY);
     } catch (Exception e) {
       LOG.error("Error while trying to close object [{0}]", object, e);
     }
@@ -476,5 +485,83 @@ public class BlurUtil {
 
   private static long getHours(long seconds) {
     return seconds / TimeUnit.HOURS.toSeconds(1);
+  }
+
+  @SuppressWarnings("unchecked")
+  public static long getMemoryUsage(IndexReader r) {
+    try {
+      if (r instanceof SegmentReader) {
+        long size = 0;
+        SegmentReader segmentReader = (SegmentReader) r;
+        Object segmentCoreReaders = getSegmentCoreReaders(segmentReader);
+        Object termInfosReader = getTermInfosReader(segmentCoreReaders);
+        Object termInfosReaderIndex = getTermInfosReaderIndex(termInfosReader);
+        PagedBytesDataInput dataInput = getDataInput(termInfosReaderIndex);
+        PackedInts.Reader indexToDataOffset = getIndexToDataOffset(termInfosReaderIndex);
+
+        Object pagedBytes = BlurUtil.getField("this$0", dataInput);
+        List<byte[]> blocks = (List<byte[]>) BlurUtil.getField("blocks", pagedBytes);
+        for (byte[] block : blocks) {
+          size += block.length;
+        }
+
+        try {
+          Class<? extends Reader> clazz = indexToDataOffset.getClass();
+          Method method = clazz.getMethod("ramBytesUsed", EMPTY_PARAMETER_TYPES);
+          method.setAccessible(true);
+          Long ramBytesUsed = (Long) method.invoke(indexToDataOffset, EMPTY_OBJECT_ARRAY);
+          size += ramBytesUsed;
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+        return size;
+      }
+      IndexReader[] readers = r.getSequentialSubReaders();
+      long total = 0;
+      if (readers != null) {
+        for (IndexReader reader : readers) {
+          total += getMemoryUsage(reader);
+        }
+      }
+      return total;
+    } catch (Exception e) {
+      LOG.error("Unknown error during getMemoryUsage call",e);
+      return 0;
+    }
+  }
+
+  private static PackedInts.Reader getIndexToDataOffset(Object termInfosReaderIndex) {
+    return (Reader) getField("indexToDataOffset", termInfosReaderIndex);
+  }
+
+  private static PagedBytesDataInput getDataInput(Object termInfosReaderIndex) {
+    return (PagedBytesDataInput) getField("dataInput", termInfosReaderIndex);
+  }
+
+  private static Object getTermInfosReaderIndex(Object termInfosReader) {
+    return getField("index", termInfosReader);
+  }
+
+  private static Object getTermInfosReader(Object segmentCoreReaders) {
+    return getField("tis", segmentCoreReaders);
+  }
+
+  private static Object getSegmentCoreReaders(SegmentReader segmentReader) {
+    return getField("core", segmentReader, SegmentReader.class);
+  }
+
+  private static Object getField(String name, Object o) {
+    Class<? extends Object> clazz = o.getClass();
+    return getField(name, o, clazz);
+  }
+
+  private static Object getField(String name, Object o, Class<? extends Object> clazz) {
+    try {
+      Field field = clazz.getDeclaredField(name);
+      field.setAccessible(true);
+      return field.get(o);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 }

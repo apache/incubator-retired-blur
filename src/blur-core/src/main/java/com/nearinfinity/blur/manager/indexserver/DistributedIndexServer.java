@@ -107,7 +107,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
   private String cluster = BlurConstants.BLUR_CLUSTER;
-  
+
   public static interface ReleaseReader {
     void release() throws IOException;
   }
@@ -117,29 +117,29 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
     setupFlushCacheTimer();
-    String lockPath = BlurUtil.lockForSafeMode(_zookeeper,getNodeName(),cluster);
+    String lockPath = BlurUtil.lockForSafeMode(_zookeeper, getNodeName(), cluster);
     try {
       registerMyself();
       setupSafeMode();
     } finally {
-      BlurUtil.unlockForSafeMode(_zookeeper,lockPath);
+      BlurUtil.unlockForSafeMode(_zookeeper, lockPath);
     }
     waitInSafeModeIfNeeded();
     _running.set(true);
     setupTableWarmer();
     watchForShardServerChanges();
   }
-  
+
   private void setupZookeeper() throws KeeperException, InterruptedException {
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getBasePath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlineControllersPath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getClustersPath());
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getClusterPath(cluster));
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getSafemodePath(cluster));
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getRegisteredShardsPath(cluster));
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlinePath(cluster));
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getOnlineShardsPath(cluster));
-    BlurUtil.createIfMissing(_zookeeper,ZookeeperPathConstants.getTablesPath(cluster));
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getBasePath());
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlineControllersPath());
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClustersPath());
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClusterPath(cluster));
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getSafemodePath(cluster));
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getRegisteredShardsPath(cluster));
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlinePath(cluster));
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster));
+    BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster));
   }
 
   private void watchForShardServerChanges() {
@@ -166,9 +166,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
                 _running.set(false);
                 return;
               }
-              LOG.error("Unknown Error",e);
+              LOG.error("Unknown Error", e);
             } catch (InterruptedException e) {
-              LOG.error("Unknown Error",e);
+              LOG.error("Unknown Error", e);
             }
           }
         }
@@ -192,7 +192,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     long timestamp = Long.parseLong(new String(data));
     long waitTime = timestamp - System.currentTimeMillis();
     if (waitTime > 0) {
-      LOG.info("Waiting in safe mode for [{0}] seconds",waitTime/1000.0);
+      LOG.info("Waiting in safe mode for [{0}] seconds", waitTime / 1000.0);
       Thread.sleep(waitTime);
     }
   }
@@ -230,7 +230,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void createIfMissing(String path) throws KeeperException, InterruptedException {
     if (_zookeeper.exists(path, false) == null) {
-      LOG.info("Creating missing path in zookeeper [{0}]",path);
+      LOG.info("Creating missing path in zookeeper [{0}]", path);
       _zookeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     }
   }
@@ -238,7 +238,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private void removeAnyTableLocks() {
     List<String> tableList = _clusterStatus.getTableList();
     for (String table : tableList) {
-      _clusterStatus.clearLocks(cluster,table);
+      _clusterStatus.clearLocks(cluster, table);
     }
   }
 
@@ -248,14 +248,38 @@ public class DistributedIndexServer extends AbstractIndexServer {
       @Override
       public void run() {
         List<String> tableList = _clusterStatus.getTableList();
+        _blurMetrics.tableCount.set(tableList.size());
+        long indexCount = 0;
         for (String table : tableList) {
           try {
-            int count = getIndexes(table).size();
-            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.",table,count);
+            Map<String, BlurIndex> indexes = getIndexes(table);
+            int count = indexes.size();
+            indexCount += indexCount;
+            updateMetrics(_blurMetrics, indexes);
+            LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
           } catch (IOException e) {
-            LOG.error("Unknown error trying to warm table [{0}]",e,table);
+            LOG.error("Unknown error trying to warm table [{0}]", e, table);
           }
         }
+        _blurMetrics.indexCount.set(indexCount);
+      }
+
+      // public AtomicLong rowCount = new AtomicLong(0);
+      // public AtomicLong recordCount = new AtomicLong(0);
+
+      private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes) throws IOException {
+        long segmentCount = 0;
+        long indexMemoryUsage = 0;
+        for (BlurIndex index : indexes.values()) {
+          IndexReader reader = index.getIndexReader(false);
+          try {
+            indexMemoryUsage += BlurUtil.getMemoryUsage(reader);
+          } finally {
+            reader.decRef();
+          }
+        }
+        blurMetrics.segmentCount.set(segmentCount);
+        blurMetrics.indexMemoryUsage.set(indexMemoryUsage);
       }
     }, _delay, _delay);
   }
@@ -302,7 +326,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
             if (index == null) {
               continue;
             }
-            close(index,table,shard);
+            close(index, table, shard);
           }
         }
         for (String table : _indexes.keySet()) {
@@ -312,16 +336,16 @@ public class DistributedIndexServer extends AbstractIndexServer {
             Set<String> shardsToServe = getShardsToServe(table);
             shards.removeAll(shardsToServe);
             if (!shards.isEmpty()) {
-              LOG.info("Need to close indexes for table [{0}] indexes [{1}]",table,shards);
+              LOG.info("Need to close indexes for table [{0}] indexes [{1}]", table, shards);
             }
             for (String shard : shards) {
-              LOG.info("Closing index for table [{0}] shard [{1}]",table,shard);
+              LOG.info("Closing index for table [{0}] shard [{1}]", table, shard);
               BlurIndex index = shardMap.remove(shard);
               close(index, table, shard);
             }
           }
         }
-        
+
       }
     }, _delay, _delay);
   }
@@ -329,7 +353,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   protected void close(BlurIndex index, String table, String shard) {
     LOG.info("Closing index [{0}] from table [{1}] shard [{2}]", index, table, shard);
     try {
-      _filterCache.closing(table,shard,index);
+      _filterCache.closing(table, shard, index);
       index.close();
     } catch (IOException e) {
       LOG.error("Error while closing index [{0}] from table [{1}] shard [{2}]", e, index, table, shard);
@@ -340,12 +364,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     List<String> tables = new ArrayList<String>(map.keySet());
     Map<String, T> removed = new HashMap<String, T>();
     for (String table : tables) {
-      if (!_clusterStatus.exists(true,cluster,table)) {
+      if (!_clusterStatus.exists(true, cluster, table)) {
         removed.put(table, map.remove(table));
       }
     }
     for (String table : tables) {
-      if (!_clusterStatus.isEnabled(true,cluster,table)) {
+      if (!_clusterStatus.isEnabled(true, cluster, table)) {
         removed.put(table, map.remove(table));
       }
     }
@@ -382,9 +406,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
   public CompressionCodec getCompressionCodec(String table) {
     checkTable(table);
     TableDescriptor descriptor = getTableDescriptor(table);
-    return getInstance(descriptor.compressionClass,CompressionCodec.class);
+    return getInstance(descriptor.compressionClass, CompressionCodec.class);
   }
-  
+
   @Override
   public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
     return new TreeSet<String>(getShardsToServe(table));
@@ -424,23 +448,23 @@ public class DistributedIndexServer extends AbstractIndexServer {
     DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
 
-    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true,cluster,table);
+    TableDescriptor descriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.compressionBlockSize;
     if (compressionClass != null) {
       CompressionCodec compressionCodec;
       try {
-        compressionCodec = CreateTable.getInstance(compressionClass,CompressionCodec.class);
+        compressionCodec = CreateTable.getInstance(compressionClass, CompressionCodec.class);
         directory = new CompressedFieldDataDirectory(directory, compressionCodec, compressionBlockSize);
       } catch (Exception e) {
         throw new IOException(e);
       }
     }
-    
+
     DirectIODirectory dir;
-    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(cluster,table);
+    boolean blockCacheEnabled = _clusterStatus.isBlockCacheEnabled(cluster, table);
     if (blockCacheEnabled) {
-      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(cluster,table);
+      Set<String> blockCacheFileTypes = _clusterStatus.getBlockCacheFileTypes(cluster, table);
       dir = new BlockDirectory(table + "_" + shard, directory, _cache, blockCacheFileTypes);
     } else {
       dir = directory;
@@ -458,21 +482,21 @@ public class DistributedIndexServer extends AbstractIndexServer {
     writer.setSimilarity(getSimilarity(table));
     writer.setClusterStatus(_clusterStatus);
     writer.init();
-    _filterCache.opening(table,shard,writer);
-    return warmUp(writer,table,shard);
+    _filterCache.opening(table, shard, writer);
+    return warmUp(writer, table, shard);
   }
 
   private BlurIndex warmUp(BlurIndex index, String table, String shard) throws IOException {
     final IndexReader reader = index.getIndexReader(true);
     warmUpAllSegments(reader);
-    _warmup.warmBlurIndex(table,shard,reader,index.isClosed(), new ReleaseReader() {
+    _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
       @Override
       public void release() throws IOException {
         // this will allow for closing of index
-        reader.decRef();          
+        reader.decRef();
       }
     });
-    
+
     return index;
   }
 
@@ -561,7 +585,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private synchronized Set<String> setupLayoutManager(String table) {
     DistributedLayoutManager layoutManager = new DistributedLayoutManager();
 
-    String cluster = _clusterStatus.getCluster(false,table);
+    String cluster = _clusterStatus.getCluster(false, table);
 
     List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
     List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(cluster));
@@ -629,12 +653,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
     checkTable(table);
     Similarity similarity = _tableSimilarity.get(table);
     if (similarity == null) {
-      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true,cluster,table);
+      TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
       String similarityClass = tableDescriptor.similarityClass;
       if (similarityClass == null) {
         similarity = new FairSimilarity();
       } else {
-        similarity = getInstance(similarityClass,Similarity.class);
+        similarity = getInstance(similarityClass, Similarity.class);
       }
       _tableSimilarity.put(table, similarity);
     }
@@ -658,7 +682,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   @Override
   public TABLE_STATUS getTableStatus(String table) {
     checkTable(table);
-    boolean enabled = _clusterStatus.isEnabled(true,cluster,table);
+    boolean enabled = _clusterStatus.isEnabled(true, cluster, table);
     if (enabled) {
       return TABLE_STATUS.ENABLED;
     }
@@ -666,7 +690,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void checkTable(String table) {
-    if (_clusterStatus.exists(true,cluster,table)) {
+    if (_clusterStatus.exists(true, cluster, table)) {
       return;
     }
     throw new RuntimeException("Table [" + table + "] does not exist.");
@@ -682,7 +706,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private TableDescriptor getTableDescriptor(String table) {
     TableDescriptor tableDescriptor = _tableDescriptors.get(table);
     if (tableDescriptor == null) {
-      tableDescriptor = _clusterStatus.getTableDescriptor(true,cluster,table);
+      tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
       _tableDescriptors.put(table, tableDescriptor);
     }
     return tableDescriptor;

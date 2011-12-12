@@ -27,10 +27,10 @@ public class BufferStore {
     _1024 = setupBuffers(1024,_1024Size);
     LOG.info("Initializing the 8192 buffers with [{0}] buffers.",_8192Size);
     _8192 = setupBuffers(8192,_8192Size);
-    _blurShardBuffercacheLost = metrics._blurShardBuffercacheLost;
-    _blurShardBuffercacheAllocate1024 = metrics._blurShardBuffercacheAllocate1024;
-    _blurShardBuffercacheAllocate8192 = metrics._blurShardBuffercacheAllocate8192;
-    _blurShardBuffercacheAllocateOther = metrics._blurShardBuffercacheAllocateOther;
+    _blurShardBuffercacheLost = metrics.blurShardBuffercacheLost;
+    _blurShardBuffercacheAllocate1024 = metrics.blurShardBuffercacheAllocate1024;
+    _blurShardBuffercacheAllocate8192 = metrics.blurShardBuffercacheAllocate8192;
+    _blurShardBuffercacheAllocateOther = metrics.blurShardBuffercacheAllocateOther;
   }
 
   private static BlockingQueue<byte[]> setupBuffers(int bufferSize, int count) {

@@ -29,18 +29,21 @@ public class BlurMetrics implements Updater {
   public AtomicLong recordWrites = new AtomicLong(0);
   public AtomicLong queriesExternal = new AtomicLong(0);
   public AtomicLong queriesInternal = new AtomicLong(0);
-  public AtomicLong _blurShardBuffercacheAllocate1024 = new AtomicLong(0);
-  public AtomicLong _blurShardBuffercacheAllocate8192 = new AtomicLong(0);
-  public AtomicLong _blurShardBuffercacheAllocateOther = new AtomicLong(0);
-  public AtomicLong _blurShardBuffercacheLost = new AtomicLong(0);
+  public AtomicLong blurShardBuffercacheAllocate1024 = new AtomicLong(0);
+  public AtomicLong blurShardBuffercacheAllocate8192 = new AtomicLong(0);
+  public AtomicLong blurShardBuffercacheAllocateOther = new AtomicLong(0);
+  public AtomicLong blurShardBuffercacheLost = new AtomicLong(0);
   public Map<String,MethodCall> methodCalls = new ConcurrentHashMap<String, MethodCall>();
+  
+  public AtomicLong tableCount = new AtomicLong(0);
+  public AtomicLong rowCount = new AtomicLong(0);
+  public AtomicLong recordCount = new AtomicLong(0);
+  public AtomicLong indexCount = new AtomicLong(0);
+  public AtomicLong indexMemoryUsage = new AtomicLong(0);
+  public AtomicLong segmentCount = new AtomicLong(0);
 
   private MetricsRecord _metricsRecord;
   private long _previous = System.nanoTime();
-  
-  
-  
-  
 
   public static void main(String[] args) throws InterruptedException {
     Configuration conf = new Configuration();
@@ -88,6 +91,12 @@ public class BlurMetrics implements Updater {
         _metricsRecord.setMetric("methodcalls." + key + ".count", getPerSecond(invokes, seconds));
         _metricsRecord.setMetric("methodcalls." + key + ".time", avgTimes);
       }
+      _metricsRecord.setMetric("tables", tableCount.get());
+      _metricsRecord.setMetric("rows", rowCount.get());
+      _metricsRecord.setMetric("records", recordCount.get());
+      _metricsRecord.setMetric("index.count", indexCount.get());
+      _metricsRecord.setMetric("index.memoryusage", indexMemoryUsage.get());
+      _metricsRecord.setMetric("index.segments", segmentCount.get());
       _previous = now;
     }
     _metricsRecord.update();

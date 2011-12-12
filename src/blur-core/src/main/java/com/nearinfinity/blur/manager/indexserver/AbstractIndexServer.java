@@ -20,7 +20,7 @@ public abstract class AbstractIndexServer implements IndexServer {
     for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
       IndexReader indexReader = null;
       try {
-        indexReader = index.getValue().getIndexReader(true);
+        indexReader = index.getValue().getIndexReader(false);
         recordCount += indexReader.numDocs();
       } finally {
         if (indexReader != null) {
@@ -37,7 +37,7 @@ public abstract class AbstractIndexServer implements IndexServer {
     for (Map.Entry<String, BlurIndex> index : indexes.entrySet()) {
       IndexReader indexReader = null;
       try {
-        indexReader = index.getValue().getIndexReader(true);
+        indexReader = index.getValue().getIndexReader(false);
         TermDocs termDocs = indexReader.termDocs(PRIME_DOC_TERM);
         while (termDocs.next()) {
           if (!indexReader.isDeleted(termDocs.doc())) {

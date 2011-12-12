@@ -112,7 +112,7 @@ public class BlurAnalyzer extends Analyzer {
     analyzers.put(PRIME_DOC, keywordAnalyzer);
     analyzers.put(SUPER, _fullTextAnalyzer);
     load(analyzers);
-    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer);
+    _wrapper = new PerFieldAnalyzerWrapper(defaultAnalyzer,analyzers);
   }
 
   private void load(Map<String, Analyzer> analyzers) {

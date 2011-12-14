@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -58,6 +59,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
 import org.apache.zookeeper.KeeperException;
 
@@ -127,14 +129,19 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
-    _blurTask = BlurTask.read(context.getConfiguration());
-    setupCounters(context);
-    setupAnalyzer(context);
-    setupDirectory(context);
-    setupWriter(context);
-    _configuration = context.getConfiguration();
-    if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
-      _reader = IndexReader.open(_directory, true);
+    try {
+      _blurTask = BlurTask.read(context.getConfiguration());
+      setupCounters(context);
+      setupAnalyzer(context);
+      setupDirectory(context);
+      setupWriter(context);
+      _configuration = context.getConfiguration();
+      if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
+        _reader = IndexReader.open(_directory, true);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 
@@ -154,33 +161,30 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       _rowFailures.increment(1);
     }
   }
-  
-  private Map<String,Document> _newDocs = new HashMap<String, Document>();
+
+  private Map<String, Document> _newDocs = new HashMap<String, Document>();
   private Set<String> _recordIdsToDelete = new HashSet<String>();
   private Term _rowIdTerm = new Term(BlurConstants.ROW_ID);
 
   private boolean index(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException {
-    boolean primeDoc = true;
     int recordCount = 0;
-    _rowIdTerm = null;
     _newDocs.clear();
     _recordIdsToDelete.clear();
-    
+    boolean rowIdSet = false;
+
     for (BlurRecord record : values) {
-      if (_rowIdTerm == null) {
+      if (!rowIdSet) {
         String rowId = record.getRowId();
         _rowIdTerm = _rowIdTerm.createTerm(rowId);
+        rowIdSet = true;
       }
       if (record.getMutateType() == MUTATE_TYPE.DELETE) {
         _recordIdsToDelete.add(record.getRecordId());
         continue;
       }
       Document document = toDocument(record, _builder);
-      _newDocs.put(record.getRecordId(),document);
-      if (primeDoc) {
-        document.add(PRIME_FIELD);
-        primeDoc = false;
-      }
+      _newDocs.put(record.getRecordId(), document);
+
       context.progress();
       recordCount++;
       if (recordCount >= _blurTask.getMaxRecordsPerRow()) {
@@ -190,13 +194,19 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
         fetchOldRecords();
       }
     }
-
+    
+    Collection<Document> docs = new ArrayList<Document>(_newDocs.values());
+    for (Document document : docs) {
+      document.add(PRIME_FIELD);
+      break;
+    }
+    
     switch (_blurTask.getIndexingType()) {
     case REBUILD:
-      _writer.addDocuments(_newDocs.values());
+      _writer.addDocuments(docs);
       break;
     case UPDATE:
-      _writer.updateDocuments(_rowIdTerm, _newDocs.values());
+      _writer.updateDocuments(_rowIdTerm, docs);
     default:
       break;
     }
@@ -230,7 +240,6 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return true;
   }
 
-  
   private void fetchOldRecords() throws IOException {
     TermDocs termDocs = _reader.termDocs(_rowIdTerm);
     // find all records for row that are not deleted.
@@ -245,7 +254,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
         }
       }
     }
-    
+
     // delete all records that should be removed.
     for (String recordId : _recordIdsToDelete) {
       _newDocs.remove(recordId);
@@ -399,14 +408,30 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       TableDescriptor descriptor = _blurTask.getTableDescriptor();
       Path directoryPath = _blurTask.getDirectoryPath(context);
       _directory = getDestDirectory(descriptor, directoryPath);
-      break;
+      //@TODO fix this, set the lock factory correctly
+      _directory.setLockFactory(NoLockFactory.getNoLockFactory());
+      return;
     case REBUILD:
       File dir = new File(System.getProperty("java.io.tmpdir"));
-      _directory = new ProgressableDirectory(FSDirectory.open(new File(dir, "index")), context);
-      break;
+      File path = new File(dir, "index");
+      rm(path);
+      _directory = new ProgressableDirectory(FSDirectory.open(path), context);
+      return;
     default:
       break;
     }
+  }
+
+  private void rm(File path) {
+    if (!path.exists()) {
+      return;
+    }
+    if (path.isDirectory()) {
+      for (File f : path.listFiles()) {
+        rm(f);
+      }
+    }
+    path.delete();
   }
 
   protected <T> T nullCheck(T o) {

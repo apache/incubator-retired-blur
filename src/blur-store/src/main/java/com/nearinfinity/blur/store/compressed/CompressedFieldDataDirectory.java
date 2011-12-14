@@ -29,8 +29,12 @@ import org.apache.lucene.store.Lock;
 import org.apache.lucene.store.LockFactory;
 
 import com.nearinfinity.blur.index.DirectIODirectory;
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
 
 public class CompressedFieldDataDirectory extends DirectIODirectory {
+  
+  private static final Log LOG = LogFactory.getLog(CompressedFieldDataDirectory.class);
 
   private static final int _MIN_BUFFER_SIZE = 100;
   private static final String FDZ = ".fdz";
@@ -387,7 +391,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
       double total = (e2 - s1) / 1000000.0;
       double _1st = (e1 - s1) / 1000000.0;
       double _2nd = (e2 - s2) / 1000000.0;
-      System.out.println("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd + " with blockCount of " + blockCount + "].");
+      LOG.info("Took [" + total + " ms] to open [" + _1st + "] [" + _2nd + " with blockCount of " + blockCount + "].");
     }
 
     private static void setupBuffers(CompressedIndexInput_V0 input) {

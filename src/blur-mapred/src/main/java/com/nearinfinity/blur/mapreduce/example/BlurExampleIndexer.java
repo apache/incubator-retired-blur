@@ -56,6 +56,7 @@ public class BlurExampleIndexer {
     descriptor.name = "test";
     descriptor.shardCount = 1;
     descriptor.tableUri = "./blur-testing";
+    descriptor.tableUri = "hdfs://localhost:9000/testing-update";
     
     BlurTask blurTask = new BlurTask();
     blurTask.setTableDescriptor(descriptor);
@@ -63,6 +64,7 @@ public class BlurExampleIndexer {
     blurTask.setZookeeperConnectionStr("localhost");
     blurTask.setMaxNumberOfConcurrentCopies(10);
     blurTask.setIndexingType(INDEXING_TYPE.REBUILD);
+    blurTask.setIndexingType(INDEXING_TYPE.UPDATE);
     Job job = blurTask.configureJob(configuration);
     job.setJarByClass(BlurExampleIndexer.class);
     job.setMapperClass(BlurExampleMapper.class);
@@ -71,6 +73,7 @@ public class BlurExampleIndexer {
     
     FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
     FileOutputFormat.setOutputPath(job, new Path(otherArgs[1], "job-" + System.currentTimeMillis()));
-    System.exit(job.waitForCompletion(true) ? 0 : 1);
+    boolean waitForCompletion = job.waitForCompletion(true);
+    System.exit(waitForCompletion ? 0 : 1);
   }
 }

@@ -353,14 +353,14 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   @Override
   public TableStats getTableStats(final String table) throws BlurException, TException {
+    String cluster = _clusterStatus.getCluster(true,table);
+    checkTable(cluster,table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<TableStats>() {
-
         @Override
         public TableStats call(Client client) throws BlurException, TException {
           return client.getTableStats(table);
         }
-
       }, new MergerTableStats());
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get table stats [{0}]", e, table);

@@ -30,6 +30,7 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import com.nearinfinity.blur.mapreduce.BlurTask;
+import com.nearinfinity.blur.mapreduce.BlurTask.INDEXING_TYPE;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
@@ -61,6 +62,7 @@ public class BlurExampleIndexer {
     blurTask.setSpinLockPath("/copy-locks");
     blurTask.setZookeeperConnectionStr("localhost");
     blurTask.setMaxNumberOfConcurrentCopies(10);
+    blurTask.setIndexingType(INDEXING_TYPE.REBUILD);
     Job job = blurTask.configureJob(configuration);
     job.setJarByClass(BlurExampleIndexer.class);
     job.setMapperClass(BlurExampleMapper.class);

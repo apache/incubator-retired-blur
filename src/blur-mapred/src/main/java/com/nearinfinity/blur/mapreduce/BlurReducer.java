@@ -28,7 +28,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configurable;
@@ -43,8 +47,11 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.BufferedIndexInput;
 import org.apache.lucene.store.Directory;
@@ -58,20 +65,24 @@ import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
+import com.nearinfinity.blur.mapreduce.BlurRecord.MUTATE_TYPE;
+import com.nearinfinity.blur.mapreduce.BlurTask.INDEXING_TYPE;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IterableConverter;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
+
 public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritable, BlurRecord> {
-  
+
   static class LuceneFileComparator implements Comparator<String> {
-    
+
     private Directory _directory;
-    
+
     public LuceneFileComparator(Directory directory) {
       _directory = directory;
     }
@@ -112,6 +123,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   protected long _previousRow;
   protected long _previousRecord;
   protected long _prev;
+  private IndexReader _reader;
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
@@ -121,6 +133,9 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     setupDirectory(context);
     setupWriter(context);
     _configuration = context.getConfiguration();
+    if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
+      _reader = IndexReader.open(_directory, true);
+    }
   }
 
   protected void setupCounters(Context context) {
@@ -139,14 +154,29 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       _rowFailures.increment(1);
     }
   }
+  
+  private Map<String,Document> _newDocs = new HashMap<String, Document>();
+  private Set<String> _recordIdsToDelete = new HashSet<String>();
+  private Term _rowIdTerm = new Term(BlurConstants.ROW_ID);
 
   private boolean index(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException {
     boolean primeDoc = true;
     int recordCount = 0;
-    List<Document> docs = new ArrayList<Document>();
+    _rowIdTerm = null;
+    _newDocs.clear();
+    _recordIdsToDelete.clear();
+    
     for (BlurRecord record : values) {
+      if (_rowIdTerm == null) {
+        String rowId = record.getRowId();
+        _rowIdTerm = _rowIdTerm.createTerm(rowId);
+      }
+      if (record.getMutateType() == MUTATE_TYPE.DELETE) {
+        _recordIdsToDelete.add(record.getRecordId());
+        continue;
+      }
       Document document = toDocument(record, _builder);
-      docs.add(document);
+      _newDocs.put(record.getRecordId(),document);
       if (primeDoc) {
         document.add(PRIME_FIELD);
         primeDoc = false;
@@ -156,30 +186,43 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       if (recordCount >= _blurTask.getMaxRecordsPerRow()) {
         return false;
       }
+      if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
+        fetchOldRecords();
+      }
     }
-    _writer.addDocuments(docs);
+
+    switch (_blurTask.getIndexingType()) {
+    case REBUILD:
+      _writer.addDocuments(_newDocs.values());
+      break;
+    case UPDATE:
+      _writer.updateDocuments(_rowIdTerm, _newDocs.values());
+    default:
+      break;
+    }
+
     _recordCounter.increment(recordCount);
     _rowCounter.increment(1);
     if (_prev + REPORT_PERIOD < System.currentTimeMillis()) {
       long records = _recordCounter.getValue();
       long rows = _rowCounter.getValue();
-      
+
       long now = System.currentTimeMillis();
-      
+
       double overAllSeconds = (now - _start) / 1000.0;
       double overAllRecordRate = records / overAllSeconds;
       double overAllRowsRate = rows / overAllSeconds;
-      
+
       double seconds = (now - _prev) / 1000.0;
       double recordRate = (records - _previousRecord) / seconds;
       double rowsRate = (rows - _previousRow) / seconds;
-      
-      String status = String.format("Totals [%d Row, %d Records], Avg Rates [%.1f Row/s, %.1f Records/s] Rates [%.1f Row/s, %.1f Records/s]", 
-          rows, records, overAllRowsRate, overAllRecordRate, rowsRate, recordRate);
-      
+
+      String status = String.format("Totals [%d Row, %d Records], Avg Rates [%.1f Row/s, %.1f Records/s] Rates [%.1f Row/s, %.1f Records/s]", rows, records, overAllRowsRate,
+          overAllRecordRate, rowsRate, recordRate);
+
       LOG.info(status);
       context.setStatus(status);
-      
+
       _previousRecord = records;
       _previousRow = rows;
       _prev = now;
@@ -187,8 +230,48 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return true;
   }
 
+  
+  private void fetchOldRecords() throws IOException {
+    TermDocs termDocs = _reader.termDocs(_rowIdTerm);
+    // find all records for row that are not deleted.
+    while (termDocs.next()) {
+      int doc = termDocs.doc();
+      if (!_reader.isDeleted(doc)) {
+        Document document = _reader.document(doc);
+        String recordId = document.get(RECORD_ID);
+        // add them to the new records if the new records do not contain them.
+        if (!_newDocs.containsKey(recordId)) {
+          _newDocs.put(recordId, document);
+        }
+      }
+    }
+    
+    // delete all records that should be removed.
+    for (String recordId : _recordIdsToDelete) {
+      _newDocs.remove(recordId);
+    }
+  }
+
   @Override
   protected void cleanup(Context context) throws IOException, InterruptedException {
+    switch (_blurTask.getIndexingType()) {
+    case UPDATE:
+      cleanupFromUpdate(context);
+      return;
+    case REBUILD:
+      cleanupFromRebuild(context);
+      return;
+    default:
+      break;
+    }
+  }
+
+  private void cleanupFromUpdate(Context context) throws IOException {
+    _writer.commit();
+    _writer.close();
+  }
+
+  private void cleanupFromRebuild(Context context) throws IOException, InterruptedException {
     _writer.commit();
     int maxNumSegments = _blurTask.getMaxNumSegments();
     if (maxNumSegments > 0) {
@@ -197,10 +280,23 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
     _writer.close();
     TableDescriptor descriptor = _blurTask.getTableDescriptor();
-    
+
     Path directoryPath = _blurTask.getDirectoryPath(context);
     remove(directoryPath);
-    
+
+    Directory destDirectory = getDestDirectory(descriptor, directoryPath);
+
+    copyLock(context, descriptor);
+    List<String> files = getFilesOrderedBySize(_directory);
+    long totalBytesToCopy = getTotalBytes(_directory);
+    long totalBytesCopied = 0;
+    long startTime = System.currentTimeMillis();
+    for (String file : files) {
+      totalBytesCopied += copy(_directory, destDirectory, file, file, context, totalBytesCopied, totalBytesToCopy, startTime);
+    }
+  }
+
+  private Directory getDestDirectory(TableDescriptor descriptor, Path directoryPath) throws IOException {
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.getCompressionBlockSize();
     if (compressionClass == null) {
@@ -209,18 +305,8 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     if (compressionBlockSize == 0) {
       compressionBlockSize = 32768;
     }
-    
-    copyLock(context,descriptor);
-    
     HdfsDirectory dir = new HdfsDirectory(directoryPath);
-    CompressedFieldDataDirectory directory = new CompressedFieldDataDirectory(dir, getInstance(compressionClass), compressionBlockSize);
-    List<String> files = getFilesOrderedBySize(_directory);
-    long totalBytesToCopy = getTotalBytes(_directory);
-    long totalBytesCopied = 0;
-    long startTime = System.currentTimeMillis();
-    for (String file : files) {
-      totalBytesCopied += copy(_directory, directory, file, file, context, totalBytesCopied, totalBytesToCopy, startTime);
-    }
+    return new CompressedFieldDataDirectory(dir, getInstance(compressionClass), compressionBlockSize);
   }
 
   private void copyLock(Context context, TableDescriptor descriptor) throws IOException, InterruptedException {
@@ -229,13 +315,13 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     String name = descriptor.name + "_" + _blurTask.getShardName(context);
     if (zkCon != null && path != null) {
       try {
-        SpinLock spinLock = new SpinLock(context,zkCon,name,path);
+        SpinLock spinLock = new SpinLock(context, zkCon, name, path);
         spinLock.copyLock(context);
       } catch (KeeperException e) {
         throw new RuntimeException(e);
       }
     } else {
-      LOG.info("Spin lock not used because zookeeper connection str [{0}] or spin lock path not set [{1}]",zkCon,path);
+      LOG.info("Spin lock not used because zookeeper connection str [{0}] or spin lock path not set [{1}]", zkCon, path);
     }
   }
 
@@ -308,8 +394,19 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   }
 
   protected void setupDirectory(Context context) throws IOException {
-    File dir = new File(System.getProperty("java.io.tmpdir"));
-    _directory = new ProgressableDirectory(FSDirectory.open(new File(dir, "index")),context);
+    switch (_blurTask.getIndexingType()) {
+    case UPDATE:
+      TableDescriptor descriptor = _blurTask.getTableDescriptor();
+      Path directoryPath = _blurTask.getDirectoryPath(context);
+      _directory = getDestDirectory(descriptor, directoryPath);
+      break;
+    case REBUILD:
+      File dir = new File(System.getProperty("java.io.tmpdir"));
+      _directory = new ProgressableDirectory(FSDirectory.open(new File(dir, "index")), context);
+      break;
+    default:
+      break;
+    }
   }
 
   protected <T> T nullCheck(T o) {
@@ -355,11 +452,12 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     double rate = totalBytesCopied / seconds;
     String time = estimateTimeToComplete(rate, totalBytesCopied, totalBytesToCopy);
 
-    String status = String.format("%.1f Complete - Time Remaining [%s s], Copy rate [%.1f MB/s], Total Copied [%.1f MB], Total To Copy [%.1f MB]", getPerComplete(totalBytesCopied, totalBytesToCopy),time,getMb(rate),getMb(totalBytesCopied),getMb(totalBytesToCopy));
+    String status = String.format("%.1f Complete - Time Remaining [%s s], Copy rate [%.1f MB/s], Total Copied [%.1f MB], Total To Copy [%.1f MB]", getPerComplete(totalBytesCopied,
+        totalBytesToCopy), time, getMb(rate), getMb(totalBytesCopied), getMb(totalBytesToCopy));
     LOG.info(status);
     context.setStatus(status);
   }
-  
+
   private static double getPerComplete(long totalBytesCopied, long totalBytesToCopy) {
     return ((double) totalBytesCopied / (double) totalBytesToCopy) * 100.0;
   }

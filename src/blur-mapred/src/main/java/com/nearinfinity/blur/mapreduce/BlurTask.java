@@ -52,6 +52,11 @@ import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 
 public class BlurTask implements Writable {
+  
+  public enum INDEXING_TYPE {
+    REBUILD,
+    UPDATE
+  }
 
   private static final String BLUR_BLURTASK = "blur.blurtask";
   private static final Log LOG = LogFactory.getLog(BlurTask.class);
@@ -88,6 +93,7 @@ public class BlurTask implements Writable {
   private String _zookeeperConnectionStr;
   private int _maxNumberOfConcurrentCopies;
   private int _maxNumSegments = -1;
+  private INDEXING_TYPE _indexingType = INDEXING_TYPE.REBUILD;
 
   public String getShardName(TaskAttemptContext context) {
     TaskAttemptID taskAttemptID = context.getTaskAttemptID();
@@ -212,6 +218,7 @@ public class BlurTask implements Writable {
     _maxRecordCount = input.readLong();
     _ramBufferSizeMB = input.readInt();
     _maxNumSegments = input.readInt();
+    _indexingType = INDEXING_TYPE.valueOf(readString(input));
     byte[] data = new byte[input.readInt()];
     input.readFully(data);
     ByteArrayInputStream is = new ByteArrayInputStream(data);
@@ -240,6 +247,7 @@ public class BlurTask implements Writable {
     output.writeLong(_maxRecordCount);
     output.writeInt(_ramBufferSizeMB);
     output.writeInt(_maxNumSegments);
+    writeString(output, _indexingType.name());
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     TIOStreamTransport trans = new TIOStreamTransport(os);
     TBinaryProtocol protocol = new TBinaryProtocol(trans);
@@ -298,5 +306,13 @@ public class BlurTask implements Writable {
 
   public void setMaxNumSegments(int maxNumSegments) {
     _maxNumSegments = maxNumSegments;
+  }
+
+  public INDEXING_TYPE getIndexingType() {
+    return _indexingType;
+  }
+
+  public void setIndexingType(INDEXING_TYPE indexingType) {
+    _indexingType = indexingType;
   }
 }

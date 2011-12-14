@@ -2948,7 +2948,7 @@ sub write {
 
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly ) );
 
 sub new {
   my $classname = shift;
@@ -2965,6 +2965,7 @@ sub new {
   $self->{similarityClass} = undef;
   $self->{blockCaching} = 1;
   $self->{blockCachingFileTypes} = undef;
+  $self->{readOnly} = 0;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {
       $self->{isEnabled} = $vals->{isEnabled};
@@ -2998,6 +2999,9 @@ sub new {
     }
     if (defined $vals->{blockCachingFileTypes}) {
       $self->{blockCachingFileTypes} = $vals->{blockCachingFileTypes};
+    }
+    if (defined $vals->{readOnly}) {
+      $self->{readOnly} = $vals->{readOnly};
     }
   }
   return bless ($self, $classname);
@@ -3101,6 +3105,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^12$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{readOnly});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -3175,6 +3185,11 @@ sub write {
       }
       $xfer += $output->writeSetEnd();
     }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{readOnly}) {
+    $xfer += $output->writeFieldBegin('readOnly', TType::BOOL, 12);
+    $xfer += $output->writeBool($self->{readOnly});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

@@ -104,6 +104,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private ZooKeeper _zk;
   private AtomicBoolean _running = new AtomicBoolean();
   private ConcurrentMap<String, AtomicBoolean> _enabledMap = new ConcurrentHashMap<String, AtomicBoolean>();
+  private ConcurrentMap<String, AtomicBoolean> _readOnlyMap = new ConcurrentHashMap<String, AtomicBoolean>();
   private ConcurrentMap<String, Collection<String>> _fieldsMap = new ConcurrentHashMap<String, Collection<String>>();
   private AtomicReference<Map<String,List<String>>> _tableToClusterCache = new AtomicReference<Map<String,List<String>>>(new HashMap<String, List<String>>());
   private Thread _enabledTables;
@@ -114,6 +115,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     _running.set(true);
     watchForEnabledTables();
     watchForTables();
+  }
+
+  public ZookeeperClusterStatus(String connectionStr) throws IOException {
+    this(new ZooKeeper(connectionStr, 30000, new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+        
+      }
+    }));
   }
 
   private void watchForTables() {
@@ -218,7 +228,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 AtomicBoolean enabled = _enabledMap.get(table);
                 if (enabled == null) {
                   enabled = new AtomicBoolean();
-                  _enabledMap.put(getEnabledMapKey(cluster, table), enabled);
+                  _enabledMap.put(getClusterTableKey(cluster, table), enabled);
                 }
                 if (stat == null) {
                   enabled.set(false);
@@ -237,7 +247,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     _enabledTables.start();
   }
 
-  private String getEnabledMapKey(String cluster, String table) {
+  private String getClusterTableKey(String cluster, String table) {
     return cluster + "." + table;
   }
 
@@ -288,7 +298,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   @Override
   public boolean exists(boolean useCache, String cluster, String table) {
     if (useCache) {
-      AtomicBoolean enabled = _enabledMap.get(getEnabledMapKey(cluster, table));
+      AtomicBoolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
       if (enabled == null) {
         return false;
       } else {
@@ -310,7 +320,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   @Override
   public boolean isEnabled(boolean useCache, String cluster, String table) {
     if (useCache) {
-      AtomicBoolean enabled = _enabledMap.get(getEnabledMapKey(cluster, table));
+      AtomicBoolean enabled = _enabledMap.get(getClusterTableKey(cluster, table));
       if (enabled == null) {
         throw new RuntimeException("Table [" + table + "] does not exist.");
       } else {
@@ -525,7 +535,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public Collection<String> readCacheFieldsForTable(String cluster, String table) {
-    Collection<String> fields = _fieldsMap.get(getEnabledMapKey(cluster,table));
+    Collection<String> fields = _fieldsMap.get(getClusterTableKey(cluster,table));
     if (fields == null) {
       return EMPTY_COLLECTION;
     }
@@ -558,6 +568,33 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       } catch (InterruptedException e) {
         LOG.error("Unknown error", e);
       }
+    }
+  }
+
+  @Override
+  public boolean isReadOnly(boolean useCache, String cluster, String table) {
+    String key = getClusterTableKey(cluster, table);
+    if (useCache) {
+      AtomicBoolean flag = _readOnlyMap.get(key);
+      if (flag != null) {
+        return flag.get();
+      }
+    }
+    String path = ZookeeperPathConstants.getTableReadOnlyPath(cluster, table);
+    AtomicBoolean flag = new AtomicBoolean();
+    try {
+      if (_zk.exists(path, false) == null) {
+        flag.set(false);
+        return false;
+      }
+      flag.set(true);
+      return true;
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } finally {
+      _readOnlyMap.put(key, flag);
     }
   }
 }

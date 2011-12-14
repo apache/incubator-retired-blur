@@ -61,6 +61,7 @@ import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
+import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
 import com.nearinfinity.blur.metrics.BlurMetrics;
@@ -474,21 +475,39 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } else {
       dir = directory;
     }
-    BlurIndexWriter writer = new BlurIndexWriter();
-    writer.setCloser(_closer);
-    writer.setCommiter(_commiter);
-    writer.setAnalyzer(getAnalyzer(table));
-    writer.setDirectory(dir);
-    writer.setRefresher(_refresher);
-    writer.setBlurMetrics(_blurMetrics);
-    writer.setShard(shard);
-    writer.setTable(table);
-    writer.setIndexDeletionPolicy(_indexDeletionPolicy);
-    writer.setSimilarity(getSimilarity(table));
-    writer.setClusterStatus(_clusterStatus);
-    writer.init();
-    _filterCache.opening(table, shard, writer);
-    return warmUp(writer, table, shard);
+    
+    BlurIndex index;
+    if (_clusterStatus.isReadOnly(true,cluster,table)) {
+      BlurIndexReader reader = new BlurIndexReader();
+      reader.setCloser(_closer);
+      reader.setAnalyzer(getAnalyzer(table));
+      reader.setDirectory(dir);
+      reader.setRefresher(_refresher);
+      reader.setShard(shard);
+      reader.setTable(table);
+      reader.setIndexDeletionPolicy(_indexDeletionPolicy);
+      reader.setSimilarity(getSimilarity(table));
+      reader.setClusterStatus(_clusterStatus);
+      reader.init();
+      index = reader;
+    } else {
+      BlurIndexWriter writer = new BlurIndexWriter();
+      writer.setCloser(_closer);
+      writer.setCommiter(_commiter);
+      writer.setAnalyzer(getAnalyzer(table));
+      writer.setDirectory(dir);
+      writer.setRefresher(_refresher);
+      writer.setBlurMetrics(_blurMetrics);
+      writer.setShard(shard);
+      writer.setTable(table);
+      writer.setIndexDeletionPolicy(_indexDeletionPolicy);
+      writer.setSimilarity(getSimilarity(table));
+      writer.setClusterStatus(_clusterStatus);
+      writer.init();
+      index = writer;
+    }
+    _filterCache.opening(table, shard, index);
+    return warmUp(index, table, shard);
   }
 
   private BlurIndex warmUp(BlurIndex index, String table, String shard) throws IOException {

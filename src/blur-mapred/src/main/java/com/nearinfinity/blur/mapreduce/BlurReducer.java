@@ -59,18 +59,22 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
-import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.mapreduce.BlurRecord.MUTATE_TYPE;
 import com.nearinfinity.blur.mapreduce.BlurTask.INDEXING_TYPE;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
+import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
@@ -125,13 +129,18 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   protected long _previousRow;
   protected long _previousRecord;
   protected long _prev;
-  private IndexReader _reader;
+  protected IndexReader _reader;
+  protected Map<String, Document> _newDocs = new HashMap<String, Document>();
+  protected Set<String> _recordIdsToDelete = new HashSet<String>();
+  protected Term _rowIdTerm = new Term(BlurConstants.ROW_ID);
+  protected ZooKeeper _zookeeper;
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
     try {
       _blurTask = BlurTask.read(context.getConfiguration());
       setupCounters(context);
+      setupZookeeper(context);
       setupAnalyzer(context);
       setupDirectory(context);
       setupWriter(context);
@@ -143,6 +152,15 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       e.printStackTrace();
       throw new RuntimeException(e);
     }
+  }
+
+  protected void setupZookeeper(Context context) throws IOException {
+    _zookeeper = new ZooKeeper(_blurTask.getZookeeperConnectionStr(), 30000, new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+        //do nothing
+      }
+    });
   }
 
   protected void setupCounters(Context context) {
@@ -162,11 +180,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
   }
 
-  private Map<String, Document> _newDocs = new HashMap<String, Document>();
-  private Set<String> _recordIdsToDelete = new HashSet<String>();
-  private Term _rowIdTerm = new Term(BlurConstants.ROW_ID);
-
-  private boolean index(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException {
+  protected boolean index(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException {
     int recordCount = 0;
     _newDocs.clear();
     _recordIdsToDelete.clear();
@@ -240,7 +254,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return true;
   }
 
-  private void fetchOldRecords() throws IOException {
+  protected void fetchOldRecords() throws IOException {
     TermDocs termDocs = _reader.termDocs(_rowIdTerm);
     // find all records for row that are not deleted.
     while (termDocs.next()) {
@@ -275,12 +289,12 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
   }
 
-  private void cleanupFromUpdate(Context context) throws IOException {
+  protected void cleanupFromUpdate(Context context) throws IOException {
     _writer.commit();
     _writer.close();
   }
 
-  private void cleanupFromRebuild(Context context) throws IOException, InterruptedException {
+  protected void cleanupFromRebuild(Context context) throws IOException, InterruptedException {
     _writer.commit();
     int maxNumSegments = _blurTask.getMaxNumSegments();
     if (maxNumSegments > 0) {
@@ -305,7 +319,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
   }
 
-  private Directory getDestDirectory(TableDescriptor descriptor, Path directoryPath) throws IOException {
+  protected Directory getDestDirectory(TableDescriptor descriptor, Path directoryPath) throws IOException {
     String compressionClass = descriptor.compressionClass;
     int compressionBlockSize = descriptor.getCompressionBlockSize();
     if (compressionClass == null) {
@@ -318,7 +332,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return new CompressedFieldDataDirectory(dir, getInstance(compressionClass), compressionBlockSize);
   }
 
-  private void copyLock(Context context, TableDescriptor descriptor) throws IOException, InterruptedException {
+  protected void copyLock(Context context, TableDescriptor descriptor) throws IOException, InterruptedException {
     String zkCon = _blurTask.getZookeeperConnectionStr();
     String path = _blurTask.getSpinLockPath();
     String name = descriptor.name + "_" + _blurTask.getShardName(context);
@@ -334,7 +348,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
   }
 
-  private CompressionCodec getInstance(String compressionClass) throws IOException {
+  protected CompressionCodec getInstance(String compressionClass) throws IOException {
     try {
       CompressionCodec codec = (CompressionCodec) Class.forName(compressionClass).newInstance();
       if (codec instanceof Configurable) {
@@ -347,12 +361,12 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
   }
 
-  private void remove(Path directoryPath) throws IOException {
+  protected void remove(Path directoryPath) throws IOException {
     FileSystem fileSystem = FileSystem.get(directoryPath.toUri(), _configuration);
     fileSystem.delete(directoryPath, true);
   }
 
-  private long getTotalBytes(Directory directory) throws IOException {
+  protected long getTotalBytes(Directory directory) throws IOException {
     long total = 0;
     for (String file : directory.listAll()) {
       total += directory.fileLength(file);
@@ -360,7 +374,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return total;
   }
 
-  private long copy(Directory from, Directory to, String src, String dest, Context context, long totalBytesCopied, long totalBytesToCopy, long startTime) throws IOException {
+  protected long copy(Directory from, Directory to, String src, String dest, Context context, long totalBytesCopied, long totalBytesToCopy, long startTime) throws IOException {
     IndexOutput os = to.createOutput(dest);
     IndexInput is = from.openInput(src);
     IOException priorException = null;
@@ -374,7 +388,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return 0;// this should never be called
   }
 
-  private long copyBytes(IndexInput in, IndexOutput out, long numBytes, Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src)
+  protected long copyBytes(IndexInput in, IndexOutput out, long numBytes, Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src)
       throws IOException {
     if (_copyBuf == null) {
       _copyBuf = new byte[BufferedIndexInput.BUFFER_SIZE];
@@ -396,7 +410,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return copied;
   }
 
-  private List<String> getFilesOrderedBySize(final Directory directory) throws IOException {
+  protected List<String> getFilesOrderedBySize(final Directory directory) throws IOException {
     List<String> files = new ArrayList<String>(Arrays.asList(directory.listAll()));
     Collections.sort(files, new LuceneFileComparator(_directory));
     return files;
@@ -408,8 +422,13 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       TableDescriptor descriptor = _blurTask.getTableDescriptor();
       Path directoryPath = _blurTask.getDirectoryPath(context);
       _directory = getDestDirectory(descriptor, directoryPath);
-      //@TODO fix this, set the lock factory correctly
-      _directory.setLockFactory(NoLockFactory.getNoLockFactory());
+
+      TableDescriptor tableDescriptor = _blurTask.getTableDescriptor();
+      String cluster = tableDescriptor.cluster;
+      String table = tableDescriptor.name;
+      String shard = _blurTask.getShardName(context);
+      ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
+      _directory.setLockFactory(lockFactory);
       return;
     case REBUILD:
       File dir = new File(System.getProperty("java.io.tmpdir"));
@@ -422,7 +441,11 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     }
   }
 
-  private void rm(File path) {
+  protected String getNodeName(Context context) {
+    return context.getTaskAttemptID().toString();
+  }
+
+  protected void rm(File path) {
     if (!path.exists()) {
       return;
     }
@@ -471,7 +494,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     return document;
   }
 
-  private static void report(Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src) {
+  protected static void report(Context context, long totalBytesCopied, long totalBytesToCopy, long startTime, String src) {
     long now = System.currentTimeMillis();
     double seconds = (now - startTime) / 1000.0;
     double rate = totalBytesCopied / seconds;
@@ -483,15 +506,15 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     context.setStatus(status);
   }
 
-  private static double getPerComplete(long totalBytesCopied, long totalBytesToCopy) {
+  protected static double getPerComplete(long totalBytesCopied, long totalBytesToCopy) {
     return ((double) totalBytesCopied / (double) totalBytesToCopy) * 100.0;
   }
 
-  private static double getMb(double b) {
+  protected static double getMb(double b) {
     return b / MB;
   }
 
-  private static String estimateTimeToComplete(double rate, long totalBytesCopied, long totalBytesToCopy) {
+  protected static String estimateTimeToComplete(double rate, long totalBytesCopied, long totalBytesToCopy) {
     long whatsLeft = totalBytesToCopy - totalBytesCopied;
     long secondsLeft = (long) (whatsLeft / rate);
     return BlurUtil.humanizeTime(secondsLeft, TimeUnit.SECONDS);

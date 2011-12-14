@@ -70,5 +70,7 @@ public abstract class ClusterStatus {
   public abstract void writeCacheFieldsForTable(String cluster, String table, Collection<String> fieldNames);
   
   public abstract Collection<String> readCacheFieldsForTable(String cluster, String table);
+
+  public abstract boolean isReadOnly(boolean useCache, String cluster, String table);
   
 }

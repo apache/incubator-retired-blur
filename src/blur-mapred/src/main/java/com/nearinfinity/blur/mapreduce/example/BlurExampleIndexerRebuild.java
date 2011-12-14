@@ -35,7 +35,7 @@ import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
-public class BlurExampleIndexer {
+public class BlurExampleIndexerRebuild {
   
   public static void main(String[] args) throws IOException, InterruptedException, ClassNotFoundException {
     Configuration configuration = new Configuration();
@@ -47,16 +47,16 @@ public class BlurExampleIndexer {
 
     AnalyzerDefinition ad = new AnalyzerDefinition();
     ad.defaultDefinition = new ColumnDefinition(StandardAnalyzer.class.getName(), true, null);
-    
+
     TableDescriptor descriptor = new TableDescriptor();
     descriptor.analyzerDefinition = ad;
     descriptor.compressionBlockSize = 32768;
     descriptor.compressionClass = DefaultCodec.class.getName();
     descriptor.isEnabled = true;
-    descriptor.name = "test";
+    descriptor.name = "test-table";
     descriptor.shardCount = 1;
+    descriptor.cluster = "default";
     descriptor.tableUri = "./blur-testing";
-    descriptor.tableUri = "hdfs://localhost:9000/testing-update";
     
     BlurTask blurTask = new BlurTask();
     blurTask.setTableDescriptor(descriptor);
@@ -64,9 +64,8 @@ public class BlurExampleIndexer {
     blurTask.setZookeeperConnectionStr("localhost");
     blurTask.setMaxNumberOfConcurrentCopies(10);
     blurTask.setIndexingType(INDEXING_TYPE.REBUILD);
-    blurTask.setIndexingType(INDEXING_TYPE.UPDATE);
     Job job = blurTask.configureJob(configuration);
-    job.setJarByClass(BlurExampleIndexer.class);
+    job.setJarByClass(BlurExampleIndexerRebuild.class);
     job.setMapperClass(BlurExampleMapper.class);
     job.setInputFormatClass(TextInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);

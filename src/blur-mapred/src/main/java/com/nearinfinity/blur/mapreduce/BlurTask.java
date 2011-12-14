@@ -23,6 +23,7 @@ import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.conf.Configuration;
@@ -47,6 +48,8 @@ import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
+import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
@@ -94,6 +97,7 @@ public class BlurTask implements Writable {
   private int _maxNumberOfConcurrentCopies;
   private int _maxNumSegments = -1;
   private INDEXING_TYPE _indexingType = INDEXING_TYPE.REBUILD;
+  private transient ZooKeeper _zooKeeper;
 
   public String getShardName(TaskAttemptContext context) {
     TaskAttemptID taskAttemptID = context.getTaskAttemptID();
@@ -163,6 +167,9 @@ public class BlurTask implements Writable {
 
   public Job configureJob(Configuration configuration) throws IOException {
     setupZookeeper();
+    if (getIndexingType() == INDEXING_TYPE.UPDATE) {
+      checkTable();
+    }
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     DataOutputStream output = new DataOutputStream(os);
     write(output);
@@ -178,23 +185,45 @@ public class BlurTask implements Writable {
     return job;
   }
 
+  private void checkTable() {
+    ZookeeperClusterStatus status = new ZookeeperClusterStatus(_zooKeeper);
+    // check if table exists
+    String cluster = _tableDescriptor.cluster;
+    String table = _tableDescriptor.name;
+    if (!status.exists(false, cluster, table)) {
+      throw new RuntimeException("Table [" + table + "] in cluster [" + cluster + "] does not exist.");
+    }
+    // check if table is locked
+    try {
+      List<String> children = _zooKeeper.getChildren(ZookeeperPathConstants.getLockPath(cluster, table), false);
+      if (!children.isEmpty()) {
+        throw new RuntimeException("Table [" + table + "] in cluster [" + cluster + "] has write locks enabled, cannot perform update.");
+      }
+    } catch (KeeperException e) {
+      throw new RuntimeException(e);
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    }
+    
+  }
+
   private void setupZookeeper() throws IOException {
     if (_zookeeperConnectionStr == null || _spinLockPath == null) {
       LOG.warn("Cannot setup spin locks, please set zookeeper connection str and spin lock path.");
       return;
     }
-    ZooKeeper zooKeeper = new ZooKeeper(_zookeeperConnectionStr,60000,new Watcher(){
+    _zooKeeper = new ZooKeeper(_zookeeperConnectionStr,60000,new Watcher(){
       @Override
       public void process(WatchedEvent event) {
         
       }
     });
     try {
-      Stat stat = zooKeeper.exists(_spinLockPath, false);
+      Stat stat = _zooKeeper.exists(_spinLockPath, false);
       if (stat == null) {
-        zooKeeper.create(_spinLockPath, Integer.toString(_maxNumberOfConcurrentCopies).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        _zooKeeper.create(_spinLockPath, Integer.toString(_maxNumberOfConcurrentCopies).getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
       } else {
-        zooKeeper.setData(_spinLockPath, Integer.toString(_maxNumberOfConcurrentCopies).getBytes(), -1);
+        _zooKeeper.setData(_spinLockPath, Integer.toString(_maxNumberOfConcurrentCopies).getBytes(), -1);
       }
     } catch (KeeperException e) {
       throw new RuntimeException(e);

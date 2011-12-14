@@ -103,4 +103,8 @@ public class ZookeeperPathConstants {
     return getTableFieldNamesPath(cluster, table) + "/" + fieldName;
   }
 
+  public static String getTableReadOnlyPath(String cluster, String table) {
+    return getTablePath(cluster, table) + "/readonly";
+  }
+
 }

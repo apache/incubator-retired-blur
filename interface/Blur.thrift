@@ -347,7 +347,8 @@ struct TableDescriptor {
   8:string name,
   9:string similarityClass,
   10:bool blockCaching = 1,
-  11:set<string> blockCachingFileTypes
+  11:set<string> blockCachingFileTypes,
+  12:bool readOnly = 0
 }
 
 service Blur {

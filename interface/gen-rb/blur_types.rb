@@ -622,6 +622,7 @@ module Blur
       SIMILARITYCLASS = 9
       BLOCKCACHING = 10
       BLOCKCACHINGFILETYPES = 11
+      READONLY = 12
 
       FIELDS = {
         ISENABLED => {:type => ::Thrift::Types::BOOL, :name => 'isEnabled', :default => true},
@@ -634,7 +635,8 @@ module Blur
         NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
         SIMILARITYCLASS => {:type => ::Thrift::Types::STRING, :name => 'similarityClass'},
         BLOCKCACHING => {:type => ::Thrift::Types::BOOL, :name => 'blockCaching', :default => true},
-        BLOCKCACHINGFILETYPES => {:type => ::Thrift::Types::SET, :name => 'blockCachingFileTypes', :element => {:type => ::Thrift::Types::STRING}}
+        BLOCKCACHINGFILETYPES => {:type => ::Thrift::Types::SET, :name => 'blockCachingFileTypes', :element => {:type => ::Thrift::Types::STRING}},
+        READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false}
       }
 
       def struct_fields; FIELDS; end

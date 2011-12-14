@@ -34,6 +34,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final org.apache.thrift.protocol.TField SIMILARITY_CLASS_FIELD_DESC = new org.apache.thrift.protocol.TField("similarityClass", org.apache.thrift.protocol.TType.STRING, (short)9);
   private static final org.apache.thrift.protocol.TField BLOCK_CACHING_FIELD_DESC = new org.apache.thrift.protocol.TField("blockCaching", org.apache.thrift.protocol.TType.BOOL, (short)10);
   private static final org.apache.thrift.protocol.TField BLOCK_CACHING_FILE_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("blockCachingFileTypes", org.apache.thrift.protocol.TType.SET, (short)11);
+  private static final org.apache.thrift.protocol.TField READ_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("readOnly", org.apache.thrift.protocol.TType.BOOL, (short)12);
 
   public boolean isEnabled; // required
   public AnalyzerDefinition analyzerDefinition; // required
@@ -46,6 +47,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   public String similarityClass; // required
   public boolean blockCaching; // required
   public Set<String> blockCachingFileTypes; // required
+  public boolean readOnly; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -59,7 +61,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     NAME((short)8, "name"),
     SIMILARITY_CLASS((short)9, "similarityClass"),
     BLOCK_CACHING((short)10, "blockCaching"),
-    BLOCK_CACHING_FILE_TYPES((short)11, "blockCachingFileTypes");
+    BLOCK_CACHING_FILE_TYPES((short)11, "blockCachingFileTypes"),
+    READ_ONLY((short)12, "readOnly");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -96,6 +99,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
           return BLOCK_CACHING;
         case 11: // BLOCK_CACHING_FILE_TYPES
           return BLOCK_CACHING_FILE_TYPES;
+        case 12: // READ_ONLY
+          return READ_ONLY;
         default:
           return null;
       }
@@ -140,7 +145,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final int __SHARDCOUNT_ISSET_ID = 1;
   private static final int __COMPRESSIONBLOCKSIZE_ISSET_ID = 2;
   private static final int __BLOCKCACHING_ISSET_ID = 3;
-  private BitSet __isset_bit_vector = new BitSet(4);
+  private static final int __READONLY_ISSET_ID = 4;
+  private BitSet __isset_bit_vector = new BitSet(5);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -168,6 +174,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     tmpMap.put(_Fields.BLOCK_CACHING_FILE_TYPES, new org.apache.thrift.meta_data.FieldMetaData("blockCachingFileTypes", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.SetMetaData(org.apache.thrift.protocol.TType.SET, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.READ_ONLY, new org.apache.thrift.meta_data.FieldMetaData("readOnly", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
   }
@@ -183,6 +191,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
     this.blockCaching = true;
 
+    this.readOnly = false;
+
   }
 
   public TableDescriptor(
@@ -196,7 +206,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     String name,
     String similarityClass,
     boolean blockCaching,
-    Set<String> blockCachingFileTypes)
+    Set<String> blockCachingFileTypes,
+    boolean readOnly)
   {
     this();
     this.isEnabled = isEnabled;
@@ -214,6 +225,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.blockCaching = blockCaching;
     setBlockCachingIsSet(true);
     this.blockCachingFileTypes = blockCachingFileTypes;
+    this.readOnly = readOnly;
+    setReadOnlyIsSet(true);
   }
 
   /**
@@ -251,6 +264,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       this.blockCachingFileTypes = __this__blockCachingFileTypes;
     }
+    this.readOnly = other.readOnly;
   }
 
   public TableDescriptor deepCopy() {
@@ -275,6 +289,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.blockCaching = true;
 
     this.blockCachingFileTypes = null;
+    this.readOnly = false;
+
   }
 
   public boolean isIsEnabled() {
@@ -552,6 +568,29 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  public boolean isReadOnly() {
+    return this.readOnly;
+  }
+
+  public TableDescriptor setReadOnly(boolean readOnly) {
+    this.readOnly = readOnly;
+    setReadOnlyIsSet(true);
+    return this;
+  }
+
+  public void unsetReadOnly() {
+    __isset_bit_vector.clear(__READONLY_ISSET_ID);
+  }
+
+  /** Returns true if field readOnly is set (has been assigned a value) and false otherwise */
+  public boolean isSetReadOnly() {
+    return __isset_bit_vector.get(__READONLY_ISSET_ID);
+  }
+
+  public void setReadOnlyIsSet(boolean value) {
+    __isset_bit_vector.set(__READONLY_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case IS_ENABLED:
@@ -642,6 +681,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       break;
 
+    case READ_ONLY:
+      if (value == null) {
+        unsetReadOnly();
+      } else {
+        setReadOnly((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -680,6 +727,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     case BLOCK_CACHING_FILE_TYPES:
       return getBlockCachingFileTypes();
 
+    case READ_ONLY:
+      return Boolean.valueOf(isReadOnly());
+
     }
     throw new IllegalStateException();
   }
@@ -713,6 +763,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       return isSetBlockCaching();
     case BLOCK_CACHING_FILE_TYPES:
       return isSetBlockCachingFileTypes();
+    case READ_ONLY:
+      return isSetReadOnly();
     }
     throw new IllegalStateException();
   }
@@ -826,6 +878,15 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       if (!(this_present_blockCachingFileTypes && that_present_blockCachingFileTypes))
         return false;
       if (!this.blockCachingFileTypes.equals(that.blockCachingFileTypes))
+        return false;
+    }
+
+    boolean this_present_readOnly = true;
+    boolean that_present_readOnly = true;
+    if (this_present_readOnly || that_present_readOnly) {
+      if (!(this_present_readOnly && that_present_readOnly))
+        return false;
+      if (this.readOnly != that.readOnly)
         return false;
     }
 
@@ -955,6 +1016,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetReadOnly()).compareTo(typedOther.isSetReadOnly());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetReadOnly()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.readOnly, typedOther.readOnly);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1064,6 +1135,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 12: // READ_ONLY
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.readOnly = iprot.readBool();
+            setReadOnlyIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -1133,6 +1212,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       oprot.writeFieldEnd();
     }
+    oprot.writeFieldBegin(READ_ONLY_FIELD_DESC);
+    oprot.writeBool(this.readOnly);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -1212,6 +1294,10 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     } else {
       sb.append(this.blockCachingFileTypes);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("readOnly:");
+    sb.append(this.readOnly);
     first = false;
     sb.append(")");
     return sb.toString();

@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -250,36 +251,40 @@ public class DistributedIndexServer extends AbstractIndexServer {
         List<String> tableList = _clusterStatus.getTableList();
         _blurMetrics.tableCount.set(tableList.size());
         long indexCount = 0;
+        AtomicLong segmentCount = new AtomicLong();
+        AtomicLong indexMemoryUsage = new AtomicLong();
         for (String table : tableList) {
           try {
             Map<String, BlurIndex> indexes = getIndexes(table);
             int count = indexes.size();
-            indexCount += indexCount;
-            updateMetrics(_blurMetrics, indexes);
+            indexCount += count;
+            updateMetrics(_blurMetrics, indexes, segmentCount, indexMemoryUsage);
             LOG.debug("Table [{0}] has [{1}] number of shards online in this node.", table, count);
           } catch (IOException e) {
             LOG.error("Unknown error trying to warm table [{0}]", e, table);
           }
         }
         _blurMetrics.indexCount.set(indexCount);
+        _blurMetrics.segmentCount.set(segmentCount.get());
+        _blurMetrics.indexMemoryUsage.set(indexMemoryUsage.get());
       }
 
       // public AtomicLong rowCount = new AtomicLong(0);
       // public AtomicLong recordCount = new AtomicLong(0);
 
-      private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes) throws IOException {
-        long segmentCount = 0;
-        long indexMemoryUsage = 0;
+      private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage) throws IOException {
         for (BlurIndex index : indexes.values()) {
           IndexReader reader = index.getIndexReader(false);
           try {
-            indexMemoryUsage += BlurUtil.getMemoryUsage(reader);
+            IndexReader[] readers = reader.getSequentialSubReaders();
+            if (readers != null) {
+              segmentCount.addAndGet(readers.length);
+            }
+            indexMemoryUsage.addAndGet(BlurUtil.getMemoryUsage(reader));
           } finally {
             reader.decRef();
           }
         }
-        blurMetrics.segmentCount.set(segmentCount);
-        blurMetrics.indexMemoryUsage.set(indexMemoryUsage);
       }
     }, _delay, _delay);
   }

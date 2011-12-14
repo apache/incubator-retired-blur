@@ -217,6 +217,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   @Override
   public void mutate(RowMutation mutation) throws BlurException, TException {
     checkTable(_cluster,mutation.table);
+    checkForUpdates(_cluster,mutation.table);
     MutationHelper.validateMutation(mutation);
     try {
       _indexManager.mutate(mutation);

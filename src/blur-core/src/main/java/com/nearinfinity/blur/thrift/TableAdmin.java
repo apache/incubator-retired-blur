@@ -92,6 +92,14 @@ public abstract class TableAdmin implements Iface {
     }
   }
   
+  public void checkForUpdates(String cluster, String table) throws BlurException {
+    if (_clusterStatus.isReadOnly(true, cluster, table)) {
+      throw new BlurException("Table [" + table +
+      		"] in cluster [" + cluster + 
+      		"] is read only.",null);
+    }
+  }
+  
   @Override
   public final List<String> controllerServerList() throws BlurException, TException {
     try {

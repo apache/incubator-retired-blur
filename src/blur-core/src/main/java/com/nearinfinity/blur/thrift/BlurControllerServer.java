@@ -528,6 +528,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   @Override
   public void mutate(final RowMutation mutation) throws BlurException, TException {
     String cluster = _clusterStatus.getCluster(true,mutation.table);
+    checkForUpdates(cluster,mutation.table);
     checkTable(cluster,mutation.table);
     try {
       MutationHelper.validateMutation(mutation);

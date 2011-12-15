@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.nearinfinity.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.1.rc1</version>
+		<version>0.1.rc2-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
@@ -32,7 +32,7 @@
 		<dependency>
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>
-			<version>3.3.3-cdh3u2</version>
+			<version>3.3.4</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>

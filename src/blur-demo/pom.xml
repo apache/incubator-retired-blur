@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>com.nearinfinity.blur</groupId>
 		<artifactId>blur</artifactId>
-		<version>0.1.rc1</version>
+		<version>0.1.rc2-SNAPSHOT</version>
 	</parent>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
@@ -15,7 +15,7 @@
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-core</artifactId>
-			<version>0.1.rc1</version>
+			<version>0.1.rc2-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 

@@ -15,7 +15,7 @@ $(document).ready ->
     .delegate "a", "click", -> toggle_submit()
 
     $('.column_family_filter').bind "loaded.jstree", ->
-      $('#filter_columns').show()
+      $('#filter_columns').removeClass('hidden')
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
@@ -33,7 +33,7 @@ $(document).ready ->
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
   $('#blur_table').change ->
-    $('#filter_columns').hide()
+    $('#filter_columns').addClass('hidden')
     $('#filter_columns').load Routes.search_filters_path($(this).val()), setup_filter_tree
     $('#saved .body').load 'reload/' + $(this).val()
       
@@ -85,7 +85,7 @@ $(document).ready ->
       for family in $('.familysets th')
         if family.id?
           family_class = '.family_-sep-_' + family.id
-          if num_unchecked is 0 then $(family_class).show() else $(family_class).hide()
+          if num_unchecked is 0 then $(family_class).removeClass('hidden') else $(family_class).addClass('hidden')
 
     # hide the clicked filter element if the corresponding column is visible
     else if $(name).is(":visible")
@@ -96,7 +96,7 @@ $(document).ready ->
         else
           $(family_header).attr('colspan', curr_col_span-1)
           $(family_name + '_-sep-_empty').attr('colspan', curr_col_span-1)
-        $(name).hide()
+        $(name).addClass('hidden')
       # hide/show column family
       else
         list_length = $('#'+$(this).attr('name')).find("> ul > .jstree-checked").length + 1
@@ -104,10 +104,10 @@ $(document).ready ->
         if curr_col_span < max_col_span || curr_col_span < list_length
           $(family_header).attr('colspan', max_col_span)
           $(family_name + '_-sep-_empty').attr('colspan', max_col_span)
-          $(name).show()
+          $(name).removeClass('hidden')
         # hide column family otherwise
         else
-          $(name).hide()
+          $(name).addClass('hidden')
 
     # show the clicked filter element if the corresponding column is hidden
     else
@@ -122,14 +122,14 @@ $(document).ready ->
         else
           $(family_header).attr('colspan', 2)
           $(family_name + '_-sep-_empty').attr('colspan', 2)
-          $(family_header).show()
-          $(recordId_name).show()
-          $(family_name + '_-sep-_empty').show()
+          $(family_header).removeClass('hidden')
+          $(recordId_name).removeClass('hidden')
+          $(family_name + '_-sep-_empty').removeClass('hidden')
       # show a family
       else
         $(family_header).attr('colspan', max_col_span)
         $(family_name + '_-sep-_empty').attr('colspan', max_col_span)
-      $(name).show()
+      $(name).removeClass('hidden')
 
   #listener that accordion the filter sections
   $('.header').live 'click', ->
@@ -152,9 +152,9 @@ $(document).ready ->
   toggle_submit()
   # set up listeners for ajax to show spinner and disable buttons
   $('#loading-spinner').bind 'ajaxStart', ->
-    $(this).show()
+    $(this).removeClass('hidden')
   $('#loading-spinner').bind 'ajaxStop', ->
-    $(this).hide()
+    $(this).addClass('hidden')
   $('#search_submit, #update_button, #save_button').bind 'ajaxStart', ->
     $(this).attr 'disabled', 'disabled'
   $('#search_submit, #update_button, #save_button').bind 'ajaxStop', ->

@@ -20,7 +20,7 @@
           = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
           .filter
             Column Families:
-          #filter_columns{:style => 'display: none;' }
+          #filter_columns.hidden
             = render 'filters', :columns => @columns
 
       #advanced.tab
@@ -51,10 +51,9 @@
               Update Search
 
       #search_send.partial_section
-        %img{:id => "loading-spinner",
+        %img.hidden{:id => "loading-spinner",
              :src => image_path("/images/loadinfo_24.gif"),
-             :alt => "Loading...",
-             :style => "display:none;" }
+             :alt => "Loading..."}
         = submit_tag "Search", :id => "search_submit"
   #bar_section
     #arrow.ui-icon.ui-icon-triangle-1-w
@@ -62,9 +61,9 @@
   #results_wrapper.open_filters
     #results_container
 
-#dialog-confirm{:title => "Delete this saved query?", :style => "display:none"}
+#dialog-confirm.hidden{:title => "Delete this saved query?"}
   %p This will permanently delete the selected saved query. Do you wish to continue?
-#update-conflict{:title => "Update Error", :style=> "display:none"}
+#update-conflict.hidden{:title => "Update Error"}
   %ul
     An error occurred while trying to update the saved search, either:
     %li There are multiple saves with the same name.

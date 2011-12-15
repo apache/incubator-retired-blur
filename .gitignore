@@ -6,3 +6,5 @@ nbproject/
 .project
 target
 build
+*.pid
+log

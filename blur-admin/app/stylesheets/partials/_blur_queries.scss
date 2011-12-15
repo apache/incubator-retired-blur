@@ -18,12 +18,14 @@
       #pause, #refresh{
         @include border;
         cursor: pointer;
-        display: none;
         padding: 0px 1px 1px 1px;
         &:hover{
           background-color: $row-hover;
           background-image: url(../images/ui-icons_555555_256x240.png);
         }
+      }
+      #pause {
+        display: none;
       }
     }
   }

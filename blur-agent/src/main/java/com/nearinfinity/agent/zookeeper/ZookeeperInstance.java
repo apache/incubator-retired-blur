@@ -35,13 +35,11 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	
 	private void initializeZkInstanceModel() {
 		String blurConnection = props.getProperty("blur." + name + ".url");
-		String blurHost = blurConnection.split(":")[0]; 
-		String blurPort = blurConnection.split(":")[1]; 
 		
-		int updatedCount = jdbc.update("update zookeepers set url=?, host=?, port=? where name=?", url, blurHost, blurPort, name);
+		int updatedCount = jdbc.update("update zookeepers set url=?, blur_urls=? where name=?", url, blurConnection, name);
 		
 		if (updatedCount == 0) {
-			jdbc.update("insert into zookeepers (name, url, host, port) values (?, ?, ?, ?)", name, url, blurHost, blurPort);
+			jdbc.update("insert into zookeepers (name, url, blur_urls) values (?, ?, ?)", name, url, blurConnection);
 		}
 		
 		instanceId = jdbc.queryForInt("select id from zookeepers where name = ?", new Object[]{name});

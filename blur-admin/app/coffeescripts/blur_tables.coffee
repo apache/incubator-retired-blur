@@ -45,8 +45,7 @@ $(document).ready ->
         open: ->
           $(this).children().hide()
           setup_filter_tree $(this)
-          $(this).children.show()
-          
+          $(this).children().show()
     .live 'ajax:error', (evt, xhr, status, error) ->
       # TODO: improve error handling
 

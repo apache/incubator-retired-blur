@@ -23,9 +23,9 @@
     - tables.each do |table|
       %tr.ui-widget-content
         %td
-          = table.table_name
+          %span>=table.table_name
           %br
-          = table.table_uri
+          %span>=table.table_uri
         %td
           - if table.server
             = link_to hosts_blur_table_path(table), :remote => true, :class => 'hosts' do

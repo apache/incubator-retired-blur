@@ -251,7 +251,7 @@ $(document).ready ->
       success: (data) ->
         if data
         #display the results from the save
-          $('.body#saved').html(data)
+          $('#searches').replaceWith(data)
 
   #ajax listener for the update action
   $('#update_button').live 'click', (evt) ->

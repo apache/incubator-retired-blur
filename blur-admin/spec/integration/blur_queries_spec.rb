@@ -15,13 +15,6 @@ describe "blur queries" do
     visit blur_queries_path
   end
 
-  it "displays the queries that were just created" do
-    zookeeper.blur_queries.each do |query|
-      find("#queries-table").should have_content query.query_string.slice(0, 15)
-      find("#queries-table").should have_content query.userid
-    end
-  end
-
   it "shows filter options" do
     find("#filter_form").should have_content "Within past:"
     find("#filter_form").should have_content "Super Query:"

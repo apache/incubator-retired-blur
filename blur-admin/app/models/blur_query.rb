@@ -36,7 +36,11 @@ class BlurQuery < ActiveRecord::Base
   end
 
   def complete
-    self.complete_shards / self.total_shards.to_f
+    if self.total_shards == 0
+      0
+    else
+      self.complete_shards / self.total_shards.to_f
+    end
   end
   
   def self.where_zookeeper(zookeeper_id)

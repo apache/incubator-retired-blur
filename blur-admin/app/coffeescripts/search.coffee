@@ -242,7 +242,7 @@ $(document).ready ->
     				  $.ajax Routes.delete_search_path(parent.parent().attr("id"), $('#blur_table option:selected').val()),
                 type: 'DELETE',
                 success: (data) ->
-                  $('.body#saved').html(data)
+                  $('#saved .body').html(data)
     				Cancel: ->
     					$( this ).dialog "close"
 

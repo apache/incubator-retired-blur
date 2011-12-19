@@ -32,6 +32,9 @@
               = label_tag :super_query, "Super Query:"
               = check_box_tag :super_query, true, true
             .filter
+              = label_tag :record_only, "Record Only:"
+              = check_box_tag :record_only, true, false,:disabled => 'disabled'
+            .filter
               = label_tag :offset, 'Start:'
               = number_field_tag :offset, 0, :min => 0
             .filter

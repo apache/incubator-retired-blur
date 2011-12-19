@@ -168,10 +168,13 @@ $(document).ready ->
     $('#offset').val(search.offset)
     $('#query_string').val(search.query)
     $('#save_name').val(search.name)
+    $('#super_query').prop('checked',false).prop('disabled',false)
+    $('#record_only').prop('checked',false).prop('disabled',false)
     if search.super_query
-      $('#super_query').attr('checked', 'checked')
-    else
-      $('#super_query').removeAttr('checked')
+      $('#super_query').click();
+    if search.record_only
+      $('#record_only').click();
+
     #uncheck everything so we only check what we saved
     $('.column_family_filter').jstree('uncheck_all')
     #check everything in the tree
@@ -282,3 +285,17 @@ $(document).ready ->
     leftMargin = parseInt $('#bar_section').css('left')
     $('#results_wrapper').css('width',bdWidth - leftMargin - 30)
   $(window).resize(resultsWrapperWidth)
+  #listener for the superquery and recordOnly checkboxes
+  $('#super_query, #record_only').live 'change',(evt) ->
+    console.log $(this)
+    sq = $('#super_query');
+    ro = $('#record_only');
+    if sq[0] == $(this)[0]     
+      that = ro
+    else
+      that = sq
+    console.log that
+    that.prop('disabled',$(this).is(':checked'))
+
+  
+  

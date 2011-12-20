@@ -1,4 +1,7 @@
 $(document).ready ->
+  if typeof(history.pushState) == 'undefined'
+    history.pushState = ()->
+      
   # Method to initialize the jstree
   setup_context_menus = () ->
       $('#hdfs_browser li.hdfs_instance').contextMenu

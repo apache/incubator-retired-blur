@@ -215,13 +215,107 @@ $(document).ready ->
         rename el
       when "upload"
         upload el
-
-
+  ###
+  #Methods for HTML History manipulation
+  ###
+  
+  #selects the correct hdfs instance based on the current URL
+  setHdfs = () ->
+    #checks if URL is a show
+    urlCheck = location.pathname.match(/^\/hdfs\/\d+\/show/)
+    if urlCheck != null and urlCheck.length == 1
+      #retrieves the ID from the url
+      idRegex = location.pathname.match(/^\/hdfs\/(\d+)\/show/)
+      if idRegex.length && idRegex.length == 2
+        id = idRegex[1]
+        #variable used by the added event listener, weither or not it should keep parsing through the URL
+        window.hdfs_path_set = false
+        $('.hdfs_instance[hdfs_id=' + id + ']').click();
+      else
+        window.hdfs_path_set = true
+    else
+      window.hdfs_path_set = true 
+      
+  #selects the folder on the filesystem with the given hdfs_path, if it exists
+  selectFolder = (path) ->
+    #retrieves HDFS id from the url
+    idRegex = location.pathname.match(/^\/hdfs\/(\d+)\/show/)
+    if idRegex.length && idRegex.length == 2
+      id = idRegex[1]
+      selector = '.folder[hdfs_path="' + path + '"][hdfs_id=' + id + ']'
+      folder = $(selector)
+      folder.click(); 
+      
+  #popstate event listener
+  window.onpopstate = (e)->
+    #only run if there is a previous path stored
+    if window.previous_path
+      #previous is contained in current, add folder
+      if location.pathname.indexOf(window.previous_path) == 0
+        #retrieve the path from the URL
+        pathRegex = location.pathname.match(/^\/hdfs\/\d+\/show(.+)/)
+        if pathRegex.length and pathRegex.length == 2
+          path = pathRegex[1]
+          #if the path ends in a trailing slash, remove it
+          if path.charAt(path.length - 1) == "/"
+            path = path.substring(0,path.length - 1)
+          #prevents a double push state
+          window.dont_push_state = true
+          selectFolder(path)
+          
+      #current is contained in previous, remove current folder
+      else if(window.previous_path.indexOf(location.pathname) == 0)
+        $('.innerWindow').last().remove()
+        $('.osxSelected').last().removeClass('osxSelected')
+        
+      #path is not withen a step of each other, full retread
+      else
+        #remove every innerWindow except for the base and any selected hdfs system
+        $('.innerWindow:not(.innerWindow:eq(0))').remove()
+        $('.osxSelected').removeClass('osxSelected')
+        setHdfs()
+    #set the previous path to the current path for the next popstate
+    window.previous_path = location.pathname
+    
+  ###
   # Methods to call on page load
+  ###
   $(document.body).append(tree_context_menu())
   setup_context_menus();
   paste_buffer = {}
-  $('#hdfs_browser').osxFinder();
+  $('#hdfs_browser').osxFinder
+    done:()->
+      setHdfs()     
+    added:(e,data)->
+      #verifys that the URL was an expand
+      urlCheck = data.url.match(/^\/hdfs\/\d+\/expand/)
+      if urlCheck.length and urlCheck.length == 1
+        #replace with a show URL
+        current_url = data.url.replace "expand","show"
+        #if was just a single add, push the history state
+        if window.hdfs_path_set
+          if not window.dont_push_state
+            history.pushState {},'',current_url
+          else window.dont_push_state = false
+        else
+          #parse the remainder of the URL vs what the returned path was
+          urlLeft = location.pathname.substring(current_url.length)
+          next_path = urlLeft.substring(0,urlLeft.indexOf('/'))
+          if next_path == ""
+            next_path = urlLeft
+          #if the remaining path is not empty
+          if next_path != ""
+            pathRegex = current_url.match(/^\/hdfs\/\d+\/show(.+)/)
+            if pathRegex.length and pathRegex.length == 2
+              path = pathRegex[1] + next_path
+              selectFolder(path)
+          else
+            window.hdfs_path_set = true
+      #set the previous path as the current path for the next popstate
+      window.previous_path = location.pathname
+
+
+    
   $('#hdfs_wrapper').resizable
     handles:'s'
     stop: () ->

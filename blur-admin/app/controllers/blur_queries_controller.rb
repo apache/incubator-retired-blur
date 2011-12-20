@@ -1,6 +1,7 @@
 class BlurQueriesController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:index, :refresh]
+  before_filter :zookeepers, :only => [:index, :refresh]
 
   def index
     @filters = current_user.filter_preference.value || {'super_query' => 'true', 'created_at_time' => 1.minute}

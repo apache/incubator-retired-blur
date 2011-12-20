@@ -49,6 +49,7 @@ public class SuperParser extends QueryParser {
 
   public SuperParser(Version matchVersion, Analyzer a, boolean superSearch, Filter queryFilter, ScoreType scoreType) {
     super(matchVersion, SUPER, a);
+    this.setAutoGeneratePhraseQueries(true);
     this.setAllowLeadingWildcard(true);
     this.superSearch = superSearch;
     this.queryFilter = queryFilter;

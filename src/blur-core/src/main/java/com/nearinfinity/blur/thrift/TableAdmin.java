@@ -44,7 +44,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void disableTable(String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(true,table);
+      String cluster = _clusterStatus.getCluster(false,table);
       DisableTable.disableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during disable of [table={0}]", e, table);
@@ -55,7 +55,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void enableTable(String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(true,table);
+      String cluster = _clusterStatus.getCluster(false,table);
       EnableTable.enableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during enable of [table={0}]", e, table);
@@ -66,7 +66,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(true,table);
+      String cluster = _clusterStatus.getCluster(false,table);
       RemoveTable.removeTable(_zookeeper, cluster, table, deleteIndexFiles);
     } catch (Exception e) {
       LOG.error("Unknown error during remove of [table={0}]", e, table);
@@ -133,7 +133,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final TableDescriptor describe(final String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(true,table);
+      String cluster = _clusterStatus.getCluster(false,table);
       return _clusterStatus.getTableDescriptor(true,cluster,table);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
@@ -162,7 +162,7 @@ public abstract class TableAdmin implements Iface {
   }
 
   private boolean inSafeMode(boolean useCache, String table) {
-    String cluster = _clusterStatus.getCluster(true,table);
+    String cluster = _clusterStatus.getCluster(useCache,table);
     return _clusterStatus.isInSafeMode(cluster);
   }
 

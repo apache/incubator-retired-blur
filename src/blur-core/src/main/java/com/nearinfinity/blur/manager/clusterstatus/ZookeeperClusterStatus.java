@@ -151,6 +151,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 }
               }
             });
+            Map<String, List<String>> newValue = new HashMap<String, List<String>>();
             for (String cluster : clusters) {
               List<String> tables = _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), new Watcher() {
                 @Override
@@ -160,8 +161,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                   }
                 }
               });
-              
-              Map<String, List<String>> newValue = new HashMap<String, List<String>>();
               for (String table : tables) {
                 List<String> clusterList = newValue.get(table);
                 if (clusterList == null) {
@@ -170,8 +169,8 @@ public class ZookeeperClusterStatus extends ClusterStatus {
                 }
                 clusterList.add(cluster);
               }
-              _tableToClusterCache.set(newValue);
             }
+            _tableToClusterCache.set(newValue);
             _tableToClusterCache.wait();
           }
         }
@@ -416,7 +415,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       Map<String, List<String>> map = _tableToClusterCache.get();
       List<String> clusters = map.get(table);
       if (clusters == null || clusters.size() == 0) {
-        return null;
+        throw new RuntimeException("Cluster for Table [" + table + "] not found.");
       } else if (clusters.size() == 1) {
         return clusters.get(0);
       } else {
@@ -436,7 +435,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         throw new RuntimeException(e);
       }
     }
-    return null;
+    throw new RuntimeException("Cluster for Table [" + table + "] not found.");
   }
 
   @Override

@@ -75,7 +75,11 @@ public class ThreadExecutionTimeout {
     _timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        tryToInterrupt();
+        try {
+          tryToInterrupt();
+        } catch (Throwable e) {
+          LOG.error("Unknown error",e);
+        }
       }
     }, _delay, _delay);
   }

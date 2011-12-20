@@ -181,7 +181,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
     for (String table : tableList) {
       DistributedLayoutManager layoutManager = new DistributedLayoutManager();
-      String cluster = _clusterStatus.getCluster(true,table);
+      String cluster = _clusterStatus.getCluster(false,table);
       List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
       List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(cluster);
       List<String> shardList = getShardList(cluster,table);

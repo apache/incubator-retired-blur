@@ -238,7 +238,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void removeAnyTableLocks() {
-    List<String> tableList = _clusterStatus.getTableList();
+    List<String> tableList = _clusterStatus.getTableList(cluster);
     for (String table : tableList) {
       _clusterStatus.clearLocks(cluster, table);
     }
@@ -249,7 +249,15 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _timerTableWarmer.schedule(new TimerTask() {
       @Override
       public void run() {
-        List<String> tableList = _clusterStatus.getTableList();
+        try {
+          warmup();
+        } catch (Throwable e) {
+          LOG.error("Unknown error",e);
+        }
+      }
+
+      private void warmup() {
+        List<String> tableList = _clusterStatus.getTableList(cluster);
         _blurMetrics.tableCount.set(tableList.size());
         long indexCount = 0;
         AtomicLong segmentCount = new AtomicLong();
@@ -269,9 +277,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
         _blurMetrics.segmentCount.set(segmentCount.get());
         _blurMetrics.indexMemoryUsage.set(indexMemoryUsage.get());
       }
-
-      // public AtomicLong rowCount = new AtomicLong(0);
-      // public AtomicLong recordCount = new AtomicLong(0);
 
       private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage) throws IOException {
         for (BlurIndex index : indexes.values()) {
@@ -316,6 +321,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
     _timerCacheFlush.schedule(new TimerTask() {
       @Override
       public void run() {
+        try {
+          cleanup();
+        } catch (Throwable e) {
+          LOG.error("Unknown error",e);
+        }
+      }
+
+      private void cleanup() {
         clearMapOfOldTables(_tableAnalyzers);
         clearMapOfOldTables(_tableDescriptors);
         clearMapOfOldTables(_layoutManagers);
@@ -351,7 +364,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
             }
           }
         }
-
       }
     }, _delay, _delay);
   }
@@ -361,7 +373,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     try {
       _filterCache.closing(table, shard, index);
       index.close();
-    } catch (IOException e) {
+    } catch (Throwable e) {
       LOG.error("Error while closing index [{0}] from table [{1}] shard [{2}]", e, index, table, shard);
     }
   }

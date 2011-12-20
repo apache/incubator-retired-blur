@@ -55,7 +55,11 @@ public class ThreadWatcher {
     _timer.schedule(new TimerTask() {
       @Override
       public void run() {
-        processRunningThreads();
+        try {
+          processRunningThreads();
+        } catch (Throwable e) {
+          LOG.error("Unknown error",e);
+        }
       }
     }, TimeUnit.SECONDS.toMillis(5), TimeUnit.SECONDS.toMillis(5));
   }

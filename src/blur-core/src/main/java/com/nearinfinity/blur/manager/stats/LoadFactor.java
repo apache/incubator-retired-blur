@@ -8,7 +8,12 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import com.nearinfinity.blur.log.Log;
+import com.nearinfinity.blur.log.LogFactory;
+
 public class LoadFactor {
+  
+  private static final Log LOG = LogFactory.getLog(LoadFactor.class);
 
   public static void main(String[] args) throws InterruptedException {
     LoadFactor loadFactor = new LoadFactor();
@@ -59,7 +64,11 @@ public class LoadFactor {
     _timer.schedule(new TimerTask() {
       @Override
       public void run() {
+       try { 
         sampleAll();
+      } catch (Throwable e) {
+        LOG.error("Unknown error",e);
+      }
       }
     }, _delay, _period);
 

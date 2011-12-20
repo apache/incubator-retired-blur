@@ -45,7 +45,7 @@ public class QueryStatusManager {
       public void run() {
         try {
           cleanupFinishedQueryStatuses();
-        } catch (Exception e) {
+        } catch (Throwable e) {
           LOG.error("Unknown error while trying to cleanup finished queries.", e);
         }
       }

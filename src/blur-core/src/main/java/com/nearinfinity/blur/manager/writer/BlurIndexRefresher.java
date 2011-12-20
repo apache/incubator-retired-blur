@@ -40,6 +40,14 @@ public class BlurIndexRefresher extends TimerTask {
 
   @Override
   public void run() {
+    try {
+      refreshInternal();
+    } catch (Throwable e) {
+      LOG.error("Unknown error", e);
+    }
+  }
+
+  private void refreshInternal() {
     for (BlurIndex index : _indexes) {
       try {
         index.refresh();

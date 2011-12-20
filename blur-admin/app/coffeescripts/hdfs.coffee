@@ -242,7 +242,7 @@ $(document).ready ->
     idRegex = location.pathname.match(/^\/hdfs\/(\d+)\/show/)
     if idRegex.length && idRegex.length == 2
       id = idRegex[1]
-      selector = '.folder[hdfs_path="' + path + '"][hdfs_id=' + id + ']'
+      selector = '.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']'
       folder = $(selector)
       folder.click(); 
       
@@ -289,7 +289,7 @@ $(document).ready ->
     added:(e,data)->
       #verifys that the URL was an expand
       urlCheck = data.url.match(/^\/hdfs\/\d+\/expand/)
-      if urlCheck.length and urlCheck.length == 1
+      if urlCheck and urlCheck.length == 1
         #replace with a show URL
         current_url = data.url.replace "expand","show"
         #if was just a single add, push the history state
@@ -311,6 +311,14 @@ $(document).ready ->
               selectFolder(path)
           else
             window.hdfs_path_set = true
+      else
+        urlCheck = data.url.match(/^\/hdfs\/\d+\/file_info/)
+        if urlCheck and urlCheck.length == 1
+          if not window.dont_push_state
+            current_url = data.url.replace "file_info","show"
+            history.pushState {},'',current_url
+          else window.dont_push_state = false
+          
       #set the previous path as the current path for the next popstate
       window.previous_path = location.pathname
 

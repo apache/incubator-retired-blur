@@ -4,9 +4,9 @@
   %ul
     - @children.each do |child|
       -if child[:is_dir]
-        %li.folder{:hdfs_id=>@hdfs_id, :hdfs_path=>@path + child[:name]}
+        %li.osxSelectable.folder{:hdfs_id=>@hdfs_id, :hdfs_path=>@path + child[:name]}
           =link_to(child[:name], hdfs_expand_path(@hdfs_id, @path + child[:name]), :title=>child[:name])
       -else
-        %li.file{:hdfs_id=>@hdfs_id, :hdfs_path=>@path + child[:name]}
+        %li.osxSelectable.file{:hdfs_id=>@hdfs_id, :hdfs_path=>@path + child[:name]}
           =link_to(child[:name], hdfs_file_info_path(@hdfs_id, @path + child[:name]), :title=>child[:name])
 

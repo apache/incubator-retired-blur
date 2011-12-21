@@ -726,10 +726,11 @@ public class IndexManager {
     @Override
     public BlurResultIterable call(Entry<String, BlurIndex> entry) throws Exception {
       _status.attachThread();
-      _threadExecutionTimeout.timeout(_timeout);
-      BlurIndex index = entry.getValue();
-      IndexReader reader = index.getIndexReader(_forceRefresh);
+      IndexReader reader = null;
       try {
+        _threadExecutionTimeout.timeout(_timeout);
+        BlurIndex index = entry.getValue();
+        reader = index.getIndexReader(_forceRefresh);
         String shard = entry.getKey();
         BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache(_table).getIndexReaderCache(shard));
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
@@ -737,7 +738,9 @@ public class IndexManager {
       } finally {
         _blurMetrics.queriesInternal.incrementAndGet();
         // this will allow for closing of index
-        reader.decRef();
+        if (reader != null) {
+          reader.decRef();
+        }
         _threadExecutionTimeout.finished();
         _status.deattachThread();
       }

@@ -16,6 +16,9 @@
 
 package com.nearinfinity.blur.utils;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
@@ -26,9 +29,27 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BlurExecutorCompletionService<T> extends ExecutorCompletionService<T> {
 
   private AtomicInteger count = new AtomicInteger(0);
+  private Collection<Future<T>> bag;
 
   public BlurExecutorCompletionService(Executor executor) {
     super(executor);
+    bag = Collections.synchronizedCollection(new HashSet<Future<T>>());
+  }
+  
+  public void cancelAll() {
+    for (Future<T> future : bag) {
+      future.cancel(true);
+    }
+  }
+  
+  private Future<T> remember(Future<T> future) {
+    bag.add(future);
+    return future;
+  }
+  
+  private Future<T> forget(Future<T> future) {
+    bag.remove(future);
+    return future;
   }
 
   public int getRemainingCount() {
@@ -41,7 +62,7 @@ public class BlurExecutorCompletionService<T> extends ExecutorCompletionService<
     if (poll != null) {
       count.decrementAndGet();
     }
-    return poll;
+    return forget(poll);
   }
 
   @Override
@@ -50,21 +71,21 @@ public class BlurExecutorCompletionService<T> extends ExecutorCompletionService<
     if (poll != null) {
       count.decrementAndGet();
     }
-    return poll;
+    return forget(poll);
   }
-
+  
   @Override
   public Future<T> submit(Callable<T> task) {
     Future<T> future = super.submit(task);
     count.incrementAndGet();
-    return future;
+    return remember(future);
   }
-
+  
   @Override
   public Future<T> submit(Runnable task, T result) {
     Future<T> future = super.submit(task, result);
     count.incrementAndGet();
-    return future;
+    return remember(future);
   }
 
   @Override
@@ -73,7 +94,7 @@ public class BlurExecutorCompletionService<T> extends ExecutorCompletionService<
     if (take != null) {
       count.decrementAndGet();
     }
-    return take;
+    return forget(take);
   }
 
 }

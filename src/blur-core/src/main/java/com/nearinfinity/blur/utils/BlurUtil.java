@@ -25,6 +25,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -94,6 +95,8 @@ public class BlurUtil {
         long start = System.nanoTime();
         try {
           return method.invoke(t, args);
+        } catch (InvocationTargetException e) {
+          throw e.getTargetException();
         } finally {
           long end = System.nanoTime();
           MethodCall methodCall = metrics.methodCalls.get(method.getName());

@@ -136,6 +136,7 @@ describe SearchController do
       it "renders the create partial" do
 
         get :create, :super_query  => @search.super_query,
+                     :record_only  => @search.record_only,
                      :result_count => @search.fetch,
                      :offset       => @search.offset,
                      :query_string => @search.query,

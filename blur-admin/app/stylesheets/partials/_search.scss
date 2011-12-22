@@ -1,10 +1,7 @@
 #search_page_wrapper {
   @include full;
   @mixin search-margin { margin: .25em 0em .25em; }
-  display: inline-block;
-  max-height:600px;
   margin-bottom:40px;
-  overflow:auto;
 
   // styles for filters
   #filter_section {
@@ -13,15 +10,20 @@
     
     @include standard-font;
     padding-top: 1em;
-    position: absolute;
-    top: 0;
+    padding-left: 10px;
+    position: fixed;
+    height:100%;
+    top: 90px;
     left:0;
     padding-left:05px;
     padding-right: 15px;
     background-color: #FFF;
     overflow-y: auto;
     z-index: 1;
-    
+    #filters_wrap{
+      max-height:450px;
+      overflow:scroll;
+    }
     .partial-section, .body { padding: 0.5em; }
     .filter { padding: 0.5em 0 0; }
     .filter#buttons { text-align: right; }
@@ -51,7 +53,7 @@
     position: fixed;
     background-color: #eee;
     cursor: pointer;
-    left: 295px;
+    left: 285px;
     z-index:1;
     &.leftbar {
       left: 0;
@@ -64,10 +66,8 @@
   }
 
   #results_wrapper{
-    height:500px;
     width: auto;
-    z-index: 0;
-    overflow:auto;
+    z-index: -1;
     &.open_filters {
       margin-left: 290px;
     }
@@ -127,8 +127,8 @@
 
   //Navigation Tab outer divs
   .tab { @include border; @include border-radius; }
-  #standard .tab, #advanced.tab { @include search-margin; }
-  #saved.body, #store.body, #advanced.body { display: none; }
+  #standard .tab { @include search-margin; }
+  #saved .body, #store .body, #advanced .body { display: none; }
 
   // Navigation Tabs labels
   .tab .header {

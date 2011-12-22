@@ -4,7 +4,7 @@
 	<groupId>com.nearinfinity</groupId>
 	<artifactId>blur-agent</artifactId>
 	<packaging>jar</packaging>
-	<version>0.4</version>
+	<version>0.5</version>
 	<name>blur-agent</name>
 	<url>http://maven.apache.org</url>
 
@@ -48,12 +48,12 @@
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.1.rc1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.1.rc1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.thrift</groupId>

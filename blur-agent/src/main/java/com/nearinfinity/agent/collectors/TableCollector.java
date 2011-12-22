@@ -26,49 +26,107 @@ public class TableCollector {
 		try {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
 				@Override
-				public Void call(Client client) throws Exception {
-					List<String> tables = client.tableList();
-					//mapper used to generate the json
-					ObjectMapper mapper = new ObjectMapper();
+				public Void call(Client client) {
+					List<String> tables = null;
+					try {
+						tables = client.tableList();
+					} catch (Exception e) {
+						log.error("Unable to get table list from blur. Unable to retrive stats for tables.", e);
+					}
 					
-					//Create and update tables
-					for (String table : tables) {				
-						TableDescriptor descriptor = client.describe(table);
-						Integer clusterId = jdbc.queryForInt("select id from clusters where name=?", new Object[]{descriptor.getCluster()});
+					if (tables != null) {
+						//mapper used to generate the json
+						ObjectMapper mapper = new ObjectMapper();
 						
-						List<Map<String, Object>> existingTable = jdbc.queryForList("select id, cluster_id from blur_tables where table_name=? and cluster_id=?", table, clusterId);
-						
-						//add the tablename and tableid to the map that acts as a dictionary
-						if (!existingTable.isEmpty()){
-							TableMap.get().put(table, (Integer)(existingTable.get(0).get("id")));
-						}
-						
-						if (descriptor.isEnabled) {
-							//strings that are being mocked to json
-							Schema schema = client.schema(table);
-							String schemaString = mapper.writeValueAsString(schema);
-							
-							Map<String, String> shardServerLayout = client.shardServerLayout(table);
-							
-							Map<String, ArrayList<String>> formattedShard = new HashMap<String, ArrayList<String>>();
-							for(String shard : shardServerLayout.keySet()){
-								String host = shardServerLayout.get(shard);
-								if(formattedShard.get(host) != null){
-									formattedShard.get(host).add(shard);
-								} else {
-									formattedShard.put(host, new ArrayList<String>(Arrays.asList(shard)));
-								}
+						//Create and update tables
+						for (String table : tables) {				
+							TableDescriptor descriptor = null;
+							try {
+								descriptor = client.describe(table);
+							} catch (Exception e) {
+								log.error("Unable to describe table [" + table + "].", e);
+								continue;
 							}
 							
-							String shardServerString = mapper.writeValueAsString(formattedShard);
-							String tableAnalyzer = descriptor.analyzerDefinition.fullTextAnalyzerClassName;
-							
-							TableStats tableStats = client.getTableStats(table);
-							
-							if (!existingTable.isEmpty()) {
-								//Update Table
-								jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=?, current_size=?, query_usage=?, record_count=?, row_count=? where table_name=? and cluster_id=?", 
-										new Object[]{tableAnalyzer, schemaString, shardServerString, tableStats.getBytes(), tableStats.getQueries(), tableStats.getRecordCount(), tableStats.getRowCount(), table, clusterId});
+							if (descriptor != null) {
+								Integer clusterId = jdbc.queryForInt("select id from clusters where name=?", new Object[]{descriptor.getCluster()});
+								
+								List<Map<String, Object>> existingTable = jdbc.queryForList("select id, cluster_id from blur_tables where table_name=? and cluster_id=?", table, clusterId);
+								
+								//add the tablename and tableid to the map that acts as a dictionary
+								if (!existingTable.isEmpty()){
+									TableMap.get().put(table, (Integer)(existingTable.get(0).get("id")));
+								}
+								
+								if (descriptor.isEnabled) {
+									//strings that are being mocked to json
+									Schema schema = null;
+									try {
+										schema = client.schema(table);
+									} catch (Exception e) {
+										log.error("Unable to get schema for table [" + table + "].", e);
+									}
+									
+									String schemaString = "";
+									if (schema != null) {
+										try {
+											schemaString = mapper.writeValueAsString(schema);
+										} catch (Exception e) {
+											log.error("Unable to convert schema to json.", e);
+										}
+										
+									}
+									
+									Map<String, String> shardServerLayout = null;
+									try {
+										shardServerLayout = client.shardServerLayout(table);
+									} catch (Exception e) {
+										log.error("Unable to get shard server layout for table [" + table +"].", e);
+									}
+									
+									String shardServerString = "";
+									if (shardServerLayout != null) {
+										Map<String, ArrayList<String>> formattedShard = new HashMap<String, ArrayList<String>>();
+										for(String shard : shardServerLayout.keySet()){
+											String host = shardServerLayout.get(shard);
+											if(formattedShard.get(host) != null){
+												formattedShard.get(host).add(shard);
+											} else {
+												formattedShard.put(host, new ArrayList<String>(Arrays.asList(shard)));
+											}
+										}
+										
+										try {
+											shardServerString = mapper.writeValueAsString(formattedShard);
+										} catch (Exception e) {
+											log.error("Unable to convert shard server layout to json.", e);
+										}
+									}
+									String tableAnalyzer = descriptor.analyzerDefinition.fullTextAnalyzerClassName;
+									
+									TableStats tableStats = null;
+									Long tableBytes = null;
+									Long tableQueries = null;
+									Long tableRecordCount = null;
+									Long tableRowCount = null;
+									try {
+										tableStats = client.getTableStats(table);
+										if (tableStats != null) {
+											tableBytes = tableStats.getBytes();
+											tableQueries = tableStats.getQueries();
+											tableRecordCount = tableStats.getRecordCount();
+											tableRowCount = tableStats.getRowCount();
+										}
+									} catch (Exception e) {
+										log.error("Unable to get table stats for table [" + table + "].", e);
+									}
+									
+									if (!existingTable.isEmpty()) {
+										//Update Table
+										jdbc.update("update blur_tables set table_analyzer=?, table_schema=?, server=?, current_size=?, query_usage=?, record_count=?, row_count=? where table_name=? and cluster_id=?", 
+												new Object[]{tableAnalyzer, schemaString, shardServerString, tableBytes, tableQueries, tableRecordCount, tableRowCount, table, clusterId});
+									}
+								}
 							}
 						}
 					}

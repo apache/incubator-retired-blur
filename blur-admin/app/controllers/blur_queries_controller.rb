@@ -1,18 +1,19 @@
 class BlurQueriesController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:index, :refresh]
+  before_filter :zookeepers, :only => [:index, :refresh]
 
   def index
-    @filters = current_user.filter_preference.value || {}
+    @filters = current_user.filter_preference.value || {'super_query' => 'true', 'created_at_time' => 1.minute}
     now = Time.now
-    super_query = true  if @filters['super_query_on'] == 'true'
+    super_query = true if @filters['super_query_on'] == 'true'
     super_query = false  if @filters['super_query_on'] == 'false'
 
     @blur_tables = @current_zookeeper.blur_tables.where('status = 4')
     @blur_queries = BlurQuery.where_zookeeper(@current_zookeeper.id).filter_on_time_range((now - @filters['created_at_time'].to_i.minutes)..now)
     
     # Add super query filter
-    @blur_queries = @blur_queries.where(:super_query_on => super_query) unless super_query.nil?
+    @blur_queries = @blur_queries.where(:super_query_on => super_query)
     
     # Add state filter
     @blur_queries = @blur_queries.where(:state => @filters['state']) unless @filters['state'].blank?

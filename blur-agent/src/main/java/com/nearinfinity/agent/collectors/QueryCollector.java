@@ -28,7 +28,7 @@ public class QueryCollector {
 		try {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
 				@Override
-				public Void call(Client client) throws Exception {
+				public Void call(Client client) {
 					Calendar now = getUTCCal(new Date().getTime());
 					
 					Calendar twoHoursAgo = Calendar.getInstance();
@@ -43,67 +43,93 @@ public class QueryCollector {
 					
 					jdbc.update("update blur_queries set state=1, updated_at=? where updated_at < ? and state = 0", now.getTime(), twoMinutesAgo);
 					
-					List<String> tables = client.tableList();
+					List<String> tables = null;
+					try {
+						tables = client.tableList();
+					} catch (Exception e) {
+						log.error("Unable to get table list from blur. Unable to retrive stats for tables.", e);
+					}
 					
-					for (String table : tables) {
-						TableDescriptor descriptor = client.describe(table);
-						if (descriptor.isEnabled) {
-							List<BlurQueryStatus> currentQueries = client.currentQueries(table);
-							
-							for (BlurQueryStatus blurQueryStatus : currentQueries) {
-								//Check if query exists
-								List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete_shards, times, state from blur_queries where blur_table_id=? and uuid=?", new Object[]{TableMap.get().get(table), blurQueryStatus.getUuid()});
+					if (tables != null) {
+						for (String table : tables) {
+							TableDescriptor descriptor = null;
+							try {
+								descriptor = client.describe(table);
+							} catch (Exception e) {
+								log.error("Unable to describe table [" + table + "].", e);
+								continue;
+							}
+							if (descriptor != null && descriptor.isEnabled) {
+								List<BlurQueryStatus> currentQueries = null;
+								try {
+									currentQueries = client.currentQueries(table);
+								} catch (Exception e) {
+									log.error("Unable to retrieve current queries for table [" + table + "].", e);
+									continue;
+								}
 								
-								ObjectMapper timesMapper = new ObjectMapper();
-								String times = timesMapper.writeValueAsString(blurQueryStatus.getCpuTimes());
-								
-								if (existingRow.isEmpty()) {
-									Calendar cal = getUTCCal(new Date().getTime());
-									
-									SimpleQuery query = blurQueryStatus.getQuery().getSimpleQuery();
-									
-									Date startTime = cal.getTime();
-									long startTimeLong = blurQueryStatus.getQuery().getStartTime();
-									if (startTimeLong > 0) {
-										Calendar startCal = getUTCCal(startTimeLong);
-										startTime = startCal.getTime();
+								if (currentQueries != null) {
+									for (BlurQueryStatus blurQueryStatus : currentQueries) {
+										//Check if query exists
+										List<Map<String, Object>> existingRow = jdbc.queryForList("select id, complete_shards, times, state from blur_queries where blur_table_id=? and uuid=?", new Object[]{TableMap.get().get(table), blurQueryStatus.getUuid()});
+										
+										ObjectMapper timesMapper = new ObjectMapper();
+										String times = null;
+										try {
+											times = timesMapper.writeValueAsString(blurQueryStatus.getCpuTimes());
+										} catch (Exception e) {
+											log.error("Unable to parse cpu times.", e);
+										}
+										
+										if (existingRow.isEmpty()) {
+											Calendar cal = getUTCCal(new Date().getTime());
+											
+											SimpleQuery query = blurQueryStatus.getQuery().getSimpleQuery();
+											
+											Date startTime = cal.getTime();
+											long startTimeLong = blurQueryStatus.getQuery().getStartTime();
+											if (startTimeLong > 0) {
+												Calendar startCal = getUTCCal(startTimeLong);
+												startTime = startCal.getTime();
+											}
+											
+											jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
+														new Object[]{query.getQueryStr(), 
+															times,
+															blurQueryStatus.getCompleteShards(),
+															blurQueryStatus.getTotalShards(),
+															blurQueryStatus.getState().getValue(),
+															blurQueryStatus.getUuid(),
+															startTime,
+															cal.getTime(),
+															TableMap.get().get(table),
+															query.isSuperQueryOn(),
+															StringUtils.join(blurQueryStatus.getQuery().getFacets(), ", "),
+															blurQueryStatus.getQuery().getStart(),
+															blurQueryStatus.getQuery().getFetch(),
+															query.getPreSuperFilter(),
+															query.getPostSuperFilter(),
+															blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnFamiliesToFetch()),
+															blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnsToFetch()),
+															blurQueryStatus.getQuery().getUserContext()
+														});
+										} else if (queryHasChanged(blurQueryStatus, times, existingRow.get(0))){
+											Calendar cal = getUTCCal(new Date().getTime());
+											
+											jdbc.update("update blur_queries set times=?, complete_shards=?, total_shards=?, state=?, updated_at=? where id=?", 
+														new Object[] {times,
+															blurQueryStatus.getCompleteShards(),
+															blurQueryStatus.getTotalShards(),
+															blurQueryStatus.getState().getValue(),
+															cal.getTime(),
+															existingRow.get(0).get("ID")
+														});
+										}
 									}
-									
-									jdbc.update("insert into blur_queries (query_string, times, complete_shards, total_shards, state, uuid, created_at, updated_at, blur_table_id, super_query_on, facets, start, fetch_num, pre_filters, post_filters, selector_column_families, selector_columns, userid) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", 
-												new Object[]{query.getQueryStr(), 
-													times,
-													blurQueryStatus.getCompleteShards(),
-													blurQueryStatus.getTotalShards(),
-													blurQueryStatus.getState().getValue(),
-													blurQueryStatus.getUuid(),
-													startTime,
-													cal.getTime(),
-													TableMap.get().get(table),
-													query.isSuperQueryOn(),
-													StringUtils.join(blurQueryStatus.getQuery().getFacets(), ", "),
-													blurQueryStatus.getQuery().getStart(),
-													blurQueryStatus.getQuery().getFetch(),
-													query.getPreSuperFilter(),
-													query.getPostSuperFilter(),
-													blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnFamiliesToFetch()),
-													blurQueryStatus.getQuery().getSelector() == null ? null : JSONValue.toJSONString(blurQueryStatus.getQuery().getSelector().getColumnsToFetch()),
-													blurQueryStatus.getQuery().getUserContext()
-												});
-								} else if (queryHasChanged(blurQueryStatus, times, existingRow.get(0))){
-									Calendar cal = getUTCCal(new Date().getTime());
-									
-									jdbc.update("update blur_queries set times=?, complete_shards=?, total_shards=?, state=?, updated_at=? where id=?", 
-												new Object[] {times,
-													blurQueryStatus.getCompleteShards(),
-													blurQueryStatus.getTotalShards(),
-													blurQueryStatus.getState().getValue(),
-													cal.getTime(),
-													existingRow.get(0).get("ID")
-												});
 								}
 							}
+							
 						}
-						
 					}
 					return null;
 				}

@@ -33,6 +33,7 @@ class SearchController < ApplicationController
     else
       params[:column_data].delete( "neighborhood")
       search = Search.new(:super_query    =>!params[:super_query].nil?,
+                          :record_only    =>!params[:record_only].nil?,
                           :fetch          => params[:result_count].to_i,
                           :offset         => params[:offset].to_i,
                           :user_id        => current_user.id,
@@ -57,19 +58,28 @@ class SearchController < ApplicationController
     @result_time = -1 #blur_results.realTime
     @results = []
     blur_results.results.each do |blur_result_container|
-      # drill down through the result object cruft to get the real result
-      blur_result = blur_result_container.fetchResult.rowResult.row
-      # continue to next result if there is no returned data
-      next if blur_result.records.empty?
 
-      max_record_count = blur_result.records.
+      # drill down through the result object cruft to get the real result
+      if !search.record_only
+        blur_result = blur_result_container.fetchResult.rowResult.row
+        records = blur_result.records
+        id = blur_result.id
+      else
+        blur_result = blur_result_container.fetchResult.recordResult
+        records = [blur_result.record]
+        id = blur_result.rowid
+      end
+      # continue to next result if there is no returned data
+      next if records.empty?
+
+      max_record_count = records.
         collect {|record| record.family}.
         reduce(Hash.new(0)) {|count, family| count[family] += 1; count}.
         values.max
 
-      result = {:max_record_count => max_record_count, :id => blur_result.id}
+      result = {:max_record_count => max_record_count, :id => id}
 
-      blur_result.records.each do |blur_record|
+      records.each do |blur_record|
         column_family = blur_record.family
         unless column_family.nil? # to compensate for a bug in blur that returns empty records if a column family is not selected
           record = {'recordId' => blur_record.recordId}
@@ -120,6 +130,7 @@ class SearchController < ApplicationController
   def save
     search = Search.new(:name         => params[:save_name],
                   :super_query  =>!params[:super_query].nil?,
+                  :record_only  =>!params[:record_only].nil?,
                   :fetch        => params[:result_count].to_i,
                   :offset       => params[:offset].to_i,
                   :user_id      => current_user.id,
@@ -138,6 +149,7 @@ class SearchController < ApplicationController
     search = Search.find params[:search_id]
     search.attributes(:name               => params[:save_name],
                         :super_query =>!params[:super_query].nil?,
+                        :record_only  =>!params[:record_only].nil?,
                         :fetch       => params[:result_count].to_i,
                         :offset      => params[:offset].to_i,
                         :user_id     => current_user.id,

@@ -10,11 +10,11 @@
 %table.ui-widget-content.ui-corner-all
   %thead
     %tr
-      %th Name/Location
+      %th Name
       %th Hosts/Shards
       %th Row Count
       %th Record Count
-      %th Schema
+      %th Info
       %th
   %tbody
     - if tables.empty?
@@ -23,9 +23,7 @@
     - tables.each do |table|
       %tr.ui-widget-content
         %td
-          = table.table_name
-          %br
-          = table.table_uri
+          %span>=table.table_name
         %td
           - if table.server
             = link_to hosts_blur_table_path(table), :remote => true, :class => 'hosts' do

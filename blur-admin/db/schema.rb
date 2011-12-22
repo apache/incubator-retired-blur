@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111130011338) do
+ActiveRecord::Schema.define(:version => 20111219160043) do
 
   create_table "blur_queries", :force => true do |t|
     t.text     "query_string"
@@ -23,8 +23,8 @@ ActiveRecord::Schema.define(:version => 20111130011338) do
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 16777215
-    t.text     "post_filters",             :limit => 16777215
+    t.text     "pre_filters",              :limit => 2147483647
+    t.text     "post_filters",             :limit => 2147483647
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"
@@ -123,6 +123,7 @@ ActiveRecord::Schema.define(:version => 20111130011338) do
     t.integer  "user_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.boolean  "record_only",   :default => false
   end
 
   add_index "searches", ["blur_table_id"], :name => "index_searches_on_blur_table_id"

@@ -2,13 +2,14 @@
   $.widget('ui.osxFinder',{
     options: {
         lockFirst : true,
-        width : 250
+        width : 250,
+        baseUrl : '/'
       },
     _create: function() {
       var self = this,
         o = self.options,
         el = self.element;
-
+      console.log(o.baseUrl);
       el.addClass('osxFinder');
 
       el.children('ul').each(function() {
@@ -28,7 +29,7 @@
           $.ajax(url, {
             success:function(data) {
               innerWindow.append(data);
-              self._trigger("added", null, innerWindow);
+              self._trigger("added", null,{"innerWindow":innerWindow,"url":url + "/"});
             },
             error: function(data) {
               innerWindow.html("error retrieving [" + url + "]");
@@ -37,6 +38,7 @@
         }
         return false;
       });
+      self._trigger("done");
     },
     _createInnerWindow: function() {
       var currentCount = this.element.children('div').size();

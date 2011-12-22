@@ -6,12 +6,12 @@
       = form_tag update_all_blur_tables_path, :method => :put, :remote => true, :class => 'update' do
         = hidden_field_tag 'enable', true, :id => 'global_enable_enabled', :class => 'enable'
         = hidden_field_tag 'cluster_id', cluster, :id => 'global_enable_cluster', :class => 'cluster_id'
-        = tag :input, :type => :button, :value => 'Enable All Tables', :class => :enable_table_button
+        = tag :input, :type => :button, :value => 'Enable All Tables', :class => 'enable_table_button btn'
     - if can? :delete, :blur_tables
       = form_tag delete_all_blur_tables_path, :method => :delete, :remote => true, :class => 'delete' do
         = hidden_field_tag :delete_index, false, :id => 'global_delete_index', :class => 'delete_index'
         = hidden_field_tag 'cluster_id', cluster, :id => 'global_delete_cluster_id', :class => 'cluster_id'
-        = tag :input, :type => :button, :value => 'Delete All Tables', :class => :delete_blur_table_button
+        = tag :input, :type => :button, :value => 'Delete All Tables', :class => 'delete_blur_table_button btn'
 
 %table
   %thead
@@ -37,11 +37,11 @@
             - if can? :update, :blur_tables
               = form_tag blur_table_path(table), :method => :put, :remote => true, :class => 'update' do
                 = hidden_field_tag 'enable', true, :id => "enable_#{table.id}", :class => 'enable'
-                = tag :input, :type => :button, :value => 'Enable Table', :class => :enable_table_button
+                = tag :input, :type => :button, :value => 'Enable Table', :class => 'enable_table_button btn'
             - if can? :delete, :blur_tables
               = form_tag blur_table_path(table), :class  => 'delete', :method => :delete, :remote => true do
                 = hidden_field_tag :delete_index, false, :id => "delete_index_#{table.id}", :class => 'delete_index'
-                = tag :input, :type => :button, :value => 'Delete Table', :class => :delete_blur_table_button
+                = tag :input, :type => :button, :value => 'Delete Table', :class => 'delete_blur_table_button btn'
           - elsif table.status == 5
             Enabling...
           - elsif table.status == 1

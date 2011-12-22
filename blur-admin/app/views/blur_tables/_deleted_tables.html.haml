@@ -4,7 +4,7 @@
   %div.global_actions
     = form_tag forget_all_blur_tables_path, :method => :delete, :remote => true, :class => 'delete' do
       = hidden_field_tag 'cluster_id', cluster, :id => 'global_disable_cluster_id', :class => 'cluster_id'
-      = tag :input, :type => :button, :value => 'Forget All Tables', :class => :forget_all_tables_button
+      = tag :input, :type => :button, :value => 'Forget All Tables', :class => 'forget_all_tables_button btn'
 
 %table
   %thead
@@ -24,6 +24,6 @@
         %td
           - if can? :delete, :blur_tables
             = form_tag forget_blur_table_path(table), :class  => 'delete', :method => :delete, :remote => true do
-              = tag :input, :type => :button, :value => 'Forget Table', :class => :forget_blur_table_button
+              = tag :input, :type => :button, :value => 'Forget Table', :class => 'forget_blur_table_button btn'
 :javascript
   $("#cluster_#{cluster} .table_accordion h3:eq(2) .counter").html(#{tables.size})

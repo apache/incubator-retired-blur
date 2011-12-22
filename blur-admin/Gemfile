@@ -12,7 +12,7 @@ gem 'cancan', '2.0.0.alpha', :path => 'vendor/gems/cancan'
 gem 'role_model'
 gem 'compass-susy-plugin'
 gem "ganapati", "~> 0.0.5"
-
+gem "compass_twitter_bootstrap"
 group :development do
   #gem 'system-metrics'
 end

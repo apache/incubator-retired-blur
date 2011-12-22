@@ -76,6 +76,8 @@ GEM
       sass (~> 3.1)
     compass-susy-plugin (0.9)
       compass (>= 0.11.1)
+    compass_twitter_bootstrap (0.1.8)
+      compass
     configatron (2.8.2)
       yamler (>= 0.1.0)
     cover_me (1.1.1)
@@ -231,6 +233,7 @@ DEPENDENCIES
   ci_reporter
   compass (= 0.11.1)
   compass-susy-plugin
+  compass_twitter_bootstrap
   cover_me
   factory_girl_rails
   ganapati (~> 0.0.5)

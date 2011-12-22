@@ -1,13 +1,16 @@
 @import "compass";
 @import "compass/layout";
 @import "compass/reset";
+@import "compass_twitter_bootstrap";
 @import "susy";
-@import "blueprint/typography";
+
 @import "partials/application";
 
-@include blueprint-typography;
 
 #{headings()} {
   font-weight: bold;
   color: #555;
+}
+label{
+  width: inherit;
 }

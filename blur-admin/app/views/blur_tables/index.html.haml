@@ -10,24 +10,24 @@
   - @clusters.each do |cluster|
     #cluster{:id => cluster.id, :data => {:cluster_id => cluster.id}}
       .table_accordion
-        %h3
+        %h3.breadcrumb
           %a{:href => '#'}
             Active Tables (
             %span.counter
             )
-        %div.active_tables
+        %div.active_tables.tabletab
           = render :partial => 'active_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_enabled?}, :cluster => cluster.id}
-        %h3
+        %h3.breadcrumb
           %a{:href => '#'}
             Disabled Tables (
             %span.counter
             )
-        %div.disabled_tables
+        %div.disabled_tables.hidden.tabletab
           = render :partial => 'disabled_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_disabled?}, :cluster => cluster.id}
-        %h3
+        %h3.breadcrumb
           %a{:href => '#'}
             Deleted Tables (
             %span.counter
             )
-        %div.deleted_tables
+        %div.deleted_tables.hidden.tabletab
           = render :partial => 'deleted_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_deleted?}, :cluster => cluster.id}

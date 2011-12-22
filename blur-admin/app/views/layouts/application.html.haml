@@ -6,7 +6,8 @@
                              'jquery-ui',
                              'rails',
                              'routes',
-                             'compiled/application'
+                             'compiled/application',
+                             'bootstrap-tabs'
 
     -# Use this syntax in haml templates to add page specific javascript
     -# - content_for :javascript do
@@ -84,6 +85,7 @@
 
       #bd
         = yield
+      #root-footer
     #ft{:class => (license.nil? || (license.expires_date - Date.today).to_i < 30) && 'expiring_license'}
       #license
         - if license

@@ -13,7 +13,7 @@
         = hidden_field_tag 'cluster_id', cluster, :id => 'global_delete_cluster_id', :class => 'cluster_id'
         = tag :input, :type => :button, :value => 'Delete All Tables', :class => :delete_blur_table_button
 
-%table.ui-widget-content.ui-corner-all
+%table
   %thead
     %tr
       %th Name/Location
@@ -25,7 +25,7 @@
       %tr
         %td{:colspan => 4} No disabled tables found.
     - tables.each do |table|
-      %tr.ui-widget-content
+      %tr
         %td
           = table.table_name
           %br

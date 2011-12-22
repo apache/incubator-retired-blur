@@ -6,7 +6,7 @@
       = hidden_field_tag 'cluster_id', cluster, :id => 'global_disable_cluster_id', :class => 'cluster_id'
       = tag :input, :type => :button, :value => 'Forget All Tables', :class => :forget_all_tables_button
 
-%table.ui-widget-content.ui-corner-all
+%table
   %thead
     %tr
       %th Name/Location
@@ -16,7 +16,7 @@
       %tr
         %td{:colspan => 2} No deleted tables found.
     - tables.each do |table|
-      %tr.ui-widget-content
+      %tr
         %td
           = table.table_name
           %br

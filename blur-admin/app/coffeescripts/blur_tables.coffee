@@ -1,17 +1,20 @@
 $(document).ready ->
   $('#blur_tables').tabs()
-  $('.table_accordion').accordion
-    collapsible: true
-    autoHeight: false
-  $('#blur_tables').bind "tabsshow", (event, ui)->
-    $(ui.panel).find('.table_accordion').accordion('refresh')
+  
+  #Custom Accordian code
+  $('.table_accordion h3').live 'click', (e)->
+    content = $(this).next()
+    console.log($(this))
+    console.log(content)
+    if content.is(':hidden')
+      $('.tabletab').hide(500)
+      content.show(500)
+    
   
   reload_table_info = (cluster, state) ->
     $('#cluster_' + cluster + ' .' + state + '_tables').load "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", ->
-      $(this).parents('.table_accordion').accordion('refresh')
-      setTimeout(->
         reload_table_info(cluster, state)
-      10000)
+
   
   $('.ui-tabs-panel').each ->
     id = $(this).data('cluster_id')

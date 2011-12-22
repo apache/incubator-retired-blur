@@ -5,9 +5,9 @@
     = form_tag update_all_blur_tables_path, :method => :put, :remote => true, :class => 'update' do
       = hidden_field_tag 'disable', true, :id => 'global_disable_disable', :class => 'disable'
       = hidden_field_tag 'cluster_id', cluster, :id => 'global_disable_cluster_id', :class => 'cluster_id'
-      = tag :input, :type => :button, :value => 'Disable All Tables', :class => :disable_table_button
+      = tag :input, :type => :button, :value => 'Disable All Tables', :class => 'disable_table_button btn'
 
-%table.ui-widget-content.ui-corner-all
+%table
   %thead
     %tr
       %th Name
@@ -21,7 +21,7 @@
       %tr
         %td{:colspan => 6} No Tables found.
     - tables.each do |table|
-      %tr.ui-widget-content
+      %tr
         %td
           %span>=table.table_name
         %td
@@ -39,7 +39,7 @@
           - if table.status == 4 && can?(:update, :blur_tables)
             = form_tag blur_table_path(table), :method => :put, :remote => true, :class => 'update' do
               = hidden_field_tag 'disable', true, :id => "disable_#{table.id}", :class => 'disable'
-              = tag :input, :type => :button, :value => 'Disable Table', :class => :disable_table_button
+              = tag :input, :type => :button, :value => 'Disable Table', :class => 'disable_table_button btn'
           - elsif table.status == 3
             Disabling...
 :javascript

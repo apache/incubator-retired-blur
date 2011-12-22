@@ -4,30 +4,30 @@
   - if @zookeeper
     .zookeeper{ :id => @zookeeper.id }
       #zookeeper
-        %h2 Zookeeper Information
+        %h2.title Zookeeper Information
         %table
           %tbody
             %tr
-              %td.label Name:
+              %th Name:
               %td.value= @zookeeper.name
             %tr
-              %td.label Connection:
+              %th Connection:
               %td.value= @zookeeper.url
             %tr
-              %td.label Status:
+              %th Status:
               %td.value
                 - if @zookeeper.status == 1
-                  .green_box.ui-corner-all
+                  .status.label.success
                     Online
                 - else
-                  .ui-state-error.ui-corner-all
+                  .status.label.important
                     Offline
       #blur
-        %h2 Blur Status
+        %h2.title Blur Status
         #controllers
           .blur_container
             - unless @zookeeper.controllers.empty?
-              %h3= "Controllers(#{@zookeeper.controllers.length})"
+              %h3.bottom-line= "Controllers(#{@zookeeper.controllers.length})"
               #controllers-placeholder
                 - if @controller_nodes == 1
                   = "Controllers (blur version #{@zookeeper.controllers.first.blur_version}) :"
@@ -41,43 +41,45 @@
                       - if @controller_nodes > 1
                         = "(blur version #{controller.blur_version})"
                       - if controller.status == 1
-                        .green_box.ui-corner-all
+                        .status.label.success
                           Online
                       - else
-                        .ui-state-error.ui-corner-all
+                        .status.label.important
                           Offline
                         = link_to 'Forget Offline Node', destroy_controller_path(@zookeeper, controller), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
             - else
-              %h3 Controllers
-              %p Not Available
+              %h3.bottom-line Controllers
+              #controllers-placeholder
+                %p Not Available
         #shards
           .blur_container
             - unless @zookeeper.shards.empty?
-              %h3= "Shards(#{@zookeeper.shards.length})"
-              - if @shard_nodes == 1
-                = "Shards (blur version #{@zookeeper.shards.first.blur_version}) :"
-              - elsif @shard_nodes > 1
-                .warning
-                  = "Shards are not running the same blur version"
-              %ul
-                - @zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
-                  %li
-                    = cluster.name
-                    %ul
-                      - cluster.shards.sort_by{|s| [s.status, s.node_name]}.each do |shard|
-                        %li
-                          = shard.node_name
-                          - if @shard_nodes > 1
-                            = "(blur version #{shard.blur_version})"
-                          - if shard.status == 1
-                            .green_box.ui-corner-all
-                              Online
-                          - else
-                            .ui-state-error.ui-corner-all
-                              Offline
-                            = link_to 'Forget Offline Node', destroy_shard_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
+              %h3.bottom-line= "Shards(#{@zookeeper.shards.length})"
+              #shards-placeholder
+                - if @shard_nodes == 1
+                  = "Shards (blur version #{@zookeeper.shards.first.blur_version}) :"
+                - elsif @shard_nodes > 1
+                  .warning
+                    = "Shards are not running the same blur version"
+                %ul
+                  - @zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
+                    %li
+                      = cluster.name
+                      %ul
+                        - cluster.shards.sort_by{|s| [s.status, s.node_name]}.each do |shard|
+                          %li
+                            = shard.node_name
+                            - if @shard_nodes > 1
+                              = "(blur version #{shard.blur_version})"
+                            - if shard.status == 1
+                              .status.label.success
+                                Online
+                            - else
+                              .status.label.important
+                                Offline
+                              = link_to 'Forget Offline Node', destroy_shard_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
             - else
-              %h3 Shards
+              %h3.bottom-line Shards
               %p Not Available
 
   - else

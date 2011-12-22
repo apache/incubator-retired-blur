@@ -22,6 +22,8 @@ $bar-hover: #FAD290;
 
 $font-color: #555;
 $border_color: #999;
+$lightblue-color: #93A7AC;
+$lighterblue-color: #C4D2D6;
 
 $border_width: 1px;
 $border_style: solid;
@@ -52,6 +54,10 @@ $show-grid-backgrounds: true;
 @mixin border-sides  { border-left:   $border_width $border_style $border_color;
                        border-right:  $border_width $border_style $border_color; }
 
+$twitter-border: 1px solid #ddd;
+.bottom-line{
+  border-bottom: $twitter-border;
+}
 @mixin standard-border {
   @include border-radius;
   @include border;
@@ -88,14 +94,24 @@ body {
   }
 }
 
-h2 { font-size: 200%; }
+.title{
+  color:$lightblue-color;
+}
+.blue-back{
+  background-color:$lighterblue-color;
+}
+.center{
+  text-align:center;
+  vertical-align:middle;
+}
 
-.ui-dialog { min-width: 300px; }
-.ui-tooltip { max-width: 600px; }
+.label{
+  text-align: center;
+  display: inline-block;
+  padding:1px 15px 1px;
+  margin: 2px 0 2px;
 
-.jstree-icon{ cursor: pointer; }
-.jstree a { 
-  &:hover{
-    color: #06C;
-  }
+}
+.label.important{
+font-style:italic;
 }

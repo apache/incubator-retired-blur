@@ -1,7 +1,7 @@
 $(document).ready ->
-  ONLINE='green_box'
-  OFFLINE='ui-state-error'
-  NA='grey_box'
+  ONLINE='success'
+  OFFLINE='important'
+  NA=''
   
   # Updates all fields on the dashboard
   load_dashboard = () ->
@@ -13,7 +13,7 @@ $(document).ready ->
         zookeeper_table = $('#zookeepers').find("#" + this.id )
 
         # Updates the header showing the zookeeper status
-        current_zookeeper = $('#' + zookeeper_table[0].id).find("th")
+        current_zookeeper = $('#' + zookeeper_table[0].id).find(".zookeeper-title")
         if this.status == 1
           current_zookeeper.removeClass(OFFLINE)
                           .addClass(ONLINE)

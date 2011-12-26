@@ -23,6 +23,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
@@ -57,8 +58,8 @@ public class QueryStatusManager {
     statusCleanupTimer.purge();
   }
 
-  public QueryStatus newQueryStatus(String table, BlurQuery blurQuery, int maxNumberOfThreads) {
-    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery);
+  public QueryStatus newQueryStatus(String table, BlurQuery blurQuery, int maxNumberOfThreads, AtomicBoolean running) {
+    QueryStatus queryStatus = new QueryStatus(statusCleanupTimerDelay, table, blurQuery, running);
     currentQueryStatusCollection.put(queryStatus, CONSTANT_VALUE);
     return queryStatus;
   }

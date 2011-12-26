@@ -276,7 +276,8 @@ public class IndexManager {
   }
 
   public BlurResultIterable query(final String table, final BlurQuery blurQuery, AtomicLongArray facetedCounts) throws Exception {
-    final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount);
+    final AtomicBoolean running = new AtomicBoolean(true);
+    final QueryStatus status = _statusManager.newQueryStatus(table, blurQuery, _threadCount, running);
     _blurMetrics.queriesExternal.incrementAndGet();
     try {
       Map<String, BlurIndex> blurIndexes;
@@ -287,8 +288,6 @@ public class IndexManager {
         throw new BException(e.getMessage(), e);
       }
       Analyzer analyzer = _indexServer.getAnalyzer(table);
-      final AtomicBoolean running = new AtomicBoolean(true);
-
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;

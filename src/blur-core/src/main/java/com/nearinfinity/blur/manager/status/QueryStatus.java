@@ -18,9 +18,6 @@ package com.nearinfinity.blur.manager.status;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,33 +42,27 @@ public class QueryStatus implements Comparable<QueryStatus> {
   private final AtomicBoolean _interrupted = new AtomicBoolean(false);
   private final AtomicInteger _totalShards = new AtomicInteger();
   private final AtomicInteger _completeShards = new AtomicInteger();
-  private final List<Thread> _threads = Collections.synchronizedList(new ArrayList<Thread>());
+  private AtomicBoolean _running;
 
-  public QueryStatus(long ttl, String table, BlurQuery blurQuery) {
+  public QueryStatus(long ttl, String table, BlurQuery blurQuery, AtomicBoolean running) {
     _ttl = ttl;
     _table = table;
     _blurQuery = blurQuery;
     _startingTime = System.currentTimeMillis();
+    _running = running;
   }
 
   public QueryStatus attachThread() {
-    if (_interrupted.get()) {
-      Thread.currentThread().interrupt();
-    }
     if (CPU_TIME_SUPPORTED) {
       _cpuTimes.set(_bean.getCurrentThreadCpuTime());
     } else {
       _cpuTimes.set(-1L);
     }
     _totalShards.incrementAndGet();
-    _threads.add(Thread.currentThread());
     return this;
   }
 
   public QueryStatus deattachThread() {
-    if (_interrupted.get()) {
-      Thread.currentThread().interrupt();
-    }
     _completeShards.incrementAndGet();
     if (CPU_TIME_SUPPORTED) {
       long startingThreadCpuTime = _cpuTimes.get();
@@ -87,9 +78,7 @@ public class QueryStatus implements Comparable<QueryStatus> {
 
   public void cancelQuery() {
     _interrupted.set(true);
-    for (Thread t : _threads) {
-      t.interrupt();
-    }
+    _running.set(false);
   }
 
   public BlurQueryStatus getQueryStatus() {

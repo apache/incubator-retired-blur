@@ -162,11 +162,6 @@ public class LocalIndexServer extends AbstractIndexServer {
   }
 
   @Override
-  public List<String> getTableList() {
-    return new ArrayList<String>(_readersMap.keySet());
-  }
-
-  @Override
   public List<String> getShardList(String table) {
     try {
       List<String> result = new ArrayList<String>();

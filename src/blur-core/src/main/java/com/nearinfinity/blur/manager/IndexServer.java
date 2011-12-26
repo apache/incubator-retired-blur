@@ -100,13 +100,6 @@ public interface IndexServer {
   String getNodeName();
 
   /**
-   * The table name list.
-   * 
-   * @return the list of tables.
-   */
-  List<String> getTableList();
-
-  /**
    * Gets the table uri. (hdfs://cluster1:9000/blur/tables/tablename1234)
    * 
    * @param table

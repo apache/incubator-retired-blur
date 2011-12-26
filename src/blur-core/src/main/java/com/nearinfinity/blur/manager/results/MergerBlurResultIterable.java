@@ -16,13 +16,11 @@
 
 package com.nearinfinity.blur.manager.results;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.thrift.BException;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
@@ -43,24 +41,12 @@ public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
   }
 
   @Override
-  public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws BlurException {
+  public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws Exception {
     BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
     while (service.getRemainingCount() > 0) {
-      Future<BlurResultIterable> future;
-      try {
-        future = service.poll(_maxQueryTime, TimeUnit.MILLISECONDS);
-      } catch (InterruptedException e) {
-        throw new BException("Query [" + _blurQuery + "] was interrupted", e);
-      }
+      Future<BlurResultIterable> future = service.poll(_maxQueryTime, TimeUnit.MILLISECONDS);
       if (future != null) {
-        BlurResultIterable blurResultIterable;
-        try {
-          blurResultIterable = future.get();
-        } catch (InterruptedException e) {
-          throw new BException("Query [" + _blurQuery + "] was interrupted", e);
-        } catch (ExecutionException e) {
-          throw new BException("Query [" + _blurQuery + "] threw execution exception", e);
-        }
+        BlurResultIterable blurResultIterable = future.get();
         iterable.addBlurResultIterable(blurResultIterable);
         if (iterable.getTotalResults() >= _minimumNumberOfResults) {
           return iterable;

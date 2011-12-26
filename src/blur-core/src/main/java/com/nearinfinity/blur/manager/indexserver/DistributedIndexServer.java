@@ -702,11 +702,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   @Override
-  public List<String> getTableList() {
-    return _clusterStatus.getTableList();
-  }
-
-  @Override
   public long getTableSize(String table) throws IOException {
     checkTable(table);
     Path tablePath = new Path(getTableUri(table));

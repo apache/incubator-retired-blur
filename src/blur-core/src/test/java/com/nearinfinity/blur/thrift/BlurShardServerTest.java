@@ -88,11 +88,6 @@ public class BlurShardServerTest {
       }
 
       @Override
-      public List<String> getTableList() {
-        throw new RuntimeException("not impl");
-      }
-
-      @Override
       public TABLE_STATUS getTableStatus(String table) {
         throw new RuntimeException("not impl");
       }

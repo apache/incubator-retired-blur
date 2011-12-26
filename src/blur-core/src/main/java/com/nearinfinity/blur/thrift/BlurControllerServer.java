@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLongArray;
@@ -105,6 +106,8 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private long _maxFetchDelay = 2000;
   private long _maxMutateDelay = 2000;
   private long _maxDefaultDelay = 2000;
+  
+  private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
 
   public void init() throws KeeperException, InterruptedException {
     setupZookeeper();
@@ -333,7 +336,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         public List<BlurQueryStatus> call(Client client) throws BlurException, TException {
           return client.currentQueries(table);
         }
-      }, new MergerQueryStatus());
+      }, new MergerQueryStatus(_defaultParallelCallTimeout));
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get current searches [{0}]", e, table);
       throw new BException("Unknown error while trying to get current searches [{0}]", e, table);
@@ -350,7 +353,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         public TableStats call(Client client) throws BlurException, TException {
           return client.getTableStats(table);
         }
-      }, new MergerTableStats());
+      }, new MergerTableStats(_defaultParallelCallTimeout));
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get table stats [{0}]", e, table);
       throw new BException("Unknown error while trying to get table stats [{0}]", e, table);
@@ -380,11 +383,13 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           return client.recordFrequency(table, columnFamily, columnName, value);
         }
       }, new Merger<Long>() {
+
         @Override
-        public Long merge(BlurExecutorCompletionService<Long> service) throws Exception {
+        public Long merge(BlurExecutorCompletionService<Long> service) throws BlurException {
           Long total = 0L;
           while (service.getRemainingCount() > 0) {
-            total += service.take().get();
+            Future<Long> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table, columnFamily, columnName, value);
+            total += service.getResultThrowException(future, table, columnFamily, columnName, value);
           }
           return total;
         }
@@ -407,10 +412,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       }, new Merger<Schema>() {
         @Override
-        public Schema merge(BlurExecutorCompletionService<Schema> service) throws Exception {
+        public Schema merge(BlurExecutorCompletionService<Schema> service) throws BlurException {
           Schema result = null;
           while (service.getRemainingCount() > 0) {
-            Schema schema = service.take().get();
+            Future<Schema> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table);
+            Schema schema = service.getResultThrowException(future, table);
             if (result == null) {
               result = schema;
             } else {
@@ -438,10 +444,11 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         }
       }, new Merger<List<String>>() {
         @Override
-        public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws Exception {
+        public List<String> merge(BlurExecutorCompletionService<List<String>> service) throws BlurException {
           TreeSet<String> terms = new TreeSet<String>();
           while (service.getRemainingCount() > 0) {
-            terms.addAll(service.take().get());
+            Future<List<String>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true, table, columnFamily, columnName, startWith, size);
+            terms.addAll(service.getResultThrowException(future, table, columnFamily, columnName, startWith, size));
           }
           return new ArrayList<String>(terms).subList(0, Math.min(terms.size(), size));
         }
@@ -482,9 +489,10 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private <R> void scatter(String cluster, BlurCommand<R> command) throws Exception {
     scatterGather(cluster, command, new Merger<R>() {
       @Override
-      public R merge(BlurExecutorCompletionService<R> service) throws Exception {
+      public R merge(BlurExecutorCompletionService<R> service) throws BlurException {
         while (service.getRemainingCount() > 0) {
-          service.take().get();
+          Future<R> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
+          service.getResultThrowException(future);
         }
         return null;
       }

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -50,8 +51,10 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   private IndexSearcher _searcher;
   private TotalHitsRef _totalHitsRef = new TotalHitsRef();
   private ProgressRef _progressRef = new ProgressRef();
+  private AtomicBoolean _running;
 
-  public BlurResultIterableSearcher(Query query, String table, String shard, IndexSearcher searcher, Selector selector) throws IOException {
+  public BlurResultIterableSearcher(AtomicBoolean running, Query query, String table, String shard, IndexSearcher searcher, Selector selector) throws IOException {
+    _running = running;
     _table = table;
     _query = query;
     _shard = shard;
@@ -61,7 +64,7 @@ public class BlurResultIterableSearcher implements BlurResultIterable {
   }
 
   private void performSearch() throws IOException {
-    IterablePaging iterablePaging = new IterablePaging(_searcher, _query, _fetchCount, _totalHitsRef, _progressRef);
+    IterablePaging iterablePaging = new IterablePaging(_running, _searcher, _query, _fetchCount, _totalHitsRef, _progressRef);
     _iterator = new IteratorConverter<ScoreDoc, BlurResult>(iterablePaging.iterator(), new Converter<ScoreDoc, BlurResult>() {
       @Override
       public BlurResult convert(ScoreDoc scoreDoc) throws Exception {

@@ -23,6 +23,8 @@ import java.util.concurrent.Future;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.utils.BlurExecutorCompletionService.Cancel;
 
 public class ForkJoin {
 
@@ -33,15 +35,26 @@ public class ForkJoin {
   }
 
   public static interface ParallelReturn<OUTPUT> {
-    OUTPUT merge(Merger<OUTPUT> merger) throws Exception;
+    OUTPUT merge(Merger<OUTPUT> merger) throws BlurException;
   }
 
   public static interface Merger<OUTPUT> {
-    OUTPUT merge(BlurExecutorCompletionService<OUTPUT> service) throws Exception;
+    OUTPUT merge(BlurExecutorCompletionService<OUTPUT> service) throws BlurException;
+  }
+  
+  public static Cancel CANCEL = new Cancel() {
+    @Override
+    public void cancel() {
+      // do nothing
+    }
+  };
+  
+  public static <INPUT, OUTPUT> ParallelReturn<OUTPUT> execute(ExecutorService executor, Iterable<INPUT> it, final ParallelCall<INPUT, OUTPUT> parallelCall) {
+    return execute(executor, it, parallelCall, CANCEL);
   }
 
-  public static <INPUT, OUTPUT> ParallelReturn<OUTPUT> execute(ExecutorService executor, Iterable<INPUT> it, final ParallelCall<INPUT, OUTPUT> parallelCall) {
-    final BlurExecutorCompletionService<OUTPUT> service = new BlurExecutorCompletionService<OUTPUT>(executor);
+  public static <INPUT, OUTPUT> ParallelReturn<OUTPUT> execute(ExecutorService executor, Iterable<INPUT> it, final ParallelCall<INPUT, OUTPUT> parallelCall, Cancel cancel) {
+    final BlurExecutorCompletionService<OUTPUT> service = new BlurExecutorCompletionService<OUTPUT>(executor, cancel);
     for (final INPUT input : it) {
       service.submit(new Callable<OUTPUT>() {
         @Override
@@ -52,8 +65,12 @@ public class ForkJoin {
     }
     return new ParallelReturn<OUTPUT>() {
       @Override
-      public OUTPUT merge(Merger<OUTPUT> merger) throws Exception {
-        return merger.merge(service);
+      public OUTPUT merge(Merger<OUTPUT> merger) throws BlurException {
+        try {
+          return merger.merge(service);
+        } finally {
+          service.cancelAll();
+        }
       }
     };
   }

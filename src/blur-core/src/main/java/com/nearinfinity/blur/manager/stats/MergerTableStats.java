@@ -1,19 +1,28 @@
 package com.nearinfinity.blur.manager.stats;
 
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
 public class MergerTableStats implements Merger<TableStats> {
 
+  private long _timeout;
+
+  public MergerTableStats(long timeout) {
+    _timeout = timeout;
+  }
+
   @Override
-  public TableStats merge(BlurExecutorCompletionService<TableStats> service) throws Exception {
+  public TableStats merge(BlurExecutorCompletionService<TableStats> service) throws BlurException {
     TableStats result = new TableStats();
     while (service.getRemainingCount() > 0) {
-      Future<TableStats> tableStats = service.take();
-      result = merge(result, tableStats.get());
+      Future<TableStats> tableStats = service.poll(_timeout, TimeUnit.MILLISECONDS, true);
+      TableStats stats = service.getResultThrowException(tableStats);
+      result = merge(result, stats);
     }
     return result;
   }

@@ -18,6 +18,7 @@ package com.nearinfinity.blur.lucene.search;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -40,16 +41,18 @@ public class IterablePaging implements Iterable<ScoreDoc> {
   private int skipTo;
   private int numHitsToCollect = DEFAULT_NUMBER_OF_HITS_TO_COLLECT;
   private int gather = -1;
+  private AtomicBoolean running;
 
-  public IterablePaging(IndexSearcher searcher, Query query) throws IOException {
-    this(searcher, query, DEFAULT_NUMBER_OF_HITS_TO_COLLECT, null, null);
+  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query) throws IOException {
+    this(running, searcher, query, DEFAULT_NUMBER_OF_HITS_TO_COLLECT, null, null);
   }
 
-  public IterablePaging(IndexSearcher searcher, Query query, int numHitsToCollect) throws IOException {
-    this(searcher, query, numHitsToCollect, null, null);
+  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect) throws IOException {
+    this(running, searcher, query, numHitsToCollect, null, null);
   }
 
-  public IterablePaging(IndexSearcher searcher, Query query, int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
+  public IterablePaging(AtomicBoolean running, IndexSearcher searcher, Query query, int numHitsToCollect, TotalHitsRef totalHitsRef, ProgressRef progressRef) throws IOException {
+    this.running = running;
     this.query = searcher.rewrite(query);
     this.searcher = searcher;
     this.numHitsToCollect = numHitsToCollect;
@@ -177,7 +180,8 @@ public class IterablePaging implements Iterable<ScoreDoc> {
         collector = new PagingCollector(numHitsToCollect, scoreDocs[scoreDocs.length - 1]);
       }
       try {
-        searcher.search(query, collector);
+        StopExecutionCollector stopExecutionCollector = new StopExecutionCollector(collector, running);
+        searcher.search(query, stopExecutionCollector);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

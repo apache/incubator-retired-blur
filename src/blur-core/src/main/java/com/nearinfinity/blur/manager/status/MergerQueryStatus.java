@@ -21,7 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.CpuTime;
 import com.nearinfinity.blur.thrift.generated.QueryState;
@@ -30,12 +32,19 @@ import com.nearinfinity.blur.utils.ForkJoin.Merger;
 
 public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
 
+  private long _timeout;
+
+  public MergerQueryStatus(long timeout) {
+    _timeout = timeout;
+  }
+
   @Override
-  public List<BlurQueryStatus> merge(BlurExecutorCompletionService<List<BlurQueryStatus>> service) throws Exception {
+  public List<BlurQueryStatus> merge(BlurExecutorCompletionService<List<BlurQueryStatus>> service) throws BlurException {
     Map<Long, BlurQueryStatus> statusMap = new HashMap<Long, BlurQueryStatus>();
     while (service.getRemainingCount() > 0) {
-      Future<List<BlurQueryStatus>> future = service.take();
-      addToMap(statusMap, future.get());
+      Future<List<BlurQueryStatus>> future = service.poll(_timeout, TimeUnit.MILLISECONDS, true);
+      List<BlurQueryStatus> status = service.getResultThrowException(future);
+      addToMap(statusMap, status);
     }
     return new ArrayList<BlurQueryStatus>(statusMap.values());
   }

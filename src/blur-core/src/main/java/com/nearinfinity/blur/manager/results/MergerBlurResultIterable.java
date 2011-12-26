@@ -41,18 +41,17 @@ public class MergerBlurResultIterable implements Merger<BlurResultIterable> {
   }
 
   @Override
-  public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws Exception {
+  public BlurResultIterable merge(BlurExecutorCompletionService<BlurResultIterable> service) throws BlurException {
     BlurResultIterableMultiple iterable = new BlurResultIterableMultiple();
     while (service.getRemainingCount() > 0) {
-      Future<BlurResultIterable> future = service.poll(_maxQueryTime, TimeUnit.MILLISECONDS);
+      Future<BlurResultIterable> future = service.poll(_maxQueryTime, TimeUnit.MILLISECONDS, true, _blurQuery);
       if (future != null) {
-        BlurResultIterable blurResultIterable = future.get();
+        BlurResultIterable blurResultIterable = service.getResultThrowException(future, _blurQuery);
         iterable.addBlurResultIterable(blurResultIterable);
         if (iterable.getTotalResults() >= _minimumNumberOfResults) {
           return iterable;
         }
       } else {
-        service.cancelAll();
         LOG.info("Query timeout with max query time of [{2}] for query [{1}].",_maxQueryTime,_blurQuery);
         throw new BlurException("Query timeout with max query time of [" + _maxQueryTime + "] for query [" + _blurQuery + "].", null);
       }

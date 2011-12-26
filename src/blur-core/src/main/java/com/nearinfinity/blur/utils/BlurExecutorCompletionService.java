@@ -16,39 +16,51 @@
 
 package com.nearinfinity.blur.utils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.nearinfinity.blur.thrift.BException;
+import com.nearinfinity.blur.thrift.generated.BlurException;
+
 public class BlurExecutorCompletionService<T> extends ExecutorCompletionService<T> {
 
   private AtomicInteger count = new AtomicInteger(0);
-  private Collection<Future<T>> bag;
+  private Collection<Future<T>> _bag;
+  private Cancel _cancel;
+  
+  public interface Cancel {
+    void cancel();
+  }
 
-  public BlurExecutorCompletionService(Executor executor) {
+  public BlurExecutorCompletionService(Executor executor, Cancel cancel) {
     super(executor);
-    bag = Collections.synchronizedCollection(new HashSet<Future<T>>());
+    _bag = Collections.synchronizedCollection(new HashSet<Future<T>>());
+    _cancel = cancel;
   }
   
   public void cancelAll() {
-    for (Future<T> future : bag) {
+    for (Future<T> future : _bag) {
       future.cancel(true);
     }
+    _cancel.cancel();
   }
   
   private Future<T> remember(Future<T> future) {
-    bag.add(future);
+    _bag.add(future);
     return future;
   }
   
   private Future<T> forget(Future<T> future) {
-    bag.remove(future);
+    _bag.remove(future);
     return future;
   }
 
@@ -95,6 +107,28 @@ public class BlurExecutorCompletionService<T> extends ExecutorCompletionService<
       count.decrementAndGet();
     }
     return forget(take);
+  }
+
+  public Future<T> poll(long timeout, TimeUnit unit, boolean throwExceptionIfTimeout, Object... parameters) throws BlurException {
+    try {
+      Future<T> future = poll(timeout, unit);
+      if (future == null) {
+        throw new BException("Call timeout [{0}]", Arrays.asList(parameters));
+      }
+      return future;
+    } catch (InterruptedException e) {
+      throw new BException("Call interrupted [{0}]", e, Arrays.asList(parameters));
+    }
+  }
+
+  public T getResultThrowException(Future<T> future, Object... parameters) throws BlurException {
+    try {
+      return future.get();
+    } catch (InterruptedException e) {
+      throw new BException("Call interrupted [{0}]", e, Arrays.asList(parameters));
+    } catch (ExecutionException e) {
+      throw new BException("Call execution exception [{0}]", e, Arrays.asList(parameters));
+    }
   }
 
 }

@@ -33,6 +33,8 @@ package com.nearinfinity.blur.search;
  */
 import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -72,7 +74,7 @@ public class TestingPagingCollector {
     ProgressRef progressRef = new ProgressRef();
 
     TermQuery query = new TermQuery(new Term("f1", "value"));
-    IterablePaging paging = new IterablePaging(searcher, query, 100);
+    IterablePaging paging = new IterablePaging(new AtomicBoolean(true), searcher, query, 100);
 
     for (ScoreDoc sd : paging.skipTo(90).gather(20).totalHits(totalHitsRef).progress(progressRef)) {
 

@@ -1,6 +1,5 @@
 package com.nearinfinity.blur.manager.writer;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +25,11 @@ public class BlurIndexCommiter {
       @Override
       public void run() {
         while (_running.get()) {
+          try {
           commit();
+          } catch (Throwable t) {
+            LOG.error("Unknown error",t);
+          }
           try {
             Thread.sleep(_delay);
           } catch (InterruptedException e) {
@@ -55,8 +58,8 @@ public class BlurIndexCommiter {
       LOG.info("Commiting writer for [" + name + "]");
       try {
         writer.commitAndRollWal();
-      } catch (IOException e) {
-        e.printStackTrace();
+      } catch (Exception e) {
+        LOG.error("Unknown error",e);
         return;
       }
     }

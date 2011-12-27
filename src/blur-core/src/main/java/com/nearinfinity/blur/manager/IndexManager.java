@@ -365,6 +365,10 @@ public class IndexManager {
   public List<BlurQueryStatus> currentQueries(String table) {
     return _statusManager.currentQueries(table);
   }
+  
+  public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException {
+    return _statusManager.queryStatus(table,uuid);
+  }
 
   public static void fetchRow(IndexReader reader, String table, Selector selector, FetchResult fetchResult) throws CorruptIndexException, IOException {
     fetchResult.table = table;

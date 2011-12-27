@@ -140,4 +140,9 @@ public class DoNothingServer implements Iface {
   public List<String> tableListByCluster(String cluster) throws BlurException, TException {
     return null;
   }
+
+  @Override
+  public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException, TException {
+    return null;
+  }
 }

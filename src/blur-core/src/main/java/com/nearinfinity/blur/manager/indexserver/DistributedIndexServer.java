@@ -149,29 +149,37 @@ public class DistributedIndexServer extends AbstractIndexServer {
       @Override
       public void run() {
         while (_running.get()) {
-          synchronized (_layoutManagers) {
-            try {
-              _zookeeper.getChildren(ZookeeperPathConstants.getOnlineShardsPath(cluster), new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_layoutManagers) {
-                    _layoutManagers.notifyAll();
-                  }
+          try {
+            doAction();
+          } catch (Throwable t) {
+            LOG.error("Unknown error",t);
+          }
+        }
+      }
+
+      private void doAction() {
+        synchronized (_layoutManagers) {
+          try {
+            _zookeeper.getChildren(ZookeeperPathConstants.getOnlineShardsPath(cluster), new Watcher() {
+              @Override
+              public void process(WatchedEvent event) {
+                synchronized (_layoutManagers) {
+                  _layoutManagers.notifyAll();
                 }
-              });
-              _layoutManagers.clear();
-              _layoutCache.clear();
-              _layoutManagers.wait();
-            } catch (KeeperException e) {
-              if (e.code() == Code.SESSIONEXPIRED) {
-                LOG.error("Zookeeper session expired.");
-                _running.set(false);
-                return;
               }
-              LOG.error("Unknown Error", e);
-            } catch (InterruptedException e) {
-              LOG.error("Unknown Error", e);
+            });
+            _layoutManagers.clear();
+            _layoutCache.clear();
+            _layoutManagers.wait();
+          } catch (KeeperException e) {
+            if (e.code() == Code.SESSIONEXPIRED) {
+              LOG.error("Zookeeper session expired.");
+              _running.set(false);
+              return;
             }
+            LOG.error("Unknown Error", e);
+          } catch (InterruptedException e) {
+            LOG.error("Unknown Error", e);
           }
         }
       }
@@ -251,8 +259,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
       public void run() {
         try {
           warmup();
-        } catch (Throwable e) {
-          LOG.error("Unknown error",e);
+        } catch (Throwable t) {
+          LOG.error("Unknown error", t);
         }
       }
 
@@ -323,8 +331,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
       public void run() {
         try {
           cleanup();
-        } catch (Throwable e) {
-          LOG.error("Unknown error",e);
+        } catch (Throwable t) {
+          LOG.error("Unknown error", t);
         }
       }
 
@@ -487,9 +495,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } else {
       dir = directory;
     }
-    
+
     BlurIndex index;
-    if (_clusterStatus.isReadOnly(true,cluster,table)) {
+    if (_clusterStatus.isReadOnly(true, cluster, table)) {
       BlurIndexReader reader = new BlurIndexReader();
       reader.setCloser(_closer);
       reader.setAnalyzer(getAnalyzer(table));

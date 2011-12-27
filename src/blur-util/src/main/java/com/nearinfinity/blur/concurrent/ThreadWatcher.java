@@ -57,8 +57,8 @@ public class ThreadWatcher {
       public void run() {
         try {
           processRunningThreads();
-        } catch (Throwable e) {
-          LOG.error("Unknown error",e);
+        } catch (Throwable t) {
+          LOG.error("Unknown error",t);
         }
       }
     }, TimeUnit.SECONDS.toMillis(5), TimeUnit.SECONDS.toMillis(5));

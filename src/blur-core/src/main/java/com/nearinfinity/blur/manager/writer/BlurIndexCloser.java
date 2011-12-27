@@ -1,6 +1,5 @@
 package com.nearinfinity.blur.manager.writer;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -42,7 +41,11 @@ public class BlurIndexCloser implements Runnable {
   @Override
   public void run() {
     while (running.get()) {
-      tryToCloseReaders();
+      try {
+        tryToCloseReaders();
+      } catch (Throwable t) {
+        LOG.error("Unknown error",t);
+      }
       try {
         Thread.sleep(PAUSE_TIME);
       } catch (InterruptedException e) {
@@ -59,7 +62,7 @@ public class BlurIndexCloser implements Runnable {
         try {
           LOG.debug("Closing indexreader [" + reader + "].");
           reader.close();
-        } catch (IOException e) {
+        } catch (Exception e) {
           LOG.error("Error while trying to close indexreader [" + reader + "].", e);
         }
         it.remove();

@@ -60,7 +60,7 @@ public class MergerQueryStatus implements Merger<List<BlurQueryStatus>> {
     }
   }
 
-  private BlurQueryStatus merge(BlurQueryStatus s1, BlurQueryStatus s2) {
+  public static BlurQueryStatus merge(BlurQueryStatus s1, BlurQueryStatus s2) {
     s1.completeShards = s1.completeShards + s2.completeShards;
     s1.totalShards = s1.totalShards + s2.totalShards;
     if (s1.state != s2.state) {

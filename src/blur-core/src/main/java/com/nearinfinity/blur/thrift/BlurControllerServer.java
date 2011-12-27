@@ -52,6 +52,7 @@ import com.nearinfinity.blur.manager.results.BlurResultIterableClient;
 import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.stats.MergerTableStats;
 import com.nearinfinity.blur.manager.status.MergerQueryStatus;
+import com.nearinfinity.blur.manager.status.MergerQueryStatusSingle;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -106,7 +107,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private long _maxFetchDelay = 2000;
   private long _maxMutateDelay = 2000;
   private long _maxDefaultDelay = 2000;
-  
+
   private long _defaultParallelCallTimeout = TimeUnit.MINUTES.toMillis(1);
 
   public void init() throws KeeperException, InterruptedException {
@@ -132,41 +133,50 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       @Override
       public void run() {
         while (_running.get()) {
-          synchronized (_shardServerLayout) {
-            try {
-              String shardNodesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes";
-              String tablesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables";
-              _zookeeper.getChildren(shardNodesPath, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_shardServerLayout) {
-                    _shardServerLayout.notifyAll();
-                  }
-                }
-              });
-              _zookeeper.getChildren(tablesPath, new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_shardServerLayout) {
-                    _shardServerLayout.notifyAll();
-                  }
-                }
-              });
-              LOG.info("Layout changing for cluster [{0}], because of table or shard server change.", cluster);
-              updateLayout();
-              _shardServerLayout.wait();
-            } catch (KeeperException e) {
-              if (e.code() == Code.SESSIONEXPIRED) {
-                LOG.error("Zookeeper session expired.");
-                _running.set(false);
-                return;
-              }
-              LOG.error("Unknown Error", e);
-            } catch (InterruptedException e) {
-              LOG.error("Unknown Error", e);
-            }
+          try {
+            doAction(cluster);
+          } catch (Throwable t) {
+            LOG.error("Unknown error", t);
           }
         }
+      }
+
+      private void doAction(final String cluster) {
+        synchronized (_shardServerLayout) {
+          try {
+            String shardNodesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes";
+            String tablesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables";
+            _zookeeper.getChildren(shardNodesPath, new Watcher() {
+              @Override
+              public void process(WatchedEvent event) {
+                synchronized (_shardServerLayout) {
+                  _shardServerLayout.notifyAll();
+                }
+              }
+            });
+            _zookeeper.getChildren(tablesPath, new Watcher() {
+              @Override
+              public void process(WatchedEvent event) {
+                synchronized (_shardServerLayout) {
+                  _shardServerLayout.notifyAll();
+                }
+              }
+            });
+            LOG.info("Layout changing for cluster [{0}], because of table or shard server change.", cluster);
+            updateLayout();
+            _shardServerLayout.wait();
+          } catch (KeeperException e) {
+            if (e.code() == Code.SESSIONEXPIRED) {
+              LOG.error("Zookeeper session expired.");
+              _running.set(false);
+              return;
+            }
+            LOG.error("Unknown Error", e);
+          } catch (InterruptedException e) {
+            LOG.error("Unknown Error", e);
+          }
+        }
+
       }
     });
     shardServerWatcherDaemon.setName("Shard-Server-Watcher-Daemon-Cluster[" + cluster + "]");
@@ -340,6 +350,23 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get current searches [{0}]", e, table);
       throw new BException("Unknown error while trying to get current searches [{0}]", e, table);
+    }
+  }
+
+  @Override
+  public BlurQueryStatus queryStatus(final String table, final long uuid) throws BlurException, TException {
+    String cluster = _clusterStatus.getCluster(true, table);
+    checkTable(cluster, table);
+    try {
+      return scatterGather(getCluster(table), new BlurCommand<BlurQueryStatus>() {
+        @Override
+        public BlurQueryStatus call(Client client) throws BlurException, TException {
+          return client.queryStatus(table, uuid);
+        }
+      }, new MergerQueryStatusSingle(_defaultParallelCallTimeout));
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get query status [{0}]", e, table, uuid);
+      throw new BException("Unknown error while trying to get query status [{0}]", e, table, uuid);
     }
   }
 

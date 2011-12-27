@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 
@@ -104,5 +105,16 @@ public class QueryStatusManager {
       }
     }
     return result;
+  }
+
+  public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException {
+    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+      if (status.getUserUuid() == uuid && status.getTable().equals(table)) {
+        return status.getQueryStatus();
+      }
+    }
+    throw new BlurException("Query status for table [" + table + 
+    		"] and uuid [" + uuid + 
+    		"] not found",null);
   }
 }

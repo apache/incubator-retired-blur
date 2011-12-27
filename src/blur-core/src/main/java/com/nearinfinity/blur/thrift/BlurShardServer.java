@@ -265,4 +265,15 @@ public class BlurShardServer extends TableAdmin implements Iface {
     _indexServer = indexServer;
   }
 
+  @Override
+  public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException, TException {
+    checkTable(_cluster,table);
+    try {
+      return _indexManager.queryStatus(table,uuid);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get current query status [table={0},uuid={1}]", e, table, uuid);
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
 }

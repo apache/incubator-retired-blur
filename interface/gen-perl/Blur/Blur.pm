@@ -1568,6 +1568,166 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_queryStatus_args;
+use base qw(Class::Accessor);
+Blur::Blur_queryStatus_args->mk_accessors( qw( table uuid ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{table} = undef;
+  $self->{uuid} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{uuid}) {
+      $self->{uuid} = $vals->{uuid};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_queryStatus_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::I64) {
+        $xfer += $input->readI64(\$self->{uuid});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_queryStatus_args');
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{uuid}) {
+    $xfer += $output->writeFieldBegin('uuid', TType::I64, 2);
+    $xfer += $output->writeI64($self->{uuid});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_queryStatus_result;
+use base qw(Class::Accessor);
+Blur::Blur_queryStatus_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_queryStatus_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{success} = new Blur::BlurQueryStatus();
+        $xfer += $self->{success}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_queryStatus_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::STRUCT, 0);
+    $xfer += $self->{success}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::Blur_schema_args;
 use base qw(Class::Accessor);
 Blur::Blur_schema_args->mk_accessors( qw( table ) );
@@ -3320,6 +3480,14 @@ sub currentQueries{
   die 'implement interface';
 }
 
+sub queryStatus{
+  my $self = shift;
+  my $table = shift;
+  my $uuid = shift;
+
+  die 'implement interface';
+}
+
 sub schema{
   my $self = shift;
   my $table = shift;
@@ -3485,6 +3653,14 @@ sub currentQueries{
 
   my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   return $self->{impl}->currentQueries($table);
+}
+
+sub queryStatus{
+  my ($self, $request) = @_;
+
+  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
+  my $uuid = ($request->{'uuid'}) ? $request->{'uuid'} : undef;
+  return $self->{impl}->queryStatus($table, $uuid);
 }
 
 sub schema{
@@ -4039,6 +4215,55 @@ sub recv_currentQueries{
     die $result->{ex};
   }
   die "currentQueries failed: unknown result";
+}
+sub queryStatus{
+  my $self = shift;
+  my $table = shift;
+  my $uuid = shift;
+
+    $self->send_queryStatus($table, $uuid);
+  return $self->recv_queryStatus();
+}
+
+sub send_queryStatus{
+  my $self = shift;
+  my $table = shift;
+  my $uuid = shift;
+
+  $self->{output}->writeMessageBegin('queryStatus', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_queryStatus_args();
+  $args->{table} = $table;
+  $args->{uuid} = $uuid;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_queryStatus{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_queryStatus_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "queryStatus failed: unknown result";
 }
 sub schema{
   my $self = shift;
@@ -4754,6 +4979,23 @@ sub process_currentQueries {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('currentQueries', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_queryStatus {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_queryStatus_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_queryStatus_result();
+    eval {
+      $result->{success} = $self->{handler}->queryStatus($args->table, $args->uuid);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('queryStatus', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

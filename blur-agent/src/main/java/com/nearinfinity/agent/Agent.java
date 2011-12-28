@@ -32,6 +32,7 @@ import com.nearinfinity.license.IssuingKey;
 
 public class Agent {
 	private static final Log log = LogFactory.getLog(Agent.class);
+    private static final int SETUP_SLEEP_TIME = 15000;
 	
 	public static void main(String[] args) {
 		writePidFile();		
@@ -112,7 +113,7 @@ public class Agent {
 		
 		while (true) {
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(SETUP_SLEEP_TIME);
 			} catch (InterruptedException e) {
 				break;
 			}
@@ -182,7 +183,7 @@ public class Agent {
 							while(true) {
 								QueryCollector.startCollecting(uri, jdbc);
 								try {
-									Thread.sleep(1500);
+									Thread.sleep(SETUP_SLEEP_TIME);
 								} catch (InterruptedException e) {
 									break;
 								}
@@ -203,7 +204,7 @@ public class Agent {
 							while (true) {
 								TableCollector.startCollecting(uri, jdbc);
 								try {
-									Thread.sleep(1500);
+									Thread.sleep(SETUP_SLEEP_TIME);
 								} catch (InterruptedException e) {
 									break;
 								}
@@ -233,7 +234,7 @@ public class Agent {
 							while(true) {
 								HDFSCollector.startCollecting(instance.get("default"), instance.get("name"), jdbc);
 								try {
-									Thread.sleep(1500);
+									Thread.sleep(SETUP_SLEEP_TIME);
 								} catch (InterruptedException e) {
 									break;
 								}

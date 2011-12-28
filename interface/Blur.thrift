@@ -364,8 +364,11 @@ service Blur {
 
   BlurResults query(1:string table, 2:BlurQuery blurQuery) throws (1:BlurException ex)
   void cancelQuery(1:string table, 2:i64 uuid) throws (1:BlurException ex)
+
   list<BlurQueryStatus> currentQueries(1:string table) throws (1:BlurException ex)
-  BlurQueryStatus queryStatus(1:string table, 2:i64 uuid) throws (1:BlurException ex)
+
+  list<i64> queryStatusIdList(1:string table) throws (1:BlurException ex)
+  BlurQueryStatus queryStatusById(1:string table, 2:i64 uuid) throws (1:BlurException ex)
 
   Schema schema(1:string table) throws (1:BlurException ex)
   TableStats getTableStats(1:string table) throws (1:BlurException ex)

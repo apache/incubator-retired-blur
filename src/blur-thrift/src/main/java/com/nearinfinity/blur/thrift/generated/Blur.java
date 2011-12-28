@@ -44,7 +44,9 @@ public class Blur {
 
     public List<BlurQueryStatus> currentQueries(String table) throws BlurException, org.apache.thrift.TException;
 
-    public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException, org.apache.thrift.TException;
+    public List<Long> queryStatusIdList(String table) throws BlurException, org.apache.thrift.TException;
+
+    public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, org.apache.thrift.TException;
 
     public Schema schema(String table) throws BlurException, org.apache.thrift.TException;
 
@@ -92,7 +94,9 @@ public class Blur {
 
     public void currentQueries(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.currentQueries_call> resultHandler) throws org.apache.thrift.TException;
 
-    public void queryStatus(String table, long uuid, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.queryStatus_call> resultHandler) throws org.apache.thrift.TException;
+    public void queryStatusIdList(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.queryStatusIdList_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void queryStatusById(String table, long uuid, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.queryStatusById_call> resultHandler) throws org.apache.thrift.TException;
 
     public void schema(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.schema_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -394,31 +398,57 @@ public class Blur {
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "currentQueries failed: unknown result");
     }
 
-    public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException, org.apache.thrift.TException
+    public List<Long> queryStatusIdList(String table) throws BlurException, org.apache.thrift.TException
     {
-      send_queryStatus(table, uuid);
-      return recv_queryStatus();
+      send_queryStatusIdList(table);
+      return recv_queryStatusIdList();
     }
 
-    public void send_queryStatus(String table, long uuid) throws org.apache.thrift.TException
+    public void send_queryStatusIdList(String table) throws org.apache.thrift.TException
     {
-      queryStatus_args args = new queryStatus_args();
+      queryStatusIdList_args args = new queryStatusIdList_args();
       args.setTable(table);
-      args.setUuid(uuid);
-      sendBase("queryStatus", args);
+      sendBase("queryStatusIdList", args);
     }
 
-    public BlurQueryStatus recv_queryStatus() throws BlurException, org.apache.thrift.TException
+    public List<Long> recv_queryStatusIdList() throws BlurException, org.apache.thrift.TException
     {
-      queryStatus_result result = new queryStatus_result();
-      receiveBase(result, "queryStatus");
+      queryStatusIdList_result result = new queryStatusIdList_result();
+      receiveBase(result, "queryStatusIdList");
       if (result.isSetSuccess()) {
         return result.success;
       }
       if (result.ex != null) {
         throw result.ex;
       }
-      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "queryStatus failed: unknown result");
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "queryStatusIdList failed: unknown result");
+    }
+
+    public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, org.apache.thrift.TException
+    {
+      send_queryStatusById(table, uuid);
+      return recv_queryStatusById();
+    }
+
+    public void send_queryStatusById(String table, long uuid) throws org.apache.thrift.TException
+    {
+      queryStatusById_args args = new queryStatusById_args();
+      args.setTable(table);
+      args.setUuid(uuid);
+      sendBase("queryStatusById", args);
+    }
+
+    public BlurQueryStatus recv_queryStatusById() throws BlurException, org.apache.thrift.TException
+    {
+      queryStatusById_result result = new queryStatusById_result();
+      receiveBase(result, "queryStatusById");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "queryStatusById failed: unknown result");
     }
 
     public Schema schema(String table) throws BlurException, org.apache.thrift.TException
@@ -1033,25 +1063,57 @@ public class Blur {
       }
     }
 
-    public void queryStatus(String table, long uuid, org.apache.thrift.async.AsyncMethodCallback<queryStatus_call> resultHandler) throws org.apache.thrift.TException {
+    public void queryStatusIdList(String table, org.apache.thrift.async.AsyncMethodCallback<queryStatusIdList_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
-      queryStatus_call method_call = new queryStatus_call(table, uuid, resultHandler, this, ___protocolFactory, ___transport);
+      queryStatusIdList_call method_call = new queryStatusIdList_call(table, resultHandler, this, ___protocolFactory, ___transport);
       this.___currentMethod = method_call;
       ___manager.call(method_call);
     }
 
-    public static class queryStatus_call extends org.apache.thrift.async.TAsyncMethodCall {
+    public static class queryStatusIdList_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String table;
+      public queryStatusIdList_call(String table, org.apache.thrift.async.AsyncMethodCallback<queryStatusIdList_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("queryStatusIdList", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        queryStatusIdList_args args = new queryStatusIdList_args();
+        args.setTable(table);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public List<Long> getResult() throws BlurException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_queryStatusIdList();
+      }
+    }
+
+    public void queryStatusById(String table, long uuid, org.apache.thrift.async.AsyncMethodCallback<queryStatusById_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      queryStatusById_call method_call = new queryStatusById_call(table, uuid, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class queryStatusById_call extends org.apache.thrift.async.TAsyncMethodCall {
       private String table;
       private long uuid;
-      public queryStatus_call(String table, long uuid, org.apache.thrift.async.AsyncMethodCallback<queryStatus_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+      public queryStatusById_call(String table, long uuid, org.apache.thrift.async.AsyncMethodCallback<queryStatusById_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
         super(client, protocolFactory, transport, resultHandler, false);
         this.table = table;
         this.uuid = uuid;
       }
 
       public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("queryStatus", org.apache.thrift.protocol.TMessageType.CALL, 0));
-        queryStatus_args args = new queryStatus_args();
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("queryStatusById", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        queryStatusById_args args = new queryStatusById_args();
         args.setTable(table);
         args.setUuid(uuid);
         args.write(prot);
@@ -1064,7 +1126,7 @@ public class Blur {
         }
         org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
         org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
-        return (new Client(prot)).recv_queryStatus();
+        return (new Client(prot)).recv_queryStatusById();
       }
     }
 
@@ -1470,7 +1532,8 @@ public class Blur {
       processMap.put("query", new query());
       processMap.put("cancelQuery", new cancelQuery());
       processMap.put("currentQueries", new currentQueries());
-      processMap.put("queryStatus", new queryStatus());
+      processMap.put("queryStatusIdList", new queryStatusIdList());
+      processMap.put("queryStatusById", new queryStatusById());
       processMap.put("schema", new schema());
       processMap.put("getTableStats", new getTableStats());
       processMap.put("terms", new terms());
@@ -1685,19 +1748,39 @@ public class Blur {
       }
     }
 
-    private static class queryStatus<I extends Iface> extends org.apache.thrift.ProcessFunction<I, queryStatus_args> {
-      public queryStatus() {
-        super("queryStatus");
+    private static class queryStatusIdList<I extends Iface> extends org.apache.thrift.ProcessFunction<I, queryStatusIdList_args> {
+      public queryStatusIdList() {
+        super("queryStatusIdList");
       }
 
-      protected queryStatus_args getEmptyArgsInstance() {
-        return new queryStatus_args();
+      protected queryStatusIdList_args getEmptyArgsInstance() {
+        return new queryStatusIdList_args();
       }
 
-      protected queryStatus_result getResult(I iface, queryStatus_args args) throws org.apache.thrift.TException {
-        queryStatus_result result = new queryStatus_result();
+      protected queryStatusIdList_result getResult(I iface, queryStatusIdList_args args) throws org.apache.thrift.TException {
+        queryStatusIdList_result result = new queryStatusIdList_result();
         try {
-          result.success = iface.queryStatus(args.table, args.uuid);
+          result.success = iface.queryStatusIdList(args.table);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    private static class queryStatusById<I extends Iface> extends org.apache.thrift.ProcessFunction<I, queryStatusById_args> {
+      public queryStatusById() {
+        super("queryStatusById");
+      }
+
+      protected queryStatusById_args getEmptyArgsInstance() {
+        return new queryStatusById_args();
+      }
+
+      protected queryStatusById_result getResult(I iface, queryStatusById_args args) throws org.apache.thrift.TException {
+        queryStatusById_result result = new queryStatusById_result();
+        try {
+          result.success = iface.queryStatusById(args.table, args.uuid);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -8824,8 +8907,727 @@ public class Blur {
 
   }
 
-  public static class queryStatus_args implements org.apache.thrift.TBase<queryStatus_args, queryStatus_args._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("queryStatus_args");
+  public static class queryStatusIdList_args implements org.apache.thrift.TBase<queryStatusIdList_args, queryStatusIdList_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("queryStatusIdList_args");
+
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
+
+    public String table; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      TABLE((short)1, "table");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(queryStatusIdList_args.class, metaDataMap);
+    }
+
+    public queryStatusIdList_args() {
+    }
+
+    public queryStatusIdList_args(
+      String table)
+    {
+      this();
+      this.table = table;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public queryStatusIdList_args(queryStatusIdList_args other) {
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+    }
+
+    public queryStatusIdList_args deepCopy() {
+      return new queryStatusIdList_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public queryStatusIdList_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof queryStatusIdList_args)
+        return this.equals((queryStatusIdList_args)that);
+      return false;
+    }
+
+    public boolean equals(queryStatusIdList_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(queryStatusIdList_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      queryStatusIdList_args typedOther = (queryStatusIdList_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("queryStatusIdList_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class queryStatusIdList_result implements org.apache.thrift.TBase<queryStatusIdList_result, queryStatusIdList_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("queryStatusIdList_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.LIST, (short)0);
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public List<Long> success; // required
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
+              new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64))));
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(queryStatusIdList_result.class, metaDataMap);
+    }
+
+    public queryStatusIdList_result() {
+    }
+
+    public queryStatusIdList_result(
+      List<Long> success,
+      BlurException ex)
+    {
+      this();
+      this.success = success;
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public queryStatusIdList_result(queryStatusIdList_result other) {
+      if (other.isSetSuccess()) {
+        List<Long> __this__success = new ArrayList<Long>();
+        for (Long other_element : other.success) {
+          __this__success.add(other_element);
+        }
+        this.success = __this__success;
+      }
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public queryStatusIdList_result deepCopy() {
+      return new queryStatusIdList_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.ex = null;
+    }
+
+    public int getSuccessSize() {
+      return (this.success == null) ? 0 : this.success.size();
+    }
+
+    public java.util.Iterator<Long> getSuccessIterator() {
+      return (this.success == null) ? null : this.success.iterator();
+    }
+
+    public void addToSuccess(long elem) {
+      if (this.success == null) {
+        this.success = new ArrayList<Long>();
+      }
+      this.success.add(elem);
+    }
+
+    public List<Long> getSuccess() {
+      return this.success;
+    }
+
+    public queryStatusIdList_result setSuccess(List<Long> success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public queryStatusIdList_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((List<Long>)value);
+        }
+        break;
+
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof queryStatusIdList_result)
+        return this.equals((queryStatusIdList_result)that);
+      return false;
+    }
+
+    public boolean equals(queryStatusIdList_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(queryStatusIdList_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      queryStatusIdList_result typedOther = (queryStatusIdList_result)other;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, typedOther.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 0: // SUCCESS
+            if (field.type == org.apache.thrift.protocol.TType.LIST) {
+              {
+                org.apache.thrift.protocol.TList _list108 = iprot.readListBegin();
+                this.success = new ArrayList<Long>(_list108.size);
+                for (int _i109 = 0; _i109 < _list108.size; ++_i109)
+                {
+                  long _elem110; // required
+                  _elem110 = iprot.readI64();
+                  this.success.add(_elem110);
+                }
+                iprot.readListEnd();
+              }
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 1: // EX
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.ex = new BlurException();
+              this.ex.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetSuccess()) {
+        oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+        {
+          oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.I64, this.success.size()));
+          for (long _iter111 : this.success)
+          {
+            oprot.writeI64(_iter111);
+          }
+          oprot.writeListEnd();
+        }
+        oprot.writeFieldEnd();
+      } else if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("queryStatusIdList_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class queryStatusById_args implements org.apache.thrift.TBase<queryStatusById_args, queryStatusById_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("queryStatusById_args");
 
     private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
     private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)2);
@@ -8906,13 +9708,13 @@ public class Blur {
       tmpMap.put(_Fields.UUID, new org.apache.thrift.meta_data.FieldMetaData("uuid", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(queryStatus_args.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(queryStatusById_args.class, metaDataMap);
     }
 
-    public queryStatus_args() {
+    public queryStatusById_args() {
     }
 
-    public queryStatus_args(
+    public queryStatusById_args(
       String table,
       long uuid)
     {
@@ -8925,7 +9727,7 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public queryStatus_args(queryStatus_args other) {
+    public queryStatusById_args(queryStatusById_args other) {
       __isset_bit_vector.clear();
       __isset_bit_vector.or(other.__isset_bit_vector);
       if (other.isSetTable()) {
@@ -8934,8 +9736,8 @@ public class Blur {
       this.uuid = other.uuid;
     }
 
-    public queryStatus_args deepCopy() {
-      return new queryStatus_args(this);
+    public queryStatusById_args deepCopy() {
+      return new queryStatusById_args(this);
     }
 
     @Override
@@ -8949,7 +9751,7 @@ public class Blur {
       return this.table;
     }
 
-    public queryStatus_args setTable(String table) {
+    public queryStatusById_args setTable(String table) {
       this.table = table;
       return this;
     }
@@ -8973,7 +9775,7 @@ public class Blur {
       return this.uuid;
     }
 
-    public queryStatus_args setUuid(long uuid) {
+    public queryStatusById_args setUuid(long uuid) {
       this.uuid = uuid;
       setUuidIsSet(true);
       return this;
@@ -9044,12 +9846,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof queryStatus_args)
-        return this.equals((queryStatus_args)that);
+      if (that instanceof queryStatusById_args)
+        return this.equals((queryStatusById_args)that);
       return false;
     }
 
-    public boolean equals(queryStatus_args that) {
+    public boolean equals(queryStatusById_args that) {
       if (that == null)
         return false;
 
@@ -9079,13 +9881,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(queryStatus_args other) {
+    public int compareTo(queryStatusById_args other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      queryStatus_args typedOther = (queryStatus_args)other;
+      queryStatusById_args typedOther = (queryStatusById_args)other;
 
       lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
       if (lastComparison != 0) {
@@ -9168,7 +9970,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("queryStatus_args(");
+      StringBuilder sb = new StringBuilder("queryStatusById_args(");
       boolean first = true;
 
       sb.append("table:");
@@ -9210,8 +10012,8 @@ public class Blur {
 
   }
 
-  public static class queryStatus_result implements org.apache.thrift.TBase<queryStatus_result, queryStatus_result._Fields>, java.io.Serializable, Cloneable   {
-    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("queryStatus_result");
+  public static class queryStatusById_result implements org.apache.thrift.TBase<queryStatusById_result, queryStatusById_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("queryStatusById_result");
 
     private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
     private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
@@ -9290,13 +10092,13 @@ public class Blur {
       tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
           new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
       metaDataMap = Collections.unmodifiableMap(tmpMap);
-      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(queryStatus_result.class, metaDataMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(queryStatusById_result.class, metaDataMap);
     }
 
-    public queryStatus_result() {
+    public queryStatusById_result() {
     }
 
-    public queryStatus_result(
+    public queryStatusById_result(
       BlurQueryStatus success,
       BlurException ex)
     {
@@ -9308,7 +10110,7 @@ public class Blur {
     /**
      * Performs a deep copy on <i>other</i>.
      */
-    public queryStatus_result(queryStatus_result other) {
+    public queryStatusById_result(queryStatusById_result other) {
       if (other.isSetSuccess()) {
         this.success = new BlurQueryStatus(other.success);
       }
@@ -9317,8 +10119,8 @@ public class Blur {
       }
     }
 
-    public queryStatus_result deepCopy() {
-      return new queryStatus_result(this);
+    public queryStatusById_result deepCopy() {
+      return new queryStatusById_result(this);
     }
 
     @Override
@@ -9331,7 +10133,7 @@ public class Blur {
       return this.success;
     }
 
-    public queryStatus_result setSuccess(BlurQueryStatus success) {
+    public queryStatusById_result setSuccess(BlurQueryStatus success) {
       this.success = success;
       return this;
     }
@@ -9355,7 +10157,7 @@ public class Blur {
       return this.ex;
     }
 
-    public queryStatus_result setEx(BlurException ex) {
+    public queryStatusById_result setEx(BlurException ex) {
       this.ex = ex;
       return this;
     }
@@ -9427,12 +10229,12 @@ public class Blur {
     public boolean equals(Object that) {
       if (that == null)
         return false;
-      if (that instanceof queryStatus_result)
-        return this.equals((queryStatus_result)that);
+      if (that instanceof queryStatusById_result)
+        return this.equals((queryStatusById_result)that);
       return false;
     }
 
-    public boolean equals(queryStatus_result that) {
+    public boolean equals(queryStatusById_result that) {
       if (that == null)
         return false;
 
@@ -9462,13 +10264,13 @@ public class Blur {
       return 0;
     }
 
-    public int compareTo(queryStatus_result other) {
+    public int compareTo(queryStatusById_result other) {
       if (!getClass().equals(other.getClass())) {
         return getClass().getName().compareTo(other.getClass().getName());
       }
 
       int lastComparison = 0;
-      queryStatus_result typedOther = (queryStatus_result)other;
+      queryStatusById_result typedOther = (queryStatusById_result)other;
 
       lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
       if (lastComparison != 0) {
@@ -9552,7 +10354,7 @@ public class Blur {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("queryStatus_result(");
+      StringBuilder sb = new StringBuilder("queryStatusById_result(");
       boolean first = true;
 
       sb.append("success:");
@@ -11935,13 +12737,13 @@ public class Blur {
           case 0: // SUCCESS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list108 = iprot.readListBegin();
-                this.success = new ArrayList<String>(_list108.size);
-                for (int _i109 = 0; _i109 < _list108.size; ++_i109)
+                org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
+                this.success = new ArrayList<String>(_list112.size);
+                for (int _i113 = 0; _i113 < _list112.size; ++_i113)
                 {
-                  String _elem110; // required
-                  _elem110 = iprot.readString();
-                  this.success.add(_elem110);
+                  String _elem114; // required
+                  _elem114 = iprot.readString();
+                  this.success.add(_elem114);
                 }
                 iprot.readListEnd();
               }
@@ -11975,9 +12777,9 @@ public class Blur {
         oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, this.success.size()));
-          for (String _iter111 : this.success)
+          for (String _iter115 : this.success)
           {
-            oprot.writeString(_iter111);
+            oprot.writeString(_iter115);
           }
           oprot.writeListEnd();
         }
@@ -14605,14 +15407,14 @@ public class Blur {
           case 1: // MUTATIONS
             if (field.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list112 = iprot.readListBegin();
-                this.mutations = new ArrayList<RowMutation>(_list112.size);
-                for (int _i113 = 0; _i113 < _list112.size; ++_i113)
+                org.apache.thrift.protocol.TList _list116 = iprot.readListBegin();
+                this.mutations = new ArrayList<RowMutation>(_list116.size);
+                for (int _i117 = 0; _i117 < _list116.size; ++_i117)
                 {
-                  RowMutation _elem114; // required
-                  _elem114 = new RowMutation();
-                  _elem114.read(iprot);
-                  this.mutations.add(_elem114);
+                  RowMutation _elem118; // required
+                  _elem118 = new RowMutation();
+                  _elem118.read(iprot);
+                  this.mutations.add(_elem118);
                 }
                 iprot.readListEnd();
               }
@@ -14639,9 +15441,9 @@ public class Blur {
         oprot.writeFieldBegin(MUTATIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, this.mutations.size()));
-          for (RowMutation _iter115 : this.mutations)
+          for (RowMutation _iter119 : this.mutations)
           {
-            _iter115.write(oprot);
+            _iter119.write(oprot);
           }
           oprot.writeListEnd();
         }

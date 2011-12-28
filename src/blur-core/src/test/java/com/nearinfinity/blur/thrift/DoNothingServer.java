@@ -142,7 +142,12 @@ public class DoNothingServer implements Iface {
   }
 
   @Override
-  public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException, TException {
+  public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, TException {
+    return null;
+  }
+
+  @Override
+  public List<Long> queryStatusIdList(String table) throws BlurException, TException {
     return null;
   }
 }

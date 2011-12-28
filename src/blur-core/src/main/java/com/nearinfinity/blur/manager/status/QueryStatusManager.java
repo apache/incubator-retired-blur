@@ -17,8 +17,10 @@
 package com.nearinfinity.blur.manager.status;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -116,5 +118,13 @@ public class QueryStatusManager {
     throw new BlurException("Query status for table [" + table + 
     		"] and uuid [" + uuid + 
     		"] not found",null);
+  }
+
+  public List<Long> queryStatusIdList(String table) {
+    Set<Long> ids = new HashSet<Long>();
+    for (QueryStatus status : currentQueryStatusCollection.keySet()) {
+      ids.add(status.getUserUuid());
+    }
+    return new ArrayList<Long>(ids);
   }
 }

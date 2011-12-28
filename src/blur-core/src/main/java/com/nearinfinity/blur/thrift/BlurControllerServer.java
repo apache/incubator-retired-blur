@@ -18,6 +18,7 @@ package com.nearinfinity.blur.thrift;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -352,16 +353,44 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throw new BException("Unknown error while trying to get current searches [{0}]", e, table);
     }
   }
+  
+  @Override
+  public List<Long> queryStatusIdList(final String table) throws BlurException, TException {
+    String cluster = _clusterStatus.getCluster(true, table);
+    checkTable(cluster, table);
+    try {
+      return scatterGather(getCluster(table), new BlurCommand<List<Long>>() {
+        @Override
+        public List<Long> call(Client client) throws BlurException, TException {
+          return client.queryStatusIdList(table);
+        }
+      }, new Merger<List<Long>>() {
+        @Override
+        public List<Long> merge(BlurExecutorCompletionService<List<Long>> service) throws BlurException {
+          Set<Long> result = new HashSet<Long>();
+          while (service.getRemainingCount() > 0) {
+            Future<List<Long>> future = service.poll(_defaultParallelCallTimeout, TimeUnit.MILLISECONDS, true);
+            List<Long> ids = service.getResultThrowException(future);
+            result.addAll(ids);
+          }
+          return new ArrayList<Long>(result);
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to get query status ids for table [{0}]", e, table);
+      throw new BException("Unknown error while trying to get query status ids for table [{0}]", e, table);
+    }
+  }
 
   @Override
-  public BlurQueryStatus queryStatus(final String table, final long uuid) throws BlurException, TException {
+  public BlurQueryStatus queryStatusById(final String table, final long uuid) throws BlurException, TException {
     String cluster = _clusterStatus.getCluster(true, table);
     checkTable(cluster, table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<BlurQueryStatus>() {
         @Override
         public BlurQueryStatus call(Client client) throws BlurException, TException {
-          return client.queryStatus(table, uuid);
+          return client.queryStatusById(table, uuid);
         }
       }, new MergerQueryStatusSingle(_defaultParallelCallTimeout));
     } catch (Exception e) {
@@ -678,4 +707,5 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   public void setClient(BlurClient client) {
     _client = client;
   }
+
 }

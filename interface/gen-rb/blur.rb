@@ -171,20 +171,36 @@ require 'blur_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'currentQueries failed: unknown result')
           end
 
-          def queryStatus(table, uuid)
-            send_queryStatus(table, uuid)
-            return recv_queryStatus()
+          def queryStatusIdList(table)
+            send_queryStatusIdList(table)
+            return recv_queryStatusIdList()
           end
 
-          def send_queryStatus(table, uuid)
-            send_message('queryStatus', QueryStatus_args, :table => table, :uuid => uuid)
+          def send_queryStatusIdList(table)
+            send_message('queryStatusIdList', QueryStatusIdList_args, :table => table)
           end
 
-          def recv_queryStatus()
-            result = receive_message(QueryStatus_result)
+          def recv_queryStatusIdList()
+            result = receive_message(QueryStatusIdList_result)
             return result.success unless result.success.nil?
             raise result.ex unless result.ex.nil?
-            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'queryStatus failed: unknown result')
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'queryStatusIdList failed: unknown result')
+          end
+
+          def queryStatusById(table, uuid)
+            send_queryStatusById(table, uuid)
+            return recv_queryStatusById()
+          end
+
+          def send_queryStatusById(table, uuid)
+            send_message('queryStatusById', QueryStatusById_args, :table => table, :uuid => uuid)
+          end
+
+          def recv_queryStatusById()
+            result = receive_message(QueryStatusById_result)
+            return result.success unless result.success.nil?
+            raise result.ex unless result.ex.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'queryStatusById failed: unknown result')
           end
 
           def schema(table)
@@ -472,15 +488,26 @@ require 'blur_types'
             write_result(result, oprot, 'currentQueries', seqid)
           end
 
-          def process_queryStatus(seqid, iprot, oprot)
-            args = read_args(iprot, QueryStatus_args)
-            result = QueryStatus_result.new()
+          def process_queryStatusIdList(seqid, iprot, oprot)
+            args = read_args(iprot, QueryStatusIdList_args)
+            result = QueryStatusIdList_result.new()
             begin
-              result.success = @handler.queryStatus(args.table, args.uuid)
+              result.success = @handler.queryStatusIdList(args.table)
             rescue Blur::BlurException => ex
               result.ex = ex
             end
-            write_result(result, oprot, 'queryStatus', seqid)
+            write_result(result, oprot, 'queryStatusIdList', seqid)
+          end
+
+          def process_queryStatusById(seqid, iprot, oprot)
+            args = read_args(iprot, QueryStatusById_args)
+            result = QueryStatusById_result.new()
+            begin
+              result.success = @handler.queryStatusById(args.table, args.uuid)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'queryStatusById', seqid)
           end
 
           def process_schema(seqid, iprot, oprot)
@@ -947,7 +974,41 @@ require 'blur_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class QueryStatus_args
+        class QueryStatusIdList_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TABLE = 1
+
+          FIELDS = {
+            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class QueryStatusIdList_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          EX = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::I64}},
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class QueryStatusById_args
           include ::Thrift::Struct, ::Thrift::Struct_Union
           TABLE = 1
           UUID = 2
@@ -965,7 +1026,7 @@ require 'blur_types'
           ::Thrift::Struct.generate_accessors self
         end
 
-        class QueryStatus_result
+        class QueryStatusById_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           EX = 1

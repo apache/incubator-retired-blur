@@ -6,8 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,13 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.SimpleDriverDataSource;
 
 import com.nearinfinity.agent.collectors.HDFSCollector;
 import com.nearinfinity.agent.collectors.QueryCollector;
@@ -34,6 +32,7 @@ import com.nearinfinity.license.IssuingKey;
 
 public class Agent {
 	private static final Log log = LogFactory.getLog(Agent.class);
+    private static final int SETUP_SLEEP_TIME = 15000;
 	
 	public static void main(String[] args) {
 		writePidFile();		
@@ -114,7 +113,7 @@ public class Agent {
 		
 		while (true) {
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(SETUP_SLEEP_TIME);
 			} catch (InterruptedException e) {
 				break;
 			}
@@ -184,7 +183,7 @@ public class Agent {
 							while(true) {
 								QueryCollector.startCollecting(uri, jdbc);
 								try {
-									Thread.sleep(1500);
+									Thread.sleep(SETUP_SLEEP_TIME);
 								} catch (InterruptedException e) {
 									break;
 								}
@@ -205,7 +204,7 @@ public class Agent {
 							while (true) {
 								TableCollector.startCollecting(uri, jdbc);
 								try {
-									Thread.sleep(1500);
+									Thread.sleep(SETUP_SLEEP_TIME);
 								} catch (InterruptedException e) {
 									break;
 								}
@@ -235,7 +234,7 @@ public class Agent {
 							while(true) {
 								HDFSCollector.startCollecting(instance.get("default"), instance.get("name"), jdbc);
 								try {
-									Thread.sleep(1500);
+									Thread.sleep(SETUP_SLEEP_TIME);
 								} catch (InterruptedException e) {
 									break;
 								}
@@ -251,13 +250,18 @@ public class Agent {
 
 	private JdbcTemplate setupDBConnection(Properties props) {
 		String url = props.getProperty("store.url");
-		SimpleDriverDataSource dataSource = null;
-		try {
-			dataSource = new SimpleDriverDataSource(DriverManager.getDriver(url), url, props.getProperty("store.user"), props.getProperty("store.password"));
-		} catch (SQLException e) {
-			log.fatal("Unable to connect to the collector store: " + e.getMessage());
-			System.exit(1);
-		}
+		BasicDataSource dataSource = new BasicDataSource();
+		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+		dataSource.setUrl(url);
+		dataSource.setUsername(props.getProperty("store.user"));
+		dataSource.setPassword(props.getProperty("store.password"));
+		dataSource.setMaxActive(80);
+		dataSource.setMinIdle(2);
+		dataSource.setMaxWait(10000);
+		dataSource.setMaxIdle(-1);
+		dataSource.setRemoveAbandoned(true);
+		dataSource.setRemoveAbandonedTimeout(60);
+		dataSource.setDefaultAutoCommit(true);
 		
 		return new JdbcTemplate(dataSource);
 	}

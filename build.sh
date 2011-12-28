@@ -100,8 +100,23 @@ echo "Create lib dir"
 mkdir agent/lib
 cp ../blur-agent/target/blur-agent-*.jar agent/lib/agent.jar
 cp ../blur-agent/target/lib/*.jar agent/lib
-rm agent/lib/junit*.jar
+rm agent/lib/ant*.jar
+rm agent/lib/commons-cli*.jar
+rm agent/lib/commons-el*.jar
+rm agent/lib/commons-httpclient*.jar
+rm agent/lib/commons-net*.jar
+rm agent/lib/core*.jar
 rm agent/lib/hamcrest*.jar
+rm agent/lib/hsqldb*.jar
+rm agent/lib/jasper*.jar
+rm agent/lib/jets3t*.jar
+rm agent/lib/jetty*.jar
+rm agent/lib/jsp-api*.jar
+rm agent/lib/junit*.jar
+rm agent/lib/oro*.jar
+rm agent/lib/servlet-api*.jar
+rm agent/lib/xmlenc*.jar
+rm agent/lib/zookeeper-3.3.1.jar
 
 echo "Compressing and zipping agent dir"
 mv agent "agent-$version"

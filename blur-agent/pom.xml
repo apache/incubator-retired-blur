@@ -4,7 +4,7 @@
 	<groupId>com.nearinfinity</groupId>
 	<artifactId>blur-agent</artifactId>
 	<packaging>jar</packaging>
-	<version>0.5</version>
+	<version>0.5.2</version>
 	<name>blur-agent</name>
 	<url>http://maven.apache.org</url>
 
@@ -34,6 +34,11 @@
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
 			<version>1.5</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
@@ -94,6 +99,11 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
 			<version>1.8.1</version>
 		</dependency>
 		<dependency>

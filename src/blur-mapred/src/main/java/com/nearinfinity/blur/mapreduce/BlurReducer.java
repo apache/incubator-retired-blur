@@ -66,6 +66,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
@@ -137,20 +138,15 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
-    try {
-      _blurTask = BlurTask.read(context.getConfiguration());
-      setupCounters(context);
-      setupZookeeper(context);
-      setupAnalyzer(context);
-      setupDirectory(context);
-      setupWriter(context);
-      _configuration = context.getConfiguration();
-      if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
-        _reader = IndexReader.open(_directory, true);
-      }
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new RuntimeException(e);
+    _blurTask = BlurTask.read(context.getConfiguration());
+    setupCounters(context);
+    setupZookeeper(context);
+    setupAnalyzer(context);
+    setupDirectory(context);
+    setupWriter(context);
+    _configuration = context.getConfiguration();
+    if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
+      _reader = IndexReader.open(_directory, true);
     }
   }
 
@@ -158,7 +154,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     _zookeeper = new ZooKeeper(_blurTask.getZookeeperConnectionStr(), 30000, new Watcher() {
       @Override
       public void process(WatchedEvent event) {
-        //do nothing
+        // do nothing
       }
     });
   }
@@ -208,13 +204,13 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
         fetchOldRecords();
       }
     }
-    
+
     Collection<Document> docs = new ArrayList<Document>(_newDocs.values());
     for (Document document : docs) {
       document.add(PRIME_FIELD);
       break;
     }
-    
+
     switch (_blurTask.getIndexingType()) {
     case REBUILD:
       _writer.addDocuments(docs);
@@ -296,27 +292,57 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
 
   protected void cleanupFromRebuild(Context context) throws IOException, InterruptedException {
     _writer.commit();
-    int maxNumSegments = _blurTask.getMaxNumSegments();
-    if (maxNumSegments > 0) {
-      _writer.forceMerge(maxNumSegments);
-      _writer.commit();
-    }
     _writer.close();
+
+    IndexReader reader = IndexReader.open(_directory);
+
     TableDescriptor descriptor = _blurTask.getTableDescriptor();
 
     Path directoryPath = _blurTask.getDirectoryPath(context);
     remove(directoryPath);
 
-    Directory destDirectory = getDestDirectory(descriptor, directoryPath);
+    TableDescriptor tableDescriptor = _blurTask.getTableDescriptor();
+    String cluster = tableDescriptor.cluster;
+    String table = tableDescriptor.name;
+    String shard = _blurTask.getShardName(context);
+    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
 
-    copyLock(context, descriptor);
-    List<String> files = getFilesOrderedBySize(_directory);
-    long totalBytesToCopy = getTotalBytes(_directory);
-    long totalBytesCopied = 0;
-    long startTime = System.currentTimeMillis();
-    for (String file : files) {
-      totalBytesCopied += copy(_directory, destDirectory, file, file, context, totalBytesCopied, totalBytesToCopy, startTime);
+    Directory destDirectory = getDestDirectory(descriptor, directoryPath);
+    destDirectory.setLockFactory(lockFactory);
+
+    boolean optimize = _blurTask.getOptimize();
+
+    if (optimize) {
+      context.setStatus("Starting Copy-Optimize Phase");
+      IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
+      TieredMergePolicy policy = (TieredMergePolicy) conf.getMergePolicy();
+      policy.setUseCompoundFile(false);
+      long s = System.currentTimeMillis();
+      IndexWriter writer = new IndexWriter(getBiggerBuffers(destDirectory), conf);
+      writer.addIndexes(reader);
+      writer.close();
+      long e = System.currentTimeMillis();
+      context.setStatus("Copying phase took [" + (e - s) + " ms]");
+      LOG.info("Copying phase took [" + (e - s) + " ms]");
+    } else {
+      context.setStatus("Starting Copy-Optimize Phase");
+      long s = System.currentTimeMillis();
+      copyLock(context, descriptor);
+      List<String> files = getFilesOrderedBySize(_directory);
+      long totalBytesToCopy = getTotalBytes(_directory);
+      long totalBytesCopied = 0;
+      long startTime = System.currentTimeMillis();
+      for (String file : files) {
+        totalBytesCopied += copy(_directory, destDirectory, file, file, context, totalBytesCopied, totalBytesToCopy, startTime);
+      }
+      long e = System.currentTimeMillis();
+      context.setStatus("Copying phase took [" + (e - s) + " ms]");
+      LOG.info("Copying phase took [" + (e - s) + " ms]");
     }
+  }
+
+  protected Directory getBiggerBuffers(Directory destDirectory) {
+    return new BufferedDirectory(destDirectory, 32768);
   }
 
   protected Directory getDestDirectory(TableDescriptor descriptor, Path directoryPath) throws IOException {
@@ -325,9 +351,9 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     if (compressionClass == null) {
       compressionClass = "org.apache.hadoop.io.compress.DefaultCodec";
     }
-    if (compressionBlockSize == 0) {
-      compressionBlockSize = 32768;
-    }
+    // if (compressionBlockSize == 0) {
+    compressionBlockSize = 32768;
+    // }
     HdfsDirectory dir = new HdfsDirectory(directoryPath);
     return new CompressedFieldDataDirectory(dir, getInstance(compressionClass), compressionBlockSize);
   }
@@ -417,9 +443,9 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   }
 
   protected void setupDirectory(Context context) throws IOException {
+    TableDescriptor descriptor = _blurTask.getTableDescriptor();
     switch (_blurTask.getIndexingType()) {
     case UPDATE:
-      TableDescriptor descriptor = _blurTask.getTableDescriptor();
       Path directoryPath = _blurTask.getDirectoryPath(context);
       _directory = getDestDirectory(descriptor, directoryPath);
 
@@ -434,7 +460,20 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       File dir = new File(System.getProperty("java.io.tmpdir"));
       File path = new File(dir, "index");
       rm(path);
-      _directory = new ProgressableDirectory(FSDirectory.open(path), context);
+      LOG.info("Using local path [" + path + "] for indexing.");
+      String compressionClass = descriptor.compressionClass;
+      int compressionBlockSize = descriptor.getCompressionBlockSize();
+      if (compressionClass == null) {
+        compressionClass = "org.apache.hadoop.io.compress.DefaultCodec";
+      }
+
+      Directory localDirectory = FSDirectory.open(path);
+      // if (compressionBlockSize == 0) {
+      compressionBlockSize = 32768;
+      // }
+      CompressedFieldDataDirectory compressedFieldDataDirectory = new CompressedFieldDataDirectory(DirectIODirectory.wrap(localDirectory), getInstance(compressionClass),
+          compressionBlockSize);
+      _directory = new ProgressableDirectory(compressedFieldDataDirectory, context);
       return;
     default:
       break;

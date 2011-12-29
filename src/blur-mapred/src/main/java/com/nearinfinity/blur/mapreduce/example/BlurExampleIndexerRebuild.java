@@ -64,6 +64,7 @@ public class BlurExampleIndexerRebuild {
     blurTask.setZookeeperConnectionStr("localhost");
     blurTask.setMaxNumberOfConcurrentCopies(10);
     blurTask.setIndexingType(INDEXING_TYPE.REBUILD);
+    blurTask.setOptimize(false);
     Job job = blurTask.configureJob(configuration);
     job.setJarByClass(BlurExampleIndexerRebuild.class);
     job.setMapperClass(BlurExampleMapper.class);
@@ -72,7 +73,10 @@ public class BlurExampleIndexerRebuild {
     
     FileInputFormat.addInputPath(job, new Path(otherArgs[0]));
     FileOutputFormat.setOutputPath(job, new Path(otherArgs[1], "job-" + System.currentTimeMillis()));
+    long s = System.currentTimeMillis();
     boolean waitForCompletion = job.waitForCompletion(true);
+    long e = System.currentTimeMillis();
+    System.out.println("Completed in [" + (e-s) + " ms]");
     System.exit(waitForCompletion ? 0 : 1);
   }
 }

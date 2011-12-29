@@ -95,7 +95,7 @@ public class BlurTask implements Writable {
   private String _spinLockPath;
   private String _zookeeperConnectionStr;
   private int _maxNumberOfConcurrentCopies;
-  private int _maxNumSegments = -1;
+  private boolean _optimize = true;
   private INDEXING_TYPE _indexingType = INDEXING_TYPE.REBUILD;
   private transient ZooKeeper _zooKeeper;
 
@@ -246,7 +246,7 @@ public class BlurTask implements Writable {
     _maxNumberOfConcurrentCopies = input.readInt();
     _maxRecordCount = input.readLong();
     _ramBufferSizeMB = input.readInt();
-    _maxNumSegments = input.readInt();
+    _optimize = input.readBoolean();
     _indexingType = INDEXING_TYPE.valueOf(readString(input));
     byte[] data = new byte[input.readInt()];
     input.readFully(data);
@@ -275,7 +275,7 @@ public class BlurTask implements Writable {
     output.writeInt(_maxNumberOfConcurrentCopies);
     output.writeLong(_maxRecordCount);
     output.writeInt(_ramBufferSizeMB);
-    output.writeInt(_maxNumSegments);
+    output.writeBoolean(_optimize);
     writeString(output, _indexingType.name());
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     TIOStreamTransport trans = new TIOStreamTransport(os);
@@ -329,12 +329,12 @@ public class BlurTask implements Writable {
     return _maxNumberOfConcurrentCopies;
   }
 
-  public int getMaxNumSegments() {
-    return _maxNumSegments;    
+  public boolean getOptimize() {
+    return _optimize;    
   }
 
-  public void setMaxNumSegments(int maxNumSegments) {
-    _maxNumSegments = maxNumSegments;
+  public void setOptimize(boolean optimize) {
+    _optimize = optimize;
   }
 
   public INDEXING_TYPE getIndexingType() {

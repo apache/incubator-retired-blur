@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.IOUtils;
@@ -32,7 +33,8 @@ import com.nearinfinity.license.IssuingKey;
 
 public class Agent {
 	private static final Log log = LogFactory.getLog(Agent.class);
-    private static final int SETUP_SLEEP_TIME = 15000;
+    private static final long COLLECTOR_SLEEP_TIME = TimeUnit.SECONDS.toMillis(15);
+    private static final long CLEAN_UP_SLEEP_TIME = TimeUnit.HOURS.toMillis(1);
 	
 	public static void main(String[] args) {
 		writePidFile();		
@@ -113,7 +115,7 @@ public class Agent {
 		
 		while (true) {
 			try {
-				Thread.sleep(SETUP_SLEEP_TIME);
+				Thread.sleep(COLLECTOR_SLEEP_TIME);
 			} catch (InterruptedException e) {
 				break;
 			}
@@ -176,44 +178,49 @@ public class Agent {
 		Map<String, String> blurInstances = loadBlurInstances(props);
 		if (activeCollectors.contains("queries")) {
 			for (final String uri : blurInstances.values()) {
-				try {
-					new Thread(new Runnable(){
-						@Override
-						public void run() {
-							while(true) {
-								QueryCollector.startCollecting(uri, jdbc);
-								try {
-									Thread.sleep(SETUP_SLEEP_TIME);
-								} catch (InterruptedException e) {
-									break;
-								}
+				new Thread(new Runnable(){
+					@Override
+					public void run() {
+						while(true) {
+							QueryCollector.startCollecting(uri, jdbc);
+							try {
+								Thread.sleep(COLLECTOR_SLEEP_TIME);
+							} catch (InterruptedException e) {
+								break;
 							}
 						}
-					}).start();
-				} catch (Exception e) {
-					log.warn("Unable to collect Query status, will try again next pass: " + e.getMessage());
-				}
+					}
+				}).start();
+				new Thread(new Runnable(){
+					@Override
+					public void run() {
+						while(true) {
+							QueryCollector.cleanQueries(jdbc);
+							try {
+								Thread.sleep(CLEAN_UP_SLEEP_TIME);
+							} catch (InterruptedException e) {
+								break;
+							}
+						}
+					}
+				}).start();
 			}
 		}
 		if (activeCollectors.contains("tables")) {
 			for (final String uri : blurInstances.values()) {
-				try {
-					new Thread(new Runnable(){
-						@Override
-						public void run() {
-							while (true) {
-								TableCollector.startCollecting(uri, jdbc);
-								try {
-									Thread.sleep(SETUP_SLEEP_TIME);
-								} catch (InterruptedException e) {
-									break;
-								}
+				new Thread(new Runnable(){
+					@Override
+					public void run() {
+						while (true) {
+							TableCollector.startCollecting(uri, jdbc);
+							try {
+								Thread.sleep(COLLECTOR_SLEEP_TIME);
+							} catch (InterruptedException e) {
+								break;
 							}
 						}
-					}).start();
-				} catch (Exception e) {
-					log.warn("Unable to collect Table information, will try again next pass: " + e.getMessage());
-				}
+					}
+				}).start();
 			}
 		}
 
@@ -226,24 +233,35 @@ public class Agent {
 		}
 		
 		if (activeCollectors.contains("hdfs")) {
-			for (final Map<String, String> instance : hdfsInstances.values()) {
-				try {
-					new Thread(new Runnable(){
-						@Override
-						public void run() {
-							while(true) {
-								HDFSCollector.startCollecting(instance.get("default"), instance.get("name"), jdbc);
-								try {
-									Thread.sleep(SETUP_SLEEP_TIME);
-								} catch (InterruptedException e) {
-									break;
-								}
+			for (Map<String, String> instance : hdfsInstances.values()) {
+				final String uri = instance.get("default");
+				final String name = instance.get("name");
+				new Thread(new Runnable(){
+					@Override
+					public void run() {
+						while(true) {
+							HDFSCollector.startCollecting(uri, name, jdbc);
+							try {
+								Thread.sleep(COLLECTOR_SLEEP_TIME);
+							} catch (InterruptedException e) {
+								break;
 							}
 						}
-					}).start();
-				} catch (Exception e) {
-					log.warn("Unable to collect HDFS stats, will try again next pass: " + e.getMessage());
-				}
+					}
+				}).start();
+				new Thread(new Runnable(){
+					@Override
+					public void run() {
+						while(true) {
+							HDFSCollector.cleanStats(jdbc);
+							try {
+								Thread.sleep(CLEAN_UP_SLEEP_TIME);
+							} catch (InterruptedException e) {
+								break;
+							}
+						}
+					}
+				}).start();
 			}
 		}
 	}

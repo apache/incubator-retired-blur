@@ -2,21 +2,24 @@ $(document).ready ->
   $('#blur_tables').tabs()
   
   #Custom Accordian code
-  $('.table_accordion h3').live 'click', (e)->
+  $('.table_accordion .accordion-header').live 'click', (e)->
     content = $(this).next()
     console.log($(this))
     console.log(content)
     if content.is(':hidden')
-      $('.tabletab').hide(500)
+      $('.accordion-content').hide(500)
       content.show(500)
+    $('.table_accordion .accordion-header').removeClass('selected')
+    $(this).addClass('selected')
     
   
   reload_table_info = (cluster, state) ->
-    $('#cluster_' + cluster + ' .' + state + '_tables').load "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", ->
+    
+    $('#cluster_' + cluster + ' .table_accordion .' + state + '_tables').load "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", ->
         reload_table_info(cluster, state)
 
   
-  $('.ui-tabs-panel').each ->
+  $('.cluster').each ->
     id = $(this).data('cluster_id')
     reload_table_info id, 'active'
     reload_table_info id, 'disabled'

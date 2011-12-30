@@ -8,6 +8,7 @@ $yellow-state-color: #F6DD60;
 $yellow-border-color: #D0D00B;
 $green-state-color: #68B473;
 $green-border-color: #62A630;
+$orange-color: #FBBE5D;
 
 $nav-blue-color: #C4D9FF;
 $table-hd-color: #E4EDFF;
@@ -54,7 +55,7 @@ $show-grid-backgrounds: true;
 @mixin border-sides  { border-left:   $border_width $border_style $border_color;
                        border-right:  $border_width $border_style $border_color; }
 
-$twitter-border: 1px solid #ddd;
+$twitter-border: 1px solid #ccc;
 .bottom-line{
   border-bottom: $twitter-border;
 }
@@ -114,4 +115,45 @@ body {
 }
 .label.important{
 font-style:italic;
+}
+.tabs{
+font-size:120%;
+}
+
+.icon{
+ width:20px;
+ height:20px;
+ display:inline-block;
+ background-color:#F8F8F8;
+ border-radius:3px;
+ border:1px solid #CCC;
+ &:hover{
+ background-color:#ffe4a3;
+ }
+ div{
+  width:16px;
+  height:16px;
+  margin:2px;
+ }
+ .cut{
+  background-image: url(/images/cut.png);
+ }
+ .delete{
+  background-image: url(/images/delete.png);
+ }
+ .edit{
+  background-image: url(/images/edit.png);
+ }
+ .play{
+ background-image: url(/images/play.png);
+ }
+ .refresh{
+ background-image: url(/images/refresh.png);
+ }
+ .pause{
+ background-image: url(/images/pause.png);
+ }
+}
+.clear{
+  clear:both;
 }

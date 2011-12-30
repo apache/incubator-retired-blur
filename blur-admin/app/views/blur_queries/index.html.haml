@@ -15,8 +15,10 @@
       = select_tag :refresh_period,
         options_for_refresh_period(@filters['refresh_period'])
       #pause_button
-        #pause.ui-icon.ui-icon-pause
-        #refresh.ui-icon.ui-icon-refresh
+        #pause.icon
+          .pause
+        #refresh.icon
+          .refresh
     #spinner_wrapper
       = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading..."
     #filter_display_wrapper

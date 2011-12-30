@@ -12,18 +12,17 @@ $(document).ready ->
   $('.ui-widget-overlay').live "click", -> $(".ui-dialog-content").dialog "close"
   
   #slower tooltip for the saved buttons  
-  $('.action-icon').tooltip
-    show:
-      delay: 1000
+  $('.action-icon').twipsy
+    delayIn: 500
+
           
   $('html').live 'ajax:success', ->
     # remove old tooltips
     $('.ui-tooltip').remove()
         
     #slower tooltip for the saved buttons    
-    $('.action-icon').tooltip
-      show:
-        delay: 1000
+    $('.action-icon').twipsy
+      delayIn: 500
         
   #fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow")

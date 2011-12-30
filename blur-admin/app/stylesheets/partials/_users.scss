@@ -20,7 +20,12 @@
 
   #users_table { @include columns(15,$total-cols); @include suffix(15); }
 
-  #roles_wrapper {@include alpha; }
+  #roles_wrapper{
+    li{
+      list-style-type:none;
+      display:block;
+    }
+  }
   
   .info-contain{ 
     @include full($total-cols); 
@@ -119,10 +124,6 @@
     @include info($table-hd-color);
   }
   
-  ul{
-    padding:0px;
-    margin:0px;
-  }
   
   .section-label{
     text-align:center;

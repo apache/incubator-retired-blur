@@ -19,15 +19,31 @@
 
   #zookeeper {
     @include columns(30,$total-cols);
+    border:$twitter-border;
+    padding-top:20px;
+    @include border-radius(5px);
+    position:relative;
     table {
       @include prefix(0.25);
       @include columns(29.5);
+    }
+    
+    .title{
+      position:absolute;
+      display:block;
+      top:-18px;
+      left:20px;
+      background:$bg-blue-color;
     }
   }
 
   #blur {
     @include columns(30,$total-cols);
     margin-bottom: 165px;
+    border:$twitter-border;
+    @include border-radius(5px);
+    padding-top:20px;
+    position:relative;
     #controllers-placeholder,#shards-placeholder{
       margin-top: 5px;
     }
@@ -35,11 +51,17 @@
     .blur_container{ @include inner-container; @include prefix(0.25);}
     #controllers{ @include prefix(0.25); }
     #shards{ @include omega($total-cols); @include suffix(0.25);}
+    .title{
+      position:absolute;
+      display:block;
+      top:-18px;
+      left:20px;
+      background:$bg-blue-color;
+    }
   }
   .status{
   width:75px;
   }
-  h2 { @include prefix(0.25) }
   h3 { margin-top: 0.5em; }
 }
 
@@ -47,8 +69,20 @@
   display: none;
   @include full;
   @include standard-font;
-  padding-top: 2em;
-  padding-bottom: 165px;
+  margin-top: 2em;
+  margin-bottom: 165px;
+  border:$twitter-border;
+  @include border-radius(5px);
+  position:relative;
+  
+
+  .title{
+    position:absolute;
+    display:block;
+    top:-18px;
+    left:20px;
+    background:$bg-blue-color;
+  }
 
   .zookeeper_info {
     min-width: 400px;

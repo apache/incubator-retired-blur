@@ -222,24 +222,24 @@ $(document).ready ->
 
   #ajax listener for the edit action
   $('#edit_icon').live 'click', ->
-    retrieve_search($(this).parent().attr('id'))
+    retrieve_search($(this).parents('.search_element').attr('id'))
 
   #ajax listener for the run action
   $('#run_icon').live 'click', ->
-    search = $(this).parent().attr 'id'
+    search = $(this).parents('.search_element').attr 'id'
     retrieve_search search
     fetch_result search
 
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
-    parent = $(this)
+    parent = $(this).parents('.search_element')
     $( "#dialog-confirm" ).dialog
     			resizable: false,
     			modal: true,
     			buttons:
     				"Delete Query": ->
     				  $( this ).dialog "close"
-    				  $.ajax Routes.delete_search_path(parent.parent().attr("id"), $('#blur_table option:selected').val()),
+    				  $.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
                 type: 'DELETE',
                 success: (data) ->
                   $('#saved .body').html(data)
@@ -287,14 +287,12 @@ $(document).ready ->
   $(window).resize(resultsWrapperWidth)
   #listener for the superquery and recordOnly checkboxes
   $('#super_query, #record_only').live 'change',(evt) ->
-    console.log $(this)
     sq = $('#super_query');
     ro = $('#record_only');
     if sq[0] == $(this)[0]     
       that = ro
     else
       that = sq
-    console.log that
     that.prop('disabled',$(this).is(':checked'))
 
   

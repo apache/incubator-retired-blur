@@ -3,17 +3,17 @@
     -searches.each do |search|
       -val = is_valid_search?(search)
       .search_element{:id => search.id}
-        %label{:title => val ? search.name : "This is not a valid search for this schema"}
+        .search-name{:title => val ? search.name : "This is not a valid search for this schema"}
           =search.name
-        %img.ui-icon.ui-icon-close.action-icon{:id    => "delete_icon",
-                                               :title => "Delete This Saved Query",
-                                               :alt   => "Delete This Saved Query"}
-        %img.ui-icon-pencil.ui-icon.action-icon{:id    => "edit_icon",
-                                                :title => "Edit This Saved Query",
-                                                :alt   => "Edit This Saved Query"}
-        -if val
-          %img.ui-icon-play.ui-icon.action-icon{:id    => "run_icon",
-                                                :title => "Run This Saved Query",
-                                                :alt   => "Run This Saved Query"}
+        .search-buttons
+          -if val
+            #run_icon.icon.action-icon{ :title => "Run This Saved Query"}
+              .play
+          #edit_icon.icon.action-icon{ :title => "Edit This Saved Query"}
+            .edit
+          #delete_icon.icon.action-icon{ :title => "Delete This Saved Query"}
+            .delete
+        .clear
+
   -else
-    %label You do not have any saved searches.
+    %div You do not have any saved searches.

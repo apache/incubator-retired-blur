@@ -1,8 +1,7 @@
 #blur_tables {
   width: 99%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 5px;
+  border: 0;
+  margin: 5px 20px 0;
   table {
     margin-bottom: 5px;
   }
@@ -12,18 +11,42 @@
   .disabled_tables form {
     float: right;
   }
-  td input.disable_table_button, td input.forget_blur_table_button, td input.enable_table_button {
-    float:right;
-  }
+}
+.disable_table_button, .forget_blur_table_button, .enable_table_button {
+  float:right;
+  vertical-align:top;
+  display:inline-block;
+}
+.pill-content{
+  margin:0 10px;
 }
 .location{
   //font-weight: bold;
 }
-.breadcrumb{
+.table_accordion .accordion-header{
+z-index:10;
+position:relative;
   margin-bottom:0;
+  margin-top: 0;
+  padding-left:15px;
+  color:#555;
+  //@include border-radius(5px);
+  border: $twitter-border;
+  &.selected{
+    color:$lightblue-color;
+  }
+  
+  &:hover{
+    color:$orange-color;
+  }
+
 }
-.tabletab{
+
+.accordion-content{
   padding:10px 0 10px;
   border-left: $twitter-border;
   border-right: $twitter-border;
+  &:nth-child(3n-1){
+    border-bottom: $twitter-border;
+  }
 }

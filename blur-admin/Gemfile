@@ -12,13 +12,13 @@ gem 'cancan', '2.0.0.alpha', :path => 'vendor/gems/cancan'
 gem 'role_model'
 gem 'compass-susy-plugin'
 gem "ganapati", "~> 0.0.5"
-gem "compass_twitter_bootstrap"
+gem "twitter_bootstrap_form_for"
 group :development do
   #gem 'system-metrics'
 end
-
-group :development, :test do
   gem 'barista', '1.0.0'
+group :development, :test do
+
   gem 'autotest'
   gem 'rspec-rails'
   gem 'capybara'

@@ -5,8 +5,8 @@
 
   // styles for filters
   #filter_section {
-    width: 260px;
-    max-height: 500px;
+    width: 270px;
+    height: 100%;
     
     @include standard-font;
     padding-top: 1em;
@@ -26,7 +26,7 @@
     }
     .partial-section, .body { padding: 0.5em; }
     .filter { padding: 0.5em 0 0; }
-    .filter#buttons { text-align: right; }
+    .filter#buttons { text-align: center; button{font-size:85%;}}
 
     // style for the help link
     #search_help { text-align:right; }
@@ -68,11 +68,10 @@
   #results_wrapper{
     width: auto;
     z-index: -1;
+    margin-right:1em;
+    margin-bottom:100px;
     &.open_filters {
       margin-left: 290px;
-    }
-    &.collapsed_filters {
-      margin-left: -5px;
     }
     #results_container{
       margin-right: 1em;
@@ -91,6 +90,7 @@
 
   // styles for results table
   table {
+  margin-bottom:50px;
     @include border;
     table-layout: strict;
     empty-cells: show;
@@ -135,6 +135,9 @@
     cursor:pointer;
     text-align:center;
   }
+  .header{
+    padding:5px 0;
+  }
 
   // Navigation Tab label div
   .header label { cursor:pointer; }
@@ -147,19 +150,8 @@
       font-weight: bold;
     }
   }
-  
-  .action-icon{
-    cursor:pointer;
-    float:right;
-    margin-left: 2px;
-    margin-right: 2px;
-    background-color: #F8F8F8;
-    
-    &:hover{
-      background-color: $row-hover;
-      background-image: url(../images/ui-icons_555555_256x240.png);
-    }
-  }
+  .search-name{float:left;}
+  .search-buttons{float:right;}
 
   #hidden-help-container{ display:none; }
 }

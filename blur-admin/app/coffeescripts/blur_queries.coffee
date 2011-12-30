@@ -231,13 +231,14 @@ $(document).ready ->
 
   # Listener for pause/play button
   $('#pause').live 'click', ->
-    if $(this).hasClass 'ui-icon-pause'
-      $(this).removeClass 'ui-icon-pause'
-      $(this).addClass 'ui-icon-play'
+    child = $(this).children()
+    if child.hasClass 'pause'
+      child.removeClass 'pause'
+      child.addClass 'play'
       $('#filter_spinner').hide()
     else
-      $(this).removeClass 'ui-icon-play'
-      $(this).addClass 'ui-icon-pause'
+      child.removeClass 'play'
+      child.addClass 'pause'
       if $('#refresh_period').val() is 'continuous' and $('#pause').hasClass 'ui-icon-pause'
         filter_queries()
         

@@ -31,12 +31,6 @@ public class QueryCollector {
 				public Void call(Client client) {
 					Calendar now = getUTCCal(new Date().getTime());
 					
-					Calendar twoHoursAgo = Calendar.getInstance();
-					twoHoursAgo.setTimeInMillis(now.getTimeInMillis());
-					twoHoursAgo.add(Calendar.HOUR_OF_DAY, -2);
-					
-					jdbc.update("delete from blur_queries where created_at < ?", twoHoursAgo.getTime());
-					
 					Calendar twoMinutesAgo = Calendar.getInstance();
 					twoMinutesAgo.setTimeInMillis(now.getTimeInMillis());
 					twoMinutesAgo.add(Calendar.MINUTE, -2);
@@ -151,5 +145,17 @@ public class QueryCollector {
 			log.debug(e);
 		}
 		
+	}
+	
+	public static void cleanQueries(JdbcTemplate jdbc) {
+		Calendar now = Calendar.getInstance();
+		TimeZone z = now.getTimeZone();
+		now.add(Calendar.MILLISECOND, -(z.getOffset(new Date().getTime())));
+		
+		Calendar twoHoursAgo = Calendar.getInstance();
+		twoHoursAgo.setTimeInMillis(now.getTimeInMillis());
+		twoHoursAgo.add(Calendar.HOUR_OF_DAY, -2);
+		
+		jdbc.update("delete from blur_queries where created_at < ?", twoHoursAgo.getTime());
 	}
 }

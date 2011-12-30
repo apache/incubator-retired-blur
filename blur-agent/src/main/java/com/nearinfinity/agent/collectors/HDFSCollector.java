@@ -3,6 +3,7 @@ package com.nearinfinity.agent.collectors;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -25,9 +26,7 @@ public class HDFSCollector {
 			new Thread(new Runnable(){
 				@Override
 				public void run() {
-					try {
-						jdbc.update("delete from hdfs_stats where created_at+0 < NOW() - (7*24*60*60);");
-						
+					try {						
 						String[] uriParts = uriString.split(":");
 						String host = uriParts[0];
 						String port = uriParts[1];
@@ -112,5 +111,17 @@ public class HDFSCollector {
 				log.debug(e);
 			}
 		}
+	}
+	
+	public static void cleanStats(JdbcTemplate jdbc) {
+		Calendar now = Calendar.getInstance();
+		TimeZone z = now.getTimeZone();
+		now.add(Calendar.MILLISECOND, -(z.getOffset(new Date().getTime())));
+		
+		Calendar oneWeekAgo = Calendar.getInstance();
+		oneWeekAgo.setTimeInMillis(now.getTimeInMillis());
+		oneWeekAgo.add(Calendar.DATE, -7);
+		
+		jdbc.update("delete from hdfs_stats where created_at < ?", oneWeekAgo.getTime());
 	}
 }

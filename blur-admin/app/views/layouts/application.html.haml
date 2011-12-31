@@ -84,19 +84,9 @@
 
       #bd
         = yield
-    #ft{:class => (license.nil? || (license.expires_date - Date.today).to_i < 30) && 'expiring_license'}
+    #ft{:class => footer_class(license)}
       #license
-        - if license
-          - days_left_in_license = (license.expires_date - Date.today).to_i
-          = "Licensed to: #{license.org} on #{license.issued_date.strftime('%d %b %Y')}."
-          - if days_left_in_license < 0
-            License is expired.
-          - elsif days_left_in_license == 0
-            License expires today.
-          - elsif days_left_in_license < 30
-            = "License expires in #{pluralize(days_left_in_license, 'day')}."
-        - else
-          No valid license found.
+        = license_text(license)
       #company-info
         %p
           %a#page-help{:href => '#'} Help

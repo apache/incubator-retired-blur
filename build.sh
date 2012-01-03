@@ -116,7 +116,6 @@ rm agent/lib/junit*.jar
 rm agent/lib/oro*.jar
 rm agent/lib/servlet-api*.jar
 rm agent/lib/xmlenc*.jar
-rm agent/lib/zookeeper-3.3.1.jar
 
 echo "Compressing and zipping agent dir"
 mv agent "agent-$version"

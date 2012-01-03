@@ -213,7 +213,7 @@ public class Agent {
 		try {
 			jdbc.update("insert into licenses (org, issued_date, expires_date, node_overage, grace_period_days_remain) values (?,?,?,?,?)", licenseFileLines.get(1), sdf.parse(licenseFileLines.get(4)), expires, 0, 60);
 		} catch (Exception e) {
-			log.fatal("Bad date formats in license.  Exiting.");
+			log.fatal("Unable to insert license into DB.  Exiting.");
 			System.exit(1);
 		}		
 		

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20111219160043) do
+ActiveRecord::Schema.define(:version => 20111229213416) do
 
   create_table "blur_queries", :force => true do |t|
     t.text     "query_string"
@@ -96,9 +96,11 @@ ActiveRecord::Schema.define(:version => 20111219160043) do
   add_index "hdfs_stats", ["hdfs_id"], :name => "index_hdfs_stats_on_hdfs_id"
 
   create_table "licenses", :id => false, :force => true do |t|
-    t.string "org"
-    t.date   "issued_date"
-    t.date   "expires_date"
+    t.string  "org"
+    t.date    "issued_date"
+    t.date    "expires_date"
+    t.integer "node_overage"
+    t.integer "grace_period_days_remain"
   end
 
   create_table "preferences", :force => true do |t|

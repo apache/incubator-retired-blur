@@ -1,16 +1,12 @@
 package com.nearinfinity.agent;
 
 import java.util.HashMap;
+import java.util.Map;
 
 public class TableMap {
-	private static HashMap<String, Integer> tables = new HashMap<String, Integer>();
+	private static HashMap<String, Map<String, Object>> tables = new HashMap<String, Map<String, Object>>();
 	
-	public static HashMap<String, Integer> get(){
+	public static HashMap<String, Map<String, Object>> get(){
 		return tables;
 	}
-	
-	public static HashMap<String, Integer> set(HashMap<String, Integer> newMap){
-		return tables = newMap;
-	}
-
 }

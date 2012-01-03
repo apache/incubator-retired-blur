@@ -38,14 +38,15 @@ class BlurTablesController < ApplicationController
       tables.each do |table|
         table.status = STATUS[:enabling]
         table.save
-        table.enable(@current_zookeeper.host, @current_zookeeper.port)
+        table.enable(@current_zookeeper.blur_urls)
       end
     elsif params[:disable]
+      puts 'disabling table'
       tables = @current_zookeeper.blur_tables.active.where('cluster_id =?', cluster_id)
       tables.each do |table|
         table.status = STATUS[:disabling]
         table.save
-        table.disable(@current_zookeeper.host, @current_zookeeper.port)
+        table.disable(@current_zookeeper.blur_urls)
       end
     end
     render :text => ''

@@ -4,8 +4,6 @@ $(document).ready ->
   #Custom Accordian code
   $('.table_accordion .accordion-header').live 'click', (e)->
     content = $(this).next()
-    console.log($(this))
-    console.log(content)
     if content.is(':hidden')
       $('.accordion-content').hide(500)
       content.show(500)
@@ -13,17 +11,18 @@ $(document).ready ->
     $(this).addClass('selected')
     
   
-  reload_table_info = (cluster, state) ->
+  reload_table_info = (cluster, state, shouldRepeat) ->
     
     $('#cluster_' + cluster + ' .table_accordion .' + state + '_tables').load "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", ->
-        reload_table_info(cluster, state)
-
+        if shouldRepeat
+          setTimeout('window.reload_table_info("' + cluster + '","' + state + '",' + shouldRepeat + ')', 5000);
+  window.reload_table_info = reload_table_info
   
   $('.cluster').each ->
     id = $(this).data('cluster_id')
-    reload_table_info id, 'active'
-    reload_table_info id, 'disabled'
-    reload_table_info id, 'deleted'
+    reload_table_info id, 'active',true
+    reload_table_info id, 'disabled',true
+    reload_table_info id, 'deleted',true
 
   # Function to initialize a filter tree on the passed in element
   setup_filter_tree = (selector) ->
@@ -61,125 +60,114 @@ $(document).ready ->
       $(this).find('input[type=button]').attr('disabled', 'disabled')
     .live 'ajax:complete', (evt, xhr, status) ->
       $(this).find('input[type=button]').removeAttr('disabled')
-    
+      
+
   # Listener for delete button (launches dialog box)
   $('.delete_blur_table_button').live 'click', ->
-    form = $(this).closest 'form.delete'
-    global_delete = form.find('.cluster_id').size() > 0
+    table = $(this).parents('.blur_table')
+    global = table.length <= 0
+    cluster_id = $(this).attr('blur_cluster_id')
+    if global
+      route = Routes.delete_all_blur_tables_path()
+    else
+      table_id = table.attr('blur_table_id')
+      route = Routes.blur_table_path(table_id)
     
-    confirm_msg = if global_delete then 'Do you want to delete all of the underlying table indicies?' else 'Do you want to delete the underlying table index?'
-    title = if global_delete then 'Delete All Tables' else 'Delete Table'
-    button_1 = if global_delete then 'Delete tables and indicies' else 'Delete table/index'
-    button_2 = if global_delete then 'Delete tables only' else 'Delete table only'
+    confirm_msg = if global then 'Do you want to delete all of the underlying table indicies?' else 'Do you want to delete the underlying table index?'
+    title = if global then 'Delete All Tables' else 'Delete Table'
+    button_1 = if global then 'Delete tables and indicies' else 'Delete table/index'
+    button_2 = if global then 'Delete tables only' else 'Delete table only'
     
-    buttons_map = {}
-    buttons_map[button_1] = ->
-      form.find('.delete_index').val 'true'
-      form.submit()
-      $(this).dialog 'close'
-    buttons_map[button_2] = ->
-      form.submit()
-      $(this).dialog 'close'
-    buttons_map["Cancel"] = ->
-      $(this).dialog 'close'
-      
-    $("<div class='confirm_delete'>#{confirm_msg}</div>").dialog
-      width: 'auto',
-      modal: true,
-      draggable: false,
-      resizable: false,
-      title: title,
-      buttons:buttons_map,
-      close: ->
-        $(this).remove()
+    delete_table = (route, cluster_id, delete_index)->
+      $.ajax
+        url: route,
+        type: 'DELETE',
+        data:
+          cluster_id: cluster_id
+          delete_index: delete_index
+          
+    btns = new Array()
+    btns[button_1] = ->
+      delete_table(route,cluster_id,true)
+      $('#modal').modal('hide')
+    btns[button_2] = ->
+      delete_table(route,cluster_id,false)
+      $('#modal').modal('hide')
+    btns["Cancel"] = ->
+      $('#modal').modal('hide')
+    $().popup(title,confirm_msg,btns)
 
   # Listener for disable button (launches dialog box)
   $('.disable_table_button').live 'click', ->
     #array of buttons, so that they are dynamic
-    btns = {}
-    btns[$(this).val()] = -> 
-      form.submit()
-      $(this).dialog 'close'
+    btns = new Array()
+    btns["Disable"] = -> 
+      $.ajax
+        url: route,
+        type: 'PUT',
+        data:
+          cluster_id: cluster_id
+          disable: true
+      $('#modal').modal('hide')
     btns["Cancel"] = -> 
-      $(this).dialog 'close'
-      
-    form = $(this).closest 'form.update'
-    global_delete = form.find('.cluster_id').size() > 0
+      $('#modal').modal('hide')
+    cluster_id = $(this).attr('blur_cluster_id')
+    table = $(this).parents('.blur_table')
+    global = table.length <= 0
+    if global
+      route = Routes.update_all_blur_tables_path()
+    else
+      table_id = table.attr('blur_table_id')
+      route = Routes.blur_table_path(table_id)
+    title = if global then 'Disable All Tables' else 'Disable Table'
+    confirm_msg = if global then 'Are you sure you want to disable all of the tables?' else 'Are you sure you want to disable this table?'
+    $().popup(title,confirm_msg,btns)
     
-    confirm_msg = if global_delete then 'Are you sure you want to disable all of the tables?' else 'Are you sure you want to disable this table?'
-    $("<div class='confirm_enable_disable'>#{confirm_msg}</div>").dialog
-      modal: true,
-      draggable: false,
-      resizable: false,
-      buttons: btns,        
-      close: ->
-        $(this).remove()
-        
   # Listener for forget button (launches dialog box)
   $('.forget_blur_table_button').live 'click', ->
-    #array of buttons, so that they are dynamic
-    btns = {}
-    _self = $(this)
-    btns[_self.val()] = ->
-      form.submit()
-      $(this).dialog 'close'
-      console.log(_self.parents('tr:first'))
-      _self.closest('tr').hide()
+    btns = new Array()
+    btns["Forget"] = -> 
+      $.ajax
+        url: route,
+        type: 'DELETE',
+        data:
+          cluster_id: cluster_id
+      $('#modal').modal('hide')
     btns["Cancel"] = -> 
-      $(this).dialog 'close'
-
-    form = $(this).closest 'form.delete'
-
-    confirm_msg = 'Are you sure you want to forget this table?'
-    $("<div class='confirm_forget'>#{confirm_msg}</div>").dialog
-      modal: true,
-      draggable: false,
-      resizable: false,
-      buttons: btns,        
-      close: ->
-        $(this).remove()
-
-  # Listener for forget all button (launches dialog box)
-  $('.forget_all_tables_button').live 'click', ->
-    #array of buttons, so that they are dynamic
-    btns = {}
-    _self = $(this)
-    btns[_self.val()] = ->
-      form.submit()
-      $(this).dialog 'close'
-      _self.closest('div.deleted_tables').find('tbody tr').hide()
-    btns["Cancel"] = ->
-      $(this).dialog 'close'
-
-    form = $(this).closest 'form.delete'
-
-    confirm_msg = 'Are you sure you want to forget all the table?'
-    $("<div class='confirm_forget'>#{confirm_msg}</div>").dialog
-      modal: true,
-      draggable: false,
-      resizable: false,
-      buttons: btns,
-      close: ->
-        $(this).remove()
+      $('#modal').modal('hide')
+    cluster_id = $(this).attr('blur_cluster_id')
+    table = $(this).parents('.blur_table')
+    global = table.length <= 0
+    if global
+      route = Routes.forget_all_blur_tables_path()
+    else
+      table_id = table.attr('blur_table_id')
+      route = Routes.forget_blur_table_path(table_id)
+    title = if global then 'Forget All Tables' else 'Forget Table'
+    confirm_msg = if global then 'Are you sure you want to forget all tables?' else "Are you sure you want to disable this table?"
+    $().popup(title,confirm_msg,btns)   
         
-  # Listener for enable button (launches dialog box)
+  # Listener for disable button (launches dialog box)
   $('.enable_table_button').live 'click', ->
-    #array of buttons, so that they are dynamic
-    btns = {}
-    btns[$(this).val()] = -> 
-      form.submit()
-      $(this).dialog 'close'
+    btns = new Array()
+    btns["Enable"] = -> 
+      $.ajax
+        url: route,
+        type: 'PUT',
+        data:
+          cluster_id: cluster_id
+          enable: true
+      $('#modal').modal('hide')
     btns["Cancel"] = -> 
-      $(this).dialog 'close'
-
-    form = $(this).closest 'form.update'
-    global_delete = form.find('.cluster_id').size() > 0
-    
-    confirm_msg = if global_delete then 'Are you sure you want to enable all of the tables?' else 'Are you sure you want to enable this table?'
-    $("<div class='confirm_enable_disable'>#{confirm_msg}</div>").dialog
-      modal: true,
-      draggable: false,
-      resizable: false,
-      buttons: btns,        
-      close: ->
-        $(this).remove()
+      $('#modal').modal('hide')
+    cluster_id = $(this).attr('blur_cluster_id')
+    table = $(this).parents('.blur_table')
+    global = table.length <= 0
+    if global
+      route = Routes.update_all_blur_tables_path()
+    else
+      table_id = table.attr('blur_table_id')
+      route = Routes.blur_table_path(table_id)
+    title = if global then 'Enable All Tables' else 'Enable Table'
+    confirm_msg = if global then 'Are you sure you want to enable all of the tables?' else 'Are you sure you want to enable this table?'
+    $().popup(title,confirm_msg,btns)

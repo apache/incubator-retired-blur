@@ -22,6 +22,7 @@
     %title
       = yield(:title)
       | Blur Admin
+    = stylesheet_link_tag 'bootstrap', :cache => 'main'
     = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
     = yield :stylesheets
   %body

@@ -101,6 +101,7 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       modal.bind('hidden',function(){
         hidden(modal)
       });
+    }
     modal.bind('hidden',function(){
       modal.remove();
     });

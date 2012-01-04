@@ -18,7 +18,9 @@ backdrop: Includes a modal-backdrop element. Set backdrop to "static" if you do 
 keyboard: boolean, closes the modal when the escape key is pressed.  defaults to true
 */
 (function( $ ){
-  
+  $.fn.closePopup = function(){
+    $('#modal').modal('hide');
+  }
   $.fn.popup = function(params) {
     var defaultBtn = new Array();
     defaultBtn["Close"] = function(){$('#modal').modal('hide');};

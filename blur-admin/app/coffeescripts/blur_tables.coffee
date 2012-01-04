@@ -94,14 +94,14 @@ $(document).ready ->
     btnClasses = new Array()
     btns[button_1] = ->
       delete_table(route,cluster_id,true)
-      $('#modal').modal('hide')
+      $().closePopup()
     btnClasses[button_1] = 'danger'
     btns[button_2] = ->
       delete_table(route,cluster_id,false)
-      $('#modal').modal('hide')
+      $().closePopup()
     btnClasses[button_2] = 'danger'
     btns["Cancel"] = ->
-      $('#modal').modal('hide')
+      $().closePopup()
     $().popup 
       title: title
       titleClass:'title'
@@ -121,10 +121,10 @@ $(document).ready ->
         data:
           cluster_id: cluster_id
           disable: true
-      $('#modal').modal('hide')
+      $().closePopup()
     btnClasses["Disable"] = "primary"
     btns["Cancel"] = -> 
-      $('#modal').modal('hide')
+      $().closePopup()
     cluster_id = $(this).attr('blur_cluster_id')
     table = $(this).parents('.blur_table')
     global = table.length <= 0
@@ -152,10 +152,10 @@ $(document).ready ->
         type: 'DELETE',
         data:
           cluster_id: cluster_id
-      $('#modal').modal('hide')
+      $().closePopup()
     btnClasses["Forget"] = "danger"
     btns["Cancel"] = -> 
-      $('#modal').modal('hide')
+      $().closePopup()
     cluster_id = $(this).attr('blur_cluster_id')
     table = $(this).parents('.blur_table')
     global = table.length <= 0
@@ -184,10 +184,10 @@ $(document).ready ->
         data:
           cluster_id: cluster_id
           enable: true
-      $('#modal').modal('hide')
+      $().closePopup()
     btnClasses["Enable"] = "primary"
     btns["Cancel"] = -> 
-      $('#modal').modal('hide')
+      $().closePopup()
     cluster_id = $(this).attr('blur_cluster_id')
     table = $(this).parents('.blur_table')
     global = table.length <= 0
@@ -229,10 +229,10 @@ $(document).ready ->
                 data:
                   cluster_id: cluster_id
                   enable: true
-            $('#modal').modal('hide')
+            $().closePopup()
           btnClasses['Enable'] = "primary"
           btns["Cancel"] = ->
-            $('#modal').modal('hide')
+            $().closePopup()
           title = "Enable Tables"
           msg = "Are you sure you want to enable these tables?"
         else if action == 'disable'
@@ -244,10 +244,10 @@ $(document).ready ->
                 data:
                   cluster_id: cluster_id
                   disable: true
-            $('#modal').modal('hide')
+            $().closePopup()
           btnClasses['Disable'] = "primary"
           btns["Cancel"] = ->
-            $('#modal').modal('hide')
+            $().closePopup()
           title = "Disable Tables"
           msg = "Are you sure you want to disable these tables?"
         else if action == 'forget'
@@ -258,10 +258,10 @@ $(document).ready ->
                 type: 'DELETE'
                 data:
                   cluster_id: cluster_id
-            $('#modal').modal('hide')
+            $().closePopup()
           btnClasses['Forget'] = "primary"
           btns["Cancel"] = ->
-            $('#modal').modal('hide')
+            $().closePopup()
           title = "Forget Tables"
           msg = "Are you sure you want to forget these tables?"
         else if action == 'delete'
@@ -275,14 +275,14 @@ $(document).ready ->
                   delete_index: delete_index
           btns["Delete tables and indicies"] = ->
             delete_tables(true)
-            $('#modal').modal('hide')
+            $().closePopup()
           btnClasses["Delete tables and indicies"] = 'danger'
           btns["Delete tables only"] = ->
             delete_tables(false)
-            $('#modal').modal('hide')
+            $().closePopup()
           btnClasses["Delete tables only"] = 'danger'
           btns["Cancel"] = ->
-            $('#modal').modal('hide')
+            $().closePopup()
           title = "Delete Tables"
           msg = 'Do you want to delete all of the underlying table indicies?'
           

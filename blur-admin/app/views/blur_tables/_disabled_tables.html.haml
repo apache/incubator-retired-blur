@@ -1,14 +1,21 @@
 - nil_message = "Not Available"
-
+Bulk Action:
+%select.bulk-action-selector
+  -if !tables.empty? && can?(:update, :blur_tables)
+    %option{:value => "enable"}Enable Tables
+  -if !tables.empty? && can?(:delete, :blur_tables)
+    %option{:value => "delete"}Delete Tables
+%button.bulk-action-button.btn Do Action
 - if !tables.empty? && (can?(:update, :blur_tables) || can?(:delete, :blur_tables))
   - if can? :update, :blur_tables
     %button.enable_table_button.btn.primary{:blur_cluster_id => cluster} Enable All Tables
   - if can? :delete, :blur_tables
     %button.delete_blur_table_button.btn{:blur_cluster_id => cluster} Delete All Tables
 
-%table.zebra-striped
+%table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead
     %tr
+      %th
       %th Name/Location
       %th Row Count
       %th Record Count
@@ -16,9 +23,11 @@
   %tbody
     - if tables.empty?
       %tr
-        %td{:colspan => 4} No disabled tables found.
+        %td{:colspan => 5} No disabled tables found.
     - tables.each do |table|
       %tr.blur_table{:blur_table_id => table.id}
+        %td
+          %input.bulk-action-checkbox{:type => "checkbox"}
         %td
           = table.table_name
           %br

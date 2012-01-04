@@ -13,7 +13,17 @@ $(document).ready ->
   
   reload_table_info = (cluster, state, shouldRepeat) ->
     
-    $('#cluster_' + cluster + ' .table_accordion .' + state + '_tables').load "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", ->
+    $.get "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", (data)->
+        selector = $('#cluster_' + cluster + ' .table_accordion .' + state + '_tables')
+        selected_tables = new Array()
+        tables = selector.children('table').children('tbody').children('tr.blur_table')
+        tables.each (idx,elm) ->
+          if $(elm).children('td').children('input[type="checkbox"]').is(':checked')
+            selected_tables.push $(elm).attr('blur_table_id')
+        selector.html(data)
+        for table_id,index in selected_tables
+          box = selector.children('table').children('tbody').children("tr.blur_table[blur_table_id='#{table_id}']")
+          box.children('td').children('input[type="checkbox"]').prop("checked",true)
         if shouldRepeat
           setTimeout('window.reload_table_info("' + cluster + '","' + state + '",' + shouldRepeat + ')', 5000);
   window.reload_table_info = reload_table_info
@@ -194,3 +204,92 @@ $(document).ready ->
       body:confirm_msg
       btns: btns
       btnClasses:btnClasses
+  #Listener for bulk action button
+  $('.bulk-action-button').live 'click', ->
+    action = $(this).siblings('.bulk-action-selector').val()
+    if action
+      cluster_table = $(this).siblings('.cluster_table')
+      cluster_id = cluster_table.attr('blur_cluster_id')
+      blur_tables = cluster_table.children('tbody').children('.blur_table')
+      table_ids = new Array()
+      blur_tables.each (idx,elm) ->
+        if $(elm).children('td').children('input[type="checkbox"]').is(':checked')
+          table_ids.push $(elm).attr('blur_table_id')
+      if table_ids.length > 0
+        btns = new Array()
+        btnClasses = new Array()
+        title = ''
+        msg = ''
+        if action == 'enable'
+          btns["Enable"] = ->
+            for idx, table_id of table_ids
+              $.ajax
+                url: Routes.blur_table_path(table_id)
+                type: 'PUT'
+                data:
+                  cluster_id: cluster_id
+                  enable: true
+            $('#modal').modal('hide')
+          btnClasses['Enable'] = "primary"
+          btns["Cancel"] = ->
+            $('#modal').modal('hide')
+          title = "Enable Tables"
+          msg = "Are you sure you want to enable these tables?"
+        else if action == 'disable'
+          btns["Disable"] = ->
+            for idx, table_id of table_ids
+              $.ajax
+                url: Routes.blur_table_path(table_id)
+                type: 'PUT'
+                data:
+                  cluster_id: cluster_id
+                  disable: true
+            $('#modal').modal('hide')
+          btnClasses['Disable'] = "primary"
+          btns["Cancel"] = ->
+            $('#modal').modal('hide')
+          title = "Disable Tables"
+          msg = "Are you sure you want to disable these tables?"
+        else if action == 'forget'
+          btns["Forget"] = ->
+            for idx, table_id of table_ids
+              $.ajax
+                url: Routes.forget_blur_table_path(table_id)
+                type: 'DELETE'
+                data:
+                  cluster_id: cluster_id
+            $('#modal').modal('hide')
+          btnClasses['Forget'] = "primary"
+          btns["Cancel"] = ->
+            $('#modal').modal('hide')
+          title = "Forget Tables"
+          msg = "Are you sure you want to forget these tables?"
+        else if action == 'delete'
+          delete_tables = (delete_index) ->
+            for idx, table_id of table_ids
+              $.ajax
+                url: Routes.blur_table_path(table_id)
+                type: 'DELETE'
+                data:
+                  cluster_id: cluster_id
+                  delete_index: delete_index
+          btns["Delete tables and indicies"] = ->
+            delete_tables(true)
+            $('#modal').modal('hide')
+          btnClasses["Delete tables and indicies"] = 'danger'
+          btns["Delete tables only"] = ->
+            delete_tables(false)
+            $('#modal').modal('hide')
+          btnClasses["Delete tables only"] = 'danger'
+          btns["Cancel"] = ->
+            $('#modal').modal('hide')
+          title = "Delete Tables"
+          msg = 'Do you want to delete all of the underlying table indicies?'
+          
+          
+        $().popup
+          title:title
+          titleClass: 'title'
+          body: msg
+          btns: btns
+          btnClasses: btnClasses

@@ -39,20 +39,14 @@ $(document).ready ->
     .live 'ajax:success', (evt, data, status, xhr) ->
       title = $(this).attr('class')
       $(data).hide()
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $().popup 
         title: title.substring(0,1).toUpperCase() + title.substring(1)
-        close: (event, ui) ->
-          $(this).remove()
-        open: ->
-          $(this).children().hide()
-          setup_filter_tree $(this)
-          $(this).children().show()
-    .live 'ajax:error', (evt, xhr, status, error) ->
-      # TODO: improve error handling
+        titleClass: 'title'
+        body:data
+        show:(modal) ->
+          modal.children().hide()
+          setup_filter_tree $(modal).children('.modal-body').children()
+          modal.children().show()
 
   # Ajax request handling for enable/disable/delete
   $('form.update, form.delete')
@@ -87,20 +81,29 @@ $(document).ready ->
           delete_index: delete_index
           
     btns = new Array()
+    btnClasses = new Array()
     btns[button_1] = ->
       delete_table(route,cluster_id,true)
       $('#modal').modal('hide')
+    btnClasses[button_1] = 'danger'
     btns[button_2] = ->
       delete_table(route,cluster_id,false)
       $('#modal').modal('hide')
+    btnClasses[button_2] = 'danger'
     btns["Cancel"] = ->
       $('#modal').modal('hide')
-    $().popup(title,confirm_msg,btns)
+    $().popup 
+      title: title
+      titleClass:'title'
+      body:confirm_msg
+      btns: btns
+      btnClasses: btnClasses
 
   # Listener for disable button (launches dialog box)
   $('.disable_table_button').live 'click', ->
     #array of buttons, so that they are dynamic
     btns = new Array()
+    btnClasses = new Array()
     btns["Disable"] = -> 
       $.ajax
         url: route,
@@ -109,6 +112,7 @@ $(document).ready ->
           cluster_id: cluster_id
           disable: true
       $('#modal').modal('hide')
+    btnClasses["Disable"] = "primary"
     btns["Cancel"] = -> 
       $('#modal').modal('hide')
     cluster_id = $(this).attr('blur_cluster_id')
@@ -121,11 +125,17 @@ $(document).ready ->
       route = Routes.blur_table_path(table_id)
     title = if global then 'Disable All Tables' else 'Disable Table'
     confirm_msg = if global then 'Are you sure you want to disable all of the tables?' else 'Are you sure you want to disable this table?'
-    $().popup(title,confirm_msg,btns)
+    $().popup 
+      title: title
+      titleClass:'title'
+      body:confirm_msg
+      btns: btns
+      btnClasses: btnClasses
     
   # Listener for forget button (launches dialog box)
   $('.forget_blur_table_button').live 'click', ->
     btns = new Array()
+    btnClasses = new Array()
     btns["Forget"] = -> 
       $.ajax
         url: route,
@@ -133,6 +143,7 @@ $(document).ready ->
         data:
           cluster_id: cluster_id
       $('#modal').modal('hide')
+    btnClasses["Forget"] = "danger"
     btns["Cancel"] = -> 
       $('#modal').modal('hide')
     cluster_id = $(this).attr('blur_cluster_id')
@@ -145,11 +156,17 @@ $(document).ready ->
       route = Routes.forget_blur_table_path(table_id)
     title = if global then 'Forget All Tables' else 'Forget Table'
     confirm_msg = if global then 'Are you sure you want to forget all tables?' else "Are you sure you want to disable this table?"
-    $().popup(title,confirm_msg,btns)   
+    $().popup 
+      title: title
+      titleClass:'title'
+      body:confirm_msg
+      btns: btns 
+      btnClasses:btnClasses
         
   # Listener for disable button (launches dialog box)
   $('.enable_table_button').live 'click', ->
     btns = new Array()
+    btnClasses = new Array()
     btns["Enable"] = -> 
       $.ajax
         url: route,
@@ -158,6 +175,7 @@ $(document).ready ->
           cluster_id: cluster_id
           enable: true
       $('#modal').modal('hide')
+    btnClasses["Enable"] = "primary"
     btns["Cancel"] = -> 
       $('#modal').modal('hide')
     cluster_id = $(this).attr('blur_cluster_id')
@@ -169,5 +187,10 @@ $(document).ready ->
       table_id = table.attr('blur_table_id')
       route = Routes.blur_table_path(table_id)
     title = if global then 'Enable All Tables' else 'Enable Table'
-    confirm_msg = if global then 'Are you sure you want to enable all of the tables?' else 'Are you sure you want to enable this table?'
-    $().popup(title,confirm_msg,btns)
+    confirm_msg = if global then 'Are you sure you want to enable all of the tables?' else '<div>Are you sure you want to enable this table?</div>'
+    $().popup 
+      title: title
+      titleClass:'title'
+      body:confirm_msg
+      btns: btns
+      btnClasses:btnClasses

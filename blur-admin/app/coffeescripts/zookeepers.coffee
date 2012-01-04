@@ -163,15 +163,11 @@ $(document).ready ->
   $('a.long_running_queries').live 'click', ->
     url = $(this).attr('href')
     $.get url, (data) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $().popup
+        body:data
         title: "Long Running Queries"
-        close: (event, ui) ->
-          $(this).remove()
-        open: (event, ui) ->
+        titleClass:'title'
+        show: ()->
           $('#no-queries-row').hide()
     false
 

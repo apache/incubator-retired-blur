@@ -1,7 +1,7 @@
 /*
 Params:
 title: A string of text/html to display in the title.  If not html, will be wrapped in a h2 tag
-body: A string of text/html to display in the body.
+body: A string of text/html to display in the body.  Ignored if a selector is provided
 btns: An array where the key is the name of the button, and the value is the click action. Defaults to a single close button
 titleClass: class name to apply to the title
 bodyClass: class name to apply to the body
@@ -67,7 +67,16 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       modal.append("<h2 class='modal-header'>" + title + "</h2>");
     }
     modal.children('.modal-header').addClass(titleClass);
-    modal.append("<div class='modal-body'>" + body + "</div>");
+    modal.append("<div class='modal-body'></div>");
+    var clone = null;
+    if($(this).length == 0){
+      modal.children('.modal-body').html(body);
+    }else{
+      var clone = $(this).first().clone(true);
+      $(this).first().replaceWith('<div id="modal-placeholder-div" style="display:none;"></div>');
+      modal.children('.modal-body').html(clone);
+      
+    }
     modal.children('.modal-body').addClass(bodyClass);
     modal.append("<div class='modal-footer'></div>");
     var footer = modal.children('.modal-footer');
@@ -105,6 +114,9 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       });
     }
     modal.bind('hidden',function(){
+      if(clone != null){
+        $('#modal-placeholder-div').replaceWith(clone);
+      }
       modal.remove();
     });
     modal.modal({

@@ -8,9 +8,6 @@ $(document).ready ->
   $('.jstree-clicked').live 'click', ->
     $('.jstree-clicked').removeAttr('class', 'jstree-clicked')
 
-  # Listener to hide dialog on click
-  $('.ui-widget-overlay').live "click", -> $(".ui-dialog-content").dialog "close"
-  
   #slower tooltip for the saved buttons  
   $('.action-icon').twipsy
     delayIn: 500
@@ -70,14 +67,10 @@ $(document).ready ->
         $.each Zookeeper.instances, () ->
           select_box += "<option value='#{this.id}'>#{this.name}</option>"
         select_box += "</select></div>"
-        $(select_box).dialog
-          autoOpen: true
-          height: 100
-          width: 350
-          modal: true
+        $().popup
+          body:select_box
           title: 'Select a Zookeeper Instance to use:'
-          open: ()->
-            dialog = $(this)
+          shown: ()->
             $('#zookeeper_selector').change ()->
               $.ajax Routes.make_current_zookeeper_path(), 
                 type: 'put',
@@ -85,5 +78,5 @@ $(document).ready ->
                   id: $(this).val()
                 success: () ->
                   window.location = self.href
-              dialog.dialog("close")
+              $().closePopup()
         return false

@@ -166,31 +166,19 @@ $(document).ready ->
   # Ajax request handling for more info link
   $('a.more_info')
     .live 'ajax:success', (evt, data, status, xhr) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $().popup
         title: "Additional Info"
-        close: (event, ui) ->
-          $(this).remove()
-        open: ->
-          $('.ui-widget-overlay').bind 'click', -> 
-            $('#more-info-table').dialog('close')
+        titleClass:'title'
+        body:data
+
   # Ajax request handling for more info link
   $('a.times')
     .live 'ajax:success', (evt, data, status, xhr) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $().popup
+        body:data
         title: "Query Time"
-        close: (event, ui) ->
-          $(this).remove()
-        open: ->
-          $('.ui-widget-overlay').bind 'click', -> 
-            $('#more-info-table').dialog('close')
+        titleClass:'title'
+
 
   #when the page loads show the currently selected filters
   update_filter_choices()
@@ -249,37 +237,35 @@ $(document).ready ->
   # Listener for cancel button (launches dialog box)
   $('.cancel_query_button').live 'click', ->
     form = $(this).closest 'form.cancel'
-    $("<div class='confirm_enable_disable'>Are you sure?</div>").dialog
-      modal: true,
-      draggable: false,
-      resizable: false,
+    $().popup
+      body:"Are you sure?"
       title: "Cancel",
+      titleClass:'title'
       buttons:
         "Yes": ->
           form.submit()
-          $(this).dialog 'close'
+          $().closePopup()
         "Cancel": ->
-          $(this).dialog 'close'
-      close: ->
-        $(this).remove()
+          $().closePopup()
 
   # set off change event on refresh period to get auto refresh started
   $('#refresh_period').trigger('change')
   
   $('#filter_link').click ->
-    $('#filter_form').dialog
-      autoOpen: true
-      modal: true
-      draggable: false
-      resizable: false
-      width: 'auto'
+    btns = new Array()
+    btns["Apply"] = ->
+      filter_queries()
+      $().closePopup()
+    btns["Cancel"] = ->
+      $().closePopup()
+    $('#filter_form').popup
       title: "Filters"
-      buttons:
-        "Apply": ->
-          filter_queries()
-          $(this).dialog 'close'
-        "Cancel": ->
-          $(this).dialog 'close'
+      titleClass:'title'
+      btns:btns
+      show: ->
+        $('#filter_form').show()
+      hide: ->
+        $('#filter_form').hide()
           
   $('#users').change ()->
     if $('#users').val() == ''

@@ -9,7 +9,6 @@
       var self = this,
         o = self.options,
         el = self.element;
-      console.log(o.baseUrl);
       el.addClass('osxFinder');
 
       el.children('ul').each(function() {

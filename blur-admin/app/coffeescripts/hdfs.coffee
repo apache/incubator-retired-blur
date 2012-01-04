@@ -59,15 +59,14 @@ $(document).ready ->
   rename = (el) ->
     id = el.attr('hdfs_id')
     from_path = el.attr('hdfs_path')
-    $('<div id="newName"><input></input></div>').dialog
-      modal: true
-      draggable: true
-      resizable: false
-      width: 'auto'
+    $('<div id="newName"><input></input></div>').popup
       title: 'New Name'
-      open: ()->
+      titleClass: 'title'
+      shown: ()->
         $('#newName input').focus()
-      buttons:
+      btnClasses:
+        "Create": "primary"
+      btns:
         "Create": ()->
           newName = $('#newName input').val()
           newFullPath = "#{from_path.substring(0, from_path.lastIndexOf('/')+1)}#{newName}"
@@ -88,11 +87,9 @@ $(document).ready ->
                 nextWin.load(display_href)
               else
                 el.click()
-          $(this).dialog("close")
+          $().closePopup()
         "Cancel": () ->
-          $(this).dialog("close")
-      close: (event, ui) ->
-          $(this).remove()
+          $().closePopup()
     
   delete_file = (file) ->
     id = file.attr('hdfs_id');
@@ -103,7 +100,7 @@ $(document).ready ->
   window.uploading = false
   finishUploading = (path)->
     $("li[hdfs_path='" + path + "']").click();
-    $('#upload-file').dialog('close').remove();
+    $().closePopup()
     window.uploading = false
   window.finishUploading = finishUploading
   uploadFailed = (error)->
@@ -114,20 +111,15 @@ $(document).ready ->
     id = el.attr('hdfs_id');
     path = el.attr('hdfs_path');
     $.get Routes.hdfs_upload_form_path(), (data)->
-      $(data).dialog
-        modal: true
-        draggable: true
-        resizeable: false
-        width: 'auto'
+      $().popup
+        body:data
         title: 'Upload File'
-        open: ()->
+        titleClass: 'title'
+        show: ()->
           $('#fpath-input').val(path)
           $('#hdfs-id-input').val(id)
-          $('#upload-button').button()
-        beforeClose: ()->
+        hide: ()->
           !window.uploading
-        close: ()->
-          $(this).remove();
   $('#upload-form').live 'submit', ()->
     window.uploading = true
     $('#upload-file #status').html '<h2>Uploading...</h2>'
@@ -135,15 +127,14 @@ $(document).ready ->
   make_dir = (el) ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path');
-    $('<div id="newFolder"><input></input></div>').dialog
-      modal: true
-      draggable: true
-      resizable: false
-      width: 'auto'
+    $('<div id="newFolder"><input></input></div>').popup
       title: 'New Folder'
-      open: ()->
+      titleClass: 'title'
+      shown: ()->
         $('#newFolder input').focus()
-      buttons:
+      btnClasses:
+        "Create": "Primary"
+      btns:
         "Create": ()->
           $.ajax Routes.hdfs_mkdir_path(id),
             type: 'post',
@@ -157,44 +148,31 @@ $(document).ready ->
                 nextWin.load(display_href)
               else
                 el.click()
-          $(this).dialog("close")
+          $().closePopup()
         "Cancel": () ->
-          $(this).dialog("close")
-      close: (event, ui) ->
-          $(this).remove()
+          $().closePopup()
 
   show_hdfs_props = (el) ->
     id = el.attr('hdfs_id')
     title = "HDFS Information (#{el.attr('hdfs_name')})"
     $.get Routes.hdfs_info_path(id), (data) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $(data).popup
         title: title
-        close: (event, ui) ->
-          $(this).remove()
+        titleClass: 'title'
 
   show_dir_props = (el) ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path')
     title = "Properties for #{path}"
     $.get Routes.hdfs_folder_info_path(id),{'fs_path':path},(data) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $(data).popup
+        titleClass: 'title'
         title: title
-        open: () ->
+        show: () ->
           $.get Routes.hdfs_slow_folder_info_path(id),{'fs_path':path},(data) ->
             $('#file_count').html(data.file_count)
             $('#folder_count').html(data.folder_count)
             $('#file_size').html(data.file_size)
-          return true
-        close: (event, ui) ->
-          $(this).remove()
 
   perform_action = (action, el) ->
     switch action

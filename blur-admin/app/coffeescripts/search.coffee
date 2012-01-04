@@ -233,18 +233,20 @@ $(document).ready ->
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
     parent = $(this).parents('.search_element')
-    $( "#dialog-confirm" ).dialog
-    			resizable: false,
-    			modal: true,
-    			buttons:
-    				"Delete Query": ->
-    				  $( this ).dialog "close"
-    				  $.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
-                type: 'DELETE',
-                success: (data) ->
-                  $('#saved .body').html(data)
-    				Cancel: ->
-    					$( this ).dialog "close"
+    buttons = 
+    	"Delete Query": ->
+    		$().closePopup();
+    		$.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
+          type: 'DELETE',
+          success: (data) ->
+            $('#saved .body').html(data)
+    	"Cancel": ->
+    		$().closePopup();
+    $().popup
+      btns:buttons
+      title:"Delete this saved query?"
+      titleClass:'title'
+      body: "This will permanently delete the selected saved query. Do you wish to continue?"
 
   #ajax listener for the save action
   $('#save_button').live 'click', (evt) ->
@@ -273,12 +275,14 @@ $(document).ready ->
         type: 'PUT',
         data: $('#search_form').serialize()
     else
-      $( "#update-conflict" ).dialog
-      			resizable: false,
-      			modal: true,
-      			buttons:
-      				"Ok": ->
-      				  $(this).dialog "close"
+      $().popup
+        title:"Update Error"
+        titleClass:'title'
+        body:"<ul>An error occurred while trying to update the saved search, either:
+        <li>There are multiple saves with the same name.</li>
+        <li>There are no saved searches with that name.</li>
+        To fix this error try changing the name.</ul>"
+        
   #function to adjust size of results container
   resultsWrapperWidth = () ->
     bdWidth = parseInt $('#bd').css('width')

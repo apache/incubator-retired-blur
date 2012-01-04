@@ -65,6 +65,8 @@
                   - @zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
                     %li
                       = cluster.name
+                      -if can? :destroy_cluster, :zookeepers
+                        =link_to 'Remove Cluster', destroy_cluster_path(@zookeeper, cluster.id), :method=>:delete, :confirm => 'Are you sure you want to remove this cluster?'
                       %ul
                         - cluster.shards.sort_by{|s| [s.status, s.node_name]}.each do |shard|
                           %li

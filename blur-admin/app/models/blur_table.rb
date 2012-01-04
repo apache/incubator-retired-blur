@@ -2,8 +2,8 @@ class BlurTable < ActiveRecord::Base
   require 'blur_thrift_client'
 
   belongs_to :cluster
-  has_many :blur_queries
-  has_many :searches
+  has_many :blur_queries, :dependent => :destroy
+  has_many :searches, :dependent => :destroy
   has_one :zookeeper, :through => :cluster
 
   scope :deleted, where("status=?", 0)

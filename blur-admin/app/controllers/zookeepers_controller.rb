@@ -68,6 +68,11 @@ class ZookeepersController < ApplicationController
     Shard.destroy(params[:shard_id])
     redirect_to :zookeeper
   end
+  
+  def destroy_cluster
+    Cluster.destroy(params[:cluster_id])
+    redirect_to :zookeeper
+  end
 
   def destroy_controller
     Controller.destroy(params[:controller_id])

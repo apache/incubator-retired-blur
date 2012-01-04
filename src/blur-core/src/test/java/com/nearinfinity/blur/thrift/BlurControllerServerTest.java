@@ -18,6 +18,11 @@ package com.nearinfinity.blur.thrift;
 
 
 public class BlurControllerServerTest {
+  
+  @Test
+  public void testNothing() {
+    //do nothing
+  }
 
 //  private static final String TABLE = "test";
 //  private static Map<String, Iface> shardServers = new HashMap<String, Iface>();

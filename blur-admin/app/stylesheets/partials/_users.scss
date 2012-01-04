@@ -1,15 +1,15 @@
-#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{
-  @mixin info($color) {
-    @include border;
-    @include border-radius;
-    background-color: $color;
-  }
-  
-  @mixin pref-box{
-    @include info(white);
-    margin:0px 0px 0px 0px;
-  }
-   
+@mixin info($color) {
+  @include border;
+  @include border-radius;
+  background-color: $color;
+}
+
+@mixin pref-box{
+  @include info(white);
+  margin:0px 0px 0px 0px;
+}
+
+#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{   
   @include full;
   @include standard-font;
 

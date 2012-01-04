@@ -1,17 +1,16 @@
+@mixin outer-container {
+  margin-bottom: 2em;
+  
+}
+@mixin inner-container {
+
+  margin-bottom: 2em;
+}
+
 #zookeeper_wrapper {
 
   margin-top: 2em;
   @include full;
-
-  @mixin outer-container {
-    margin-bottom: 2em;
-    
-  }
-
-  @mixin inner-container {
-
-    margin-bottom: 2em;
-  }
 
   #blur, #zookeeper{
     @include outer-container;

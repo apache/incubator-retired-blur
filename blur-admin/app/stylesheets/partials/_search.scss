@@ -1,6 +1,6 @@
+@mixin search-margin { margin: .25em 0em .25em; }
 #search_page_wrapper {
   @include full;
-  @mixin search-margin { margin: .25em 0em .25em; }
   margin-bottom:40px;
 
   // styles for filters

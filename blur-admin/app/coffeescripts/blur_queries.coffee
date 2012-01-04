@@ -241,7 +241,7 @@ $(document).ready ->
       body:"Are you sure?"
       title: "Cancel",
       titleClass:'title'
-      buttons:
+      btns:
         "Yes": ->
           form.submit()
           $().closePopup()

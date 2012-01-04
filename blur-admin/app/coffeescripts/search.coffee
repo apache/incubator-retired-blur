@@ -264,7 +264,7 @@ $(document).ready ->
     search_id = ""
     #if the name in the "name" field matches a search then we can update
     $('.search_element').each (index, value) ->
-      if $(value).children('label').attr('title') == $('#save_name').val()
+      if $(value).children('.search-name').attr('title') == $('#save_name').val()
         if send_request == true
           send_request = false
           return false

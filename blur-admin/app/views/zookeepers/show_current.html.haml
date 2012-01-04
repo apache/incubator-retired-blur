@@ -22,6 +22,10 @@
                 - else
                   .status.label.important
                     Offline
+            -if can? :destroy_zookeeper, :zookeepers
+              %tr
+                %td{:colspan => 2}
+                  =link_to 'Remove Zookeeper', destroy_zookeeper_path(@zookeeper), :method => :delete, :confirm=>'Are you sure you want to remove this zookeeper?'
       #blur
         %h2.title Blur Status
         #controllers

@@ -1,6 +1,6 @@
 class Zookeeper < ActiveRecord::Base
-  has_many :controllers
-  has_many :clusters
+  has_many :controllers, :dependent => :destroy
+  has_many :clusters, :dependent => :destroy
   has_many :shards, :through => :clusters
   has_many :blur_tables, :through => :clusters
 

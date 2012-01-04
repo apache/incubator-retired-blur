@@ -78,6 +78,11 @@ class ZookeepersController < ApplicationController
     Controller.destroy(params[:controller_id])
     redirect_to :zookeeper
   end
+  
+  def destroy_zookeeper
+    Zookeeper.destroy(params[:id])
+    redirect_to :zookeeper
+  end
 
   private
     def reset_zookeeper

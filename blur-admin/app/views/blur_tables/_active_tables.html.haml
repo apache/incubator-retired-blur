@@ -7,11 +7,13 @@
   %thead
     %tr
       %th
-        %input.bulk-action-checkbox.check-all{:type => "checkbox"}
+        %input.bulk-action-checkbox.check-all{:type => "checkbox", :disabled=>'disabled'}
       %th Name
       %th Hosts/Shards
       %th Row Count
       %th Record Count
       %th Info
   %tbody
-    
+    %tr.no-tables
+      %th
+      %th{:colspan=>5} Loading Tables...

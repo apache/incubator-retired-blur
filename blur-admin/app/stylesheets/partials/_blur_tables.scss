@@ -5,48 +5,45 @@
   table {
     margin-bottom: 5px;
   }
-  .global_actions form {
-    float: right;
+  li > a:hover{
+    background-color:white;
   }
-  .disabled_tables form {
-    float: right;
+  .active a, .active a:hover{
+  background-color:#EEE;
   }
-}
-.disable_table_button, .forget_blur_table_button, .enable_table_button, .delete_blur_table_button {
-  float:right;
-  vertical-align:top;
-  display:inline-block;
 }
 .pill-content{
   margin:0 10px;
 }
-.location{
-  //font-weight: bold;
-}
-.table_accordion .accordion-header{
-z-index:10;
-position:relative;
-  margin-bottom:0;
-  margin-top: 0;
-  padding-left:15px;
-  color:#555;
-  //@include border-radius(5px);
+#tables-wrapper{
   border: $twitter-border;
-  &.selected{
-    color:$lightblue-color;
-  }
-  
-  &:hover{
-    color:$orange-color;
-  }
-
+  background-color:#EEE;
+  padding:10px;
 }
 
-.accordion-content{
-  padding:10px 0 10px;
-  border-left: $twitter-border;
-  border-right: $twitter-border;
-  &:nth-child(3n-1){
-    border-bottom: $twitter-border;
-  }
+.cluster-tabs{
+margin:15px;
+margin-bottom: 0;
+border-bottom:0;
+li > a:hover{
+  background-color:#DDD;
 }
+.active a, .active a:hover{
+  background-color:white;
+}
+}
+
+.inner-wrap{
+  border:$twitter-border;
+  background-color:white;
+}
+.bulk-action-selector{
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 5px;
+}
+tr.highlighted-row td{
+  background:#FAD08A !important;
+}
+
+

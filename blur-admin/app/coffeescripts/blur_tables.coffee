@@ -1,42 +1,45 @@
 $(document).ready ->
   $('#blur_tables').tabs()
+  $('.cluster-tabs').tabs()
   
   #converts a number to a string with comma seperation
   number_commas = (number) ->
-    number.toString(10).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+    if number
+      number.toString(10).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+    else
+      'Unknown'
   get_host_shard_info = (blur_table) ->
     server = $.parseJSON(blur_table['server'])
-    keys = Object.keys(server)
-    hosts = keys.length
-    count = 0
-    for key in keys
-      count += Object.keys(server[key]).length
-    info =
-      hosts: hosts
-      shards: count
+    if server
+      keys = Object.keys(server)
+      hosts = keys.length
+      count = 0
+      for key in keys
+        count += Object.keys(server[key]).length
+      info =
+        hosts: hosts
+        shards: count
+    else
+      info =
+        hosts: 'Unknown'
+        shards: 'Unknown'
     
-  #Custom Accordian code
-  $('.table_accordion .accordion-header').live 'click', (e)->
-    content = $(this).next()
-    if content.is(':hidden')
-      $('.accordion-content').not(':hidden').hide("blind",500)
-      content.show("blind",500)
-    $('.table_accordion .accordion-header').removeClass('selected')
-    $(this).addClass('selected')
     
   
   reload_table_info = (cluster, state, shouldRepeat) ->
     
     $.get "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", (data)->
-        selector = $('#cluster_' + cluster + ' .table_accordion .' + state + '_tables')
+        selector = $("#cluster_#{cluster}_#{state}")
         cluster_table = selector.children('.cluster_table')
         cluster_table.find('.no-tables').remove()
-        selector.prev().find('.counter').html(data.length)
+        $("#inner-tabs-cluster_#{cluster} .#{state}_table_tab a .counter").html(data.length)
         if data.length == 0
+          cluster_table.find('.check-all').prop('disabled',true)
           cluster_table.find('.blur_table').remove()
-          num_col = cluster_table.find('th').length
-          cluster_table.children('tbody').append("<tr class='no-tables'><td colspan='#{num_col}'>No Tables Found</td></tr>")
-        else  
+          num_col = cluster_table.find('th').length - 1
+          cluster_table.children('tbody').append("<tr class='no-tables'><td/><td colspan='#{num_col}'>No Tables Found</td></tr>")
+        else
+          cluster_table.find('.check-all').prop('disabled',false)
           for table_hash in data
             blur_table = table_hash['blur_table']
             id = blur_table['id']
@@ -50,25 +53,31 @@ $(document).ready ->
                 existing_table.find('.blur_table_row_count').html(number_commas(blur_table['row_count']))
                 existing_table.find('.blur_table_record_count').html(number_commas(blur_table['record_count']))
               if state == 'active'
-                host_html = "<a class='hosts' href='#{Routes.hosts_blur_table_path(id)}' data-remote='true'>"
-                host_html += "#{host_info['hosts']} / #{host_info['shards']}</a>"
+                if blur_table['server']
+                  host_html = "<a class='hosts' href='#{Routes.hosts_blur_table_path(id)}' data-remote='true'>"
+                  host_html += "#{host_info['hosts']} / #{host_info['shards']}</a>"
+                else
+                  host_html = "Unknown"
                 existing_table.find('.blur_table_hosts_shards').html(host_html)
                 existing_table.find('.blur_table_info').html("<a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a>")
             #table does not exist in table, create new row
             else
               row = $("<tr class='blur_table updated' blur_table_id='#{id}'><td><input class='bulk-action-checkbox' type='checkbox'/></td></tr>")
               row.appendTo(cluster_table.children('tbody'))
-              row.append("<td class='.blur_table_name'>#{blur_table['table_name']}</td>")
+              row.append("<td class='blur_table_name'>#{blur_table['table_name']}</td>")
               if state == 'active'
-                host_html = "<td class='.blur_table_hosts_shards'>"
-                host_html += "<a class='hosts' href='#{Routes.hosts_blur_table_path(id)}' data-remote='true'>"
-                host_html += "#{host_info['hosts']} / #{host_info['shards']}</a>"
+                host_html = "<td class='blur_table_hosts_shards'>"
+                if blur_table['server']
+                  host_html += "<a class='hosts' href='#{Routes.hosts_blur_table_path(id)}' data-remote='true'>"
+                  host_html += "#{host_info['hosts']} / #{host_info['shards']}</a>"
+                else
+                  host_html += "Unknown"
                 row.append(host_html)
               if state != 'deleted'
-                row.append("<td class='.blur_table_row_count'>#{number_commas(blur_table['row_count'])}</td>")
-                row.append("<td class='.blur_table_record_count'>#{number_commas(blur_table['record_count'])}</td>")
+                row.append("<td class='blur_table_row_count'>#{number_commas(blur_table['row_count'])}</td>")
+                row.append("<td class='blur_table_record_count'>#{number_commas(blur_table['record_count'])}</td>")
               if state == 'active'
-                row.append("<td class='.blur_table_info'><a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a></td>")
+                row.append("<td class='blur_table_info'><a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a></td>")
         #remove tables that are not updated
         cluster_table.find('.blur_table').not('.updated').remove()  
         cluster_table.find('.blur_table').removeClass('updated')
@@ -115,8 +124,18 @@ $(document).ready ->
     boxes.each (idx, box) ->
       $(box).prop('checked', checked)
   
+  #listener for bulk action checkboxes
   $('.bulk-action-checkbox').live 'change', ->
-    disable_action($(this).parents('.cluster_table'))
+    cluster_table = $(this).parents('.cluster_table')
+    if !$(this).hasClass 'check-all'
+      cluster_table.find('.check-all').prop('checked',false)
+    table_row = $(this).parents('.blur_table')
+    if table_row.length == 1
+      if $(this).is(':checked')
+        table_row.addClass('highlighted-row')
+      else
+        table_row.removeClass('highlighted-row')
+    disable_action(cluster_table)
     
 
    
@@ -125,6 +144,7 @@ $(document).ready ->
     disabled = if checked.length == 0 then true else false
     actions = table.siblings('.bulk-action-button, .bulk-action-selector')
     actions.prop('disabled',disabled)
+    if disabled then actions.removeClass('primary') else actions.addClass('primary')
 
   #Listener for bulk action button
   $('.bulk-action-button').live 'click', ->

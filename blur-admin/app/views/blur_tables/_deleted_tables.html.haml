@@ -7,6 +7,9 @@
   %thead
     %tr
       %th
-        %input.bulk-action-checkbox.check-all{:type => "checkbox"}
+        %input.bulk-action-checkbox.check-all{:type => "checkbox", :disabled=>'disabled'}
       %th Name
   %tbody
+    %tr.no-tables
+      %th
+      %th{:colspan=>1} Loading Tables...

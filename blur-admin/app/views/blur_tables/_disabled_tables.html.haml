@@ -1,48 +1,16 @@
-- nil_message = "Not Available"
-Bulk Action:
-%select.bulk-action-selector
-  -if !tables.empty? && can?(:update, :blur_tables)
+%select.bulk-action-selector{:disabled => 'disabled'}
+  -if can?(:update, :blur_tables)
     %option{:value => "enable"}Enable Tables
-  -if !tables.empty? && can?(:delete, :blur_tables)
+  -if can?(:delete, :blur_tables)
     %option{:value => "delete"}Delete Tables
-%button.bulk-action-button.btn Do Action
-- if !tables.empty? && (can?(:update, :blur_tables) || can?(:delete, :blur_tables))
-  - if can? :update, :blur_tables
-    %button.enable_table_button.btn.primary{:blur_cluster_id => cluster} Enable All Tables
-  - if can? :delete, :blur_tables
-    %button.delete_blur_table_button.btn{:blur_cluster_id => cluster} Delete All Tables
+%button.bulk-action-button.btn{:disabled => 'disabled'} Do Action
 
 %table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead
     %tr
       %th
-      %th Name/Location
+        %input.bulk-action-checkbox.check-all{:type => "checkbox"}
+      %th Name
       %th Row Count
       %th Record Count
-      %th
   %tbody
-    - if tables.empty?
-      %tr
-        %td{:colspan => 5} No disabled tables found.
-    - tables.each do |table|
-      %tr.blur_table{:blur_table_id => table.id}
-        %td
-          %input.bulk-action-checkbox{:type => "checkbox"}
-        %td
-          = table.table_name
-          %br
-          = table.table_uri
-        %td= table.row_count ? number_with_delimiter(table.row_count, :delimiter => ',') : nil_message
-        %td= table.record_count ? number_with_delimiter(table.record_count, :delimiter => ',') : nil_message
-        %td
-          - if table.status == 2
-            - if can? :update, :blur_tables
-              %button.enable_table_button.btn.primary{:blur_cluster_id => cluster} Enable Table
-            - if can? :delete, :blur_tables
-              %button.delete_blur_table_button.btn{:blur_cluster_id => cluster} Delete Table
-          - elsif table.status == 5
-            Enabling...
-          - elsif table.status == 1
-            Deleting...
-:javascript
-  $("#cluster_#{cluster} .table_accordion h3:eq(1) .counter").html(#{tables.size})

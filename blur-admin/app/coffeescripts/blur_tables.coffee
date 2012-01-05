@@ -1,12 +1,26 @@
 $(document).ready ->
   $('#blur_tables').tabs()
   
+  #converts a number to a string with comma seperation
+  number_commas = (number) ->
+    number.toString(10).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+  get_host_shard_info = (blur_table) ->
+    server = $.parseJSON(blur_table['server'])
+    keys = Object.keys(server)
+    hosts = keys.length
+    count = 0
+    for key in keys
+      count += Object.keys(server[key]).length
+    info =
+      hosts: hosts
+      shards: count
+    
   #Custom Accordian code
   $('.table_accordion .accordion-header').live 'click', (e)->
     content = $(this).next()
     if content.is(':hidden')
-      $('.accordion-content').hide(500)
-      content.show(500)
+      $('.accordion-content').not(':hidden').hide("blind",500)
+      content.show("blind",500)
     $('.table_accordion .accordion-header').removeClass('selected')
     $(this).addClass('selected')
     
@@ -15,15 +29,50 @@ $(document).ready ->
     
     $.get "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", (data)->
         selector = $('#cluster_' + cluster + ' .table_accordion .' + state + '_tables')
-        selected_tables = new Array()
-        tables = selector.children('table').children('tbody').children('tr.blur_table')
-        tables.each (idx,elm) ->
-          if $(elm).children('td').children('input[type="checkbox"]').is(':checked')
-            selected_tables.push $(elm).attr('blur_table_id')
-        selector.html(data)
-        for table_id,index in selected_tables
-          box = selector.children('table').children('tbody').children("tr.blur_table[blur_table_id='#{table_id}']")
-          box.children('td').children('input[type="checkbox"]').prop("checked",true)
+        cluster_table = selector.children('.cluster_table')
+        cluster_table.find('.no-tables').remove()
+        selector.prev().find('.counter').html(data.length)
+        if data.length == 0
+          cluster_table.find('.blur_table').remove()
+          num_col = cluster_table.find('th').length
+          cluster_table.children('tbody').append("<tr class='no-tables'><td colspan='#{num_col}'>No Tables Found</td></tr>")
+        else  
+          for table_hash in data
+            blur_table = table_hash['blur_table']
+            id = blur_table['id']
+            host_info = get_host_shard_info(blur_table)
+            existing_table = cluster_table.find(".blur_table[blur_table_id='#{id}']")
+            #table exists in table, update row
+            if existing_table.length > 0
+              existing_table.addClass('updated')
+              existing_table.find('.blur_table_name').html(blur_table['table_name'])
+              if state != 'deleted'
+                existing_table.find('.blur_table_row_count').html(number_commas(blur_table['row_count']))
+                existing_table.find('.blur_table_record_count').html(number_commas(blur_table['record_count']))
+              if state == 'active'
+                host_html = "<a class='hosts' href='#{Routes.hosts_blur_table_path(id)}' data-remote='true'>"
+                host_html += "#{host_info['hosts']} / #{host_info['shards']}</a>"
+                existing_table.find('.blur_table_hosts_shards').html(host_html)
+                existing_table.find('.blur_table_info').html("<a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a>")
+            #table does not exist in table, create new row
+            else
+              row = $("<tr class='blur_table updated' blur_table_id='#{id}'><td><input class='bulk-action-checkbox' type='checkbox'/></td></tr>")
+              row.appendTo(cluster_table.children('tbody'))
+              row.append("<td class='.blur_table_name'>#{blur_table['table_name']}</td>")
+              if state == 'active'
+                host_html = "<td class='.blur_table_hosts_shards'>"
+                host_html += "<a class='hosts' href='#{Routes.hosts_blur_table_path(id)}' data-remote='true'>"
+                host_html += "#{host_info['hosts']} / #{host_info['shards']}</a>"
+                row.append(host_html)
+              if state != 'deleted'
+                row.append("<td class='.blur_table_row_count'>#{number_commas(blur_table['row_count'])}</td>")
+                row.append("<td class='.blur_table_record_count'>#{number_commas(blur_table['record_count'])}</td>")
+              if state == 'active'
+                row.append("<td class='.blur_table_info'><a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a></td>")
+        #remove tables that are not updated
+        cluster_table.find('.blur_table').not('.updated').remove()  
+        cluster_table.find('.blur_table').removeClass('updated')
+        disable_action(cluster_table)
         if shouldRepeat
           setTimeout('window.reload_table_info("' + cluster + '","' + state + '",' + shouldRepeat + ')', 5000);
   window.reload_table_info = reload_table_info
@@ -57,153 +106,27 @@ $(document).ready ->
           modal.children().hide()
           setup_filter_tree $(modal).children('.modal-body').children()
           modal.children().show()
-
-  # Ajax request handling for enable/disable/delete
-  $('form.update, form.delete')
-    .live 'ajax:beforeSend', (evt, xhr, settings) ->
-      $(this).find('input[type=button]').attr('disabled', 'disabled')
-    .live 'ajax:complete', (evt, xhr, status) ->
-      $(this).find('input[type=button]').removeAttr('disabled')
-      
-
-  # Listener for delete button (launches dialog box)
-  $('.delete_blur_table_button').live 'click', ->
-    table = $(this).parents('.blur_table')
-    global = table.length <= 0
-    cluster_id = $(this).attr('blur_cluster_id')
-    if global
-      route = Routes.delete_all_blur_tables_path()
-    else
-      table_id = table.attr('blur_table_id')
-      route = Routes.blur_table_path(table_id)
+  
+  #Listener for the check all checkbox
+  $('.check-all').live 'change', ->
+    checked = $(this).is(':checked')
+    $(this).prop('checked',checked)
+    boxes = $(this).parents('.cluster_table').children('tbody').find('.bulk-action-checkbox')
+    boxes.each (idx, box) ->
+      $(box).prop('checked', checked)
+  
+  $('.bulk-action-checkbox').live 'change', ->
+    disable_action($(this).parents('.cluster_table'))
     
-    confirm_msg = if global then 'Do you want to delete all of the underlying table indicies?' else 'Do you want to delete the underlying table index?'
-    title = if global then 'Delete All Tables' else 'Delete Table'
-    button_1 = if global then 'Delete tables and indicies' else 'Delete table/index'
-    button_2 = if global then 'Delete tables only' else 'Delete table only'
-    
-    delete_table = (route, cluster_id, delete_index)->
-      $.ajax
-        url: route,
-        type: 'DELETE',
-        data:
-          cluster_id: cluster_id
-          delete_index: delete_index
-          
-    btns = new Array()
-    btnClasses = new Array()
-    btns[button_1] = ->
-      delete_table(route,cluster_id,true)
-      $().closePopup()
-    btnClasses[button_1] = 'danger'
-    btns[button_2] = ->
-      delete_table(route,cluster_id,false)
-      $().closePopup()
-    btnClasses[button_2] = 'danger'
-    btns["Cancel"] = ->
-      $().closePopup()
-    $().popup 
-      title: title
-      titleClass:'title'
-      body:confirm_msg
-      btns: btns
-      btnClasses: btnClasses
 
-  # Listener for disable button (launches dialog box)
-  $('.disable_table_button').live 'click', ->
-    #array of buttons, so that they are dynamic
-    btns = new Array()
-    btnClasses = new Array()
-    btns["Disable"] = -> 
-      $.ajax
-        url: route,
-        type: 'PUT',
-        data:
-          cluster_id: cluster_id
-          disable: true
-      $().closePopup()
-    btnClasses["Disable"] = "primary"
-    btns["Cancel"] = -> 
-      $().closePopup()
-    cluster_id = $(this).attr('blur_cluster_id')
-    table = $(this).parents('.blur_table')
-    global = table.length <= 0
-    if global
-      route = Routes.update_all_blur_tables_path()
-    else
-      table_id = table.attr('blur_table_id')
-      route = Routes.blur_table_path(table_id)
-    title = if global then 'Disable All Tables' else 'Disable Table'
-    confirm_msg = if global then 'Are you sure you want to disable all of the tables?' else 'Are you sure you want to disable this table?'
-    $().popup 
-      title: title
-      titleClass:'title'
-      body:confirm_msg
-      btns: btns
-      btnClasses: btnClasses
-    
-  # Listener for forget button (launches dialog box)
-  $('.forget_blur_table_button').live 'click', ->
-    btns = new Array()
-    btnClasses = new Array()
-    btns["Forget"] = -> 
-      $.ajax
-        url: route,
-        type: 'DELETE',
-        data:
-          cluster_id: cluster_id
-      $().closePopup()
-    btnClasses["Forget"] = "danger"
-    btns["Cancel"] = -> 
-      $().closePopup()
-    cluster_id = $(this).attr('blur_cluster_id')
-    table = $(this).parents('.blur_table')
-    global = table.length <= 0
-    if global
-      route = Routes.forget_all_blur_tables_path()
-    else
-      table_id = table.attr('blur_table_id')
-      route = Routes.forget_blur_table_path(table_id)
-    title = if global then 'Forget All Tables' else 'Forget Table'
-    confirm_msg = if global then 'Are you sure you want to forget all tables?' else "Are you sure you want to disable this table?"
-    $().popup 
-      title: title
-      titleClass:'title'
-      body:confirm_msg
-      btns: btns 
-      btnClasses:btnClasses
-        
-  # Listener for disable button (launches dialog box)
-  $('.enable_table_button').live 'click', ->
-    btns = new Array()
-    btnClasses = new Array()
-    btns["Enable"] = -> 
-      $.ajax
-        url: route,
-        type: 'PUT',
-        data:
-          cluster_id: cluster_id
-          enable: true
-      $().closePopup()
-    btnClasses["Enable"] = "primary"
-    btns["Cancel"] = -> 
-      $().closePopup()
-    cluster_id = $(this).attr('blur_cluster_id')
-    table = $(this).parents('.blur_table')
-    global = table.length <= 0
-    if global
-      route = Routes.update_all_blur_tables_path()
-    else
-      table_id = table.attr('blur_table_id')
-      route = Routes.blur_table_path(table_id)
-    title = if global then 'Enable All Tables' else 'Enable Table'
-    confirm_msg = if global then 'Are you sure you want to enable all of the tables?' else '<div>Are you sure you want to enable this table?</div>'
-    $().popup 
-      title: title
-      titleClass:'title'
-      body:confirm_msg
-      btns: btns
-      btnClasses:btnClasses
+   
+  disable_action = (table) ->
+    checked = table.find('.bulk-action-checkbox:checked')
+    console.log checked
+    disabled = if checked.length == 0 then true else false
+    actions = table.siblings('.bulk-action-button, .bulk-action-selector')
+    actions.prop('disabled',disabled)
+
   #Listener for bulk action button
   $('.bulk-action-button').live 'click', ->
     action = $(this).siblings('.bulk-action-selector').val()

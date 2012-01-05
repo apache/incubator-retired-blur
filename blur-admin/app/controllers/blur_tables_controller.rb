@@ -14,7 +14,7 @@ class BlurTablesController < ApplicationController
     where_clause = ["status in (#{Array.new(selectors.size, '?').join(', ')}) and cluster_id = ?", selectors, params[:cluster_id]].flatten
     
     tables = @current_zookeeper.blur_tables.where(where_clause).order('table_name ASC').includes('cluster')
-    render :partial => "#{params[:status]}_tables", :locals => {:tables => tables, :cluster => params[:cluster_id]}
+    render :json => tables
   end
 
   def update

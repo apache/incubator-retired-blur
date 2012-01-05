@@ -1,32 +1,12 @@
-- nil_message = "Not Available"
-Bulk Action:
-%select.bulk-action-selector
-  -if !tables.empty? && can?(:update, :blur_tables)
+%select.bulk-action-selector{:disabled => 'disabled'}
+  -if can?(:update, :blur_tables)
     %option{:value => "forget"}Forget Tables
-%button.bulk-action-button.btn Do Action
-- if !tables.empty? && can?(:update, :blur_tables)
-  %button.forget_blur_table_button.btn.primary{:blur_cluster_id => cluster} Forget All Tables
+%button.bulk-action-button.btn{:disabled => 'disabled'} Do Action
 
 %table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead
     %tr
       %th
-      %th Name/Location
-      %th
+        %input.bulk-action-checkbox.check-all{:type => "checkbox"}
+      %th Name
   %tbody
-    - if tables.empty?
-      %tr
-        %td{:colspan => 3} No deleted tables found.
-    - tables.each do |table|
-      %tr.blur_table{:blur_table_id => table.id}
-        %td
-          %input.bulk-action-checkbox{:type => "checkbox"}
-        %td
-          = table.table_name
-          %br
-          = table.table_uri
-        %td
-          - if can? :delete, :blur_tables
-            %button.forget_blur_table_button.btn.primary{:blur_cluster_id => cluster} Forget Table
-:javascript
-  $("#cluster_#{cluster} .table_accordion h3:eq(2) .counter").html(#{tables.size})

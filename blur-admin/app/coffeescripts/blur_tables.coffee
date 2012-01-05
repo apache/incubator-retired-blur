@@ -34,7 +34,10 @@ $(document).ready ->
         cluster_table.find('.no-tables').remove()
         $("#inner-tabs-cluster_#{cluster} .#{state}_table_tab a .counter").html(data.length)
         if data.length == 0
-          cluster_table.find('.check-all').prop('disabled',true)
+          cluster_table.find('.check-all').prop('disabled',true).prop('checked',false)
+          cluster_table.siblings('.bulk-action-button').addClass('suppress-button').each (idx,elm) ->
+            $(elm).prop('disabled',true)
+          
           cluster_table.find('.blur_table').remove()
           num_col = cluster_table.find('th').length - 1
           cluster_table.children('tbody').append("<tr class='no-tables'><td/><td colspan='#{num_col}'>No Tables Found</td></tr>")
@@ -79,7 +82,7 @@ $(document).ready ->
               if state == 'active'
                 row.append("<td class='blur_table_info'><a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a></td>")
         #remove tables that are not updated
-        cluster_table.find('.blur_table').not('.updated').remove()  
+        cluster_table.find('.blur_table').not('.updated').remove()
         cluster_table.find('.blur_table').removeClass('updated')
         disable_action(cluster_table)
         if shouldRepeat
@@ -88,9 +91,9 @@ $(document).ready ->
   
   $('.cluster').each ->
     id = $(this).data('cluster_id')
-    reload_table_info id, 'active',true
-    reload_table_info id, 'disabled',true
-    reload_table_info id, 'deleted',true
+    reload_table_info id, 'active', true
+    reload_table_info id, 'disabled', true
+    reload_table_info id, 'deleted', true
 
   # Function to initialize a filter tree on the passed in element
   setup_filter_tree = (selector) ->
@@ -123,6 +126,7 @@ $(document).ready ->
     boxes = $(this).parents('.cluster_table').children('tbody').find('.bulk-action-checkbox')
     boxes.each (idx, box) ->
       $(box).prop('checked', checked)
+      row_highlight(checked, $(this).parents('.blur_table'))
   
   #listener for bulk action checkboxes
   $('.bulk-action-checkbox').live 'change', ->
@@ -131,24 +135,39 @@ $(document).ready ->
       cluster_table.find('.check-all').prop('checked',false)
     table_row = $(this).parents('.blur_table')
     if table_row.length == 1
-      if $(this).is(':checked')
-        table_row.addClass('highlighted-row')
-      else
-        table_row.removeClass('highlighted-row')
+      row_highlight($(this).is(':checked'),table_row)
     disable_action(cluster_table)
     
 
-   
+  row_highlight = (should_highlight, table_row) ->
+    if should_highlight
+      table_row.addClass('highlighted-row')
+    else
+      table_row.removeClass('highlighted-row')
+    
   disable_action = (table) ->
     checked = table.find('.bulk-action-checkbox:checked')
     disabled = if checked.length == 0 then true else false
-    actions = table.siblings('.bulk-action-button, .bulk-action-selector')
+    actions = table.siblings('.bulk-action-button')
     actions.prop('disabled',disabled)
-    if disabled then actions.removeClass('primary') else actions.addClass('primary')
+    if disabled then actions.addClass('suppress-button') else actions.removeClass('suppress-button')
 
+  pending_change = (cluster,table,state,action) ->
+    blur_table = $("#cluster_#{cluster}_#{state}} .cluster_table").find(".blur_table[blur_table_id='#{table}']")
+    if state == 'active'
+      colspan = 6
+    else if state == 'disabled'
+      colspan = 4
+    else if state == 'deleted'
+      colspan = 2
+    table_name = blur_table.find('.blur_table_name').html()
+    blur_table.removeClass('highlighted-row').children().remove()
+    blur_table.append("<td colspan='#{colspan}'>#{action} #{table_name}...</td>")
+    
+    
   #Listener for bulk action button
   $('.bulk-action-button').live 'click', ->
-    action = $(this).siblings('.bulk-action-selector').val()
+    action = $(this).attr('blur_bulk_action')
     if action
       cluster_table = $(this).siblings('.cluster_table')
       cluster_id = cluster_table.attr('blur_cluster_id')
@@ -171,7 +190,9 @@ $(document).ready ->
                 data:
                   cluster_id: cluster_id
                   enable: true
+              pending_change(cluster_id, table_id,'disabled','Enabling')
             $().closePopup()
+            
           btnClasses['Enable'] = "primary"
           btns["Cancel"] = ->
             $().closePopup()
@@ -186,6 +207,7 @@ $(document).ready ->
                 data:
                   cluster_id: cluster_id
                   disable: true
+              pending_change(cluster_id, table_id,'active','Disabling')
             $().closePopup()
           btnClasses['Disable'] = "primary"
           btns["Cancel"] = ->
@@ -200,6 +222,7 @@ $(document).ready ->
                 type: 'DELETE'
                 data:
                   cluster_id: cluster_id
+              pending_change(cluster_id, table_id,'deleted','Forgetting')
             $().closePopup()
           btnClasses['Forget'] = "primary"
           btns["Cancel"] = ->
@@ -215,6 +238,7 @@ $(document).ready ->
                 data:
                   cluster_id: cluster_id
                   delete_index: delete_index
+              pending_change(cluster_id, table_id,'disabled','Deleting')
           btns["Delete tables and indicies"] = ->
             delete_tables(true)
             $().closePopup()

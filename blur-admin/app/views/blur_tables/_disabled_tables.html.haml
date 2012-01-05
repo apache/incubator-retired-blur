@@ -1,9 +1,7 @@
-%select.bulk-action-selector{:disabled => 'disabled'}
-  -if can?(:update, :blur_tables)
-    %option{:value => "enable"}Enable Tables
-  -if can?(:delete, :blur_tables)
-    %option{:value => "delete"}Delete Tables
-%button.bulk-action-button.btn{:disabled => 'disabled'} Do Action
+-if can?(:update, :blur_tables)
+  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'enable'} Enable Tables
+-if can?(:delete, :blur_tables)
+  %button.bulk-action-button.btn.danger.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'delete'} Delete Tables
 
 %table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead

@@ -1,7 +1,5 @@
-%select.bulk-action-selector{:disabled => 'disabled'}
-  -if can?(:update, :blur_tables)
-    %option{:value => "forget"}Forget Tables
-%button.bulk-action-button.btn{:disabled => 'disabled'} Do Action
+-if can?(:update, :blur_tables)
+  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'forget'} Forget Tables
 
 %table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead

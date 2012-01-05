@@ -122,7 +122,6 @@ $(document).ready ->
    
   disable_action = (table) ->
     checked = table.find('.bulk-action-checkbox:checked')
-    console.log checked
     disabled = if checked.length == 0 then true else false
     actions = table.siblings('.bulk-action-button, .bulk-action-selector')
     actions.prop('disabled',disabled)

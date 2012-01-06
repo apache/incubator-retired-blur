@@ -36,8 +36,12 @@
           - if flash
             #flash
               - flash.each do |type, message|
-                .flash{:id => type}
-                  = message
+                -if type == :notice
+                  .alert-message.success{:class=>type}= message
+                -elsif type == :error
+                  .alert-message.error{:class=>type}= message
+                -else
+                  .alert-message.info{:class=>type}= message
           - if @current_zookeeper && @zookeepers
             #zookeeper_select
               = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',

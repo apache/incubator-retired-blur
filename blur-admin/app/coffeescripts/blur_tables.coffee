@@ -62,7 +62,7 @@ $(document).ready ->
                 else
                   host_html = "Unknown"
                 existing_table.find('.blur_table_hosts_shards').html(host_html)
-                existing_table.find('.blur_table_info').html("<a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a>")
+                existing_table.find('.blur_table_info').html("<a class='info' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a>")
             #table does not exist in table, create new row
             else
               row = $("<tr class='blur_table updated' blur_table_id='#{id}'><td><input class='bulk-action-checkbox' type='checkbox'/></td></tr>")
@@ -80,7 +80,7 @@ $(document).ready ->
                 row.append("<td class='blur_table_row_count'>#{number_commas(blur_table['row_count'])}</td>")
                 row.append("<td class='blur_table_record_count'>#{number_commas(blur_table['record_count'])}</td>")
               if state == 'active'
-                row.append("<td class='blur_table_info'><a class='schema' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a></td>")
+                row.append("<td class='blur_table_info'><a class='info' href='#{Routes.schema_blur_table_path(id)}' data-remote='true'>view</a></td>")
         #remove tables that are not updated
         cluster_table.find('.blur_table').not('.updated').remove()
         cluster_table.find('.blur_table').removeClass('updated')
@@ -106,7 +106,7 @@ $(document).ready ->
       $(this).jstree('toggle_node')
 
   # Ajax request handling for hosts/schema link
-  $('a.hosts, a.schema')
+  $('a.hosts, a.info')
     .live 'ajax:success', (evt, data, status, xhr) ->
       title = $(this).attr('class')
       $(data).hide()
@@ -116,7 +116,9 @@ $(document).ready ->
         body:data
         show:(modal) ->
           modal.children().hide()
-          setup_filter_tree $(modal).children('.modal-body').children()
+          popup_tree = $(modal).children('.modal-body').find('.'+title)
+          if popup_tree.size() > 0
+            setup_filter_tree popup_tree
           modal.children().show()
   
   #Listener for the check all checkbox
@@ -246,7 +248,7 @@ $(document).ready ->
           btns["Delete tables only"] = ->
             delete_tables(false)
             $().closePopup()
-          btnClasses["Delete tables only"] = 'danger'
+          btnClasses["Delete tables only"] = 'warning'
           btns["Cancel"] = ->
             $().closePopup()
           title = "Delete Tables"

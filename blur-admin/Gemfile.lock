@@ -7,7 +7,6 @@ GEM
   remote: http://rubygems.org/
   specs:
     Saikuro (1.1.0)
-    ZenTest (4.6.2)
     abstract (1.0.0)
     actionmailer (3.0.10)
       actionpack (= 3.0.10)
@@ -41,8 +40,6 @@ GEM
     authlogic (3.1.0)
       activerecord (>= 3.0.7)
       activerecord (>= 3.0.7)
-    autotest (4.4.6)
-      ZenTest (>= 4.4.1)
     barista (1.0.0)
       coffee-script (~> 2.1.1)
     builder (2.1.2)
@@ -239,25 +236,24 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  authlogic
-  autotest
+  authlogic (= 3.1.0)
   barista (= 1.0.0)
   cancan (= 2.0.0.alpha)!
   capybara
   ci_reporter
   compass (= 0.11.1)
-  compass-susy-plugin
+  compass-susy-plugin (= 0.9)
   cover_me
   factory_girl_rails
   ganapati (~> 0.0.5)
-  haml
-  jquery-rails (>= 0.2.6)
+  haml (= 3.1.4)
+  jquery-rails (= 1.0.19)
   launchy
   metric_fu
   mysql2 (= 0.2.11)
   rails (= 3.0.10)
   rails-erd
-  role_model
+  role_model (= 0.7.0)
   rspec-rails
-  thrift_client (>= 0.7)
-  twitter_bootstrap_form_for
+  thrift_client (= 0.7.1)
+  twitter_bootstrap_form_for (= 1.0.5)

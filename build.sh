@@ -66,9 +66,9 @@ fi
 
 echo "Vendor gems"
 cd rails
-RAILS_ENV=production bundle package
+bundle package
 
-find rails -name .DS_Store | xargs rm
+find . -name .DS_Store | xargs rm
 
 echo "Compressing and zipping rails dir"
 cd ..
@@ -113,6 +113,7 @@ rm agent/lib/jets3t*.jar
 rm agent/lib/jetty*.jar
 rm agent/lib/jsp-api*.jar
 rm agent/lib/junit*.jar
+rm agent/lib/mysql-connector-java*.jar
 rm agent/lib/oro*.jar
 rm agent/lib/servlet-api*.jar
 rm agent/lib/xmlenc*.jar

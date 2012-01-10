@@ -137,6 +137,8 @@ public class Agent {
 		verifyLicenseValidity(licenseFileLines, licenseType, jdbc, props);
 		if ("NODE_YEARLY".equals(licenseType)) {
 			monitorNodeCount(licenseFileLines, props, jdbc);
+		} else if ("CLUSTER_YEARLY".equals(licenseType)) {
+			monitorClusterCount(licenseFileLines, jdbc);
 		}
 	}
 	
@@ -171,6 +173,9 @@ public class Agent {
 		} else if ("NODE_YEARLY".equals(licenseType)) {
 			licenseData = StringUtils.join(licenseFileLines.subList(1, 8),"\n");
 			signature = StringUtils.join(licenseFileLines.subList(8, licenseFileLines.size()-1), "\n");
+		} else if ("CLUSTER_YEARLY".equals(licenseType)) {
+			licenseData = StringUtils.join(licenseFileLines.subList(1, 8),"\n");
+			signature = StringUtils.join(licenseFileLines.subList(8, licenseFileLines.size()-1), "\n"); 
 		} else {
 			log.fatal("Invalid license type [" + licenseType + "].  Exiting.");
 			System.exit(1);
@@ -211,7 +216,7 @@ public class Agent {
 		
 		jdbc.update("delete from licenses");
 		try {
-			jdbc.update("insert into licenses (org, issued_date, expires_date, node_overage, grace_period_days_remain) values (?,?,?,?,?)", licenseFileLines.get(1), sdf.parse(licenseFileLines.get(4)), expires, 0, 60);
+			jdbc.update("insert into licenses (org, issued_date, expires_date, node_overage, grace_period_days_remain, cluster_overage) values (?,?,?,?,?,?)", licenseFileLines.get(1), sdf.parse(licenseFileLines.get(4)), expires, 0, 60, 0);
 		} catch (Exception e) {
 			log.fatal("Unable to insert license into DB.  Exiting.");
 			System.exit(1);
@@ -219,6 +224,8 @@ public class Agent {
 		
 		if ("NODE_YEARLY".equals(licenseType)) {
 			updateNodeOverageInfo(jdbc, licenseFileLines, props);
+		} else if ("CLUSTER_YEARLY".equals(licenseType)) {
+			updateClusterOverageInfo(jdbc, licenseFileLines);
 		}
 	}
 	
@@ -236,6 +243,33 @@ public class Agent {
 				}
 			}
 		}).start();
+	}
+	
+	private void monitorClusterCount(final List<String> licenseFileLines, final JdbcTemplate jdbc) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while(true) {
+					try {
+						Thread.sleep(TimeUnit.HOURS.toMillis(1));
+					} catch (InterruptedException e) {
+						break;
+					}
+					updateClusterOverageInfo(jdbc, licenseFileLines);
+				}
+			}
+		}).start();
+	}
+	
+	private void updateClusterOverageInfo(JdbcTemplate jdbc, List<String> licenseFileLines) {
+		int totalClusters = jdbc.queryForInt("select count(1) from clusters");
+		int allowedClusters = Integer.parseInt(licenseFileLines.get(7));
+		
+		if (totalClusters > allowedClusters) {
+			jdbc.update("update licenses set cluster_overage=?", totalClusters - allowedClusters);
+			log.fatal("Too many clusters for license.  Request new license to continue collecting information.  Exiting.");
+			System.exit(1);
+		}
 	}
 	
 	private void updateNodeOverageInfo(JdbcTemplate jdbc, List<String> licenseFileLines, Properties props) {

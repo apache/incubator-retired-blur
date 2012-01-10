@@ -12,12 +12,15 @@ module LicenseHelper
       end
       
       if license.node_overage > 0
-        text << " There are currently #{pluralize(license.node_overage, 'node')} over licensed amount."
+        text << " There is currently #{pluralize(license.node_overage, 'node')} over licensed amount."
         if license.grace_period_days_remain < 0
           text << " Please contact Near Infinity to upgrade the license."
         else
           text << " #{pluralize(license.grace_period_days_remain, 'day')} left until new license is needed."
         end
+      end
+      if license.cluster_overage > 0
+        text << " There is currently #{pluralize(license.cluster_overage, 'cluster')} over licensed amount.  Please contact Near Infinity to upgrade the license."
       end
       text
     else
@@ -26,6 +29,6 @@ module LicenseHelper
   end
   
   def footer_class(license)
-    (license.nil? || (license.expires_date - Date.today).to_i < 30 || license.grace_period_days_remain < 10) && 'expiring_license'
+    (license.nil? || (license.expires_date - Date.today).to_i < 30 || license.grace_period_days_remain < 10) || license.cluster_overage > 0 && 'expiring_license'
   end
 end

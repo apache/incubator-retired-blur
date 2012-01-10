@@ -1,49 +1,70 @@
 - content_for :title, 'Blur Queries'
 
 - content_for :javascript do
+  :javascript
+    var Tools = {};
+    Tools.can_cancel = #{can? :update, :blur_queries}
   = javascript_include_tag 'compiled/blur_queries'
 
 #blur_queries_wrapper
-  #filters_container
-    #table_wrapper
-      = label_tag :blur_table_id, 'Blur Table:'
-      = select_tag :blur_table_id,
-        options_for_select([['All', nil]]) + options_from_collection_for_select(@blur_tables.sort {|a,b|a.table_name.downcase <=> b.table_name.downcase}, "id", "table_name")
-    #refresh_wrapper
-      = hidden_field_tag :time_since_refresh
-      = label_tag :refresh_period, 'Refresh:'
-      = select_tag :refresh_period,
-        options_for_refresh_period(@filters['refresh_period'])
-      #pause_button
-        #pause.icon
-          .pause
-        #refresh.icon
-          .refresh
-    #spinner_wrapper
-      = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading..."
-    #filter_display_wrapper
-      %span
-        %a#filter_link{:href => '#'} Current Filters:
-      %span#filters
-  = render 'query_table', :blur_queries => @blur_queries
-#filter_form
-  .query_filter
-    = label_tag "created_at_time", 'Within past:'
-    = select_tag "created_at_time",
-        options_for_created_at_time(@filters['created_at_time'])
-  .query_filter
-    = label_tag "super_query_on", 'Super Query:'
-    = select_tag "super_query_on",
-        options_for_all_on_off(@filters['super_query_on'])
-  .query_filter
-    = label_tag "state", 'Query State:'
-    = select_tag "state",
-        options_for_select([['All', ''], ['Running', 0], ['Interrupted', 1], ['Completed', 2]], @filters['state'])
-  .query_filter
-    = label_tag "users", "Users:"
-    = select_tag "users", options_for_select([['All Users', ''], ['Only Users', 'only'], ['Exclude Users', 'exclude']])
-  #user_filters.query_filter{:style => 'display:none'}
-    = label_tag "userid", ''
-    = text_field_tag "userid", ''
-    = label_tag "unknown_user", "Add Unknown?"
-    = check_box_tag "unknown_user", "true"
+  -##filters_container
+  -#  #table_wrapper
+  -#    = label_tag :blur_table_id, 'Blur Table:'
+  -#    = select_tag :blur_table_id,
+  -#      options_for_select([['All', nil]]) + options_from_collection_for_select(@blur_tables.sort {|a,b|a.table_name.downcase <=> b.table_name.downcase}, "id", "table_name")
+  -#  #refresh_wrapper
+  -#    = hidden_field_tag :time_since_refresh
+  -#    = label_tag :refresh_period, 'Refresh:'
+  -#    = select_tag :refresh_period,
+  -#      options_for_refresh_period(@filters['refresh_period'])
+  -#    #pause_button
+  -#      #pause.icon
+  -#        .pause
+  -#      #refresh.icon
+  -#        .refresh
+  -#  #spinner_wrapper
+  -#    = image_tag "/images/loadinfo_24.gif", :id => "filter_spinner", :alt => "Loading..."
+  -#  #filter_display_wrapper
+  -#    %span
+  -#      %a#filter_link{:href => '#'} Current Filters:
+  -#    %span#filters
+  %table#queries-table.zebra-striped
+    %thead
+      %tr.header
+        %th User ID
+        - if can? :index, :blur_queries, :query_string
+          %th Query
+        %th Table Name
+        %th Start
+        %th Fetch
+        %th Status
+        %th Actions/Info
+    %tbody
+      %tr#loading_row
+        %td{:colspan => can?(:index, :blur_queries, :query_string) ? 7 : 6}
+          Loading...
+      -#= render blur_queries
+      -#%tr#no-queries-row
+      -#  %td{:colspan => can?(:index, :blur_queries, :query_string) ? 7 : 6}
+      -#    %b No Available Queries
+-##filter_form
+-#  .query_filter
+-#    = label_tag "created_at_time", 'Within past:'
+-#    = select_tag "created_at_time",
+-#        options_for_created_at_time(@filters['created_at_time'])
+-#  .query_filter
+-#    = label_tag "super_query_on", 'Super Query:'
+-#    = select_tag "super_query_on",
+-#        options_for_all_on_off(@filters['super_query_on'])
+-#  .query_filter
+-#    = label_tag "state", 'Query State:'
+-#    = select_tag "state",
+-#        options_for_select([['All', ''], ['Running', 0], ['Interrupted', 1], ['Completed', 2]], @filters['state'])
+-#  .query_filter
+-#    = label_tag "users", "Users:"
+-#    = select_tag "users", options_for_select([['All Users', ''], ['Only Users', 'only'], ['Exclude Users', 'exclude']])
+-#  #user_filters.query_filter{:style => 'display:none'}
+-#    = label_tag "userid", ''
+-#    = text_field_tag "userid", ''
+-#    = label_tag "unknown_user", "Add Unknown?"
+-#    = check_box_tag "unknown_user", "true"

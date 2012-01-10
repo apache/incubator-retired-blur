@@ -17,7 +17,7 @@ class Pounder
         if state == 0 || state == 1
           completed = 20 - rand(20)
         end
-        query = BlurQuery.create!(:query_string => "query_#{count}", :uuid => count, :created_at => Time.now, :updated_at => Time.now, :blur_table => blur_table, :state => state, :total_shards => 20, :complete_shards => completed)
+        query = BlurQuery.create!(:query_string => "query_#{count}", :uuid => count, :created_at => Time.now, :updated_at => Time.now, :blur_table => blur_table, :state => state, :total_shards => 20, :complete_shards => completed, :times => '{}')
         puts "Query #{count} created: #{query.state_str}"
         count = count + 1
         sleep(rand(6))

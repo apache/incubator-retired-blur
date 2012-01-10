@@ -2,7 +2,7 @@ $(document).ready ->
   $('#blur_tables').tabs()
   $('.cluster-tabs').tabs()
   
-  #converts a number to a string with comma seperation
+  #converts a number to a string with comma separation
   number_commas = (number) ->
     if number
       number.toString(10).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
@@ -23,11 +23,7 @@ $(document).ready ->
       info =
         hosts: 'Unknown'
         shards: 'Unknown'
-    
-    
-  
   reload_table_info = (cluster, state, shouldRepeat) ->
-    
     $.get "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", (data)->
         selector = $("#cluster_#{cluster}_#{state}")
         cluster_table = selector.children('.cluster_table')
@@ -139,7 +135,6 @@ $(document).ready ->
     if table_row.length == 1
       row_highlight($(this).is(':checked'),table_row)
     disable_action(cluster_table)
-    
 
   row_highlight = (should_highlight, table_row) ->
     if should_highlight

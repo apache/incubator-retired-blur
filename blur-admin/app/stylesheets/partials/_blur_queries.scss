@@ -4,101 +4,107 @@
   @include full;
   @include standard-font;
   @include clearfix;
-  
-  #table_wrapper, #refresh_wrapper, #spinner_wrapper {
-   display:inline-block;
-   margin-right: 5px;
-   vertical-align:top;
-  }
-  
-  #refresh_wrapper {
-    #pause_button {
-      vertical-align: middle;
-      display: inline-block;
-      margin-bottom: -1px;
-      #pause {
-        display: none;
-      }
-    }
-  }
-  
-  #spinner_wrapper {
-    #filter_spinner {
-      display: none;
-      margin-top: -2px;
-    }
-  }
-  
-  #filter_display_wrapper {
-    float: right;
-    #filter_link {
-      font-weight: bold;
-    }
-  }
-
-  #current{
-    @include full($total-cols);
-    @include omega;
-    #filters { font-weight: normal; }
-  }
-
 
   #queries-table {
-    margin-bottom: 165px;
-    th{
-    text-align:center;
-    }
-    tr{
-      td {
-       &.query_string {
-        width: 80%; 
-       }
-       &.query-actions {
-         white-space: nowrap;
-         form.cancel {
-           @include inline-block;
-         }
-       }
-      }
-    }
-    
-    thead {
-      th {
-       white-space: nowrap; 
-      }
-    }
-
-    // only display the no-queries-row if it is the first (only) row
-    tbody tr#no-queries-row {
-      display: none;
-    }
-    tbody tr:first-child#no-queries-row {
-      display: table-row;
+    #loading_row td, #no_queries td {
+        text-align: center;
     }
   }
+  
+  /*#table_wrapper, #refresh_wrapper, #spinner_wrapper {*/
+   /*display:inline-block;*/
+   /*margin-right: 5px;*/
+   /*vertical-align:top;*/
+  /*}*/
+  /**/
+  /*#refresh_wrapper {*/
+    /*#pause_button {*/
+      /*vertical-align: middle;*/
+      /*display: inline-block;*/
+      /*margin-bottom: -1px;*/
+      /*#pause {*/
+        /*display: none;*/
+      /*}*/
+    /*}*/
+  /*}*/
+  /**/
+  /*#spinner_wrapper {*/
+    /*#filter_spinner {*/
+      /*display: none;*/
+      /*margin-top: -2px;*/
+    /*}*/
+  /*}*/
+  /**/
+  /*#filter_display_wrapper {*/
+    /*float: right;*/
+    /*#filter_link {*/
+      /*font-weight: bold;*/
+    /*}*/
+  /*}*/
 
-  .ui-tooltip { @include standard-font; }
+  /*#current{*/
+    /*@include full($total-cols);*/
+    /*@include omega;*/
+    /*#filters { font-weight: normal; }*/
+  /*}*/
+
+
+  /*#queries-table {*/
+    /*margin-bottom: 165px;*/
+    /*th{*/
+    /*text-align:center;*/
+    /*}*/
+    /*tr{*/
+      /*td {*/
+       /*&.query_string {*/
+        /*width: 80%; */
+       /*}*/
+       /*&.query-actions {*/
+         /*white-space: nowrap;*/
+         /*form.cancel {*/
+           /*@include inline-block;*/
+         /*}*/
+       /*}*/
+      /*}*/
+    /*}*/
+    /**/
+    /*thead {*/
+      /*th {*/
+       /*white-space: nowrap; */
+      /*}*/
+    /*}*/
+
+    /*// only display the no-queries-row if it is the first (only) row*/
+    /*tbody tr#no-queries-row {*/
+      /*display: none;*/
+    /*}*/
+    /*tbody tr:first-child#no-queries-row {*/
+      /*display: table-row;*/
+    /*}*/
+  /*}*/
+
+  /*.ui-tooltip { @include standard-font; }*/
 }
 
-#more-info-table {
-  td { color: #555; }
-  .more-info-label { white-space: nowrap; font-weight: bold;}
-}
+/*#more-info-table {*/
+  /*td { color: #555; }*/
+  /*.more-info-label { white-space: nowrap; font-weight: bold;}*/
+/*}*/
 
-#times-table {
-  td { color: #555; }
-  thead td, .shard { font-weight: bold; }
-  .time { text-align: center;}
+/*#times-table {*/
+  /*td { color: #555; }*/
+  /*thead td, .shard { font-weight: bold; }*/
+  /*.time { text-align: center;}*/
 
-}
+/*}*/
 
-#filter_form {
-  display: none;
-  .query_filter{ 
-    margin-bottom: .75em;
-    label{ 
-      width: 100px;
-      @include inline-block;
-    }
-  }
-}
+/*#filter_form {*/
+  /*display: none;*/
+  /*.query_filter{ */
+    /*margin-bottom: .75em;*/
+    /*label{ */
+      /*width: 100px;*/
+      /*@include inline-block;*/
+    /*}*/
+  /*}*/
+/*}*/

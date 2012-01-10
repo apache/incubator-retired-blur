@@ -10,6 +10,7 @@
 	<artifactId>blur-thrift</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Thrift</name>
+	<version>0.1.rc1</version>
 
 	<dependencies>
 		<dependency>

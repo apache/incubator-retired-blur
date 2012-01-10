@@ -10,6 +10,7 @@
 	<artifactId>blur-util</artifactId>
 	<packaging>jar</packaging>
 	<name>Blur Util</name>
+	<version>0.1.rc1</version>
 
 	<dependencies>
 		<dependency>

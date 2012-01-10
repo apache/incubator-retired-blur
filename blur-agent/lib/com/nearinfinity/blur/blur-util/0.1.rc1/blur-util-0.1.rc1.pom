@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<parent>
+	<!-- parent>
 		<groupId>com.nearinfinity.blur</groupId>
 		<artifactId>blur</artifactId>
 		<version>0.1.rc1</version>
-	</parent>
+	</parent -->
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.nearinfinity.blur</groupId>
 	<artifactId>blur-util</artifactId>
@@ -59,7 +59,7 @@
 		</repository>
 	</repositories>
 
-	<build>
+	<!-- build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -96,5 +96,5 @@
 				</executions>
 			</plugin>
 		</plugins>
-	</build>
+	</build -->
 </project>

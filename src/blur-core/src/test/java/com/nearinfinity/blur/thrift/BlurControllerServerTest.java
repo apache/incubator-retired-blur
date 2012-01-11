@@ -16,6 +16,8 @@
 
 package com.nearinfinity.blur.thrift;
 
+import org.junit.Test;
+
 
 public class BlurControllerServerTest {
   

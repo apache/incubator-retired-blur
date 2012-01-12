@@ -239,7 +239,7 @@ $(document).ready ->
     		$.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
           type: 'DELETE',
           success: (data) ->
-            $('#saved .body').html(data)
+            $('#saved .body .saved').html(data)
     	"Cancel": ->
     		$().closePopup();
     $().popup
@@ -260,15 +260,17 @@ $(document).ready ->
 
   #ajax listener for the update action
   $('#update_button').live 'click', (evt) ->
+    match_found = false
     send_request = false
     search_id = ""
     #if the name in the "name" field matches a search then we can update
     $('.search_element').each (index, value) ->
-      if $(value).children('.search-name').attr('title') == $('#save_name').val()
-        if send_request == true
-          send_request = false
-          return false
+      if $(value).children('.search-name').text() == $('#save_name').val()
+        #if we found another matching item do not send the update request
+        if match_found
+          return send_request = false
         send_request = true
+        match_found = true
         search_id = $(value).attr('id')
     if send_request
       $.ajax Routes.update_search_path(search_id),

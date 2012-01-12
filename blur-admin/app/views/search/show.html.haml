@@ -10,7 +10,17 @@
           .header
             Saved Searches
           .body
-            = render "saved", :searches => @searches, :blur_table => @blur_table
+            .saved
+              = render "saved", :searches => @searches, :blur_table => @blur_table
+            .save_actions
+              .filter#save_name_wrap
+                #save_label= label_tag :save_name, 'Name:'
+                = text_field_tag 'save_name'
+              .filter#buttons
+                %button.btn.primary{:name => "save", :type => "button", :id => 'save_button'}
+                  Save New
+                %button.btn{:name => "update", :type => "button", :id => 'update_button'}
+                  Update
         #standard.tab
           .header
             Search
@@ -40,19 +50,6 @@
             .filter
               Fetch:
               = number_field_tag :result_count, 10, :min => 0
-
-        #store.tab
-          .header
-            #store Save Options
-          .body
-            .filter#save_name_wrap
-              #save_label= label_tag :save_name, 'Name:'
-              = text_field_tag 'save_name'
-            .filter#buttons
-              %button.btn.primary{:name => "save", :type => "button", :id => 'save_button'}
-                Save as New Search
-              %button.btn{:name => "update", :type => "button", :id => 'update_button'}
-                Update Search
 
       #search_send.partial_section
         %img.hidden{:id => "loading-spinner",

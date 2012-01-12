@@ -6,6 +6,19 @@
   #filter_section
     = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
       #filters_wrap
+
+        #standard.tab
+          .header
+            Search
+          .body
+            .filter Query:
+            = text_area_tag :query_string, params[:query_string]
+            .filter Table:
+            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
+            .filter
+              Column Families:
+            #filter_columns.hidden
+              = render 'filters', :columns => @columns
         #saved.tab
           .header
             Saved Searches
@@ -21,19 +34,6 @@
                   Save New
                 %button.btn{:name => "update", :type => "button", :id => 'update_button'}
                   Update
-        #standard.tab
-          .header
-            Search
-          .body
-            .filter Query:
-            = text_area_tag :query_string, params[:query_string]
-            .filter Table:
-            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
-            .filter
-              Column Families:
-            #filter_columns.hidden
-              = render 'filters', :columns => @columns
-
         #advanced.tab
           .header
             Advanced Options

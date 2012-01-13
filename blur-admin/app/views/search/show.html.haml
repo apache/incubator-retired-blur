@@ -6,38 +6,20 @@
   #filter_section
     = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
       #filters_wrap
+        #standard
+          = text_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
 
-        #standard.tab
+        = submit_tag "Search", :id => "search_submit", :class => "btn primary"
+        #advanced
           .header
-            Search
+            .btn Advanced
           .body
-            .filter Query:
-            = text_area_tag :query_string, params[:query_string]
             .filter Table:
             = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
             .filter
               Column Families:
             #filter_columns.hidden
               = render 'filters', :columns => @columns
-        #saved.tab
-          .header
-            Saved Searches
-          .body
-            .saved
-              = render "saved", :searches => @searches, :blur_table => @blur_table
-            .save_actions
-              .filter#save_name_wrap
-                #save_label= label_tag :save_name, 'Name:'
-                = text_field_tag 'save_name'
-              .filter#buttons
-                %button.btn.primary{:name => "save", :type => "button", :id => 'save_button'}
-                  Save New
-                %button.btn{:name => "update", :type => "button", :id => 'update_button'}
-                  Update
-        #advanced.tab
-          .header
-            Advanced Options
-          .body
             .filter
               Super Query:
               = check_box_tag :super_query, true, true
@@ -50,14 +32,23 @@
             .filter
               Fetch:
               = number_field_tag :result_count, 10, :min => 0
-
-      #search_send.partial_section
         %img.hidden{:id => "loading-spinner",
-             :src => image_path("/images/loadinfo_24.gif"),
+             :src => image_path("/images/loader.gif"),
              :alt => "Loading..."}
-        = submit_tag "Search", :id => "search_submit", :class => "btn primary"
-  #bar_section
-    #arrow.ui-icon.ui-icon-triangle-1-w
-
-  #results_wrapper.open_filters
+        #saved
+          .header.btn
+            Saved
+          .body
+            .saved
+              = render "saved", :searches => @searches, :blur_table => @blur_table
+            .save_actions
+              .filter#save_name_wrap
+                #save_label= label_tag :save_name, 'Name:'
+                = text_field_tag 'save_name'
+              .filter#buttons
+                %button.btn.primary{:name => "save", :type => "button", :id => 'save_button'}
+                  Save New
+                %button.btn{:name => "update", :type => "button", :id => 'update_button'}
+                  Update
+  #results_wrapper
     #results_container

@@ -48,25 +48,11 @@ $(document).ready ->
       if $('#search_submit').attr 'disabled'
         error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
         $('#results_container').html(error_content)
-        resultsWrapperWidth()
+        $('#results_wrapper').show()
       else
         $('#search_form').submit()
     else
       toggle_submit()
-
-  # listener that Hides/Shows filter section
-  $('#bar_section').live 'click', ->
-    if !$('#filter_section').is ':hidden'
-      $('#filter_section').hide 'fast'
-      $('#arrow').addClass('ui-icon-triangle-1-e').removeClass('ui-icon-triangle-1-w')
-      $('#results_wrapper').removeClass('open_filters').addClass('collapsed_filters')
-      $('#bar_section').addClass('leftbar')
-    else
-      $('#filter_section').show 'fast'
-      $('#arrow').addClass('ui-icon-triangle-1-w').removeClass('ui-icon-triangle-1-e')
-      $('#results_wrapper').addClass('open_filters').removeClass('collapsed_filters')
-      $('#bar_section').removeClass('leftbar')
-    resultsWrapperWidth()
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
@@ -140,13 +126,13 @@ $(document).ready ->
   fetch_error = (error) ->
     message = "<div>An error has occured: #{error}</div>"
     $('#results_container').html message
-    resultsWrapperWidth()
+    $('#results_wrapper').show()
 
   no_results = ->
     #hides number of results option if there are no results
     message = '<div>No results for your search.</div>'
     $('#results_container').html message
-    resultsWrapperWidth()
+    $('#results_wrapper').show()
 
   # disable buttons on load
   toggle_submit()
@@ -199,7 +185,7 @@ $(document).ready ->
           #shows number of results option if there are results
           #If data is returned properly process it
           $('#results_container').html data
-          resultsWrapperWidth()
+          $('#results_wrapper').show()
         else
           no_results()
       error: (jqXHR, textStatus, errorThrown) ->
@@ -211,12 +197,12 @@ $(document).ready ->
     .live 'ajax:success', (evt, data, status, xhr) ->
       if data
         $('#results_container').html data
-        resultsWrapperWidth()
+        $('#results_wrapper').show()
       else
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'
         $('#results_container').html(error_content)
-        resultsWrapperWidth()
+        $('#results_wrapper').show()
     .live 'ajax:error', (event, xhr, status, error) ->
       fetch_error error
 
@@ -284,13 +270,6 @@ $(document).ready ->
         <li>There are multiple saves with the same name.</li>
         <li>There are no saved searches with that name.</li>
         To fix this error try changing the name.</ul>"
-        
-  #function to adjust size of results container
-  resultsWrapperWidth = () ->
-    bdWidth = parseInt $('#bd').css('width')
-    leftMargin = parseInt $('#bar_section').css('left')
-    $('#results_wrapper').css('width',bdWidth - leftMargin - 30)
-  $(window).resize(resultsWrapperWidth)
   #listener for the superquery and recordOnly checkboxes
   $('#super_query, #record_only').live 'change',(evt) ->
     sq = $('#super_query');

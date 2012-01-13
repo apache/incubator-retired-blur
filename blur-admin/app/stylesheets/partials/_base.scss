@@ -64,8 +64,14 @@ $twitter-border: 1px solid #ccc;
   @include border;
 }
 
+html{
+  height:100%;
+  overflow:auto;
+}
+
 // Page settings
 body {
+  height: 100%;
   @include container;
   margin:0 auto;
   background-color: $bg-blue-color;

@@ -93,6 +93,7 @@
     display: inline-block;
     table{
       margin-bottom:0;
+      @include border-bottom-radius(5px)
     }
     &:hover {
       cursor: pointer;
@@ -105,12 +106,13 @@
     margin:0;
     display:table-cell;
     text-align: left;
+    @include border-bottom-radius(0px)
   }
   .warning { height: 18px; text-align: center; }
   .status{
   width:160px;
   }
-  #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
+  #zookeepers { @include columns(30,$total-cols); height: 100%;}
 
 
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }

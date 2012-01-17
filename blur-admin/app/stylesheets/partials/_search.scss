@@ -1,8 +1,26 @@
+@mixin search-tab {
+  width: 10%;
+  .header{
+    text-align: center;
+    cursor: pointer;
+  }
+}
+
+@mixin tab-body {
+  width: 200px;
+  top: 36px;
+  right: 0px;
+  background-color: #ddd;
+  position: absolute;
+  @include border-bottom-radius(5px);
+  border: solid 1px #bbb;
+  border-top: none;
+}
 #search_page_wrapper {
   @include full;
   
   .hidden{
-    display:none;
+    display:none !important;
   }
 
   // styles for filters
@@ -13,7 +31,7 @@
     position: fixed;
     top: 90px;
     left:0;
-    padding: 10px;
+    padding: 10px 0px 10px 10px;
     box-sizing: border-box;
     @include linear-gradient(color-stops(white, #ccc));
     .partial-section, .body { padding: 0.5em; }
@@ -37,34 +55,62 @@
     }
     
     #standard{
-      width: 70%;
-      #query_string{
-        width: 100%;
+      position: relative;
+      width: 79%;
+      .search_field{
+        display: inline-block;
+        width: 89%;
+        #query_string{
+          width: 100%;
+          @include border-right-radius(0px);
+        }
+      }
+      .btn{
+        width: 10%;
+        @include border-left-radius(0px);
+        &[disabled]{
+          opacity: 1;
+          background-color: #4D90FE;
+        }
+      }
+      img{
+        position: absolute;
+        padding: 6px;
       }
     }
     #advanced{
+      @include search-tab;
+      border-right: 1px solid #ccc;
       position: relative;
       .body{
-        top: 48px;
-        background-color: #ccc;
-        position: absolute;
-        @include border-bottom-radius(5px);
+        @include tab-body;
+        #blur_table{
+          width: 100%;
+        }
       }
       img{
         vertical-align: middle;
       }
     }
     #loading-spinner { vertical-align: middle; }
-    #search_submit { margin-left: 15px; }
+  }
+  
+  #saved{
+    position: relative;
+    @include search-tab;
+    border-right: 1px solid #ccc;
+    .body{
+      @include tab-body;
+    }
   }
 
   #results_wrapper{
     margin-top:55px;
     margin-bottom:15px;
-    width: 100%;
+    max-width: 100%;
     overflow: auto;
     border: 1px solid #999;
-    display: none;
+    display: inline-block;
     #results_container{
       position: relative;
 
@@ -78,8 +124,8 @@
 
   // styles for results table
   table {
+    border-top: solid 1px #ccc;
     margin-bottom:0px;
-    border-top: 1px solid #999;
     table-layout: strict;
     empty-cells: show;
     thead {

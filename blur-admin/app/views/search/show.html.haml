@@ -7,13 +7,16 @@
     = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
       #filters_wrap
         #standard
-          = text_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
-
-        = submit_tag "Search", :id => "search_submit", :class => "btn primary"
+          .search_field
+            = text_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
+          = submit_tag "Search", :id => "search_submit", :class => "btn primary"
+          %img.hidden{:id => "loading-spinner",
+              :src => image_path("/images/loader.gif"),
+              :alt => "Loading..."}
         #advanced
           .header
-            .btn Advanced
-          .body
+            Advanced
+          .body.tab
             .filter Table:
             = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
             .filter
@@ -32,13 +35,10 @@
             .filter
               Fetch:
               = number_field_tag :result_count, 10, :min => 0
-        %img.hidden{:id => "loading-spinner",
-             :src => image_path("/images/loader.gif"),
-             :alt => "Loading..."}
         #saved
-          .header.btn
+          .header
             Saved
-          .body
+          .body.tab
             .saved
               = render "saved", :searches => @searches, :blur_table => @blur_table
             .save_actions
@@ -50,5 +50,5 @@
                   Save New
                 %button.btn{:name => "update", :type => "button", :id => 'update_button'}
                   Update
-  #results_wrapper
+  #results_wrapper.hidden
     #results_container

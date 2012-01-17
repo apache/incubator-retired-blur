@@ -48,7 +48,7 @@ $(document).ready ->
       if $('#search_submit').attr 'disabled'
         error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
         $('#results_container').html(error_content)
-        $('#results_wrapper').show()
+        $('#results_wrapper').removeClass('hidden')
       else
         $('#search_form').submit()
     else
@@ -119,20 +119,26 @@ $(document).ready ->
 
   #listener that accordion the filter sections
   $('.header').live 'click', ->
-    $(this).siblings('.body').first().slideToggle 'fast'
+    if $('.tab:visible').length > 0
+      if $(this).siblings('.tab:visible').length > 0
+        $(this).siblings('.tab:visible').slideUp 'fast'
+      else
+        $('.tab').slideToggle 'fast'
+    else
+      $(this).siblings('.body').slideDown 'fast'
 
   ########### more Functions #############
 
   fetch_error = (error) ->
     message = "<div>An error has occured: #{error}</div>"
     $('#results_container').html message
-    $('#results_wrapper').show()
+    $('#results_wrapper').removeClass('hidden')
 
   no_results = ->
     #hides number of results option if there are no results
     message = '<div>No results for your search.</div>'
     $('#results_container').html message
-    $('#results_wrapper').show()
+    $('#results_wrapper').removeClass('hidden')
 
   # disable buttons on load
   toggle_submit()
@@ -185,7 +191,7 @@ $(document).ready ->
           #shows number of results option if there are results
           #If data is returned properly process it
           $('#results_container').html data
-          $('#results_wrapper').show()
+          $('#results_wrapper').removeClass('hidden')
         else
           no_results()
       error: (jqXHR, textStatus, errorThrown) ->
@@ -197,12 +203,12 @@ $(document).ready ->
     .live 'ajax:success', (evt, data, status, xhr) ->
       if data
         $('#results_container').html data
-        $('#results_wrapper').show()
+        $('#results_wrapper').removeClass('hidden')
       else
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'
         $('#results_container').html(error_content)
-        $('#results_wrapper').show()
+        $('#results_wrapper').removeClass('hidden')
     .live 'ajax:error', (event, xhr, status, error) ->
       fetch_error error
 
@@ -263,13 +269,15 @@ $(document).ready ->
         type: 'PUT',
         data: $('#search_form').serialize()
     else
+      if match_found
+        contentBody = "There are multiple saves with the same name."
+      else
+        contentBody = "There are no saved searches with that name."
+      message = "An error occurred while trying to update the saved search: " + contentBody + " To fix this error try changing the name."
       $().popup
         title:"Update Error"
         titleClass:'title'
-        body:"<ul>An error occurred while trying to update the saved search, either:
-        <li>There are multiple saves with the same name.</li>
-        <li>There are no saved searches with that name.</li>
-        To fix this error try changing the name.</ul>"
+        body: message
   #listener for the superquery and recordOnly checkboxes
   $('#super_query, #record_only').live 'change',(evt) ->
     sq = $('#super_query');

@@ -130,14 +130,12 @@ $(document).ready ->
   ########### more Functions #############
 
   fetch_error = (error) ->
-    message = "<div>An error has occured: #{error}</div>"
-    $('#results_container').html message
+    $('#results_container').html "<div>An error has occured: #{error}</div>"
     $('#results_wrapper').removeClass('hidden')
 
   no_results = ->
     #hides number of results option if there are no results
-    message = '<div>No results for your search.</div>'
-    $('#results_container').html message
+    $('#results_container').html '<div>No results for your search.</div>'
     $('#results_wrapper').removeClass('hidden')
 
   # disable buttons on load

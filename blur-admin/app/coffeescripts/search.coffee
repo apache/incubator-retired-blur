@@ -126,7 +126,7 @@ $(document).ready ->
         $(this).find('.arrow_down').show()
       else
         $('.tab').slideToggle 'fast'
-        $(this).find('img').toggle()
+        $('.arrow').toggle()
     else
       $(this).siblings('.body').slideDown 'fast'
       $(this).find('.arrow_down').hide()

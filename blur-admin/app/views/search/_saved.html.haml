@@ -6,9 +6,6 @@
         .search-name{:title => val ? search.name : "This is not a valid search for this schema"}
           =search.name
         .search-buttons
-          -if val
-            #run_icon.icon.action-icon{ :title => "Run This Saved Query"}
-              .play
           #edit_icon.icon.action-icon{ :title => "Edit This Saved Query"}
             .edit
           #delete_icon.icon.action-icon{ :title => "Delete This Saved Query"}

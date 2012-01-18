@@ -8,7 +8,7 @@
       #filters_wrap
         #standard
           .search_field
-            = text_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
+            = search_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
           = submit_tag "Search", :id => "search_submit", :class => "btn primary"
           %img.hidden{:id => "loading-spinner",
               :src => image_path("/images/loader.gif"),
@@ -16,32 +16,58 @@
         #advanced
           .header
             Advanced
+            %img{:class => "arrow_down",
+                :src => image_path("/images/arrow_down.png"),
+                :alt => "Expand For More Options"}
+            %img{:class => "arrow_up",
+                :src => image_path("/images/arrow_up.png"),
+                :alt => "Expand For More Options",
+                :style => "display:none"}
           .body.tab
-            .filter Table:
-            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
-            .filter
-              Column Families:
-            #filter_columns.hidden
-              = render 'filters', :columns => @columns
-            .filter
-              Super Query:
-              = check_box_tag :super_query, true, true
-            .filter
-              Record Only:
-              = check_box_tag :record_only, true, false,:disabled => 'disabled'
-            .filter
-              Start:
-              = number_field_tag :offset, 0, :min => 0
-            .filter
-              Fetch:
-              = number_field_tag :result_count, 10, :min => 0
+            .filter.section
+              .filtered-title
+                Table
+              = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
+            .filter.section
+              .filtered-title Column Families
+              #filter_columns.hidden
+                = render 'filters', :columns => @columns
+            .section
+              %table
+                %tr.filter
+                  %td Super Query:
+                  %td 
+                    = check_box_tag :super_query, true, true
+                %tr.filter
+                  %td Record Only:
+                  %td 
+                    = check_box_tag :record_only, true, false,:disabled => 'disabled'
+                %tr.filter
+                  %td Start:
+                  %td 
+                    = number_field_tag :offset, 0, :min => 0
+                %tr.filter
+                  %td Fetch:
+                  %td 
+                    = number_field_tag :result_count, 10, :min => 0
         #saved
           .header
             Saved
+            %img{:class => "arrow_down",
+                :src => image_path("/images/arrow_down.png"),
+                :alt => "Expand For More Options"}
+            %img{:class => "arrow_up",
+                :src => image_path("/images/arrow_up.png"),
+                :alt => "Expand For More Options",
+                :style => "display:none"}
           .body.tab
-            .saved
+            .saved.section
+              .saved-title
+                Saved Searches
               = render "saved", :searches => @searches, :blur_table => @blur_table
-            .save_actions
+            .save_actions.section
+              .saved-title.saved-input
+                Save Current Search
               .filter#save_name_wrap
                 #save_label= label_tag :save_name, 'Name:'
                 = text_field_tag 'save_name'

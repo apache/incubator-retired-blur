@@ -7,7 +7,7 @@
 }
 
 @mixin tab-body {
-  width: 200px;
+  min-width: 200px;
   top: 36px;
   right: 0px;
   background-color: #ddd;
@@ -16,9 +16,18 @@
   border: solid 1px #bbb;
   border-top: none;
 }
+
+@mixin title-style{
+  text-align: center;
+  font-weight: bold;
+  padding-bottom: 10px;
+}
 #search_page_wrapper {
   @include full;
-  
+  .section{
+    border-top: 1px solid #ccc;   
+    padding: 10px 0 10px 0;     
+  }
   .hidden{
     display:none !important;
   }
@@ -35,8 +44,23 @@
     box-sizing: border-box;
     @include linear-gradient(color-stops(white, #ccc));
     .partial-section, .body { padding: 0.5em; }
-    .filter { padding: 0.5em 0 0; color: black;}
-    .filter#buttons { text-align: center; button{font-size:85%;}}
+    .filter {
+      font-weight: bold;
+      td{
+        padding: 3px;
+      }
+      .filtered-title{
+        @include title-style;
+      }
+    }
+
+    .filter#buttons { 
+      text-align: center; 
+      button{font-size:85%;} 
+      display: inline-block;
+      width: 100%;
+      padding-top: 10px;
+    }
 
     // style for the help link
     #search_help { text-align:right; }
@@ -63,6 +87,7 @@
         #query_string{
           width: 100%;
           @include border-right-radius(0px);
+          padding-right: 0px;
         }
       }
       .btn{
@@ -87,6 +112,9 @@
         #blur_table{
           width: 100%;
         }
+        td:first-child{
+          font-weight: bold;
+        }
       }
       img{
         vertical-align: middle;
@@ -96,11 +124,18 @@
   }
   
   #saved{
+    text-align: center;
     position: relative;
     @include search-tab;
     border-right: 1px solid #ccc;
     .body{
       @include tab-body;
+    }
+    .saved-title{
+      @include title-style;
+      &.saved-input{
+        display: inline-block;
+      }
     }
   }
 
@@ -163,6 +198,9 @@
 
   .header{
     padding:5px 0;
+    img{
+      vertical-align: middle;
+    }
   }
 
   // Navigation Tab label div

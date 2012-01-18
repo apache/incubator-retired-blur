@@ -122,10 +122,17 @@ $(document).ready ->
     if $('.tab:visible').length > 0
       if $(this).siblings('.tab:visible').length > 0
         $(this).siblings('.tab:visible').slideUp 'fast'
+        $(this).find('.arrow_up').hide()
+        $(this).find('.arrow_down').show()
       else
         $('.tab').slideToggle 'fast'
+        $(this).find('img').toggle()
     else
       $(this).siblings('.body').slideDown 'fast'
+      $(this).find('.arrow_down').hide()
+      $(this).find('.arrow_up').show()
+      
+  
 
   ########### more Functions #############
 
@@ -214,12 +221,6 @@ $(document).ready ->
   $('#edit_icon').live 'click', ->
     retrieve_search($(this).parents('.search_element').attr('id'))
 
-  #ajax listener for the run action
-  $('#run_icon').live 'click', ->
-    search = $(this).parents('.search_element').attr 'id'
-    retrieve_search search
-    fetch_result search
-
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
     parent = $(this).parents('.search_element')
@@ -255,7 +256,7 @@ $(document).ready ->
     search_id = ""
     #if the name in the "name" field matches a search then we can update
     $('.search_element').each (index, value) ->
-      if $(value).children('.search-name').text() == $('#save_name').val()
+      if $.trim($(value).children('.search-name').text()) == $.trim($('#save_name').val())
         #if we found another matching item do not send the update request
         if match_found
           return send_request = false

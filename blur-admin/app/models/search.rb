@@ -23,7 +23,6 @@ class Search < ActiveRecord::Base
   end
 
   def column_families
-    puts column_object.inspect
     column_object.collect{|value| value.split('_-sep-_')[1] if value.starts_with?('family')}.compact
   end
   
@@ -58,7 +57,6 @@ class Search < ActiveRecord::Base
       tmp_schema[family] << blur_table.schema[family]
       tmp_schema[family].flatten!
     end
-    puts "schema: #{tmp_schema}"
     tmp_schema
   end
   

@@ -44,7 +44,7 @@ $(document).ready ->
     help_win = window.open Routes.help_path(tab),"Help Menu","menubar=0,resizable=0,width=500,height=800"
       
   $('.help-section').live 'click', ->
-    $(this).children('.help-content').toggle('fast')
+    $(this).children('.help-content').slideToggle('fast')
     
   # Fix menus with no zookeeper context
   if typeof Zookeeper != 'undefined' && Zookeeper.instances

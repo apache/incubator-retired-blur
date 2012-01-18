@@ -81,7 +81,7 @@ $nav-height: 40px;
     }
   }
   #bd {
-    height: 80%;
+    @include clearfix;
     position:relative;
     top: $header-height + $nav-height;
     padding-bottom: 46px;

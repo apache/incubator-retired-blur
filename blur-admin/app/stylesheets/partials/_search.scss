@@ -1,87 +1,156 @@
-@mixin search-margin { margin: .25em 0em .25em; }
+@mixin search-tab {
+  width: 10%;
+  .header{
+    text-align: center;
+    cursor: pointer;
+  }
+}
+
+@mixin tab-body {
+  min-width: 200px;
+  top: 36px;
+  right: 0px;
+  background-color: #ddd;
+  position: absolute;
+  @include border-bottom-radius(5px);
+  border: solid 1px #bbb;
+  border-top: none;
+}
+
+@mixin title-style{
+  text-align: center;
+  font-weight: bold;
+  padding-bottom: 10px;
+}
 #search_page_wrapper {
   @include full;
-  margin-bottom:40px;
+  .section{
+    border-top: 1px solid #ccc;   
+    padding: 10px 0 10px 0;     
+  }
+  .hidden{
+    display:none !important;
+  }
 
   // styles for filters
   #filter_section {
-    width: 270px;
-    height: 100%;
-    
+    width: 100%;
+    z-index: 999;
     @include standard-font;
-    padding-top: 1em;
-    padding-left: 10px;
     position: fixed;
-    height:100%;
     top: 90px;
     left:0;
-    padding-left:05px;
-    padding-right: 15px;
-    background-color: #FFF;
-    overflow-y: auto;
-    z-index: 1;
-    #filters_wrap{
-      max-height:450px;
-      overflow:scroll;
-    }
+    padding: 10px 0px 10px 10px;
+    box-sizing: border-box;
+    @include linear-gradient(color-stops(white, #ccc));
     .partial-section, .body { padding: 0.5em; }
-    .filter { padding: 0.5em 0 0; }
-    .filter#buttons { text-align: center; button{font-size:85%;}}
+    .filter {
+      font-weight: bold;
+      td{
+        padding: 3px;
+      }
+      .filtered-title{
+        @include title-style;
+      }
+    }
+
+    .filter#buttons { 
+      text-align: center; 
+      button{font-size:85%;} 
+      display: inline-block;
+      width: 100%;
+      padding-top: 10px;
+    }
 
     // style for the help link
     #search_help { text-align:right; }
-
-    // styles for text boxes & selectors
-    #query_string { resize:vertical; }
-    #query_string, #blur_table, #save_name_wrap { @include columns(5,5.5); }
     #offset, #result_count { max-width: 40px; }
     #save_label { @include columns(1, 5.5); }
     #save_name { @include columns(4, 5.5); @include omega(5.5);}
 
-    // styles for elements below the filter tabs
-    #search_send {
-      margin-top: 1em;
-      #loading-spinner { margin-left: 1em; }
-      #search_submit { float: right; }
+    #filters_wrap{
+      & > div{
+        display:inline-block;
+      }
     }
-  }
-
-  #bar_section {
-    &:hover { background-color: $bar-hover; }
-    width: 1em;
-    height: 100%;
-    position: fixed;
-    background-color: #eee;
-    cursor: pointer;
-    left: 285px;
-    z-index:1;
-    &.leftbar {
-      left: 0;
+    
+    #search_form{
+      margin: 0px;
     }
-    #arrow{
+    
+    #standard{
       position: relative;
-      top: 50%;
-      border:none;
+      width: 79%;
+      .search_field{
+        display: inline-block;
+        width: 89%;
+        #query_string{
+          width: 100%;
+          @include border-right-radius(0px);
+          padding-right: 0px;
+        }
+      }
+      .btn{
+        width: 10%;
+        @include border-left-radius(0px);
+        &[disabled]{
+          opacity: 1;
+          background-color: #4D90FE;
+        }
+      }
+      img{
+        position: absolute;
+        padding: 6px;
+      }
+    }
+    #advanced{
+      @include search-tab;
+      border-right: 1px solid #ccc;
+      position: relative;
+      .body{
+        @include tab-body;
+        #blur_table{
+          width: 100%;
+        }
+        td:first-child{
+          font-weight: bold;
+        }
+      }
+      img{
+        vertical-align: middle;
+      }
+    }
+    #loading-spinner { vertical-align: middle; }
+  }
+  
+  #saved{
+    text-align: center;
+    position: relative;
+    @include search-tab;
+    border-right: 1px solid #ccc;
+    .body{
+      @include tab-body;
+    }
+    .saved-title{
+      @include title-style;
+      &.saved-input{
+        display: inline-block;
+      }
     }
   }
 
   #results_wrapper{
-    width: auto;
-    z-index: -1;
-    margin-right:1em;
-    margin-bottom:100px;
-    &.open_filters {
-      margin-left: 290px;
-    }
+    margin-top:55px;
+    margin-bottom:15px;
+    max-width: 100%;
+    overflow: auto;
+    border: 1px solid #999;
+    display: inline-block;
     #results_container{
-      margin-right: 1em;
-      max-height:500px;
       position: relative;
-      padding-top: 1em;
-      //z-index: -2;
-
 
       #results_section{
+        display: inline-block;
         background-color : white;
         width: auto;
       }
@@ -90,8 +159,8 @@
 
   // styles for results table
   table {
-  margin-bottom:50px;
-    @include border;
+    border-top: solid 1px #ccc;
+    margin-bottom:0px;
     table-layout: strict;
     empty-cells: show;
     thead {
@@ -125,18 +194,13 @@
     &:hover{ color: #06C; }
   }
 
-  //Navigation Tab outer divs
-  .tab { @include border; @include border-radius; }
-  #standard .tab { @include search-margin; }
   #saved .body, #store .body, #advanced .body { display: none; }
 
-  // Navigation Tabs labels
-  .tab .header {
-    cursor:pointer;
-    text-align:center;
-  }
   .header{
     padding:5px 0;
+    img{
+      vertical-align: middle;
+    }
   }
 
   // Navigation Tab label div

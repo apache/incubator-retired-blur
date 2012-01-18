@@ -48,25 +48,11 @@ $(document).ready ->
       if $('#search_submit').attr 'disabled'
         error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
         $('#results_container').html(error_content)
-        resultsWrapperWidth()
+        $('#results_wrapper').removeClass('hidden')
       else
         $('#search_form').submit()
     else
       toggle_submit()
-
-  # listener that Hides/Shows filter section
-  $('#bar_section').live 'click', ->
-    if !$('#filter_section').is ':hidden'
-      $('#filter_section').hide 'fast'
-      $('#arrow').addClass('ui-icon-triangle-1-e').removeClass('ui-icon-triangle-1-w')
-      $('#results_wrapper').removeClass('open_filters').addClass('collapsed_filters')
-      $('#bar_section').addClass('leftbar')
-    else
-      $('#filter_section').show 'fast'
-      $('#arrow').addClass('ui-icon-triangle-1-w').removeClass('ui-icon-triangle-1-e')
-      $('#results_wrapper').addClass('open_filters').removeClass('collapsed_filters')
-      $('#bar_section').removeClass('leftbar')
-    resultsWrapperWidth()
 
   # listener that filters results table when filter checks are changed
   $('.check_filter').live 'click', ->
@@ -133,20 +119,31 @@ $(document).ready ->
 
   #listener that accordion the filter sections
   $('.header').live 'click', ->
-    $(this).siblings('.body').first().slideToggle 'fast'
+    if $('.tab:visible').length > 0
+      if $(this).siblings('.tab:visible').length > 0
+        $(this).siblings('.tab:visible').slideUp 'fast'
+        $(this).find('.arrow_up').hide()
+        $(this).find('.arrow_down').show()
+      else
+        $('.tab').slideToggle 'fast'
+        $(this).find('img').toggle()
+    else
+      $(this).siblings('.body').slideDown 'fast'
+      $(this).find('.arrow_down').hide()
+      $(this).find('.arrow_up').show()
+      
+  
 
   ########### more Functions #############
 
   fetch_error = (error) ->
-    message = "<div>An error has occured: #{error}</div>"
-    $('#results_container').html message
-    resultsWrapperWidth()
+    $('#results_container').html "<div>An error has occured: #{error}</div>"
+    $('#results_wrapper').removeClass('hidden')
 
   no_results = ->
     #hides number of results option if there are no results
-    message = '<div>No results for your search.</div>'
-    $('#results_container').html message
-    resultsWrapperWidth()
+    $('#results_container').html '<div>No results for your search.</div>'
+    $('#results_wrapper').removeClass('hidden')
 
   # disable buttons on load
   toggle_submit()
@@ -199,7 +196,7 @@ $(document).ready ->
           #shows number of results option if there are results
           #If data is returned properly process it
           $('#results_container').html data
-          resultsWrapperWidth()
+          $('#results_wrapper').removeClass('hidden')
         else
           no_results()
       error: (jqXHR, textStatus, errorThrown) ->
@@ -211,24 +208,18 @@ $(document).ready ->
     .live 'ajax:success', (evt, data, status, xhr) ->
       if data
         $('#results_container').html data
-        resultsWrapperWidth()
+        $('#results_wrapper').removeClass('hidden')
       else
         #hides number of results option if there are no results
         error_content = '<div>No results for your search.</div>'
         $('#results_container').html(error_content)
-        resultsWrapperWidth()
+        $('#results_wrapper').removeClass('hidden')
     .live 'ajax:error', (event, xhr, status, error) ->
       fetch_error error
 
   #ajax listener for the edit action
   $('#edit_icon').live 'click', ->
     retrieve_search($(this).parents('.search_element').attr('id'))
-
-  #ajax listener for the run action
-  $('#run_icon').live 'click', ->
-    search = $(this).parents('.search_element').attr 'id'
-    retrieve_search search
-    fetch_result search
 
   #ajax listener for the delete action
   $('#delete_icon').live 'click', ->
@@ -239,7 +230,7 @@ $(document).ready ->
     		$.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
           type: 'DELETE',
           success: (data) ->
-            $('#saved .body').html(data)
+            $('#saved .body .saved').html(data)
     	"Cancel": ->
     		$().closePopup();
     $().popup
@@ -260,35 +251,32 @@ $(document).ready ->
 
   #ajax listener for the update action
   $('#update_button').live 'click', (evt) ->
+    match_found = false
     send_request = false
     search_id = ""
     #if the name in the "name" field matches a search then we can update
     $('.search_element').each (index, value) ->
-      if $(value).children('.search-name').attr('title') == $('#save_name').val()
-        if send_request == true
-          send_request = false
-          return false
+      if $.trim($(value).children('.search-name').text()) == $.trim($('#save_name').val())
+        #if we found another matching item do not send the update request
+        if match_found
+          return send_request = false
         send_request = true
+        match_found = true
         search_id = $(value).attr('id')
     if send_request
       $.ajax Routes.update_search_path(search_id),
         type: 'PUT',
         data: $('#search_form').serialize()
     else
+      if match_found
+        contentBody = "There are multiple saves with the same name."
+      else
+        contentBody = "There are no saved searches with that name."
+      message = "An error occurred while trying to update the saved search: " + contentBody + " To fix this error try changing the name."
       $().popup
         title:"Update Error"
         titleClass:'title'
-        body:"<ul>An error occurred while trying to update the saved search, either:
-        <li>There are multiple saves with the same name.</li>
-        <li>There are no saved searches with that name.</li>
-        To fix this error try changing the name.</ul>"
-        
-  #function to adjust size of results container
-  resultsWrapperWidth = () ->
-    bdWidth = parseInt $('#bd').css('width')
-    leftMargin = parseInt $('#bar_section').css('left')
-    $('#results_wrapper').css('width',bdWidth - leftMargin - 30)
-  $(window).resize(resultsWrapperWidth)
+        body: message
   #listener for the superquery and recordOnly checkboxes
   $('#super_query, #record_only').live 'change',(evt) ->
     sq = $('#super_query');

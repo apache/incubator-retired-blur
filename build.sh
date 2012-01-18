@@ -70,6 +70,62 @@ bundle package
 
 find . -name .DS_Store | xargs rm
 
+rm -f vendor/cache/Saikuro*.gem
+rm -f vendor/cache/ZenTest*.gem
+rm -f vendor/cache/addressable*.gem
+rm -f vendor/cache/arrayfields*.gem
+rm -f vendor/cache/autotest*.gem
+rm -f vendor/cache/barista*.gem
+rm -f vendor/cache/capybara*.gem
+rm -f vendor/cache/childprocess*.gem
+rm -f vendor/cache/chronic*.gem
+rm -f vendor/cache/churn*.gem
+rm -f vendor/cache/ci_reporter*.gem
+rm -f vendor/cache/coffee*.gem
+rm -f vendor/cache/coffee*.gem
+rm -f vendor/cache/colored*.gem
+rm -f vendor/cache/configatron*.gem
+rm -f vendor/cache/cover_me*.gem
+rm -f vendor/cache/diff*.gem
+rm -f vendor/cache/factory_girl*.gem
+rm -f vendor/cache/factory_girl_rails*.gem
+rm -f vendor/cache/fattr*.gem
+rm -f vendor/cache/ffi*.gem
+rm -f vendor/cache/flay*.gem
+rm -f vendor/cache/flog*.gem
+rm -f vendor/cache/git*.gem
+rm -f vendor/cache/hashie*.gem
+rm -f vendor/cache/hirb*.gem
+rm -f vendor/cache/jeweler*.gem
+rm -f vendor/cache/json_pure*.gem
+rm -f vendor/cache/launchy*.gem
+rm -f vendor/cache/main*.gem
+rm -f vendor/cache/map*.gem
+rm -f vendor/cache/metric_fu*.gem
+rm -f vendor/cache/multi_json*.gem
+rm -f vendor/cache/nokogiri*.gem
+rm -f vendor/cache/progressbar*.gem
+rm -f vendor/cache/rack*.gem
+rm -f vendor/cache/rails*.gem
+rm -f vendor/cache/rails_best_practices*.gem
+rm -f vendor/cache/rcov*.gem
+rm -f vendor/cache/reek*.gem
+rm -f vendor/cache/roodi*.gem
+rm -f vendor/cache/rspec*.gem
+rm -f vendor/cache/rspec*.gem
+rm -f vendor/cache/rspec*.gem
+rm -f vendor/cache/rspec*.gem
+rm -f vendor/cache/rspec*.gem
+rm -f vendor/cache/ruby*.gem
+rm -f vendor/cache/ruby2ruby*.gem
+rm -f vendor/cache/ruby_parser*.gem
+rm -f vendor/cache/rubyzip*.gem
+rm -f vendor/cache/selenium*.gem
+rm -f vendor/cache/sexp_processor*.gem
+rm -f vendor/cache/syntax*.gem
+rm -f vendor/cache/xpath*.gem
+rm -f vendor/cache/yamler*.gem
+
 echo "Compressing and zipping rails dir"
 cd ..
 mv rails "rails-$version"

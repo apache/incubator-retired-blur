@@ -77,8 +77,16 @@ class BlurQueriesController < ApplicationController
     #  @blur_queries = @blur_queries.where([where_clause, users_without_unknown].flatten)
     #end
 
-    queries = BlurQuery.where_zookeeper(@current_zookeeper.id).includes(:blur_table)
-    respond_with queries.collect{ |query| query.summary current_user }
+    queries = BlurQuery.where_zookeeper(@current_zookeeper.id).includes(:blur_table).all
+    query_summaries = queries.collect do |query| 
+      summary = query.summary(current_user)
+      summary[:action] = ''
+      summary
+    end
+    
+    render :json => {:aaData => query_summaries}.to_json
+      # summary[:actions] = "<"
+    #end
     #render :json => BlurQuery.where_zookeeper(@current_zookeeper.id).includes(:blur_table).to_json(:methods => [:summary_state])
   end
 

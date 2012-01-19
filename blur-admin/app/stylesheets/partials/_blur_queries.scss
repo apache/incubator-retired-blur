@@ -4,86 +4,32 @@
   @include full;
   @include standard-font;
   @include clearfix;
-
-  #queries-table {
-    #loading_row td, #no_queries td {
-        text-align: center;
+  .row .span4 {
+    padding-top: 8px;
+    a {
+      margin-right: 5px;
+      &.selected {
+        color: black;
+        &:hover {
+         text-decoration: none; 
+        }
+      }
+      &.unselected {
+        text-decoration: underline;
+      }
     }
   }
-  
-  /*#table_wrapper, #refresh_wrapper, #spinner_wrapper {*/
-   /*display:inline-block;*/
-   /*margin-right: 5px;*/
-   /*vertical-align:top;*/
-  /*}*/
-  /**/
-  /*#refresh_wrapper {*/
-    /*#pause_button {*/
-      /*vertical-align: middle;*/
-      /*display: inline-block;*/
-      /*margin-bottom: -1px;*/
-      /*#pause {*/
-        /*display: none;*/
-      /*}*/
-    /*}*/
-  /*}*/
-  /**/
-  /*#spinner_wrapper {*/
-    /*#filter_spinner {*/
-      /*display: none;*/
-      /*margin-top: -2px;*/
-    /*}*/
-  /*}*/
-  /**/
-  /*#filter_display_wrapper {*/
-    /*float: right;*/
-    /*#filter_link {*/
-      /*font-weight: bold;*/
-    /*}*/
-  /*}*/
-
-  /*#current{*/
-    /*@include full($total-cols);*/
-    /*@include omega;*/
-    /*#filters { font-weight: normal; }*/
-  /*}*/
-
-
-  /*#queries-table {*/
-    /*margin-bottom: 165px;*/
-    /*th{*/
-    /*text-align:center;*/
-    /*}*/
-    /*tr{*/
-      /*td {*/
-       /*&.query_string {*/
-        /*width: 80%; */
-       /*}*/
-       /*&.query-actions {*/
-         /*white-space: nowrap;*/
-         /*form.cancel {*/
-           /*@include inline-block;*/
-         /*}*/
-       /*}*/
-      /*}*/
-    /*}*/
-    /**/
-    /*thead {*/
-      /*th {*/
-       /*white-space: nowrap; */
-      /*}*/
-    /*}*/
-
-    /*// only display the no-queries-row if it is the first (only) row*/
-    /*tbody tr#no-queries-row {*/
-      /*display: none;*/
-    /*}*/
-    /*tbody tr:first-child#no-queries-row {*/
-      /*display: table-row;*/
-    /*}*/
-  /*}*/
-
-  /*.ui-tooltip { @include standard-font; }*/
+  .dataTables_processing {
+    padding-top: 8px;
+  }
+  #queries-table > tbody > tr > td:last-child {
+    white-space: nowrap;
+    form.cancel {
+      @include inline-block;
+      margin-right: 3px;
+      margin-bottom: 0;
+    }
+  }
 }
 
 /*#more-info-table {*/

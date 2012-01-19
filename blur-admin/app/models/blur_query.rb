@@ -54,9 +54,9 @@ class BlurQuery < ActiveRecord::Base
 
   def summary(user)
     if user.can?(:index, :blur_queries, :query_string)
-      [id, user.can?(:update, :blur_queries), userid, query_string, blur_table.table_name, start, fetch_num, summary_state]
+      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :query => print_value(query_string), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state}
     else
-      [id, user.can?(:update, :blur_queries), userid, blur_table.table_name, start, fetch_num, summary_state]
+      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state}
     end
   end
 
@@ -70,5 +70,11 @@ class BlurQuery < ActiveRecord::Base
     else
       "Complete"
     end
+  end
+  
+  def print_value(conditional, default_message = "Not Available")
+    return default_message unless conditional
+    return conditional unless block_given?
+    yield
   end
 end

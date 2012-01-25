@@ -148,6 +148,9 @@
     display: inline-block;
     #results_container{
       position: relative;
+      #results_info{
+        background-color: white;
+      }
 
       #results_section{
         display: inline-block;

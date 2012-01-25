@@ -17,6 +17,8 @@
 package com.nearinfinity.blur.store.compressed;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.Compressor;
@@ -33,7 +35,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 
 public class CompressedFieldDataDirectory extends DirectIODirectory {
-  
+
   private static final Log LOG = LogFactory.getLog(CompressedFieldDataDirectory.class);
 
   private static final int _MIN_BUFFER_SIZE = 100;
@@ -76,7 +78,9 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     int version = getVersion(indexInput);
     switch (version) {
     case 0:
-      return new CompressedIndexInput_V0(name, indexInput, _compression);  
+      return new CompressedIndexInput_V0(name, indexInput, _compression);
+    case 1:
+      return new CompressedIndexInput_V1(name, indexInput, _compression);
     default:
       throw new RuntimeException("Unknown version [" + version + "]");
     }
@@ -94,7 +98,7 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
   }
 
   private IndexOutput wrapOutput(String name) throws IOException {
-    return new CompressedIndexOutput(name, _directory, _compression, _writingBlockSize);
+    return new CompressedIndexOutput_V1(name, _directory, _compression, _writingBlockSize);
   }
 
   public IndexInput openInput(String name) throws IOException {
@@ -218,7 +222,128 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     return _directory.toString();
   }
 
-  public static class CompressedIndexOutput extends IndexOutput {
+  public static class CompressedIndexOutput_V1 extends IndexOutput {
+
+    private static final long VERSION = -1L;
+    private long _position = 0;
+    private IndexOutput _output;
+    private byte[] _buffer;
+    private int _bufferPosition = 0;
+    private byte[] _compressedBuffer;
+    private IndexOutput _tmpOutput;
+    private Directory _directory;
+    private String _name;
+    private int _blockCount;
+    private Compressor _compressor;
+
+    public CompressedIndexOutput_V1(String name, Directory directory, CompressionCodec codec, int blockSize)
+        throws IOException {
+      _compressor = codec.createCompressor();
+      if (_compressor == null) {
+        throw new RuntimeException("CompressionCodec [" + codec + "] does not support compressor on this platform.");
+      }
+      _directory = directory;
+      _name = name;
+      _output = directory.createOutput(name);
+      _tmpOutput = directory.createOutput(name + Z_TMP);
+      _buffer = new byte[blockSize];
+      int dsize = blockSize * 2;
+      if (dsize < _MIN_BUFFER_SIZE) {
+        dsize = _MIN_BUFFER_SIZE;
+      }
+      _compressedBuffer = new byte[dsize];
+    }
+
+    @Override
+    public void writeByte(byte b) throws IOException {
+      _buffer[_bufferPosition] = b;
+      _bufferPosition++;
+      _position++;
+      flushIfNeeded();
+    }
+
+    private void flushIfNeeded() throws IOException {
+      if (_bufferPosition >= _buffer.length) {
+        flushBuffer();
+        _bufferPosition = 0;
+      }
+    }
+
+    private void flushBuffer() throws IOException {
+      if (_bufferPosition > 0) {
+        _compressor.reset();
+        _compressor.setInput(_buffer, 0, _bufferPosition);
+        _compressor.finish();
+
+        long filePointer = _output.getFilePointer();
+
+        int length = _compressor.compress(_compressedBuffer, 0, _compressedBuffer.length);
+
+        _tmpOutput.writeLong(filePointer);
+        _blockCount++;
+        _output.writeBytes(_compressedBuffer, 0, length);
+      }
+    }
+
+    @Override
+    public void writeBytes(byte[] b, int offset, int length) throws IOException {
+      int len = length + offset;
+      for (int i = offset; i < len; i++) {
+        writeByte(b[i]);
+      }
+    }
+
+    @Override
+    public void close() throws IOException {
+      flushBuffer();
+      _tmpOutput.close();
+      IndexInput input = _directory.openInput(_name + Z_TMP);
+      try {
+        long len = input.length();
+        long readCount = 0;
+        while (readCount < len) {
+          int toRead = readCount + _buffer.length > len ? (int) (len - readCount) : _buffer.length;
+          input.readBytes(_buffer, 0, toRead);
+          _output.writeBytes(_buffer, toRead);
+          readCount += toRead;
+        }
+        _output.writeInt(_blockCount);
+        _output.writeInt(_buffer.length);
+        _output.writeLong(_position);
+        _output.writeLong(VERSION);
+      } finally {
+        try {
+          _output.close();
+        } finally {
+          input.close();
+        }
+      }
+      _directory.deleteFile(_name + Z_TMP);
+      _compressor.end();
+    }
+
+    @Override
+    public long getFilePointer() {
+      return _position;
+    }
+
+    @Override
+    public long length() throws IOException {
+      throw new RuntimeException("not supported");
+    }
+
+    @Override
+    public void seek(long pos) throws IOException {
+      throw new RuntimeException("not supported");
+    }
+
+    @Override
+    public void flush() throws IOException {
+
+    }
+  }
+
+  public static class CompressedIndexOutput_V0 extends IndexOutput {
 
     private long _position = 0;
     private IndexOutput _output;
@@ -231,7 +356,8 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     private int _blockCount;
     private Compressor _compressor;
 
-    public CompressedIndexOutput(String name, Directory directory, CompressionCodec codec, int blockSize) throws IOException {
+    public CompressedIndexOutput_V0(String name, Directory directory, CompressionCodec codec, int blockSize)
+        throws IOException {
       _compressor = codec.createCompressor();
       if (_compressor == null) {
         throw new RuntimeException("CompressionCodec [" + codec + "] does not support compressor on this platform.");
@@ -335,6 +461,201 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
     @Override
     public void flush() throws IOException {
 
+    }
+  }
+
+  public static class CompressedIndexInput_V1 extends IndexInput {
+
+    private static final long VERSION = -1l;
+
+    private static final int _SIZES_META_DATA = 24;
+
+    private final AtomicLongArray _blockPositions;
+    private final long _realLength;
+    private final long _origLength;
+    private final int _blockSize;
+
+    private IndexInput _indexInput;
+    private long _pos;
+    private boolean _isClone;
+    private long _currentBlockId = -1;
+    private byte[] _blockBuffer;
+    private byte[] _decompressionBuffer;
+    private int _blockBufferLength;
+    private Decompressor _decompressor;
+    private int _blockCount;
+    private Thread _openerThread;
+    private AtomicBoolean _errorInOpener = new AtomicBoolean(false);
+    private String _name;
+
+    public CompressedIndexInput_V1(String name, IndexInput indexInput, CompressionCodec codec) throws IOException {
+      super(name);
+      _name = name;
+      long s = System.nanoTime();
+      _decompressor = codec.createDecompressor();
+      if (_decompressor == null) {
+        throw new RuntimeException("CompressionCodec [" + codec + "] does not support decompressor on this platform.");
+      }
+      _indexInput = indexInput;
+      _realLength = _indexInput.length();
+
+      // read meta data
+      _indexInput.seek(_realLength - _SIZES_META_DATA); // 8 - 4 - 4 - 8
+      _blockCount = _indexInput.readInt();
+      _blockSize = _indexInput.readInt();
+      _origLength = _indexInput.readLong();
+      long version = _indexInput.readLong();
+      if (version != VERSION) {
+        throw new IOException("Version [" + version + "] mismatch!");
+      }
+
+      _blockPositions = new AtomicLongArray(_blockCount);
+      for (int i = 0; i < _blockCount; i++) {
+        _blockPositions.set(i, -1l);
+      }
+      readBlockPositions((IndexInput) indexInput.clone(), name);
+      setupBuffers(this);
+      long e = System.nanoTime();
+      double total = (e - s) / 1000000.0;
+      LOG.info("Took [" + total + " ms] to open file [" + name + "].");
+    }
+
+    private void readBlockPositions(final IndexInput indexInput, final String name) throws IOException {
+      _openerThread = new Thread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            long s = System.nanoTime();
+            long metaDataLength = _blockCount * 8;
+            indexInput.seek(_realLength - _SIZES_META_DATA - metaDataLength);
+            for (int i = 0; i < _blockCount; i++) {
+              _blockPositions.set(i, indexInput.readLong());
+            }
+            long e = System.nanoTime();
+            double total = (e - s) / 1000000.0;
+            LOG.info("Took [{0} ms] to read block positions with blockCount of [{1}] in file [{2}].", total, _blockCount, name);
+            indexInput.close();
+          } catch (Exception e) {
+            LOG.error("Error during the reading of block positions in file [{0}] ", e, name);
+            _errorInOpener.set(true);
+          }
+        }
+      });
+      _openerThread.setName("Block-Position-Reader-" + name);
+      _openerThread.start();
+    }
+
+    private int getBlockLength(int blockId) throws IOException {
+      int newBlockId = blockId + 1;
+      if (newBlockId == _blockCount) {
+        // last block
+        return (int) (_realLength - _SIZES_META_DATA - getBlockPosition(blockId));
+      } else {
+        return (int) (getBlockPosition(newBlockId) - getBlockPosition(blockId));
+      }
+    }
+
+    public long getBlockPosition(int blockId) throws IOException {
+      long position = _blockPositions.get(blockId);
+      while (true) {
+        if (position < 0) {
+          try {
+            Thread.sleep(10);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        } else {
+          return position;
+        }
+        if (_errorInOpener.get()) {
+          throw new IOException("Block positions for file [" + _name + "] can not be read.");
+        }
+        position = _blockPositions.get(blockId);
+      }
+    }
+
+    private static void setupBuffers(CompressedIndexInput_V1 input) {
+      input._blockBuffer = new byte[input._blockSize];
+      int dsize = input._blockSize * 2;
+      if (dsize < _MIN_BUFFER_SIZE) {
+        dsize = _MIN_BUFFER_SIZE;
+      }
+      input._decompressionBuffer = new byte[dsize];
+    }
+
+    public Object clone() {
+      CompressedIndexInput_V1 clone = (CompressedIndexInput_V1) super.clone();
+      clone._isClone = true;
+      clone._indexInput = (IndexInput) _indexInput.clone();
+      setupBuffers(clone);
+      return clone;
+    }
+
+    public void close() throws IOException {
+      if (!_isClone) {
+        _decompressor.end();
+      }
+      _indexInput.close();
+    }
+
+    public long getFilePointer() {
+      return _pos;
+    }
+
+    public long length() {
+      return _origLength;
+    }
+
+    public byte readByte() throws IOException {
+      int blockId = getBlockId();
+      if (blockId != _currentBlockId) {
+        fetchBlock(blockId);
+      }
+      int blockPosition = getBlockPosition();
+      _pos++;
+      return _blockBuffer[blockPosition];
+    }
+
+    public void readBytes(byte[] b, int offset, int len) throws IOException {
+      while (len > 0) {
+        int blockId = getBlockId();
+        if (blockId != _currentBlockId) {
+          fetchBlock(blockId);
+        }
+        int blockPosition = getBlockPosition();
+        int length = Math.min(_blockBufferLength - blockPosition, len);
+        System.arraycopy(_blockBuffer, blockPosition, b, offset, length);
+        _pos += length;
+        len -= length;
+        offset += length;
+      }
+    }
+
+    private int getBlockPosition() {
+      return (int) (_pos % _blockSize);
+    }
+
+    private void fetchBlock(int blockId) throws IOException {
+      long position = getBlockPosition(blockId);
+      int length = getBlockLength(blockId);
+      _indexInput.seek(position);
+      _indexInput.readBytes(_decompressionBuffer, 0, length);
+
+      synchronized (_decompressor) {
+        _decompressor.reset();
+        _decompressor.setInput(_decompressionBuffer, 0, length);
+        _blockBufferLength = _decompressor.decompress(_blockBuffer, 0, _blockBuffer.length);
+      }
+
+      _currentBlockId = blockId;
+    }
+
+    private int getBlockId() {
+      return (int) (_pos / _blockSize);
+    }
+
+    public void seek(long pos) throws IOException {
+      _pos = pos;
     }
   }
 

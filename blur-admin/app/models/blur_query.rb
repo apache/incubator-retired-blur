@@ -54,7 +54,7 @@ class BlurQuery < ActiveRecord::Base
 
   def summary(user)
     if user.can?(:index, :blur_queries, :query_string)
-      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :query => print_value(query_string), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state}
+      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :query => print_value(query_string), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state_str}
     else
       {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state}
     end
@@ -64,9 +64,10 @@ class BlurQuery < ActiveRecord::Base
 
   def summary_state
     if state == 0
-      number_to_percentage(100 * complete, :precision => 0)
+      formattedNumber = "%02d" % (100 * complete)
+      formattedNumber + '%'
     elsif state == 1
-      "#{number_to_percentage(100 * complete, :precision => 0)} (Interrupted)"
+      "(Interrupted) - #{number_to_percentage(100 * complete, :precision => 0)}"
     else
       "Complete"
     end

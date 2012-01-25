@@ -32,14 +32,14 @@ $(document).ready ->
         if refresh_rate > -1
           refresh_timeout = setTimeout($.proxy(data_table.fnReloadAjax,data_table), refresh_rate * 1000)
   table_cols = () ->
-    return [{"mDataProp":"userid"},{"mDataProp":"query"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"action"}] if visible_column_count == 7
-    [{"mDataProp":"userid"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"action"}]
+    return [{"mDataProp":"userid"},{"mDataProp":"query"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"state"},{"mDataProp":"action"}] if visible_column_count == 8
+    [{"mDataProp":"userid"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"state"},{"mDataProp":"action"}]
   process_row = (row, data, rowIdx, dataIdx) ->
     action_td = $('td:last-child', row)
     if action_td.html() == ''
+      action_td.append("<a href='#{Routes.more_info_blur_query_path(data['id'])}' class='more_info' data-remote='true' style='margin-right: 3px'>More Info</a>")
       if data['state'] == 0 && data['can_update']
         action_td.append("<form accept-charset='UTF-8' action='#{Routes.blur_query_path(data['id'])}' class='cancel' data-remote='true' method='post'><div style='margin:0;padding:0;display:inline'><input name='_method' type='hidden' value='put'></div><input id='cancel' name='cancel' type='hidden' value='true'><input class='cancel_query_button btn' type='submit' value='Cancel'></form>")
-      action_td.append("<a href='#{Routes.more_info_blur_query_path(data['id'])}' class='more_info' data-remote='true' style='margin-right: 3px'>More Info</a>")
     row
   add_refresh_rates = (data_table) ->
     refresh_content = '<div class="span4">Auto Refresh: '
@@ -69,3 +69,4 @@ $(document).ready ->
 
   # Initialize page
   load_queries()
+  $('.hide_me').hide()

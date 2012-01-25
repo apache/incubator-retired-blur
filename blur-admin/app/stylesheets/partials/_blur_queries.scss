@@ -22,20 +22,25 @@
   .dataTables_processing {
     padding-top: 8px;
   }
-  #queries-table > tbody > tr > td:last-child {
-    white-space: nowrap;
-    form.cancel {
-      @include inline-block;
-      margin-right: 3px;
-      margin-bottom: 0;
+  #queries-table{
+    & > tbody > tr > td:last-child {
+      white-space: nowrap;
+      form.cancel {
+        @include inline-block;
+        margin-right: 3px;
+        margin-bottom: 0;
+      }
+    }
+    td:nth-child(7){
+      display:none;
     }
   }
 }
 
-/*#more-info-table {*/
-  /*td { color: #555; }*/
-  /*.more-info-label { white-space: nowrap; font-weight: bold;}*/
-/*}*/
+#more-info-table {
+  td { color: #555; }
+  .more-info-label { white-space: nowrap; font-weight: bold;}
+}
 
 /*#times-table {*/
   /*td { color: #555; }*/

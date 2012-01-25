@@ -1,6 +1,7 @@
 require 'blur_thrift_client'
 
 class BlurQuery < ActiveRecord::Base
+  include ActionView::Helpers::NumberHelper
   belongs_to :blur_table
   has_one :cluster, :through => :blur_table
 
@@ -49,5 +50,32 @@ class BlurQuery < ActiveRecord::Base
   
   def self.filter_on_time_range(range)
     where(:updated_at => range)
+  end
+
+  def summary(user)
+    if user.can?(:index, :blur_queries, :query_string)
+      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :query => print_value(query_string), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state_str}
+    else
+      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state}
+    end
+  end
+
+  private
+
+  def summary_state
+    if state == 0
+      formattedNumber = "%02d" % (100 * complete)
+      formattedNumber + '%'
+    elsif state == 1
+      "(Interrupted) - #{number_to_percentage(100 * complete, :precision => 0)}"
+    else
+      "Complete"
+    end
+  end
+  
+  def print_value(conditional, default_message = "Not Available")
+    return default_message unless conditional
+    return conditional unless block_given?
+    yield
   end
 end

@@ -16,12 +16,14 @@ describe "blur queries" do
   end
 
   it "shows filter options" do
+    pending "New Table Implementation"
     find("#filter_form").should have_content "Within past:"
     find("#filter_form").should have_content "Super Query:"
     find("#filter_form").should have_content "Query State:"
   end
 
   it "shows table and refresh options" do
+    pending "New Table Implementation"
     find("#table_wrapper").should have_content "Blur Table:"
     find("#refresh_wrapper").should have_content "Refresh:"
   end

@@ -30,6 +30,7 @@ import org.apache.zookeeper.data.Stat;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
+import com.nearinfinity.blur.utils.BlurConstants;
 
 public class EnableTable {
 
@@ -79,7 +80,7 @@ public class EnableTable {
           return;
         } else {
           LOG.info("Waiting for locks to engage [{0}] out of [{1}]", list.size(), shardCount);
-          object.wait();
+          object.wait(BlurConstants.ZK_WAIT_TIME);
         }
       }
     }

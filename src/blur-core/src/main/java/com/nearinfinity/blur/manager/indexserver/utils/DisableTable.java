@@ -27,6 +27,7 @@ import org.apache.zookeeper.ZooKeeper;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
+import com.nearinfinity.blur.utils.BlurConstants;
 
 public class DisableTable {
 
@@ -62,7 +63,7 @@ public class DisableTable {
           return;
         } else {
           LOG.info("Waiting for locks to be released [{0}] total [{1}]", list.size(), list);
-          object.wait();
+          object.wait(BlurConstants.ZK_WAIT_TIME);
         }
       }
     }

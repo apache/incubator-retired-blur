@@ -131,6 +131,17 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   private void watchForLayoutChanges(final String cluster) {
     Thread shardServerWatcherDaemon = new Thread(new Runnable() {
+      private Watcher watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+          synchronized (_shardServerLayout) {
+            _shardServerLayout.notifyAll();
+          }
+        }
+      };
+      private Set<String> prevShardNodes;
+      private Set<String> prevTables;
+      
       @Override
       public void run() {
         while (_running.get()) {
@@ -147,25 +158,15 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           try {
             String shardNodesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes";
             String tablesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables";
-            _zookeeper.getChildren(shardNodesPath, new Watcher() {
-              @Override
-              public void process(WatchedEvent event) {
-                synchronized (_shardServerLayout) {
-                  _shardServerLayout.notifyAll();
-                }
-              }
-            });
-            _zookeeper.getChildren(tablesPath, new Watcher() {
-              @Override
-              public void process(WatchedEvent event) {
-                synchronized (_shardServerLayout) {
-                  _shardServerLayout.notifyAll();
-                }
-              }
-            });
-            LOG.info("Layout changing for cluster [{0}], because of table or shard server change.", cluster);
-            updateLayout();
-            _shardServerLayout.wait();
+            Set<String> shardNodes = new TreeSet<String>(_zookeeper.getChildren(shardNodesPath, watcher));
+            Set<String> tables = new TreeSet<String>(_zookeeper.getChildren(tablesPath, watcher));
+            if (isShardNodesChanged(shardNodes) || isTablesNodesChanged(tables)) {
+              LOG.info("Layout changing for cluster [{0}], because of table or shard server change.", cluster);
+              updateLayout();
+              prevShardNodes = shardNodes;
+              prevTables = tables;
+            }
+            _shardServerLayout.wait(BlurConstants.ZK_WAIT_TIME);
           } catch (KeeperException e) {
             if (e.code() == Code.SESSIONEXPIRED) {
               LOG.error("Zookeeper session expired.");
@@ -177,7 +178,20 @@ public class BlurControllerServer extends TableAdmin implements Iface {
             LOG.error("Unknown Error", e);
           }
         }
+      }
 
+      private boolean isTablesNodesChanged(Set<String> tables) {
+        if (prevTables != null && prevTables.equals(tables)) {
+          return false;
+        }
+        return true;
+      }
+
+      private boolean isShardNodesChanged(Set<String> shardNodes) {
+        if (prevShardNodes != null && prevShardNodes.equals(shardNodes)) {
+          return false;
+        }
+        return true;
       }
     });
     shardServerWatcherDaemon.setName("Shard-Server-Watcher-Daemon-Cluster[" + cluster + "]");

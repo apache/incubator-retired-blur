@@ -48,6 +48,7 @@ import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.BlurConfiguration;
@@ -62,9 +63,9 @@ import com.nearinfinity.blur.manager.IndexManager;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperClusterStatus;
 import com.nearinfinity.blur.manager.indexserver.BlurIndexWarmup;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
+import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import com.nearinfinity.blur.manager.indexserver.DistributedIndexServer;
-import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.metrics.BlurMetrics;
@@ -72,8 +73,8 @@ import com.nearinfinity.blur.store.BufferStore;
 import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
-import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
@@ -102,8 +103,16 @@ public class ThriftBlurShardServer extends ThriftServer {
     LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes",slabSize,bankCount,((long) bankCount * (long) slabSize));
     
     BufferStore.init(configuration,blurMetrics);
-    
-    BlockCache blockCache = new BlockCache(bankCount, numberOfBlocksPerBank, blockSize, blurMetrics, directAllocation);
+    BlockCache blockCache;
+    try {
+      blockCache = new BlockCache(bankCount, numberOfBlocksPerBank, blockSize, blurMetrics, directAllocation);
+    } catch (OutOfMemoryError e) {
+      if ("Direct buffer memory".equals(e.getMessage())) {
+        System.err.println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");
+        System.exit(1);
+      }
+      throw e;
+    }
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, blurMetrics);
     
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
@@ -124,7 +133,14 @@ public class ThriftBlurShardServer extends ThriftServer {
     }
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
-    ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
+    try {
+      ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
+    } catch (KeeperException e) {
+      if (e.code() == Code.CONNECTIONLOSS) {
+        System.err.println("Cannot connect zookeeper to [" + zkConnectionStr + "]");
+        System.exit(1);
+      }
+    }
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 

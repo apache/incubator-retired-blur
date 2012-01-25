@@ -18,6 +18,7 @@ package com.nearinfinity.blur.utils;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.concurrent.TimeUnit;
 
 import com.nearinfinity.blur.BlurConfiguration;
 import com.nearinfinity.blur.manager.results.BlurResultComparator;
@@ -83,6 +84,8 @@ public class BlurConstants {
   public static final String DEFAULT = "default";
   public static final String BLUR_CLUSTER_NAME = "blur.cluster.name";
   public static final String BLUR_CLUSTER;
+  
+  public static final long ZK_WAIT_TIME = TimeUnit.SECONDS.toMillis(5);
 
   static {
     try {

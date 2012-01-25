@@ -146,6 +146,18 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void watchForShardServerChanges() {
     _shardServerWatcherDaemon = new Thread(new Runnable() {
+      
+      private List<String> _prevOnlineShards;
+      
+      private Watcher watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+          synchronized (_layoutManagers) {
+            _layoutManagers.notifyAll();
+          }
+        }
+      };
+      
       @Override
       public void run() {
         while (_running.get()) {
@@ -160,17 +172,28 @@ public class DistributedIndexServer extends AbstractIndexServer {
       private void doAction() {
         synchronized (_layoutManagers) {
           try {
-            _zookeeper.getChildren(ZookeeperPathConstants.getOnlineShardsPath(cluster), new Watcher() {
-              @Override
-              public void process(WatchedEvent event) {
-                synchronized (_layoutManagers) {
-                  _layoutManagers.notifyAll();
+            List<String> onlineShards = new ArrayList<String>(_zookeeper.getChildren(ZookeeperPathConstants.getOnlineShardsPath(cluster), watcher));
+            if (_prevOnlineShards == null || !onlineShards.equals(_prevOnlineShards)) {
+              List<String> oldOnlineShards = _prevOnlineShards;
+              _prevOnlineShards = onlineShards;
+              _layoutManagers.clear();
+              _layoutCache.clear();
+              LOG.info("Online shard servers changed, clearing layout managers and cache.");
+              if (oldOnlineShards == null) {
+                oldOnlineShards = new ArrayList<String>();
+              }
+              for (String oldOnlineShard : oldOnlineShards) {
+                if (!onlineShards.contains(oldOnlineShard)) {
+                  LOG.info("Node went offline [{0}]",oldOnlineShard);
                 }
               }
-            });
-            _layoutManagers.clear();
-            _layoutCache.clear();
-            _layoutManagers.wait();
+              for (String onlineShard : onlineShards) {
+                if (!oldOnlineShards.contains(onlineShard)) {
+                  LOG.info("Node came online [{0}]",onlineShard);
+                }
+              }
+            }
+            _layoutManagers.wait(BlurConstants.ZK_WAIT_TIME);
           } catch (KeeperException e) {
             if (e.code() == Code.SESSIONEXPIRED) {
               LOG.error("Zookeeper session expired.");

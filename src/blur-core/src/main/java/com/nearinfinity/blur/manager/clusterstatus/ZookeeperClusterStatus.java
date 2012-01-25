@@ -46,6 +46,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.utils.BlurConstants;
 
 public class ZookeeperClusterStatus extends ClusterStatus {
 
@@ -128,6 +129,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private void watchForTables() {
     _tablesToCluster = new Thread(new Runnable() {
+      private Watcher watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+          synchronized (_tableToClusterCache) {
+            _tableToClusterCache.notifyAll();
+          }
+        }
+      };
+      
       @Override
       public void run() {
         while (_running.get()) {
@@ -140,27 +150,12 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
 
       private void doWatch() throws KeeperException, InterruptedException {
-
         synchronized (_tableToClusterCache) {
           String clusterPath = ZookeeperPathConstants.getClustersPath();
-          List<String> clusters = _zk.getChildren(clusterPath, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-              synchronized (_tableToClusterCache) {
-                _tableToClusterCache.notifyAll();
-              }
-            }
-          });
+          List<String> clusters = _zk.getChildren(forPathToExist(clusterPath), watcher);
           Map<String, List<String>> newValue = new HashMap<String, List<String>>();
           for (String cluster : clusters) {
-            List<String> tables = _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), new Watcher() {
-              @Override
-              public void process(WatchedEvent event) {
-                synchronized (_tableToClusterCache) {
-                  _tableToClusterCache.notifyAll();
-                }
-              }
-            });
+            List<String> tables = _zk.getChildren(forPathToExist(ZookeeperPathConstants.getTablesPath(cluster)), watcher);
             for (String table : tables) {
               List<String> clusterList = newValue.get(table);
               if (clusterList == null) {
@@ -171,7 +166,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
             }
           }
           _tableToClusterCache.set(newValue);
-          _tableToClusterCache.wait();
+          _tableToClusterCache.wait(BlurConstants.ZK_WAIT_TIME);
         }
       }
     });
@@ -182,6 +177,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private void watchForEnabledTables() {
     _enabledTables = new Thread(new Runnable() {
+      private Watcher _watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+          synchronized (_enabledMap) {
+            _enabledMap.notifyAll();
+          }
+        }
+      };
+      
       @Override
       public void run() {
         while (_running.get()) {
@@ -194,35 +198,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
 
       private void doWatch() throws KeeperException, InterruptedException {
-
         synchronized (_enabledMap) {
           String clusterPath = ZookeeperPathConstants.getClustersPath();
-          List<String> clusters = _zk.getChildren(clusterPath, new Watcher() {
-            @Override
-            public void process(WatchedEvent event) {
-              synchronized (_enabledMap) {
-                _enabledMap.notifyAll();
-              }
-            }
-          });
+          List<String> clusters = _zk.getChildren(forPathToExist(clusterPath), _watcher);
           for (String cluster : clusters) {
-            List<String> tables = _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), new Watcher() {
-              @Override
-              public void process(WatchedEvent event) {
-                synchronized (_enabledMap) {
-                  _enabledMap.notifyAll();
-                }
-              }
-            });
+            List<String> tables = _zk.getChildren(forPathToExist(ZookeeperPathConstants.getTablesPath(cluster)), _watcher);
             for (String table : tables) {
-              Stat stat = _zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), new Watcher() {
-                @Override
-                public void process(WatchedEvent event) {
-                  synchronized (_enabledMap) {
-                    _enabledMap.notifyAll();
-                  }
-                }
-              });
+              Stat stat = _zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), _watcher);
               AtomicBoolean enabled = _enabledMap.get(table);
               if (enabled == null) {
                 enabled = new AtomicBoolean();
@@ -235,13 +217,23 @@ public class ZookeeperClusterStatus extends ClusterStatus {
               }
             }
           }
-          _enabledMap.wait();
+          _enabledMap.wait(BlurConstants.ZK_WAIT_TIME);
         }
       }
     });
     _enabledTables.setDaemon(true);
     _enabledTables.setName("cluster-status-enabled-tables-watcher");
     _enabledTables.start();
+  }
+  
+  private String forPathToExist(String path) throws KeeperException, InterruptedException {
+    Stat stat = _zk.exists(path, false);
+    while (stat == null) {
+      LOG.info("Waiting for path [{0}] to exist before continuing.",path);
+      Thread.sleep(1000);
+      stat = _zk.exists(path, false);
+    }
+    return path;
   }
 
   private String getClusterTableKey(String cluster, String table) {

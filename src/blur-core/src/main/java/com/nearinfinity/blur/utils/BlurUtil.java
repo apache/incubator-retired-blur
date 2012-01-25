@@ -82,8 +82,7 @@ import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 public class BlurUtil {
 
   private static final Object[] EMPTY_OBJECT_ARRAY = new Object[] {};
-  @SuppressWarnings("unchecked")
-  private static final Class[] EMPTY_PARAMETER_TYPES = new Class[] {};
+  private static final Class<?>[] EMPTY_PARAMETER_TYPES = new Class[] {};
   private static final Log LOG = LogFactory.getLog(BlurUtil.class);
   private static final String UNKNOWN = "UNKNOWN";
 
@@ -416,22 +415,23 @@ public class BlurUtil {
     final Object lock = new Object();
     String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
     String newPath = zookeeper.create(blurSafemodePath + "/safemode-", nodeName.getBytes(), Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
+    Watcher watcher = new Watcher() {
+      @Override
+      public void process(WatchedEvent event) {
+        synchronized (lock) {
+          lock.notifyAll();
+        }
+      }
+    };
     while (true) {
       synchronized (lock) {
-        List<String> children = new ArrayList<String>(zookeeper.getChildren(blurSafemodePath, new Watcher() {
-          @Override
-          public void process(WatchedEvent event) {
-            synchronized (lock) {
-              lock.notifyAll();
-            }
-          }
-        }));
+        List<String> children = new ArrayList<String>(zookeeper.getChildren(blurSafemodePath, watcher));
         Collections.sort(children);
         if (newPath.equals(blurSafemodePath + "/" + children.get(0))) {
           LOG.info("Lock aquired.");
           return newPath;
         } else {
-          lock.wait();
+          lock.wait(BlurConstants.ZK_WAIT_TIME);
         }
       }
     }

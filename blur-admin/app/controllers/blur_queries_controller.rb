@@ -16,9 +16,6 @@ class BlurQueriesController < ApplicationController
     end
     
     render :json => {:aaData => query_summaries}.to_json
-      # summary[:actions] = "<"
-    #end
-    #render :json => BlurQuery.where_zookeeper(@current_zookeeper.id).includes(:blur_table).to_json(:methods => [:summary_state])
   end
 
   def update

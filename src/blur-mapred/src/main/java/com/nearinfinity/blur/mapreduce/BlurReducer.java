@@ -205,7 +205,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       }
     }
 
-    Collection<Document> docs = new ArrayList<Document>(_newDocs.values());
+    Collection<Document> docs = documentsToIndex(new ArrayList<Document>(_newDocs.values()));
     for (Document document : docs) {
       document.add(PRIME_FIELD);
       break;
@@ -248,6 +248,10 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
       _prev = now;
     }
     return true;
+  }
+
+  protected Collection<Document> documentsToIndex(Collection<Document> list) {
+    return list;
   }
 
   protected void fetchOldRecords() throws IOException {

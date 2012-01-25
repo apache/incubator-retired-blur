@@ -66,6 +66,12 @@ $(document).ready ->
     return null unless value
     return value unless value.length > length
     "#{value.substring(0,length)}#{ommission ? ommission : ''}"
+    
+  $('.more_info').live 'ajax:success', (evt, data, status, xhr) ->
+    $().popup
+      title: "Additional Info"
+      titleClass:'title'
+      body:data
 
   # Initialize page
   load_queries()

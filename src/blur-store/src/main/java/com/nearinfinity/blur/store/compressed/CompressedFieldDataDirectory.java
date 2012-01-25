@@ -164,7 +164,20 @@ public class CompressedFieldDataDirectory extends DirectIODirectory {
 
   public long fileLength(String name) throws IOException {
     if (compressedFileExists(name)) {
-      return _directory.fileLength(getCompressedName(name));
+      IndexInput input = _directory.openInput(getCompressedName(name));
+      try {
+        long length = input.length();
+        input.seek(length - 8);
+        long fileLength = input.readLong();
+        if (fileLength < 0) {
+          input.seek(length - 16);
+          return input.readLong();
+        } else {
+          return fileLength;
+        }
+      } finally {
+        input.close();
+      }
     }
     return _directory.fileLength(name);
   }

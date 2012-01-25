@@ -17,6 +17,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
 import org.junit.Test;
@@ -87,6 +88,17 @@ public class CompressedFieldDataDirectoryTest {
     addDocs(writer, 7, 3);
     writer.close();
     testFetches(directory2);
+    testFileLengths(directory2);
+  }
+
+  private void testFileLengths(Directory dir) throws IOException {
+    String[] listAll = dir.listAll();
+    for (String name : listAll) {
+      IndexInput input = dir.openInput(name);
+      assertEquals(input.length(),dir.fileLength(name));
+      input.close();
+    }
+    
   }
 
   private void testFetches(Directory directory) throws CorruptIndexException, IOException {

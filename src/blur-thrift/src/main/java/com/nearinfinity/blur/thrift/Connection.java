@@ -19,7 +19,7 @@ public class Connection {
     }
   }
   
-  public Connection(int port, String host, String proxyHost, int proxyPort) {
+  public Connection(String host, int port, String proxyHost, int proxyPort) {
     _port = port;
     _host = host;
     _proxyHost = proxyHost;
@@ -27,7 +27,7 @@ public class Connection {
     _proxy = true;
   }
 
-  public Connection(int port, String host) {
+  public Connection(String host, int port) {
     _port = port;
     _host = host;
   }

@@ -141,7 +141,6 @@ $(document).ready ->
     $('#results_wrapper').removeClass('hidden')
 
   no_results = ->
-    #hides number of results option if there are no results
     $('#results_container').html '<div>No results for your search.</div>'
     $('#results_wrapper').removeClass('hidden')
 

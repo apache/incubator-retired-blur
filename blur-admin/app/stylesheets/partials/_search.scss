@@ -131,6 +131,9 @@
     .body{
       @include tab-body;
     }
+    .action-icon{
+      cursor: pointer;
+    }
     .saved-title{
       @include title-style;
       &.saved-input{

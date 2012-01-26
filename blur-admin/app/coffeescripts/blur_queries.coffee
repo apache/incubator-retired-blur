@@ -75,4 +75,5 @@ $(document).ready ->
 
   # Initialize page
   load_queries()
+  # Hack to have the proper table layout w/ a hidden column
   $('.hide_me').hide()

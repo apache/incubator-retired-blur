@@ -9,6 +9,10 @@
   margin:0px 0px 0px 0px;
 }
 
+ul{
+  margin: 5px;
+}
+
 #admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{   
   @include full;
   @include standard-font;

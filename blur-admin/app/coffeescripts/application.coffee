@@ -1,7 +1,7 @@
 $(document).ready ->
   # Zookeeper context switch
+  # reload page with new zookeeper
   $('#zookeeper_id').live 'change', ->
-    #reload page with new zookeeper
     $(this).closest('form').submit()
 
   # Remove blue oval around clicked jstree elements
@@ -36,11 +36,7 @@ $(document).ready ->
       tab = "admin"
     else 
       pre_tab = url.substring 1
-      if pre_tab.indexOf('/') != -1
-        tab = pre_tab.substring 0, pre_tab.indexOf '/'
-      else
-        tab = pre_tab
-        
+      tab = if pre_tab.indexOf('/') != -1 then pre_tab.substring 0, pre_tab.indexOf '/' else pre_tab
     help_win = window.open Routes.help_path(tab),"Help Menu","menubar=0,resizable=0,width=500,height=800"
       
   $('.help-section').live 'click', ->

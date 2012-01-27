@@ -28,12 +28,23 @@
     padding-top: 8px;
   }
   #queries-table{
+    width: auto !important;
     & > tbody > tr > td:last-child {
       white-space: nowrap;
       form.cancel {
         @include inline-block;
         margin-right: 3px;
         margin-bottom: 0;
+      }
+    }
+    .oldRunning{
+      &:hover{
+        background: rgba(247, 225, 225, 1);
+      }
+      td{
+        background: rgba(247, 225, 225, 0.75);
+        border-top: 1px solid #FF0000;
+        border-bottom: 1px solid #FF0000;
       }
     }
   }

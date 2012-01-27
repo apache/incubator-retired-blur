@@ -47,10 +47,6 @@ class BlurQuery < ActiveRecord::Base
   def self.where_zookeeper(zookeeper_id)
     joins(:blur_table => :cluster).where(:blur_table =>{:clusters => {:zookeeper_id => zookeeper_id}}).includes(:blur_table).order("created_at DESC")
   end
-  
-  def self.filter_on_time_range(range)
-    where(:updated_at => range)
-  end
 
   def summary(user)
     if user.can?(:index, :blur_queries, :query_string)

@@ -22,7 +22,7 @@ $(document).ready ->
         "sZeroRecords": "No queries to display",
         "sInfoFiltered": "(filtered from _MAX_ total queries)"
       },
-      sAjaxSource: Routes.refresh_path(),
+      sAjaxSource: Routes.refresh_path(1),
       aoColumns: table_cols(),
       fnRowCallback: process_row
     });
@@ -31,9 +31,12 @@ $(document).ready ->
       if settings.url.indexOf('/blur_queries/refresh') >= 0
         if refresh_rate > -1
           refresh_timeout = setTimeout($.proxy(data_table.fnReloadAjax,data_table), refresh_rate * 1000)
+    $('.time_range').live 'change', ->
+      range_time_limit = $(@).find('option:selected').val()
+      data_table.fnReloadAjax Routes.refresh_path(range_time_limit)
   table_cols = () ->
-    return [{"mDataProp":"userid"},{"mDataProp":"query"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"state"},{"mDataProp":"action"}] if visible_column_count == 8
-    [{"mDataProp":"userid"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"state"},{"mDataProp":"action"}]
+    return [{"mDataProp":"userid"},{"mDataProp":"query"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}] if visible_column_count == 8
+    [{"mDataProp":"userid"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}]
   process_row = (row, data, rowIdx, dataIdx) ->
     action_td = $('td:last-child', row)
     if action_td.html() == ''
@@ -52,10 +55,8 @@ $(document).ready ->
     refresh_content += '</div>'
     $('#queries-table_wrapper > .row:first-child').prepend(refresh_content)
     $('a.refresh_option').click () ->
-      $('a.refresh_option').removeClass 'selected'
-      $('a.refresh_option').addClass 'unselected'
-      $(this).addClass 'selected'
-      $(this).removeClass 'unselected'
+      $('a.refresh_option').removeClass('selected').addClass('unselected')
+      $(this).addClass('selected').removeClass('unselected')
       prev_refresh_rate = refresh_rate
       refresh_rate = $(this).data('refresh_val')
       if prev_refresh_rate == -1
@@ -75,5 +76,3 @@ $(document).ready ->
 
   # Initialize page
   load_queries()
-  # Hack to have the proper table layout w/ a hidden column
-  $('.hide_me').hide()

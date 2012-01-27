@@ -19,6 +19,11 @@
       }
     }
   }
+  .range_select{
+    select{
+      width: 100px;
+    }
+  }
   .dataTables_processing {
     padding-top: 8px;
   }
@@ -30,9 +35,6 @@
         margin-right: 3px;
         margin-bottom: 0;
       }
-    }
-    td:nth-child(7){
-      display:none;
     }
   }
 }

@@ -26,7 +26,7 @@ BlurAdmin::Application.routes.draw do
     delete 'forget', :on => :member, :as => :forget
   end
 
-  match 'blur_queries/refresh' => 'blur_queries#refresh', :via => :get, :as => :refresh
+  match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh
   match 'blur_queries/long_running/:zookeeper_id' => 'blur_queries#long_running', :via => :get, :as => :long_running_queries
   resources :blur_queries do
     member do

@@ -5,7 +5,11 @@ class BlurQueriesController < ApplicationController
   before_filter :zookeepers, :only => [:index, :refresh]
 
   def refresh
-    queries = BlurQuery.where_zookeeper(@current_zookeeper.id).includes(:blur_table).all
+    puts params.inspect
+    lower_range = Time.now - (params[:time_length].to_i * 60)
+    queries = BlurQuery.where_zookeeper(@current_zookeeper.id)
+      .where("blur_queries.updated_at > ?", lower_range)
+      .includes(:blur_table).all
     query_summaries = queries.collect do |query| 
       summary = query.summary(current_user)
       summary[:action] = ''

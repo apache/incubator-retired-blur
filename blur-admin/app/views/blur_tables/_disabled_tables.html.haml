@@ -1,50 +1,17 @@
-- nil_message = "Not Available"
+-if can?(:update, :blur_tables)
+  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'enable'} Enable Tables
+-if can?(:delete, :blur_tables)
+  %button.bulk-action-button.btn.danger.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'delete'} Delete Tables
 
-- if !tables.empty? && (can?(:update, :blur_tables) || can?(:delete, :blur_tables))
-  %div.global_actions
-    - if can? :update, :blur_tables
-      = form_tag update_all_blur_tables_path, :method => :put, :remote => true, :class => 'update' do
-        = hidden_field_tag 'enable', true, :id => 'global_enable_enabled', :class => 'enable'
-        = hidden_field_tag 'cluster_id', cluster, :id => 'global_enable_cluster', :class => 'cluster_id'
-        = tag :input, :type => :button, :value => 'Enable All Tables', :class => :enable_table_button
-    - if can? :delete, :blur_tables
-      = form_tag delete_all_blur_tables_path, :method => :delete, :remote => true, :class => 'delete' do
-        = hidden_field_tag :delete_index, false, :id => 'global_delete_index', :class => 'delete_index'
-        = hidden_field_tag 'cluster_id', cluster, :id => 'global_delete_cluster_id', :class => 'cluster_id'
-        = tag :input, :type => :button, :value => 'Delete All Tables', :class => :delete_blur_table_button
-
-%table.ui-widget-content.ui-corner-all
+%table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead
     %tr
-      %th Name/Location
+      %th
+        %input.bulk-action-checkbox.check-all{:type => "checkbox", :disabled=>'disabled'}
+      %th Name
       %th Row Count
       %th Record Count
-      %th
   %tbody
-    - if tables.empty?
-      %tr
-        %td{:colspan => 4} No disabled tables found.
-    - tables.each do |table|
-      %tr.ui-widget-content
-        %td
-          = table.table_name
-          %br
-          = table.table_uri
-        %td= table.row_count ? number_with_delimiter(table.row_count, :delimiter => ',') : nil_message
-        %td= table.record_count ? number_with_delimiter(table.record_count, :delimiter => ',') : nil_message
-        %td
-          - if table.status == 2
-            - if can? :update, :blur_tables
-              = form_tag blur_table_path(table), :method => :put, :remote => true, :class => 'update' do
-                = hidden_field_tag 'enable', true, :id => "enable_#{table.id}", :class => 'enable'
-                = tag :input, :type => :button, :value => 'Enable Table', :class => :enable_table_button
-            - if can? :delete, :blur_tables
-              = form_tag blur_table_path(table), :class  => 'delete', :method => :delete, :remote => true do
-                = hidden_field_tag :delete_index, false, :id => "delete_index_#{table.id}", :class => 'delete_index'
-                = tag :input, :type => :button, :value => 'Delete Table', :class => :delete_blur_table_button
-          - elsif table.status == 5
-            Enabling...
-          - elsif table.status == 1
-            Deleting...
-:javascript
-  $("#cluster_#{cluster} .table_accordion h3:eq(1) .counter").html(#{tables.size})
+    %tr.no-tables
+      %th
+      %th{:colspan=>3} Loading Tables...

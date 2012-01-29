@@ -136,6 +136,7 @@ describe SearchController do
       it "renders the create partial" do
 
         get :create, :super_query  => @search.super_query,
+                     :record_only  => @search.record_only,
                      :result_count => @search.fetch,
                      :offset       => @search.offset,
                      :query_string => @search.query,
@@ -152,7 +153,7 @@ describe SearchController do
     end
     it "assigns the @schema variable to hold the sorted column families and columns of the search" do
       get :create, :search_id  => @search.id
-      assigns(:schema).keys.should == %w[ColumnFamily2 ColumnFamily1 ColumnFamily3]
+      assigns(:schema).keys.should == %w[ColumnFamily2 ColumnFamily3 ColumnFamily1]
     end
     # it "assigns the @result_count and @result_time instance variables" do
     #       get :create, :search_id  => @search.id

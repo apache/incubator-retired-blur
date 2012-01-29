@@ -15,20 +15,15 @@ describe "blur queries" do
     visit blur_queries_path
   end
 
-  it "displays the queries that were just created" do
-    zookeeper.blur_queries.each do |query|
-      find("#queries-table").should have_content query.query_string.slice(0, 15)
-      find("#queries-table").should have_content query.userid
-    end
-  end
-
   it "shows filter options" do
+    pending "New Table Implementation"
     find("#filter_form").should have_content "Within past:"
     find("#filter_form").should have_content "Super Query:"
     find("#filter_form").should have_content "Query State:"
   end
 
   it "shows table and refresh options" do
+    pending "New Table Implementation"
     find("#table_wrapper").should have_content "Blur Table:"
     find("#refresh_wrapper").should have_content "Refresh:"
   end

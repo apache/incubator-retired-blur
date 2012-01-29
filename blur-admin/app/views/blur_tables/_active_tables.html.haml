@@ -1,48 +1,17 @@
-- nil_message = "Not Available"
+-if can?(:update, :blur_tables)
+  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'disable'} Disable Tables
 
-- if !tables.empty? && can?(:update, :blur_tables)
-  %div.global_actions
-    = form_tag update_all_blur_tables_path, :method => :put, :remote => true, :class => 'update' do
-      = hidden_field_tag 'disable', true, :id => 'global_disable_disable', :class => 'disable'
-      = hidden_field_tag 'cluster_id', cluster, :id => 'global_disable_cluster_id', :class => 'cluster_id'
-      = tag :input, :type => :button, :value => 'Disable All Tables', :class => :disable_table_button
-
-%table.ui-widget-content.ui-corner-all
+%table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead
     %tr
-      %th Name/Location
+      %th
+        %input.bulk-action-checkbox.check-all{:type => "checkbox", :disabled=>'disabled'}
+      %th Name
       %th Hosts/Shards
       %th Row Count
       %th Record Count
-      %th Schema
-      %th
+      %th Info
   %tbody
-    - if tables.empty?
-      %tr
-        %td{:colspan => 6} No Tables found.
-    - tables.each do |table|
-      %tr.ui-widget-content
-        %td
-          = table.table_name
-          %br
-          = table.table_uri
-        %td
-          - if table.server
-            = link_to hosts_blur_table_path(table), :remote => true, :class => 'hosts' do
-              = table.hosts.keys.length
-              &#47;
-              = table.hosts.values.flatten.length
-          - else
-            = nil_message
-        %td= table.row_count ? number_with_delimiter(table.row_count, :delimiter => ',') : nil_message
-        %td= table.record_count ? number_with_delimiter(table.record_count, :delimiter => ',') : nil_message
-        %td= link_to "view", schema_blur_table_path(table), :remote => true, :class => 'schema'
-        %td
-          - if table.status == 4 && can?(:update, :blur_tables)
-            = form_tag blur_table_path(table), :method => :put, :remote => true, :class => 'update' do
-              = hidden_field_tag 'disable', true, :id => "disable_#{table.id}", :class => 'disable'
-              = tag :input, :type => :button, :value => 'Disable Table', :class => :disable_table_button
-          - elsif table.status == 3
-            Disabling...
-:javascript
-  $("#cluster_#{cluster} .table_accordion h3:eq(0) .counter").html(#{tables.size})
+    %tr.no-tables
+      %th
+      %th{:colspan=>5} Loading Tables...

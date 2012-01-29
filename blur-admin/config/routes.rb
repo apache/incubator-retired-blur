@@ -14,7 +14,8 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id' => 'zookeepers#show', :via => :get, :as => :show_zookeeper
   match 'zookeepers/:id/controller/:controller_id' => 'zookeepers#destroy_controller', :via => :delete, :as => :destroy_controller
   match 'zookeepers/:id/shard/:shard_id' => 'zookeepers#destroy_shard', :via => :delete, :as => :destroy_shard
-
+  match 'zookeepers/:id/cluster/:cluster_id' => 'zookeepers#destroy_cluster', :via => :delete, :as => :destroy_cluster
+  match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
   match 'blur_tables/forget_all' => 'blur_tables#forget_all', :via => :delete, :as => :forget_all_blur_tables
   resources :blur_tables do
     get 'hosts', :on => :member
@@ -25,7 +26,7 @@ BlurAdmin::Application.routes.draw do
     delete 'forget', :on => :member, :as => :forget
   end
 
-  match 'blur_queries/refresh' => 'blur_queries#refresh', :via => :get, :as => :refresh
+  match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh
   match 'blur_queries/long_running/:zookeeper_id' => 'blur_queries#long_running', :via => :get, :as => :long_running_queries
   resources :blur_queries do
     member do
@@ -49,6 +50,7 @@ BlurAdmin::Application.routes.draw do
   match 'help/:tab' => 'application#help', :as => :help
 
   match 'hdfs' => 'hdfs#index', :via => :get
+  match 'hdfs/:id/show/(*fs_path)' => 'hdfs#index', :via => :get
   match 'hdfs/:id/info' => 'hdfs#info', :via => :get, :as => :hdfs_info
   match 'hdfs/:id/folder_info' => 'hdfs#folder_info', :via=>:get, :as => :hdfs_folder_info
   match 'hdfs/:id/slow_folder_info' => 'hdfs#slow_folder_info', :via=>:get, :as => :hdfs_slow_folder_info

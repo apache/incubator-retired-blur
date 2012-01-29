@@ -4,7 +4,7 @@
 	<groupId>com.nearinfinity</groupId>
 	<artifactId>blur-agent</artifactId>
 	<packaging>jar</packaging>
-	<version>0.4</version>
+	<version>0.5.2</version>
 	<name>blur-agent</name>
 	<url>http://maven.apache.org</url>
 
@@ -36,24 +36,29 @@
 			<version>1.5</version>
 		</dependency>
 		<dependency>
+			<groupId>commons-dbcp</groupId>
+			<artifactId>commons-dbcp</artifactId>
+			<version>1.4</version>
+		</dependency>
+		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.16</version>
 		</dependency>
-		<dependency>
+		<!-- dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-core</artifactId>
 			<version>0.20.2-cdh3u2</version>
-		</dependency>
+		</dependency -->
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-thrift</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.1.rc2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.nearinfinity.blur</groupId>
 			<artifactId>blur-util</artifactId>
-			<version>0.1-SNAPSHOT</version>
+			<version>0.1.rc2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.thrift</groupId>
@@ -71,7 +76,7 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.1</version>
 		</dependency>
-		<dependency>
+		<!-- dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>zookeeper</artifactId>
 			<version>3.3.1</version>
@@ -85,7 +90,7 @@
 					<artifactId>log4j</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency -->
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
@@ -94,6 +99,11 @@
 		<dependency>
 			<groupId>org.codehaus.jackson</groupId>
 			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
 			<version>1.8.1</version>
 		</dependency>
 		<dependency>

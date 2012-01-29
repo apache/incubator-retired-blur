@@ -1,8 +1,8 @@
 .hidden{ display: none; }
 .inline{ display: inline; }
-
 @import "base";
 @import "navigation";
+@import "bootstrap_addons";
 
 // Application specific pages
 @import "search";

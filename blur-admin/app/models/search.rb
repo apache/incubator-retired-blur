@@ -23,7 +23,6 @@ class Search < ActiveRecord::Base
   end
 
   def column_families
-    puts column_object.inspect
     column_object.collect{|value| value.split('_-sep-_')[1] if value.starts_with?('family')}.compact
   end
   
@@ -44,7 +43,8 @@ class Search < ActiveRecord::Base
   
   def selector
     Blur::Selector.new :columnFamiliesToFetch => column_families,
-                       :columnsToFetch        => columns_hash
+                       :columnsToFetch        => columns_hash,
+                       :recordOnly            => record_only?
   end
   def fetch_results(table_name, blur_urls)
     BlurThriftClient.client(blur_urls).query(table_name, blur_query)
@@ -57,7 +57,6 @@ class Search < ActiveRecord::Base
       tmp_schema[family] << blur_table.schema[family]
       tmp_schema[family].flatten!
     end
-    puts "schema: #{tmp_schema}"
     tmp_schema
   end
   

@@ -3,10 +3,12 @@
   = javascript_include_tag 'compiled/zookeepers'
 
 #zookeepers_wrapper
-  %h2 Zookeepers
+  %h2.title Zookeepers
 
   - if @zookeepers.any?
     #zookeepers
       = render @zookeepers
   - else
     %h4 No Zookeeper Instances Available
+  .clear
+    

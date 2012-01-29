@@ -6,7 +6,12 @@
                              'jquery-ui',
                              'rails',
                              'routes',
-                             'compiled/application'
+                             'compiled/application',
+                             'bootstrap-tabs',
+                             'bootstrap-twipsy',
+                             'bootstrap-popover',
+                             'bootstrap-modal',
+                             'bootstrap-modal-helper'
 
     -# Use this syntax in haml templates to add page specific javascript
     -# - content_for :javascript do
@@ -19,6 +24,7 @@
     %title
       = yield(:title)
       | Blur Admin
+    = stylesheet_link_tag 'bootstrap', :cache => 'main'
     = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
     = yield :stylesheets
   %body
@@ -30,8 +36,12 @@
           - if flash
             #flash
               - flash.each do |type, message|
-                .flash{:id => type}
-                  = message
+                -if type == :notice
+                  .alert-message.success{:class=>type}= message
+                -elsif type == :error
+                  .alert-message.error{:class=>type}= message
+                -else
+                  .alert-message.info{:class=>type}= message
           - if @current_zookeeper && @zookeepers
             #zookeeper_select
               = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',
@@ -84,24 +94,13 @@
 
       #bd
         = yield
-    #ft{:class => (license.nil? || (license.expires_date - Date.today).to_i < 30) && 'expiring_license'}
+    #ft{:class => footer_class(license)}
       #license
-        - if license
-          - days_left_in_license = (license.expires_date - Date.today).to_i
-          = "Licensed to: #{license.org} on #{license.issued_date.strftime('%d %b %Y')}."
-          - if days_left_in_license < 0
-            License is expired.
-          - elsif days_left_in_license == 0
-            License expires today.
-          - elsif days_left_in_license < 30
-            = "License expires in #{pluralize(days_left_in_license, 'day')}."
-        - else
-          No valid license found.
+        = license_text(license)
       #company-info
         %p
           %a#page-help{:href => '#'} Help
           | Developed by 
           %a{:href => "http://www.nearinfinity.com"} Near Infinity
-          | Version 0.4
-
+          | Version 0.5
 #help-menu{:style => 'display: none', "data-controller" => params[:controller], "data-action" => params[:action]}

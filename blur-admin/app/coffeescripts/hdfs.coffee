@@ -1,4 +1,7 @@
 $(document).ready ->
+  if typeof(history.pushState) == 'undefined'
+    history.pushState = ()->
+      
   # Method to initialize the jstree
   setup_context_menus = () ->
       $('#hdfs_browser li.hdfs_instance').contextMenu
@@ -56,15 +59,14 @@ $(document).ready ->
   rename = (el) ->
     id = el.attr('hdfs_id')
     from_path = el.attr('hdfs_path')
-    $('<div id="newName"><input></input></div>').dialog
-      modal: true
-      draggable: true
-      resizable: false
-      width: 'auto'
+    $('<div id="newName"><input></input></div>').popup
       title: 'New Name'
-      open: ()->
+      titleClass: 'title'
+      shown: ()->
         $('#newName input').focus()
-      buttons:
+      btnClasses:
+        "Create": "primary"
+      btns:
         "Create": ()->
           newName = $('#newName input').val()
           newFullPath = "#{from_path.substring(0, from_path.lastIndexOf('/')+1)}#{newName}"
@@ -85,11 +87,9 @@ $(document).ready ->
                 nextWin.load(display_href)
               else
                 el.click()
-          $(this).dialog("close")
+          $().closePopup()
         "Cancel": () ->
-          $(this).dialog("close")
-      close: (event, ui) ->
-          $(this).remove()
+          $().closePopup()
     
   delete_file = (file) ->
     id = file.attr('hdfs_id');
@@ -100,7 +100,7 @@ $(document).ready ->
   window.uploading = false
   finishUploading = (path)->
     $("li[hdfs_path='" + path + "']").click();
-    $('#upload-file').dialog('close').remove();
+    $().closePopup()
     window.uploading = false
   window.finishUploading = finishUploading
   uploadFailed = (error)->
@@ -111,20 +111,15 @@ $(document).ready ->
     id = el.attr('hdfs_id');
     path = el.attr('hdfs_path');
     $.get Routes.hdfs_upload_form_path(), (data)->
-      $(data).dialog
-        modal: true
-        draggable: true
-        resizeable: false
-        width: 'auto'
+      $().popup
+        body:data
         title: 'Upload File'
-        open: ()->
+        titleClass: 'title'
+        show: ()->
           $('#fpath-input').val(path)
           $('#hdfs-id-input').val(id)
-          $('#upload-button').button()
-        beforeClose: ()->
+        hide: ()->
           !window.uploading
-        close: ()->
-          $(this).remove();
   $('#upload-form').live 'submit', ()->
     window.uploading = true
     $('#upload-file #status').html '<h2>Uploading...</h2>'
@@ -132,15 +127,14 @@ $(document).ready ->
   make_dir = (el) ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path');
-    $('<div id="newFolder"><input></input></div>').dialog
-      modal: true
-      draggable: true
-      resizable: false
-      width: 'auto'
+    $('<div id="newFolder"><input></input></div>').popup
       title: 'New Folder'
-      open: ()->
+      titleClass: 'title'
+      shown: ()->
         $('#newFolder input').focus()
-      buttons:
+      btnClasses:
+        "Create": "Primary"
+      btns:
         "Create": ()->
           $.ajax Routes.hdfs_mkdir_path(id),
             type: 'post',
@@ -154,44 +148,31 @@ $(document).ready ->
                 nextWin.load(display_href)
               else
                 el.click()
-          $(this).dialog("close")
+          $().closePopup()
         "Cancel": () ->
-          $(this).dialog("close")
-      close: (event, ui) ->
-          $(this).remove()
+          $().closePopup()
 
   show_hdfs_props = (el) ->
     id = el.attr('hdfs_id')
     title = "HDFS Information (#{el.attr('hdfs_name')})"
     $.get Routes.hdfs_info_path(id), (data) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $(data).popup
         title: title
-        close: (event, ui) ->
-          $(this).remove()
+        titleClass: 'title'
 
   show_dir_props = (el) ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path')
     title = "Properties for #{path}"
     $.get Routes.hdfs_folder_info_path(id),{'fs_path':path},(data) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
+      $(data).popup
+        titleClass: 'title'
         title: title
-        open: () ->
+        show: () ->
           $.get Routes.hdfs_slow_folder_info_path(id),{'fs_path':path},(data) ->
             $('#file_count').html(data.file_count)
             $('#folder_count').html(data.folder_count)
             $('#file_size').html(data.file_size)
-          return true
-        close: (event, ui) ->
-          $(this).remove()
 
   perform_action = (action, el) ->
     switch action
@@ -215,13 +196,115 @@ $(document).ready ->
         rename el
       when "upload"
         upload el
-
-
+  ###
+  #Methods for HTML History manipulation
+  ###
+  
+  #selects the correct hdfs instance based on the current URL
+  setHdfs = () ->
+    #checks if URL is a show
+    urlCheck = location.pathname.match(/^\/hdfs\/\d+\/show/)
+    if urlCheck != null and urlCheck.length == 1
+      #retrieves the ID from the url
+      idRegex = location.pathname.match(/^\/hdfs\/(\d+)\/show/)
+      if idRegex.length && idRegex.length == 2
+        id = idRegex[1]
+        #variable used by the added event listener, weither or not it should keep parsing through the URL
+        window.hdfs_path_set = false
+        $('.hdfs_instance[hdfs_id=' + id + ']').click();
+      else
+        window.hdfs_path_set = true
+    else
+      window.hdfs_path_set = true 
+      
+  #selects the folder on the filesystem with the given hdfs_path, if it exists
+  selectFolder = (path) ->
+    #retrieves HDFS id from the url
+    idRegex = location.pathname.match(/^\/hdfs\/(\d+)\/show/)
+    if idRegex.length && idRegex.length == 2
+      id = idRegex[1]
+      selector = '.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']'
+      folder = $(selector)
+      folder.click(); 
+      
+  #popstate event listener
+  window.onpopstate = (e)->
+    #only run if there is a previous path stored
+    if window.previous_path
+      #previous is contained in current, add folder
+      if location.pathname.indexOf(window.previous_path) == 0
+        #retrieve the path from the URL
+        pathRegex = location.pathname.match(/^\/hdfs\/\d+\/show(.+)/)
+        if pathRegex.length and pathRegex.length == 2
+          path = pathRegex[1]
+          #if the path ends in a trailing slash, remove it
+          if path.charAt(path.length - 1) == "/"
+            path = path.substring(0,path.length - 1)
+          #prevents a double push state
+          window.dont_push_state = true
+          selectFolder(path)
+          
+      #current is contained in previous, remove current folder
+      else if(window.previous_path.indexOf(location.pathname) == 0)
+        $('.innerWindow').last().remove()
+        $('.osxSelected').last().removeClass('osxSelected')
+        
+      #path is not withen a step of each other, full retread
+      else
+        #remove every innerWindow except for the base and any selected hdfs system
+        $('.innerWindow:not(.innerWindow:eq(0))').remove()
+        $('.osxSelected').removeClass('osxSelected')
+        setHdfs()
+    #set the previous path to the current path for the next popstate
+    window.previous_path = location.pathname
+    
+  ###
   # Methods to call on page load
+  ###
   $(document.body).append(tree_context_menu())
   setup_context_menus();
   paste_buffer = {}
-  $('#hdfs_browser').osxFinder();
+  $('#hdfs_browser').osxFinder
+    done:()->
+      setHdfs()     
+    added:(e,data)->
+      #verifys that the URL was an expand
+      urlCheck = data.url.match(/^\/hdfs\/\d+\/expand/)
+      if urlCheck and urlCheck.length == 1
+        #replace with a show URL
+        current_url = data.url.replace "expand","show"
+        #if was just a single add, push the history state
+        if window.hdfs_path_set
+          if not window.dont_push_state
+            history.pushState {},'',current_url
+          else window.dont_push_state = false
+        else
+          #parse the remainder of the URL vs what the returned path was
+          urlLeft = location.pathname.substring(current_url.length)
+          next_path = urlLeft.substring(0,urlLeft.indexOf('/'))
+          if next_path == ""
+            next_path = urlLeft
+          #if the remaining path is not empty
+          if next_path != ""
+            pathRegex = current_url.match(/^\/hdfs\/\d+\/show(.+)/)
+            if pathRegex.length and pathRegex.length == 2
+              path = pathRegex[1] + next_path
+              selectFolder(path)
+          else
+            window.hdfs_path_set = true
+      else
+        urlCheck = data.url.match(/^\/hdfs\/\d+\/file_info/)
+        if urlCheck and urlCheck.length == 1
+          if not window.dont_push_state
+            current_url = data.url.replace "file_info","show"
+            history.pushState {},'',current_url
+          else window.dont_push_state = false
+          
+      #set the previous path as the current path for the next popstate
+      window.previous_path = location.pathname
+
+
+    
   $('#hdfs_wrapper').resizable
     handles:'s'
     stop: () ->

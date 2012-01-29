@@ -1,15 +1,19 @@
-#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{
-  @mixin info($color) {
-    @include border;
-    @include border-radius;
-    background-color: $color;
-  }
-  
-  @mixin pref-box{
-    @include info(white);
-    margin:0px 0px 0px 0px;
-  }
-   
+@mixin info($color) {
+  @include border;
+  @include border-radius;
+  background-color: $color;
+}
+
+@mixin pref-box{
+  @include info(white);
+  margin:0px 0px 0px 0px;
+}
+
+ul{
+  margin: 5px;
+}
+
+#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{   
   @include full;
   @include standard-font;
 
@@ -20,7 +24,12 @@
 
   #users_table { @include columns(15,$total-cols); @include suffix(15); }
 
-  #roles_wrapper {@include alpha; }
+  #roles_wrapper{
+    li{
+      list-style-type:none;
+      display:block;
+    }
+  }
   
   .info-contain{ 
     @include full($total-cols); 
@@ -119,10 +128,6 @@
     @include info($table-hd-color);
   }
   
-  ul{
-    padding:0px;
-    margin:0px;
-  }
   
   .section-label{
     text-align:center;

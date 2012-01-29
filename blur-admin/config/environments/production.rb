@@ -21,7 +21,7 @@ BlurAdmin::Application.configure do
       "#{severity} #tok1-block-tok #{msg}\n"
     end
   end
-  config.logger = Logger.new("#{RAILS_ROOT}/log/#{ENV['RAILS_ENV']}.log", 10,26_214_400)
+  config.logger = Logger.new("#{::Rails.root.to_s}/log/#{ENV['RAILS_ENV']}.log", 10,26_214_400)
   config.logger.formatter = LogFormatter.new
   config.logger.level = Logger::WARN
 

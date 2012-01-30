@@ -14,7 +14,8 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id' => 'zookeepers#show', :via => :get, :as => :show_zookeeper
   match 'zookeepers/:id/controller/:controller_id' => 'zookeepers#destroy_controller', :via => :delete, :as => :destroy_controller
   match 'zookeepers/:id/shard/:shard_id' => 'zookeepers#destroy_shard', :via => :delete, :as => :destroy_shard
-
+  match 'zookeepers/:id/cluster/:cluster_id' => 'zookeepers#destroy_cluster', :via => :delete, :as => :destroy_cluster
+  match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
   match 'blur_tables/forget_all' => 'blur_tables#forget_all', :via => :delete, :as => :forget_all_blur_tables
   resources :blur_tables do
     get 'hosts', :on => :member
@@ -25,8 +26,7 @@ BlurAdmin::Application.routes.draw do
     delete 'forget', :on => :member, :as => :forget
   end
 
-  match 'blur_queries/refresh' => 'blur_queries#refresh', :via => :get, :as => :refresh
-  match 'blur_queries/long_running/:zookeeper_id' => 'blur_queries#long_running', :via => :get, :as => :long_running_queries
+  match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh
   resources :blur_queries do
     member do
       get 'more_info'

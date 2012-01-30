@@ -3,23 +3,18 @@ source 'http://rubygems.org'
 gem 'rails', '3.0.10'
 
 gem 'mysql2', '0.2.11'
-gem 'jquery-rails', '>= 0.2.6'
+gem 'jquery-rails', '1.0.19'
 gem 'compass', '0.11.1'
-gem 'haml'
-gem 'thrift_client', '>=0.7'
-gem 'authlogic'
+gem 'haml', '3.1.4'
+gem 'thrift_client', '0.7.1'
+gem 'authlogic', '3.1.0'
 gem 'cancan', '2.0.0.alpha', :path => 'vendor/gems/cancan'
-gem 'role_model'
-gem 'compass-susy-plugin'
-gem "ganapati", "~> 0.0.5"
-
-group :development do
-  #gem 'system-metrics'
-end
+gem 'role_model', '0.7.0'
+gem 'compass-susy-plugin', '0.9'
+gem "twitter_bootstrap_form_for", '1.0.5'
 
 group :development, :test do
   gem 'barista', '1.0.0'
-  gem 'autotest'
   gem 'rspec-rails'
   gem 'capybara'
   gem 'ci_reporter'

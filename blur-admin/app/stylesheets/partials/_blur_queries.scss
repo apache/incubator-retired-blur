@@ -4,114 +4,50 @@
   @include full;
   @include standard-font;
   @include clearfix;
-  
-  #table_wrapper, #refresh_wrapper, #spinner_wrapper {
-   float: left;
-   margin-right: 5px;
-  }
-  
-  #refresh_wrapper {
-    #pause_button {
-      vertical-align: middle;
-      display: inline-block;
-      margin-bottom: -1px;
-      #pause, #refresh{
-        @include border;
-        cursor: pointer;
-        padding: 0px 1px 1px 1px;
-        &:hover{
-          background-color: $row-hover;
-          background-image: url(../images/ui-icons_555555_256x240.png);
+  .row .span4 {
+    padding-top: 8px;
+    a {
+      margin-right: 5px;
+      &.selected {
+        color: black;
+        &:hover {
+         text-decoration: none; 
         }
       }
-      #pause {
-        display: none;
+      &.unselected {
+        text-decoration: underline;
       }
     }
   }
-  
-  #spinner_wrapper {
-    #filter_spinner {
-      display: none;
-      margin-top: -2px;
+  .range_select{
+    select{
+      width: 100px;
     }
   }
-  
-  #filter_display_wrapper {
-    float: right;
-    #filter_link {
-      font-weight: bold;
-    }
+  .dataTables_processing {
+    padding-top: 8px;
   }
-
-  #current{
-    @include full($total-cols);
-    @include omega;
-    #filters { font-weight: normal; }
-  }
-
-  @mixin table-base {
-    display: table;
-    @include standard-border;
-    tr:nth-child(even) { background-color: white; };
-    tr:nth-child(odd) { background-color: $grey-div-color; };
-    text-align: center;
-    tr.error td{
-      text-align: center;
-    }
-    th {
-      @include border-bottom;
-      font-size: 120%;    
-      text-align: center;
-      background-color: $table-hd-color;
-      color: $table-hd-text;
-      font-weight: bold;
-    }
-    td {
-      text-align: center;
-      font-size: 100%;
-      a { font-weight: bold; };
-    }
-  }
-
-  #queries-table {
-    @include full;
-    @include omega($total-cols);
-    @include table-base;
-    margin-bottom: 165px;
-    tr{
-      height: 50px;
-      td {
-       width: 1%;
-       &.query_string {
-        width: 80%; 
-       }
-       &.actions {
-         white-space: nowrap;
-         form.cancel {
-           @include inline-block;
-         }
-       }
+  #queries-table{
+    width: auto !important;
+    & > tbody > tr > td:last-child {
+      white-space: nowrap;
+      form.cancel {
+        @include inline-block;
+        margin-right: 3px;
+        margin-bottom: 0;
       }
     }
-    
-    thead {
-      th {
-       white-space: nowrap; 
+    .oldRunning{
+      &:hover{
+        background: rgba(247, 225, 225, 1);
+      }
+      td{
+        background: rgba(247, 225, 225, 0.75);
+        border-top: 1px solid #FF0000;
+        border-bottom: 1px solid #FF0000;
       }
     }
-
-    // only display the no-queries-row if it is the first (only) row
-    tbody tr#no-queries-row {
-      display: none;
-    }
-    tbody tr:first-child#no-queries-row {
-      display: table-row;
-    }
   }
-
-  .ui-tooltip { @include standard-font; }
-  #blur_table_id{ margin-bottom: 15px; }
 }
 
 #more-info-table {
@@ -119,20 +55,20 @@
   .more-info-label { white-space: nowrap; font-weight: bold;}
 }
 
-#times-table {
-  td { color: #555; }
-  thead td, .shard { font-weight: bold; }
-  .time { text-align: center;}
+/*#times-table {*/
+  /*td { color: #555; }*/
+  /*thead td, .shard { font-weight: bold; }*/
+  /*.time { text-align: center;}*/
 
-}
+/*}*/
 
-#filter_form {
-  display: none;
-  .query_filter{ 
-    margin-bottom: .75em;
-    label{ 
-      width: 100px;
-      @include inline-block;
-    }
-  }
-}
+/*#filter_form {*/
+  /*display: none;*/
+  /*.query_filter{ */
+    /*margin-bottom: .75em;*/
+    /*label{ */
+      /*width: 100px;*/
+      /*@include inline-block;*/
+    /*}*/
+  /*}*/
+/*}*/

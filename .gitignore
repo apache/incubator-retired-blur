@@ -8,3 +8,6 @@ target
 build
 *.pid
 log
+.metadata
+*.iml
+*.idea

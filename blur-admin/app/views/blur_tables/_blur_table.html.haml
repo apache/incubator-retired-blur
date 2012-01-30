@@ -34,13 +34,13 @@
                                                     :remote => true do
           - unless blur_table.is_enabled?
             = hidden_field_tag 'enable', true
-            = tag :input, :type => :button, :value => 'Enable Table', :class => :enable_table_button
+            = tag :input, :type => :button, :value => 'Enable Table', :class => 'enable_table_button btn'
           - else
             = hidden_field_tag 'disable', true
-            = tag :input, :type => :button, :value => 'Disable Table', :class => :disable_table_button
+            = tag :input, :type => :button, :value => 'Disable Table', :class => 'disable_table_button btn'
       - if can? :delete, :blur_tables and  !blur_table.is_enabled?
         = form_tag "/blur_tables/#{blur_table.id}", :class  => 'delete',
                                                     :method => :delete,
                                                     :remote => true do
           = hidden_field_tag :delete_index, false
-          = tag :input, :type => :button, :value => 'Delete Table', :class => :delete_blur_table_button
+          = tag :input, :type => :button, :value => 'Delete Table', :class => 'delete_blur_table_button btn'

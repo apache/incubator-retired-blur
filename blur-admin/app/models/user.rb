@@ -16,6 +16,11 @@ class User < ActiveRecord::Base
   # roles later, always append them at the end!
   roles :editor, :admin, :reader, :auditor, :searcher
 
+  def ability
+    @ability ||= Ability.new(self)
+  end
+  delegate :can?, :cannot?, :to => :ability
+
   #returns the array of saved cols
   def column_preference
     Preference.find_or_create_by_user_id_and_pref_type(self.id, 'column') do |preference|

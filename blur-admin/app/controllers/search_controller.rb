@@ -92,7 +92,7 @@ class SearchController < ApplicationController
       end
       @results << result
     end
-
+    puts search.schema(blur_table)
     @schema = Hash[search.schema(blur_table).sort &preference_sort(current_user.column_preference.value || [])]
 
     respond_to do |format|
@@ -146,17 +146,15 @@ class SearchController < ApplicationController
   end
 
   def update
-    search = Search.find params[:search_id]
-    search.attributes(:name               => params[:save_name],
+    Search.update(params[:search_id],
+                        :name               => params[:save_name],
                         :super_query =>!params[:super_query].nil?,
-                        :record_only  =>!params[:record_only].nil?,
+                        :record_only =>!params[:record_only].nil?,
                         :fetch       => params[:result_count].to_i,
                         :offset      => params[:offset].to_i,
                         :user_id     => current_user.id,
-                        :query       => params[:query_string])
-    search.column_object = params[:column_data]
-    search.save
-
+                        :query       => params[:query_string],
+                        :column_object => params[:column_data])
     render :nothing => true
   end
   private
@@ -167,7 +165,7 @@ class SearchController < ApplicationController
         elsif preferred_columns.include? b[0] and !preferred_columns.include? a[0]
           1
         else
-          a[0] <=> b[0]
+          preferred_columns.index(a[0]) <=> preferred_columns.index(b[0])
         end
       end
     end

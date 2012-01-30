@@ -1,7 +1,7 @@
 $(document).ready ->
-  ONLINE='green_box'
-  OFFLINE='ui-state-error'
-  NA='grey_box'
+  ONLINE='success'
+  OFFLINE='important'
+  NA=''
   
   # Updates all fields on the dashboard
   load_dashboard = () ->
@@ -13,7 +13,7 @@ $(document).ready ->
         zookeeper_table = $('#zookeepers').find("#" + this.id )
 
         # Updates the header showing the zookeeper status
-        current_zookeeper = $('#' + zookeeper_table[0].id).find("th")
+        current_zookeeper = $('#' + zookeeper_table[0].id).find(".zookeeper-title")
         if this.status == 1
           current_zookeeper.removeClass(OFFLINE)
                           .addClass(ONLINE)
@@ -29,9 +29,9 @@ $(document).ready ->
         query_message = '<div></div>'
         if parseInt(this.long_running_queries) > 0
           if parseInt(this.long_running_queries,10) == 1
-            query_message = '<div><a href="' + Routes.long_running_queries_path(this.id) + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.make_current_zookeeper_path() + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
           else
-            query_message = '<div><a href="' + Routes.long_running_queries_path(this.id) + '" class="long_running_queries">' + this.long_running_queries + '</a> queries have been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.make_current_zookeeper_path() + '" class="long_running_queries">' + this.long_running_queries + '</a> queries have been running for more than a minute</div>'
         zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards
@@ -162,16 +162,11 @@ $(document).ready ->
     window.location = Routes.show_zookeeper_path($(this).children('table').attr('id'))
   $('a.long_running_queries').live 'click', ->
     url = $(this).attr('href')
-    $.get url, (data) ->
-      $(data).dialog
-        modal: true
-        draggable: false
-        resizable: false
-        width: 'auto'
-        title: "Long Running Queries"
-        close: (event, ui) ->
-          $(this).remove()
-        open: (event, ui) ->
-          $('#no-queries-row').hide()
+    $.ajax url, 
+      type: 'put',
+      data:
+        id: $(this).closest('table').attr('id')
+      success: () ->
+        window.location = Routes.blur_queries_path()
     false
 

@@ -1,5 +1,6 @@
+= stylesheet_link_tag 'bootstrap', :cache => 'main'
 = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
-= javascript_include_tag 'jquery','jquery-ui','rails','compiled/application'
+= javascript_include_tag 'jquery','jquery-ui','rails','compiled/application','bootstrap-twipsy'
 .help-section
   %h3.help-label Navigation Help
   .help-content{:style => 'display: none'}
@@ -64,8 +65,9 @@
         %li "Row Count" is the number of rows in that particular table.
         %li "Record Count" is the number of records in that particular table.
         %li
-          "Schema" is a link that displays a list of Column families and their columns when clicked.
+          "Info" is a link that displays a list of Column families and their columns.
           %ul
+            %li The location of the table in the HDFS.
             %li Each entry also shows the name of its analyzer.
     .head
       Depending on access, various actions will be available per status.
@@ -81,23 +83,11 @@
       The "Blur Queries" page is a list of recently executed Blur Queries.
     .body
       %ol
-        %li
-          The "Filters" section is a set of options for limiting what queries are displayed in the list.
-          %ul
-            %li The "Within past" selector allows you to limit the queries based on how long ago the query was submitted.
-            %li The "Super Query" option allows to show or hide queries based on whether they were run with super query on or off.
-            %li The "State" option allows users to filter the queries by their state (Running, Interrupted, Completed).
-            %li The "User" option allows users to filter the queries by the user that performed the query (separated by a space). This filter can optionally include or exclude the listed users and include or exclude any unknown users.
-        %li The "Blur Table" selector filters the queries list what table the query was ran against.
-        %li
-          The "Refresh" selector allows the user to choose how often the table information is refreshed.
-          %ul
-            %li
-              When the table is refreshed, queries are automatically added, updated, and deleted.
-              %ul
-                %li When a query is added, it flashes green.
-                %li When a query is updated, it flashes orange.
-                %li When a query is deleted, it flashes red before it is removed from the table.
+        %li The "Auto Refresh" selector allows the user to choose how often the table information is refreshed.
+        %li The "Queries in the last" selector allows users to limit the queries by the time they were updated.
+        %li When the table is refreshed, queries are automatically added, updated, and deleted.
+        %li Each column in the table is sortable by clicking the header of each column.
+        %li The filter box allows users to search for specific values in the table.
     .head
       Underneath the filters section is the queries table.
     .body
@@ -109,8 +99,8 @@
           %ul
             %li Only the first 50 characters of the query text are displayed on the table. The full text can be seen by hovering your mouse over the query column.
         %li The "Table Name" column shows the table that the query was executed against.
-        %li The "Start" column shows the starting offset for the executed query.
-        %li The "Fetch" column shows the amount of records fetched for the executed query.
+        %li The "Starting Record" column shows the starting offset for the executed query.
+        %li The "Time Submitted" column shows the time that the query was submitted.
         %li The "Status" column shows the percent of shards that have completed the query and whether or not the query is still running or was interrupted.
         %li The "Actions/Info" column gives users the ability to cancel queries that are still in the running state (editor role only) and display details associated with the query (auditor role only).
 
@@ -119,16 +109,19 @@
   .help-content{ :style =>  tab != 'search' && 'display: none' }
     .help_list#saved_help
       .head
-        Use the "Saved Searches" tab to load a previously saved query.
+        Use the "Saved" menu to load a previously saved query.
       .body
         %ul
-          %li The green play button will execute the query and display the results.
           %li The pencil will load the save into the form.
           %li The red "x" will delete the saved query.
+          %li 
+            Use the "Save Options" tab to save the current query.
+            %ul
+              %li The "Name" field is used to name your saved searches.
 
     .help_list#search_help
       .head
-        Use the "Search" tab to begin building a query. Use the search button at the bottom to submit.
+        Use the "Search" box to begin building a query. Use the search button to the right to submit.
       .body
         %ul
           %li Basic field searches are in the format column_family.column:value
@@ -144,19 +137,14 @@
 
     .help_list#advanced_help
       .head
-        Use the "Advanced Options" tab to further modify a query.
+        Use the "Advanced" menu to further modify a query.
       .body
         %ul
+          %li The "Column Families" selector tree allows users to limit the returned columns.
           %li The "Super Query" option allows you to turn superQuery on/off.
           %li The "Start" option allows you to choose the starting element to display.
           %li The "Fetch" option allows you to limit the amount of rows that are returned.
-
-    .help_list#store_help
-      .head
-        Use the "Save Options" tab to save the current query.
-      .body
-        %ul
-          %li The "Name" field is used to name your saved searches.
+          %li The "Record Only" option displays results as records only.
 
 .help-section
   %h3.help-label HDFS help
@@ -181,8 +169,3 @@
             %li This list is sortable. To change the order of the column families, simply drag a column family to the desired spot in the list.
             %li To add columns to your preferred list, click on a blue column from the list on the right and it will be added to your preferred list.
             %li To remove a column from your preferred list,** a user can either drag the column into the trash can from their preferred list or click on the corresponding column on the right.
-    .head
-      The "Filter Preferences" section allows the user to choose their Blur Query filter defaults.
-    .body
-      %ol
-        %li These values are automatically populated into their respective selectors on the Blur Queries page.

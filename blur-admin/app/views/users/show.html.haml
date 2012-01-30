@@ -41,28 +41,6 @@
               .fam{:id => "value_#{option}"}
                 =option
 
-    #pref-filter-info
-      %h3
-        Blur Queries Filter Preferences
-      =form_tag(user_preference_path(@user, :filter), :method => :put, :id => 'filters', :remote => true)
-      - filter_pref = @filter_preference.value || {'created_at_time'=>'', 'super_query_on'=>'', 'state'=>'', 'refresh_period'=>''}
-      .query_filter
-        = label_tag "value[created_at_time]", 'Within past:'
-        = select_tag "value[created_at_time]",
-          options_for_created_at_time(filter_pref['created_at_time'])
-      .query_filter
-        = label_tag "value[super_query_on]", 'Super Query:'
-        = select_tag "value[super_query_on]",
-          options_for_all_yes_no(filter_pref['super_query_on'])
-      .query_filter
-        = label_tag "value[state]", 'Query Status:'
-        = select_tag "value[state]",
-          options_for_select([['All', ''], ['Running', 0], ['Interrupted', 1], ['Completed', 2]], filter_pref['state'])
-      .query_filter
-        = label_tag "value[refresh_period]", 'Refresh:'
-        = select_tag "value[refresh_period]",
-          options_for_refresh_period(filter_pref['refresh_period'])
-
     #user-info
       %p
         %strong Username:

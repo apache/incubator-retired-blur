@@ -2,11 +2,4 @@
 
 #new_user_wrapper
   %h2 Register
-
-  = render 'form', :user => @user
-
-  %br
-  - if @current_user
-    %p= link_to "Back to List", users_path
-  - else
-    %p= link_to "Log In", login_path
+  = render 'form', :user => @user, :cancel_path => (@current_user ? users_path : login_path)

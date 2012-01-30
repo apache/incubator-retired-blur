@@ -6,70 +6,75 @@
   #filter_section
     = form_tag search_path, :method => 'post', :id=>'search_form', :remote => true do
       #filters_wrap
-        #saved.tab
+        #standard
+          .search_field
+            = search_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
+          = submit_tag "Search", :id => "search_submit", :class => "btn primary"
+          %img.hidden{:id => "loading-spinner",
+              :src => image_path("/images/loader.gif"),
+              :alt => "Loading..."}
+        #advanced
           .header
-            %label Saved Searches
-          .body
-            = render "saved", :searches => @searches, :blur_table => @blur_table
-        #standard.tab
+            Advanced
+            %img{:class => "arrow_down arrow",
+                :src => image_path("/images/arrow_down.png"),
+                :alt => "Expand For More Options"}
+            %img{:class => "arrow_up arrow",
+                :src => image_path("/images/arrow_up.png"),
+                :alt => "Expand For More Options",
+                :style => "display:none"}
+          .body.tab
+            .filter.section
+              .filtered-title
+                Table
+              = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
+            .filter.section
+              .filtered-title Column Families
+              #filter_columns.hidden
+                = render 'filters', :columns => @columns
+            .section
+              %table
+                %tr.filter
+                  %td Super Query:
+                  %td 
+                    = check_box_tag :super_query, true, true
+                %tr.filter
+                  %td Record Only:
+                  %td 
+                    = check_box_tag :record_only, true, false,:disabled => 'disabled'
+                %tr.filter
+                  %td Start:
+                  %td 
+                    = number_field_tag :offset, 0, :min => 0
+                %tr.filter
+                  %td Fetch:
+                  %td 
+                    = number_field_tag :result_count, 10, :min => 0
+        #saved
           .header
-            %label Search
-          .body
-            .filter= label_tag :query_string, "Query:"
-            = text_area_tag :query_string, params[:query_string]
-            .filter= label_tag :blur_table, "Table:"
-            = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
-            .filter
-              Column Families:
-            #filter_columns.hidden
-              = render 'filters', :columns => @columns
-
-        #advanced.tab
-          .header
-            %label Advanced Options
-          .body
-            .filter
-              = label_tag :super_query, "Super Query:"
-              = check_box_tag :super_query, true, true
-            .filter
-              = label_tag :record_only, "Record Only:"
-              = check_box_tag :record_only, true, false,:disabled => 'disabled'
-            .filter
-              = label_tag :offset, 'Start:'
-              = number_field_tag :offset, 0, :min => 0
-            .filter
-              = label_tag :result_count, 'Fetch:'
-              = number_field_tag :result_count, 10, :min => 0
-
-        #store.tab
-          .header
-            %label{:id => 'store'} Save Options
-          .body
-            .filter#save_name_wrap
-              #save_label= label_tag :save_name, 'Name:'
-              = text_field_tag 'save_name'
-            .filter#buttons
-              %button{:name => "save", :type => "button", :id => 'save_button'}
-                Save as New Search
-              %button{:name => "update", :type => "button", :id => 'update_button'}
-                Update Search
-
-      #search_send.partial_section
-        %img.hidden{:id => "loading-spinner",
-             :src => image_path("/images/loadinfo_24.gif"),
-             :alt => "Loading..."}
-        = submit_tag "Search", :id => "search_submit"
-  #bar_section
-    #arrow.ui-icon.ui-icon-triangle-1-w
-
-  #results_wrapper.open_filters
+            Saved
+            %img{:class => "arrow_down arrow",
+                :src => image_path("/images/arrow_down.png"),
+                :alt => "Expand For More Options"}
+            %img{:class => "arrow_up arrow",
+                :src => image_path("/images/arrow_up.png"),
+                :alt => "Expand For More Options",
+                :style => "display:none"}
+          .body.tab
+            .saved.section
+              .saved-title
+                Saved Searches
+              = render "saved", :searches => @searches, :blur_table => @blur_table
+            .save_actions.section
+              .saved-title.saved-input
+                Save Current Search
+              .filter#save_name_wrap
+                #save_label= label_tag :save_name, 'Name:'
+                = text_field_tag 'save_name'
+              .filter#buttons
+                %button.btn.primary{:name => "save", :type => "button", :id => 'save_button'}
+                  Save New
+                %button.btn{:name => "update", :type => "button", :id => 'update_button'}
+                  Update
+  #results_wrapper.hidden
     #results_container
-
-#dialog-confirm.hidden{:title => "Delete this saved query?"}
-  %p This will permanently delete the selected saved query. Do you wish to continue?
-#update-conflict.hidden{:title => "Update Error"}
-  %ul
-    An error occurred while trying to update the saved search, either:
-    %li There are multiple saves with the same name.
-    %li There are no saved searches with that name.
-    To fix this error try changing the name.

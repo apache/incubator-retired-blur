@@ -1,96 +1,119 @@
+@mixin outer-container {
+  margin-bottom: 2em;
+  
+}
+@mixin inner-container {
+
+  margin-bottom: 2em;
+}
+
 #zookeeper_wrapper {
+
   margin-top: 2em;
   @include full;
 
-  @mixin outer-container {
-    @include border;
-    @include border-radius;
-    margin-bottom: 2em;
-    background-color: $grey-div-color;
-  }
-
-  @mixin inner-container {
-    @include border;
-    @include border-radius;
-    background-color: white;
-    margin-bottom: 2em;
-  }
-
-  #blur, #zookeeper {
+  #blur, #zookeeper{
     @include outer-container;
   }
 
   #zookeeper {
     @include columns(30,$total-cols);
-    td.label {
-      font-weight: bold;
-    }
+    border:$twitter-border;
+    padding-top:20px;
+    @include border-radius(5px);
+    position:relative;
     table {
       @include prefix(0.25);
       @include columns(29.5);
+    }
+    
+    .title{
+      position:absolute;
+      display:block;
+      top:-18px;
+      left:20px;
+      background:$bg-blue-color;
     }
   }
 
   #blur {
     @include columns(30,$total-cols);
     margin-bottom: 165px;
-
+    border:$twitter-border;
+    @include border-radius(5px);
+    padding-top:20px;
+    position:relative;
+    #controllers-placeholder,#shards-placeholder{
+      margin-top: 5px;
+    }
     #controllers, #shards{ @include columns(14.25, $total-cols); }
     .blur_container{ @include inner-container; @include prefix(0.25);}
     #controllers{ @include prefix(0.25); }
     #shards{ @include omega($total-cols); @include suffix(0.25);}
+    .title{
+      position:absolute;
+      display:block;
+      top:-18px;
+      left:20px;
+      background:$bg-blue-color;
+    }
   }
-
-  h2 { @include prefix(0.25) }
+  .status{
+  width:75px;
+  }
   h3 { margin-top: 0.5em; }
-
-  .green_box, .ui-state-error, .yellow_box {
-    text-align:center;
-    margin: 5px;
-    width: 100px;
-  }
-
-  h4.name, .green_box, .ui-state-error, .yellow_box { display: inline-block; }
 }
 
 #zookeepers_wrapper{
   display: none;
   @include full;
   @include standard-font;
-  padding-top: 2em;
-  padding-bottom: 165px;
+  margin-top: 2em;
+  margin-bottom: 165px;
+  border:$twitter-border;
+  @include border-radius(5px);
+  position:relative;
+  
+
+  .title{
+    position:absolute;
+    display:block;
+    top:-18px;
+    left:20px;
+    background:$bg-blue-color;
+  }
 
   .zookeeper_info {
-    @include standard-border;
-    max-width: 500px;
     min-width: 400px;
     margin-left: 20px;
     margin-right: 10px;
     margin-bottom: 20px;
+    margin-top: 20px;
     float: left;
     display: inline-block;
-    background-color: white;
-
     table{
-      width: 100%;
-      margin: 0;
-      th { width: 100%; font-size: 1.2em; @include border-top-radius(4px); border: none; }
-      td { @include standard-font; padding-bottom: 1em;}
-      td.cont, td.shard { text-align: center; }
-      .index { vertical-align: top; }
+      margin-bottom:0;
+      @include border-bottom-radius(5px)
     }
-    
     &:hover {
       cursor: pointer;
       background: #FFFCD6;
     }
   }
-
+  .zookeeper-title{
+    font-size:125%;
+    padding: 5px 10px;
+    margin:0;
+    display:table-cell;
+    text-align: left;
+    @include border-bottom-radius(0px)
+  }
   .warning { height: 18px; text-align: center; }
+  .status{
+  width:160px;
+  }
+  #zookeepers { @include columns(30,$total-cols); height: 100%;}
 
-  #zookeepers { @include columns(30,$total-cols); height: 100%; padding-bottom: 85px; }
-
-  .green_box, .ui-state-error, .yellow_box, .grey_box { margin-bottom: 5px; width: 160px; }
 
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
   .number {width: 20px; text-align: right; }
@@ -99,8 +122,4 @@
 }
 
 .grey_box { background-color: $grey-color; @include border; }
-.green_box { background: $green-state-color; color: white; border: $border_width $border_style $green-border-color; }
-.yellow_box { background: $yellow-state-color; border: $border_width $border_style $yellow-border-color; }
-
-.warning { color: $red-state-color; font-weight: bold; }
 

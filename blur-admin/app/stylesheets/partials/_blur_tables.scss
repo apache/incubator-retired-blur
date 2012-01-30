@@ -1,21 +1,57 @@
 #blur_tables {
   width: 99%;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: 5px;
+  border: 0;
+  margin: 5px 20px 0;
   table {
     margin-bottom: 5px;
   }
-  .global_actions form {
-    float: right;
+  li > a:hover{
+    background-color:white;
   }
-  .disabled_tables form {
-    float: right;
-  }
-  td input.disable_table_button, td input.forget_blur_table_button, td input.enable_table_button {
-    float:right;
+  .active a, .active a:hover{
+  background-color:#EEE;
   }
 }
-.location{
-  //font-weight: bold;
+.pill-content{
+  margin:0 10px;
 }
+#tables-wrapper{
+  border: $twitter-border;
+  background-color:#EEE;
+  padding:10px;
+}
+
+.cluster-tabs{
+margin:15px;
+margin-bottom: 0;
+border-bottom:0;
+li > a:hover{
+  background-color:#DDD;
+}
+.active a, .active a:hover{
+  background-color:white;
+}
+}
+
+.inner-wrap{
+  border:$twitter-border;
+  background-color:white;
+}
+.bulk-action-selector{
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 5px;
+}
+tr.highlighted-row td{
+  background:#FAD08A !important;
+}
+.btn.suppress-button{
+  background-color:#E6E6E6;
+  color :#333;
+}
+
+.bulk-action-button{
+  margin:10px 0px 10px 10px;
+}
+
+

@@ -1,29 +1,13 @@
-- nil_message = "Not Available"
+-if can?(:update, :blur_tables)
+  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'forget'} Forget Tables
 
-- if !tables.empty? && can?(:update, :blur_tables)
-  %div.global_actions
-    = form_tag forget_all_blur_tables_path, :method => :delete, :remote => true, :class => 'delete' do
-      = hidden_field_tag 'cluster_id', cluster, :id => 'global_disable_cluster_id', :class => 'cluster_id'
-      = tag :input, :type => :button, :value => 'Forget All Tables', :class => :forget_all_tables_button
-
-%table.ui-widget-content.ui-corner-all
+%table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
   %thead
     %tr
-      %th Name/Location
       %th
+        %input.bulk-action-checkbox.check-all{:type => "checkbox", :disabled=>'disabled'}
+      %th Name
   %tbody
-    - if tables.empty?
-      %tr
-        %td{:colspan => 2} No deleted tables found.
-    - tables.each do |table|
-      %tr.ui-widget-content
-        %td
-          = table.table_name
-          %br
-          = table.table_uri
-        %td
-          - if can? :delete, :blur_tables
-            = form_tag forget_blur_table_path(table), :class  => 'delete', :method => :delete, :remote => true do
-              = tag :input, :type => :button, :value => 'Forget Table', :class => :forget_blur_table_button
-:javascript
-  $("#cluster_#{cluster} .table_accordion h3:eq(2) .counter").html(#{tables.size})
+    %tr.no-tables
+      %th
+      %th{:colspan=>1} Loading Tables...

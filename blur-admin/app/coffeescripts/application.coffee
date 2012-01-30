@@ -1,29 +1,25 @@
 $(document).ready ->
   # Zookeeper context switch
+  # reload page with new zookeeper
   $('#zookeeper_id').live 'change', ->
-    #reload page with new zookeeper
     $(this).closest('form').submit()
 
   # Remove blue oval around clicked jstree elements
   $('.jstree-clicked').live 'click', ->
     $('.jstree-clicked').removeAttr('class', 'jstree-clicked')
 
-  # Listener to hide dialog on click
-  $('.ui-widget-overlay').live "click", -> $(".ui-dialog-content").dialog "close"
-  
   #slower tooltip for the saved buttons  
-  $('.action-icon').tooltip
-    show:
-      delay: 1000
+  $('.action-icon').twipsy
+    delayIn: 500
+
           
   $('html').live 'ajax:success', ->
     # remove old tooltips
     $('.ui-tooltip').remove()
         
     #slower tooltip for the saved buttons    
-    $('.action-icon').tooltip
-      show:
-        delay: 1000
+    $('.action-icon').twipsy
+      delayIn: 500
         
   #fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow")
@@ -40,15 +36,11 @@ $(document).ready ->
       tab = "admin"
     else 
       pre_tab = url.substring 1
-      if pre_tab.indexOf('/') != -1
-        tab = pre_tab.substring 0, pre_tab.indexOf '/'
-      else
-        tab = pre_tab
-        
+      tab = if pre_tab.indexOf('/') != -1 then pre_tab.substring 0, pre_tab.indexOf '/' else pre_tab
     help_win = window.open Routes.help_path(tab),"Help Menu","menubar=0,resizable=0,width=500,height=800"
       
   $('.help-section').live 'click', ->
-    $(this).children('.help-content').toggle('fast')
+    $(this).children('.help-content').slideToggle('fast')
     
   # Fix menus with no zookeeper context
   if typeof Zookeeper != 'undefined' && Zookeeper.instances
@@ -71,14 +63,10 @@ $(document).ready ->
         $.each Zookeeper.instances, () ->
           select_box += "<option value='#{this.id}'>#{this.name}</option>"
         select_box += "</select></div>"
-        $(select_box).dialog
-          autoOpen: true
-          height: 100
-          width: 350
-          modal: true
+        $().popup
+          body:select_box
           title: 'Select a Zookeeper Instance to use:'
-          open: ()->
-            dialog = $(this)
+          shown: ()->
             $('#zookeeper_selector').change ()->
               $.ajax Routes.make_current_zookeeper_path(), 
                 type: 'put',
@@ -86,5 +74,5 @@ $(document).ready ->
                   id: $(this).val()
                 success: () ->
                   window.location = self.href
-              dialog.dialog("close")
+              $().closePopup()
         return false

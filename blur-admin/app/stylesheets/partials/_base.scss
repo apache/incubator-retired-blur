@@ -8,6 +8,7 @@ $yellow-state-color: #F6DD60;
 $yellow-border-color: #D0D00B;
 $green-state-color: #68B473;
 $green-border-color: #62A630;
+$orange-color: #FBBE5D;
 
 $nav-blue-color: #C4D9FF;
 $table-hd-color: #E4EDFF;
@@ -22,6 +23,8 @@ $bar-hover: #FAD290;
 
 $font-color: #555;
 $border_color: #999;
+$lightblue-color: #93A7AC;
+$lighterblue-color: #C4D2D6;
 
 $border_width: 1px;
 $border_style: solid;
@@ -52,13 +55,23 @@ $show-grid-backgrounds: true;
 @mixin border-sides  { border-left:   $border_width $border_style $border_color;
                        border-right:  $border_width $border_style $border_color; }
 
+$twitter-border: 1px solid #ccc;
+.bottom-line{
+  border-bottom: $twitter-border;
+}
 @mixin standard-border {
   @include border-radius;
   @include border;
 }
 
+html{
+  height:100%;
+  overflow:auto;
+}
+
 // Page settings
 body {
+  height: 100%;
   @include container;
   margin:0 auto;
   background-color: $bg-blue-color;
@@ -88,14 +101,65 @@ body {
   }
 }
 
-h2 { font-size: 200%; }
+.title{
+  color:$lightblue-color;
+}
+.blue-back{
+  background-color:$lighterblue-color;
+}
+.center{
+  text-align:center;
+  vertical-align:middle;
+}
 
-.ui-dialog { min-width: 300px; }
-.ui-tooltip { max-width: 600px; }
+.label{
+  text-align: center;
+  display: inline-block;
+  padding:1px 15px 1px;
+  margin: 2px 0 2px;
 
-.jstree-icon{ cursor: pointer; }
-.jstree a { 
-  &:hover{
-    color: #06C;
-  }
+}
+.label.important{
+font-style:italic;
+}
+.tabs{
+font-size:120%;
+}
+
+.icon{
+ width:20px;
+ height:20px;
+ display:inline-block;
+ background-color:#F8F8F8;
+ border-radius:3px;
+ border:1px solid #CCC;
+ &:hover{
+ background-color:#ffe4a3;
+ }
+ div{
+  width:16px;
+  height:16px;
+  margin:2px;
+ }
+ .cut{
+  background-image: url(/images/cut.png);
+ }
+ .delete{
+  background-image: url(/images/delete.png);
+ }
+ .edit{
+  background-image: url(/images/edit.png);
+ }
+ .play{
+ background-image: url(/images/play.png);
+ }
+ .refresh{
+ background-image: url(/images/refresh.png);
+ }
+ .pause{
+ background-image: url(/images/pause.png);
+ }
+}
+.clear{
+  clear:both;
 }

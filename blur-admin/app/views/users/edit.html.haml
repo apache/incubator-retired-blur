@@ -2,9 +2,4 @@
 
 #edit_user_wrapper
   %h2 Edit User
-
-  = render 'form', :user => @user
-
-  %br
-  %p
-    = link_to "View All", users_path
+  = render 'form', :user => @user, :cancel_path => users_path

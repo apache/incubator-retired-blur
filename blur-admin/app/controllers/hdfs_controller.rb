@@ -18,7 +18,7 @@ class HdfsController < ApplicationController
 
   def folder_info
     instance = Hdfs.find params[:id]
-    client = HdfsThriftClient.client(instance.host, instance.port)
+    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
     @path = params[:fs_path]
     @stat = client.stat @path
     render :layout => false
@@ -26,9 +26,9 @@ class HdfsController < ApplicationController
 
   def slow_folder_info
     instance = Hdfs.find params[:id]
-    client = HdfsThriftClient.client(instance.host, instance.port)
+    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
     @path = params[:fs_path]
-    file_stats = client.ls(@path, true, true)
+    file_stats = client.ls(@path, true)
     @file_count = @folder_count = @file_size = 0
     file_stats.each do |stat|
       @file_size += stat.length
@@ -43,8 +43,8 @@ class HdfsController < ApplicationController
     instance = Hdfs.find @hdfs_id
     @path = params[:fs_path] || '/'
     @path += '/' unless @path.last=='/'
-    client = HdfsThriftClient.client(instance.host, instance.port)
-    fileStats = client.ls(@path, true)
+    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
+    fileStats = client.ls(@path)
 
     @children = fileStats.collect do |stat|
       file_ending = stat.path.split('/').last
@@ -56,7 +56,7 @@ class HdfsController < ApplicationController
 
   def mkdir
     instance = Hdfs.find params[:id]
-    client = HdfsThriftClient.client(instance.host, instance.port)
+    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
     path = "#{params[:fs_path]}/#{params[:folder]}/"
     path.gsub!(/\/\//, "/")
     client.mkdir(path)
@@ -65,28 +65,28 @@ class HdfsController < ApplicationController
 
   def file_info
    instance = Hdfs.find params[:id]
-   client = HdfsThriftClient.client(instance.host, instance.port)
+   client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
    @stat = client.stat params[:fs_path]
    render :layout => false
   end
   
   def move_file
     instance = Hdfs.find params[:id]
-    client = HdfsThriftClient.client(instance.host, instance.port)
+    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
     
     puts params[:from]
     puts params[:to]
     
-    client.mv(params[:from], params[:to])
+    client.rename(params[:from], params[:to])
     render :nothing => true
   end
   
   def delete_file
     instance = Hdfs.find params[:id]
-    client = HdfsThriftClient.client(instance.host, instance.port)
+    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
     
     path = params[:path]
-    client.rm path, true
+    client.delete path, true
     render :nothing => true
   end
   
@@ -103,7 +103,7 @@ class HdfsController < ApplicationController
           @error = 'Upload is Too Large.  Files must be less than 25Mb.'
         else
           instance = Hdfs.find params[:hdfs_id]
-          client = HdfsThriftClient.client(instance.host, instance.port)
+          client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
           client.put(f.tempfile.path,@path + '/' + f.original_filename)
         end
       else

@@ -1,7 +1,13 @@
 $(document).ready ->
   if typeof(history.pushState) == 'undefined'
     history.pushState = ()->
-      
+  headerHeight = parseInt($('#top').css('height'),10)
+  $('#hdfs_wrapper').css('height', window.innerHeight - headerHeight)
+  prevHeight = window.innerHeight
+  $(window).resize ()->
+    if prevHeight != window.innerHeight
+      $('#hdfs_wrapper').css('height', window.innerHeight - headerHeight)
+    prevHeight = window.innerHeight
   # Method to initialize the jstree
   setup_context_menus = () ->
       $('#hdfs_browser li.hdfs_instance').contextMenu

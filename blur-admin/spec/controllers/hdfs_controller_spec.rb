@@ -2,7 +2,7 @@ require "spec_helper"
 
 describe HdfsController do
   before(:each) do
-    @hdfs_client = mock(Ganapati::Client)
+    @hdfs_client = mock(HdfsThriftClient::Client)
     HdfsThriftClient.stub!(:client).and_return(@hdfs_client)
 
     @ability = Ability.new User.new
@@ -19,7 +19,6 @@ describe HdfsController do
     before do
       Hdfs.stub(:select).and_return([@hdfs])
       @hdfs_client.stub(:ls).and_return(@file_strings)
-      @hdfs_client.stub(:exists?).and_return(true)
     end
 
     it "renders the index template" do

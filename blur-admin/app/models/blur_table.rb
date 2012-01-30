@@ -38,11 +38,11 @@ class BlurTable < ActiveRecord::Base
   end
   
   def is_disabled?
-    self.status = 2
+    self.status == 2
   end
   
   def is_deleted?
-    self.status = 0
+    self.status == 0
   end
 
   def enable(blur_urls)
@@ -57,7 +57,7 @@ class BlurTable < ActiveRecord::Base
     begin
       BlurThriftClient.client(blur_urls).disableTable self.table_name
     ensure
-      return self.is_enabled?
+      return self.is_disabled?
     end
   end
 

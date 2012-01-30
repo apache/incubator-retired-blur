@@ -16,10 +16,7 @@ class Search < ActiveRecord::Base
   end
   
   def column_object
-    unless @column_object
-      @column_object = columns ? JSON.parse(columns) : []
-    end
-    @column_object
+    @column_object = @column_object || (columns ? JSON.parse(columns) : [])
   end
 
   def column_families

@@ -43,7 +43,13 @@ class ApplicationController < ActionController::Base
         session.delete :current_zookeeper_id if @current_zookeeper.nil?
         session[:current_zookeeper_id] = @current_zookeeper.id unless @current_zookeeper.nil?
       end
-      redirect_to root_path and return unless @current_zookeeper
+      if @current_zookeeper.nil?
+        if request.xhr?
+          render :status => :conflict, :text => "No Current Zookeeper"
+        else
+          redirect_to root_path
+        end
+      end
       @current_zookeeper
     end
 

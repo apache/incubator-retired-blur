@@ -24,7 +24,7 @@ $(document).ready ->
         hosts: 'Unknown'
         shards: 'Unknown'
   reload_table_info = (cluster, state, shouldRepeat) ->
-    $.get "#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", (data)->
+    $.get("#{Routes.reload_blur_tables_path()}?status=#{state}&cluster_id=#{cluster}", (data)->
         selector = $("#cluster_#{cluster}_#{state}")
         cluster_table = selector.children('.cluster_table')
         cluster_table.find('.no-tables').remove()
@@ -82,7 +82,10 @@ $(document).ready ->
         cluster_table.find('.blur_table').removeClass('updated')
         disable_action(cluster_table)
         if shouldRepeat
-          setTimeout('window.reload_table_info("' + cluster + '","' + state + '",' + shouldRepeat + ')', 5000);
+          setTimeout('window.reload_table_info("' + cluster + '","' + state + '",' + shouldRepeat + ')', 5000)).error( (data) ->
+              if data.status == 409
+                window.location.replace(document.location.origin);
+            )
   window.reload_table_info = reload_table_info
   
   $('.cluster').each ->

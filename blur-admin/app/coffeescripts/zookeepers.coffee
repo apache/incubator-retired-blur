@@ -29,9 +29,9 @@ $(document).ready ->
         query_message = '<div></div>'
         if parseInt(this.long_running_queries) > 0
           if parseInt(this.long_running_queries,10) == 1
-            query_message = '<div><a href="' + Routes.long_running_queries_path(this.id) + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.make_current_zookeeper_path() + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
           else
-            query_message = '<div><a href="' + Routes.long_running_queries_path(this.id) + '" class="long_running_queries">' + this.long_running_queries + '</a> queries have been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.make_current_zookeeper_path() + '" class="long_running_queries">' + this.long_running_queries + '</a> queries have been running for more than a minute</div>'
         zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards
@@ -162,12 +162,11 @@ $(document).ready ->
     window.location = Routes.show_zookeeper_path($(this).children('table').attr('id'))
   $('a.long_running_queries').live 'click', ->
     url = $(this).attr('href')
-    $.get url, (data) ->
-      $().popup
-        body:data
-        title: "Long Running Queries"
-        titleClass:'title'
-        show: ()->
-          $('#no-queries-row').hide()
+    $.ajax url, 
+      type: 'put',
+      data:
+        id: $(this).closest('table').attr('id')
+      success: () ->
+        window.location = Routes.blur_queries_path()
     false
 

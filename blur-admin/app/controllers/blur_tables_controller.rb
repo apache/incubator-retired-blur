@@ -1,6 +1,6 @@
 class BlurTablesController < ApplicationController
 
-  before_filter :current_zookeeper, :only => [:index, :update, :destroy, :reload, :update_all, :delete_all, :forget_all]
+  before_filter :current_zookeeper, :only => [:index, :reload, :update, :destroy, :reload, :update_all, :delete_all, :forget_all]
   before_filter :zookeepers, :only => :index
   before_filter :table, :except => [:index, :reload, :update_all, :delete_all, :forget, :forget_all]
 

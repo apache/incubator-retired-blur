@@ -105,8 +105,6 @@ rm -f vendor/cache/metric_fu*.gem
 rm -f vendor/cache/multi_json*.gem
 rm -f vendor/cache/nokogiri*.gem
 rm -f vendor/cache/progressbar*.gem
-rm -f vendor/cache/rack*.gem
-rm -f vendor/cache/rails*.gem
 rm -f vendor/cache/rails_best_practices*.gem
 rm -f vendor/cache/rcov*.gem
 rm -f vendor/cache/reek*.gem

@@ -13,7 +13,7 @@ $(document).ready ->
     if server
       hosts = 0
       count = 0
-      for key in server
+      for key of server
         hosts++
         count += server[key].length
       info =

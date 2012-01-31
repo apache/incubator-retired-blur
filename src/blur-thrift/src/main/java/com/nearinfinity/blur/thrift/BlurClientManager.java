@@ -198,7 +198,7 @@ public class BlurClientManager {
 
   private static <CLIENT,T> boolean handleError(Connection connection, AtomicReference<Blur.Client> client, AtomicInteger retries, AbstractCommand<CLIENT, T> command, Exception e, int maxRetries, long backOffTime, long maxBackOffTime) {
     if (client.get() != null) {
-      trashClient(connection, client);
+      trashConnections(connection,client);
       markBadConnection(connection);
       client.set(null);
     }
@@ -259,11 +259,22 @@ public class BlurClientManager {
     }
   }
 
-  private static void trashClient(Connection connection, AtomicReference<Blur.Client> client) {
-    LOG.info("Trashing client for connection [{0}]",connection);
-    Client c = client.get();
-    c.getInputProtocol().getTransport().close();
-    c.getOutputProtocol().getTransport().close();
+  private static void trashConnections(Connection connection, AtomicReference<Client> c) {
+    BlockingQueue<Client> blockingQueue;
+    synchronized (clientPool) {
+      blockingQueue = clientPool.put(connection,new LinkedBlockingQueue<Client>());
+      try {
+        blockingQueue.put(c.get());
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    
+    LOG.info("Trashing client for connections [{0}]",connection);
+    for (Client client : blockingQueue) {
+      client.getInputProtocol().getTransport().close();
+      client.getOutputProtocol().getTransport().close();
+    }
   }
 
   private static Client getClient(Connection connection) throws TTransportException, IOException {

@@ -11,11 +11,11 @@ $(document).ready ->
   get_host_shard_info = (blur_table) ->
     server = $.parseJSON(blur_table['server'])
     if server
-      keys = Object.keys(server)
-      hosts = keys.length
+      hosts = 0
       count = 0
-      for key in keys
-        count += Object.keys(server[key]).length
+      for key in server
+        hosts++
+        count += server[key].length
       info =
         hosts: hosts
         shards: count

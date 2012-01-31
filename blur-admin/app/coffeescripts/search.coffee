@@ -1,5 +1,11 @@
 $(document).ready ->
   ########### METHODS ###############
+  resizeSearch = () ->
+    headerHeight = parseInt($('#top').css('height'))
+    footerHeight = parseInt($('#ft').css('height'))
+    resultWrapper = $('#results_wrapper')
+    $('#results_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 10))
+  
   # method to initialize the filter tree
   setup_filter_tree = () ->
     $('.column_family_filter').jstree
@@ -29,6 +35,10 @@ $(document).ready ->
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
   setup_filter_tree()
+  $(window).resize ()->
+    if prevHeight != window.innerHeight
+      resizeSearch()
+    prevHeight = window.innerHeight
 
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
@@ -123,27 +133,13 @@ $(document).ready ->
       success: (data) ->
         populate_form(data)
 
-  # fetch the result of a persisted search
-  fetch_result = (id) ->
-    $.ajax Routes.fetch_results_path(id, $('#blur_table option:selected').val()),
-      type: 'POST',
-      success: (data) ->
-        if data
-          #shows number of results option if there are results
-          #If data is returned properly process it
-          $('#results_container').html data
-          $('#results_wrapper').removeClass('hidden')
-        else
-          no_results()
-      error: (jqXHR, textStatus, errorThrown) ->
-        fetch_error errorThrown
-
   ########### PAGE AJAX LISTENERS ##############
   # fetch the result of a new search
   $('#search_form')
     .live 'ajax:success', (evt, data, status, xhr) ->
       if data
         $('#results_container').html data
+        resizeSearch()
         $('#results_wrapper').removeClass('hidden')
       else
         #hides number of results option if there are no results

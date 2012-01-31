@@ -1,12 +1,17 @@
 $(document).ready ->
   if typeof(history.pushState) == 'undefined'
     history.pushState = ()->
-  headerHeight = parseInt($('#top').css('height'),10)
-  $('#hdfs_wrapper').css('height', window.innerHeight - headerHeight)
+  headerHeight = 0
+  footerHeight = 0
+  windowLoaded = () ->
+    headerHeight = parseInt($('#top').css('height'))
+    footerHeight = parseInt($('#ft').css('height'))
+    $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
+  window.onload = windowLoaded
   prevHeight = window.innerHeight
   $(window).resize ()->
     if prevHeight != window.innerHeight
-      $('#hdfs_wrapper').css('height', window.innerHeight - headerHeight)
+      $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
     prevHeight = window.innerHeight
   # Method to initialize the jstree
   setup_context_menus = () ->

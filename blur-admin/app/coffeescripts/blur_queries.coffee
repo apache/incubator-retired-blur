@@ -8,7 +8,7 @@ $(document).ready ->
   visible_column_count = $('#queries-table thead th').length
   refresh_rate = -1
   refresh_timeout = null
-  data_table = null
+  data_table = null  
   # Load queries into table
   load_queries = () ->  
     data_table = $('#queries-table').dataTable({
@@ -31,7 +31,10 @@ $(document).ready ->
     $('#queries-table').ajaxComplete (e, xhr, settings) ->
       if settings.url.indexOf('/blur_queries/refresh') >= 0
         if refresh_rate > -1
-          refresh_timeout = setTimeout($.proxy(data_table.fnReloadAjax,data_table), refresh_rate * 1000)
+          refresh_timeout = setTimeout ->
+            range_time_limit = $('.time_range').find('option:selected').val()
+            data_table.fnReloadAjax Routes.refresh_path(range_time_limit)
+          , refresh_rate * 1000
     $('.time_range').live 'change', ->
       range_time_limit = $(@).find('option:selected').val()
       data_table.fnReloadAjax Routes.refresh_path(range_time_limit)

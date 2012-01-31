@@ -92,7 +92,6 @@ class SearchController < ApplicationController
       end
       @results << result
     end
-    puts search.schema(blur_table)
     @schema = Hash[search.schema(blur_table).sort &preference_sort(current_user.column_preference.value || [])]
 
     respond_to do |format|

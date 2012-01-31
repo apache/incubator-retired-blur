@@ -111,16 +111,6 @@ Factory.define :preference do |t|
   t.value     ['ColumnFamily2']
 end
 
-Factory.define :filter_preference, :parent => :preference do |t|
-  t.name 'filter'
-  t.pref_type 'filter'
-  t.value {{'created_at_time' =>  5,
-    'super_query_on' => '',
-    'running' => '',
-    'interrupted' => '',
-    'refresh_period' => 'false'}}
-end
-
 #create a valid hdfs
 Factory.define :hdfs do |t|
   t.host { "nic-factory-hdfs.com" }

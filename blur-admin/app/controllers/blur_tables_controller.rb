@@ -41,7 +41,6 @@ class BlurTablesController < ApplicationController
         table.enable(@current_zookeeper.blur_urls)
       end
     elsif params[:disable]
-      puts 'disabling table'
       tables = @current_zookeeper.blur_tables.active.where('cluster_id =?', cluster_id)
       tables.each do |table|
         table.status = STATUS[:disabling]

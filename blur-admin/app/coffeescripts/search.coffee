@@ -102,6 +102,10 @@ $(document).ready ->
     $(this).attr 'disabled', 'disabled'
   $('#search_submit, #update_button, #save_button').bind 'ajaxStop', ->
     toggle_submit()
+  $('#search_submit').click ->
+    $('.tab:visible').slideUp 'fast'
+    $('.arrow_up').hide()
+    $('.arrow_down').show()
 
 
   populate_form = (data) ->

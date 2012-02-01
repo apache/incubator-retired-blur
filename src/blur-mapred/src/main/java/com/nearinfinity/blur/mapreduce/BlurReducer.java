@@ -139,12 +139,12 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
     _blurTask = BlurTask.read(context.getConfiguration());
+    _configuration = context.getConfiguration();
     setupCounters(context);
     setupZookeeper(context);
     setupAnalyzer(context);
     setupDirectory(context);
     setupWriter(context);
-    _configuration = context.getConfiguration();
     if (_blurTask.getIndexingType() == INDEXING_TYPE.UPDATE) {
       _reader = IndexReader.open(_directory, true);
     }

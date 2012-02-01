@@ -129,21 +129,22 @@ public class BlurClientManager {
     Random random = new Random();
   }
   
-  private static ThreadLocal<LocalResources> resources = new ThreadLocal<BlurClientManager.LocalResources>() {
-    @Override
-    protected LocalResources initialValue() {
-      return new LocalResources();
-    }
-  };
+//  private static ThreadLocal<LocalResources> resources = new ThreadLocal<BlurClientManager.LocalResources>() {
+//    @Override
+//    protected LocalResources initialValue() {
+//      return new LocalResources();
+//    }
+//  };
   
   @SuppressWarnings("unchecked")
   public static <CLIENT, T> T execute(List<Connection> connections, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
-    LocalResources localResources = resources.get();
+//    LocalResources localResources = resources.get();
+    LocalResources localResources = null;
     try {
       if (localResources == null) {
         localResources = new LocalResources();
       }
-      resources.set(null);
+//      resources.set(null);
       AtomicReference<Client> client = localResources.client;
       Random random = localResources.random;
       AtomicInteger retries = localResources.retries;
@@ -183,7 +184,7 @@ public class BlurClientManager {
         }
       }
     } finally {
-      resources.set(localResources);
+//      resources.set(localResources);
     }
   }
 

@@ -49,7 +49,7 @@ public class BufferedDirectory extends Directory {
   }
 
   public IndexInput openInput(String name, int bufferSize) throws IOException {
-    return openInput(name, bufferSize);
+    return openInput(name);
   }
 
   public IndexInput openInput(String name) throws IOException {

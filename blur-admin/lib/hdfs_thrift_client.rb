@@ -54,7 +54,6 @@ class HdfsThriftClient
     end
 
     def ls(path, recursive=false)
-      Rails.logger.fatal("in ls with #{path}")
       statuses = @client.listStatus(pathname(path))
       return statuses unless recursive
       statuses + statuses.select { |s| s.isdir }.map { |s| ls(s.path, recursive) }.flatten

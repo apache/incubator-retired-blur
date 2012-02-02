@@ -65,32 +65,33 @@
               = link_to "Log In", login_path
 
         #nav
-          %ul
-            - controller = params[:controller]
-            - action = params[:action]
+          - if @current_user
+            %ul
+              - controller = params[:controller]
+              - action = params[:action]
 
-            %li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
-              = link_to 'Dashboard', root_path
+              %li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
+                = link_to 'Dashboard', root_path
 
-            %li{:class => controller == 'zookeepers' && action == 'show_current' && 'active'}
-              = link_to 'Environment Status', zookeeper_path, :id => 'env_link'
+              %li{:class => controller == 'zookeepers' && action == 'show_current' && 'active'}
+                = link_to 'Environment Status', zookeeper_path, :id => 'env_link'
 
-            %li{:class => controller == 'blur_tables' && 'active'}
-              = link_to 'Blur Tables', blur_tables_path, :id => 'tables_link'
+              %li{:class => controller == 'blur_tables' && 'active'}
+                = link_to 'Blur Tables', blur_tables_path, :id => 'tables_link'
 
-            %li{:class => controller == 'blur_queries' && 'active'}
-              = link_to 'Blur Queries', blur_queries_path, :id => 'queries_link'
+              %li{:class => controller == 'blur_queries' && 'active'}
+                = link_to 'Blur Queries', blur_queries_path, :id => 'queries_link'
 
-            - if can? :show, :search
-              %li{:class => controller == 'search' && 'active', :id => "left"}
-                = link_to 'Search', search_path, :id => 'search_link'
+              - if can? :show, :search
+                %li{:class => controller == 'search' && 'active', :id => "left"}
+                  = link_to 'Search', search_path, :id => 'search_link'
 
-            %li{:class => controller == 'hdfs' && 'active'}
-              = link_to 'HDFS', hdfs_path
+              %li{:class => controller == 'hdfs' && 'active'}
+                = link_to 'HDFS', hdfs_path
 
-            - if can? :index, :users
-              %li{:class => controller == 'users' && action == 'index' && 'active', :id=> "left"}
-                = link_to 'Admin', users_path
+              - if can? :index, :users
+                %li{:class => controller == 'users' && action == 'index' && 'active', :id=> "left"}
+                  = link_to 'Admin', users_path
 
       #bd
         = yield

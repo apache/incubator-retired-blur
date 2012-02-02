@@ -95,9 +95,7 @@ $(document).ready ->
             num_col = $(tbody).closest('table').find('th').length
             $(tbody).append("<tr class='no-tables'><td/><td colspan='#{num_col}'>No Tables Found</td></tr>")
           else
-            check_all = $(tbody).siblings('thead').find('.check-all')
-            console.log check_all
-            check_all.removeAttr('disabled')
+            check_all = $(tbody).siblings('thead').find('.check-all').removeAttr('disabled')
             if number_of_tables == number_checked
               check_all.prop('checked',true)
             else

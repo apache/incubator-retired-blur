@@ -10,7 +10,7 @@
   @include full;
   @include standard-font;
   padding: 20px 0 20px 0;
-  box-sizing: border-box;
+  @include box-sizing(border-box);
   height: 300px;
 
   #hdfs_browser {
@@ -28,7 +28,7 @@
       >ul>li {
         &.file, &.folder, &.hdfs_instance {
           a {
-            -moz-box-sizing: border-box;
+            @include box-sizing(border-box);
             display: block;
             overflow-x: hidden;
             text-overflow: ellipsis;

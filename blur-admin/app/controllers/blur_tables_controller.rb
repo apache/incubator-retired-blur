@@ -10,10 +10,7 @@ class BlurTablesController < ApplicationController
   end
   
   def reload
-    selectors = STATUS_SELECTOR[params[:status].to_sym]
-    where_clause = ["status in (#{Array.new(selectors.size, '?').join(', ')}) and cluster_id = ?", selectors, params[:cluster_id]].flatten
-    
-    tables = @current_zookeeper.blur_tables.where(where_clause).order('table_name ASC').includes('cluster')
+    tables = @current_zookeeper.blur_tables.order('table_name ASC').includes('cluster')
     render :json => tables
   end
 

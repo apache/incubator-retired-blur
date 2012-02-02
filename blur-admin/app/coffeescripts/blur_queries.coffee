@@ -45,11 +45,11 @@ $(document).ready ->
     action_td = $('td:last-child', row)
     if action_td.html() == ''
       action_td.append("<a href='#{Routes.more_info_blur_query_path(data['id'])}' class='more_info' data-remote='true' style='margin-right: 3px'>More Info</a>")
-      if data['state'] == 0 && data['can_update']
+      if data['state'] == 'Running' && data['can_update']
         action_td.append("<form accept-charset='UTF-8' action='#{Routes.blur_query_path(data['id'])}' class='cancel' data-remote='true' method='post'><div style='margin:0;padding:0;display:inline'><input name='_method' type='hidden' value='put'></div><input id='cancel' name='cancel' type='hidden' value='true'><input class='cancel_query_button btn' type='submit' value='Cancel'></form>")
     time = data.time.substring(0, data.time.indexOf(' ')).split(':')
     timeModifier = data.time.substring(data.time.indexOf(' ') + 1) == 'PM'
-    timeInSecs = (if timeModifier then (parseInt(time[0]) + 12) else parseInt(time[0])) * 3600 + parseInt(time[1]) * 60 + parseInt(time[2])
+    timeInSecs = (if timeModifier then (parseInt(time[0], 10) + 12) else parseInt(time[0], 10)) * 3600 + parseInt(time[1], 10) * 60 + parseInt(time[2], 10)
     dateNow = new Date()
     timeNowSecs = dateNow.getHours() * 3600 + dateNow.getMinutes() * 60 + dateNow.getSeconds()
     if data.state == 'Running' && Math.abs(timeNowSecs - timeInSecs) > 3600

@@ -4,8 +4,8 @@ $(document).ready ->
   headerHeight = 0
   footerHeight = 0
   windowLoaded = () ->
-    headerHeight = parseInt($('#top').css('height'))
-    footerHeight = parseInt($('#ft').css('height'))
+    headerHeight = parseInt($('#top').css('height'), 10)
+    footerHeight = parseInt($('#ft').css('height'), 10)
     $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
   window.onload = windowLoaded
   prevHeight = window.innerHeight

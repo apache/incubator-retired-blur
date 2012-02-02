@@ -27,7 +27,7 @@
             .filter.section
               .filtered-title
                 Table
-              = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
+              = select_tag :blur_table, grouped_options_for_select(@filter_table_collection)
             .filter.section
               .filtered-title Column Families
               #filter_columns.hidden

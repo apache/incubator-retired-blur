@@ -6,6 +6,11 @@ $(document).ready ->
     resultWrapper = $('#results_wrapper')
     $('#results_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 10))
   
+  hide_all_tabs = () ->
+    $('.tab:visible').slideUp 'fast'
+    $('.arrow_up').hide()
+    $('.arrow_down').show()
+  
   # method to initialize the filter tree
   setup_filter_tree = () ->
     $('.column_family_filter').jstree
@@ -103,9 +108,7 @@ $(document).ready ->
   $('#search_submit, #update_button, #save_button').bind 'ajaxStop', ->
     toggle_submit()
   $('#search_submit').click ->
-    $('.tab:visible').slideUp 'fast'
-    $('.arrow_up').hide()
-    $('.arrow_down').show()
+    hide_all_tabs()
 
 
   populate_form = (data) ->
@@ -222,6 +225,14 @@ $(document).ready ->
     else
       that = sq
     that.prop('disabled',$(this).is(':checked'))
+    
+    $('.tab:visible').hover ->
+      $("body").die 'mouseup'
+    , ->
+      $("body").live 'mouseup', ->
+        hide_all_tabs()
+    
+    
 
   
   

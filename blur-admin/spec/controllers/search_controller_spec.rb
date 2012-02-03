@@ -28,12 +28,12 @@ describe SearchController do
     end
 
     it "renders the show template" do
-      pending "The blurtables variable is empty and I think is a stub chain issue"
       get :show
       response.should render_template 'show'
     end
     
     it "find and assign tables, and columns" do
+      pending "The blurtables variable is empty and I think is a stub chain issue"
       @zookeeper.stub_chain(:blur_tables, :where, :order, :includes, :all).and_return(@blur_tables)
       get :show
       assigns(:blur_tables).should == @blur_tables

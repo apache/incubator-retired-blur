@@ -17,7 +17,9 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id/cluster/:cluster_id' => 'zookeepers#destroy_cluster', :via => :delete, :as => :destroy_cluster
   match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
   match 'blur_tables/forget_all' => 'blur_tables#forget_all', :via => :delete, :as => :forget_all_blur_tables
-  resources :blur_tables do
+  match 'blur_tables/destroy' => 'blur_tables#destroy', :via => :delete, :as => :delete_selected_blur_tables
+  match 'blur_tables/update' => 'blur_tables#update', :via => :put, :as => :update_selected_blur_tables
+  resources :blur_tables, :except => [:destroy, :update] do
     get 'hosts', :on => :member
     get 'schema', :on => :member
     get 'reload', :on => :collection, :as => :reload

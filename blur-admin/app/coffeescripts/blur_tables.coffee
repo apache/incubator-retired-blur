@@ -20,7 +20,6 @@ $(document).ready ->
     'active' : 6
     'disabled' : 4
     'deleted' : 2  
-  
   #converts a number to a string with comma separation
   number_commas = (number) ->
     if number
@@ -48,18 +47,17 @@ $(document).ready ->
   build_table_row = (blur_table) ->
     capitalize_first = (string) ->
       string.charAt(0).toUpperCase() + string.slice(1)
-    
     state = state_lookup[blur_table['status']]
     table = table_lookup[blur_table['status']]
     id = blur_table['id']
     host_info = get_host_shard_info(blur_table)
-    row = $("<tr class='blur_table' blur_table_id='#{id}'><td><input class='bulk-action-checkbox' type='checkbox'/></td></tr>")
+    row = $("<tr class='blur_table' blur_table_id='#{id}'></tr>")
     row.data('status', state)
     if ['disabling', 'enabling', 'deleting'].indexOf(state) >= 0
-      col_span = colspan_lookup[table] - 1
+      col_span = colspan_lookup[table]
       row.append("<td colspan='#{col_span}'>#{capitalize_first(state) + ' ' +blur_table['table_name']}...</td>")
     else
-      row.append("<td class='blur_table_name'>#{blur_table['table_name']}</td>")        
+      row.append("<td><input class='bulk-action-checkbox' type='checkbox'/></td><td class='blur_table_name'>#{blur_table['table_name']}</td>")        
       if table == 'active'
         host_html = "<td class='blur_table_hosts_shards'>"
         if blur_table['server']
@@ -89,6 +87,7 @@ $(document).ready ->
     for table in $('table')
       tbody = $(table).find('tbody')
       number_of_tables = $(tbody).children().length
+      number_of_checkboxes = $(tbody).find('.bulk-action-checkbox').length
       number_checked = $(tbody).find('.bulk-action-checkbox:checked:not(.check-all)').length
       tab_id = $(tbody).closest('div').attr('id')
       $("a[href=##{tab_id}] .counter").text(number_of_tables)   
@@ -101,7 +100,9 @@ $(document).ready ->
         if number_of_tables == number_checked
           check_all.prop('checked',true)
         else
-          check_all.prop('checked',false)
+          if number_of_checkboxes == 0
+            check_all.prop('disabled',true)
+          check_all.prop('checked',false)      
   
   rebuild_table = (data) ->
     $('.no-tables, .remove-next-update').remove()
@@ -112,9 +113,8 @@ $(document).ready ->
       for table_hash in data
         blur_table = table_hash['blur_table']
         selected_row = $('tr[blur_table_id=' + blur_table.id + ']')
-        if selected_row.length && selected_row.find('td').length > 1
+        if selected_row.length
           if selected_row.data('status') != state_lookup[blur_table['status']]
-            selected_row.find('input:checked').prop('checked',false)
             selected_row.remove()
             new_row_container = $("div#cluster_#{blur_table['cluster_id']}_#{table_lookup[blur_table['status']]} table tbody")
             new_row_container.append(build_table_row(blur_table))
@@ -187,6 +187,9 @@ $(document).ready ->
     if table_row.length == 1
       row_highlight($(this).is(':checked'),table_row)
     disable_action(cluster_table)
+    num_checked = cluster_table.find('.bulk-action-checkbox:checked').length
+    if num_checked == cluster_table.find('tbody tr .bulk-action-checkbox').length
+      cluster_table.find('.check-all').prop('checked',true)
 
   row_highlight = (should_highlight, table_row) ->
     if should_highlight
@@ -196,7 +199,7 @@ $(document).ready ->
     
   disable_action = (table) ->
     checked = table.find('.bulk-action-checkbox:checked')
-    disabled = if checked.length == 0 then true else false
+    disabled = checked.length == 0
     actions = table.siblings('.bulk-action-button')
     actions.prop('disabled',disabled)
     if disabled then actions.addClass('suppress-button') else actions.removeClass('suppress-button')

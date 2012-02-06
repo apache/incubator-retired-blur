@@ -110,7 +110,7 @@ $(document).ready ->
   $('body').live 'click', ->
     hide_all_tabs()
   $('.tab:visible, .header').live 'click', (e) ->
-    e.stopPropogation()
+    e.stopPropagation()
 
 
   populate_form = (data) ->

@@ -59,6 +59,7 @@ BlurAdmin::Application.routes.draw do
   match 'hdfs/:id/delete_file' => 'hdfs#delete_file', :via => :post, :as => :hdfs_delete
   match 'hdfs/upload_form' => 'hdfs#upload_form', :via => :get, :as => :hdfs_upload_form
   match 'hdfs/upload/' => 'hdfs#upload', :via =>:post, :as => :hdfs_upload
+  match 'hdfs/:id/structure' => 'hdfs#file_tree', :via =>:get, :as => :hdfs_structure
   root :to => 'zookeepers#index'
 
   # The priority is based upon order of creation:

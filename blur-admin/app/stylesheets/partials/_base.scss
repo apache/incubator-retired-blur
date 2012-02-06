@@ -101,6 +101,17 @@ body {
   }
 }
 
+.search-info-section{
+  width: 49%;
+  display: inline-block;
+  vertical-align: top;
+  .radial-graph{
+    text-align: center;
+    height: 400px;
+    width: 100%;
+  }
+}
+
 .title{
   color:$lightblue-color;
 }

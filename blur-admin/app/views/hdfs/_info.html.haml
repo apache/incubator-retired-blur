@@ -1,35 +1,40 @@
-%table#more-info-table.condensed-table
-  %tbody
-    %tr
-      %td.more-info-label Configured Capacity
-      %td= number_to_human_size @hdfs.config_capacity
-    %tr
-      %td.more-info-label Present Capacity
-      %td= number_to_human_size @hdfs.present_capacity
-    %tr
-      %td.more-info-label Amount Used
-      %td= number_to_human_size @hdfs.dfs_used
-    %tr
-      %td.more-info-label Amount Remaining
-      %td= number_to_human_size @hdfs.dfs_remaining
-    %tr
-      %td.more-info-label Percent Used
-      %td= "#{@hdfs.dfs_used_percent}%"
-    %tr
-      %td.more-info-label Under Replicated Blocks
-      %td= @hdfs.under_replicated
-    %tr
-      %td.more-info-label Corrupt Blocks
-      %td= @hdfs.corrupt_blocks
-    %tr
-      %td.more-info-label Missing Blocks
-      %td= @hdfs.missing_blocks
-    %tr
-      %td.more-info-label Total Nodes
-      %td= @hdfs.total_nodes < 0 ? 'Unavailable' : @hdfs.total_nodes
-    %tr
-      %td.more-info-label Dead Nodes
-      %td= @hdfs.dead_nodes < 0 ? 'Unavailable' : @hdfs.dead_nodes
-    %tr
-      %td.more-info-label Live Nodes
-      %td= @hdfs.live_nodes < 0 ? 'Unavailable' : @hdfs.live_nodes
+.info-modal
+  .search-info-section
+    %table#more-info-table.condensed-table
+      %tbody
+        %tr
+          %td.more-info-label Configured Capacity
+          %td= number_to_human_size @hdfs.config_capacity
+        %tr
+          %td.more-info-label Present Capacity
+          %td= number_to_human_size @hdfs.present_capacity
+        %tr
+          %td.more-info-label Amount Used
+          %td= number_to_human_size @hdfs.dfs_used
+        %tr
+          %td.more-info-label Amount Remaining
+          %td= number_to_human_size @hdfs.dfs_remaining
+        %tr
+          %td.more-info-label Percent Used
+          %td= "#{@hdfs.dfs_used_percent}%"
+        %tr
+          %td.more-info-label Under Replicated Blocks
+          %td= @hdfs.under_replicated
+        %tr
+          %td.more-info-label Corrupt Blocks
+          %td= @hdfs.corrupt_blocks
+        %tr
+          %td.more-info-label Missing Blocks
+          %td= @hdfs.missing_blocks
+        %tr
+          %td.more-info-label Total Nodes
+          %td= @hdfs.total_nodes < 0 ? 'Unavailable' : @hdfs.total_nodes
+        %tr
+          %td.more-info-label Dead Nodes
+          %td= @hdfs.dead_nodes < 0 ? 'Unavailable' : @hdfs.dead_nodes
+        %tr
+          %td.more-info-label Live Nodes
+          %td= @hdfs.live_nodes < 0 ? 'Unavailable' : @hdfs.live_nodes
+  .search-info-section
+    .radial-graph
+      Loading...

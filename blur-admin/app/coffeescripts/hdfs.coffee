@@ -13,6 +13,7 @@ $(document).ready ->
     if prevHeight != window.innerHeight
       $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
     prevHeight = window.innerHeight
+      
   # Method to initialize the jstree
   setup_context_menus = () ->
       $('#hdfs_browser li.hdfs_instance').contextMenu
@@ -162,6 +163,41 @@ $(document).ready ->
           $().closePopup()
         "Cancel": () ->
           $().closePopup()
+          
+  draw_radial_graph = (width, height, json) ->
+    radius = Math.min(width, height) / 2
+    color = d3.scale.category20c()
+    selector = ".radial-graph"
+    $(selector).empty()
+    vis = d3.select(selector)
+      .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    partition = d3.layout.partition()
+      .sort(null)
+      .size([2 * Math.PI, radius * radius])
+      .value (d) ->
+        return 1
+
+    arc = d3.svg.arc()
+      .startAngle((d) -> return d.x)
+      .endAngle((d) -> return d.x + d.dx)
+      .innerRadius((d) -> return Math.sqrt(d.y))
+      .outerRadius((d) -> return Math.sqrt(d.y + d.dy));
+
+    path = vis.data([json]).selectAll("path")
+      .data(partition.nodes)
+      .enter().append("path")
+      .attr("display", (d) -> return if d.depth then null else "none")
+      .attr("d", arc)
+      .attr("fill-rule", "evenodd")
+      .style("stroke", "#fff")
+      .style("fill", (d) -> return color((if d.children then d else d.parent).name))
+      .attr("title", (d) -> return d.name )
+    $('path').hover
 
   show_hdfs_props = (el) ->
     id = el.attr('hdfs_id')
@@ -170,6 +206,12 @@ $(document).ready ->
       $(data).popup
         title: title
         titleClass: 'title'
+        show: () ->
+          $.get Routes.hdfs_structure_path(id),{'fs_path':'/'},(data) ->
+            draw_radial_graph(520, 400, data)
+          $('#modal').css
+            'width':'1120px'
+            'margin-left':'-560px'
 
   show_dir_props = (el) ->
     id = el.attr('hdfs_id')
@@ -184,6 +226,11 @@ $(document).ready ->
             $('#file_count').html(data.file_count)
             $('#folder_count').html(data.folder_count)
             $('#file_size').html(data.file_size)
+          $.get Routes.hdfs_structure_path(id),{'fs_path':path},(data) ->
+            draw_radial_graph(520, 400, data)            
+          $('#modal').css
+            'width':'1120px'
+            'margin-left':'-560px'
 
   perform_action = (action, el) ->
     switch action

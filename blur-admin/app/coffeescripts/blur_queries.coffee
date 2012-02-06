@@ -39,7 +39,7 @@ $(document).ready ->
       range_time_limit = $(@).find('option:selected').val()
       data_table.fnReloadAjax Routes.refresh_path(range_time_limit)
   table_cols = () ->
-    return [{"mDataProp":"userid"},{"mDataProp":"query", "sWidth": "500px"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "200px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}] if visible_column_count == 8
+    return [{"mDataProp":"userid"},{"mDataProp":"query", "sWidth": "400px"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "200px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}] if visible_column_count == 8
     [{"mDataProp":"userid"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "150px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}]
   process_row = (row, data, rowIdx, dataIdx) ->
     action_td = $('td:last-child', row)

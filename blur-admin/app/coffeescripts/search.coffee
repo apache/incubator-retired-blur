@@ -107,8 +107,10 @@ $(document).ready ->
     $(this).attr 'disabled', 'disabled'
   $('#search_submit, #update_button, #save_button').bind 'ajaxStop', ->
     toggle_submit()
-  $('#search_submit').click ->
+  $('body').live 'click', ->
     hide_all_tabs()
+  $('.tab:visible, .header').live 'click', (e) ->
+    e.stopPropogation()
 
 
   populate_form = (data) ->
@@ -225,12 +227,6 @@ $(document).ready ->
     else
       that = sq
     that.prop('disabled',$(this).is(':checked'))
-    
-    $('.tab:visible').hover ->
-      $("body").die 'mouseup'
-    , ->
-      $("body").live 'mouseup', ->
-        hide_all_tabs()
     
     
 

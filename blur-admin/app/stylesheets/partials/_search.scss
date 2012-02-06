@@ -1,5 +1,5 @@
 @mixin search-tab {
-  width: 10%;
+  width: 9%;
   .header{
     text-align: center;
     cursor: pointer;
@@ -24,6 +24,7 @@
 }
 #search_page_wrapper {
   @include full;
+  text-align: center;
   .section{
     border-top: 1px solid #ccc;   
     padding: 10px 0 10px 0;     
@@ -38,7 +39,7 @@
     z-index: 999;
     @include standard-font;
     position: fixed;
-    top: 90px;
+    top: 95px;
     left:0;
     padding: 10px 0px 10px 10px;
     box-sizing: border-box;
@@ -80,7 +81,7 @@
     
     #standard{
       position: relative;
-      width: 79%;
+      width: 69%;
       .search_field{
         display: inline-block;
         width: 89%;
@@ -100,12 +101,22 @@
       }
       img{
         position: absolute;
-        padding: 6px;
+        padding: 6px 4px;
       }
     }
+    
+    #blur-table{
+      width: 9%;
+      margin: 0 5px 0 15px;
+      #blur_table{
+        width: 100%;
+      }
+    }
+    
     #advanced{
       @include search-tab;
       border-right: 1px solid #ccc;
+      border-left: 1px solid #ccc;
       position: relative;
       .body{
         @include tab-body;

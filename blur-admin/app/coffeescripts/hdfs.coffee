@@ -190,6 +190,7 @@ $(document).ready ->
 
     path = vis.data([json]).selectAll("path")
       .data(partition.nodes)
+      .data(partition.value((d) -> d.size))
       .enter().append("path")
       .attr("display", (d) -> return if d.depth then null else "none")
       .attr("d", arc)
@@ -197,6 +198,7 @@ $(document).ready ->
       .style("stroke", "#fff")
       .style("fill", (d) -> return color((if d.children then d else d.parent).name))
       .attr("title", (d) -> return d.name )
+    path.data()
     $('path').hover
 
   show_hdfs_props = (el) ->

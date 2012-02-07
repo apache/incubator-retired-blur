@@ -5,7 +5,6 @@ class BlurQueriesController < ApplicationController
   before_filter :zookeepers, :only => [:index, :refresh]
 
   def refresh
-    puts params.inspect
     lower_range = Time.now - (params[:time_length].to_i * 60)
     queries = BlurQuery.where_zookeeper(@current_zookeeper.id)
       .where("blur_queries.updated_at > ?", lower_range)

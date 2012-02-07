@@ -2,7 +2,7 @@ class BlurTablesController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:index, :reload, :update, :destroy, :reload, :update_all, :delete_all, :forget_all]
   before_filter :zookeepers, :only => :index
-  before_filter :table, :except => [:index, :reload, :update_all, :delete_all, :forget, :forget_all]
+  before_filter :table, :except => [:index, :reload, :update_all, :delete_all, :forget, :forget_all, :update, :destroy]
 
   def index
     @blur_tables = @current_zookeeper.blur_tables.order('status DESC, table_name ASC').includes('cluster')
@@ -10,75 +10,37 @@ class BlurTablesController < ApplicationController
   end
   
   def reload
-    selectors = STATUS_SELECTOR[params[:status].to_sym]
-    where_clause = ["status in (#{Array.new(selectors.size, '?').join(', ')}) and cluster_id = ?", selectors, params[:cluster_id]].flatten
-    
-    tables = @current_zookeeper.blur_tables.where(where_clause).order('table_name ASC').includes('cluster')
-    render :json => tables
+    render_table_json
   end
 
   def update
-    if params[:enable]
-      @table.status = STATUS[:enabling]
-      @table.save
-      @table.enable(@current_zookeeper.blur_urls)
-    elsif params[:disable]
-      @table.status = STATUS[:disabling]
-      @table.save
-      @table.disable(@current_zookeeper.blur_urls)
-    end
-    render :text => ''
-  end
-  
-  def update_all
-    cluster_id = params[:cluster_id]
-    
-    if params[:enable]
-      tables = @current_zookeeper.blur_tables.disabled.where('cluster_id =?', cluster_id)
-      tables.each do |table|
+    params[:tables].map {|table| BlurTable.find(table)}.each do |table|
+      if params[:tableAction] == 'enable'
         table.status = STATUS[:enabling]
         table.save
         table.enable(@current_zookeeper.blur_urls)
-      end
-    elsif params[:disable]
-      puts 'disabling table'
-      tables = @current_zookeeper.blur_tables.active.where('cluster_id =?', cluster_id)
-      tables.each do |table|
+      elsif params[:tableAction] == 'disable'
         table.status = STATUS[:disabling]
         table.save
         table.disable(@current_zookeeper.blur_urls)
       end
     end
-    render :text => ''
+    render_table_json
   end
 
   def destroy
-    @table.status = STATUS[:deleting]
-    @table.save
-    destroy_index = params[:delete_index] == 'true'
-    @table.blur_destroy destroy_index, @current_zookeeper.blur_urls
-    render :text => ''
+    params[:tables].map {|table| BlurTable.find(table)}.each do |table|
+      @table.status = STATUS[:deleting]
+      @table.save
+      destroy_index = params[:delete_index] == 'true'
+      @table.blur_destroy destroy_index, @current_zookeeper.blur_urls
+    end
+    render_table_json
   end
   
   def forget
     BlurTable.destroy params[:id]
-    render :text => ''
-  end
-
-  def forget_all
-    Cluster.find(params[:cluster_id]).blur_tables.deleted.delete_all
-    render :text => ''
-  end
-  
-  def delete_all
-    tables = @current_zookeeper.blur_tables.disabled.where('cluster_id =?', params[:cluster_id])
-    destroy_index = params[:delete_index] == 'true'
-    tables.each do |table|
-      table.status = STATUS[:deleting]
-      table.save
-      table.blur_destroy(destroy_index, @current_zookeeper.blur_urls)
-    end
-    render :text => ''
+    render_table_json
   end
 
   def schema
@@ -99,5 +61,10 @@ class BlurTablesController < ApplicationController
   
     def table
       @table = BlurTable.find(params[:id])
+    end
+    
+    def render_table_json
+      tables = @current_zookeeper.blur_tables.order('table_name ASC').includes('cluster')
+      render :json => tables
     end
 end

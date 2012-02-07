@@ -4,79 +4,27 @@ describe BlurQueriesController do
   before do
     @client = mock(Blur::Blur::Client)
     BlurThriftClient.stub!(:client).and_return(@client)
-
-    @ability = Ability.new User.new
+    
+    @user = User.new
+    @ability = Ability.new @user
     @ability.stub!(:can?).and_return(true)
     controller.stub!(:current_ability).and_return(@ability)
 
     @blur_query = Factory.stub :blur_query
-
-    @ability = Ability.new User.new
     @user = User.new
-    @ability.stub!(:can?).and_return(true)
-    controller.stub!(:current_ability).and_return(@ability)
     controller.stub!(:current_user).and_return(@user)
-    
-    @user.stub(:saved_filters).and_return (Factory.stub :filter_preference).value
   end
 
   describe "GET index" do
     before do
-      mock_time = Time.local(2011, 6, 28, 10, 20, 30)
-      Time.stub(:now).and_return(mock_time + 30.seconds)
-
-      # Set up association chain
       @zookeeper  = Factory.stub :zookeeper
-      @blur_table = Factory.stub :blur_table
-      @blur_query = Factory.stub :blur_query, :created_at => mock_time
-
-      @zookeeper.stub_chain(:blur_tables, :where).and_return([@blur_table])
-      BlurQuery.stub_chain(:joins, :where, :includes, :order, :filter_on_time_range, :where).and_return([@blur_query])
-
-      # ApplicationController.current_zookeeper
       Zookeeper.stub(:find_by_id).and_return(@zookeeper)
-      # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
-      # ApplicationController.zookeepers
       Zookeeper.stub(:order).and_return [@zookeeper]
-
     end
-    # it "assigns the collection all zookeepers to @zookeepers" do
-    #       get :index
-    #       assigns(:zookeepers).should == [@zookeeper]
-    #     end
 
     it "assigns the current zookeeper to @current_zookeeper" do
-      pending "New Table Implementation"
       get :index
       assigns(:current_zookeeper).should == @zookeeper
-    end
-
-    it "should assign @blur_tables to be the collection of all blur tables" do
-      pending "New Table Implementation"
-      @zookeeper.should_receive(:blur_tables)
-      get :index
-      assigns(:blur_tables).should == [@blur_table]
-    end
-
-    it "should assign @blur_queries to be the collection of blur queries" do
-      pending "New Table Implementation"
-      get :index
-      assigns(:blur_queries).should == [@blur_query]
-    end
-
-    it "filters blur queries to running queries within the past minute" do
-      pending "Test active relations"
-      BlurQuery.should_receive(:where).with(:created_at => Time.now - 1.minutes..Time.now, :running => :true)
-      get :index
-    end
-
-    it "filters blur queries by zookeeper" do
-      pending "New Table Implementation"
-      other_query = Factory.stub :blur_query
-      other_query.stub(:zookeeper).and_return(Factory.stub :zookeeper)
-      BlurQuery.stub(:all).and_return [@blur_query, other_query]
-      get :index
-      assigns(:blur_queries).should_not include other_query
     end
 
     context "when an HTML request" do
@@ -111,6 +59,12 @@ describe BlurQueriesController do
       pending "New Table Implementation"
       get :refresh, :time_since_refresh => ''
       assigns(:current_zookeeper).should == @zookeeper
+    end
+    
+    it "filters blur queries to running queries within the past minute" do
+      pending "New Table Implementation"
+      BlurQuery.should_receive(:where).with(:updated_at => Time.now - 1.minutes..Time.now)
+      get :index
     end
 
     it "should assign @blur_queries to be the collection of blur queries" do
@@ -218,6 +172,11 @@ describe BlurQueriesController do
       @blur_query.should_receive(:cancel)
       put :update, :cancel => 'true', :id => '1'
     end
+    
+    it "should render the blur_query partial" do
+      put :update, :cancel => 'false', :id => '1'
+      response.should render_template(:partial => '_blur_query')
+    end
   end
 
   describe "GET more_info" do
@@ -228,9 +187,7 @@ describe BlurQueriesController do
     end
 
     it "should assign @blur_query to be the blur query specified by the id parameter" do
-      pending "Test active relations"
-      BlurQuery.stub_chain(:find, :includes)
-      BlurQuery.should_receive(:find).with('1').and_return(@blur_query)
+      BlurQuery.stub_chain(:includes, :find).and_return(@blur_query)
       get :more_info, :id => '1'
       assigns(:blur_query).should == @blur_query
     end

@@ -8,10 +8,16 @@ class SearchController < ApplicationController
     # the .all call executes the SQL fetch, otherwise there are many more SQL fetches
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
-    @blur_tables = @current_zookeeper.blur_tables.where('status = 4').order("table_name").all
+    @blur_tables = @current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
     @blur_table = @blur_tables[0]
     @columns = @blur_table.schema &preference_sort(current_user.column_preference.value || []) if @blur_table
     @searches = current_user.searches.order("name")
+    @filter_table_collection = {}
+    puts @blur_tables.inspect
+    @blur_tables.each do |table|
+        @filter_table_collection[table.cluster.name] ||= []
+        @filter_table_collection[table.cluster.name] << [table.table_name, table.id]
+    end
   end
 
   #Filter action to help build the tree for column families
@@ -92,7 +98,6 @@ class SearchController < ApplicationController
       end
       @results << result
     end
-    puts search.schema(blur_table)
     @schema = Hash[search.schema(blur_table).sort &preference_sort(current_user.column_preference.value || [])]
 
     respond_to do |format|

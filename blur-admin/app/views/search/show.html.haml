@@ -13,6 +13,8 @@
           %img.hidden{:id => "loading-spinner",
               :src => image_path("/images/loader.gif"),
               :alt => "Loading..."}
+        #blur-table
+          = select_tag :blur_table, grouped_options_for_select(@filter_table_collection)
         #advanced
           .header
             Advanced
@@ -24,10 +26,6 @@
                 :alt => "Expand For More Options",
                 :style => "display:none"}
           .body.tab
-            .filter.section
-              .filtered-title
-                Table
-              = select_tag :blur_table, options_from_collection_for_select(@blur_tables, :id, :table_name)
             .filter.section
               .filtered-title Column Families
               #filter_columns.hidden

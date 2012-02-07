@@ -73,10 +73,7 @@ class HdfsController < ApplicationController
   def move_file
     instance = Hdfs.find params[:id]
     client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
-    
-    puts params[:from]
-    puts params[:to]
-    
+
     client.rename(params[:from], params[:to])
     render :nothing => true
   end
@@ -113,6 +110,13 @@ class HdfsController < ApplicationController
       @error = e.to_s
     end
     render :layout => false
+  end
+  
+  def file_tree
+    instance = Hdfs.find params[:id]
+    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
+    file_structure = client.folder_tree params[:fs_path]    
+    render :json => file_structure
   end
 end
 

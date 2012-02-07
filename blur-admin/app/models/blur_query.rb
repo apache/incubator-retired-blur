@@ -50,7 +50,7 @@ class BlurQuery < ActiveRecord::Base
 
   def summary(user)
     if user.can?(:index, :blur_queries, :query_string)
-      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :query => print_value(query_string), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state_str}
+      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :query => print_value(query_string), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.getlocal.strftime('%r'), :status => summary_state, :state => state_str}
     else
       {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state}
     end

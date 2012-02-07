@@ -206,12 +206,12 @@ $(document).ready ->
       $(data).popup
         title: title
         titleClass: 'title'
-        show: () ->
-          $.get Routes.hdfs_structure_path(id),{'fs_path':'/'},(data) ->
-            draw_radial_graph(520, 400, data)
-          $('#modal').css
-            'width':'1120px'
-            'margin-left':'-560px'
+        # show: () ->
+        #           $.get Routes.hdfs_structure_path(id),{'fs_path':'/'},(data) ->
+        #             draw_radial_graph(520, 400, data)
+        #           $('#modal').css
+        #             'width':'1120px'
+        #             'margin-left':'-560px'
 
   show_dir_props = (el) ->
     id = el.attr('hdfs_id')

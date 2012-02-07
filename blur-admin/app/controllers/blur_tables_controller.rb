@@ -22,7 +22,7 @@ class BlurTablesController < ApplicationController
       elsif params[:tableAction] == 'disable'
         table.status = STATUS[:disabling]
         table.save
-        table.enable(@current_zookeeper.blur_urls)
+        table.disable(@current_zookeeper.blur_urls)
       end
     end
     render_table_json

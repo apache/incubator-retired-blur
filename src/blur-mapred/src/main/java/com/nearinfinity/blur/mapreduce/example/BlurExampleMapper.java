@@ -23,24 +23,28 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 import com.nearinfinity.blur.mapreduce.BlurMapper;
+import com.nearinfinity.blur.mapreduce.BlurRecord;
+import com.nearinfinity.blur.mapreduce.BlurMutate.MUTATE_TYPE;
 
 public class BlurExampleMapper extends BlurMapper<LongWritable, Text> {
 
   @Override
   protected void map(LongWritable k, Text value, Context context) throws IOException, InterruptedException {
-    _record.clearColumns();
+    BlurRecord record = _mutate.getRecord();
+    record.clearColumns();
     String str = value.toString();
     String[] split = str.split("\\t");
-    _record.setRowId(UUID.randomUUID().toString());
-    _record.setRecordId(UUID.randomUUID().toString());
-    _record.setColumnFamily("cf1");
+    record.setRowId(UUID.randomUUID().toString());
+    record.setRecordId(UUID.randomUUID().toString());
+    record.setFamily("cf1");
     for (int i = 0; i < split.length; i++) {
-      _record.addColumn("c" + i, split[i]);
+      record.addColumn("c" + i, split[i]);
       _fieldCounter.increment(1);
     }
-    byte[] bs = _record.getRowId().getBytes();
+    byte[] bs = record.getRowId().getBytes();
     _key.set(bs, 0, bs.length);
-    context.write(_key, _record);
+    _mutate.setMutateType(MUTATE_TYPE.ADD);
+    context.write(_key, _mutate);
     _recordCounter.increment(1);
     context.progress();
   }

@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 
-import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.FetchRecordResult;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
@@ -34,8 +33,8 @@ public class RowDocumentUtil {
 
   public static FetchRecordResult getColumns(Document document) {
     FetchRecordResult result = new FetchRecordResult();
-    Record record = new Record();
-    String rowId = populateRecord(record, document);
+    BlurThriftRecord record = new BlurThriftRecord();
+    String rowId = readRecord(document, record);
     result.setRecord(record);
     result.setRowid(rowId);
     return result;
@@ -49,8 +48,8 @@ public class RowDocumentUtil {
     }
     for (Document document : docs) {
       empty = false;
-      Record record = new Record();
-      String rowId = populateRecord(record, document);
+      BlurThriftRecord record = new BlurThriftRecord();
+      String rowId = readRecord(document, record);
       if (record.getColumns() != null) {
         row.addToRecords(record);
       }
@@ -67,15 +66,15 @@ public class RowDocumentUtil {
     }
     return row;
   }
-
-  private static String populateRecord(Record record, Document document) {
+  
+  public static String readRecord(Document document, ReaderBlurRecord reader) {
     String rowId = null;
     String family = null;
     for (Fieldable field : document.getFields()) {
       if (field.name().equals(ROW_ID)) {
         rowId = field.stringValue();
       } else if (field.name().equals(RECORD_ID)) {
-        record.setRecordId(field.stringValue());
+        reader.setRecordIdStr(field.stringValue());
       } else {
         String name = field.name();
         int index = name.indexOf(SEP);
@@ -85,10 +84,11 @@ public class RowDocumentUtil {
           family = name.substring(0, index);
         }
         name = name.substring(index + 1);
-        record.addToColumns(new Column(name, field.stringValue()));
+        reader.addColumn(name,field.stringValue());
       }
     }
-    record.setFamily(family);
+    reader.setFamilyStr(family);
+    reader.setRowIdStr(rowId);
     return rowId;
   }
 }

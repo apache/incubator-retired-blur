@@ -65,8 +65,7 @@ public class SpinLock {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  public void copyLock(Context context) {
+  public void copyLock(@SuppressWarnings("rawtypes") Context context) {
     if (_maxCopies == Integer.MAX_VALUE) {
       return;
     }

@@ -62,4 +62,8 @@ public class BlurColumn implements Writable {
     this.value = value;
   }
 
+  @Override
+  public String toString() {
+    return "{name=" + name + ", value=" + value + "}";
+  }
 }

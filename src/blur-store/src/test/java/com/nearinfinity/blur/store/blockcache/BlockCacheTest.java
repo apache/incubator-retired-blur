@@ -16,12 +16,13 @@ public class BlockCacheTest {
   public void testBlockCache() {
     int blocksInTest = 2000000;
     int blockSize = 1024;
-    int numberOfBlocksPerBank = 4096;
     
-    BlockCache blockCache = new BlockCache(2, numberOfBlocksPerBank, blockSize, new BlurMetrics(new Configuration()), true);
+    int slabSize = blockSize * 4096;
+    long totalMemory = 2 * slabSize;
+    
+    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()), true,totalMemory,slabSize,blockSize);
     byte[] buffer = new byte[1024];
     Random random = new Random();
-    int i = 0;
     byte[] newData = new byte[blockSize];
     AtomicLong hitsInCache = new AtomicLong();
     AtomicLong missesInCache = new AtomicLong();
@@ -59,7 +60,6 @@ public class BlockCacheTest {
     System.out.println("Store         = " + (storeTime / (double) passes) / 1000000.0);
     System.out.println("Fetch         = " + (fetchTime / (double) passes) / 1000000.0);
     System.out.println("# of Elements = " + blockCache.getSize());
-    i++;
   }
 
   private static byte[] testData(Random random, int size, byte[] buf) {

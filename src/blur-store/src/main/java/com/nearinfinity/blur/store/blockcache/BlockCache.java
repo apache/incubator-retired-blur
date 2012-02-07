@@ -10,6 +10,8 @@ import com.nearinfinity.blur.metrics.BlurMetrics;
 
 public class BlockCache {
 
+  public static final int _128M = 134217728;
+  public static final int _32K = 32768;
   private final ConcurrentMap<BlockCacheKey, BlockCacheLocation> _cache;
   private final ByteBuffer[] _banks;
   private final BlockLocks[] _locks;
@@ -18,21 +20,31 @@ public class BlockCache {
   private final int _numberOfBlocksPerBank;
   private final int _maxEntries;
   private final BlurMetrics _metrics;
-
-  public BlockCache(final int numberOfBanks, final int numberOfBlocksPerBank, int blockSize, BlurMetrics metrics, boolean directAllocation) {
+  
+  public BlockCache(BlurMetrics metrics, boolean directAllocation, long totalMemory) {
+    this(metrics,directAllocation,totalMemory,_128M);
+  }
+  
+  public BlockCache(BlurMetrics metrics, boolean directAllocation, long totalMemory, int slabSize) {
+    this(metrics,directAllocation,totalMemory,slabSize,_32K);
+  }
+  
+  public BlockCache(BlurMetrics metrics, boolean directAllocation, long totalMemory, int slabSize, int blockSize) {
     _metrics = metrics;
-    _numberOfBlocksPerBank = numberOfBlocksPerBank;
+    _numberOfBlocksPerBank = slabSize / blockSize;
+    int numberOfBanks = (int) (totalMemory / slabSize);
+    
     _banks = new ByteBuffer[numberOfBanks];
     _locks = new BlockLocks[numberOfBanks];
     _lockCounters = new AtomicInteger[numberOfBanks];
-    _maxEntries = (numberOfBlocksPerBank * numberOfBanks) - 1;
+    _maxEntries = (_numberOfBlocksPerBank * numberOfBanks) - 1;
     for (int i = 0; i < numberOfBanks; i++) {
       if (directAllocation) {
-        _banks[i] = ByteBuffer.allocateDirect(numberOfBlocksPerBank * blockSize);
+        _banks[i] = ByteBuffer.allocateDirect(_numberOfBlocksPerBank * blockSize);
       } else {
-        _banks[i] = ByteBuffer.allocate(numberOfBlocksPerBank * blockSize);
+        _banks[i] = ByteBuffer.allocate(_numberOfBlocksPerBank * blockSize);
       }
-      _locks[i] = new BlockLocks(numberOfBlocksPerBank);
+      _locks[i] = new BlockLocks(_numberOfBlocksPerBank);
       _lockCounters[i] = new AtomicInteger();
     }
 

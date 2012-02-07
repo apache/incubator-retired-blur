@@ -22,9 +22,9 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Mapper;
 
-public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, BytesWritable, BlurRecord> {
+public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, BytesWritable, BlurMutate> {
 
-  protected BlurRecord _record;
+  protected BlurMutate _mutate;
   protected BytesWritable _key;
   protected BlurTask _blurTask;
   protected Counter _recordCounter;
@@ -46,7 +46,7 @@ public abstract class BlurMapper<KEY, VALUE> extends Mapper<KEY, VALUE, BytesWri
   @Override
   protected void setup(Context context) throws IOException, InterruptedException {
     _blurTask = BlurTask.read(context.getConfiguration());
-    _record = new BlurRecord();
+    _mutate = new BlurMutate();
     _key = new BytesWritable();
     _recordCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getRecordCounterName());
     _fieldCounter = context.getCounter(BlurTask.getCounterGroupName(), BlurTask.getFieldCounterName());

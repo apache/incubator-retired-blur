@@ -71,7 +71,7 @@ import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
-import com.nearinfinity.blur.mapreduce.BlurRecord.MUTATE_TYPE;
+import com.nearinfinity.blur.mapreduce.BlurMutate.MUTATE_TYPE;
 import com.nearinfinity.blur.mapreduce.BlurTask.INDEXING_TYPE;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
@@ -84,7 +84,7 @@ import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IterableConverter;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 
-public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritable, BlurRecord> {
+public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritable, BlurMutate> {
 
   static class LuceneFileComparator implements Comparator<String> {
 
@@ -170,25 +170,26 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
   }
 
   @Override
-  protected void reduce(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException, InterruptedException {
+  protected void reduce(BytesWritable key, Iterable<BlurMutate> values, Context context) throws IOException, InterruptedException {
     if (!index(key, values, context)) {
       _rowFailures.increment(1);
     }
   }
 
-  protected boolean index(BytesWritable key, Iterable<BlurRecord> values, Context context) throws IOException {
+  protected boolean index(BytesWritable key, Iterable<BlurMutate> values, Context context) throws IOException {
     int recordCount = 0;
     _newDocs.clear();
     _recordIdsToDelete.clear();
     boolean rowIdSet = false;
 
-    for (BlurRecord record : values) {
+    for (BlurMutate mutate : values) {
+      BlurRecord record = mutate.getRecord();
       if (!rowIdSet) {
         String rowId = record.getRowId();
         _rowIdTerm = _rowIdTerm.createTerm(rowId);
         rowIdSet = true;
       }
-      if (record.getMutateType() == MUTATE_TYPE.DELETE) {
+      if (mutate.getMutateType() == MUTATE_TYPE.DELETE) {
         _recordIdsToDelete.add(record.getRecordId());
         continue;
       }
@@ -526,7 +527,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurRecord, BytesWritabl
     Document document = new Document();
     document.add(new Field(ROW_ID, record.getRowId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(RECORD_ID, record.getRecordId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    String columnFamily = record.getColumnFamily();
+    String columnFamily = record.getFamily();
     RowWalIndexWriter.addColumns(document, _analyzer, builder, columnFamily, new IterableConverter<BlurColumn, Column>(record.getColumns(), new Converter<BlurColumn, Column>() {
       @Override
       public Column convert(BlurColumn from) throws Exception {

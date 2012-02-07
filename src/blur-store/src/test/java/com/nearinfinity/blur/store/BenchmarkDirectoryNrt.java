@@ -35,10 +35,11 @@ import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
 public class BenchmarkDirectoryNrt {
 
   public static void main(String[] args) throws IOException, InterruptedException {
-    int numberOfBlocksPerBank = 8192;
     int blockSize = BlockDirectory.BLOCK_SIZE;
-    int numberOfBanks = getNumberOfBanks(0.5f, numberOfBlocksPerBank, blockSize);
-    BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize, new BlurMetrics(new Configuration()),true);
+    long totalMemory = BlockCache._128M * 2;
+    int slabSize = (int) (totalMemory / 2);
+    
+    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()),true,totalMemory,slabSize,blockSize);
     BlurMetrics metrics = new BlurMetrics(new Configuration());
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, metrics);
 
@@ -56,7 +57,7 @@ public class BenchmarkDirectoryNrt {
       TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
       mergePolicy.setUseCompoundFile(false);
       int count = 0;
-      int max = 100;
+      int max = 10000;
       long s = System.currentTimeMillis();
       IndexWriter writer = new IndexWriter(directory, conf);
       long as = System.currentTimeMillis();

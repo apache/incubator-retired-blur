@@ -41,10 +41,11 @@ import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 public class BenchmarkDirectory {
 
   public static void main(String[] args) throws IOException {
-    int numberOfBlocksPerBank = 8192;
     int blockSize = BlockDirectory.BLOCK_SIZE;
-    int numberOfBanks = getNumberOfBanks(0.5f, numberOfBlocksPerBank, blockSize);
-    BlockCache blockCache = new BlockCache(numberOfBanks, numberOfBlocksPerBank, blockSize, new BlurMetrics(new Configuration()),true);
+    long totalMemory = BlockCache._128M * 2;
+    int slabSize = (int) (totalMemory / 2);
+    
+    BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()),true,totalMemory,slabSize,blockSize);
     BlurMetrics metrics = new BlurMetrics(new Configuration());
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, metrics);
     

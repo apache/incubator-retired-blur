@@ -291,8 +291,8 @@ public class IndexManager {
       ParallelCall<Entry<String, BlurIndex>, BlurResultIterable> call;
       if (isSimpleQuery(blurQuery)) {
         SimpleQuery simpleQuery = blurQuery.simpleQuery;
-        Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer,_filterCache);
-        Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer,_filterCache);
+        Filter preFilter = QueryParserUtil.parseFilter(table, simpleQuery.preSuperFilter, false, analyzer, _filterCache);
+        Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer, _filterCache);
         Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
@@ -309,7 +309,7 @@ public class IndexManager {
         call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
-      return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel(){
+      return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
         @Override
         public void cancel() {
           running.set(false);
@@ -365,11 +365,11 @@ public class IndexManager {
   public List<BlurQueryStatus> currentQueries(String table) {
     return _statusManager.currentQueries(table);
   }
-  
+
   public BlurQueryStatus queryStatus(String table, long uuid) throws BlurException {
-    return _statusManager.queryStatus(table,uuid);
+    return _statusManager.queryStatus(table, uuid);
   }
-  
+
   public List<Long> queryStatusIdList(String table) {
     return _statusManager.queryStatusIdList(table);
   }
@@ -434,7 +434,7 @@ public class IndexManager {
     return fieldName.substring(0, fieldName.lastIndexOf('.'));
   }
 
-  private static FieldSelector getFieldSelector(final Selector selector) {
+  public static FieldSelector getFieldSelector(final Selector selector) {
     return new FieldSelector() {
       private static final long serialVersionUID = 4089164344758433000L;
 
@@ -725,7 +725,8 @@ public class IndexManager {
     private BlurMetrics _blurMetrics;
     private AtomicBoolean _running;
 
-    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh, BlurMetrics blurMetrics) {
+    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh,
+        BlurMetrics blurMetrics) {
       _running = running;
       _table = table;
       _status = status;

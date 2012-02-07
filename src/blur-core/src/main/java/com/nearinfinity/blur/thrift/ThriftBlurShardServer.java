@@ -105,7 +105,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     BufferStore.init(configuration,blurMetrics);
     BlockCache blockCache;
     try {
-      blockCache = new BlockCache(bankCount, numberOfBlocksPerBank, blockSize, blurMetrics, directAllocation);
+      long totalMemory = bankCount * numberOfBlocksPerBank * blockSize;
+      blockCache = new BlockCache(blurMetrics, directAllocation, totalMemory, slabSize, blockSize);
     } catch (OutOfMemoryError e) {
       if ("Direct buffer memory".equals(e.getMessage())) {
         System.err.println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");

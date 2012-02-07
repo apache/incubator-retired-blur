@@ -24,40 +24,23 @@ import java.util.List;
 
 import org.apache.hadoop.io.Writable;
 
-public class BlurRecord implements Writable {
+import com.nearinfinity.blur.utils.ReaderBlurRecord;
+
+public class BlurRecord implements Writable, ReaderBlurRecord {
   
-  public enum MUTATE_TYPE {
-    UPDATE(1),
-    DELETE(2);
-    private int _value;
-    private MUTATE_TYPE(int value) {
-      _value = value;
-    }
-    public int getValue() {return _value;}
-    public MUTATE_TYPE find(int value) {
-      switch (value) {
-      case 1:
-        return UPDATE;
-      case 2:
-        return DELETE;
-      default:
-        throw new RuntimeException("Value [" + value + "] not found.");
-      }
-    }
-  }
+
 
   private String _rowId;
   private String _recordId;
-  private String _columnFamily;
-  private MUTATE_TYPE _mutateType = MUTATE_TYPE.UPDATE;
+  private String _family;
+  
   private List<BlurColumn> _columns = new ArrayList<BlurColumn>();
 
   @Override
   public void readFields(DataInput in) throws IOException {
     _rowId = IOUtil.readString(in);
     _recordId = IOUtil.readString(in);
-    _columnFamily = IOUtil.readString(in);
-    _mutateType.find(IOUtil.readVInt(in));
+    _family = IOUtil.readString(in);
     int size = IOUtil.readVInt(in);
     _columns.clear();
     for (int i = 0; i < size; i++) {
@@ -71,8 +54,7 @@ public class BlurRecord implements Writable {
   public void write(DataOutput out) throws IOException {
     IOUtil.writeString(out, _rowId);
     IOUtil.writeString(out, _recordId);
-    IOUtil.writeString(out, _columnFamily);
-    IOUtil.writeVInt(out, _mutateType.getValue());
+    IOUtil.writeString(out, _family);
     IOUtil.writeVInt(out, _columns.size());
     for (BlurColumn column : _columns) {
       column.write(out);
@@ -95,12 +77,12 @@ public class BlurRecord implements Writable {
     this._recordId = recordId;
   }
 
-  public String getColumnFamily() {
-    return _columnFamily;
+  public String getFamily() {
+    return _family;
   }
 
-  public void setColumnFamily(String columnFamily) {
-    this._columnFamily = columnFamily;
+  public void setFamily(String family) {
+    this._family = family;
   }
 
   public List<BlurColumn> getColumns() {
@@ -126,11 +108,32 @@ public class BlurRecord implements Writable {
     addColumn(blurColumn);
   }
 
-  public MUTATE_TYPE getMutateType() {
-    return _mutateType;
+  @Override
+  public void setRecordIdStr(String value) {
+    setRecordId(value);
   }
 
-  public void setMutateType(MUTATE_TYPE mutateType) {
-    _mutateType = mutateType;
+  @Override
+  public void setFamilyStr(String family) {
+    setFamily(family);
   }
+
+  public void reset() {
+    clearColumns();
+    _rowId = null;
+    _recordId = null;
+    _family = null;
+  }
+
+  @Override
+  public void setRowIdStr(String rowId) {
+    setRowId(rowId);
+  }
+
+  @Override
+  public String toString() {
+    return "{rowId=" + _rowId + ", recordId=" + _recordId + ", family=" + _family + ", columns=" + _columns + "}";
+  }
+  
+  
 }

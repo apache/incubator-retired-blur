@@ -227,69 +227,74 @@ $(document).ready ->
         table_ids.push $(element).attr('blur_table_id')
     if table_ids.length <= 0
       return
-    btns = new Array()
-    btnClasses = new Array()
-    title = ''
-    msg = ''
     switch action
       when 'enable'
-        btns["Enable"] = ->
-          $.ajax
-            url: Routes.update_selected_blur_tables_path()
-            type: 'PUT'
-            beforeSend: ->
-              clearTimeout(refresh_timeout)
-            success: (data) ->
-              rebuild_table(data)
-            data:
-              tables: table_ids
-              cluster_id: cluster_id
-              tableAction: 'enable'
-          pending_change(cluster_id, table_ids,'disabled','Enabling')
-          $().closePopup()
-        btnClasses['Enable'] = "primary"
-        btns["Cancel"] = ->
-          $().closePopup()
+        btns = 
+          "Enable" : 
+            class: "primary"
+            func: ->
+              $.ajax
+                url: Routes.update_selected_blur_tables_path()
+                type: 'PUT'
+                beforeSend: ->
+                  clearTimeout(refresh_timeout)
+                success: (data) ->
+                  rebuild_table(data)
+                data:
+                  tables: table_ids
+                  cluster_id: cluster_id
+                  tableAction: 'enable'
+              pending_change(cluster_id, table_ids,'disabled','Enabling')
+              $().closePopup()
+          "Cancel" :
+            func: ->
+              $().closePopup()
         title = "Enable Tables"
         msg = "Are you sure you want to enable these tables?"
       when 'disable'
-        btns["Disable"] = ->
-          $.ajax
-            url: Routes.update_selected_blur_tables_path()
-            type: 'PUT'
-            beforeSend: ->
-              clearTimeout(refresh_timeout)
-            success: (data) ->
-              rebuild_table(data)
-            data:
-              tables: table_ids
-              cluster_id: cluster_id
-              tableAction: 'disable'
-          pending_change(cluster_id, table_ids,'active','Disabling')
-          $().closePopup()
-        btnClasses['Disable'] = "primary"
-        btns["Cancel"] = ->
-          $().closePopup()
+        btns = 
+          "Disable" :
+            class: "primary"
+            func: ->
+              $.ajax
+                url: Routes.update_selected_blur_tables_path()
+                type: 'PUT'
+                beforeSend: ->
+                  clearTimeout(refresh_timeout)
+                success: (data) ->
+                  rebuild_table(data)
+                data:
+                  tables: table_ids
+                  cluster_id: cluster_id
+                  tableAction: 'disable'
+              pending_change(cluster_id, table_ids,'active','Disabling')
+              $().closePopup()
+          "Cancel" :
+            func: ->
+              $().closePopup()
         title = "Disable Tables"
         msg = "Are you sure you want to disable these tables?"
       when 'forget'
-        btns["Forget"] = ->
-          $.ajax
-            url: Routes.forget_blur_table_path(table_id)
-            type: 'DELETE'
-            beforeSend: ->
-              clearTimeout(refresh_timeout)
-            success: (data) ->
-              rebuild_table(data)
-            data:
-              tables: table_ids
-              cluster_id: cluster_id
-              tableAction: 'forget'
-          pending_change(cluster_id, table_ids,'deleted','Forgetting')
-          $().closePopup()
-        btnClasses['Forget'] = "primary"
-        btns["Cancel"] = ->
-          $().closePopup()
+        btns = 
+          "Forget" : 
+            class: "primary"
+            func: ->
+              $.ajax
+                url: Routes.forget_selected_blur_tables_path()
+                type: 'DELETE'
+                beforeSend: ->
+                  clearTimeout(refresh_timeout)
+                success: (data) ->
+                  rebuild_table(data)
+                data:
+                  tables: table_ids
+                  cluster_id: cluster_id
+                  tableAction: 'forget'
+              pending_change(cluster_id, table_ids,'deleted','Forgetting')
+              $().closePopup()
+          "Cancel" :
+            func: ->
+              $().closePopup()
         title = "Forget Tables"
         msg = "Are you sure you want to forget these tables?"
       when 'delete'
@@ -306,16 +311,20 @@ $(document).ready ->
               cluster_id: cluster_id
               delete_index: delete_index
           pending_change(cluster_id, table_ids,'disabled','Deleting')
-        btns["Delete tables and indicies"] = ->
-          delete_tables(true)
-          $().closePopup()
-        btnClasses["Delete tables and indicies"] = 'danger'
-        btns["Delete tables only"] = ->
-          delete_tables(false)
-          $().closePopup()
-        btnClasses["Delete tables only"] = 'warning'
-        btns["Cancel"] = ->
-          $().closePopup()
+        btns = 
+          "Delete tables and indicies" :
+            class: "danger"
+            func: ->
+              delete_tables(true)
+              $().closePopup()
+          "Delete tables only" :
+            class: "warning"
+            func: ->
+              delete_tables(false)
+              $().closePopup()
+          "Cancel":
+            func: ->
+              $().closePopup()
         title = "Delete Tables"
         msg = 'Do you want to delete all of the underlying table indicies?'
       else
@@ -325,5 +334,4 @@ $(document).ready ->
       titleClass: 'title'
       body: msg
       btns: btns
-      btnClasses: btnClasses
     

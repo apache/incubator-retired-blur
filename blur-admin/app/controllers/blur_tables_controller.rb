@@ -39,7 +39,9 @@ class BlurTablesController < ApplicationController
   end
   
   def forget
-    BlurTable.destroy params[:id]
+    params[:tables].each do |table|
+      BlurTable.destroy table
+    end
     render_table_json
   end
 

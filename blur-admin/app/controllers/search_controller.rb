@@ -13,7 +13,6 @@ class SearchController < ApplicationController
     @columns = @blur_table.schema &preference_sort(current_user.column_preference.value || []) if @blur_table
     @searches = current_user.searches.order("name")
     @filter_table_collection = {}
-    puts @blur_tables.inspect
     @blur_tables.each do |table|
         @filter_table_collection[table.cluster.name] ||= []
         @filter_table_collection[table.cluster.name] << [table.table_name, table.id]

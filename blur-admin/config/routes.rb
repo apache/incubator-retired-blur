@@ -18,11 +18,11 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
   match 'blur_tables/destroy' => 'blur_tables#destroy', :via => :delete, :as => :delete_selected_blur_tables
   match 'blur_tables/update' => 'blur_tables#update', :via => :put, :as => :update_selected_blur_tables
+  match 'blur_tables/forget' => 'blur_tables#forget', :via => :delete, :as => :forget_selected_blur_tables
   resources :blur_tables, :except => [:destroy, :update] do
     get 'hosts', :on => :member
     get 'schema', :on => :member
     get 'reload', :on => :collection, :as => :reload
-    delete 'forget', :on => :member, :as => :forget
   end
 
   match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh

@@ -17,6 +17,7 @@
     background-color: $grey-div-color;
     @include border;
     @include border-radius;
+    overflow-y: hidden;
     div.innerWindow {
       @include border;
       background-color: white;

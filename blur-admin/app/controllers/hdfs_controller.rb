@@ -115,7 +115,7 @@ class HdfsController < ApplicationController
   def file_tree
     instance = Hdfs.find params[:id]
     client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")
-    file_structure = client.folder_tree params[:fs_path]    
+    file_structure = client.folder_tree params[:fs_path], 4    
     render :json => file_structure
   end
 end

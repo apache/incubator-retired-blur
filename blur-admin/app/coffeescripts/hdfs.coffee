@@ -1,14 +1,14 @@
 $(document).ready ->
   if typeof(history.pushState) == 'undefined'
-    history.pushState = ()->
+    history.pushState = () ->
   headerHeight = 0
   footerHeight = 0
+  prevHeight = window.innerHeight
   windowLoaded = () ->
     headerHeight = parseInt($('#top').css('height'), 10)
     footerHeight = parseInt($('#ft').css('height'), 10)
     $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
   window.onload = windowLoaded
-  prevHeight = window.innerHeight
   $(window).resize ()->
     if prevHeight != window.innerHeight
       $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
@@ -165,6 +165,18 @@ $(document).ready ->
           $().closePopup()
           
   draw_radial_graph = (width, height, json) ->
+    showGraphTooltip = (graph, tipContent) ->
+      tooltip = $('<div class="graphtip" ><div id="tipcontent">' + tipContent + '</div></div>')
+      $('.radial-graph').append tooltip
+      graphWidth = graph.outerWidth()
+      graphHeight = graph.outerHeight()
+      tipWidth = tooltip.outerWidth()
+      tipHeight = tooltip.outerHeight() 
+      drawPositionX = (graphWidth / 2) - (tipWidth / 2)
+      drawPositionY = (graphHeight / 2) - (tipHeight / 2)
+      tooltip.css({top: drawPositionY+'px', left: drawPositionX+'px'})
+      tooltip.fadeIn(400)
+
     radius = Math.min(width, height) / 2
     color = d3.scale.category20c()
     selector = ".radial-graph"
@@ -177,10 +189,9 @@ $(document).ready ->
         .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
 
     partition = d3.layout.partition()
-      .sort(null)
+      .sort((a, b) -> b.size - a.size)
       .size([2 * Math.PI, radius * radius])
-      .value (d) ->
-        return 1
+      .value((d) -> d.size)
 
     arc = d3.svg.arc()
       .startAngle((d) -> return d.x)
@@ -190,7 +201,6 @@ $(document).ready ->
 
     path = vis.data([json]).selectAll("path")
       .data(partition.nodes)
-      .data(partition.value((d) -> d.size))
       .enter().append("path")
       .attr("display", (d) -> return if d.depth then null else "none")
       .attr("d", arc)
@@ -198,12 +208,19 @@ $(document).ready ->
       .style("stroke", "#fff")
       .style("fill", (d) -> return color((if d.children then d else d.parent).name))
       .attr("title", (d) -> return d.name )
-    path.data()
-    $('path').hover
+    timeoutShowVar = null
+    $('path').hover(() ->
+        title = $(this).attr('title') || "No path name found!"
+        $('.graphtip').remove()
+        clearTimeout(timeoutShowVar)
+        timeoutShowVar = setTimeout ( -> showGraphTooltip($('.radial-graph'), title)), 500
+      , () ->
+        clearTimeout(timeoutShowVar)
+        $('.graphtip').remove())
 
-  show_hdfs_props = (el) ->
-    id = el.attr('hdfs_id')
-    title = "HDFS Information (#{el.attr('hdfs_name')})"
+  show_hdfs_props = (id, name) ->
+    title = "HDFS Information (#{name})"
+    $('.hdfs_instance[hdfs_id=' + id + ']').click()
     $.get Routes.hdfs_info_path(id), (data) ->
       $(data).popup
         title: title
@@ -215,10 +232,9 @@ $(document).ready ->
             'width':'1120px'
             'margin-left':'-560px'
 
-  show_dir_props = (el) ->
-    id = el.attr('hdfs_id')
-    path = el.attr('hdfs_path')
+  show_dir_props = (id, path) ->
     title = "Properties for #{path}"
+    $('.osxSelectable[hdfs_path="' + path + '"][hdfs_id=' + id + ']').click()
     $.get Routes.hdfs_folder_info_path(id),{'fs_path':path},(data) ->
       $(data).popup
         titleClass: 'title'
@@ -247,9 +263,9 @@ $(document).ready ->
           if paste_buffer.action == "cut"
             cut_file(paste_buffer.location, el)
       when "props"
-        show_hdfs_props el
+        show_hdfs_props el.attr('hdfs_id'), el.attr('hdfs_name')
       when "dirprops"
-        show_dir_props el
+        show_dir_props el.attr('hdfs_id'), el.attr('hdfs_path')
       when "mkdir"
         make_dir el
       when "rename"
@@ -363,10 +379,16 @@ $(document).ready ->
       #set the previous path as the current path for the next popstate
       window.previous_path = location.pathname
 
-
-    
-  $('#hdfs_wrapper').resizable
+  $('#hdfs_browser').resizable
     handles:'s'
     stop: () ->
       $(this).css('width', '')
+  $('path').live 'click', () ->
+    $().closePopup()
+    id = $('#top_level .osxSelected').attr 'hdfs_id'
+    fullpath = $(this).attr('title')
+    fullpath = fullpath.substring(fullpath.indexOf('//') + 2)
+    path = fullpath.substring(fullpath.indexOf('/'))
+    url = window.location.protocol + '//' + window.location.host + '/hdfs/' + id + '/show' + path
+    window.location.replace url
 

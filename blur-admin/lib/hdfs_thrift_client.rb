@@ -59,11 +59,14 @@ class HdfsThriftClient
       statuses + statuses.select { |s| s.isdir }.map { |s| ls(s.path, recursive) }.flatten
     end
     
-    def folder_tree(path)
+    def folder_tree(path, depth)
+      if depth == 0
+       return {:name => path, :size => folder_size(path)}
+     end
       statuses = @client.listStatus(pathname(path))
       file_tree = {:name => path, :children =>
         statuses.map do |status|
-          status.isdir ? folder_tree(status.path) : {:name => status.path, :size => status.length}
+          status.isdir ? folder_tree(status.path, depth - 1) : {:name => status.path, :size => status.length}
         end
       }
     end
@@ -71,6 +74,15 @@ class HdfsThriftClient
   private
     def pathname(path)
       ThriftHadoopFileSystem::Pathname.new(:pathname => path.to_s)
+    end
+    
+    def folder_size(path)
+      statuses = @client.listStatus(pathname(path))
+      size = 0
+      statuses.each do |status|
+        size += status.isdir ? folder_size(status.path) : status.length
+      end
+      size
     end
   end
 end

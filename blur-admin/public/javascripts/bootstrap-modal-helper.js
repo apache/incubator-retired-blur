@@ -22,21 +22,17 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
     $('#modal').modal('hide');
   }
   $.fn.popup = function(params) {
-    var defaultBtn = new Array();
-    defaultBtn["Close"] = function(){$('#modal').modal('hide');};
     params = $.extend({
       title:'',
       body:'',
-      btns:defaultBtn,
+      btns:{ 'Close': { func: function(){ $('#modal').modal('hide');} } },
       titleClass:'',
       bodyClass:'',
       footerClass:'',
-      btnClass:'',
-      btnClasses: new Array(),
       fade:true,
       backdrop:'modal-backdrop',
       keyboard:true
-      },params)
+      }, params)
     var title = params['title'];
     var body = params['body'];
     var btns = params['btns'];
@@ -48,46 +44,52 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
     var titleClass = params['titleClass'];
     var bodyClass = params['bodyClass'];
     var footerClass = params['footerClass'];
-    var btnClass = params['btnClass'];
-    var btnClasses = params['btnClasses'];
     var fade = params['fade'];
     var backdrop = params['backdrop'];
     var keyboard = params['keyboard'];
     
     $('#modal').removeClass('fade').unbind('hide').unbind('hidden').modal('hide');
     $('#modal').remove();
-    $('body').append("<div id='modal' class='modal'></div>");
-    var modal = $('#modal');
+    
+    var modal = $("<div id='modal' class='modal'></div>");
+    $('body').append(modal);
     if(fade){
-     modal.addClass('fade'); 
+      modal.addClass('fade'); 
     }
-    if(title.charAt(0) == "<"){
-      modal.append("<div class='modal-header'>" + title + "</div>")
-    }else{
-      modal.append("<h2 class='modal-header'>" + title + "</h2>");
-    }
-    modal.children('.modal-header').addClass(titleClass);
-    modal.append("<div class='modal-body'></div>");
+    
+    titleElement = title.charAt(0) == "<" ? 'div' : 'h2';
+    modalHeader = $("<" + titleElement + " class='modal-header'>" + title + "</" + titleElement + ">");
+    modalBody = $("<div class='modal-body'></div>");
+    modalFooter = $("<div class='modal-footer'></div>");
+    
+    modal.append(modalHeader);
+    modalHeader.addClass(titleClass);
+    modal.append(modalBody);
+    modalBody.addClass(bodyClass);
+    modal.append(modalFooter);
+    modalFooter.addClass(footerClass);
+        
     var clone = null;
     if($(this).length == 0){
-      modal.children('.modal-body').html(body);
+      modalBody.html(body);
     }else{
       var clone = $(this).first().clone(true);
       $(this).first().replaceWith('<div id="modal-placeholder-div" style="display:none;"></div>');
-      modal.children('.modal-body').html(clone);
-      
+      modalBody.html(clone);
     }
-    modal.children('.modal-body').addClass(bodyClass);
-    modal.append("<div class='modal-footer'></div>");
-    var footer = modal.children('.modal-footer');
-    footer.addClass(footerClass);
-    for(name in btns){
-      footer.prepend("<button class='btn'>" + name + "<button>");
-      var btn = footer.children("button").first();
-      btn.addClass(btnClass).bind('click', btns[name]);
-      if(btnClasses.hasOwnProperty(name)){
-        btn.addClass(btnClasses[name]);
+    
+    for(buttonName in btns){
+      buttonProps = btns[buttonName]
+      button = $("<button class='btn'>" + buttonName + "<button>")
+      if (buttonProps['class']){
+        button.addClass(buttonProps['class']);
       }
+      if (buttonProps['func']){
+        button.bind('click', buttonProps['func']);
+      } else {
+        throw "No functionality for button: " + buttonName;
+      }
+      modalFooter.prepend(button);
     }
     
     if(typeof(preShow) =='function'){

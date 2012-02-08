@@ -166,14 +166,17 @@ $(document).ready ->
   $('#delete_icon').live 'click', ->
     parent = $(this).parents('.search_element')
     buttons = 
-    	"Delete Query": ->
-    		$().closePopup();
-    		$.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
-          type: 'DELETE',
-          success: (data) ->
-            $('#saved .body .saved').html(data)
-    	"Cancel": ->
-    		$().closePopup();
+    	"Delete Query":
+    	  class: 'primary'
+    	  func: ->
+      		$().closePopup();
+      		$.ajax Routes.delete_search_path(parent.attr("id"), $('#blur_table option:selected').val()),
+            type: 'DELETE',
+            success: (data) ->
+              $('#saved .body .saved').html(data)
+    	"Cancel":
+    	  func: ->
+      		$().closePopup();
     $().popup
       btns:buttons
       title:"Delete this saved query?"

@@ -122,15 +122,6 @@ class SearchController < ApplicationController
     end
   end
 
-  def reload
-    @searches = current_user.searches.reverse
-    @blur_table = BlurTable.find params[:blur_table]
-    respond_to do |format|
-      format.html {render :partial =>"saved", :locals => {:searches => @searches,
-                                                          :blur_table => @blur_table}}
-    end
-  end
-
   def save
     search = Search.new(:name         => params[:save_name],
                   :super_query  =>!params[:super_query].nil?,

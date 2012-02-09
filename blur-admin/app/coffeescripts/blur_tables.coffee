@@ -227,23 +227,23 @@ $(document).ready ->
         table_ids.push $(element).attr('blur_table_id')
     if table_ids.length <= 0
       return
+    sharedAjaxSettings = 
+      beforeSend: ->
+        clearTimeout(refresh_timeout)
+      success: (data) ->
+        rebuild_table(data)
+      data:
+        tables: table_ids
+        cluster_id: cluster_id
     switch action
       when 'enable'
         btns = 
           "Enable" : 
             class: "primary"
             func: ->
-              $.ajax
-                url: Routes.update_selected_blur_tables_path()
-                type: 'PUT'
-                beforeSend: ->
-                  clearTimeout(refresh_timeout)
-                success: (data) ->
-                  rebuild_table(data)
-                data:
-                  tables: table_ids
-                  cluster_id: cluster_id
-                  tableAction: 'enable'
+              $.extend(sharedAjaxSettings, { type: 'PUT', url: Routes.update_selected_blur_tables_path() })
+              sharedAjaxSettings.data.tableAction = 'enable'
+              $.ajax(sharedAjaxSettings)
               pending_change(cluster_id, table_ids,'disabled','Enabling')
               $().closePopup()
           "Cancel" :
@@ -256,17 +256,9 @@ $(document).ready ->
           "Disable" :
             class: "primary"
             func: ->
-              $.ajax
-                url: Routes.update_selected_blur_tables_path()
-                type: 'PUT'
-                beforeSend: ->
-                  clearTimeout(refresh_timeout)
-                success: (data) ->
-                  rebuild_table(data)
-                data:
-                  tables: table_ids
-                  cluster_id: cluster_id
-                  tableAction: 'disable'
+              $.extend(sharedAjaxSettings, { type: 'PUT', url: Routes.update_selected_blur_tables_path() })
+              sharedAjaxSettings.data.tableAction = 'disable'
+              $.ajax(sharedAjaxSettings)
               pending_change(cluster_id, table_ids,'active','Disabling')
               $().closePopup()
           "Cancel" :
@@ -279,17 +271,9 @@ $(document).ready ->
           "Forget" : 
             class: "primary"
             func: ->
-              $.ajax
-                url: Routes.forget_selected_blur_tables_path()
-                type: 'DELETE'
-                beforeSend: ->
-                  clearTimeout(refresh_timeout)
-                success: (data) ->
-                  rebuild_table(data)
-                data:
-                  tables: table_ids
-                  cluster_id: cluster_id
-                  tableAction: 'forget'
+              $.extend(sharedAjaxSettings, { type: 'DELETE', url: Routes.forget_selected_blur_tables_path() })
+              sharedAjaxSettings.data.tableAction = 'forget'
+              $.ajax(sharedAjaxSettings)
               pending_change(cluster_id, table_ids,'deleted','Forgetting')
               $().closePopup()
           "Cancel" :
@@ -299,17 +283,9 @@ $(document).ready ->
         msg = "Are you sure you want to forget these tables?"
       when 'delete'
         delete_tables = (delete_index) ->
-          $.ajax
-            url: Routes.delete_selected_blur_tables_path()
-            type: 'DELETE'
-            beforeSend: ->
-              clearTimeout(refresh_timeout)
-            success: (data) ->
-              rebuild_table(data)
-            data:
-              tables: table_ids
-              cluster_id: cluster_id
-              delete_index: delete_index
+          $.extend(sharedAjaxSettings, { type: 'DELETE', url: Routes.delete_selected_blur_tables_path() })
+          sharedAjaxSettings.data.delete_index = delete_index
+          $.ajax(sharedAjaxSettings)
           pending_change(cluster_id, table_ids,'disabled','Deleting')
         btns = 
           "Delete tables and indicies" :

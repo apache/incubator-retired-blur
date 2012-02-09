@@ -208,21 +208,6 @@ describe SearchController do
     end
   end
   
-  describe "reload" do
-    before(:each) do
-      @search = Factory.stub :search
-      @user.stub(:searches).and_return [@search]
-      Search.stub(:new).and_return(@search)
-      Search.stub(:find).and_return(@search)
-      BlurTable.stub(:find)
-    end
-
-    it "renders the saved partial" do
-      get :reload, :blur_table => 1
-      response.should render_template 'saved'
-    end
-  end
-  
   describe "save" do
     before(:each) do
     end

@@ -52,7 +52,7 @@ $(document).ready ->
     timeInSecs = (if timeModifier then (parseInt(time[0], 10) + 12) else parseInt(time[0], 10)) * 3600 + parseInt(time[1], 10) * 60 + parseInt(time[2], 10)
     dateNow = new Date()
     timeNowSecs = dateNow.getHours() * 3600 + dateNow.getMinutes() * 60 + dateNow.getSeconds()
-    if data.state == 'Running' && Math.abs(timeNowSecs - timeInSecs) > 3600
+    if data.state == 'Running' && Math.abs(timeNowSecs - timeInSecs) > 60
       $(row).addClass('oldRunning')
     row
   add_refresh_rates = (data_table) ->

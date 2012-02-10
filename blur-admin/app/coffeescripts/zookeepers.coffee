@@ -31,7 +31,7 @@ $(document).ready ->
           if parseInt(this.long_running_queries,10) == 1
             query_message = '<div><a href="' + Routes.make_current_zookeeper_path() + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
           else
-            query_message = '<div><a href="' + Routes.make_current_zookeeper_path() + '" class="long_running_queries">' + this.long_running_queries + '</a> queries have been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.make_current_zookeeper_path() + '" class="long_running_queries">' + parseInt(this.long_running_queries) + '</a> queries have been running for more than a minute</div>'
         zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards

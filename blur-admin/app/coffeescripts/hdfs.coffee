@@ -4,17 +4,17 @@ $(document).ready ->
     history.pushState = () ->
   
   # Setup a view variables
-  initializeFinderHeight = ( () ->
+  ( () ->
     headerHeight = 0; footerHeight = 0;
     prevHeight = window.innerHeight
     windowLoaded = () ->
       headerHeight = parseInt($('#top').css('height'), 10)
       footerHeight = parseInt($('#ft').css('height'), 10)
-      $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
+      $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight) - 10)
     window.onload = windowLoaded
     $(window).resize ()->
       if prevHeight != window.innerHeight
-        $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight))
+        $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight) - 10)
       prevHeight = window.innerHeight
   )()
       
@@ -290,10 +290,9 @@ $(document).ready ->
     #navigate to the folder given in the path
     pathPieces = window.location.pathname.split('/').filter((member) ->
       return member != '').slice(1)
-    if pathPieces.length > 0
-      hdfsId = pathPieces.shift()
-      path = '/' + pathPieces.slice(1).join('/')
-      $('#hdfs_browser').osxFinder('navigateToPath', path, hdfsId, true)
+    hdfsId = pathPieces.shift()
+    path = '/' + pathPieces.slice(1).join('/')
+    $('#hdfs_browser').osxFinder('navigateToPath', path, hdfsId, true)
   
   #popstate event listener
   window.onpopstate = (e) ->
@@ -315,8 +314,8 @@ $(document).ready ->
     fullpath = $(this).attr('title')
     fullpath = fullpath.substring(fullpath.indexOf('//') + 2)
     path = fullpath.substring(fullpath.indexOf('/'))
-    url = window.location.protocol + '//' + window.location.host + '/hdfs/' + id + '/show' + path
-    window.location.replace url
+    $('#hdfs_browser').osxFinder('navigateToPath', path)
+    show_dir_props(id, path)
     
   $('#hdfs_browser').osxFinder
     done: () ->

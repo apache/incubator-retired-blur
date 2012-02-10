@@ -30,10 +30,10 @@ class BlurTablesController < ApplicationController
 
   def destroy
     params[:tables].map {|table| BlurTable.find(table)}.each do |table|
-      @table.status = STATUS[:deleting]
-      @table.save
+      table.status = STATUS[:deleting]
+      table.save
       destroy_index = params[:delete_index] == 'true'
-      @table.blur_destroy destroy_index, @current_zookeeper.blur_urls
+      table.blur_destroy destroy_index, @current_zookeeper.blur_urls
     end
     render_table_json
   end

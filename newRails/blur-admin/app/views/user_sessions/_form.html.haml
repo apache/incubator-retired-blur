@@ -1,0 +1,15 @@
+= twitter_bootstrap_form_for user_session do |f|
+  -if user_session.errors.any?
+    #error_explanation
+      %h4= "#{pluralize(user_session.errors.count, 'error')} prohibited successful login"
+      %ul
+        - user_session.errors.full_messages.each do |msg|
+          %li= msg
+
+  %p
+    = f.text_field :username
+  %p
+    = f.password_field :password
+  %p
+    = f.submit 'Log In'
+    = link_to 'Register', new_user_path

@@ -1,0 +1,17 @@
+-if can?(:update, :blur_tables)
+  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'enable'} Enable Tables
+-if can?(:delete, :blur_tables)
+  %button.bulk-action-button.btn.danger.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'delete'} Delete Tables
+
+%table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
+  %thead
+    %tr
+      %th
+        %input.bulk-action-checkbox.check-all{:type => "checkbox", :disabled=>'disabled'}
+      %th Name
+      %th Row Count
+      %th Record Count
+  %tbody
+    %tr.no-tables
+      %th
+      %th{:colspan=>3} Loading Tables...

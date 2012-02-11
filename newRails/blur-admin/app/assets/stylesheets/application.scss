@@ -1,0 +1,27 @@
+@import "bootstrap";
+@import "compass";
+@import "compass/layout";
+@import "susy";
+
+.hidden{ display: none; }
+.inline{ display: inline; }
+#{headings()} {
+  font-weight: bold;
+  color: #555;
+}
+label{
+  width: inherit;
+}
+
+@import "base";
+@import "navigation";
+@import "bootstrap_addons";
+
+// Application specific pages
+@import "search";
+@import "blur_queries";
+@import "blur_tables";
+@import "zookeepers";
+@import "user_session";
+@import "users";
+@import "hdfs";

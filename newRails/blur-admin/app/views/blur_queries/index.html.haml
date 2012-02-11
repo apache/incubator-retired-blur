@@ -1,0 +1,25 @@
+- content_for :title, 'Blur Queries'
+
+- content_for :javascript do
+  = javascript_include_tag 'blur_queries'
+- content_for :stylesheets do
+  = stylesheet_link_tag 'datatables.bootstrap'
+
+#blur_queries_wrapper
+  .range_select
+    Queries in the last:
+    %select.time_range
+      =options_for_select({ "1 min" => 1, "5 min" => 5, "10 min" => 10, "30 min" => 30 }, 1)
+  %table#queries-table.zebra-striped
+    %thead
+      %tr
+        %th User ID
+        - if can? :index, :blur_queries, :query_string
+          %th Query
+        %th Table Name
+        %th Starting Record
+        %th Time Submitted
+        %th Status
+        %th State
+        %th Actions/Info
+    %tbody

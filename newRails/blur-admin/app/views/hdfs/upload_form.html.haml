@@ -1,0 +1,10 @@
+#upload-file
+  #status
+  %form#upload-form{:target=>'upload_frame', :action=>hdfs_upload_path,:method=>'post',:enctype=>"multipart/form-data"}
+    %input#file-input{:type=>'file',:name=>'upload'}
+    %p File must be less than 25Mb
+    %input#hdfs-id-input{:type=>'hidden',:name=>'hdfs_id'}
+    %input#fpath-input{:type=>'hidden',:name=>'path'}
+    %input#upload-button.btn.primary{:type=>'submit',:value=>'Upload'}
+  %iframe#upload_frame{:name=>'upload_frame',:style=>'display:none'}
+  

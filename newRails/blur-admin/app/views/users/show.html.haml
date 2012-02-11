@@ -1,0 +1,62 @@
+- content_for :title, 'User'
+- content_for :javascript do
+  =javascript_include_tag 'compiled/users'
+
+#show_user_wrapper{'data-user-id' => @user.id}
+  .info-contain
+    - if can? :update, @column_preference
+      - col_prefs = @column_preference.value || []
+      #pref-col-info
+        #pref-title
+          %h3 Search Result Column Preferences
+        #pref-bin
+          #pref-col
+            .section-label{:id => @user.id} My Saved Column Families
+            %ul#my-cols.sort
+              -if col_prefs.size() == 0
+                #no-saved None Currently Saved
+              -else
+                #no-saved{:style => "display:none;"} None Currently Saved
+                -col_prefs.each do |pref|
+                  .sel-fam{:id => "value_#{pref}"}
+                    =pref
+          #pref-trash
+            %ul#actual-trash.sort
+              #trash Drag a column here to remove it from your preferences
+          #pref-key
+            Key:
+            %br
+            Saved Column:
+            #orange_color
+            %br
+            Unsaved Column:
+            #blue_color
+        #opt-col
+          .section-label All Column Families
+          -@choices.each do |option|
+            -if col_prefs.include? option
+              .my-select.fam{:id => "value_#{option}"}
+                =option
+            -else
+              .fam{:id => "value_#{option}"}
+                =option
+
+    #user-info
+      %p
+        %strong Username:
+        = @user.username
+      %p
+        %strong Name:
+        = @user.name
+      %p
+        %strong Email:
+        = @user.email
+      %p
+        %strong Roles:
+        = @user.roles.to_a.join ', '
+      %p
+        - if can? :edit, @user
+          = link_to "Edit", edit_user_path(@user)
+        - if can? :index, :users
+          |
+          = link_to "View All Users", users_path

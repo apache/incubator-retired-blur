@@ -1,0 +1,34 @@
+- content_for :title, 'Blur Tables'
+- content_for :javascript do
+  =javascript_include_tag 'jquery.jstree','blur_tables'
+
+%ul#blur_tables.tabs
+  - @clusters.each_with_index do |cluster,i|
+    %li{:class =>("active" unless i != 0)}
+      %a{:href=>"#cluster_#{cluster.id}"}= cluster.name
+#tables-wrapper.pill-content
+  - @clusters.each_with_index do |cluster,i|
+    #cluster.cluster{:id => cluster.id,:class =>("active" unless i != 0), :data => {:cluster_id => cluster.id}}
+      %ul.cluster-tabs.tabs{:id => "inner-tabs-cluster_#{cluster.id}"}
+        %li.active_table_tab.active
+          %a{:href=>"#cluster_#{cluster.id}_active"}
+            Active Tables (
+            %span.counter
+            )
+        %li.disabled_table_tab
+          %a{:href=>"#cluster_#{cluster.id}_disabled"}
+            Disabled Tables (
+            %span.counter
+            )
+        %li.deleted_table_tab
+          %a{:href=>"#cluster_#{cluster.id}_deleted"}
+            Deleted Tables (
+            %span.counter
+            )
+      .pill-content.inner-wrap
+        %div.active{:id => "cluster_#{cluster.id}_active"}
+          = render :partial => 'active_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_enabled?}, :cluster => cluster.id}
+        %div{:id => "cluster_#{cluster.id}_disabled"}
+          = render :partial => 'disabled_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_disabled?}, :cluster => cluster.id}
+        %div{:id => "cluster_#{cluster.id}_deleted"}
+          = render :partial => 'deleted_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_deleted?}, :cluster => cluster.id}

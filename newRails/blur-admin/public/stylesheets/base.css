@@ -1,0 +1,98 @@
+/*
+Syntax error: Undefined mixin 'container'.
+        on line 75 of /Users/nic-bmarcaur/blur/blur-tools/newRails/blur-admin/app/assets/stylesheets/base.scss, in `container'
+        from line 75 of /Users/nic-bmarcaur/blur/blur-tools/newRails/blur-admin/app/assets/stylesheets/base.scss
+
+70: }
+71: 
+72: // Page settings
+73: body {
+74:   height: 100%;
+75:   @include container;
+76:   margin:0 auto;
+77:   background-color: $bg-blue-color;
+78: }
+79: 
+80: //help dialog styles
+
+Backtrace:
+/Users/nic-bmarcaur/blur/blur-tools/newRails/blur-admin/app/assets/stylesheets/base.scss:75:in `container'
+/Users/nic-bmarcaur/blur/blur-tools/newRails/blur-admin/app/assets/stylesheets/base.scss:75
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:170:in `visit_mixin'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:37:in `visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:18:in `visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:53:in `block in visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:53:in `map'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:53:in `visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:27:in `block in visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:39:in `with_environment'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:26:in `visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:37:in `block in visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:238:in `visit_rule'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:37:in `visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:18:in `visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:53:in `block in visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:53:in `map'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:53:in `visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:27:in `block in visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:39:in `with_environment'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:26:in `visit_children'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:37:in `block in visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:47:in `visit_root'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/base.rb:37:in `visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:18:in `visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/visitors/perform.rb:7:in `visit'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/tree/root_node.rb:20:in `render'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/engine.rb:299:in `_render'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/engine.rb:247:in `block in render'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/util.rb:310:in `silence_sass_warnings'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/engine.rb:247:in `render'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/plugin/compiler.rb:339:in `update_stylesheet'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/plugin/compiler.rb:202:in `block in update_stylesheets'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/plugin/compiler.rb:200:in `each'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/plugin/compiler.rb:200:in `update_stylesheets'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/plugin.rb:81:in `update_stylesheets'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/plugin.rb:54:in `check_for_updates'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/sass-3.1.15/lib/sass/plugin/rack.rb:51:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/best_standards_support.rb:17:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/etag.rb:23:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/conditionalget.rb:25:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/head.rb:14:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/params_parser.rb:21:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/flash.rb:242:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/session/abstract/id.rb:205:in `context'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/session/abstract/id.rb:200:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/cookies.rb:338:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/activerecord-3.2.1/lib/active_record/query_cache.rb:64:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/activerecord-3.2.1/lib/active_record/connection_adapters/abstract/connection_pool.rb:443:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/callbacks.rb:28:in `block in call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/activesupport-3.2.1/lib/active_support/callbacks.rb:405:in `_run__1556784524412621796__call__1480094955327930198__callbacks'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/activesupport-3.2.1/lib/active_support/callbacks.rb:405:in `__run_callback'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/activesupport-3.2.1/lib/active_support/callbacks.rb:385:in `_run_call_callbacks'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/activesupport-3.2.1/lib/active_support/callbacks.rb:81:in `run_callbacks'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/callbacks.rb:27:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/reloader.rb:65:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/remote_ip.rb:31:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/debug_exceptions.rb:16:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/show_exceptions.rb:56:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/railties-3.2.1/lib/rails/rack/logger.rb:26:in `call_app'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/railties-3.2.1/lib/rails/rack/logger.rb:16:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/request_id.rb:22:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/methodoverride.rb:21:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/runtime.rb:17:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/activesupport-3.2.1/lib/active_support/cache/strategy/local_cache.rb:72:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/lock.rb:15:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/actionpack-3.2.1/lib/action_dispatch/middleware/static.rb:53:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/railties-3.2.1/lib/rails/engine.rb:479:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/railties-3.2.1/lib/rails/application.rb:220:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/content_length.rb:14:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/railties-3.2.1/lib/rails/rack/log_tailer.rb:14:in `call'
+/Users/nic-bmarcaur/.rvm/gems/ruby-1.9.2-p290/gems/rack-1.4.1/lib/rack/handler/webrick.rb:59:in `service'
+/Users/nic-bmarcaur/.rvm/rubies/ruby-1.9.2-p290/lib/ruby/1.9.1/webrick/httpserver.rb:111:in `service'
+/Users/nic-bmarcaur/.rvm/rubies/ruby-1.9.2-p290/lib/ruby/1.9.1/webrick/httpserver.rb:70:in `run'
+/Users/nic-bmarcaur/.rvm/rubies/ruby-1.9.2-p290/lib/ruby/1.9.1/webrick/server.rb:183:in `block in start_thread'
+*/
+body:before {
+  white-space: pre;
+  font-family: monospace;
+  content: "Syntax error: Undefined mixin 'container'.\A         on line 75 of /Users/nic-bmarcaur/blur/blur-tools/newRails/blur-admin/app/assets/stylesheets/base.scss, in `container'\A         from line 75 of /Users/nic-bmarcaur/blur/blur-tools/newRails/blur-admin/app/assets/stylesheets/base.scss\A \A 70: }\A 71: \A 72: // Page settings\A 73: body {\A 74:   height: 100%;\A 75:   @include container;\A 76:   margin:0 auto;\A 77:   background-color: $bg-blue-color;\A 78: }\A 79: \A 80: //help dialog styles"; }

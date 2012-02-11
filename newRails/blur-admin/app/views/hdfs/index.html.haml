@@ -1,0 +1,14 @@
+- content_for :title, 'HDFS'
+- content_for :javascript do
+  =javascript_include_tag 'jquery.contextMenu', 'jquery.osxFinder', 'compiled/hdfs'
+- content_for :stylesheets do
+  =stylesheet_link_tag 'jquery.contextMenu.css', 'jquery.osxFinder'
+
+
+#hdfs_wrapper
+  #hdfs_browser.ui-corner-top.ui-corner-bottom{:hdfs_editor =>current_user.editor.to_s}
+    %ul#top_level
+      - @instances.each do |instance|
+        %li.osxSelectable.hdfs_instance{:hdfs_id=>instance.id, :hdfs_name=>instance.name, :hdfs_path=>'/'}
+          =link_to(instance.name, hdfs_expand_path(instance.id), :title=>instance.name)
+

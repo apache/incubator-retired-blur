@@ -24,7 +24,7 @@ public class BlurThriftRecord extends Record implements ReaderBlurRecord {
 
   @Override
   public void setRowIdStr(String rowId) {
-    setRowIdStr(rowId);
+//    setRowIdStr(rowId);
   }
 
 }

@@ -16,17 +16,7 @@ end
 
 if Rails.env == 'development' or Rails.env == 'test'
   require 'ci/reporter/rake/rspec'
-  require 'metric_fu'
   require 'cover_me'
-
-  MetricFu::Configuration.run do |config|
-    config.metrics = [:stats, :roodi, :rails_best_practices, :hotspots]
-    # config.metrics = [:stats, :flog, :flay, :reek, :roodi, :rails_best_practices, :hotspots]
-    config.flog    = { :dirs_to_flog => ['app'] }
-    config.reek    = { :dirs_to_reek => ['app'] }
-    config.roodi   = { :dirs_to_roodi => ['app'] }
-    config.verbose = true
-  end
 
   CoverMe.config do |c|
       # what files are you interested in coverage for:

@@ -20,6 +20,7 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.LockObtainFailedException;
@@ -140,6 +141,29 @@ public class WalIndexWriterTest {
         indexWriter.updateDocuments(false, new Term("f","v1"), docs);
       }
     },0,0);
+  }
+
+  @Test
+  public void testDeleteDocumentsByTerm() throws CorruptIndexException, LockObtainFailedException, IOException {
+    testAddDocumentsWalTrue();
+    runTest(new Action() {
+      @Override
+      public void action(WalIndexWriter indexWriter) throws CorruptIndexException, IOException {
+        indexWriter.deleteDocuments(true, new Term("f","v"));
+      }
+    },2,0);
+  }
+
+  // NOTE: Expect this to fail because deletion by query is not implemented
+  //       yet.  Previous versions had a problem that would blow up the
+  //       stack with an infinite recursion, however, so this verifies that
+  //       problem has been fixed and we correctly detect the unsupported
+  //       operation.
+  @Test(expected=IOException.class)
+  public void testDeleteDocumentsByQuery() throws CorruptIndexException, LockObtainFailedException, IOException {
+    getIndexWriter().close();
+    WalIndexWriter indexWriter = getIndexWriter();
+    indexWriter.deleteDocuments(true, new TermQuery(new Term("f","v")));
   }
   
   private Collection<Document> getDocs() {

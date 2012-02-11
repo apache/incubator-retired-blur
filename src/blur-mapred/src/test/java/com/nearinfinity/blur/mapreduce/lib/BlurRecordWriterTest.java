@@ -29,9 +29,9 @@ public class BlurRecordWriterTest {
     TaskID tId = new TaskID(jobId, false, 13);
     TaskAttemptID taskId = new TaskAttemptID(tId, 0);
     Configuration conf = new Configuration();
-    String string = "./tmp/output-record-writer-test-newapi";
-    rm(new File(string));
-    conf.set("mapred.output.dir", string);
+    String pathStr = "./tmp/output-record-writer-test-newapi";
+    rm(new File(pathStr));
+    conf.set("mapred.output.dir", pathStr);
     TaskAttemptContext context = new TaskAttemptContext(conf, taskId);
     BlurRecordWriter writer = new BlurRecordWriter(context);
     
@@ -52,7 +52,7 @@ public class BlurRecordWriterTest {
     
     //assert index exists and has document
     
-    HdfsDirectory dir = new HdfsDirectory(new Path(string,BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 13)));
+    HdfsDirectory dir = new HdfsDirectory(new Path(pathStr,BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 13)));
     assertTrue(IndexReader.indexExists(dir));
     IndexReader reader = IndexReader.open(dir);
     assertEquals(10,reader.numDocs());

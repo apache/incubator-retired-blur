@@ -56,6 +56,7 @@ import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
+import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -396,6 +397,18 @@ public class IndexManagerTest {
     Row row = newRow("row-4", newRecord("test-family", "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
+  }
+
+  @Test
+  public void testMutationDeleteRow() throws Exception {
+    RowMutation mutation = newRowMutation(TABLE, "row-2");
+    mutation.setRowMutationType(RowMutationType.DELETE_ROW);
+    indexManager.mutate(mutation);
+
+    Selector selector = new Selector().setRowId("row-2");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNull("row should be deleted", fetchResult.rowResult);
   }
 
 }

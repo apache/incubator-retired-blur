@@ -176,16 +176,6 @@ public class WalIndexWriter extends IndexWriter {
     _blurMetrics.recordWrites.incrementAndGet();
   }
 
-  public void deleteDocuments(boolean wal, Query query) throws CorruptIndexException, IOException {
-    _dirty.incrementAndGet();
-    deleteDocuments(wal, query);
-  }
-
-  public void deleteDocuments(boolean wal, Term term) throws CorruptIndexException, IOException {
-    _dirty.incrementAndGet();
-    deleteDocuments(wal, term);
-  }
-
   public void addDocument(boolean wal, Document doc, Analyzer analyzer) throws CorruptIndexException, IOException {
     _dirty.incrementAndGet();
     if (wal) {

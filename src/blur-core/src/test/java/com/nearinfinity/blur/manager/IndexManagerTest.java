@@ -422,6 +422,29 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testMutationReplaceMissingRow() throws Exception {
+    Column c1 = newColumn("testcol1", "value20");
+    Column c2 = newColumn("testcol2", "value21");
+    Column c3 = newColumn("testcol3", "value22");
+    String rec = "record-6";
+    RecordMutation rm = newRecordMutation(FAMILY, rec, c1, c2, c3);
+    RowMutation mutation = newRowMutation(TABLE, "row-6", rm);
+    indexManager.mutate(mutation);
+
+    Selector selector = new Selector().setRowId("row-6");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    Row r = fetchResult.rowResult.row;
+    assertNotNull("new row should exist", r);
+    Row row = newRow("row-6", newRecord(FAMILY, "record-6",
+      newColumn("testcol1", "value20"),
+      newColumn("testcol2", "value21"),
+      newColumn("testcol3", "value22")));
+    row.recordCount = 1;
+    assertEquals("row should match", row, r);
+  }
+
+  @Test
   public void testMutationDeleteRow() throws Exception {
     RowMutation mutation = newRowMutation(DELETE_ROW, TABLE, "row-2");
     indexManager.mutate(mutation);
@@ -430,6 +453,17 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNull("row should be deleted", fetchResult.rowResult);
+  }
+
+  @Test
+  public void testMutationDeleteMissingRow() throws Exception {
+    RowMutation mutation = newRowMutation(DELETE_ROW, TABLE, "row-6");
+    indexManager.mutate(mutation);
+
+    Selector selector = new Selector().setRowId("row-6");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNull("row should not exist", fetchResult.rowResult);
   }
 
   @Test
@@ -458,6 +492,15 @@ public class IndexManagerTest {
     assertNotNull("row should exist", fetchResult.rowResult);
     assertNotNull("row should exist", fetchResult.rowResult.row);
     assertEquals("row should have one record", 1, fetchResult.rowResult.row.getRecordsSize());
+  }
+
+  // XXX: Should this instead result in a BlurException or silently do nothing?
+  @Test(expected=RuntimeException.class)
+  public void testMutationUpdateMissingRowDeleteRecord() throws Exception {
+    RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-6");
+
+    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-6", rm);
+    indexManager.mutate(rowMutation);
   }
 
   @Test
@@ -529,6 +572,24 @@ public class IndexManagerTest {
     assertEquals("matching record should be updated", 1, rm1Matches);
     assertEquals("missing record should be added", 1, rm2Matches);
     assertEquals("unmodified record should exist", 1, nonMatches);
+  }
+
+  // XXX: Should this instead throw a BlurException or silently do nothing?
+  @Test
+  public void testMutationUpdateMissingRowReplaceRecord() throws Exception {
+    Column c1 = newColumn("testcol1", "value104");
+    Column c2 = newColumn("testcol2", "value105");
+    Column c3 = newColumn("testcol3", "value105");
+    String rec = "record-6";
+    RecordMutation rm = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, rec, c1, c2, c3);
+
+    Record r = updateAndFetchRecord("row-6", rec, rm);
+
+    assertNotNull("record should exist", r);
+    assertEquals("only 3 columns in record", 3, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
+    assertTrue("column 3 should be in record", r.columns.contains(c3));
   }
 
   @Test
@@ -617,6 +678,17 @@ public class IndexManagerTest {
     assertNull("record should not exist", r);
   }
 
+  // XXX: Should this instead throw a BlurException or silently do nothing?
+  @Test(expected=RuntimeException.class)
+  public void testMutationUpdateMissingRowReplaceColumns() throws Exception {
+    Column c1 = newColumn("testcol1", "value999");
+    Column c2 = newColumn("testcol2", "value9999");
+    String rec = "record-6";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
+
+    Record r = updateAndFetchRecord("row-6", rec, rm);
+  }
+
   @Test
   public void testMutationUpdateRowAppendColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
@@ -668,6 +740,17 @@ public class IndexManagerTest {
     Record r = updateAndFetchRecord("row-1", rec, rm);
 
     assertNull("record should not exist", r);
+  }
+
+  // XXX: Should this instead throw a BlurException or silently do nothing?
+  @Test(expected=RuntimeException.class)
+  public void testMutationUpdateMissingRowAppendColumns() throws Exception {
+    Column c1 = newColumn("testcol1", "value999");
+    Column c2 = newColumn("testcol2", "value9999");
+    String rec = "record-6";
+    RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2);
+
+    Record r = updateAndFetchRecord("row-6", rec, rm);
   }
 
   private Record updateAndFetchRecord(String rowId, String recordId,

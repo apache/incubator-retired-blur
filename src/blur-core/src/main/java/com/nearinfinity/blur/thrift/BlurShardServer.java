@@ -70,7 +70,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public BlurResults query(String table, BlurQuery blurQuery) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     _queryChecker.checkQuery(blurQuery);
     try {
       BlurQuery original = new BlurQuery(blurQuery);
@@ -102,7 +102,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public FetchResult fetchRow(String table, Selector selector) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       FetchResult fetchResult = new FetchResult();
       _indexManager.fetchRow(table, selector, fetchResult);
@@ -115,7 +115,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public void cancelQuery(String table, long uuid) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       _indexManager.cancelQuery(table, uuid);
     } catch (Exception e) {
@@ -126,7 +126,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public List<BlurQueryStatus> currentQueries(String table) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       return _indexManager.currentQueries(table);
     } catch (Exception e) {
@@ -137,7 +137,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public TableStats getTableStats(String table) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       TableStats tableStats = new TableStats();
       tableStats.tableName = table;
@@ -162,7 +162,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public Map<String, String> shardServerLayout(String table) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
       Map<String, String> result = new TreeMap<String, String>();
@@ -182,7 +182,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public long recordFrequency(String table, String columnFamily, String columnName, String value) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       return _indexManager.recordFrequency(table, columnFamily, columnName, value);
     } catch (Exception e) {
@@ -193,7 +193,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public Schema schema(String table) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       return _indexManager.schema(table);
     } catch (Exception e) {
@@ -204,7 +204,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public List<String> terms(String table, String columnFamily, String columnName, String startWith, short size) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       return _indexManager.terms(table, columnFamily, columnName, startWith, size);
     } catch (Exception e) {
@@ -216,8 +216,8 @@ public class BlurShardServer extends TableAdmin implements Iface {
 
   @Override
   public void mutate(RowMutation mutation) throws BlurException, TException {
-    checkTable(_cluster,mutation.table);
-    checkForUpdates(_cluster,mutation.table);
+    checkTable(_cluster, mutation.table);
+    checkForUpdates(_cluster, mutation.table);
     MutationHelper.validateMutation(mutation);
     try {
       _indexManager.mutate(mutation);
@@ -256,33 +256,44 @@ public class BlurShardServer extends TableAdmin implements Iface {
   public void setQueryChecker(BlurQueryChecker queryChecker) {
     _queryChecker = queryChecker;
   }
-  
+
   public void setIndexManager(IndexManager indexManager) {
     _indexManager = indexManager;
   }
-  
+
   public void setIndexServer(IndexServer indexServer) {
     _indexServer = indexServer;
   }
 
   @Override
   public BlurQueryStatus queryStatusById(String table, long uuid) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
-      return _indexManager.queryStatus(table,uuid);
+      return _indexManager.queryStatus(table, uuid);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get current query status [table={0},uuid={1}]", e, table, uuid);
       throw new BException(e.getMessage(), e);
     }
   }
-  
+
   @Override
   public List<Long> queryStatusIdList(String table) throws BlurException, TException {
-    checkTable(_cluster,table);
+    checkTable(_cluster, table);
     try {
       return _indexManager.queryStatusIdList(table);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to get query status id list [table={0}]", e, table);
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public void optimize(String table, int numberOfSegmentsPerShard) throws BlurException, TException {
+    checkTable(_cluster, table);
+    try {
+      _indexManager.optimize(table, numberOfSegmentsPerShard);
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table, numberOfSegmentsPerShard);
       throw new BException(e.getMessage(), e);
     }
   }

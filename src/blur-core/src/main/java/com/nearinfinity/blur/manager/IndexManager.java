@@ -771,4 +771,24 @@ public class IndexManager {
     _filterCache = filterCache;
   }
 
+  public void optimize(String table, int numberOfSegmentsPerShard) throws BException {
+    Map<String, BlurIndex> blurIndexes;
+    try {
+      blurIndexes = _indexServer.getIndexes(table);
+    } catch (IOException e) {
+      LOG.error("Unknown error while trying to fetch index readers.", e);
+      throw new BException(e.getMessage(), e);
+    }
+    
+    Collection<BlurIndex> values = blurIndexes.values();
+    for (BlurIndex index : values) {
+      try {
+        index.optimize(numberOfSegmentsPerShard);
+      } catch (IOException e) {
+        LOG.error("Unknown error while trying to optimize indexes.", e);
+        throw new BException(e.getMessage(), e);
+      }
+    }
+  }
+
 }

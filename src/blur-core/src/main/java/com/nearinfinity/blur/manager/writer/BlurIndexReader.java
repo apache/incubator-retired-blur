@@ -147,4 +147,9 @@ public class BlurIndexReader extends BlurIndex {
   public void setClusterStatus(ClusterStatus clusterStatus) {
     _clusterStatus = clusterStatus;
   }
+
+  @Override
+  public void optimize(int numberOfSegmentsPerShard) {
+    
+  }
 }

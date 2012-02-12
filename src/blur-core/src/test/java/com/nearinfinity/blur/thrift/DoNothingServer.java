@@ -150,4 +150,9 @@ public class DoNothingServer implements Iface {
   public List<Long> queryStatusIdList(String table) throws BlurException, TException {
     return null;
   }
+
+  @Override
+  public void optimize(String table, int numberOfSegmentsPerShard) throws BlurException, TException {
+    
+  }
 }

@@ -21,4 +21,6 @@ public abstract class BlurIndex {
 
   public abstract AtomicBoolean isClosed();
 
+  public abstract void optimize(int numberOfSegmentsPerShard) throws IOException;
+
 }

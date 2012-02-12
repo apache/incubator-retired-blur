@@ -384,6 +384,8 @@ service Blur {
   void enableTable(1:string table) throws (1:BlurException ex)
   void disableTable(1:string table) throws (1:BlurException ex)
   void removeTable(1:string table, 2:bool deleteIndexFiles) throws (1:BlurException ex)
+
+  void optimize(1:string table, 2:i32 numberOfSegmentsPerShard) throws (1:BlurException ex)
   
 }
 

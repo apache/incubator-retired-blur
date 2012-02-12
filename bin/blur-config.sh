@@ -24,6 +24,14 @@ export BLUR_HOME_CONF=$BLUR_HOME/conf
 
 export BLUR_LOGS=${BLUR_LOGS:=$BLUR_HOME/logs}
 
+if [ ! -d "$BLUR_LOGS" ]; then
+  mkdir -p $BLUR_LOGS
+fi
+
+if [ ! -d "$BLUR_HOME/pids" ]; then
+  mkdir -p $BLUR_HOME/pids
+fi
+
 BLUR_CLASSPATH=$BLUR_HOME/conf
 
 for f in $HADOOP_HOME/*.jar; do

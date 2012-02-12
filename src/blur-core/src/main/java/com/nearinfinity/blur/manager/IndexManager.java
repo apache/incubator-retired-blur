@@ -20,6 +20,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC;
 import static com.nearinfinity.blur.utils.BlurConstants.PRIME_DOC_VALUE;
 import static com.nearinfinity.blur.utils.BlurConstants.RECORD_ID;
 import static com.nearinfinity.blur.utils.BlurConstants.ROW_ID;
+import static com.nearinfinity.blur.utils.BlurUtil.findRecordMutation;
 import static com.nearinfinity.blur.utils.BlurUtil.readFilter;
 import static com.nearinfinity.blur.utils.BlurUtil.readQuery;
 import static com.nearinfinity.blur.utils.RowDocumentUtil.getColumns;
@@ -653,10 +654,11 @@ public class IndexManager {
       Row existingRow = fetchResult.rowResult.row;
       Row newRow = new Row().setId(existingRow.id);
       for (Record existingRecord : existingRow.records) {
-        for (RecordMutation recordMutation : mutation.recordMutations) {
-          if (isSameRecord(existingRecord, recordMutation.record)) {
-            doUpdateRecordMutation(recordMutation, existingRecord, newRow);
-          }
+        RecordMutation recordMutation = findRecordMutation(mutation, existingRecord);
+        if (recordMutation != null) {
+          doUpdateRecordMutation(recordMutation, existingRecord, newRow);
+        } else {
+          newRow.addToRecords(existingRecord);
         }
       }
       blurIndex.replaceRow(mutation.wal, newRow);

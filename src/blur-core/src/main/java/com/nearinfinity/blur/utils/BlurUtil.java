@@ -192,6 +192,24 @@ public class BlurUtil {
     return mutation;
   }
 
+  public static RecordMutation findRecordMutation(RowMutation mutation, Record record) {
+    for (RecordMutation recordMutation : mutation.recordMutations) {
+      if (match(recordMutation, record)) {
+        return recordMutation;
+      }
+    }
+    return null;
+  }
+
+  public static boolean match(RecordMutation mutation, Record record) {
+    return match(mutation.record, record);
+  }
+
+  public static boolean match(Record left, Record right) {
+    return left.recordId.equals(right.recordId) &&
+           left.family.equals(right.family);
+  }
+
   public static RowMutation newRowMutation(String table, String rowId, RecordMutation... mutations) {
     RowMutation mutation = new RowMutation();
     mutation.setRowId(rowId);

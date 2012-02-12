@@ -125,10 +125,20 @@ public class IndexManagerTest {
         newColumn("testcol3", "value9")));
     RowMutation mutation4 = newRowMutation(TABLE, "row-4", newRecordMutation("test-family", "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"),
         newColumn("testcol3", "value9")));
+    RowMutation mutation5 = newRowMutation(TABLE, "row-5",
+      newRecordMutation("test-family", "record-5A",
+        newColumn("testcol1", "value13"),
+        newColumn("testcol2", "value14"),
+        newColumn("testcol3", "value15")),
+      newRecordMutation("test-family", "record-5B",
+        newColumn("testcol1", "value16"),
+        newColumn("testcol2", "value17"),
+        newColumn("testcol3", "value18")));
     indexManager.mutate(mutation1);
     indexManager.mutate(mutation2);
     indexManager.mutate(mutation3);
     indexManager.mutate(mutation4);
+    indexManager.mutate(mutation5);
   }
 
   @Test
@@ -383,7 +393,7 @@ public class IndexManagerTest {
   @Test
   public void testTerms() throws Exception {
     List<String> terms = indexManager.terms(TABLE, "test-family", "testcol1", "", (short) 100);
-    assertEquals(Arrays.asList("value1", "value4", "value7"), terms);
+    assertEquals(Arrays.asList("value1", "value13", "value16", "value4", "value7"), terms);
   }
 
   @Test
@@ -426,6 +436,23 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNull("row should not exist", fetchResult.rowResult);
+  }
+
+  @Test
+  public void testMutationUpdateRowDeleteRecord() throws Exception {
+    RecordMutation recordMutation = newRecordMutation("test-family", "record-5A");
+    recordMutation.setRecordMutationType(RecordMutationType.DELETE_ENTIRE_RECORD);
+
+    RowMutation rowMutation = newRowMutation(TABLE, "row-5", recordMutation);
+    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    indexManager.mutate(rowMutation);
+
+    Selector selector = new Selector().setRowId("row-5");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNotNull("row should not exist", fetchResult.rowResult);
+    assertNotNull("row should not exist", fetchResult.rowResult.row);
+    assertEquals("row should have one record", 1, fetchResult.rowResult.row.getRecordsSize());
   }
 
 }

@@ -50,6 +50,7 @@ import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurResult;
+import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchRecordResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
@@ -450,9 +451,57 @@ public class IndexManagerTest {
     Selector selector = new Selector().setRowId("row-5");
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
-    assertNotNull("row should not exist", fetchResult.rowResult);
-    assertNotNull("row should not exist", fetchResult.rowResult.row);
+    assertNotNull("row should exist", fetchResult.rowResult);
+    assertNotNull("row should exist", fetchResult.rowResult.row);
     assertEquals("row should have one record", 1, fetchResult.rowResult.row.getRecordsSize());
+  }
+
+  @Test
+  public void testMutationUpdateRowReplaceExistingRecord() throws Exception {
+    Column c1 = newColumn("testcol4", "value104");
+    Column c2 = newColumn("testcol5", "value105");
+    Column c3 = newColumn("testcol6", "value105");
+    RecordMutation recordMutation = newRecordMutation("test-family", "record-5A", c1, c2, c3);
+    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+
+    RowMutation rowMutation = newRowMutation(TABLE, "row-5", recordMutation);
+    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    indexManager.mutate(rowMutation);
+
+    Selector selector = new Selector().setRowId("row-5").setRecordId("record-5A");
+    selector.setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    Record r = fetchResult.recordResult.record;
+    assertNotNull("record should exist", r);
+    assertEquals("only 3 columns in record", 3, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
+    assertTrue("column 3 should be in record", r.columns.contains(c3));
+  }
+
+  @Test
+  public void testMutationUpdateRowReplaceMissingRecord() throws Exception {
+    Column c1 = newColumn("testcol4", "value104");
+    Column c2 = newColumn("testcol5", "value105");
+    Column c3 = newColumn("testcol6", "value105");
+    RecordMutation recordMutation = newRecordMutation("test-family", "record-5C", c1, c2, c3);
+    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+
+    RowMutation rowMutation = newRowMutation(TABLE, "row-5", recordMutation);
+    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    indexManager.mutate(rowMutation);
+
+    Selector selector = new Selector().setRowId("row-5").setRecordId("record-5C");
+    selector.setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    Record r = fetchResult.recordResult.record;
+    assertNotNull("record should exist", r);
+    assertEquals("only 3 columns in record", 3, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
+    assertTrue("column 3 should be in record", r.columns.contains(c3));
   }
 
 }

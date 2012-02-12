@@ -86,6 +86,7 @@ import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.FetchRowResult;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
+import com.nearinfinity.blur.thrift.generated.RecordMutationType;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.RowMutationType;
@@ -651,16 +652,39 @@ public class IndexManager {
     selector.setRowId(mutation.rowId);
     fetchRow(mutation.table, selector, fetchResult);
     if (fetchResult.exists) {
+      // We will examine the contents of the existing row and add records
+      // onto a new replacement row based on the mutation we have been given.
       Row existingRow = fetchResult.rowResult.row;
       Row newRow = new Row().setId(existingRow.id);
+
+      // Create a local copy of the mutation we can modify
+      RowMutation mutationCopy = mutation.deepCopy();
+
+      // Match existing records against record mutations.  Once a record
+      // mutation has been processed, remove it from our local copy.
       for (Record existingRecord : existingRow.records) {
-        RecordMutation recordMutation = findRecordMutation(mutation, existingRecord);
+        RecordMutation recordMutation = findRecordMutation(mutationCopy, existingRecord);
         if (recordMutation != null) {
+          mutationCopy.recordMutations.remove(recordMutation);
           doUpdateRecordMutation(recordMutation, existingRecord, newRow);
         } else {
+          // Copy existing records over to the new row unmodified if there
+          // is no matching mutation.
           newRow.addToRecords(existingRecord);
         }
       }
+
+      // Examine all remaining record mutations.  For any record replacements
+      // we need to create a new record in the table even though an existing
+      // record did not match.  Otherwise there would be no way to add a
+      // record to an existing row.
+      for (RecordMutation recordMutation : mutationCopy.recordMutations) {
+        if (recordMutation.recordMutationType == RecordMutationType.REPLACE_ENTIRE_RECORD) {
+          newRow.addToRecords(recordMutation.record);
+        }
+      }
+
+      // Finally, replace the existing row with the new row we have built.
       blurIndex.replaceRow(mutation.wal, newRow);
     } else {
       Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);

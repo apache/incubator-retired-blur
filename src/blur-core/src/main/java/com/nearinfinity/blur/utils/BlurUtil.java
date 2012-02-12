@@ -178,7 +178,14 @@ public class BlurUtil {
     return selector;
   }
 
-  public static RecordMutation newRecordMutation(String family, String recordId, Column... columns) {
+  public static RecordMutation newRecordMutation(String family, String recordId,
+                                                 Column... columns) {
+    return newRecordMutation(RecordMutationType.REPLACE_ENTIRE_RECORD,
+                             family, recordId, columns);
+  }
+
+  public static RecordMutation newRecordMutation(RecordMutationType type, String family,
+                                                 String recordId, Column... columns) {
     Record record = new Record();
     record.setRecordId(recordId);
     record.setFamily(family);
@@ -187,7 +194,7 @@ public class BlurUtil {
     }
 
     RecordMutation mutation = new RecordMutation();
-    mutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+    mutation.setRecordMutationType(type);
     mutation.setRecord(record);
     return mutation;
   }
@@ -210,11 +217,17 @@ public class BlurUtil {
            left.family.equals(right.family);
   }
 
-  public static RowMutation newRowMutation(String table, String rowId, RecordMutation... mutations) {
+  public static RowMutation newRowMutation(String table, String rowId,
+                                           RecordMutation... mutations) {
+    return newRowMutation(RowMutationType.REPLACE_ROW, table, rowId, mutations);
+  }
+
+  public static RowMutation newRowMutation(RowMutationType type, String table,
+                                           String rowId, RecordMutation... mutations) {
     RowMutation mutation = new RowMutation();
     mutation.setRowId(rowId);
     mutation.setTable(table);
-    mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+    mutation.setRowMutationType(type);
     for (RecordMutation recordMutation : mutations) {
       mutation.addToRecordMutations(recordMutation);
     }

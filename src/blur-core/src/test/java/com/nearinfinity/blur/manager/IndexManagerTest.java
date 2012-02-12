@@ -16,6 +16,12 @@
 
 package com.nearinfinity.blur.manager;
 
+import static com.nearinfinity.blur.thrift.generated.RecordMutationType.APPEND_COLUMN_VALUES;
+import static com.nearinfinity.blur.thrift.generated.RecordMutationType.DELETE_ENTIRE_RECORD;
+import static com.nearinfinity.blur.thrift.generated.RecordMutationType.REPLACE_COLUMNS;
+import static com.nearinfinity.blur.thrift.generated.RecordMutationType.REPLACE_ENTIRE_RECORD;
+import static com.nearinfinity.blur.thrift.generated.RowMutationType.DELETE_ROW;
+import static com.nearinfinity.blur.thrift.generated.RowMutationType.UPDATE_ROW;
 import static com.nearinfinity.blur.utils.BlurUtil.match;
 import static com.nearinfinity.blur.utils.BlurUtil.newColumn;
 import static com.nearinfinity.blur.utils.BlurUtil.newRecord;
@@ -72,6 +78,7 @@ public class IndexManagerTest {
 
   private static final String SHARD_NAME = BlurUtil.getShardName(BlurConstants.SHARD_PREFIX, 0);
   private static final String TABLE = "table";
+  private static final String FAMILY = "test-family";
   private LocalIndexServer server;
   private IndexManager indexManager;
   private BlurIndexRefresher refresher;
@@ -119,20 +126,20 @@ public class IndexManagerTest {
   }
 
   private void setupData() throws BlurException, IOException {
-    RowMutation mutation1 = newRowMutation(TABLE, "row-1", newRecordMutation("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
+    RowMutation mutation1 = newRowMutation(TABLE, "row-1", newRecordMutation(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
         newColumn("testcol3", "value3")));
-    RowMutation mutation2 = newRowMutation(TABLE, "row-2", newRecordMutation("test-family", "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"),
+    RowMutation mutation2 = newRowMutation(TABLE, "row-2", newRecordMutation(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"),
         newColumn("testcol3", "value6")));
-    RowMutation mutation3 = newRowMutation(TABLE, "row-3", newRecordMutation("test-family", "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"),
+    RowMutation mutation3 = newRowMutation(TABLE, "row-3", newRecordMutation(FAMILY, "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"),
         newColumn("testcol3", "value9")));
-    RowMutation mutation4 = newRowMutation(TABLE, "row-4", newRecordMutation("test-family", "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"),
+    RowMutation mutation4 = newRowMutation(TABLE, "row-4", newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"),
         newColumn("testcol3", "value9")));
     RowMutation mutation5 = newRowMutation(TABLE, "row-5",
-      newRecordMutation("test-family", "record-5A",
+      newRecordMutation(FAMILY, "record-5A",
         newColumn("testcol1", "value13"),
         newColumn("testcol2", "value14"),
         newColumn("testcol3", "value15")),
-      newRecordMutation("test-family", "record-5B",
+      newRecordMutation(FAMILY, "record-5B",
         newColumn("testcol1", "value16"),
         newColumn("testcol2", "value17"),
         newColumn("testcol3", "value18"),
@@ -150,7 +157,7 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+    Row row = newRow("row-1", newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
   }
@@ -176,9 +183,9 @@ public class IndexManagerTest {
 
     assertEquals("row-1", fetchResult.recordResult.rowid);
     assertEquals("record-1", fetchResult.recordResult.record.recordId);
-    assertEquals("test-family", fetchResult.recordResult.record.family);
+    assertEquals(FAMILY, fetchResult.recordResult.record.family);
 
-    Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
     assertEquals(record, fetchResult.recordResult.record);
   }
 
@@ -188,7 +195,7 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    Row row = newRow("row-1", newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+    Row row = newRow("row-1", newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
   }
@@ -234,19 +241,19 @@ public class IndexManagerTest {
     assertNull(fetchResult.rowResult);
     assertNotNull(fetchResult.recordResult);
     FetchRecordResult recordResult = fetchResult.recordResult;
-    assertEquals("test-family", recordResult.record.family);
+    assertEquals(FAMILY, recordResult.record.family);
     assertEquals("record-1", recordResult.record.recordId);
     assertEquals("row-1", recordResult.rowid);
 
-    Record record = newRecord("test-family", "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
+    Record record = newRecord(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3"));
     assertEquals(record, recordResult.record);
 
   }
 
   @Test
   public void testRecordFrequency() throws Exception {
-    assertEquals(2, indexManager.recordFrequency(TABLE, "test-family", "testcol1", "value1"));
-    assertEquals(0, indexManager.recordFrequency(TABLE, "test-family", "testcol1", "NO VALUE"));
+    assertEquals(2, indexManager.recordFrequency(TABLE, FAMILY, "testcol1", "value1"));
+    assertEquals(0, indexManager.recordFrequency(TABLE, FAMILY, "testcol1", "NO VALUE"));
   }
 
   @Test
@@ -254,8 +261,8 @@ public class IndexManagerTest {
     Schema schema = indexManager.schema(TABLE);
     assertEquals(TABLE, schema.table);
     Map<String, Set<String>> columnFamilies = schema.columnFamilies;
-    assertEquals(new TreeSet<String>(Arrays.asList("test-family")), new TreeSet<String>(columnFamilies.keySet()));
-    assertEquals(new TreeSet<String>(Arrays.asList("testcol1", "testcol2", "testcol3")), new TreeSet<String>(columnFamilies.get("test-family")));
+    assertEquals(new TreeSet<String>(Arrays.asList(FAMILY)), new TreeSet<String>(columnFamilies.keySet()));
+    assertEquals(new TreeSet<String>(Arrays.asList("testcol1", "testcol2", "testcol3")), new TreeSet<String>(columnFamilies.get(FAMILY)));
   }
 
   @Test
@@ -395,13 +402,13 @@ public class IndexManagerTest {
 
   @Test
   public void testTerms() throws Exception {
-    List<String> terms = indexManager.terms(TABLE, "test-family", "testcol1", "", (short) 100);
+    List<String> terms = indexManager.terms(TABLE, FAMILY, "testcol1", "", (short) 100);
     assertEquals(Arrays.asList("value1", "value13", "value16", "value4", "value7"), terms);
   }
 
   @Test
   public void testMutationReplaceRow() throws Exception {
-    RowMutation mutation = newRowMutation(TABLE, "row-4", newRecordMutation("test-family", "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn(
+    RowMutation mutation = newRowMutation(TABLE, "row-4", newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn(
         "testcol3", "value4")));
     indexManager.mutate(mutation);
 
@@ -409,15 +416,14 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNotNull(fetchResult.rowResult.row);
-    Row row = newRow("row-4", newRecord("test-family", "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
+    Row row = newRow("row-4", newRecord(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
     row.recordCount = 1;
     assertEquals(row, fetchResult.rowResult.row);
   }
 
   @Test
   public void testMutationDeleteRow() throws Exception {
-    RowMutation mutation = newRowMutation(TABLE, "row-2");
-    mutation.setRowMutationType(RowMutationType.DELETE_ROW);
+    RowMutation mutation = newRowMutation(DELETE_ROW, TABLE, "row-2");
     indexManager.mutate(mutation);
 
     Selector selector = new Selector().setRowId("row-2");
@@ -428,11 +434,9 @@ public class IndexManagerTest {
 
   @Test
   public void testMutationUpdateRowDeleteLastRecord() throws Exception {
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-2");
-    recordMutation.setRecordMutationType(RecordMutationType.DELETE_ENTIRE_RECORD);
+    RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-2");
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-2", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-2", rm);
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-2");
@@ -443,11 +447,9 @@ public class IndexManagerTest {
 
   @Test
   public void testMutationUpdateRowDeleteRecord() throws Exception {
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-5A");
-    recordMutation.setRecordMutationType(RecordMutationType.DELETE_ENTIRE_RECORD);
+    RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-5A");
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-5", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-5", rm);
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-5");
@@ -463,18 +465,11 @@ public class IndexManagerTest {
     Column c1 = newColumn("testcol4", "value104");
     Column c2 = newColumn("testcol5", "value105");
     Column c3 = newColumn("testcol6", "value105");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-5A", c1, c2, c3);
-    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+    String rec = "record-5A";
+    RecordMutation rm = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, rec, c1, c2, c3);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-5", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
+    Record r = updateAndFetchRecord("row-5", rec, rm);
 
-    Selector selector = new Selector().setRowId("row-5").setRecordId("record-5A");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    Record r = fetchResult.recordResult.record;
     assertNotNull("record should exist", r);
     assertEquals("only 3 columns in record", 3, r.getColumnsSize());
     assertTrue("column 1 should be in record", r.columns.contains(c1));
@@ -487,18 +482,11 @@ public class IndexManagerTest {
     Column c1 = newColumn("testcol4", "value104");
     Column c2 = newColumn("testcol5", "value105");
     Column c3 = newColumn("testcol6", "value105");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-5C", c1, c2, c3);
-    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+    String rec = "record-5C";
+    RecordMutation rm = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, rec, c1, c2, c3);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-5", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
+    Record r = updateAndFetchRecord("row-5", rec, rm);
 
-    Selector selector = new Selector().setRowId("row-5").setRecordId("record-5C");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    Record r = fetchResult.recordResult.record;
     assertNotNull("record should exist", r);
     assertEquals("only 3 columns in record", 3, r.getColumnsSize());
     assertTrue("column 1 should be in record", r.columns.contains(c1));
@@ -511,16 +499,13 @@ public class IndexManagerTest {
     Column c1 = newColumn("testcol4", "value104");
     Column c2 = newColumn("testcol5", "value105");
     Column c3 = newColumn("testcol6", "value105");
-    RecordMutation rm1 = newRecordMutation("test-family", "record-5A", c1, c2, c3);
-    rm1.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+    RecordMutation rm1 = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, "record-5A", c1, c2, c3);
     Column c4 = newColumn("testcol4", "value104");
     Column c5 = newColumn("testcol5", "value105");
     Column c6 = newColumn("testcol6", "value105");
-    RecordMutation rm2 = newRecordMutation("test-family", "record-5C", c4, c5, c6);
-    rm2.setRecordMutationType(RecordMutationType.REPLACE_ENTIRE_RECORD);
+    RecordMutation rm2 = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, "record-5C", c4, c5, c6);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-5", rm1, rm2);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-5", rm1, rm2);
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-5");
@@ -550,18 +535,10 @@ public class IndexManagerTest {
   public void testMutationUpdateRowReplaceExistingColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-1", c1, c2);
-    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_COLUMNS);
+    String rec = "record-1";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
-
-    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    Record r = fetchResult.recordResult.record;
+    Record r = updateAndFetchRecord("row-1", rec, rm);
 
     assertNotNull("record should exist", r);
     assertEquals("only 3 columns in record", 3, r.getColumnsSize());
@@ -580,18 +557,10 @@ public class IndexManagerTest {
   @Test
   public void testMutationUpdateRowReplaceExistingDuplicateColumns() throws Exception {
     Column c = newColumn("testcol3", "value999");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-5B", c);
-    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_COLUMNS);
+    String rec = "record-5B";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-5", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
-
-    Selector selector = new Selector().setRowId("row-5").setRecordId("record-5B");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    Record r = fetchResult.recordResult.record;
+    Record r = updateAndFetchRecord("row-5", rec, rm);
 
     assertNotNull("record should exist", r);
     assertEquals("only 3 columns in record", 3, r.getColumnsSize());
@@ -610,18 +579,10 @@ public class IndexManagerTest {
   public void testMutationUpdateRowReplaceMissingColumns() throws Exception {
     Column c1 = newColumn("testcol4", "value999");
     Column c2 = newColumn("testcol5", "value9999");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-1", c1, c2);
-    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_COLUMNS);
+    String rec = "record-1";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
-
-    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    Record r = fetchResult.recordResult.record;
+    Record r = updateAndFetchRecord("row-1", rec, rm);
 
     assertNotNull("record should exist", r);
     assertEquals("only 5 columns in record", 5, r.getColumnsSize());
@@ -633,18 +594,10 @@ public class IndexManagerTest {
   public void testMutationUpdateRowReplaceMixedColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol4", "value9999");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-1", c1, c2);
-    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_COLUMNS);
+    String rec = "record-1";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
-
-    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    Record r = fetchResult.recordResult.record;
+    Record r = updateAndFetchRecord("row-1", rec, rm);
 
     assertNotNull("record should exist", r);
     assertEquals("only 4 columns in record", 4, r.getColumnsSize());
@@ -656,18 +609,12 @@ public class IndexManagerTest {
   public void testMutationUpdateRowMissingRecordReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol4", "value999");
     Column c2 = newColumn("testcol5", "value9999");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-1B", c1, c2);
-    recordMutation.setRecordMutationType(RecordMutationType.REPLACE_COLUMNS);
+    String rec = "record-1B";
+    RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
+    Record r = updateAndFetchRecord("row-1", rec, rm);
 
-    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1B");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    assertNull("record should not exist", fetchResult.recordResult);
+    assertNull("record should not exist", r);
   }
 
   @Test
@@ -675,18 +622,10 @@ public class IndexManagerTest {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
     Column c3 = newColumn("testcol4", "hmm");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-1", c1, c2, c3);
-    recordMutation.setRecordMutationType(RecordMutationType.APPEND_COLUMN_VALUES);
+    String rec = "record-1";
+    RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2, c3);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
-    indexManager.mutate(rowMutation);
-
-    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1");
-    selector.setRecordOnly(true);
-    FetchResult fetchResult = new FetchResult();
-    indexManager.fetchRow(TABLE, selector, fetchResult);
-    Record r = fetchResult.recordResult.record;
+    Record r = updateAndFetchRecord("row-1", rec, rm);
 
     assertNotNull("record should exist", r);
     assertEquals("only 6 columns in record", 6, r.getColumnsSize());
@@ -723,18 +662,24 @@ public class IndexManagerTest {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
     Column c3 = newColumn("testcol4", "hmm");
-    RecordMutation recordMutation = newRecordMutation("test-family", "record-1B", c1, c2, c3);
-    recordMutation.setRecordMutationType(RecordMutationType.APPEND_COLUMN_VALUES);
+    String rec = "record-1B";
+    RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2, c3);
 
-    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
-    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    Record r = updateAndFetchRecord("row-1", rec, rm);
+
+    assertNull("record should not exist", r);
+  }
+
+  private Record updateAndFetchRecord(String rowId, String recordId,
+                                      RecordMutation... recordMutations) throws Exception {
+    RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, rowId, recordMutations);
     indexManager.mutate(rowMutation);
 
-    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1B");
+    Selector selector = new Selector().setRowId(rowId).setRecordId(recordId);
     selector.setRecordOnly(true);
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
-    assertNull("record should not exist", fetchResult.recordResult);
+    return (fetchResult.recordResult != null ? fetchResult.recordResult.record : null);
   }
 
 }

@@ -17,35 +17,18 @@
 bin=`dirname "$0"`
 bin=`cd "$bin"; pwd`
 
-export BLUR_HOME="$bin"/..
-export BLUR_HOME_CONF=$BLUR_HOME/conf
+. "$bin"/blur-testsuite-config.sh
 
-. $BLUR_HOME/conf/blur-env.sh
+$bin/stop-blur.sh
+ssh blur@$BLUR_VM_IP /home/blur/zookeeper-3.3.4-cdh3u3/bin/zkServer.sh stop
+ssh blur@$BLUR_VM_IP /home/blur/hadoop-0.20.2-cdh3u3/bin/stop-dfs.sh
 
-export BLUR_LOGS=${BLUR_LOGS:=$BLUR_HOME/logs}
+# Removing zookeeper data
+ssh blur@$BLUR_VM_IP rm -r "/home/blur/zookeeper-3.3.4-cdh3u3/data/*"
 
-if [ ! -d "$BLUR_LOGS" ]; then
-  mkdir -p $BLUR_LOGS
-fi
+# Removing hadoop data
+ssh blur@$BLUR_VM_IP rm -r "/home/blur/hadoop-0.20.2-cdh3u3/dfs/*"
 
-if [ ! -d "$BLUR_HOME/pids" ]; then
-  mkdir -p $BLUR_HOME/pids
-fi
+ssh blur@$BLUR_VM_IP /home/blur/hadoop-0.20.2-cdh3u3/bin/hadoop namenode -format
 
-BLUR_CLASSPATH=$BLUR_HOME/conf
-
-for f in $HADOOP_HOME/*.jar; do
-  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
-done
-
-for f in $HADOOP_HOME/lib/*.jar; do
-  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
-done
-
-for f in $BLUR_HOME/lib/*.jar; do
-  BLUR_CLASSPATH=${BLUR_CLASSPATH}:$f;
-done
-
-export BLUR_CLASSPATH
-
-HOSTNAME=`hostname`
+$bin/start-blur.sh

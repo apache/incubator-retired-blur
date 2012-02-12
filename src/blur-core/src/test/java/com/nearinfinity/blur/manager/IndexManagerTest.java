@@ -54,6 +54,8 @@ import com.nearinfinity.blur.thrift.generated.Facet;
 import com.nearinfinity.blur.thrift.generated.FetchRecordResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Record;
+import com.nearinfinity.blur.thrift.generated.RecordMutation;
+import com.nearinfinity.blur.thrift.generated.RecordMutationType;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 import com.nearinfinity.blur.thrift.generated.RowMutationType;
@@ -409,6 +411,21 @@ public class IndexManagerTest {
     FetchResult fetchResult = new FetchResult();
     indexManager.fetchRow(TABLE, selector, fetchResult);
     assertNull("row should be deleted", fetchResult.rowResult);
+  }
+
+  @Test
+  public void testMutationUpdateRowDeleteLastRecord() throws Exception {
+    RecordMutation recordMutation = newRecordMutation("test-family", "record-2");
+    recordMutation.setRecordMutationType(RecordMutationType.DELETE_ENTIRE_RECORD);
+
+    RowMutation rowMutation = newRowMutation(TABLE, "row-2", recordMutation);
+    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    indexManager.mutate(rowMutation);
+
+    Selector selector = new Selector().setRowId("row-2");
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNull("row should not exist", fetchResult.rowResult);
   }
 
 }

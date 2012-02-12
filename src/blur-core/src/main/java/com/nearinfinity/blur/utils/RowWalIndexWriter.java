@@ -72,8 +72,10 @@ public class RowWalIndexWriter {
   private void append(boolean wal, Row row, boolean replace) throws IOException {
     primeDocSet = false;
     List<Document> documents = new ArrayList<Document>();
-    for (Record record : row.records) {
-      convert(row.id, record, documents);
+    if (row.records != null) {
+      for (Record record : row.records) {
+        convert(row.id, record, documents);
+      }
     }
     if (replace) {
       _indexWriter.updateDocuments(wal, new Term(ROW_ID, row.id), documents, _analyzer);

@@ -653,11 +653,78 @@ public class IndexManagerTest {
   }
 
   @Test
-  public void testMutationUpdateRowReplaceMissingRecordColumns() throws Exception {
+  public void testMutationUpdateRowMissingRecordReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol4", "value999");
     Column c2 = newColumn("testcol5", "value9999");
     RecordMutation recordMutation = newRecordMutation("test-family", "record-1B", c1, c2);
     recordMutation.setRecordMutationType(RecordMutationType.REPLACE_COLUMNS);
+
+    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
+    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    indexManager.mutate(rowMutation);
+
+    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1B");
+    selector.setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    assertNull("record should not exist", fetchResult.recordResult);
+  }
+
+  @Test
+  public void testMutationUpdateRowAppendColumns() throws Exception {
+    Column c1 = newColumn("testcol1", "value999");
+    Column c2 = newColumn("testcol2", "value9999");
+    Column c3 = newColumn("testcol4", "hmm");
+    RecordMutation recordMutation = newRecordMutation("test-family", "record-1", c1, c2, c3);
+    recordMutation.setRecordMutationType(RecordMutationType.APPEND_COLUMN_VALUES);
+
+    RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
+    rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);
+    indexManager.mutate(rowMutation);
+
+    Selector selector = new Selector().setRowId("row-1").setRecordId("record-1");
+    selector.setRecordOnly(true);
+    FetchResult fetchResult = new FetchResult();
+    indexManager.fetchRow(TABLE, selector, fetchResult);
+    Record r = fetchResult.recordResult.record;
+
+    assertNotNull("record should exist", r);
+    assertEquals("only 6 columns in record", 6, r.getColumnsSize());
+    assertTrue("column 1 should be in record", r.columns.contains(c1));
+    assertTrue("column 2 should be in record", r.columns.contains(c2));
+    assertTrue("column 3 should be in record", r.columns.contains(c3));
+    int numTestcol1 = 0;
+    int numTestcol2 = 0;
+    int numTestcol3 = 0;
+    int numTestcol4 = 0;
+    int others = 0;
+    for (Column column : r.columns) {
+      if (column.name.equals("testcol1")) {
+        numTestcol1 += 1;
+      } else if (column.name.equals("testcol2")) {
+        numTestcol2 += 1;
+      } else if (column.name.equals("testcol3")) {
+        numTestcol3 += 1;
+      } else if (column.name.equals("testcol4")) {
+        numTestcol4 += 1;
+      } else {
+        others += 1;
+      }
+    }
+    assertEquals("should append testcol1", 2, numTestcol1);
+    assertEquals("should append testcol2", 2, numTestcol2);
+    assertEquals("should not append testcol3", 1, numTestcol3);
+    assertEquals("should append testcol4", 1, numTestcol4);
+    assertEquals("should not find other columns", 0, others);
+  }
+
+  @Test
+  public void testMutationUpdateRowMissingRecordAppendColumns() throws Exception {
+    Column c1 = newColumn("testcol1", "value999");
+    Column c2 = newColumn("testcol2", "value9999");
+    Column c3 = newColumn("testcol4", "hmm");
+    RecordMutation recordMutation = newRecordMutation("test-family", "record-1B", c1, c2, c3);
+    recordMutation.setRecordMutationType(RecordMutationType.APPEND_COLUMN_VALUES);
 
     RowMutation rowMutation = newRowMutation(TABLE, "row-1", recordMutation);
     rowMutation.setRowMutationType(RowMutationType.UPDATE_ROW);

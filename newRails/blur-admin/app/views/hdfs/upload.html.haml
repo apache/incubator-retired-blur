@@ -1,7 +1,0 @@
--if not defined? @error
-  :javascript
-    parent.window.finishUploading('#{@path}');
--else
-  :javascript
-    parent.window.uploadFailed('#{@error}');
-  

@@ -2,23 +2,9 @@
 %html
   %head
     =csrf_meta_tag
-    = javascript_include_tag 'jquery.min',
-                             'jquery-ui',
-                             'rails',
-                             'routes',
-                             'compiled/application',
-                             'bootstrap-tabs',
-                             'bootstrap-twipsy',
-                             'bootstrap-popover',
-                             'bootstrap-modal',
-                             'bootstrap-modal-helper',
-                             'd3.min',
-                             'd3.layout.min'
-
-    -# Use this syntax in haml templates to add page specific javascript
-    -# - content_for :javascript do
-    -#   = javascript_include_tag 'compiled/runtime'
-    = yield :javascript
+    = javascript_include_tag 'application', 'routes'
+    = yield(:javascript)
+    = stylesheet_link_tag 'application', :media => "all" 
     - if @current_zookeeper.blank? && @zookeepers
       :javascript
         var Zookeeper = {};
@@ -26,9 +12,6 @@
     %title
       = yield(:title)
       | Blur Admin
-    = stylesheet_link_tag 'bootstrap', :cache => 'main'
-    = stylesheet_link_tag 'jquery-ui', 'compiled/screen'
-    = yield :stylesheets
   %body
     #root
       #top
@@ -85,17 +68,17 @@
                 = link_to 'Blur Queries', blur_queries_path, :id => 'queries_link'
 
               - if can? :show, :search
-                %li{:class => controller == 'search' && 'active', :id => "left"}
+                %li{:class => controller == 'search' && 'active'}
                   = link_to 'Search', search_path, :id => 'search_link'
 
               %li{:class => controller == 'hdfs' && 'active'}
                 = link_to 'HDFS', hdfs_path
 
               - if can? :index, :users
-                %li{:class => controller == 'users' && action == 'index' && 'active', :id=> "left"}
+                %li{:class => controller == 'users' && action == 'index' && 'active'}
                   = link_to 'Admin', users_path
 
-      #bd
+      #bd.container
         = yield
     #ft{:class => footer_class(license)}
       #license

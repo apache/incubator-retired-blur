@@ -1,5 +1,0 @@
-- content_for :title, 'New User'
-
-#new_user_wrapper
-  %h2 Register
-  = render 'form', :user => @user, :cancel_path => (@current_user ? users_path : login_path)

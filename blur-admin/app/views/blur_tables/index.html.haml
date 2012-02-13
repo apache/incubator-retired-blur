@@ -1,34 +1,34 @@
 - content_for :title, 'Blur Tables'
 - content_for :javascript do
-  =javascript_include_tag 'jquery.jstree','compiled/blur_tables'
+  =javascript_include_tag 'blur_tables'
 
-%ul#blur_tables.tabs
+%ul#blur_tables.nav-tabs.nav
   - @clusters.each_with_index do |cluster,i|
     %li{:class =>("active" unless i != 0)}
-      %a{:href=>"#cluster_#{cluster.id}"}= cluster.name
-#tables-wrapper.pill-content
+      %a{:href=>"#cluster_#{cluster.id}", "data-toggle"=>"tab"}= cluster.name
+#tables-wrapper.tab-content
   - @clusters.each_with_index do |cluster,i|
-    #cluster.cluster{:id => cluster.id,:class =>("active" unless i != 0), :data => {:cluster_id => cluster.id}}
-      %ul.cluster-tabs.tabs{:id => "inner-tabs-cluster_#{cluster.id}"}
-        %li.active_table_tab.active
-          %a{:href=>"#cluster_#{cluster.id}_active"}
+    #cluster.tab-pane.cluster{:id => cluster.id,:class =>("active" unless i != 0), :data => {:cluster_id => cluster.id}}
+      %ul.cluster-tabs.nav-tabs.nav{:id => "inner-tabs-cluster_#{cluster.id}"}
+        %li.active
+          %a{:href=>"#cluster_#{cluster.id}_active", "data-toggle"=>"tab"}
             Active Tables (
             %span.counter
             )
-        %li.disabled_table_tab
-          %a{:href=>"#cluster_#{cluster.id}_disabled"}
+        %li
+          %a{:href=>"#cluster_#{cluster.id}_disabled", "data-toggle"=>"tab"}
             Disabled Tables (
             %span.counter
             )
-        %li.deleted_table_tab
-          %a{:href=>"#cluster_#{cluster.id}_deleted"}
+        %li
+          %a{:href=>"#cluster_#{cluster.id}_deleted", "data-toggle"=>"tab"}
             Deleted Tables (
             %span.counter
             )
-      .pill-content.inner-wrap
-        %div.active{:id => "cluster_#{cluster.id}_active"}
+      .tab-content
+        %div.tab-pane.active{:id => "cluster_#{cluster.id}_active"}
           = render :partial => 'active_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_enabled?}, :cluster => cluster.id}
-        %div{:id => "cluster_#{cluster.id}_disabled"}
+        %div.tab-pane{:id => "cluster_#{cluster.id}_disabled"}
           = render :partial => 'disabled_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_disabled?}, :cluster => cluster.id}
-        %div{:id => "cluster_#{cluster.id}_deleted"}
+        %div.tab-pane{:id => "cluster_#{cluster.id}_deleted"}
           = render :partial => 'deleted_tables', :locals => {:tables => @blur_tables.select{|table| table.cluster.id == cluster.id && table.is_deleted?}, :cluster => cluster.id}

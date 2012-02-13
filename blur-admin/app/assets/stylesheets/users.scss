@@ -1,0 +1,142 @@
+@mixin info($color) {
+  @include border;
+  @include border-radius;
+  background-color: $color;
+}
+
+@mixin pref-box{
+  @include info(white);
+  margin:0px 0px 0px 0px;
+}
+
+ul{
+  margin: 5px;
+}
+
+#admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{   
+  @include standard-font;
+
+  $select-color: #FAD08A;
+
+  margin-top: 1em;
+  padding-top: 2em;
+
+  #roles_wrapper{
+    li{
+      list-style-type:none;
+      display:block;
+    }
+  }
+  
+  .info-contain{ 
+    @include clearfix;
+    min-width: 580px;
+  }
+  
+  //user info box
+  #user-info{
+    @include info(#EEE);
+    float: right;
+    min-width: 175px;
+    margin-top:2px;
+    p{
+      margin: 5px;
+    }
+  }
+  
+  #pref-bin{
+    @include clearfix;
+  }
+  
+  #pref-trash, #pref-key{
+    @include pref-box;
+    margin-top:5px;
+  }
+
+  #pref-key {
+    padding: 5px;
+    #orange_color, #blue_color {
+      height: 10px;
+      width: 10px;
+      display: inline-block;
+    }
+    #orange_color { @include info($select-color); }
+    #blue_color { @include info($table-hd-color); }
+  }
+  
+  #actual-trash{
+    div:not(#trash){
+      display:none;
+    }
+  }
+  
+  //pref-col box
+  #pref-col-info{
+    padding:5px;
+    @include info(#EEE);
+    min-width: 300px;
+  }
+  
+  //pref-filter box
+  #pref-filter-info{
+    padding:5px;
+    @include info(#EEE);
+    min-width: 250px;
+    
+    h3{
+      text-align: center;
+    }
+  }
+  
+  //pref col - holds your choices
+  #pref-col{
+    @include pref-box;
+  }
+  
+  //style for pref title
+  #pref-title{
+    text-align: center;
+  }
+  
+  //opt-col - options to choose that will go into my list
+  #opt-col{
+    @include info(white);
+    @include pref-box;
+    float: right;
+  }
+  
+  //groups of columns
+  .fam{
+    padding:5px;
+    margin:5px;
+    cursor:pointer;
+    padding: 2px;
+    margin:2px;
+    @include info($table-hd-color);
+  }
+  
+  
+  .section-label{
+    text-align:center;
+  }
+  
+  .my-select{
+    background-color:$select-color;
+  }
+  
+  #no-saved, #trash{
+    text-align:center;
+    font-weight:200;
+  }
+  
+  .sel-fam{
+    cursor:grab;
+    cursor:grab;
+    cursor:-moz-grab;
+    cursor:-webkit-grab;
+    
+    @include info($select-color);
+    padding:2px;
+    margin:2px;
+  }
+}

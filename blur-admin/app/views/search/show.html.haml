@@ -1,6 +1,6 @@
 -content_for :title, 'Search'
 -content_for :javascript do
-  =javascript_include_tag 'jquery.jstree', 'compiled/search'
+  =javascript_include_tag 'jquery.jstree', 'search'
 
 #search_page_wrapper
   #filter_section
@@ -11,7 +11,7 @@
             = search_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
           = submit_tag "Search", :id => "search_submit", :class => "btn primary"
           %img.hidden{:id => "loading-spinner",
-              :src => image_path("/images/loader.gif"),
+              :src => image_path("loader.gif"),
               :alt => "Loading..."}
         #blur-table
           = select_tag :blur_table, grouped_options_for_select(@filter_table_collection)
@@ -19,10 +19,10 @@
           .header
             Advanced
             %img{:class => "arrow_down arrow",
-                :src => image_path("/images/arrow_down.png"),
+                :src => image_path("arrow_down.png"),
                 :alt => "Expand For More Options"}
             %img{:class => "arrow_up arrow",
-                :src => image_path("/images/arrow_up.png"),
+                :src => image_path("arrow_up.png"),
                 :alt => "Expand For More Options",
                 :style => "display:none"}
           .body.tab
@@ -52,10 +52,10 @@
           .header
             Saved
             %img{:class => "arrow_down arrow",
-                :src => image_path("/images/arrow_down.png"),
+                :src => image_path("arrow_down.png"),
                 :alt => "Expand For More Options"}
             %img{:class => "arrow_up arrow",
-                :src => image_path("/images/arrow_up.png"),
+                :src => image_path("arrow_up.png"),
                 :alt => "Expand For More Options",
                 :style => "display:none"}
           .body.tab

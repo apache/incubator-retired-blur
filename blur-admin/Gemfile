@@ -1,26 +1,34 @@
-source 'http://rubygems.org'
+source 'https://rubygems.org'
 
-gem 'rails', '3.0.10'
+gem 'rails', '3.2.1'
 
-gem 'mysql2', '0.2.11'
-gem 'jquery-rails', '1.0.19'
-gem 'compass', '0.11.1'
-gem 'haml', '3.1.4'
-gem 'thrift_client', '0.7.1'
-gem 'authlogic', '3.1.0'
+gem 'mysql2'
+gem 'jquery-rails'
+gem 'compass-rails'
+gem 'thrift_client'
+gem 'authlogic'
 gem 'cancan', '2.0.0.alpha', :path => 'vendor/gems/cancan'
-gem 'role_model', '0.7.0'
-gem 'compass-susy-plugin', '0.9'
-gem "twitter_bootstrap_form_for", '1.0.5'
+gem 'role_model'
+gem 'twitter_bootstrap_form_for'
+gem 'bootstrap-sass'
+gem 'js-routes'
+
+# Gems used only for assets and not required
+# in production environments by default.
+group :assets do
+  gem 'sass-rails',   '~> 3.2.3'
+  gem 'coffee-rails', '~> 3.2.1'
+  gem 'uglifier', '>= 1.0.3'
+  gem 'haml-rails'
+end
 
 group :development, :test do
-  gem 'barista', '1.0.0'
   gem 'rspec-rails'
   gem 'capybara'
   gem 'ci_reporter'
-  gem 'metric_fu'
   gem 'cover_me'
   gem 'rails-erd'
   gem 'factory_girl_rails'
   gem 'launchy'
 end
+

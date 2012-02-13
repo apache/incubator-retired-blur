@@ -4,8 +4,10 @@ require File.expand_path('../application', __FILE__)
 # Initialize the rails application
 BlurAdmin::Application.initialize!
 
-Js::Routes.generate!
+#generate the routes file
+JsRoutes.generate!
 
+#setup authlogic
 BlurAdmin::Application.configure do
   config.gem "authlogic"
 end

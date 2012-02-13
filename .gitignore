@@ -18,3 +18,4 @@ src/*/tmp-test/**
 src/blur-store/src/main/java/com/quicklz/
 lib/*.jar
 src/blur-core/local-testing-tmp*
+.DS_Store

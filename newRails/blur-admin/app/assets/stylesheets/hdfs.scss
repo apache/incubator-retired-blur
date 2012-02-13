@@ -7,7 +7,6 @@
 
 
 #hdfs_wrapper{
-  @include full;
   @include standard-font;
   padding: 20px 0 20px 0;
   @include box-sizing(border-box);
@@ -38,18 +37,18 @@
           }
         }
         &.folder, &.hdfs_instance {
-          background: url("../../images/expand_folder.png") no-repeat scroll right center transparent;
+          background: url("expand_folder.png") no-repeat scroll right center transparent;
         }
         &.file a {
-          background: url("../../images/file16.png") no-repeat scroll left center transparent;
+          background: url("file16.png") no-repeat scroll left center transparent;
           padding-left: 20px;
         }
         &.hdfs_instance a {
-          background: url("../../images/database16.png") no-repeat scroll left center transparent;
+          background: url("database16.png") no-repeat scroll left center transparent;
           padding-left: 20px;
         }
         &.folder a {
-          background: url("../../images/folder16.png") no-repeat scroll left center transparent;
+          background: url("folder16.png") no-repeat scroll left center transparent;
           padding-left: 20px;
         }
         &:hover {

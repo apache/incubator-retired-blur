@@ -1,6 +1,4 @@
 $(document).ready ->
-  $('#blur_tables').tabs()
-  $('.cluster-tabs').tabs()
   refresh_timeout = null
   state_lookup = 
     0 : 'deleted'

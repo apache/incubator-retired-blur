@@ -65,8 +65,6 @@ GEM
       sass (~> 3.1)
     compass-rails (1.0.0.rc.2)
       compass (~> 0.12.rc.0)
-    compass-susy-plugin (0.9)
-      compass (>= 0.11.1)
     configatron (2.9.0)
       yamler (>= 0.1.0)
     cover_me (1.2.0)
@@ -96,7 +94,7 @@ GEM
     jquery-rails (2.0.0)
       railties (>= 3.2.0.beta, < 5.0)
       thor (~> 0.14)
-    js-routes (0.7.4)
+    js-routes (0.7.5)
       rails (>= 3.0)
     json (1.6.5)
     launchy (2.0.5)
@@ -199,7 +197,6 @@ DEPENDENCIES
   ci_reporter
   coffee-rails (~> 3.2.1)
   compass-rails
-  compass-susy-plugin
   cover_me
   factory_girl_rails
   haml-rails

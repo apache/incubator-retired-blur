@@ -14,15 +14,12 @@ ul{
 }
 
 #admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{   
-  @include full;
   @include standard-font;
 
   $select-color: #FAD08A;
 
   margin-top: 1em;
   padding-top: 2em;
-
-  #users_table { @include columns(15,$total-cols); @include suffix(15); }
 
   #roles_wrapper{
     li{
@@ -32,7 +29,6 @@ ul{
   }
   
   .info-contain{ 
-    @include full($total-cols); 
     @include clearfix;
     min-width: 580px;
   }
@@ -40,7 +36,6 @@ ul{
   //user info box
   #user-info{
     @include info(#EEE);
-    @include columns(5, $total-cols);
     float: right;
     min-width: 175px;
     margin-top:2px;
@@ -50,7 +45,6 @@ ul{
   }
   
   #pref-bin{
-    @include columns(4, 10);
     @include clearfix;
   }
   
@@ -80,7 +74,6 @@ ul{
   #pref-col-info{
     padding:5px;
     @include info(#EEE);
-    @include columns(10, $total-cols);
     min-width: 300px;
   }
   
@@ -88,15 +81,10 @@ ul{
   #pref-filter-info{
     padding:5px;
     @include info(#EEE);
-    @include columns(5, $total-cols);
     min-width: 250px;
     
     h3{
       text-align: center;
-    }
-    
-    .query_filter label{
-      @include columns(2, 5);
     }
   }
   
@@ -113,7 +101,6 @@ ul{
   //opt-col - options to choose that will go into my list
   #opt-col{
     @include info(white);
-    @include columns(5.9, 10);
     @include pref-box;
     float: right;
   }
@@ -152,8 +139,4 @@ ul{
     padding:2px;
     margin:2px;
   }
-}
-
-body{
-  //@include susy-grid-background;
 }

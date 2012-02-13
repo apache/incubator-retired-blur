@@ -9,7 +9,7 @@
     background-color:white;
   }
   .active a, .active a:hover{
-  background-color:#EEE;
+    background-color:#FAFCFF;
   }
 }
 .pill-content{
@@ -17,20 +17,19 @@
 }
 #tables-wrapper{
   border: $twitter-border;
-  background-color:#EEE;
   padding:10px;
 }
 
 .cluster-tabs{
-margin:15px;
-margin-bottom: 0;
-border-bottom:0;
-li > a:hover{
-  background-color:#DDD;
-}
-.active a, .active a:hover{
-  background-color:white;
-}
+  margin:15px;
+  margin-bottom: 0;
+  border-bottom:0;
+  li > a:hover{
+    background-color:#DDD;
+  }
+  .active a, .active a:hover{
+    background-color:#FAFCFF;
+  }
 }
 
 .inner-wrap{

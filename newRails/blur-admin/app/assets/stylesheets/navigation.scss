@@ -2,45 +2,45 @@ $header-height: 55px;
 $nav-height: 40px;
 
 #root{
-  height: 100%;
-  min-height: 100%;
-  margin-bottom: -46px;
 
   #top{
-    top:0px;
     background-color:$bg-blue-color;
-    position:fixed;
     z-index:2;
     width:100%;
+    min-width: 1180px;
     #hd {
-      @include full;
+      top: 0px;
       height: $header-height;
       z-index: 2;
+      position: relative;
       #logo{
-        margin-top: 1.25em;
-        @include columns(10,$total-cols);
+        padding-top: 1.25em;
+        display: inline-block;
       }
       #flash {
-        @include columns(10,$total-cols);
         @include border-bottom-radius;
         text-align: center;
         font-size: 1.2em;
         font-weight: bold;
+        top: 10px;
+        position: absolute;
+        width: 100%;
       }
       #zookeeper_select {
-        @include columns(10, $total-cols);
-        padding-top: .25em;
         text-align: center;
+        top: 10px;
+        position: absolute;
+        width: 100%;
       }
       #change_current_zookeeper{
         margin-bottom:0px;
       }
       #user_nav {
-        @include columns(10,$total-cols);
-        @include omega($total-cols);
-        text-align: right;
-        padding-top: 1.25em;
         font-size: 1.2em;
+        display: inline-block;
+        position: absolute;
+        top: 15px;
+        right: 25px;
       }
     }
     #nav {
@@ -52,7 +52,6 @@ $nav-height: 40px;
       ul {
         @include inline-block-list(10px);
         @include text-shadow(0 1px 0 black);
-        @include full;
 
         li {
           margin: 6px .5em 0 .5em;
@@ -83,7 +82,6 @@ $nav-height: 40px;
   #bd {
     @include clearfix;
     position:relative;
-    top: $header-height + $nav-height;
     padding-bottom: 46px;
   }
 }

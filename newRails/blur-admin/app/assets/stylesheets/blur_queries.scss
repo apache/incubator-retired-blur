@@ -1,7 +1,6 @@
 #blur_queries_wrapper {
   padding-top: 2em;
   padding-bottom: 2em;
-  @include full;
   @include standard-font;
   @include clearfix;
   .row .span4 {
@@ -54,21 +53,3 @@
   td { color: #555; }
   .more-info-label { white-space: nowrap; font-weight: bold;}
 }
-
-/*#times-table {*/
-  /*td { color: #555; }*/
-  /*thead td, .shard { font-weight: bold; }*/
-  /*.time { text-align: center;}*/
-
-/*}*/
-
-/*#filter_form {*/
-  /*display: none;*/
-  /*.query_filter{ */
-    /*margin-bottom: .75em;*/
-    /*label{ */
-      /*width: 100px;*/
-      /*@include inline-block;*/
-    /*}*/
-  /*}*/
-/*}*/

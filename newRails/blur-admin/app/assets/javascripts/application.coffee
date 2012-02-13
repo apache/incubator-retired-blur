@@ -1,9 +1,8 @@
 #= require jquery
 #= require jquery_ujs
 #= require jquery-ui
-#= require ../../../vendor/assets/javascripts/bootstrap-tabs
+#= require bootstrap
 #= require ../../../vendor/assets/javascripts/bootstrap-twipsy
-#= require ../../../vendor/assets/javascripts/bootstrap-modal
 #= require ../../../vendor/assets/javascripts/bootstrap-modal-helper
 #= require ../../../vendor/assets/javascripts/d3.min
 #= require ../../../vendor/assets/javascripts/d3.layout.min

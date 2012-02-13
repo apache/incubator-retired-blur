@@ -1,6 +1,6 @@
 $(document).ready ->
-  ONLINE='success'
-  OFFLINE='important'
+  ONLINE='btn-success'
+  OFFLINE='btn-danger'
   NA=''
   
   # Updates all fields on the dashboard
@@ -13,13 +13,19 @@ $(document).ready ->
         zookeeper_table = $('#zookeepers').find("#" + this.id )
 
         # Updates the header showing the zookeeper status
-        current_zookeeper = $('#' + zookeeper_table[0].id).find(".zookeeper-title")
+        current_zookeeper = zookeeper_table.find(".zookeeper-title")
         if this.status == 1
+          zookeeper_table.closest(".zookeeper_info")
+                          .addClass('online')
+                          .removeClass('offline')
           current_zookeeper.removeClass(OFFLINE)
                           .addClass(ONLINE)
                           .find('.zookeeper-status')
                           .html('<div> - Online</div>')
         else
+          zookeeper_table.closest(".zookeeper_info")
+                          .addClass('offline')
+                          .removeClass('online')
           current_zookeeper.removeClass(ONLINE)
                           .addClass(OFFLINE)
                           .find('.zookeeper-status')
@@ -35,8 +41,8 @@ $(document).ready ->
         zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards
-        status_shards = $('#' + zookeeper_table[0].id).find(".stat-shard")
-        bv_shards = $('#' + zookeeper_table[0].id).find(".bv-shard")
+        status_shards = zookeeper_table.find(".stat-shard")
+        bv_shards = zookeeper_table.find(".bv-shard")
 
         if this.shard_total == 0
           bv_shards.find('.shards-bv')
@@ -93,8 +99,8 @@ $(document).ready ->
           status_shards.find('.shards-offline > .word').html('<div>Shards Offline</div>')
 
         # Updates the fields for the zookeeper's controllers
-        status_controllers = $('#' + zookeeper_table[0].id).find(".stat-cont")
-        bv_controllers = $('#' + zookeeper_table[0].id).find(".bv-cont")
+        status_controllers = zookeeper_table.find(".stat-cont")
+        bv_controllers = zookeeper_table.find(".bv-cont")
 
         if this.controller_total == 0
           bv_controllers.find('.controllers-bv')

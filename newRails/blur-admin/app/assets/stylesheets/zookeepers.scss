@@ -8,24 +8,17 @@
 }
 
 #zookeeper_wrapper {
-
   margin-top: 2em;
-  @include full;
 
   #blur, #zookeeper{
-    @include outer-container;
+    margin-bottom: 2em;
   }
 
   #zookeeper {
-    @include columns(30,$total-cols);
     border:$twitter-border;
     padding-top:20px;
     @include border-radius(5px);
     position:relative;
-    table {
-      @include prefix(0.25);
-      @include columns(29.5);
-    }
     
     .title{
       position:absolute;
@@ -37,8 +30,6 @@
   }
 
   #blur {
-    @include columns(30,$total-cols);
-    margin-bottom: 165px;
     border:$twitter-border;
     @include border-radius(5px);
     padding-top:20px;
@@ -46,10 +37,7 @@
     #controllers-placeholder,#shards-placeholder{
       margin-top: 5px;
     }
-    #controllers, #shards{ @include columns(14.25, $total-cols); }
-    .blur_container{ @include inner-container; @include prefix(0.25);}
-    #controllers{ @include prefix(0.25); }
-    #shards{ @include omega($total-cols); @include suffix(0.25);}
+    .blur_container{ margin-bottom: 2em }
     .title{
       position:absolute;
       display:block;
@@ -66,7 +54,6 @@
 
 #zookeepers_wrapper{
   display: none;
-  @include full;
   @include standard-font;
   margin-top: 2em;
   margin-bottom: 165px;
@@ -85,19 +72,25 @@
 
   .zookeeper_info {
     min-width: 400px;
-    margin-left: 20px;
-    margin-right: 10px;
-    margin-bottom: 20px;
-    margin-top: 20px;
+    margin: 20px 10px 20px 20px;
     float: left;
     display: inline-block;
-    table{
-      margin-bottom:0;
-      @include border-bottom-radius(5px)
-    }
+    border: 1px solid;
+    @include border-radius(5px);
     &:hover {
       cursor: pointer;
       background: #FFFCD6;
+    }
+
+    &.online{
+      border-color: #51A351;
+    }
+    &.offline{
+      border-color: #BD362F;
+    }
+
+    table{
+      margin:0;
     }
   }
   .zookeeper-title{
@@ -112,7 +105,7 @@
   .status{
   width:160px;
   }
-  #zookeepers { @include columns(30,$total-cols); height: 100%;}
+  #zookeepers {height: 100%;}
 
 
   .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }

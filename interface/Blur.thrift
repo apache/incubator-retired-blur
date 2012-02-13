@@ -76,19 +76,22 @@ enum QueryState {
  */
 enum RowMutationType {
   /** 
-   * Indicates that the entire Row is to be deleted. 
+   * Indicates that the entire Row is to be deleted.  No changes are
+   * made if the specified row does not exist.
    */
   DELETE_ROW,
 
   /** 
    * Indicates that the entire Row is to be deleted, and then a new 
-   * Row with the same id is to be added. 
+   * Row with the same id is to be added.  If the specified row does
+   * not exist, the new row will still be created.
    */
   REPLACE_ROW,
 
   /** 
    * Indicates that mutations of the underlying Records will be 
-   * processed individually. 
+   * processed individually.  Mutation will result in a BlurException
+   * if the specified row does not exist.
    */
   UPDATE_ROW
 }
@@ -100,24 +103,30 @@ enum RowMutationType {
 enum RecordMutationType {
   /** 
    * Indicates the Record with the given recordId in the given Row 
-   * is to be deleted. 
+   * is to be deleted.  If the target record does not exist, then
+   * no changes are made.
    */
   DELETE_ENTIRE_RECORD,
 
   /** 
    * Indicates the Record with the given recordId in the given Row 
-   * is to be deleted, and a new Record with the same id is to be added. 
+   * is to be deleted, and a new Record with the same id is to be added.
+   * If the specified record does not exist the new record is still
+   * added.
    */
   REPLACE_ENTIRE_RECORD,
 
   /**
-   * Replace the columns that are specified in the Record mutation.
+   * Replace the columns that are specified in the Record mutation.  If
+   * the target record does not exist then this mutation will result in
+   * a BlurException.
    */
   REPLACE_COLUMNS,
 
   /**
    * Append the columns in the Record mutation to the Record that 
-   * could already exist.
+   * could already exist.  If the target record does not exist then this
+   * mutation will result in a BlurException.
    */
   APPEND_COLUMN_VALUES
 }

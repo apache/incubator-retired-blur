@@ -676,19 +676,33 @@ public class IndexManager {
 
       // Examine all remaining record mutations.  For any record replacements
       // we need to create a new record in the table even though an existing
-      // record did not match.  Otherwise there would be no way to add a
-      // record to an existing row.
+      // record did not match.  Record deletions are also ok here since the
+      // record is effectively already deleted.  Other record mutations are
+      // an error and should generate an exception.
       for (RecordMutation recordMutation : mutationCopy.recordMutations) {
-        if (recordMutation.recordMutationType == RecordMutationType.REPLACE_ENTIRE_RECORD) {
-          newRow.addToRecords(recordMutation.record);
+        RecordMutationType type = recordMutation.recordMutationType;
+        switch (type) {
+          case DELETE_ENTIRE_RECORD:
+            // do nothing as missing record is already in desired state
+            break;
+          case APPEND_COLUMN_VALUES:
+            throw new BException("Mutation cannot append column values to non-existent record",
+                                 recordMutation);
+          case REPLACE_ENTIRE_RECORD:
+            newRow.addToRecords(recordMutation.record);
+            break;
+          case REPLACE_COLUMNS:
+            throw new BException("Mutation cannot replace columns in non-existent record",
+                                 recordMutation);
+          default:
+            throw new RuntimeException("Unsupported record mutation type [" + type + "]");
         }
       }
 
       // Finally, replace the existing row with the new row we have built.
       blurIndex.replaceRow(mutation.wal, newRow);
     } else {
-      Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-      blurIndex.replaceRow(mutation.wal, row);
+      throw new BException("Mutation cannot update row that does not exist.", mutation);
     }
   }
 

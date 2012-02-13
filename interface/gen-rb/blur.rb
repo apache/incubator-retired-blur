@@ -373,6 +373,21 @@ require 'blur_types'
             return
           end
 
+          def optimize(table, numberOfSegmentsPerShard)
+            send_optimize(table, numberOfSegmentsPerShard)
+            recv_optimize()
+          end
+
+          def send_optimize(table, numberOfSegmentsPerShard)
+            send_message('optimize', Optimize_args, :table => table, :numberOfSegmentsPerShard => numberOfSegmentsPerShard)
+          end
+
+          def recv_optimize()
+            result = receive_message(Optimize_result)
+            raise result.ex unless result.ex.nil?
+            return
+          end
+
         end
 
         class Processor
@@ -629,6 +644,17 @@ require 'blur_types'
               result.ex = ex
             end
             write_result(result, oprot, 'removeTable', seqid)
+          end
+
+          def process_optimize(seqid, iprot, oprot)
+            args = read_args(iprot, Optimize_args)
+            result = Optimize_result.new()
+            begin
+              @handler.optimize(args.table, args.numberOfSegmentsPerShard)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'optimize', seqid)
           end
 
         end
@@ -1409,6 +1435,40 @@ require 'blur_types'
         end
 
         class RemoveTable_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          EX = 1
+
+          FIELDS = {
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Optimize_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TABLE = 1
+          NUMBEROFSEGMENTSPERSHARD = 2
+
+          FIELDS = {
+            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+            NUMBEROFSEGMENTSPERSHARD => {:type => ::Thrift::Types::I32, :name => 'numberOfSegmentsPerShard'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class Optimize_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           EX = 1
 

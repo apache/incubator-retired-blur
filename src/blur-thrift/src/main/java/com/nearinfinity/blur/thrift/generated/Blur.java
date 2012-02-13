@@ -70,6 +70,8 @@ public class Blur {
 
     public void removeTable(String table, boolean deleteIndexFiles) throws BlurException, org.apache.thrift.TException;
 
+    public void optimize(String table, int numberOfSegmentsPerShard) throws BlurException, org.apache.thrift.TException;
+
   }
 
   public interface AsyncIface {
@@ -119,6 +121,8 @@ public class Blur {
     public void disableTable(String table, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.disableTable_call> resultHandler) throws org.apache.thrift.TException;
 
     public void removeTable(String table, boolean deleteIndexFiles, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.removeTable_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void optimize(String table, int numberOfSegmentsPerShard, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.optimize_call> resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -722,6 +726,30 @@ public class Blur {
     {
       removeTable_result result = new removeTable_result();
       receiveBase(result, "removeTable");
+      if (result.ex != null) {
+        throw result.ex;
+      }
+      return;
+    }
+
+    public void optimize(String table, int numberOfSegmentsPerShard) throws BlurException, org.apache.thrift.TException
+    {
+      send_optimize(table, numberOfSegmentsPerShard);
+      recv_optimize();
+    }
+
+    public void send_optimize(String table, int numberOfSegmentsPerShard) throws org.apache.thrift.TException
+    {
+      optimize_args args = new optimize_args();
+      args.setTable(table);
+      args.setNumberOfSegmentsPerShard(numberOfSegmentsPerShard);
+      sendBase("optimize", args);
+    }
+
+    public void recv_optimize() throws BlurException, org.apache.thrift.TException
+    {
+      optimize_result result = new optimize_result();
+      receiveBase(result, "optimize");
       if (result.ex != null) {
         throw result.ex;
       }
@@ -1509,6 +1537,41 @@ public class Blur {
       }
     }
 
+    public void optimize(String table, int numberOfSegmentsPerShard, org.apache.thrift.async.AsyncMethodCallback<optimize_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      optimize_call method_call = new optimize_call(table, numberOfSegmentsPerShard, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class optimize_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String table;
+      private int numberOfSegmentsPerShard;
+      public optimize_call(String table, int numberOfSegmentsPerShard, org.apache.thrift.async.AsyncMethodCallback<optimize_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.table = table;
+        this.numberOfSegmentsPerShard = numberOfSegmentsPerShard;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("optimize", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        optimize_args args = new optimize_args();
+        args.setTable(table);
+        args.setNumberOfSegmentsPerShard(numberOfSegmentsPerShard);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws BlurException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_optimize();
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends org.apache.thrift.TBaseProcessor implements org.apache.thrift.TProcessor {
@@ -1545,6 +1608,7 @@ public class Blur {
       processMap.put("enableTable", new enableTable());
       processMap.put("disableTable", new disableTable());
       processMap.put("removeTable", new removeTable());
+      processMap.put("optimize", new optimize());
       return processMap;
     }
 
@@ -2002,6 +2066,26 @@ public class Blur {
         removeTable_result result = new removeTable_result();
         try {
           iface.removeTable(args.table, args.deleteIndexFiles);
+        } catch (BlurException ex) {
+          result.ex = ex;
+        }
+        return result;
+      }
+    }
+
+    private static class optimize<I extends Iface> extends org.apache.thrift.ProcessFunction<I, optimize_args> {
+      public optimize() {
+        super("optimize");
+      }
+
+      protected optimize_args getEmptyArgsInstance() {
+        return new optimize_args();
+      }
+
+      protected optimize_result getResult(I iface, optimize_args args) throws org.apache.thrift.TException {
+        optimize_result result = new optimize_result();
+        try {
+          iface.optimize(args.table, args.numberOfSegmentsPerShard);
         } catch (BlurException ex) {
           result.ex = ex;
         }
@@ -18221,6 +18305,689 @@ public class Blur {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("removeTable_result(");
+      boolean first = true;
+
+      sb.append("ex:");
+      if (this.ex == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.ex);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class optimize_args implements org.apache.thrift.TBase<optimize_args, optimize_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("optimize_args");
+
+    private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField NUMBER_OF_SEGMENTS_PER_SHARD_FIELD_DESC = new org.apache.thrift.protocol.TField("numberOfSegmentsPerShard", org.apache.thrift.protocol.TType.I32, (short)2);
+
+    public String table; // required
+    public int numberOfSegmentsPerShard; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      TABLE((short)1, "table"),
+      NUMBER_OF_SEGMENTS_PER_SHARD((short)2, "numberOfSegmentsPerShard");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // TABLE
+            return TABLE;
+          case 2: // NUMBER_OF_SEGMENTS_PER_SHARD
+            return NUMBER_OF_SEGMENTS_PER_SHARD;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    private static final int __NUMBEROFSEGMENTSPERSHARD_ISSET_ID = 0;
+    private BitSet __isset_bit_vector = new BitSet(1);
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.TABLE, new org.apache.thrift.meta_data.FieldMetaData("table", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.NUMBER_OF_SEGMENTS_PER_SHARD, new org.apache.thrift.meta_data.FieldMetaData("numberOfSegmentsPerShard", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(optimize_args.class, metaDataMap);
+    }
+
+    public optimize_args() {
+    }
+
+    public optimize_args(
+      String table,
+      int numberOfSegmentsPerShard)
+    {
+      this();
+      this.table = table;
+      this.numberOfSegmentsPerShard = numberOfSegmentsPerShard;
+      setNumberOfSegmentsPerShardIsSet(true);
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public optimize_args(optimize_args other) {
+      __isset_bit_vector.clear();
+      __isset_bit_vector.or(other.__isset_bit_vector);
+      if (other.isSetTable()) {
+        this.table = other.table;
+      }
+      this.numberOfSegmentsPerShard = other.numberOfSegmentsPerShard;
+    }
+
+    public optimize_args deepCopy() {
+      return new optimize_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.table = null;
+      setNumberOfSegmentsPerShardIsSet(false);
+      this.numberOfSegmentsPerShard = 0;
+    }
+
+    public String getTable() {
+      return this.table;
+    }
+
+    public optimize_args setTable(String table) {
+      this.table = table;
+      return this;
+    }
+
+    public void unsetTable() {
+      this.table = null;
+    }
+
+    /** Returns true if field table is set (has been assigned a value) and false otherwise */
+    public boolean isSetTable() {
+      return this.table != null;
+    }
+
+    public void setTableIsSet(boolean value) {
+      if (!value) {
+        this.table = null;
+      }
+    }
+
+    public int getNumberOfSegmentsPerShard() {
+      return this.numberOfSegmentsPerShard;
+    }
+
+    public optimize_args setNumberOfSegmentsPerShard(int numberOfSegmentsPerShard) {
+      this.numberOfSegmentsPerShard = numberOfSegmentsPerShard;
+      setNumberOfSegmentsPerShardIsSet(true);
+      return this;
+    }
+
+    public void unsetNumberOfSegmentsPerShard() {
+      __isset_bit_vector.clear(__NUMBEROFSEGMENTSPERSHARD_ISSET_ID);
+    }
+
+    /** Returns true if field numberOfSegmentsPerShard is set (has been assigned a value) and false otherwise */
+    public boolean isSetNumberOfSegmentsPerShard() {
+      return __isset_bit_vector.get(__NUMBEROFSEGMENTSPERSHARD_ISSET_ID);
+    }
+
+    public void setNumberOfSegmentsPerShardIsSet(boolean value) {
+      __isset_bit_vector.set(__NUMBEROFSEGMENTSPERSHARD_ISSET_ID, value);
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case TABLE:
+        if (value == null) {
+          unsetTable();
+        } else {
+          setTable((String)value);
+        }
+        break;
+
+      case NUMBER_OF_SEGMENTS_PER_SHARD:
+        if (value == null) {
+          unsetNumberOfSegmentsPerShard();
+        } else {
+          setNumberOfSegmentsPerShard((Integer)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case TABLE:
+        return getTable();
+
+      case NUMBER_OF_SEGMENTS_PER_SHARD:
+        return Integer.valueOf(getNumberOfSegmentsPerShard());
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case TABLE:
+        return isSetTable();
+      case NUMBER_OF_SEGMENTS_PER_SHARD:
+        return isSetNumberOfSegmentsPerShard();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof optimize_args)
+        return this.equals((optimize_args)that);
+      return false;
+    }
+
+    public boolean equals(optimize_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_table = true && this.isSetTable();
+      boolean that_present_table = true && that.isSetTable();
+      if (this_present_table || that_present_table) {
+        if (!(this_present_table && that_present_table))
+          return false;
+        if (!this.table.equals(that.table))
+          return false;
+      }
+
+      boolean this_present_numberOfSegmentsPerShard = true;
+      boolean that_present_numberOfSegmentsPerShard = true;
+      if (this_present_numberOfSegmentsPerShard || that_present_numberOfSegmentsPerShard) {
+        if (!(this_present_numberOfSegmentsPerShard && that_present_numberOfSegmentsPerShard))
+          return false;
+        if (this.numberOfSegmentsPerShard != that.numberOfSegmentsPerShard)
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(optimize_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      optimize_args typedOther = (optimize_args)other;
+
+      lastComparison = Boolean.valueOf(isSetTable()).compareTo(typedOther.isSetTable());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTable()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.table, typedOther.table);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetNumberOfSegmentsPerShard()).compareTo(typedOther.isSetNumberOfSegmentsPerShard());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetNumberOfSegmentsPerShard()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.numberOfSegmentsPerShard, typedOther.numberOfSegmentsPerShard);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // TABLE
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.table = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // NUMBER_OF_SEGMENTS_PER_SHARD
+            if (field.type == org.apache.thrift.protocol.TType.I32) {
+              this.numberOfSegmentsPerShard = iprot.readI32();
+              setNumberOfSegmentsPerShardIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.table != null) {
+        oprot.writeFieldBegin(TABLE_FIELD_DESC);
+        oprot.writeString(this.table);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldBegin(NUMBER_OF_SEGMENTS_PER_SHARD_FIELD_DESC);
+      oprot.writeI32(this.numberOfSegmentsPerShard);
+      oprot.writeFieldEnd();
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("optimize_args(");
+      boolean first = true;
+
+      sb.append("table:");
+      if (this.table == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.table);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("numberOfSegmentsPerShard:");
+      sb.append(this.numberOfSegmentsPerShard);
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+        __isset_bit_vector = new BitSet(1);
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class optimize_result implements org.apache.thrift.TBase<optimize_result, optimize_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("optimize_result");
+
+    private static final org.apache.thrift.protocol.TField EX_FIELD_DESC = new org.apache.thrift.protocol.TField("ex", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    public BlurException ex; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      EX((short)1, "ex");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // EX
+            return EX;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.EX, new org.apache.thrift.meta_data.FieldMetaData("ex", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(optimize_result.class, metaDataMap);
+    }
+
+    public optimize_result() {
+    }
+
+    public optimize_result(
+      BlurException ex)
+    {
+      this();
+      this.ex = ex;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public optimize_result(optimize_result other) {
+      if (other.isSetEx()) {
+        this.ex = new BlurException(other.ex);
+      }
+    }
+
+    public optimize_result deepCopy() {
+      return new optimize_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.ex = null;
+    }
+
+    public BlurException getEx() {
+      return this.ex;
+    }
+
+    public optimize_result setEx(BlurException ex) {
+      this.ex = ex;
+      return this;
+    }
+
+    public void unsetEx() {
+      this.ex = null;
+    }
+
+    /** Returns true if field ex is set (has been assigned a value) and false otherwise */
+    public boolean isSetEx() {
+      return this.ex != null;
+    }
+
+    public void setExIsSet(boolean value) {
+      if (!value) {
+        this.ex = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case EX:
+        if (value == null) {
+          unsetEx();
+        } else {
+          setEx((BlurException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case EX:
+        return getEx();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case EX:
+        return isSetEx();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof optimize_result)
+        return this.equals((optimize_result)that);
+      return false;
+    }
+
+    public boolean equals(optimize_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_ex = true && this.isSetEx();
+      boolean that_present_ex = true && that.isSetEx();
+      if (this_present_ex || that_present_ex) {
+        if (!(this_present_ex && that_present_ex))
+          return false;
+        if (!this.ex.equals(that.ex))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(optimize_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      optimize_result typedOther = (optimize_result)other;
+
+      lastComparison = Boolean.valueOf(isSetEx()).compareTo(typedOther.isSetEx());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetEx()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.ex, typedOther.ex);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // EX
+            if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+              this.ex = new BlurException();
+              this.ex.read(iprot);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      if (this.isSetEx()) {
+        oprot.writeFieldBegin(EX_FIELD_DESC);
+        this.ex.write(oprot);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("optimize_result(");
       boolean first = true;
 
       sb.append("ex:");

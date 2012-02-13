@@ -21,6 +21,7 @@
 <li><a href="Blur.html#Fn_Blur_getTableStats">getTableStats</a></li>
 <li><a href="Blur.html#Fn_Blur_mutate">mutate</a></li>
 <li><a href="Blur.html#Fn_Blur_mutateBatch">mutateBatch</a></li>
+<li><a href="Blur.html#Fn_Blur_optimize">optimize</a></li>
 <li><a href="Blur.html#Fn_Blur_query">query</a></li>
 <li><a href="Blur.html#Fn_Blur_queryStatusById">queryStatusById</a></li>
 <li><a href="Blur.html#Fn_Blur_queryStatusIdList">queryStatusIdList</a></li>
@@ -353,5 +354,9 @@ through records of a row, this count will reflect the entire row.
 </pre></div><div class="definition"><h4 id="Fn_Blur_removeTable">Function: Blur.removeTable</h4>
 <pre><code>void</code> removeTable(<code>string</code> table,
                  <code>bool</code> deleteIndexFiles)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_optimize">Function: Blur.optimize</h4>
+<pre><code>void</code> optimize(<code>string</code> table,
+              <code>i32</code> numberOfSegmentsPerShard)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div></body></html>

@@ -3571,6 +3571,150 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_optimize_args;
+use base qw(Class::Accessor);
+Blur::Blur_optimize_args->mk_accessors( qw( table numberOfSegmentsPerShard ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{table} = undef;
+  $self->{numberOfSegmentsPerShard} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{table}) {
+      $self->{table} = $vals->{table};
+    }
+    if (defined $vals->{numberOfSegmentsPerShard}) {
+      $self->{numberOfSegmentsPerShard} = $vals->{numberOfSegmentsPerShard};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_optimize_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{table});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^2$/ && do{      if ($ftype == TType::I32) {
+        $xfer += $input->readI32(\$self->{numberOfSegmentsPerShard});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_optimize_args');
+  if (defined $self->{table}) {
+    $xfer += $output->writeFieldBegin('table', TType::STRING, 1);
+    $xfer += $output->writeString($self->{table});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{numberOfSegmentsPerShard}) {
+    $xfer += $output->writeFieldBegin('numberOfSegmentsPerShard', TType::I32, 2);
+    $xfer += $output->writeI32($self->{numberOfSegmentsPerShard});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_optimize_result;
+use base qw(Class::Accessor);
+Blur::Blur_optimize_result->mk_accessors( qw( ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_optimize_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_optimize_result');
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::BlurIf;
 
 use strict;
@@ -3742,6 +3886,14 @@ sub removeTable{
   my $self = shift;
   my $table = shift;
   my $deleteIndexFiles = shift;
+
+  die 'implement interface';
+}
+
+sub optimize{
+  my $self = shift;
+  my $table = shift;
+  my $numberOfSegmentsPerShard = shift;
 
   die 'implement interface';
 }
@@ -3926,6 +4078,14 @@ sub removeTable{
   my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $deleteIndexFiles = ($request->{'deleteIndexFiles'}) ? $request->{'deleteIndexFiles'} : undef;
   return $self->{impl}->removeTable($table, $deleteIndexFiles);
+}
+
+sub optimize{
+  my ($self, $request) = @_;
+
+  my $table = ($request->{'table'}) ? $request->{'table'} : undef;
+  my $numberOfSegmentsPerShard = ($request->{'numberOfSegmentsPerShard'}) ? $request->{'numberOfSegmentsPerShard'} : undef;
+  return $self->{impl}->optimize($table, $numberOfSegmentsPerShard);
 }
 
 package Blur::BlurClient;
@@ -5005,6 +5165,52 @@ sub recv_removeTable{
   }
   return;
 }
+sub optimize{
+  my $self = shift;
+  my $table = shift;
+  my $numberOfSegmentsPerShard = shift;
+
+    $self->send_optimize($table, $numberOfSegmentsPerShard);
+  $self->recv_optimize();
+}
+
+sub send_optimize{
+  my $self = shift;
+  my $table = shift;
+  my $numberOfSegmentsPerShard = shift;
+
+  $self->{output}->writeMessageBegin('optimize', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_optimize_args();
+  $args->{table} = $table;
+  $args->{numberOfSegmentsPerShard} = $numberOfSegmentsPerShard;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_optimize{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_optimize_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  return;
+}
 package Blur::BlurProcessor;
 
 use strict;
@@ -5425,6 +5631,23 @@ sub process_removeTable {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('removeTable', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_optimize {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_optimize_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_optimize_result();
+    eval {
+      $self->{handler}->optimize($args->table, $args->numberOfSegmentsPerShard);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('optimize', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

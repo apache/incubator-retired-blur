@@ -722,4 +722,22 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     _client = client;
   }
 
+  @Override
+  public void optimize(final String table, final int numberOfSegmentsPerShard) throws BlurException, TException {
+    String cluster = _clusterStatus.getCluster(true, table);
+    checkTable(cluster, table);
+    try {
+      scatter(getCluster(table), new BlurCommand<Void>() {
+        @Override
+        public Void call(Client client) throws BlurException, TException {
+          client.optimize(table, numberOfSegmentsPerShard);
+          return null;
+        }
+      });
+    } catch (Exception e) {
+      LOG.error("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table, numberOfSegmentsPerShard);
+      throw new BException("Unknown error while trying to optimize [table={0},numberOfSegmentsPerShard={1}]", e, table, numberOfSegmentsPerShard);
+    }
+  }
+
 }

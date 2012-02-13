@@ -269,5 +269,10 @@ public class BlurIndexWriter extends BlurIndex {
   public void setClusterStatus(ClusterStatus clusterStatus) {
     _clusterStatus = clusterStatus;
   }
+
+  @Override
+  public void optimize(int numberOfSegmentsPerShard) throws IOException {
+    _writer.forceMerge(numberOfSegmentsPerShard, false);    
+  }
   
 }

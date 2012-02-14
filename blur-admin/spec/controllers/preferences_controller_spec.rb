@@ -14,12 +14,12 @@ describe PreferencesController do
 
   describe "update" do
     it "should find the preference" do
-      Preference.should_receive(:find_by_pref_type_and_user_id).with('column', @user.id)
+      Preference.should_receive(:find_by_pref_type_and_user_id).with('column', @user.id.inspect)
       @preference.stub(:try)
       put :update, :user_id => @user.id, :pref_type => 'column'
     end
     it "should update the preference" do
-      Preference.should_receive(:find_by_pref_type_and_user_id).with('column', @user.id)
+      Preference.should_receive(:find_by_pref_type_and_user_id).with('column', @user.id.inspect)
       @preference.should_receive(:try).with(:update_attributes, :value => ['newCol'])
       put :update, :user_id => @user.id, :pref_type => 'column', :value => ['newCol']
     end

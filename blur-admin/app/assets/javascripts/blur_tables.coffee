@@ -170,14 +170,14 @@ $(document).ready ->
   $('.check-all').live 'change', ->
     checked = $(this).is(':checked')
     $(this).prop('checked',checked)
-    boxes = $(this).parents('.cluster_table').children('tbody').find('.bulk-action-checkbox')
+    boxes = $(this).closest('table').children('tbody').find('.bulk-action-checkbox')
     boxes.each (idx, box) ->
       $(box).prop('checked', checked)
       row_highlight(checked, $(this).parents('.blur_table'))
   
   #listener for bulk action checkboxes
   $('.bulk-action-checkbox').live 'change', ->
-    cluster_table = $(this).parents('.cluster_table')
+    cluster_table = $(this).closest('table')
     if !$(this).hasClass 'check-all'
       cluster_table.find('.check-all').prop('checked',false)
     table_row = $(this).parents('.blur_table')
@@ -197,7 +197,7 @@ $(document).ready ->
   disable_action = (table) ->
     checked = table.find('.bulk-action-checkbox:checked')
     disabled = checked.length == 0
-    actions = table.siblings('.bulk-action-button')
+    actions = table.siblings('.btn')
     actions.prop('disabled',disabled)
     if disabled then actions.addClass('suppress-button') else actions.removeClass('suppress-button')
 
@@ -211,11 +211,11 @@ $(document).ready ->
     
     
   #Listener for bulk action button
-  $('.bulk-action-button').live 'click', ->
+  $('.btn').live 'click', ->
     action = $(this).attr('blur_bulk_action')
     if !action
       return
-    cluster_table = $(this).siblings('.cluster_table')
+    cluster_table = $(this).siblings('table')
     cluster_id = cluster_table.attr('blur_cluster_id')
     blur_tables = cluster_table.children('tbody').children('.blur_table')
     table_ids = new Array()

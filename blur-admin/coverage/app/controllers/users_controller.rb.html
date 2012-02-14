@@ -1,0 +1,1889 @@
+<html>
+  <head>
+    <title>app/controllers/users_controller.rb</title>
+    
+    <link href="../../report.css?0.9574049110315762" media="screen" rel="stylesheet" type="text/css" />
+    <script src='../../jquery.js?0.4228613299845869'></script>
+    <script>
+      $(function() {
+
+        $('#toggle_test_file').click(function(e) {
+          e.preventDefault();
+          if ($('#main_file').hasClass('side_by_side')) {
+            $('#main_file').removeClass('side_by_side');
+          } else {
+            $('#main_file').addClass('side_by_side');
+          }
+        
+          $('#test_file').toggle();
+        });
+
+        $('#test_file').hide();
+        
+        function cleanString(str) {
+          return $.trim(str.replace(/<[^(<|>)]+>/gi, ''));
+        }
+        
+        $('.line_number').hover(function() {
+          $(this).attr('title', 'Line: ' + cleanString($(this).html()));
+        });
+        
+        $('.hit_number').hover(function() {
+          $(this).attr('title', 'Execution Count: ' + cleanString($(this).html()));
+        });
+        
+        $('.code_line').hover(function() {
+          $(this).attr('title', cleanString($(this).html()));
+        });
+        
+      });
+    </script>
+  </head>
+  <body>
+    <h1><a href="../../index.html">Coverage Report</a></h1>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr class='header'>
+        <th>File</th>
+        <th>Lines</th>
+        <th>Lines Of Code</th>
+        <th>Untested Lines of Code</th>
+        <th>Tested %</th>
+      </tr>
+      <tr valign='top'>
+        <td>
+          app/controllers/users_controller.rb
+          
+            <br />
+            <a href='#' id='toggle_test_file'>spec/controllers/users_controller_spec.rb</a>
+          
+        </td>
+        <td>59</td>
+        <td>31</td>
+        <td>18</td>
+        <td>41.9%</td>
+      </tr>
+    </table>
+
+    <div>&nbsp;</div>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr>
+        <th>Legend</th>
+      </tr>
+      <tr>
+        <td class='hit'>This line was executed.</td>
+      </tr>
+      <tr>
+        <td class='miss'>This line was not executed!</td>
+      </tr>
+      <tr>
+        <td class='never'>This line doesn't matter.</td>
+      </tr>
+    </table>
+    
+    <div>&nbsp;</div>
+
+    <div id='content'>
+      <div id='main_file'>
+        <table id='main'>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>1</td>
+              <td class='code_line'>
+                <pre>class UsersController < ApplicationController</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>2</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>3</td>
+              <td class='code_line'>
+                <pre>  load_and_authorize_resource</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>4</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>5</td>
+              <td class='code_line'>
+                <pre>  before_filter :find_user, :only => [:show, :edit, :update, :destroy, :save]</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>6</td>
+              <td class='code_line'>
+                <pre>  skip_before_filter :current_zookeeper, :zookeepers</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>7</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>8</td>
+              <td class='code_line'>
+                <pre>  def index</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>9</td>
+              <td class='code_line'>
+                <pre>    @users = User.all</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>10</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>11</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>12</td>
+              <td class='code_line'>
+                <pre>  def show</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>13</td>
+              <td class='code_line'>
+                <pre>    @column_preference = @user.column_preference</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>14</td>
+              <td class='code_line'>
+                <pre>    @filter_preference = @user.filter_preference</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>15</td>
+              <td class='code_line'>
+                <pre>    @choices = BlurTable.select('table_schema').collect {|table| schema = table.schema; schema.keys if schema}.flatten.uniq</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>16</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>17</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>18</td>
+              <td class='code_line'>
+                <pre>  def new</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>19</td>
+              <td class='code_line'>
+                <pre>    @user = User.new</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>20</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>21</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>22</td>
+              <td class='code_line'>
+                <pre>  def create</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>23</td>
+              <td class='code_line'>
+                <pre>    if @user.save</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>24</td>
+              <td class='code_line'>
+                <pre>      if can? :index, :users</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>25</td>
+              <td class='code_line'>
+                <pre>        redirect_to users_path, :notice => "User Created"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>26</td>
+              <td class='code_line'>
+                <pre>      else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>27</td>
+              <td class='code_line'>
+                <pre>        redirect_to @user, :notice => "User Created"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>28</td>
+              <td class='code_line'>
+                <pre>      end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>29</td>
+              <td class='code_line'>
+                <pre>    else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>30</td>
+              <td class='code_line'>
+                <pre>      render 'new'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>31</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>32</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>33</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>34</td>
+              <td class='code_line'>
+                <pre>  def edit</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>35</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>36</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>37</td>
+              <td class='code_line'>
+                <pre>  def update</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>38</td>
+              <td class='code_line'>
+                <pre>    if @user.update_attributes(params[:user])</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>39</td>
+              <td class='code_line'>
+                <pre>      if can? :index, :users</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>40</td>
+              <td class='code_line'>
+                <pre>        redirect_to users_path, :notice => "User Updated"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>41</td>
+              <td class='code_line'>
+                <pre>      else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>42</td>
+              <td class='code_line'>
+                <pre>        redirect_to @user, :notice => "User Updated"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>43</td>
+              <td class='code_line'>
+                <pre>      end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>44</td>
+              <td class='code_line'>
+                <pre>    else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>45</td>
+              <td class='code_line'>
+                <pre>      render 'edit'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>46</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>47</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>48</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>49</td>
+              <td class='code_line'>
+                <pre>  def destroy</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>50</td>
+              <td class='code_line'>
+                <pre>    @user.destroy</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>51</td>
+              <td class='code_line'>
+                <pre>    redirect_to users_path, :notice => "User Removed"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>52</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>53</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>54</td>
+              <td class='code_line'>
+                <pre>  private</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>55</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>56</td>
+              <td class='code_line'>
+                <pre>  def find_user</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>57</td>
+              <td class='code_line'>
+                <pre>    @user = User.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>58</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>59</td>
+              <td class='code_line'>
+                <pre>end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+        </table>
+      </div>
+      
+        <div id='test_file' class='side_by_side'>
+          <table id='test'>
+            
+            
+              <tr class="never">
+                <td class='line_number'>1</td>
+                <td class='code_line'>
+                  <pre>require 'spec_helper'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>2</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>3</td>
+                <td class='code_line'>
+                  <pre>describe UsersController do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>4</td>
+                <td class='code_line'>
+                  <pre>  before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>5</td>
+                <td class='code_line'>
+                  <pre>    @user = Factory.stub :user # user with all roles</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>6</td>
+                <td class='code_line'>
+                  <pre>    @ability = Ability.new @user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>7</td>
+                <td class='code_line'>
+                  <pre>    User.stub(:find).and_return @user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>8</td>
+                <td class='code_line'>
+                  <pre>    controller.stub!(:current_user).and_return(@user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>9</td>
+                <td class='code_line'>
+                  <pre>    controller.stub!(:current_ability).and_return(@ability)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>10</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>11</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>12</td>
+                <td class='code_line'>
+                  <pre>  describe "GET index" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>13</td>
+                <td class='code_line'>
+                  <pre>    before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>14</td>
+                <td class='code_line'>
+                  <pre>      @users = []</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>15</td>
+                <td class='code_line'>
+                  <pre>      User.stub(:all).and_return(@users)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>16</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>17</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>18</td>
+                <td class='code_line'>
+                  <pre>    it "should get and assign users" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>19</td>
+                <td class='code_line'>
+                  <pre>      User.should_receive(:all)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>20</td>
+                <td class='code_line'>
+                  <pre>      get :index</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>21</td>
+                <td class='code_line'>
+                  <pre>      assigns(:users).should == @users</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>22</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>23</td>
+                <td class='code_line'>
+                  <pre>    </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>24</td>
+                <td class='code_line'>
+                  <pre>    it "should render index template" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>25</td>
+                <td class='code_line'>
+                  <pre>      get :index</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>26</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template(:index)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>27</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>28</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>29</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>30</td>
+                <td class='code_line'>
+                  <pre>  describe "GET show" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>31</td>
+                <td class='code_line'>
+                  <pre>    before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>32</td>
+                <td class='code_line'>
+                  <pre>      @table = Factory.stub :blur_table</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>33</td>
+                <td class='code_line'>
+                  <pre>      User.stub(:find).and_return(@user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>34</td>
+                <td class='code_line'>
+                  <pre>      @user.stub(:saved_cols)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>35</td>
+                <td class='code_line'>
+                  <pre>      BlurTable.stub(:all).and_return([@table])</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>36</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>37</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>38</td>
+                <td class='code_line'>
+                  <pre>    it "should find and assign user" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>39</td>
+                <td class='code_line'>
+                  <pre>      User.should_receive(:find).with('id').and_return(@user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>40</td>
+                <td class='code_line'>
+                  <pre>      get :show, :id => 'id'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>41</td>
+                <td class='code_line'>
+                  <pre>      assigns(:user).should == @user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>42</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>43</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>44</td>
+                <td class='code_line'>
+                  <pre>    it "should render show template" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>45</td>
+                <td class='code_line'>
+                  <pre>      get :show, :id => 'id'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>46</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template(:show)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>47</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>48</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>49</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>50</td>
+                <td class='code_line'>
+                  <pre>  describe "GET new" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>51</td>
+                <td class='code_line'>
+                  <pre>    let(:user) { mock_model(User).as_null_object }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>52</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>53</td>
+                <td class='code_line'>
+                  <pre>    it "should create a new user" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>54</td>
+                <td class='code_line'>
+                  <pre>      User.should_receive(:new).at_least(1).times.and_return(user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>55</td>
+                <td class='code_line'>
+                  <pre>      get :new</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>56</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>57</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>58</td>
+                <td class='code_line'>
+                  <pre>    it "should render new layout" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>59</td>
+                <td class='code_line'>
+                  <pre>      get :new</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>60</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template(:new)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>61</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>62</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>63</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>64</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>65</td>
+                <td class='code_line'>
+                  <pre>  describe "POST create" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>66</td>
+                <td class='code_line'>
+                  <pre>    let(:user) { mock_model(User).as_null_object }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>67</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>68</td>
+                <td class='code_line'>
+                  <pre>    before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>69</td>
+                <td class='code_line'>
+                  <pre>      User.stub(:new).and_return(user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>70</td>
+                <td class='code_line'>
+                  <pre>      @valid_user = {</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>71</td>
+                <td class='code_line'>
+                  <pre>        'username' => 'bob',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>72</td>
+                <td class='code_line'>
+                  <pre>        'email' => 'bob@example.com',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>73</td>
+                <td class='code_line'>
+                  <pre>        'password' => 'password',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>74</td>
+                <td class='code_line'>
+                  <pre>        'password_confirmation' => 'password'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>75</td>
+                <td class='code_line'>
+                  <pre>      }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>76</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>77</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>78</td>
+                <td class='code_line'>
+                  <pre>    it "creates a new user" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>79</td>
+                <td class='code_line'>
+                  <pre>      User.should_receive(:new).with(@valid_user).and_return(user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>80</td>
+                <td class='code_line'>
+                  <pre>      post :create, :user => @valid_user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>81</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>82</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>83</td>
+                <td class='code_line'>
+                  <pre>    context "when the message saves successfully" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>84</td>
+                <td class='code_line'>
+                  <pre>      it "redirects to the users path" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>85</td>
+                <td class='code_line'>
+                  <pre>        user.stub(:save).and_return(true)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>86</td>
+                <td class='code_line'>
+                  <pre>        post :create</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>87</td>
+                <td class='code_line'>
+                  <pre>        response.should redirect_to(users_path)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>88</td>
+                <td class='code_line'>
+                  <pre>      end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>89</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>90</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>91</td>
+                <td class='code_line'>
+                  <pre>    context "when the message saves unsuccessfully" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>92</td>
+                <td class='code_line'>
+                  <pre>      it "renders the new template" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>93</td>
+                <td class='code_line'>
+                  <pre>        user.stub(:save).and_return(false)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>94</td>
+                <td class='code_line'>
+                  <pre>        post :create</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>95</td>
+                <td class='code_line'>
+                  <pre>        response.should render_template(:new)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>96</td>
+                <td class='code_line'>
+                  <pre>      end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>97</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>98</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>99</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>100</td>
+                <td class='code_line'>
+                  <pre>  describe "GET edit" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>101</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>102</td>
+                <td class='code_line'>
+                  <pre>    let(:user) { mock_model(User).as_null_object }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>103</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>104</td>
+                <td class='code_line'>
+                  <pre>    before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>105</td>
+                <td class='code_line'>
+                  <pre>      User.stub(:find).and_return(user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>106</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>107</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>108</td>
+                <td class='code_line'>
+                  <pre>    it "should find and assign the user" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>109</td>
+                <td class='code_line'>
+                  <pre>      User.should_receive(:find).with('id').and_return(user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>110</td>
+                <td class='code_line'>
+                  <pre>      get :edit, :id => 'id'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>111</td>
+                <td class='code_line'>
+                  <pre>      assigns(:user).should == user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>112</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>113</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>114</td>
+                <td class='code_line'>
+                  <pre>    it "should render the edit template" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>115</td>
+                <td class='code_line'>
+                  <pre>      get :edit, :id => 'id'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>116</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template(:edit)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>117</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>118</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>119</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>120</td>
+                <td class='code_line'>
+                  <pre>  describe "PUT update" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>121</td>
+                <td class='code_line'>
+                  <pre>    before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>122</td>
+                <td class='code_line'>
+                  <pre>      @target_user = Factory.stub :user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>123</td>
+                <td class='code_line'>
+                  <pre>      @target_user.stub(:update_attributes).and_return true</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>124</td>
+                <td class='code_line'>
+                  <pre>      User.stub(:find).and_return @target_user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>125</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>126</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>127</td>
+                <td class='code_line'>
+                  <pre>    it "should find and assign the user" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>128</td>
+                <td class='code_line'>
+                  <pre>      User.should_receive(:find).with(@target_user.id.inspect)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>129</td>
+                <td class='code_line'>
+                  <pre>      put :update, :id => @target_user.id, 'user' => {'admin' => '0'}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>130</td>
+                <td class='code_line'>
+                  <pre>      assigns(:user).should == @target_user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>131</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>132</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>133</td>
+                <td class='code_line'>
+                  <pre>    it "should redirect to the admin page and include notice when admin updates a user" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>134</td>
+                <td class='code_line'>
+                  <pre>      @user = Factory.stub :user, :roles => [:reader]</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>135</td>
+                <td class='code_line'>
+                  <pre>      @ability = Ability.new @user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>136</td>
+                <td class='code_line'>
+                  <pre>      User.stub(:find).and_return @user</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>137</td>
+                <td class='code_line'>
+                  <pre>      @user.stub(:update_attributes).and_return true</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>138</td>
+                <td class='code_line'>
+                  <pre>      controller.stub(:current_user).and_return(@user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>139</td>
+                <td class='code_line'>
+                  <pre>      controller.stub(:current_ability).and_return(@ability)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>140</td>
+                <td class='code_line'>
+                  <pre>      put :update, :id => @user.id, 'user' => {'username' => 'bob'}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>141</td>
+                <td class='code_line'>
+                  <pre>      response.should redirect_to(@user)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>142</td>
+                <td class='code_line'>
+                  <pre>      flash[:notice].should_not be_blank</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>143</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>144</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>145</td>
+                <td class='code_line'>
+                  <pre>    it "should redirect to the user and include notice when user updates himself" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>146</td>
+                <td class='code_line'>
+                  <pre>      put :update, :id => @target_user.id, 'user' => {'admin' => '0'}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>147</td>
+                <td class='code_line'>
+                  <pre>      response.should redirect_to users_path</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>148</td>
+                <td class='code_line'>
+                  <pre>      flash[:notice].should_not be_blank</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>149</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>150</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>151</td>
+                <td class='code_line'>
+                  <pre>    it "should render the edit template when update fails" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>152</td>
+                <td class='code_line'>
+                  <pre>      @target_user.stub(:update_attributes).and_return false</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>153</td>
+                <td class='code_line'>
+                  <pre>      put :update, :id => @target_user.id, 'user' => {'admin' => '0'}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>154</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template(:edit)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>155</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>156</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>157</td>
+                <td class='code_line'>
+                  <pre>  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>158</td>
+                <td class='code_line'>
+                  <pre>  describe "DELETE destroy" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>159</td>
+                <td class='code_line'>
+                  <pre>    it "should find and destroy the user" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>160</td>
+                <td class='code_line'>
+                  <pre>      @user.should_receive(:destroy)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>161</td>
+                <td class='code_line'>
+                  <pre>      delete :destroy, :id => @user.id</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>162</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>163</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>164</td>
+                <td class='code_line'>
+                  <pre>end</pre>
+                </td>
+              </tr>
+              
+            
+          </table>
+        </div>
+      
+    </div>
+    
+    <p>Generated on: 2012-02-13 17:51:39 -0500</p>
+  </body>
+</html>

@@ -2,7 +2,6 @@
 #= require jquery_ujs
 #= require jquery-ui
 #= require bootstrap
-#= require ../../../vendor/assets/javascripts/bootstrap-twipsy
 #= require ../../../vendor/assets/javascripts/bootstrap-modal-helper
 #= require ../../../vendor/assets/javascripts/d3.min
 #= require ../../../vendor/assets/javascripts/d3.layout.min
@@ -19,19 +18,6 @@ $(document).ready ->
   # Remove blue oval around clicked jstree elements
   $('.jstree-clicked').live 'click', ->
     $('.jstree-clicked').removeAttr('class', 'jstree-clicked')
-
-  #slower tooltip for the saved buttons  
-  $('.action-icon').twipsy
-    delayIn: 500
-
-          
-  $('html').live 'ajax:success', ->
-    # remove old tooltips
-    $('.ui-tooltip').remove()
-        
-    #slower tooltip for the saved buttons    
-    $('.action-icon').twipsy
-      delayIn: 500
         
   #fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow")

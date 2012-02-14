@@ -1,0 +1,1769 @@
+<html>
+  <head>
+    <title>app/controllers/zookeepers_controller.rb</title>
+    
+    <link href="../../report.css?0.43171578515519304" media="screen" rel="stylesheet" type="text/css" />
+    <script src='../../jquery.js?0.010050737337353954'></script>
+    <script>
+      $(function() {
+
+        $('#toggle_test_file').click(function(e) {
+          e.preventDefault();
+          if ($('#main_file').hasClass('side_by_side')) {
+            $('#main_file').removeClass('side_by_side');
+          } else {
+            $('#main_file').addClass('side_by_side');
+          }
+        
+          $('#test_file').toggle();
+        });
+
+        $('#test_file').hide();
+        
+        function cleanString(str) {
+          return $.trim(str.replace(/<[^(<|>)]+>/gi, ''));
+        }
+        
+        $('.line_number').hover(function() {
+          $(this).attr('title', 'Line: ' + cleanString($(this).html()));
+        });
+        
+        $('.hit_number').hover(function() {
+          $(this).attr('title', 'Execution Count: ' + cleanString($(this).html()));
+        });
+        
+        $('.code_line').hover(function() {
+          $(this).attr('title', cleanString($(this).html()));
+        });
+        
+      });
+    </script>
+  </head>
+  <body>
+    <h1><a href="../../index.html">Coverage Report</a></h1>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr class='header'>
+        <th>File</th>
+        <th>Lines</th>
+        <th>Lines Of Code</th>
+        <th>Untested Lines of Code</th>
+        <th>Tested %</th>
+      </tr>
+      <tr valign='top'>
+        <td>
+          app/controllers/zookeepers_controller.rb
+          
+            <br />
+            <a href='#' id='toggle_test_file'>spec/controllers/zookeepers_controller_spec.rb</a>
+          
+        </td>
+        <td>91</td>
+        <td>38</td>
+        <td>22</td>
+        <td>42.1%</td>
+      </tr>
+    </table>
+
+    <div>&nbsp;</div>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr>
+        <th>Legend</th>
+      </tr>
+      <tr>
+        <td class='hit'>This line was executed.</td>
+      </tr>
+      <tr>
+        <td class='miss'>This line was not executed!</td>
+      </tr>
+      <tr>
+        <td class='never'>This line doesn't matter.</td>
+      </tr>
+    </table>
+    
+    <div>&nbsp;</div>
+
+    <div id='content'>
+      <div id='main_file'>
+        <table id='main'>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>1</td>
+              <td class='code_line'>
+                <pre>class ZookeepersController < ApplicationController</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>2</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>3</td>
+              <td class='code_line'>
+                <pre>  before_filter :current_zookeeper, :only => [:show_current]</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>4</td>
+              <td class='code_line'>
+                <pre>  before_filter :zookeepers, :only => [:show_current]</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>5</td>
+              <td class='code_line'>
+                <pre>  before_filter :reset_zookeeper, :only => [:show, :make_current]</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>6</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>7</td>
+              <td class='code_line'>
+                <pre>  QUERY = "</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>8</td>
+              <td class='code_line'>
+                <pre>    select</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>9</td>
+              <td class='code_line'>
+                <pre>      z.name,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>10</td>
+              <td class='code_line'>
+                <pre>      z.status,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>11</td>
+              <td class='code_line'>
+                <pre>      z.id,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>12</td>
+              <td class='code_line'>
+                <pre>      v.controller_version,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>13</td>
+              <td class='code_line'>
+                <pre>      c.controller_offline_node,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>14</td>
+              <td class='code_line'>
+                <pre>      c.controller_total,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>15</td>
+              <td class='code_line'>
+                <pre>      v.shard_version,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>16</td>
+              <td class='code_line'>
+                <pre>      s.shard_offline_node,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>17</td>
+              <td class='code_line'>
+                <pre>      s.shard_total,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>18</td>
+              <td class='code_line'>
+                <pre>      q.long_running_queries</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>19</td>
+              <td class='code_line'>
+                <pre>    from</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>20</td>
+              <td class='code_line'>
+                <pre>      zookeepers z,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>21</td>
+              <td class='code_line'>
+                <pre>      (select z1.id, count(distinct c1.blur_version) as controller_version, count(distinct s1.blur_version) as shard_version from zookeepers z1 left join controllers c1 on (z1.id = c1.zookeeper_id), zookeepers z2 left join clusters c2 on (z2.id = c2.zookeeper_id) left join shards s1 on (c2.id = s1.cluster_id) where z1.id = z2.id group by z1.id) v,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>22</td>
+              <td class='code_line'>
+                <pre>      (select z2.id, sum(if(c3.status = 0, 1, 0)) as controller_offline_node, count(c3.id) as controller_total from zookeepers z2 left join controllers c3 on (z2.id = c3.zookeeper_id) group by z2.id) c,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>23</td>
+              <td class='code_line'>
+                <pre>      (select z3.id, sum(if(s2.status = 0, 1, 0)) as shard_offline_node, count(s2.id) as shard_total from zookeepers z3 left join clusters c4 on (z3.id = c4.zookeeper_id) left join shards s2 on (c4.id = s2.cluster_id) group by z3.id) s,</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>24</td>
+              <td class='code_line'>
+                <pre>      (select z4.id, sum(if(q1.state = 0 and q1.created_at < date_sub(utc_timestamp(), interval 1 minute), 1, 0)) as long_running_queries from zookeepers z4 left join clusters c5 on (z4.id = c5.zookeeper_id) left join blur_tables t1 on (c5.id = t1.cluster_id) left join blur_queries q1 on (t1.id = q1.blur_table_id) group by z4.id) q</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>25</td>
+              <td class='code_line'>
+                <pre>    where</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>26</td>
+              <td class='code_line'>
+                <pre>      z.id = v.id and</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>27</td>
+              <td class='code_line'>
+                <pre>      z.id = c.id and</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>28</td>
+              <td class='code_line'>
+                <pre>      z.id = s.id and</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>29</td>
+              <td class='code_line'>
+                <pre>      z.id = q.id</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>30</td>
+              <td class='code_line'>
+                <pre>    order by</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>31</td>
+              <td class='code_line'>
+                <pre>      z.id</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>32</td>
+              <td class='code_line'>
+                <pre>  "</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>33</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>34</td>
+              <td class='code_line'>
+                <pre>  def index</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>35</td>
+              <td class='code_line'>
+                <pre>    @zookeepers = Zookeeper.select('name, id, status').order('name')</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>36</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>37</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>38</td>
+              <td class='code_line'>
+                <pre>  def show</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>39</td>
+              <td class='code_line'>
+                <pre>    redirect_to :zookeeper</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>40</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>41</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>42</td>
+              <td class='code_line'>
+                <pre>  def show_current</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>43</td>
+              <td class='code_line'>
+                <pre>    @zookeeper = @current_zookeeper</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>44</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>45</td>
+              <td class='code_line'>
+                <pre>    @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>46</td>
+              <td class='code_line'>
+                <pre>    @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>47</td>
+              <td class='code_line'>
+                <pre>    respond_to do |format|</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>48</td>
+              <td class='code_line'>
+                <pre>      format.html { render :show_current }</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>49</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>50</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>51</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>52</td>
+              <td class='code_line'>
+                <pre>  def make_current</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>53</td>
+              <td class='code_line'>
+                <pre>    # Javascript redirect (has to be done in js)</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>54</td>
+              <td class='code_line'>
+                <pre>    render :js => "window.location = '#{request.referer}'"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>55</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>56</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>57</td>
+              <td class='code_line'>
+                <pre>  def dashboard</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>58</td>
+              <td class='code_line'>
+                <pre>    zookeeper_results = []</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>59</td>
+              <td class='code_line'>
+                <pre>    connection = ActiveRecord::Base.connection()</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>60</td>
+              <td class='code_line'>
+                <pre>    connection.execute(QUERY).each(:as => :hash) { |row| zookeeper_results << row }</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>61</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>62</td>
+              <td class='code_line'>
+                <pre>    respond_to do |format|</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>63</td>
+              <td class='code_line'>
+                <pre>      format.json { render :json => zookeeper_results }</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>64</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>65</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>66</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>67</td>
+              <td class='code_line'>
+                <pre>  def destroy_shard</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>68</td>
+              <td class='code_line'>
+                <pre>    Shard.destroy(params[:shard_id])</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>69</td>
+              <td class='code_line'>
+                <pre>    redirect_to :zookeeper</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>70</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>71</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>72</td>
+              <td class='code_line'>
+                <pre>  def destroy_cluster</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>73</td>
+              <td class='code_line'>
+                <pre>    Cluster.destroy(params[:cluster_id])</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>74</td>
+              <td class='code_line'>
+                <pre>    redirect_to :zookeeper</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>75</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>76</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>77</td>
+              <td class='code_line'>
+                <pre>  def destroy_controller</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>78</td>
+              <td class='code_line'>
+                <pre>    Controller.destroy(params[:controller_id])</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>79</td>
+              <td class='code_line'>
+                <pre>    redirect_to :zookeeper</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>80</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>81</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>82</td>
+              <td class='code_line'>
+                <pre>  def destroy_zookeeper</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>83</td>
+              <td class='code_line'>
+                <pre>    Zookeeper.destroy(params[:id])</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>84</td>
+              <td class='code_line'>
+                <pre>    redirect_to :zookeeper</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>85</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>86</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>87</td>
+              <td class='code_line'>
+                <pre>  private</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>88</td>
+              <td class='code_line'>
+                <pre>    def reset_zookeeper</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>89</td>
+              <td class='code_line'>
+                <pre>      session[:current_zookeeper_id] = params[:id] if params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>90</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>91</td>
+              <td class='code_line'>
+                <pre>end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+        </table>
+      </div>
+      
+        <div id='test_file' class='side_by_side'>
+          <table id='test'>
+            
+            
+              <tr class="never">
+                <td class='line_number'>1</td>
+                <td class='code_line'>
+                  <pre>require 'spec_helper'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>2</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>3</td>
+                <td class='code_line'>
+                  <pre>describe ZookeepersController do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>4</td>
+                <td class='code_line'>
+                  <pre>  before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>5</td>
+                <td class='code_line'>
+                  <pre>    @ability = Ability.new User.new</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>6</td>
+                <td class='code_line'>
+                  <pre>    @ability.stub!(:can?).and_return(true)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>7</td>
+                <td class='code_line'>
+                  <pre>    controller.stub!(:current_ability).and_return(@ability)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>8</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>9</td>
+                <td class='code_line'>
+                  <pre>    # Set up association chain</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>10</td>
+                <td class='code_line'>
+                  <pre>    @zookeeper  = Factory.stub :zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>11</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>12</td>
+                <td class='code_line'>
+                  <pre>    # ApplicationController.current_zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>13</td>
+                <td class='code_line'>
+                  <pre>    Zookeeper.stub(:find_by_id).and_return(@zookeeper)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>14</td>
+                <td class='code_line'>
+                  <pre>    # Zookeeper.stub_chain(:order, :first).and_return @zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>15</td>
+                <td class='code_line'>
+                  <pre>    # ApplicationController.zookeepers</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>16</td>
+                <td class='code_line'>
+                  <pre>    Zookeeper.stub(:order).and_return [@zookeeper]</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>17</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>18</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>19</td>
+                <td class='code_line'>
+                  <pre>  describe 'GET show_current' do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>20</td>
+                <td class='code_line'>
+                  <pre>    it "assigns the collection all zookeepers to @zookeepers" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>21</td>
+                <td class='code_line'>
+                  <pre>      get :show_current</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>22</td>
+                <td class='code_line'>
+                  <pre>      assigns(:zookeepers).should == [@zookeeper]</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>23</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>24</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>25</td>
+                <td class='code_line'>
+                  <pre>    it "assigns the current zookeeper to @current_zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>26</td>
+                <td class='code_line'>
+                  <pre>      get :show_current</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>27</td>
+                <td class='code_line'>
+                  <pre>      assigns(:current_zookeeper).should == @zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>28</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>29</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>30</td>
+                <td class='code_line'>
+                  <pre>    it "assigns the current zookeeper to @zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>31</td>
+                <td class='code_line'>
+                  <pre>      get :show_current</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>32</td>
+                <td class='code_line'>
+                  <pre>      assigns(:zookeeper).should == @zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>33</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>34</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>35</td>
+                <td class='code_line'>
+                  <pre>    it "renders the show_current view" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>36</td>
+                <td class='code_line'>
+                  <pre>      get :show_current</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>37</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template :show_current</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>38</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>39</td>
+                <td class='code_line'>
+                  <pre>    describe "with persisted zookeepers" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>40</td>
+                <td class='code_line'>
+                  <pre>      describe "with no previous zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>41</td>
+                <td class='code_line'>
+                  <pre>        it "should set the current_zookeeper to be the first zookeeper found" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>42</td>
+                <td class='code_line'>
+                  <pre>          get :show_current, nil, nil</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>43</td>
+                <td class='code_line'>
+                  <pre>          assigns(:current_zookeeper).should == @zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>44</td>
+                <td class='code_line'>
+                  <pre>          session[:current_zookeeper_id].should == @zookeeper.id</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>45</td>
+                <td class='code_line'>
+                  <pre>        end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>46</td>
+                <td class='code_line'>
+                  <pre>      end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>47</td>
+                <td class='code_line'>
+                  <pre>      describe "with a valid pre-existing current_zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>48</td>
+                <td class='code_line'>
+                  <pre>        it "should set the previous zookeeper to be the current_zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>49</td>
+                <td class='code_line'>
+                  <pre>          old_zookeeper = Factory.stub :zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>50</td>
+                <td class='code_line'>
+                  <pre>          Zookeeper.should_receive(:find_by_id).with(old_zookeeper.id).and_return(old_zookeeper)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>51</td>
+                <td class='code_line'>
+                  <pre>          get :show_current, nil, :current_zookeeper_id => old_zookeeper.id</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>52</td>
+                <td class='code_line'>
+                  <pre>          assigns(:current_zookeeper).should == old_zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>53</td>
+                <td class='code_line'>
+                  <pre>          session[:current_zookeeper_id].should == old_zookeeper.id</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>54</td>
+                <td class='code_line'>
+                  <pre>        end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>55</td>
+                <td class='code_line'>
+                  <pre>      end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>56</td>
+                <td class='code_line'>
+                  <pre>      describe "with an invalid pre-existing current_zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>57</td>
+                <td class='code_line'>
+                  <pre>        it "sets current_zookeeper to the first zookeeper, and resets the session" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>58</td>
+                <td class='code_line'>
+                  <pre>          Zookeeper.should_receive(:find_by_id).with(1).and_return(@zookeeper)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>59</td>
+                <td class='code_line'>
+                  <pre>          get :show_current, nil, :current_zookeeper_id => 1</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>60</td>
+                <td class='code_line'>
+                  <pre>          assigns(:current_zookeeper).should == @zookeeper</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>61</td>
+                <td class='code_line'>
+                  <pre>          session[:current_zookeeper_id].should == @zookeeper.id</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>62</td>
+                <td class='code_line'>
+                  <pre>        end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>63</td>
+                <td class='code_line'>
+                  <pre>      end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>64</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>65</td>
+                <td class='code_line'>
+                  <pre>    describe "with no persisted zookeepers" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>66</td>
+                <td class='code_line'>
+                  <pre>      describe "with no previous zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>67</td>
+                <td class='code_line'>
+                  <pre>        it "redirects to the root path, with no current_zookeeper_id in session" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>68</td>
+                <td class='code_line'>
+                  <pre>          Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>69</td>
+                <td class='code_line'>
+                  <pre>          Zookeeper.stub_chain(:order, :first).and_return nil</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>70</td>
+                <td class='code_line'>
+                  <pre>          get :show_current, nil, :current_zookeeper_id => 1</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>71</td>
+                <td class='code_line'>
+                  <pre>          session[:current_zookeeper_id].should be nil</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>72</td>
+                <td class='code_line'>
+                  <pre>          response.should redirect_to root_path</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>73</td>
+                <td class='code_line'>
+                  <pre>        end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>74</td>
+                <td class='code_line'>
+                  <pre>      end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>75</td>
+                <td class='code_line'>
+                  <pre>      describe "with a previous current zookeeper" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>76</td>
+                <td class='code_line'>
+                  <pre>        it "redirects to the root path, with no current_zookeeper_id in session" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>77</td>
+                <td class='code_line'>
+                  <pre>          Zookeeper.should_receive(:find_by_id).with(1).and_return(nil)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>78</td>
+                <td class='code_line'>
+                  <pre>          Zookeeper.stub_chain(:order, :first).and_return nil</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>79</td>
+                <td class='code_line'>
+                  <pre>          get :show_current, nil, :current_zookeeper_id => 1</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>80</td>
+                <td class='code_line'>
+                  <pre>          session[:current_zookeeper_id].should be nil</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>81</td>
+                <td class='code_line'>
+                  <pre>          response.should redirect_to root_path</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>82</td>
+                <td class='code_line'>
+                  <pre>        end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>83</td>
+                <td class='code_line'>
+                  <pre>      end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>84</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>85</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>86</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>87</td>
+                <td class='code_line'>
+                  <pre>  describe 'PUT make_current' do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>88</td>
+                <td class='code_line'>
+                  <pre>    it "assigns the passed in id to the session" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>89</td>
+                <td class='code_line'>
+                  <pre>      put :make_current, :id => @zookeeper.id</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>90</td>
+                <td class='code_line'>
+                  <pre>      session[:current_zookeeper_id].should == @zookeeper.id.inspect</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>91</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>92</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>93</td>
+                <td class='code_line'>
+                  <pre>    it 'renders the javascript redirect' do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>94</td>
+                <td class='code_line'>
+                  <pre>      put :make_current</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>95</td>
+                <td class='code_line'>
+                  <pre>      response.body.should include "window.location ="</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>96</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>97</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>98</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>99</td>
+                <td class='code_line'>
+                  <pre>  describe 'GET index' do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>100</td>
+                <td class='code_line'>
+                  <pre>    it "assigns the collection all zookeepers to @zookeepers" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>101</td>
+                <td class='code_line'>
+                  <pre>      Zookeeper.stub_chain(:select, :order).and_return [@zookeeper]</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>102</td>
+                <td class='code_line'>
+                  <pre>      get :index</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>103</td>
+                <td class='code_line'>
+                  <pre>      assigns(:zookeepers).should == [@zookeeper]</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>104</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>105</td>
+                <td class='code_line'>
+                  <pre>    it "renders the index template" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>106</td>
+                <td class='code_line'>
+                  <pre>      get :index</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>107</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template 'index'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>108</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>109</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>110</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>111</td>
+                <td class='code_line'>
+                  <pre>  describe 'GET dashboard' do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>112</td>
+                <td class='code_line'>
+                  <pre>    it "renders a json object"</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>113</td>
+                <td class='code_line'>
+                  <pre>    it "collects the long queries data" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>114</td>
+                <td class='code_line'>
+                  <pre>      get :dashboard</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>115</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>116</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>117</td>
+                <td class='code_line'>
+                  <pre>end</pre>
+                </td>
+              </tr>
+              
+            
+          </table>
+        </div>
+      
+    </div>
+    
+    <p>Generated on: 2012-02-13 17:51:39 -0500</p>
+  </body>
+</html>

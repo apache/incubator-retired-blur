@@ -52,6 +52,7 @@ $footer-height: 45px;
   @include border-radius;
   @include border;
 }
+//fixes the border for all boxes that are 12 columns wide
 .container{overflow: visible !important;}
 .hidden{ display: none; }
 .inline{ display: inline; }
@@ -59,14 +60,8 @@ $footer-height: 45px;
   font-weight: bold;
   color: #555;
 }
-
-label{
-  width: inherit;
-}
-
-.bottom-line{
-  border-bottom: $twitter-border;
-}
+label{ width: inherit; }
+.bottom-line{ border-bottom: $twitter-border; }
 
 html{
   height: 100%;
@@ -74,15 +69,10 @@ html{
   box-sizing: border-box;
   overflow: auto;
 }
+body { background-color: $bg-blue-color; }
 
-body {
-  background-color: $bg-blue-color;
-}
-
-#page-help{
-  text-decoration: none;
-}
-
+//help styles
+#page-help{ text-decoration: none; }
 .help-section{
   cursor: pointer;
   margin: 2px;
@@ -97,67 +87,20 @@ body {
   .head{
     margin-bottom: 2px;
   }
-  ul{
-    margin-top: 3px;
-  }
+  ul{ margin-top: 3px; }
 }
 
-.search-info-section{
-  width: 49%;
-  display: inline-block;
-  vertical-align: top;
-  .radial-graph{
-    position: relative;
-    text-align: center;
-    height: 400px;
-    width: 100%;
-    path{
-      cursor: pointer;
-      &:hover{
-        opacity: .6;
-      }
-    }
-    .graphtip{
-      position: absolute;
-      display: block;
-      z-index: 50;
-      #tipcontent{
-        padding: 1px 6px 1px 6px;
-        border: 4px solid #e2e2e2;
-        max-width: 400px;
-        background: white;
-        color: black;
-        @include border-radius(5px);
-      }
-    }
-  }
-}
-
-.title{
-  color:$lightblue-color;
-}
-.blue-back{
-  background-color:$lighterblue-color;
-}
-.center{
-  text-align:center;
-  vertical-align:middle;
-}
-
+.title{ color:$lightblue-color; }
+.blue-back{ background-color:$lighterblue-color; }
+.center{ text-align:center; vertical-align:middle; }
 .label{
   text-align: center;
   display: inline-block;
   padding:1px 15px 1px;
   margin: 2px 0 2px;
-
+  &.important{font-style:italic;}
 }
-.label.important{
-  font-style:italic;
-}
-.tabs{
-  font-size:120%;
-}
-
+.tabs{ font-size:120%; }
 .icon{
   width:20px;
   height:20px;
@@ -173,25 +116,11 @@ body {
     height:16px;
     margin:2px;
   }
-  .cut{
-    background-image: url(cut.png);
-  }
-  .delete{
-    background-image: url(delete.png);
-  }
-  .edit{
-    background-image: url(edit.png);
-  }
-  .play{
-    background-image: url(play.png);
-  }
-  .refresh{
-    background-image: url(refresh.png);
-  }
-  .pause{
-    background-image: url(pause.png);
-  }
+  .cut{ background-image: url(cut.png); }
+  .delete{ background-image: url(delete.png); }
+  .edit{ background-image: url(edit.png); }
+  .play{ background-image: url(play.png); }
+  .refresh{ background-image: url(refresh.png); }
+  .pause{ background-image: url(pause.png); }
 }
-.clear{
-  clear:both;
-}
+.clear{ clear:both; }

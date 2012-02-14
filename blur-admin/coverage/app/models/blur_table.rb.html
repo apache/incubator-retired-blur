@@ -1,0 +1,1409 @@
+<html>
+  <head>
+    <title>app/models/blur_table.rb</title>
+    
+    <link href="../../report.css?0.45227078678844157" media="screen" rel="stylesheet" type="text/css" />
+    <script src='../../jquery.js?0.2187464794222197'></script>
+    <script>
+      $(function() {
+
+        $('#toggle_test_file').click(function(e) {
+          e.preventDefault();
+          if ($('#main_file').hasClass('side_by_side')) {
+            $('#main_file').removeClass('side_by_side');
+          } else {
+            $('#main_file').addClass('side_by_side');
+          }
+        
+          $('#test_file').toggle();
+        });
+
+        $('#test_file').hide();
+        
+        function cleanString(str) {
+          return $.trim(str.replace(/<[^(<|>)]+>/gi, ''));
+        }
+        
+        $('.line_number').hover(function() {
+          $(this).attr('title', 'Line: ' + cleanString($(this).html()));
+        });
+        
+        $('.hit_number').hover(function() {
+          $(this).attr('title', 'Execution Count: ' + cleanString($(this).html()));
+        });
+        
+        $('.code_line').hover(function() {
+          $(this).attr('title', cleanString($(this).html()));
+        });
+        
+      });
+    </script>
+  </head>
+  <body>
+    <h1><a href="../../index.html">Coverage Report</a></h1>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr class='header'>
+        <th>File</th>
+        <th>Lines</th>
+        <th>Lines Of Code</th>
+        <th>Untested Lines of Code</th>
+        <th>Tested %</th>
+      </tr>
+      <tr valign='top'>
+        <td>
+          app/models/blur_table.rb
+          
+            <br />
+            <a href='#' id='toggle_test_file'>spec/models/blur_table_spec.rb</a>
+          
+        </td>
+        <td>71</td>
+        <td>37</td>
+        <td>6</td>
+        <td>83.8%</td>
+      </tr>
+    </table>
+
+    <div>&nbsp;</div>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr>
+        <th>Legend</th>
+      </tr>
+      <tr>
+        <td class='hit'>This line was executed.</td>
+      </tr>
+      <tr>
+        <td class='miss'>This line was not executed!</td>
+      </tr>
+      <tr>
+        <td class='never'>This line doesn't matter.</td>
+      </tr>
+    </table>
+    
+    <div>&nbsp;</div>
+
+    <div id='content'>
+      <div id='main_file'>
+        <table id='main'>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>1</td>
+              <td class='code_line'>
+                <pre>class BlurTable < ActiveRecord::Base</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>2</td>
+              <td class='code_line'>
+                <pre>  require 'blur_thrift_client'</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>3</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>4</td>
+              <td class='code_line'>
+                <pre>  belongs_to :cluster</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>5</td>
+              <td class='code_line'>
+                <pre>  has_many :blur_queries, :dependent => :destroy</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>6</td>
+              <td class='code_line'>
+                <pre>  has_many :searches, :dependent => :destroy</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>7</td>
+              <td class='code_line'>
+                <pre>  has_one :zookeeper, :through => :cluster</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>8</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>9</td>
+              <td class='code_line'>
+                <pre>  scope :deleted, where("status=?", 0)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>10</td>
+              <td class='code_line'>
+                <pre>  scope :disabled, where("status=?", 2)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>11</td>
+              <td class='code_line'>
+                <pre>  scope :active, where("status=?", 4)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>12</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>13</td>
+              <td class='code_line'>
+                <pre>  # Returns a map of host => [shards] of all hosts/shards associated with the table</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>14</td>
+              <td class='code_line'>
+                <pre>  def hosts</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>15</td>
+              <td class='code_line'>
+                <pre>    JSON.parse read_attribute(:server)</pre>
+              </td>
+              <td class='hit_number'>18</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>16</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>17</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>18</td>
+              <td class='code_line'>
+                <pre>  def schema</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>19</td>
+              <td class='code_line'>
+                <pre>    if self.table_schema</pre>
+              </td>
+              <td class='hit_number'>66</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>20</td>
+              <td class='code_line'>
+                <pre>      # sort columns, and then sort column families</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>21</td>
+              <td class='code_line'>
+                <pre>      if block_given?</pre>
+              </td>
+              <td class='hit_number'>66</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>22</td>
+              <td class='code_line'>
+                <pre>        Hash[(JSON.parse self.table_schema)['columnFamilies'].each {|k, v| v.sort!}.sort &Proc.new]</pre>
+              </td>
+              <td class='hit_number'>72</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>23</td>
+              <td class='code_line'>
+                <pre>      else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>24</td>
+              <td class='code_line'>
+                <pre>        Hash[(JSON.parse self.table_schema)['columnFamilies'].each {|k, v| v.sort!}.sort]</pre>
+              </td>
+              <td class='hit_number'>192</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>25</td>
+              <td class='code_line'>
+                <pre>      end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>26</td>
+              <td class='code_line'>
+                <pre>    else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>27</td>
+              <td class='code_line'>
+                <pre>      return nil</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>28</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>29</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>30</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>31</td>
+              <td class='code_line'>
+                <pre>  def num_shards</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>32</td>
+              <td class='code_line'>
+                <pre>    self.schema.values.flatten.count if self.schema</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>33</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>34</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>35</td>
+              <td class='code_line'>
+                <pre>  def is_enabled?</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>36</td>
+              <td class='code_line'>
+                <pre>    self.status == 4</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>37</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>38</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>39</td>
+              <td class='code_line'>
+                <pre>  def is_disabled?</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>40</td>
+              <td class='code_line'>
+                <pre>    self.status == 2</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>41</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>42</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>43</td>
+              <td class='code_line'>
+                <pre>  def is_deleted?</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>44</td>
+              <td class='code_line'>
+                <pre>    self.status == 0</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>45</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>46</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>47</td>
+              <td class='code_line'>
+                <pre>  def enable(blur_urls)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>48</td>
+              <td class='code_line'>
+                <pre>    begin</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>49</td>
+              <td class='code_line'>
+                <pre>      BlurThriftClient.client(blur_urls).enableTable self.table_name</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>50</td>
+              <td class='code_line'>
+                <pre>    ensure</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>51</td>
+              <td class='code_line'>
+                <pre>      return self.is_enabled?</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>52</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>53</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>54</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>55</td>
+              <td class='code_line'>
+                <pre>  def disable(blur_urls)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>56</td>
+              <td class='code_line'>
+                <pre>    begin</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>57</td>
+              <td class='code_line'>
+                <pre>      BlurThriftClient.client(blur_urls).disableTable self.table_name</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>58</td>
+              <td class='code_line'>
+                <pre>    ensure</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>59</td>
+              <td class='code_line'>
+                <pre>      return self.is_disabled?</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>60</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>61</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>62</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>63</td>
+              <td class='code_line'>
+                <pre>  def blur_destroy(underlying=false, blur_urls)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>64</td>
+              <td class='code_line'>
+                <pre>    begin</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>65</td>
+              <td class='code_line'>
+                <pre>      BlurThriftClient.client(blur_urls).removeTable self.table_name, underlying</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>66</td>
+              <td class='code_line'>
+                <pre>      return true;</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>67</td>
+              <td class='code_line'>
+                <pre>    rescue</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>68</td>
+              <td class='code_line'>
+                <pre>      return false;</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>69</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>70</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>71</td>
+              <td class='code_line'>
+                <pre>end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+        </table>
+      </div>
+      
+        <div id='test_file' class='side_by_side'>
+          <table id='test'>
+            
+            
+              <tr class="never">
+                <td class='line_number'>1</td>
+                <td class='code_line'>
+                  <pre>require 'spec_helper'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>2</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>3</td>
+                <td class='code_line'>
+                  <pre>describe BlurTable do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>4</td>
+                <td class='code_line'>
+                  <pre>  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>5</td>
+                <td class='code_line'>
+                  <pre>  before(:each) do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>6</td>
+                <td class='code_line'>
+                  <pre>    @client = mock(ThriftClient)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>7</td>
+                <td class='code_line'>
+                  <pre>    BlurThriftClient.stub!(:client).and_return(@client)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>8</td>
+                <td class='code_line'>
+                  <pre>    @table = Factory.create :blur_table</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>9</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>10</td>
+                <td class='code_line'>
+                  <pre>  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>11</td>
+                <td class='code_line'>
+                  <pre>  describe "enable " do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>12</td>
+                <td class='code_line'>
+                  <pre>    it "method sends the message to enable the table through thrift" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>13</td>
+                <td class='code_line'>
+                  <pre>      @client.should_receive(:enableTable).with @table.table_name</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>14</td>
+                <td class='code_line'>
+                  <pre>      @table.enable 'test:40000'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>15</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>16</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>17</td>
+                <td class='code_line'>
+                  <pre>  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>18</td>
+                <td class='code_line'>
+                  <pre>  describe "disable" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>19</td>
+                <td class='code_line'>
+                  <pre>    it "should send the message to disable the table through thrift" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>20</td>
+                <td class='code_line'>
+                  <pre>      #@table = BlurTable.new :table_name => 'blah', :status => "1git"</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>21</td>
+                <td class='code_line'>
+                  <pre>      @client.should_receive(:disableTable).with(@table.table_name)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>22</td>
+                <td class='code_line'>
+                  <pre>      @table.disable 'test:40000'</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>23</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>24</td>
+                <td class='code_line'>
+                  <pre>  end  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>25</td>
+                <td class='code_line'>
+                  <pre>  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>26</td>
+                <td class='code_line'>
+                  <pre>  describe "schema" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>27</td>
+                <td class='code_line'>
+                  <pre>    it "returns the table schema in a ruby hash, with hosts as keys and array of shards as values" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>28</td>
+                <td class='code_line'>
+                  <pre>      @table.hosts.should == JSON.parse( @table.server )</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>29</td>
+                <td class='code_line'>
+                  <pre>      @table.hosts.keys.each {|host| host.should match  /Host/}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>30</td>
+                <td class='code_line'>
+                  <pre>      @table.hosts.values.flatten.each {|shard| shard.should match /shard/}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>31</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>32</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>33</td>
+                <td class='code_line'>
+                  <pre>    it "sorts the columns and column families alphabetically" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>34</td>
+                <td class='code_line'>
+                  <pre>      @unsorted_table = Factory.create :blur_table,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>35</td>
+                <td class='code_line'>
+                  <pre>        :table_name => 'test_table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>36</td>
+                <td class='code_line'>
+                  <pre>        :table_schema =></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>37</td>
+                <td class='code_line'>
+                  <pre>          { :table              => 'test-table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>38</td>
+                <td class='code_line'>
+                  <pre>            :setTable           => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>39</td>
+                <td class='code_line'>
+                  <pre>            :setColumnFamilies  => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>40</td>
+                <td class='code_line'>
+                  <pre>            :columnFamiliesSize => 3,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>41</td>
+                <td class='code_line'>
+                  <pre>            :columnFamilies     => { 'ColumnFamily2' => %w[Column2B Column2C Column2A],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>42</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily1' => %w[Column1B Column1C Column1A],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>43</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily3' => %w[Column3B Column3C Column3A] }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>44</td>
+                <td class='code_line'>
+                  <pre>          }.to_json</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>45</td>
+                <td class='code_line'>
+                  <pre>      @sorted_table = Factory.create :blur_table,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>46</td>
+                <td class='code_line'>
+                  <pre>        :table_name => 'test-table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>47</td>
+                <td class='code_line'>
+                  <pre>        :table_schema =></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>48</td>
+                <td class='code_line'>
+                  <pre>          { :table              => 'test-table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>49</td>
+                <td class='code_line'>
+                  <pre>            :setTable           => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>50</td>
+                <td class='code_line'>
+                  <pre>            :setColumnFamilies  => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>51</td>
+                <td class='code_line'>
+                  <pre>            :columnFamiliesSize => 3,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>52</td>
+                <td class='code_line'>
+                  <pre>            :columnFamilies     => { 'ColumnFamily1' => %w[Column1A Column1B Column1C],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>53</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily2' => %w[Column2A Column2B Column2C],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>54</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily3' => %w[Column3A Column3B Column3C] }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>55</td>
+                <td class='code_line'>
+                  <pre>          }.to_json</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>56</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>57</td>
+                <td class='code_line'>
+                  <pre>        @unsorted_table.schema.should == @sorted_table.schema</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>58</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>59</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>60</td>
+                <td class='code_line'>
+                  <pre>    it "sorts the column families by an optionally supplied block" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>61</td>
+                <td class='code_line'>
+                  <pre>      @unsorted_table = Factory.create :blur_table,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>62</td>
+                <td class='code_line'>
+                  <pre>        :table_name => 'test_table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>63</td>
+                <td class='code_line'>
+                  <pre>        :table_schema =></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>64</td>
+                <td class='code_line'>
+                  <pre>          { :table              => 'test-table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>65</td>
+                <td class='code_line'>
+                  <pre>            :setTable           => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>66</td>
+                <td class='code_line'>
+                  <pre>            :setColumnFamilies  => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>67</td>
+                <td class='code_line'>
+                  <pre>            :columnFamiliesSize => 3,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>68</td>
+                <td class='code_line'>
+                  <pre>            :columnFamilies     => { 'ColumnFamily1' => %w[Column1B Column1C Column1A],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>69</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily2' => %w[Column2B Column2C Column2A],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>70</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily3' => %w[Column3B Column3C Column3A] }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>71</td>
+                <td class='code_line'>
+                  <pre>          }.to_json</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>72</td>
+                <td class='code_line'>
+                  <pre>      @reverse_sort_table = Factory.create :blur_table,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>73</td>
+                <td class='code_line'>
+                  <pre>        :table_name => 'test_table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>74</td>
+                <td class='code_line'>
+                  <pre>        :table_schema =></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>75</td>
+                <td class='code_line'>
+                  <pre>          { :table              => 'test-table',</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>76</td>
+                <td class='code_line'>
+                  <pre>            :setTable           => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>77</td>
+                <td class='code_line'>
+                  <pre>            :setColumnFamilies  => true,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>78</td>
+                <td class='code_line'>
+                  <pre>            :columnFamiliesSize => 3,</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>79</td>
+                <td class='code_line'>
+                  <pre>            :columnFamilies     => { 'ColumnFamily3' => %w[Column3B Column3C Column3A],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>80</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily2' => %w[Column2B Column2C Column2A],</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>81</td>
+                <td class='code_line'>
+                  <pre>                                     'ColumnFamily1' => %w[Column1B Column1C Column1A] }</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>82</td>
+                <td class='code_line'>
+                  <pre>          }.to_json</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>83</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>84</td>
+                <td class='code_line'>
+                  <pre>      @unsorted_table.schema.should == @reverse_sort_table.schema {|a, b| b <=> a}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>85</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>86</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>87</td>
+                <td class='code_line'>
+                  <pre>    it "returns nil when the server has not been populated" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>88</td>
+                <td class='code_line'>
+                  <pre>      blur_table = BlurTable.new</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>89</td>
+                <td class='code_line'>
+                  <pre>      blur_table.server.should be nil</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>90</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>91</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>92</td>
+                <td class='code_line'>
+                  <pre>end</pre>
+                </td>
+              </tr>
+              
+            
+          </table>
+        </div>
+      
+    </div>
+    
+    <p>Generated on: 2012-02-13 17:51:38 -0500</p>
+  </body>
+</html>

@@ -1,0 +1,367 @@
+<html>
+  <head>
+    <title>app/helpers/license_helper.rb</title>
+    
+    <link href="../../report.css?0.8687367072220701" media="screen" rel="stylesheet" type="text/css" />
+    <script src='../../jquery.js?0.9267342934917497'></script>
+    <script>
+      $(function() {
+
+        $('#toggle_test_file').click(function(e) {
+          e.preventDefault();
+          if ($('#main_file').hasClass('side_by_side')) {
+            $('#main_file').removeClass('side_by_side');
+          } else {
+            $('#main_file').addClass('side_by_side');
+          }
+        
+          $('#test_file').toggle();
+        });
+
+        $('#test_file').hide();
+        
+        function cleanString(str) {
+          return $.trim(str.replace(/<[^(<|>)]+>/gi, ''));
+        }
+        
+        $('.line_number').hover(function() {
+          $(this).attr('title', 'Line: ' + cleanString($(this).html()));
+        });
+        
+        $('.hit_number').hover(function() {
+          $(this).attr('title', 'Execution Count: ' + cleanString($(this).html()));
+        });
+        
+        $('.code_line').hover(function() {
+          $(this).attr('title', cleanString($(this).html()));
+        });
+        
+      });
+    </script>
+  </head>
+  <body>
+    <h1><a href="../../index.html">Coverage Report</a></h1>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr class='header'>
+        <th>File</th>
+        <th>Lines</th>
+        <th>Lines Of Code</th>
+        <th>Untested Lines of Code</th>
+        <th>Tested %</th>
+      </tr>
+      <tr valign='top'>
+        <td>
+          app/helpers/license_helper.rb
+          
+        </td>
+        <td>34</td>
+        <td>20</td>
+        <td>14</td>
+        <td>30.0%</td>
+      </tr>
+    </table>
+
+    <div>&nbsp;</div>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr>
+        <th>Legend</th>
+      </tr>
+      <tr>
+        <td class='hit'>This line was executed.</td>
+      </tr>
+      <tr>
+        <td class='miss'>This line was not executed!</td>
+      </tr>
+      <tr>
+        <td class='never'>This line doesn't matter.</td>
+      </tr>
+    </table>
+    
+    <div>&nbsp;</div>
+
+    <div id='content'>
+      <div id='main_file'>
+        <table id='main'>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>1</td>
+              <td class='code_line'>
+                <pre>module LicenseHelper </pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>2</td>
+              <td class='code_line'>
+                <pre>  def license_text(license)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>3</td>
+              <td class='code_line'>
+                <pre>    if license</pre>
+              </td>
+              <td class='hit_number'>195</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>4</td>
+              <td class='code_line'>
+                <pre>      days_left_in_license = (license.expires_date - Date.today).to_i</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>5</td>
+              <td class='code_line'>
+                <pre>      text = "Licensed to: #{license.org} on #{license.issued_date.strftime('%d %b %Y')}."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>6</td>
+              <td class='code_line'>
+                <pre>      if days_left_in_license < 0</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>7</td>
+              <td class='code_line'>
+                <pre>        text << " License is expired."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>8</td>
+              <td class='code_line'>
+                <pre>      elsif days_left_in_license == 0</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>9</td>
+              <td class='code_line'>
+                <pre>        text << " License expires today."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>10</td>
+              <td class='code_line'>
+                <pre>      elsif days_left_in_license < 30</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>11</td>
+              <td class='code_line'>
+                <pre>        text << " License expires in #{pluralize(days_left_in_license, 'day')}."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>12</td>
+              <td class='code_line'>
+                <pre>      end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>13</td>
+              <td class='code_line'>
+                <pre>      </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>14</td>
+              <td class='code_line'>
+                <pre>      if license.node_overage > 0</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>15</td>
+              <td class='code_line'>
+                <pre>        text << " There is currently #{pluralize(license.node_overage, 'node')} over licensed amount."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>16</td>
+              <td class='code_line'>
+                <pre>        if license.grace_period_days_remain < 0</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>17</td>
+              <td class='code_line'>
+                <pre>          text << " Please contact Near Infinity to upgrade the license."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>18</td>
+              <td class='code_line'>
+                <pre>        else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>19</td>
+              <td class='code_line'>
+                <pre>          text << " #{pluralize(license.grace_period_days_remain, 'day')} left until new license is needed."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>20</td>
+              <td class='code_line'>
+                <pre>        end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>21</td>
+              <td class='code_line'>
+                <pre>      end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>22</td>
+              <td class='code_line'>
+                <pre>      if license.cluster_overage > 0</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>23</td>
+              <td class='code_line'>
+                <pre>        text << " There is currently #{pluralize(license.cluster_overage, 'cluster')} over licensed amount.  Please contact Near Infinity to upgrade the license."</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>24</td>
+              <td class='code_line'>
+                <pre>      end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>25</td>
+              <td class='code_line'>
+                <pre>      text</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>26</td>
+              <td class='code_line'>
+                <pre>    else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>27</td>
+              <td class='code_line'>
+                <pre>      "No valid license found."</pre>
+              </td>
+              <td class='hit_number'>195</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>28</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>29</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>30</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>31</td>
+              <td class='code_line'>
+                <pre>  def footer_class(license)</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>32</td>
+              <td class='code_line'>
+                <pre>    (license.nil? || (license.expires_date - Date.today).to_i < 30 || license.grace_period_days_remain < 10) || license.cluster_overage > 0 && 'expiring_license'</pre>
+              </td>
+              <td class='hit_number'>195</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>33</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>34</td>
+              <td class='code_line'>
+                <pre>end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+        </table>
+      </div>
+      
+    </div>
+    
+    <p>Generated on: 2012-02-13 17:51:38 -0500</p>
+  </body>
+</html>

@@ -64,7 +64,7 @@ describe SearchController do
     end
 
     it "should find the new columns" do
-      BlurTable.should_receive(:find).with(@blur_table.id)
+      BlurTable.should_receive(:find).with(@blur_table.id.inspect)
       get :filters, :blur_table_id => @blur_table.id
     end
     
@@ -148,7 +148,7 @@ describe SearchController do
     end
     describe "when running an existing search" do
       it "fetches the saved search object" do
-        Search.should_receive(:find).with(@search.id)
+        Search.should_receive(:find).with(@search.id.inspect)
         get :create, :search_id  => @search.id
       end
     end
@@ -202,7 +202,7 @@ describe SearchController do
     end
 
     it "finds the correct table and deletes it from the DB" do
-      Search.should_receive(:find).with(1)
+      Search.should_receive(:find).with("1")
       @search.should_receive(:delete)
       delete :delete, :search_id => 1, :blur_table => 1
     end

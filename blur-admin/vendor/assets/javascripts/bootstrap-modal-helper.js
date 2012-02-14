@@ -26,11 +26,10 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       title:'',
       body:'',
       btns:{ 'Close': { func: function(){ $('#modal').modal('hide');} } },
-      titleClass:'',
       bodyClass:'',
       footerClass:'',
       fade:true,
-      backdrop:'modal-backdrop',
+      backdrop:true,
       keyboard:true
       }, params)
     var title = params['title'];
@@ -41,7 +40,6 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
     var shown= params['shown'];
     var hide = params['hide'];
     var hidden = params['hidden'];
-    var titleClass = params['titleClass'];
     var bodyClass = params['bodyClass'];
     var footerClass = params['footerClass'];
     var fade = params['fade'];
@@ -57,13 +55,11 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
       modal.addClass('fade'); 
     }
     
-    titleElement = title.charAt(0) == "<" ? 'div' : 'h2';
-    modalHeader = $("<" + titleElement + " class='modal-header'>" + title + "</" + titleElement + ">");
+    modalHeader = $("<div class='modal-header'><h3>" + title + "</h3></div>");
     modalBody = $("<div class='modal-body'></div>");
     modalFooter = $("<div class='modal-footer'></div>");
     
     modal.append(modalHeader);
-    modalHeader.addClass(titleClass);
     modal.append(modalBody);
     modalBody.addClass(bodyClass);
     modal.append(modalFooter);
@@ -80,9 +76,9 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
     
     for(buttonName in btns){
       buttonProps = btns[buttonName]
-      button = $("<button class='btn'>" + buttonName + "<button>")
+      button = $("<button class='btn'>" + buttonName + "</button>")
       if (buttonProps['class']){
-        button.addClass(buttonProps['class']);
+        button.addClass('btn-' + buttonProps['class']);
       }
       if (buttonProps['func']){
         button.bind('click', buttonProps['func']);
@@ -123,8 +119,7 @@ keyboard: boolean, closes the modal when the escape key is pressed.  defaults to
     });
     modal.modal({
       backdrop: backdrop,
-      keyboard: keyboard,
-      show: true
+      keyboard: keyboard
     });
   }
 })( jQuery );

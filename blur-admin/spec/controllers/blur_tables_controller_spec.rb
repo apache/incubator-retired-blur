@@ -56,7 +56,7 @@ describe BlurTablesController do
       BlurTable.stub(:find).and_return @blur_table
     end
     it "should the blur table whose schema is requested" do
-      BlurTable.should_receive(:find).with @blur_table.id
+      BlurTable.should_receive(:find).with @blur_table.id.inspect
       get :schema, :id => @blur_table.id
     end
     it "should render the schema partial" do
@@ -76,7 +76,7 @@ describe BlurTablesController do
       BlurTable.stub(:find).and_return @blur_table
     end
     it "finds the blur table being whose hosts is requested" do
-      BlurTable.should_receive(:find).with @blur_table.id
+      BlurTable.should_receive(:find).with @blur_table.id.inspect
       get :hosts, :id => @blur_table.id
     end
     it "should render the hosts partial" do
@@ -97,7 +97,8 @@ describe BlurTablesController do
     end
 
     it "finds the blur table being updated" do
-      #BlurTable.should_receive(:find).with @blur_table.id
+      pending "This needs to test for an array of items"
+      BlurTable.should_receive(:find).with @blur_table.id.inspect
       put :update, :id => @blur_table.id
     end
 

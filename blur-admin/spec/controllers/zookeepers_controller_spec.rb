@@ -87,7 +87,7 @@ describe ZookeepersController do
   describe 'PUT make_current' do
     it "assigns the passed in id to the session" do
       put :make_current, :id => @zookeeper.id
-      session[:current_zookeeper_id].should == @zookeeper.id
+      session[:current_zookeeper_id].should == @zookeeper.id.inspect
     end
 
     it 'renders the javascript redirect' do

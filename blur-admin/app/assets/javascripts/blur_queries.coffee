@@ -12,7 +12,7 @@ $(document).ready ->
   # Load queries into table
   load_queries = () ->  
     data_table = $('#queries-table').dataTable({
-      "sDom":"<'row'<'span8'i><'span1'r><'span8'f>>t",
+      "sDom":"<'row'<'span1'i><'span2'r><'span3'f>>t",
       bPaginate: false,
       bProcessing: true,
       bDeferRender: true,

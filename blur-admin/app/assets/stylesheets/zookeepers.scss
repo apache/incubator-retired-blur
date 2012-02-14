@@ -1,97 +1,56 @@
-@mixin outer-container {
-  margin-bottom: 2em;
-  
+@mixin box-title{
+  position:absolute;
+  display:block;
+  top:-18px;
+  left:20px;
+  background:$bg-blue-color;
 }
-@mixin inner-container {
 
-  margin-bottom: 2em;
+@mixin zoo-widget{
+  border:$twitter-border;
+  @include border-radius(5px);
+  padding-top:20px;
+  position:relative;
+  .title{ @include box-title; }
 }
 
 #zookeeper_wrapper {
   margin-top: 2em;
 
-  #blur, #zookeeper{
-    margin-bottom: 2em;
-  }
+  #blur, #zookeeper{ margin-bottom: 2em; }
 
   #zookeeper {
-    border:$twitter-border;
-    padding-top:20px;
-    @include border-radius(5px);
-    position:relative;
-    
-    .title{
-      position:absolute;
-      display:block;
-      top:-18px;
-      left:20px;
-      background:$bg-blue-color;
-    }
+    @include zoo-widget;
+    table{ text-align: left; margin-left: 10px; }
   }
 
   #blur {
-    border:$twitter-border;
-    @include border-radius(5px);
-    padding-top:20px;
-    position:relative;
-    #controllers-placeholder,#shards-placeholder{
-      margin-top: 5px;
-    }
+    @include zoo-widget;
+    #controllers, #shards{ padding: 5px; box-sizing: border-box; }
+    ul{ list-style-type: none; }
     .blur_container{ margin-bottom: 2em }
-    .title{
-      position:absolute;
-      display:block;
-      top:-18px;
-      left:20px;
-      background:$bg-blue-color;
-    }
   }
-  .status{
-  width:75px;
-  }
+  .status{ width:75px; }
   h3 { margin-top: 0.5em; }
 }
 
 #zookeepers_wrapper{
   display: none;
-  @include standard-font;
+  @include standard-font; 
+  @include zoo-widget;
   margin-top: 2em;
-  margin-bottom: 165px;
-  border:$twitter-border;
-  @include border-radius(5px);
-  position:relative;
-  
-
-  .title{
-    position:absolute;
-    display:block;
-    top:-18px;
-    left:20px;
-    background:$bg-blue-color;
-  }
 
   .zookeeper_info {
     min-width: 400px;
-    margin: 20px 10px 20px 20px;
+    margin: 0px 10px 20px 20px;
     float: left;
     display: inline-block;
     border: 1px solid;
     @include border-radius(5px);
-    &:hover {
-      cursor: pointer;
-      background: #FFFCD6;
-    }
-
-    &.online{
-      border-color: #51A351;
-    }
-    &.offline{
-      border-color: #BD362F;
-    }
-
-    table{
-      margin:0;
-    }
+    &:hover { cursor: pointer; background: #FFFCD6; }
+    &.online{ border-color: $green-border-color; }
+    &.offline{ border-color: $red-border-color; }
+    table{ margin:0; }
   }
   .zookeeper-title{
     font-size:125%;
@@ -101,14 +60,12 @@
     text-align: left;
     @include border-bottom-radius(0px)
   }
-  .warning { height: 18px; text-align: center; }
-  .status{
-  width:160px;
-  }
-  #zookeepers {height: 100%;}
+  .warning{ height: 18px; text-align: center; }
+  .status{ width:160px; }
+  #zookeepers{ height: 100%; }
 
 
-  .number, .word, .zookeeper-name, .zookeeper-status {display: inline-block; }
+  .number, .word, .zookeeper-name, .zookeeper-status { display: inline-block; }
   .number {width: 20px; text-align: right; }
   .word {width: 130px; text-align: left;}
 

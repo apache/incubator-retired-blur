@@ -1,7 +1,7 @@
 -if can?(:update, :blur_tables)
-  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'forget'} Forget Tables
+  %button.btn.btn-danger{:disabled => 'disabled', :blur_bulk_action => 'forget'} Forget Tables
 
-%table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
+%table.table.table-striped.table-bordered{:blur_cluster_id => cluster}
   %thead
     %tr
       %th

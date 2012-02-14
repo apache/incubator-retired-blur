@@ -82,6 +82,7 @@ describe UsersController do
 
     context "when the message saves successfully" do
       it "redirects to the users path" do
+        user.stub(:save).and_return(true)
         post :create
         response.should redirect_to(users_path)
       end
@@ -124,7 +125,7 @@ describe UsersController do
     end
 
     it "should find and assign the user" do
-      User.should_receive(:find).with(@target_user.id)
+      User.should_receive(:find).with(@target_user.id.inspect)
       put :update, :id => @target_user.id, 'user' => {'admin' => '0'}
       assigns(:user).should == @target_user
     end

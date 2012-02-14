@@ -8,6 +8,10 @@ $gridColumnWidth: 80px;
 @import "base";
 @import "navigation";
 @import "bootstrap_addons";
+@import "jquery-ui";
+@import "jquery.contextMenu";
+@import "fg.menu";
+@import "jquery.osxFinder";
 
 // Application specific pages
 @import "search";

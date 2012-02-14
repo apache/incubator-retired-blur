@@ -1,9 +1,9 @@
 -if can?(:update, :blur_tables)
-  %button.bulk-action-button.btn.primary.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'enable'} Enable Tables
+  %button.btn.btn-primary{:disabled => 'disabled', :blur_bulk_action => 'enable'} Enable Tables
 -if can?(:delete, :blur_tables)
-  %button.bulk-action-button.btn.danger.suppress-button{:disabled => 'disabled', :blur_bulk_action => 'delete'} Delete Tables
+  %button.btn.btn-danger{:disabled => 'disabled', :blur_bulk_action => 'delete'} Delete Tables
 
-%table.cluster_table.zebra-striped{:blur_cluster_id => cluster}
+%table.table.table-striped.table.table-bordered{:blur_cluster_id => cluster}
   %thead
     %tr
       %th

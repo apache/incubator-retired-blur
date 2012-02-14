@@ -1,0 +1,1609 @@
+<html>
+  <head>
+    <title>app/controllers/hdfs_controller.rb</title>
+    
+    <link href="../../report.css?0.559477921628162" media="screen" rel="stylesheet" type="text/css" />
+    <script src='../../jquery.js?0.8983258118323445'></script>
+    <script>
+      $(function() {
+
+        $('#toggle_test_file').click(function(e) {
+          e.preventDefault();
+          if ($('#main_file').hasClass('side_by_side')) {
+            $('#main_file').removeClass('side_by_side');
+          } else {
+            $('#main_file').addClass('side_by_side');
+          }
+        
+          $('#test_file').toggle();
+        });
+
+        $('#test_file').hide();
+        
+        function cleanString(str) {
+          return $.trim(str.replace(/<[^(<|>)]+>/gi, ''));
+        }
+        
+        $('.line_number').hover(function() {
+          $(this).attr('title', 'Line: ' + cleanString($(this).html()));
+        });
+        
+        $('.hit_number').hover(function() {
+          $(this).attr('title', 'Execution Count: ' + cleanString($(this).html()));
+        });
+        
+        $('.code_line').hover(function() {
+          $(this).attr('title', cleanString($(this).html()));
+        });
+        
+      });
+    </script>
+  </head>
+  <body>
+    <h1><a href="../../index.html">Coverage Report</a></h1>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr class='header'>
+        <th>File</th>
+        <th>Lines</th>
+        <th>Lines Of Code</th>
+        <th>Untested Lines of Code</th>
+        <th>Tested %</th>
+      </tr>
+      <tr valign='top'>
+        <td>
+          app/controllers/hdfs_controller.rb
+          
+            <br />
+            <a href='#' id='toggle_test_file'>spec/controllers/hdfs_controller_spec.rb</a>
+          
+        </td>
+        <td>126</td>
+        <td>81</td>
+        <td>66</td>
+        <td>18.5%</td>
+      </tr>
+    </table>
+
+    <div>&nbsp;</div>
+    
+    <table cellpadding='0' cellspacing='1'>
+      <tr>
+        <th>Legend</th>
+      </tr>
+      <tr>
+        <td class='hit'>This line was executed.</td>
+      </tr>
+      <tr>
+        <td class='miss'>This line was not executed!</td>
+      </tr>
+      <tr>
+        <td class='never'>This line doesn't matter.</td>
+      </tr>
+    </table>
+    
+    <div>&nbsp;</div>
+
+    <div id='content'>
+      <div id='main_file'>
+        <table id='main'>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>1</td>
+              <td class='code_line'>
+                <pre>class HdfsController < ApplicationController</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>2</td>
+              <td class='code_line'>
+                <pre>  require 'hdfs_thrift_client'</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>3</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>4</td>
+              <td class='code_line'>
+                <pre>  include ActionView::Helpers::NumberHelper</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>5</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>6</td>
+              <td class='code_line'>
+                <pre>  def index</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>7</td>
+              <td class='code_line'>
+                <pre>    @instances = Hdfs.select 'id, name'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>8</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>9</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>10</td>
+              <td class='code_line'>
+                <pre>  def info</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>11</td>
+              <td class='code_line'>
+                <pre>    @hdfs = HdfsStat.where('hdfs_id = ?', params[:id]).order("created_at desc").first</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>12</td>
+              <td class='code_line'>
+                <pre>    if @hdfs</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>13</td>
+              <td class='code_line'>
+                <pre>      render :partial => 'info'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>14</td>
+              <td class='code_line'>
+                <pre>    else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>15</td>
+              <td class='code_line'>
+                <pre>      render :text => "<div>Stats for hdfs ##{params[:id]} not found, is the blur tools agent running?</div>"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>16</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>17</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>18</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>19</td>
+              <td class='code_line'>
+                <pre>  def folder_info</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>20</td>
+              <td class='code_line'>
+                <pre>    instance = Hdfs.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>21</td>
+              <td class='code_line'>
+                <pre>    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>22</td>
+              <td class='code_line'>
+                <pre>    @path = params[:fs_path]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>23</td>
+              <td class='code_line'>
+                <pre>    @stat = client.stat @path</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>24</td>
+              <td class='code_line'>
+                <pre>    render :layout => false</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>25</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>26</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>27</td>
+              <td class='code_line'>
+                <pre>  def slow_folder_info</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>28</td>
+              <td class='code_line'>
+                <pre>    instance = Hdfs.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>29</td>
+              <td class='code_line'>
+                <pre>    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>30</td>
+              <td class='code_line'>
+                <pre>    @path = params[:fs_path]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>31</td>
+              <td class='code_line'>
+                <pre>    file_stats = client.ls(@path, true)</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>32</td>
+              <td class='code_line'>
+                <pre>    @file_count = @folder_count = @file_size = 0</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>33</td>
+              <td class='code_line'>
+                <pre>    file_stats.each do |stat|</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>34</td>
+              <td class='code_line'>
+                <pre>      @file_size += stat.length</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>35</td>
+              <td class='code_line'>
+                <pre>      @file_count += 1 unless stat.isdir</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>36</td>
+              <td class='code_line'>
+                <pre>      @folder_count += 1 if stat.isdir</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>37</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>38</td>
+              <td class='code_line'>
+                <pre>    render :json => {:file_size=>number_to_human_size(@file_size),:file_count=>@file_count,:folder_count=>@folder_count}</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>39</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>40</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>41</td>
+              <td class='code_line'>
+                <pre>  def expand</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>42</td>
+              <td class='code_line'>
+                <pre>    @hdfs_id = params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>43</td>
+              <td class='code_line'>
+                <pre>    instance = Hdfs.find @hdfs_id</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>44</td>
+              <td class='code_line'>
+                <pre>    @path = params[:fs_path] || '/'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>45</td>
+              <td class='code_line'>
+                <pre>    @path += '/' unless @path.last=='/'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>46</td>
+              <td class='code_line'>
+                <pre>    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>47</td>
+              <td class='code_line'>
+                <pre>    fileStats = client.ls(@path)</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>48</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>49</td>
+              <td class='code_line'>
+                <pre>    @children = fileStats.collect do |stat|</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>50</td>
+              <td class='code_line'>
+                <pre>      file_ending = stat.path.split('/').last</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>51</td>
+              <td class='code_line'>
+                <pre>      {:name=> file_ending, :is_dir=>stat.isdir}</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>52</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>53</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>54</td>
+              <td class='code_line'>
+                <pre>    render :layout => false</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>55</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>56</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>57</td>
+              <td class='code_line'>
+                <pre>  def mkdir</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>58</td>
+              <td class='code_line'>
+                <pre>    instance = Hdfs.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>59</td>
+              <td class='code_line'>
+                <pre>    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>60</td>
+              <td class='code_line'>
+                <pre>    path = "#{params[:fs_path]}/#{params[:folder]}/"</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>61</td>
+              <td class='code_line'>
+                <pre>    path.gsub!(/\/\//, "/")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>62</td>
+              <td class='code_line'>
+                <pre>    client.mkdir(path)</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>63</td>
+              <td class='code_line'>
+                <pre>    render :nothing => true</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>64</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>65</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>66</td>
+              <td class='code_line'>
+                <pre>  def file_info</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>67</td>
+              <td class='code_line'>
+                <pre>   instance = Hdfs.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>68</td>
+              <td class='code_line'>
+                <pre>   client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>69</td>
+              <td class='code_line'>
+                <pre>   @stat = client.stat params[:fs_path]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>70</td>
+              <td class='code_line'>
+                <pre>   render :layout => false</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>71</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>72</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>73</td>
+              <td class='code_line'>
+                <pre>  def move_file</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>74</td>
+              <td class='code_line'>
+                <pre>    instance = Hdfs.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>75</td>
+              <td class='code_line'>
+                <pre>    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>76</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>77</td>
+              <td class='code_line'>
+                <pre>    client.rename(params[:from], params[:to])</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>78</td>
+              <td class='code_line'>
+                <pre>    render :nothing => true</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>79</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>80</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>81</td>
+              <td class='code_line'>
+                <pre>  def delete_file</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>82</td>
+              <td class='code_line'>
+                <pre>    instance = Hdfs.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>83</td>
+              <td class='code_line'>
+                <pre>    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>84</td>
+              <td class='code_line'>
+                <pre>    </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>85</td>
+              <td class='code_line'>
+                <pre>    path = params[:path]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>86</td>
+              <td class='code_line'>
+                <pre>    client.delete path, true</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>87</td>
+              <td class='code_line'>
+                <pre>    render :nothing => true</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>88</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>89</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>90</td>
+              <td class='code_line'>
+                <pre>  def upload_form</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>91</td>
+              <td class='code_line'>
+                <pre>    render :layout => false</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>92</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>93</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>94</td>
+              <td class='code_line'>
+                <pre>  def upload</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>95</td>
+              <td class='code_line'>
+                <pre>    begin</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>96</td>
+              <td class='code_line'>
+                <pre>      if defined? params[:upload] and defined? params[:path] and defined? params[:hdfs_id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>97</td>
+              <td class='code_line'>
+                <pre>        f = params[:upload]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>98</td>
+              <td class='code_line'>
+                <pre>        @path = params[:path]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>99</td>
+              <td class='code_line'>
+                <pre>        if f.tempfile.size > 26214400</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>100</td>
+              <td class='code_line'>
+                <pre>          @error = 'Upload is Too Large.  Files must be less than 25Mb.'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>101</td>
+              <td class='code_line'>
+                <pre>        else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>102</td>
+              <td class='code_line'>
+                <pre>          instance = Hdfs.find params[:hdfs_id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>103</td>
+              <td class='code_line'>
+                <pre>          client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>104</td>
+              <td class='code_line'>
+                <pre>          client.put(f.tempfile.path,@path + '/' + f.original_filename)</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>105</td>
+              <td class='code_line'>
+                <pre>        end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>106</td>
+              <td class='code_line'>
+                <pre>      else</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>107</td>
+              <td class='code_line'>
+                <pre>        @error = 'Problem with File Upload'</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>108</td>
+              <td class='code_line'>
+                <pre>      end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>109</td>
+              <td class='code_line'>
+                <pre>    rescue Exception => e</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>110</td>
+              <td class='code_line'>
+                <pre>      @error = e.to_s</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>111</td>
+              <td class='code_line'>
+                <pre>    end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>112</td>
+              <td class='code_line'>
+                <pre>    render :layout => false</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>113</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>114</td>
+              <td class='code_line'>
+                <pre>  </pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="hit" data-hits='#{cov}'"">
+              <td class='line_number'>115</td>
+              <td class='code_line'>
+                <pre>  def file_tree</pre>
+              </td>
+              <td class='hit_number'>6</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>116</td>
+              <td class='code_line'>
+                <pre>    instance = Hdfs.find params[:id]</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>117</td>
+              <td class='code_line'>
+                <pre>    client = HdfsThriftClient.client("#{instance.host}:#{instance.port}")</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>118</td>
+              <td class='code_line'>
+                <pre>    file_structure = client.folder_tree params[:fs_path], 4    </pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="miss" data-hits='#{cov}'"">
+              <td class='line_number'>119</td>
+              <td class='code_line'>
+                <pre>    render :json => file_structure</pre>
+              </td>
+              <td class='hit_number'>0</td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>120</td>
+              <td class='code_line'>
+                <pre>  end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>121</td>
+              <td class='code_line'>
+                <pre>end</pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>122</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>123</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>124</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>125</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+            <tr class="never" "">
+              <td class='line_number'>126</td>
+              <td class='code_line'>
+                <pre></pre>
+              </td>
+              <td class='hit_number'></td>
+            </tr>
+          
+        </table>
+      </div>
+      
+        <div id='test_file' class='side_by_side'>
+          <table id='test'>
+            
+            
+              <tr class="never">
+                <td class='line_number'>1</td>
+                <td class='code_line'>
+                  <pre>require "spec_helper"</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>2</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>3</td>
+                <td class='code_line'>
+                  <pre>describe HdfsController do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>4</td>
+                <td class='code_line'>
+                  <pre>  before(:each) do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>5</td>
+                <td class='code_line'>
+                  <pre>    @hdfs_client = mock(HdfsThriftClient::Client)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>6</td>
+                <td class='code_line'>
+                  <pre>    HdfsThriftClient.stub!(:client).and_return(@hdfs_client)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>7</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>8</td>
+                <td class='code_line'>
+                  <pre>    @ability = Ability.new User.new</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>9</td>
+                <td class='code_line'>
+                  <pre>    @ability.stub!(:can?).and_return(true)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>10</td>
+                <td class='code_line'>
+                  <pre>    controller.stub!(:current_ability).and_return(@ability)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>11</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>12</td>
+                <td class='code_line'>
+                  <pre>    @hdfs = Factory.stub :hdfs</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>13</td>
+                <td class='code_line'>
+                  <pre>    @file_strings = ["hdfs://file-location"]</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>14</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>15</td>
+                <td class='code_line'>
+                  <pre>    @hdfs_stat = mock(ThriftHadoopFileSystem::FileStatus)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>16</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>17</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>18</td>
+                <td class='code_line'>
+                  <pre>  describe "GET index" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>19</td>
+                <td class='code_line'>
+                  <pre>    before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>20</td>
+                <td class='code_line'>
+                  <pre>      Hdfs.stub(:select).and_return([@hdfs])</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>21</td>
+                <td class='code_line'>
+                  <pre>      @hdfs_client.stub(:ls).and_return(@file_strings)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>22</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>23</td>
+                <td class='code_line'>
+                  <pre></pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>24</td>
+                <td class='code_line'>
+                  <pre>    it "renders the index template" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>25</td>
+                <td class='code_line'>
+                  <pre>      get :index</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>26</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template "index"</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>27</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>28</td>
+                <td class='code_line'>
+                  <pre>    </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>29</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>30</td>
+                <td class='code_line'>
+                  <pre>  describe "GET upload_form" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>31</td>
+                <td class='code_line'>
+                  <pre>    it "renders the upload form template" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>32</td>
+                <td class='code_line'>
+                  <pre>      get :upload_form</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>33</td>
+                <td class='code_line'>
+                  <pre>      response.should render_template "upload_form"</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>34</td>
+                <td class='code_line'>
+                  <pre>    end  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>35</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>36</td>
+                <td class='code_line'>
+                  <pre>  </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>37</td>
+                <td class='code_line'>
+                  <pre>  describe "POST upload" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>38</td>
+                <td class='code_line'>
+                  <pre>    render_views</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>39</td>
+                <td class='code_line'>
+                  <pre>    before do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>40</td>
+                <td class='code_line'>
+                  <pre>      Hdfs.stub(:find).and_return([@hdfs])</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>41</td>
+                <td class='code_line'>
+                  <pre>      @hdfs.stub(:host).and_return("foo")</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>42</td>
+                <td class='code_line'>
+                  <pre>      @hdfs.stub(:port).and_return(5000)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>43</td>
+                <td class='code_line'>
+                  <pre>      @hdfs_client.stub(:put).and_return(true)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>44</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>45</td>
+                <td class='code_line'>
+                  <pre>    it "accepts a file less than 25Mb in size" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>46</td>
+                <td class='code_line'>
+                  <pre>      @uploadfile = mock(ActionDispatch::Http::UploadedFile)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>47</td>
+                <td class='code_line'>
+                  <pre>      @tempfile = mock(File)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>48</td>
+                <td class='code_line'>
+                  <pre>      @uploadfile.stub(:original_filename).and_return("test.png")</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>49</td>
+                <td class='code_line'>
+                  <pre>      @uploadfile.stub(:tempfile).and_return(@tempfile)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>50</td>
+                <td class='code_line'>
+                  <pre>      @tempfile.stub(:path).and_return("foo/bar/biz")</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>51</td>
+                <td class='code_line'>
+                  <pre>      @tempfile.stub(:size).and_return(500)</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>52</td>
+                <td class='code_line'>
+                  <pre>      @path = "biz/bar/foo"</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>53</td>
+                <td class='code_line'>
+                  <pre>      post :upload, {:path => @path,:hdfs_id => 1, :upload => @uploadfile}</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>54</td>
+                <td class='code_line'>
+                  <pre>      response.body.should render_template "upload"</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>55</td>
+                <td class='code_line'>
+                  <pre>      </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>56</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>57</td>
+                <td class='code_line'>
+                  <pre>    </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>58</td>
+                <td class='code_line'>
+                  <pre>    it "rejects a file greater than 25Mb in size" do</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>59</td>
+                <td class='code_line'>
+                  <pre>      </pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>60</td>
+                <td class='code_line'>
+                  <pre>    end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>61</td>
+                <td class='code_line'>
+                  <pre>  end</pre>
+                </td>
+              </tr>
+              
+            
+              <tr class="never">
+                <td class='line_number'>62</td>
+                <td class='code_line'>
+                  <pre>end</pre>
+                </td>
+              </tr>
+              
+            
+          </table>
+        </div>
+      
+    </div>
+    
+    <p>Generated on: 2012-02-13 17:51:38 -0500</p>
+  </body>
+</html>

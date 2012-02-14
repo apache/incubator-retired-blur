@@ -1,55 +1,17 @@
 #blur_tables {
   width: 99%;
-  border: 0;
-  margin: 5px 20px 0;
-  table {
-    margin-bottom: 5px;
-  }
-  li > a:hover{
-    background-color:white;
-  }
-  .active a, .active a:hover{
-    background-color:#FAFCFF;
-  }
+  border: none;
+  margin: 15px 10px 0;
+  table { margin-bottom: 5px; }
+  .active a, .active a:hover{ background-color:#FAFCFF; }
 }
-.pill-content{
-  margin:0 10px;
-}
-#tables-wrapper{
-  border: $twitter-border;
-  padding:10px;
-}
+#tables-wrapper{ border: $twitter-border; padding:10px; }
 
 .cluster-tabs{
-  margin:15px;
-  margin-bottom: 0;
-  li > a:hover{
-    background-color:#DDD;
-  }
-  .active a, .active a:hover{
-    background-color:#FAFCFF;
-  }
+  margin:15px 0;
+  .active a, .active a:hover{ background-color:#FAFCFF; }
 }
-
-.inner-wrap{
-  border:$twitter-border;
-  background-color:white;
-}
-.bulk-action-selector{
-  margin-top: 10px;
-  margin-left: 10px;
-  margin-right: 5px;
-}
-tr.highlighted-row td{
-  background:#FAD08A !important;
-}
-.btn.suppress-button{
-  background-color:#E6E6E6;
-  color :#333;
-}
-
-.bulk-action-button{
-  margin:10px 0px 10px 10px;
-}
+.bulk-action-selector{ margin: 10px 5px 10px 0px; }
+tr.highlighted-row td{ background:#FAD08A !important; }
 
 

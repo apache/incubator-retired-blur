@@ -494,8 +494,7 @@ public class IndexManagerTest {
     assertEquals("row should have one record", 1, fetchResult.rowResult.row.getRecordsSize());
   }
 
-  // XXX: Should this instead result in a BlurException or silently do nothing?
-  @Test(expected=RuntimeException.class)
+  @Test(expected=BlurException.class)
   public void testMutationUpdateMissingRowDeleteRecord() throws Exception {
     RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-6");
 
@@ -574,8 +573,7 @@ public class IndexManagerTest {
     assertEquals("unmodified record should exist", 1, nonMatches);
   }
 
-  // XXX: Should this instead throw a BlurException or silently do nothing?
-  @Test
+  @Test(expected=BlurException.class)
   public void testMutationUpdateMissingRowReplaceRecord() throws Exception {
     Column c1 = newColumn("testcol1", "value104");
     Column c2 = newColumn("testcol2", "value105");
@@ -584,12 +582,6 @@ public class IndexManagerTest {
     RecordMutation rm = newRecordMutation(REPLACE_ENTIRE_RECORD, FAMILY, rec, c1, c2, c3);
 
     Record r = updateAndFetchRecord("row-6", rec, rm);
-
-    assertNotNull("record should exist", r);
-    assertEquals("only 3 columns in record", 3, r.getColumnsSize());
-    assertTrue("column 1 should be in record", r.columns.contains(c1));
-    assertTrue("column 2 should be in record", r.columns.contains(c2));
-    assertTrue("column 3 should be in record", r.columns.contains(c3));
   }
 
   @Test
@@ -666,7 +658,7 @@ public class IndexManagerTest {
     assertTrue("column 2 should be in record", r.columns.contains(c2));
   }
 
-  @Test
+  @Test(expected=BlurException.class)
   public void testMutationUpdateRowMissingRecordReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol4", "value999");
     Column c2 = newColumn("testcol5", "value9999");
@@ -674,12 +666,9 @@ public class IndexManagerTest {
     RecordMutation rm = newRecordMutation(REPLACE_COLUMNS, FAMILY, rec, c1, c2);
 
     Record r = updateAndFetchRecord("row-1", rec, rm);
-
-    assertNull("record should not exist", r);
   }
 
-  // XXX: Should this instead throw a BlurException or silently do nothing?
-  @Test(expected=RuntimeException.class)
+  @Test(expected=BlurException.class)
   public void testMutationUpdateMissingRowReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
@@ -729,7 +718,7 @@ public class IndexManagerTest {
     assertEquals("should not find other columns", 0, others);
   }
 
-  @Test
+  @Test(expected=BlurException.class)
   public void testMutationUpdateRowMissingRecordAppendColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
@@ -738,12 +727,9 @@ public class IndexManagerTest {
     RecordMutation rm = newRecordMutation(APPEND_COLUMN_VALUES, FAMILY, rec, c1, c2, c3);
 
     Record r = updateAndFetchRecord("row-1", rec, rm);
-
-    assertNull("record should not exist", r);
   }
 
-  // XXX: Should this instead throw a BlurException or silently do nothing?
-  @Test(expected=RuntimeException.class)
+  @Test(expected=BlurException.class)
   public void testMutationUpdateMissingRowAppendColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");

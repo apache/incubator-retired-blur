@@ -28,7 +28,7 @@ public class LoadData {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     loadWords();
-    final boolean wal = true;
+    final boolean wal = false;
     final int numberOfColumns = 3;
     int numberRows = 100000;
     final int numberRecordsPerRow = 2;
@@ -36,10 +36,13 @@ public class LoadData {
     final int numberOfWords = 30;
     int count = 0;
     int max = 100;
+    long start = System.currentTimeMillis();
     final String table = "test-table";
     for (int i = 0; i < numberRows; i++) {
       if (count >= max) {
-        System.out.println("Rows indexed [" + i + "]");
+        double seconds = (System.currentTimeMillis() - start) / 1000.0;
+        double rate = i / seconds;
+        System.out.println("Rows indexed [" + i + "] at [" + rate + "/s]");
         count = 0;
       }
       BlurClientManager.execute(args[0], new BlurCommand<String>() {
@@ -52,12 +55,12 @@ public class LoadData {
           mutation.setWal(wal);
           mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
           for (int j = 0; j < numberRecordsPerRow; j++) {
-            mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies,numberOfWords));
+            mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));
           }
           client.mutate(mutation);
           return rowId;
         }
-      },2,100,100);
+      }, 2, 100, 100);
       count++;
     }
   }

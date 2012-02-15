@@ -43,6 +43,7 @@ public class RandomSearchTable {
       final BlurQuery blurQuery = new BlurQuery();
       blurQuery.simpleQuery = new SimpleQuery();
       blurQuery.simpleQuery.queryStr = query;
+      blurQuery.allowStaleData = false;
       BlurResults results = BlurClientManager.execute(connectionStr, new BlurCommand<BlurResults>() {
         @Override
         public BlurResults call(Client client) throws BlurException, TException {

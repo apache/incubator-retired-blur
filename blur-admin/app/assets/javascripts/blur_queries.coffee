@@ -12,9 +12,10 @@ $(document).ready ->
   # Load queries into table
   load_queries = () ->  
     data_table = $('#queries-table').dataTable({
-      "sDom":"<'row'<'span1'i><'span2'r><'span3'f>>t",
+      "sDom":"<'row'<'span4'i><'span2'r><'span3'f>>t",
       bPaginate: false,
       bProcessing: true,
+      bAutoWidth:false,
       bDeferRender: true,
       "oLanguage": {
         "sInfoEmpty": "",
@@ -39,14 +40,14 @@ $(document).ready ->
       range_time_limit = $(@).find('option:selected').val()
       data_table.fnReloadAjax Routes.refresh_path(range_time_limit)
   table_cols = () ->
-    return [{"mDataProp":"userid"},{"mDataProp":"query", "sWidth": "400px"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "200px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}] if visible_column_count == 8
+    return [{"mDataProp":"userid"},{"mDataProp":"query", "sWidth": "400px"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "150px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}] if visible_column_count == 8
     [{"mDataProp":"userid"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "150px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}]
   process_row = (row, data, rowIdx, dataIdx) ->
     action_td = $('td:last-child', row)
     if action_td.html() == ''
       action_td.append("<a href='#{Routes.more_info_blur_query_path(data['id'])}' class='more_info' data-remote='true' style='margin-right: 3px'>More Info</a>")
       if data['state'] == 'Running' && data['can_update']
-        action_td.append("<form accept-charset='UTF-8' action='#{Routes.blur_query_path(data['id'])}' class='cancel' data-remote='true' method='post'><div style='margin:0;padding:0;display:inline'><input name='_method' type='hidden' value='put'></div><input id='cancel' name='cancel' type='hidden' value='true'><input class='cancel_query_button btn' type='submit' value='Cancel'></form>")
+        action_td.append("<form accept-charset='UTF-8' action='#{Routes.blur_query_path(data['id'])}' class='cancel' data-remote='true' method='post'><div style='margin:0;padding:0;display:inline'><input name='_method' type='hidden' value='put'></div><input id='cancel' name='cancel' type='hidden' value='true'><input class='cancel_query_button btn btn-small' type='submit' value='Cancel'></form>")
     time = data.time.substring(0, data.time.indexOf(' ')).split(':')
     timeModifier = data.time.substring(data.time.indexOf(' ') + 1) == 'PM'
     timeInSecs = (if timeModifier then (parseInt(time[0], 10) + 12) else parseInt(time[0], 10)) * 3600 + parseInt(time[1], 10) * 60 + parseInt(time[2], 10)
@@ -56,7 +57,7 @@ $(document).ready ->
       $(row).addClass('oldRunning')
     row
   add_refresh_rates = (data_table) ->
-    refresh_content = '<div class="span4">Auto Refresh: '
+    refresh_content = '<div class="span3">Auto Refresh: '
     options = [{'key':'Off', 'value':-1},{'key':'10s', 'value':10},{'key':'1m', 'value':60},{'key':'10m', 'value':600}]
     
     $.each options, (idx, val) ->

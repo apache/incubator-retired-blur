@@ -11,3 +11,4 @@ log
 .metadata
 *.iml
 *.idea
+coverage

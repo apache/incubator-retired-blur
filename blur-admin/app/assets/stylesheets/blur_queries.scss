@@ -5,48 +5,53 @@
   @include clearfix;
   .dataTables_filter{ 
     width: 100%;
-    input{ width: 89%; }
+    input{ width: 96%; }
   }
-  .row .span4 {
+  .row > *:first-child {
+    vertical-align: top;
     padding-top: 15px;
     a {
       margin-right: 5px;
       &.selected {
         color: black;
-        &:hover {
-         text-decoration: none; 
-        }
+        &:hover { text-decoration: none; }
       }
-      &.unselected {
-        text-decoration: underline;
-      }
+      &.unselected { text-decoration: underline; }
     }
   }
   .range_select{
-    select{
-      width: 100px;
-    }
+    select{ width: 100px; }
   }
   .dataTables_processing {
     padding-top: 8px;
   }
   #queries-table{
-    width: auto !important;
-    & > tbody > tr > td:last-child {
+    table-layout:fixed;
+    font-weight: normal;
+    td{
       white-space: nowrap;
-      form.cancel {
-        @include inline-block;
-        margin-right: 3px;
-        margin-bottom: 0;
+      overflow: hidden;
+      vertical-align: middle;
+      text-overflow: ellipsis;
+    }
+    .cancel_query_button{ margin: 0; }
+
+    form.cancel {
+      @include inline-block;
+      margin-right: 3px;
+      margin-bottom: 0;
+    }
+    tr:not(.oldRunning){
+      & + .oldRunning, .oldRunning:first-child{
+        td{
+          border-top: 1px solid #FF0000;
+        }
       }
+      height: 45px;
     }
     .oldRunning{
-      &:hover{
-        background: rgba(247, 225, 225, 1);
-      }
       td{
-        background: rgba(247, 225, 225, 0.75);
-        border-top: 1px solid #FF0000;
+        background: rgba(247, 225, 225, 0.8);
         border-bottom: 1px solid #FF0000;
       }
     }

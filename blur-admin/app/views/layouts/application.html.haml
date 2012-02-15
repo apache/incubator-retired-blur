@@ -22,11 +22,11 @@
             #flash
               - flash.each do |type, message|
                 -if type == :notice
-                  .alert-message.success{:class=>type}= message
+                  .alert.alert-success{:class=>type}= message
                 -elsif type == :error
-                  .alert-message.error{:class=>type}= message
+                  .alert.alert-error{:class=>type}= message
                 -else
-                  .alert-message.info{:class=>type}= message
+                  .alert.alert-info{:class=>type}= message
           - if @current_zookeeper && @zookeepers
             #zookeeper_select
               = form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper',
@@ -82,7 +82,8 @@
         = yield
     #ft{:class => footer_class(license)}
       #license
-        = license_text(license)
+        %p
+          = license_text(license)
       #company-info
         %p
           %a#page-help{:href => '#'} Help

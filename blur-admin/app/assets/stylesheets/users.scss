@@ -9,9 +9,7 @@
   margin:0px 0px 0px 0px;
 }
 
-ul{
-  margin: 5px;
-}
+ul{ margin: 5px; }
 
 #admin_wrapper, #new_user_wrapper, #edit_user_wrapper, #show_user_wrapper{   
   @include standard-font;
@@ -35,7 +33,7 @@ ul{
   
   //user info box
   #user-info{
-    @include info(#EEE);
+    @include info(#F9F9F9);
     float: right;
     min-width: 175px;
     margin-top:2px;
@@ -55,6 +53,7 @@ ul{
 
   #pref-key {
     padding: 5px;
+    text-align: center;
     #orange_color, #blue_color {
       height: 10px;
       width: 10px;
@@ -70,42 +69,21 @@ ul{
     }
   }
   
-  //pref-col box
   #pref-col-info{
     padding:5px;
-    @include info(#EEE);
+    @include info(#F9F9F9);
     min-width: 300px;
   }
   
-  //pref-filter box
-  #pref-filter-info{
-    padding:5px;
-    @include info(#EEE);
-    min-width: 250px;
-    
-    h3{
-      text-align: center;
-    }
-  }
+  #pref-col{ @include pref-box; }
+  #pref-title{ text-align: center; }
   
-  //pref col - holds your choices
-  #pref-col{
-    @include pref-box;
-  }
-  
-  //style for pref title
-  #pref-title{
-    text-align: center;
-  }
-  
-  //opt-col - options to choose that will go into my list
   #opt-col{
     @include info(white);
     @include pref-box;
     float: right;
   }
-  
-  //groups of columns
+
   .fam{
     padding:5px;
     margin:5px;
@@ -115,15 +93,8 @@ ul{
     @include info($table-hd-color);
   }
   
-  
-  .section-label{
-    text-align:center;
-  }
-  
-  .my-select{
-    background-color:$select-color;
-  }
-  
+  .section-label{ text-align:center; }
+  .my-select{ background-color:$select-color; }
   #no-saved, #trash{
     text-align:center;
     font-weight:200;

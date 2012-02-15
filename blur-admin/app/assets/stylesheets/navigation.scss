@@ -22,9 +22,13 @@ $nav-height: 40px;
         text-align: center;
         font-size: 1.2em;
         font-weight: bold;
-        top: 10px;
+        top: 7px;
         position: absolute;
         width: 100%;
+        div{
+          display: inline-block;
+          padding: 10px 20px 10px 20px;
+        }
       }
       #zookeeper_select {
         text-align: center;
@@ -111,6 +115,7 @@ $nav-height: 40px;
   
   #license {
     float: left;
+    margin-top: 10px;
     margin-left: 50px;
   }
   #company-info {

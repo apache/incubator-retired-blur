@@ -1,6 +1,7 @@
 - if blur_table.schema
   %h4 Location
-  %p= blur_table.table_uri
+  %a{:href => "/hdfs/#{blur_table.cluster_id}/show#{blur_table.table_uri[/(?<!\/)\/(?!\/).*/]}"}
+    = blur_table.table_uri
   %h4 Schema 
   .info.table_info_tree
     %ul

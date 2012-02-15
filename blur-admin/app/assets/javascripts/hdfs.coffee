@@ -10,7 +10,8 @@ $(document).ready ->
     windowLoaded = () ->
       headerHeight = parseInt($('#top').css('height'), 10)
       footerHeight = parseInt($('#ft').css('height'), 10)
-      $('#hdfs_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight) - 10)
+      newHeight = window.innerHeight - (footerHeight + headerHeight) - 10
+      $('#hdfs_wrapper').animate({height: newHeight + 'px'}, 400)
     window.onload = windowLoaded
     $(window).resize ()->
       if prevHeight != window.innerHeight

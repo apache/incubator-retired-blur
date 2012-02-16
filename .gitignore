@@ -12,3 +12,4 @@ log
 *.iml
 *.idea
 coverage
+coverage.data

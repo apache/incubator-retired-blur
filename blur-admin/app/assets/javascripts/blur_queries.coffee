@@ -66,6 +66,9 @@ $(document).ready ->
     
     refresh_content += '</div>'
     $('#queries-table_wrapper > .row:first-child').prepend(refresh_content)
+    $('#queries-table').before('<div id="refresh-queries" class="icon"><div class="refresh"/></div>')
+    $('#refresh-queries').click () ->
+      data_table.fnReloadAjax()
     $('a.refresh_option').click () ->
       $('a.refresh_option').removeClass('selected').addClass('unselected')
       $(this).addClass('selected').removeClass('unselected')
@@ -75,6 +78,10 @@ $(document).ready ->
         data_table.fnReloadAjax()
       else if refresh_rate == -1 && refresh_timeout
         clearTimeout(refresh_timeout)
+      if refresh_rate == -1
+        $('#refresh-queries').removeClass('invisible')
+      else
+        $('#refresh-queries').addClass('invisible')
   truncate = (value, length, ommission) ->
     return null unless value
     return value unless value.length > length

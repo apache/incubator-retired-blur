@@ -123,4 +123,8 @@ body { background-color: $bg-blue-color; }
   .refresh{ background-image: url(refresh.png); }
   .pause{ background-image: url(pause.png); }
 }
+.invisible{
+  visibility:none;
+}
+
 .clear{ clear:both; }

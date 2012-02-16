@@ -1,8 +1,8 @@
 class BlurTablesController < ApplicationController
 
-  before_filter :current_zookeeper, :only => [:index, :reload, :update, :destroy, :reload, :forget]
+  before_filter :current_zookeeper, :only => [:index, :reload, :enable, :disable, :destroy, :reload, :forget]
   before_filter :zookeepers, :only => :index
-  before_filter :table, :except => [:index, :reload, :update_all, :delete_all, :forget, :forget_all, :update, :destroy]
+  before_filter :table, :except => [:index, :reload, :update_all, :delete_all, :forget, :forget_all, :enable, :disable, :destroy]
 
   def index
     @blur_tables = @current_zookeeper.blur_tables.order('status DESC, table_name ASC').includes('cluster')
@@ -13,17 +13,20 @@ class BlurTablesController < ApplicationController
     render_table_json
   end
 
-  def update
+  def enable
     params[:tables].map {|table| BlurTable.find(table)}.each do |table|
-      if params[:tableAction] == 'enable'
-        table.status = STATUS[:enabling]
+      table.status = STATUS[:enabling]
         table.save
-        table.enable(@current_zookeeper.blur_urls)
-      elsif params[:tableAction] == 'disable'
-        table.status = STATUS[:disabling]
-        table.save
-        table.disable(@current_zookeeper.blur_urls)
-      end
+        table.enable @current_zookeeper.blur_urls
+    end
+    render_table_json
+  end
+
+  def disable
+    params[:tables].map {|table| BlurTable.find(table)}.each do |table|
+      table.status = STATUS[:disabling]
+      table.save
+      table.disable(@current_zookeeper.blur_urls)
     end
     render_table_json
   end

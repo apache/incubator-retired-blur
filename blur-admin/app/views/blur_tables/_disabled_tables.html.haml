@@ -1,4 +1,4 @@
--if can?(:update, :blur_tables)
+-if can?(:enable, :blur_tables)
   %button.btn.btn-primary{:disabled => 'disabled', :blur_bulk_action => 'enable'} Enable Tables
 -if can?(:delete, :blur_tables)
   %button.btn.btn-danger{:disabled => 'disabled', :blur_bulk_action => 'delete'} Delete Tables

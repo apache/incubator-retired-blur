@@ -208,9 +208,13 @@
   delete_selected_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/destroy"], ["format"], arguments)
   },
-// update_selected_blur_tables => /blur_tables/update(.:format)
-  update_selected_blur_tables_path: function(options) {
-  return Utils.build_path(0, ["/blur_tables/update"], ["format"], arguments)
+// enable_selected_blur_tables => /blur_tables/enable(.:format)
+  enable_selected_blur_tables_path: function(options) {
+  return Utils.build_path(0, ["/blur_tables/enable"], ["format"], arguments)
+  },
+// disable_selected_blur_tables => /blur_tables/disable(.:format)
+  disable_selected_blur_tables_path: function(options) {
+  return Utils.build_path(0, ["/blur_tables/disable"], ["format"], arguments)
   },
 // forget_selected_blur_tables => /blur_tables/forget(.:format)
   forget_selected_blur_tables_path: function(options) {

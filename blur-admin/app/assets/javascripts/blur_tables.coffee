@@ -129,7 +129,7 @@ $(document).ready ->
           new_row_container.append(build_table_row(blur_table))
       set_checkbox_state()
     
-    refresh_timeout = setTimeout('window.reload_table_info()', 15000)
+    refresh_timeout = setTimeout('window.reload_table_info()', 10000)
 
   reload_table_info = () ->
     $.get( "#{Routes.reload_blur_tables_path()}", (data) ->
@@ -238,8 +238,7 @@ $(document).ready ->
           "Enable" : 
             class: "primary"
             func: ->
-              $.extend(sharedAjaxSettings, { type: 'PUT', url: Routes.update_selected_blur_tables_path() })
-              sharedAjaxSettings.data.tableAction = 'enable'
+              $.extend(sharedAjaxSettings, { type: 'PUT', url: Routes.enable_selected_blur_tables_path() })
               $.ajax(sharedAjaxSettings)
               pending_change(cluster_id, table_ids,'disabled','Enabling')
               $().closePopup()
@@ -253,8 +252,7 @@ $(document).ready ->
           "Disable" :
             class: "primary"
             func: ->
-              $.extend(sharedAjaxSettings, { type: 'PUT', url: Routes.update_selected_blur_tables_path() })
-              sharedAjaxSettings.data.tableAction = 'disable'
+              $.extend(sharedAjaxSettings, { type: 'PUT', url: Routes.disable_selected_blur_tables_path() })
               $.ajax(sharedAjaxSettings)
               pending_change(cluster_id, table_ids,'active','Disabling')
               $().closePopup()
@@ -269,7 +267,6 @@ $(document).ready ->
             class: "primary"
             func: ->
               $.extend(sharedAjaxSettings, { type: 'DELETE', url: Routes.forget_selected_blur_tables_path() })
-              sharedAjaxSettings.data.tableAction = 'forget'
               $.ajax(sharedAjaxSettings)
               pending_change(cluster_id, table_ids,'deleted','Forgetting')
               $().closePopup()

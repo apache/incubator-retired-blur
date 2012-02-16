@@ -61,5 +61,8 @@ BlurAdmin::Application.routes.draw do
   match 'hdfs/upload_form' => 'hdfs#upload_form', :via => :get, :as => :hdfs_upload_form
   match 'hdfs/upload/' => 'hdfs#upload', :via =>:post, :as => :hdfs_upload
   match 'hdfs/:id/structure' => 'hdfs#file_tree', :via =>:get, :as => :hdfs_structure
+  match 'hdfs/:id/disk' => 'hdfs#disk_cap_usage', :via => :put, :as => :disk_usage_stats
+  match 'hdfs/:id/nodes' => 'hdfs#live_dead_nodes', :via => :put, :as => :node_stats
+  match 'hdfs/:id/block' => 'hdfs#block_info', :via => :put, :as => :block_stats
   root :to => 'zookeepers#index'
 end

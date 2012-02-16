@@ -360,6 +360,18 @@
   hdfs_structure_path: function(_id, options) {
   return Utils.build_path(1, ["/hdfs/", "/structure"], ["format"], arguments)
   },
+// disk_usage_stats => /hdfs/:id/disk(.:format)
+  disk_usage_stats_path: function(_id, options) {
+  return Utils.build_path(1, ["/hdfs/", "/disk"], ["format"], arguments)
+  },
+// node_stats => /hdfs/:id/nodes(.:format)
+  node_stats_path: function(_id, options) {
+  return Utils.build_path(1, ["/hdfs/", "/nodes"], ["format"], arguments)
+  },
+// block_stats => /hdfs/:id/block(.:format)
+  block_stats_path: function(_id, options) {
+  return Utils.build_path(1, ["/hdfs/", "/block"], ["format"], arguments)
+  },
 // root => /
   root_path: function(options) {
   return Utils.build_path(0, ["/"], [], arguments)

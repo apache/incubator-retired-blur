@@ -9,9 +9,15 @@ $(document).ready ->
       # Updates the fields for each zookeeper
       zookeepers = data.zookeepers
       long_queries = data.long_queries
+      $('.updated').removeClass('updated')
       $.each( data, ->
-        zookeeper_table = $('#zookeepers').find("#" + this.id )
-
+        zookeeper_table = $('.zookeeper_info').find("#" + this.id )
+        new_table = !zookeeper_table.length > 0
+        if new_table
+          zookeeper_new = $($('.zookeeper_info')[0]).clone()
+          zookeeper_table = zookeeper_new.find('table')
+          zookeeper_table.attr('id', this.id)
+        zookeeper_table.closest('.zookeeper_info').addClass('updated')
         # Updates the header showing the zookeeper status
         current_zookeeper = zookeeper_table.find(".zookeeper-title")
         if this.status == 1
@@ -155,9 +161,12 @@ $(document).ready ->
           status_controllers.find('.controllers-offline > .word').html('<div>Controller Offline</div>')
         else
           status_controllers.find('.controllers-offline > .word').html('<div>Controllers Offline</div>')
-
+        
+        if new_table
+          $('#zookeepers').append(zookeeper_new)
         $('#zookeepers_wrapper').show()
       )
+      $('.zookeeper_info:not(.updated)').remove()
 
     # Sets auto updates to run every 5 secs
     setTimeout(load_dashboard, 5000)

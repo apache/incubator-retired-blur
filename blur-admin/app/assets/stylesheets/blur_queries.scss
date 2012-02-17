@@ -29,10 +29,8 @@
     table-layout:fixed;
     font-weight: normal;
     td{
-      white-space: nowrap;
-      overflow: hidden;
       vertical-align: middle;
-      text-overflow: ellipsis;
+      word-wrap: break-word
     }
     .cancel_query_button{ margin: 0; }
 

@@ -78,7 +78,7 @@
                 %li{:class => controller == 'users' && action == 'index' && 'active'}
                   = link_to 'Admin', users_path
 
-      #bd.container
+      #bd.container-fluid
         = yield
     #ft{:class => footer_class(license)}
       #license

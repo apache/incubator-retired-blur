@@ -2,8 +2,8 @@
 
 #zookeeper_wrapper
   - if @zookeeper
-    .zookeeper.row{ :id => @zookeeper.id }
-      #zookeeper.span12
+    .zookeeper{ :id => @zookeeper.id }
+      #zookeeper
         %h2.title Zookeeper Information
         %table
           %tbody
@@ -26,9 +26,9 @@
               %tr
                 %td{:colspan => 2}
                   =link_to 'Remove Zookeeper', destroy_zookeeper_path(@zookeeper), :method => :delete, :confirm=>'Are you sure you want to remove this zookeeper?'
-      #blur.span12
+      #blur
         %h2.title Blur Status
-        .row
+        .row-fluid
           #controllers.span6
             .blur_container
               - unless @zookeeper.controllers.empty?

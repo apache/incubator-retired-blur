@@ -134,6 +134,7 @@ class HdfsController < ApplicationController
   private
   def hdfs_stat_select(properties)
     hdfs = Hdfs.find params[:id]
+    properties = [:id] + properties
     render :json => hdfs.hdfs_stats.where('id > ?', params[:stat_id]).select(properties) if params[:stat_id]
     render :json => hdfs.hdfs_stats.where('created_at > ?', (params[:stat_days] || 1).day.ago).select(properties)
   end

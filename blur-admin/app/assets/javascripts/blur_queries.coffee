@@ -66,7 +66,7 @@ $(document).ready ->
     
     refresh_content += '</div>'
     $('#queries-table_wrapper > .row:first-child').prepend(refresh_content)
-    $('#queries-table').before('<div id="refresh-queries" class="icon"><div class="refresh"/></div>')
+    $('.dataTables_wrapper .row .span3:first-child').css('vertical-align', 'middle').append('<div id="refresh-queries" class="icon"><div class="refresh"/></div>')
     $('#refresh-queries').click () ->
       data_table.fnReloadAjax()
     $('a.refresh_option').click () ->

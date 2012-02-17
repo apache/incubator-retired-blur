@@ -7,8 +7,14 @@ $(document).ready ->
   load_dashboard = () ->
     $.getJSON Routes.dashboard_path(), (data) ->
       # Updates the fields for each zookeeper
-      zookeepers = data.zookeepers
-      long_queries = data.long_queries
+      for index, storedZK of Zookeeper.instances
+        safe = false
+        for ZK in data
+          if ZK.id == storedZK.id
+            safe = true
+            break
+        if !safe
+          delete Zookeeper.instances[index]
       $('.updated').removeClass('updated')
       $.each( data, ->
         zookeeper_table = $('.zookeeper_info').find("#" + this.id )
@@ -164,6 +170,10 @@ $(document).ready ->
         
         if new_table
           $('#zookeepers').append(zookeeper_new)
+          Zookeeper.push
+            id: this.id
+            name: this.name
+
         $('#zookeepers_wrapper').show()
       )
       $('.zookeeper_info:not(.updated)').remove()

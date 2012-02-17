@@ -40,7 +40,7 @@ $(document).ready ->
       range_time_limit = $(@).find('option:selected').val()
       data_table.fnReloadAjax Routes.refresh_path(range_time_limit)
   table_cols = () ->
-    return [{"mDataProp":"userid"},{"mDataProp":"query", "sWidth": "400px"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "150px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}] if visible_column_count == 8
+    return [{"mDataProp":"userid"},{"mDataProp":"query", "sWidth": "500px"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "150px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}] if visible_column_count == 8
     [{"mDataProp":"userid"},{"mDataProp":"tablename"},{"mDataProp":"start"},{"mDataProp":"time"},{"mDataProp":"status", "sWidth": "150px"},{"mDataProp":"state", "bVisible":false},{"mDataProp":"action"}]
   process_row = (row, data, rowIdx, dataIdx) ->
     action_td = $('td:last-child', row)
@@ -66,7 +66,7 @@ $(document).ready ->
     
     refresh_content += '</div>'
     $('#queries-table_wrapper > .row:first-child').prepend(refresh_content)
-    $('.dataTables_wrapper .row .span3:first-child').css('vertical-align', 'middle').append('<div id="refresh-queries" class="icon"><div class="refresh"/></div>')
+    $('.dataTables_wrapper .row .span3:first-child').append('<div id="refresh-queries" class="icon"><div class="refresh"/></div>')
     $('#refresh-queries').click () ->
       data_table.fnReloadAjax()
     $('a.refresh_option').click () ->

@@ -104,12 +104,12 @@ describe BlurTablesController do
 
     it "enables the table if enable is true" do
       #@blur_table.should_receive(:enable)
-      put :update, :enable => 'true', :id => @blur_table.id
+      put :enable, :tables => @blur_table.id
     end
 
     it "disables the table if disable is true" do
       #@blur_table.should_receive(:disable).and_return(true)
-      put :update, :disable => 'true', :id => @blur_table.id
+      put :disable, :tables => @blur_table.id
     end
   end
   

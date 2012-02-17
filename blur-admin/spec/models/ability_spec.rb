@@ -159,7 +159,8 @@ describe Ability do
     end
   
     it "can enable, disable, and delete tables" do
-      @ability.should be_able_to :update, :blur_tables
+      @ability.should be_able_to :enable, :blur_tables
+      @ability.should be_able_to :disable, :blur_tables
       @ability.should be_able_to :destroy, :blur_tables
     end
 

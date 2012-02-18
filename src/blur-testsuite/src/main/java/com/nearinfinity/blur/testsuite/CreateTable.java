@@ -14,15 +14,22 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 public class CreateTable {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
-    final String tableName = args[1];
+    String connectionStr = args[0];
+    final String cluster = args[1];
+    final String tableName = args[2];
+    int shardCount = Integer.parseInt(args[3]);
+    String uri = args[4];
+    
     final TableDescriptor tableDescriptor = new TableDescriptor();
     tableDescriptor.analyzerDefinition = new AnalyzerDefinition();
-    tableDescriptor.cluster = "default";
+    tableDescriptor.cluster = cluster;
     tableDescriptor.name = tableName;
     tableDescriptor.readOnly = false;
-    tableDescriptor.shardCount = 7;
-    tableDescriptor.tableUri = "hdfs://localhost/blur/tables/" + tableName;
-    BlurClientManager.execute(args[0], new BlurCommand<Void>() {
+    
+    tableDescriptor.shardCount = shardCount;
+    tableDescriptor.tableUri = uri;
+    
+    BlurClientManager.execute(connectionStr, new BlurCommand<Void>() {
       @Override
       public Void call(Client client) throws BlurException, TException {
         client.createTable(tableDescriptor);

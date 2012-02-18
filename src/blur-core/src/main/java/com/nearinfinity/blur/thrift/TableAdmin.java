@@ -25,7 +25,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
-      //@todo Remove this once issue #27 is resolved
+      // @todo Remove this once issue #27 is resolved
       if (tableDescriptor.compressionBlockSize > 32768) {
         tableDescriptor.compressionBlockSize = 32768;
       } else if (tableDescriptor.compressionBlockSize < 8192) {
@@ -44,7 +44,10 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void disableTable(String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(false,table);
+      String cluster = _clusterStatus.getCluster(false, table);
+      if (cluster == null) {
+        throw new BlurException("Table [" + table + "] not found.", null);
+      }
       DisableTable.disableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during disable of [table={0}]", e, table);
@@ -55,7 +58,10 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void enableTable(String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(false,table);
+      String cluster = _clusterStatus.getCluster(false, table);
+      if (cluster == null) {
+        throw new BlurException("Table [" + table + "] not found.", null);
+      }
       EnableTable.enableTable(_zookeeper, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during enable of [table={0}]", e, table);
@@ -66,7 +72,10 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final void removeTable(String table, boolean deleteIndexFiles) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(false,table);
+      String cluster = _clusterStatus.getCluster(false, table);
+      if (cluster == null) {
+        throw new BlurException("Table [" + table + "] not found.", null);
+      }
       RemoveTable.removeTable(_zookeeper, cluster, table, deleteIndexFiles);
     } catch (Exception e) {
       LOG.error("Unknown error during remove of [table={0}]", e, table);
@@ -77,29 +86,43 @@ public abstract class TableAdmin implements Iface {
   public boolean isTableEnabled(boolean useCache, String cluster, String table) {
     return _clusterStatus.isEnabled(useCache, cluster, table);
   }
-  
-  public void checkTable(String cluster, String table) throws BlurException {
-    if (inSafeMode(true,table)) {
-      throw new BlurException("Cluster for [" + table + "] is in safe mode",null);
+
+  public void checkTable(String table) throws BlurException {
+    String cluster = _clusterStatus.getCluster(true, table);
+    if (cluster == null) {
+      throw new BlurException("Table [" + table + "] does not exist", null);
     }
-    if (tableExists(true,cluster,table)) {
-      if (isTableEnabled(true,cluster,table)) {
+    checkTable(cluster, table);
+  }
+
+  public void checkTable(String cluster, String table) throws BlurException {
+    if (inSafeMode(true, table)) {
+      throw new BlurException("Cluster for [" + table + "] is in safe mode", null);
+    }
+    if (tableExists(true, cluster, table)) {
+      if (isTableEnabled(true, cluster, table)) {
         return;
       }
-      throw new BlurException("Table [" + table + "] exists, but is not enabled",null);
+      throw new BlurException("Table [" + table + "] exists, but is not enabled", null);
     } else {
-      throw new BlurException("Table [" + table + "] does not exist",null);
+      throw new BlurException("Table [" + table + "] does not exist", null);
     }
   }
-  
+
+  public void checkForUpdates(String table) throws BlurException {
+    String cluster = _clusterStatus.getCluster(true, table);
+    if (cluster == null) {
+      throw new BlurException("Table [" + table + "] does not exist", null);
+    }
+    checkForUpdates(cluster, table);
+  }
+
   public void checkForUpdates(String cluster, String table) throws BlurException {
     if (_clusterStatus.isReadOnly(true, cluster, table)) {
-      throw new BlurException("Table [" + table +
-      		"] in cluster [" + cluster + 
-      		"] is read only.",null);
+      throw new BlurException("Table [" + table + "] in cluster [" + cluster + "] is read only.", null);
     }
   }
-  
+
   @Override
   public final List<String> controllerServerList() throws BlurException, TException {
     try {
@@ -109,7 +132,7 @@ public abstract class TableAdmin implements Iface {
       throw new BException("Unknown error while trying to get a controller list.", e);
     }
   }
-  
+
   @Override
   public final List<String> shardServerList(String cluster) throws BlurException, TException {
     try {
@@ -119,7 +142,7 @@ public abstract class TableAdmin implements Iface {
       throw new BException("Unknown error while trying to get a shard server list.", e);
     }
   }
-  
+
   @Override
   public final List<String> shardClusterList() throws BlurException, TException {
     try {
@@ -129,18 +152,21 @@ public abstract class TableAdmin implements Iface {
       throw new BException("Unknown error while trying to get a cluster list.", e);
     }
   }
-  
+
   @Override
   public final TableDescriptor describe(final String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(false,table);
-      return _clusterStatus.getTableDescriptor(true,cluster,table);
+      String cluster = _clusterStatus.getCluster(false, table);
+      if (cluster == null) {
+        throw new BlurException("Table [" + table + "] not found.", null);
+      }
+      return _clusterStatus.getTableDescriptor(true, cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error while trying to describe a table [" + table + "].", e);
       throw new BException("Unknown error while trying to describe a table [" + table + "].", e);
     }
   }
-  
+
   @Override
   public final List<String> tableListByCluster(String cluster) throws BlurException, TException {
     try {
@@ -150,7 +176,7 @@ public abstract class TableAdmin implements Iface {
       throw new BException("Unknown error while trying to get a table list by cluster [" + cluster + "].", e);
     }
   }
-  
+
   @Override
   public final List<String> tableList() throws BlurException, TException {
     try {
@@ -161,15 +187,18 @@ public abstract class TableAdmin implements Iface {
     }
   }
 
-  private boolean inSafeMode(boolean useCache, String table) {
-    String cluster = _clusterStatus.getCluster(useCache,table);
+  private boolean inSafeMode(boolean useCache, String table) throws BlurException {
+    String cluster = _clusterStatus.getCluster(useCache, table);
+    if (cluster == null) {
+      throw new BlurException("Table [" + table + "] not found.", null);
+    }
     return _clusterStatus.isInSafeMode(cluster);
   }
 
   public boolean tableExists(boolean useCache, String cluster, String table) {
-    return _clusterStatus.exists(useCache,cluster,table);
+    return _clusterStatus.exists(useCache, cluster, table);
   }
-  
+
   public ClusterStatus getClusterStatus() {
     return _clusterStatus;
   }
@@ -177,7 +206,7 @@ public abstract class TableAdmin implements Iface {
   public void setClusterStatus(ClusterStatus clusterStatus) {
     _clusterStatus = clusterStatus;
   }
-  
+
   public void setZookeeper(ZooKeeper zookeeper) {
     _zookeeper = zookeeper;
   }

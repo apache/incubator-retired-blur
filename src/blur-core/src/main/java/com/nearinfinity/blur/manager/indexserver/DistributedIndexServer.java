@@ -653,6 +653,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
     DistributedLayoutManager layoutManager = new DistributedLayoutManager();
 
     String cluster = _clusterStatus.getCluster(false, table);
+    if (cluster == null) {
+      throw new RuntimeException("Table [" + table + "] is not found.");
+    }
 
     List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
     List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(cluster));

@@ -406,7 +406,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       Map<String, List<String>> map = _tableToClusterCache.get();
       List<String> clusters = map.get(table);
       if (clusters == null || clusters.size() == 0) {
-        throw new RuntimeException("Cluster for Table [" + table + "] not found.");
+        return null;
       } else if (clusters.size() == 1) {
         return clusters.get(0);
       } else {
@@ -426,7 +426,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         throw new RuntimeException(e);
       }
     }
-    throw new RuntimeException("Cluster for Table [" + table + "] not found.");
+    return null;
   }
 
   @Override

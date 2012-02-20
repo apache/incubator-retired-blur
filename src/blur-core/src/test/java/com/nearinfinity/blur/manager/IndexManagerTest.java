@@ -369,6 +369,39 @@ public class IndexManagerTest {
   }
 
   @Test
+  public void testQueryRecordOnly() throws Exception {
+    BlurQuery blurQuery = new BlurQuery();
+    blurQuery.simpleQuery = new SimpleQuery();
+    blurQuery.simpleQuery.queryStr = "test-family.testcol1:value1";
+    blurQuery.selector = new Selector();
+    blurQuery.selector.setRecordOnly(true);
+
+    BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
+    assertEquals(iterable.getTotalResults(), 2);
+
+    int matchRecord1 = 0;
+    int matchRecord4 = 0;
+
+    for (BlurResult result : iterable) {
+      assertNull(result.fetchResult.rowResult);
+      assertNotNull(result.fetchResult.recordResult);
+
+      Record r = result.fetchResult.recordResult.record;
+
+      if (r.getRecordId().equals("record-1")) {
+        matchRecord1 += 1;
+      } else if (r.getRecordId().equals("record-4")) {
+        matchRecord4 += 1;
+      } else {
+        fail("Unexpected record ID [" + r.getRecordId() + "]");
+      }
+    }
+
+    assertEquals("Unexpected number of record-1 results", 1, matchRecord1);
+    assertEquals("Unexpected number of record-4 results", 1, matchRecord4);
+  }
+
+  @Test
   public void testQueryWithFacets() throws Exception {
     BlurQuery blurQuery = new BlurQuery();
     blurQuery.simpleQuery = new SimpleQuery();

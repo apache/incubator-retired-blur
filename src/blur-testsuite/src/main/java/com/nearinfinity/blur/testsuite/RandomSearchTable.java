@@ -40,6 +40,7 @@ public class RandomSearchTable {
     for (int i = 0; i < numberOfSearchesPerPass; i++) {
       builder.setLength(0);
       String query = generateQuery(builder,random,sampleOfTerms,numberOfTermsPerQuery);
+      System.out.println(query);
       final BlurQuery blurQuery = new BlurQuery();
       blurQuery.simpleQuery = new SimpleQuery();
       blurQuery.simpleQuery.queryStr = query;

@@ -29,6 +29,7 @@ import org.apache.lucene.util.OpenBitSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.nearinfinity.blur.manager.writer.lucene.SnapshotIndexReader;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.utils.PrimeDocCache.IndexReaderCache;
 
@@ -123,8 +124,11 @@ public class SuperQuery extends AbstractWrapperQuery {
       if (reader instanceof SegmentReader) {
         OpenBitSet primeDocBitSet = indexReaderCache.getPrimeDocBitSet((SegmentReader) reader);
         return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
+      } else if (reader instanceof SnapshotIndexReader) {
+        OpenBitSet primeDocBitSet = indexReaderCache.getPrimeDocBitSet((SnapshotIndexReader) reader);
+        return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
       } else {
-        throw new UnsupportedOperationException("Reader is not a segment reader.");
+        throw new UnsupportedOperationException("Reader is not a segment reader [" + reader.getClass() + "] [" + reader + "].");
       }
     }
 

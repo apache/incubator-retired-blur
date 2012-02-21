@@ -61,7 +61,7 @@ public class BlurIndexWriter extends AbstractBlurIndex {
     IndexWriterConfig conf = initIndexWriterConfig();
     _writer = openWriter(conf);
     _writer.commitAndRollWal();
-    _rowIndexWriter = new RowWalIndexWriter(_writer, _analyzer);
+    _rowIndexWriter = new RowWalIndexWriter(_writer, getAnalyzer());
     _commiter.addWriter(_id, _writer);
     initIndexReader(IndexReader.open(_writer, true));
   }
@@ -92,7 +92,7 @@ public class BlurIndexWriter extends AbstractBlurIndex {
         }
       });
 
-      while (_open.get()) {
+      while (isOpen()) {
         Future<WalIndexWriter> future;
         try {
           future = completionService.poll(5, TimeUnit.SECONDS);

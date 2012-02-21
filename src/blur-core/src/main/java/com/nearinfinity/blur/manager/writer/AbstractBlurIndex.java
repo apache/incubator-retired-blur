@@ -22,14 +22,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class AbstractBlurIndex extends BlurIndex {
 
-  protected BlurAnalyzer _analyzer;
+  private BlurAnalyzer _analyzer;
   private BlurIndexCloser _closer;
   private ClusterStatus _clusterStatus;
   private DirectIODirectory _directory;
   private IndexDeletionPolicy _indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
   private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
   private AtomicBoolean _isClosed = new AtomicBoolean(false);
-  protected AtomicBoolean _open = new AtomicBoolean();
+  private AtomicBoolean _open = new AtomicBoolean();
   private BlurIndexRefresher _refresher;
   private String _shard;
   private Similarity _similarity;
@@ -144,6 +144,10 @@ public abstract class AbstractBlurIndex extends BlurIndex {
     this._table = table;
   }
 
+  protected BlurAnalyzer getAnalyzer() {
+    return _analyzer;
+  }
+
   protected DirectIODirectory getDirectory() {
     return _directory;
   }
@@ -154,5 +158,9 @@ public abstract class AbstractBlurIndex extends BlurIndex {
 
   protected String getTable() {
     return _table;
+  }
+
+  protected boolean isOpen() {
+    return _open.get();
   }
 }

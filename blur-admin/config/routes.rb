@@ -1,4 +1,9 @@
 BlurAdmin::Application.routes.draw do
+  resources :hdfs_metrics, :only => [:index]
+  match 'hdfs_metrics/:id/disk' => 'hdfs_metrics#disk_cap_usage', :via => :put, :as => :disk_usage_stats
+  match 'hdfs_metrics/:id/nodes' => 'hdfs_metrics#live_dead_nodes', :via => :put, :as => :node_stats
+  match 'hdfs_metrics/:id/block' => 'hdfs_metrics#block_info', :via => :put, :as => :block_stats
+
   resources :user_sessions, :only => [:create]
 
   resources :users do
@@ -61,8 +66,5 @@ BlurAdmin::Application.routes.draw do
   match 'hdfs/upload_form' => 'hdfs#upload_form', :via => :get, :as => :hdfs_upload_form
   match 'hdfs/upload/' => 'hdfs#upload', :via =>:post, :as => :hdfs_upload
   match 'hdfs/:id/structure' => 'hdfs#file_tree', :via =>:get, :as => :hdfs_structure
-  match 'hdfs/:id/disk' => 'hdfs#disk_cap_usage', :via => :put, :as => :disk_usage_stats
-  match 'hdfs/:id/nodes' => 'hdfs#live_dead_nodes', :via => :put, :as => :node_stats
-  match 'hdfs/:id/block' => 'hdfs#block_info', :via => :put, :as => :block_stats
   root :to => 'zookeepers#index'
 end

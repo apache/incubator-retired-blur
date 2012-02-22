@@ -73,6 +73,9 @@
 
               %li{:class => controller == 'hdfs' && 'active'}
                 = link_to 'HDFS', hdfs_path
+              
+              %li{:class => controller == 'hdfs_metrics' && 'active'}
+                = link_to 'HDFS Metrics', hdfs_metrics_path
 
               - if can? :index, :users
                 %li{:class => controller == 'users' && action == 'index' && 'active'}

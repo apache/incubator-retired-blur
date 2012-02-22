@@ -1,0 +1,75 @@
+$instance_height: 200px;
+$title_height: 35px;
+$graph_height: $instance_height - $title_height;
+
+@mixin graph_component{
+	display: inline-block;
+	box-sizing: border-box;
+}
+
+@mixin clickable_title{
+	cursor: pointer;
+	&:hover{
+		opacity: .75;
+	}
+	height: $title_height;
+	h3{ line-height: $title_height; }
+	text-align: center;
+	border: 1px solid #ddd;
+	background-image: -webkit-linear-gradient(top, white, white 25%, #E6E6E6);
+}
+
+#metrics_page_wrapper{
+	.create_graph_prompt{
+		@include border-radius(10px);
+		margin: 10px 0 10px 0;
+		@include clickable_title;
+
+	}
+	.graph_instance{
+		position: relative;
+		height: $instance_height;
+		&:first-child{
+			.graph_title{ @include border-top-radius(10px) }
+		}
+		&:last-child{
+			.graph_content{ @include border-bottom-radius(10px) }
+		}
+		&:not(:last-child){
+			.graph_content{
+				border-bottom: none;
+			}
+		}
+		.graph_title{
+			@include clickable_title;
+			border-bottom: none;
+		}
+		.graph_content{
+			@include graph_component;
+			width: 100%;
+			height: $graph_height;
+			border: 1px solid #ddd;
+			position: absolute;
+			.graph_select{
+				@include graph_component;
+				width: 2%;
+				height: 100%;
+				float: left;
+				text-align: center;
+				border-right: 1px solid #ddd;
+				input{
+					margin-top: $graph_height/2 - 10;
+				}
+			}
+			.graph_data{
+				box-sizing: border-box;
+				width: 100%;
+				padding: 10px 10px 0 3%;
+				.graph{
+					height: $graph_height - 20;
+				}
+			}
+
+		}
+	}
+}

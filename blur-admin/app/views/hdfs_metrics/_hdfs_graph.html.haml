@@ -1,0 +1,30 @@
+.graph_instance{:id => hdfs_instance.id}
+	.graph_title
+		%h3
+			= "#{hdfs_instance.name} (#{hdfs_instance.host})"
+	.graph_content
+		.graph_select
+			%input{:type => :checkbox}
+		.graph_data.tabbable.tabs-left
+			%ul.nav.nav-tabs
+				%li.active
+					%a{:href => '#live_dead', 'data-toggle' => 'tab'}
+						Live/Dead Nodes
+				%li
+					%a{:href => '#capacity', 'data-toggle' => 'tab'}
+						Capacity/Usage
+				%li
+					%a{:href => '#replicated_corrupt', 'data-toggle' => 'tab'}
+						Under Replicated/Corrupt Blocks
+			.tab-content
+				%div.tab-pane.active#live_dead
+					.graph
+						Loading Graph...
+				%div.tab-pane#capacity
+					.graph
+						Loading Graph...
+				%div.tab-pane#replicated_corrupt
+					.graph
+						Loading Graph...
+
+	

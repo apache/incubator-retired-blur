@@ -32,7 +32,8 @@ $(document).ready ->
 		#req_data.stat_id for data after a certain ID (update)
 		#req_data.stat_days for specifying a different range (overwrite
 	request_data = (id, action, req_data) ->
-		$.ajax 'http://localhost:3000/hdfs_metrics/' + id + '/' + action,
+		$.ajax 
+			url: 'hdfs_metrics/' + id + '/' + action,
 			type: 'PUT'
 			data: req_data
 			success: (data) ->

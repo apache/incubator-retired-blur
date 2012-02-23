@@ -29,14 +29,6 @@ class User < ActiveRecord::Base
     end
   end
 
-  #returns the array of saved cols
-  def filter_preference
-    Preference.find_or_create_by_user_id_and_pref_type(self.id, 'filter') do |preference|
-      preference.name = 'filter'
-      preference.value = {}
-    end
-  end
-
   # the roles are virtual attributes needed to use form helpers
   User.valid_roles.each do |role|
     define_method role do

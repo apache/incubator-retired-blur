@@ -38,6 +38,7 @@ public class RandomSearchTable {
     Random random = new Random();
     StringBuilder builder = new StringBuilder();
     for (int i = 0; i < numberOfSearchesPerPass; i++) {
+      
       builder.setLength(0);
       String query = generateQuery(builder,random,sampleOfTerms,numberOfTermsPerQuery);
       System.out.println(query);
@@ -45,13 +46,15 @@ public class RandomSearchTable {
       blurQuery.simpleQuery = new SimpleQuery();
       blurQuery.simpleQuery.queryStr = query;
       blurQuery.allowStaleData = false;
+      long start = System.nanoTime();
       BlurResults results = BlurClientManager.execute(connectionStr, new BlurCommand<BlurResults>() {
         @Override
         public BlurResults call(Client client) throws BlurException, TException {
           return client.query(tableName, blurQuery);
         }
       });
-      System.out.println(results.totalResults);
+      long end = System.nanoTime();
+      System.out.println((end - start) / 1000000.0 + " ms " + results.totalResults);
     }
   }
 

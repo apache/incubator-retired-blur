@@ -29,6 +29,7 @@ import org.apache.lucene.util.OpenBitSet;
 
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.manager.writer.lucene.SnapshotIndexReader;
 
 public class PrimeDocCache {
 
@@ -41,6 +42,8 @@ public class PrimeDocCache {
 
   public interface IndexReaderCache {
     OpenBitSet getPrimeDocBitSet(SegmentReader reader);
+
+    OpenBitSet getPrimeDocBitSet(SnapshotIndexReader reader);
   }
 
   public interface ShardCache {
@@ -64,6 +67,22 @@ public class PrimeDocCache {
               @Override
               public OpenBitSet getPrimeDocBitSet(SegmentReader reader) {
                 return getBlurBitSet(table, shard, reader);
+              }
+
+              @Override
+              public OpenBitSet getPrimeDocBitSet(SnapshotIndexReader reader) {
+                try {
+                  OpenBitSet bitSet = new OpenBitSet(reader.maxDoc());
+                  TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
+                  while (termDocs.next()) {
+                    bitSet.set(termDocs.doc());
+                  }
+                  termDocs.close();
+                  return bitSet;
+                } catch (Exception e) {
+                  LOG.error("Error while trying to create prime doc bitset", e);
+                  throw new RuntimeException(e);
+                }
               }
             };
           }

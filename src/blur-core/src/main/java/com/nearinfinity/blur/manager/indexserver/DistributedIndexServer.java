@@ -11,12 +11,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -34,18 +34,18 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermPositions;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
@@ -534,6 +534,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
       reader.init();
       index = reader;
     } else {
+//      BlurRtIndex rtIndex = new BlurRtIndex();
+//      rtIndex.setAnalyzer(getAnalyzer(table));
+//      rtIndex.setDirectory(dir);
+//      rtIndex.setLimit(1000);
+//      rtIndex.init();
+//      index = rtIndex;
       BlurIndexWriter writer = new BlurIndexWriter();
       writer.setCloser(_closer);
       writer.setCommiter(_commiter);
@@ -548,6 +554,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setClusterStatus(_clusterStatus);
       writer.init();
       index = writer;
+      
     }
     _filterCache.opening(table, shard, index);
     return warmUp(index, table, shard);

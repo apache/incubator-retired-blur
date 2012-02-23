@@ -49,7 +49,7 @@ public abstract class ClusterStatus {
 
   public abstract boolean exists(boolean useCache, String cluster, String table);
   
-  public abstract boolean isInSafeMode(String cluster);
+  public abstract boolean isInSafeMode(boolean useCache, String cluster);
 
   public List<String> getOfflineShardServers(String cluster) {
     List<String> shardServerList = new ArrayList<String>(getShardServerList(cluster));

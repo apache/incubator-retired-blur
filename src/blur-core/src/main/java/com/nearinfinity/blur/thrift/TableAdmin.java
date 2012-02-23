@@ -192,7 +192,7 @@ public abstract class TableAdmin implements Iface {
     if (cluster == null) {
       throw new BlurException("Table [" + table + "] not found.", null);
     }
-    return _clusterStatus.isInSafeMode(cluster);
+    return _clusterStatus.isInSafeMode(useCache, cluster);
   }
 
   public boolean tableExists(boolean useCache, String cluster, String table) {

@@ -35,11 +35,11 @@ import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryInputTransport;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
-import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 
 import com.nearinfinity.blur.log.Log;
@@ -104,18 +104,21 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   private ZooKeeper _zk;
   private AtomicBoolean _running = new AtomicBoolean();
+  private ConcurrentMap<String, AtomicBoolean> _safeModeMap = new ConcurrentHashMap<String, AtomicBoolean>();
   private ConcurrentMap<String, AtomicBoolean> _enabledMap = new ConcurrentHashMap<String, AtomicBoolean>();
   private ConcurrentMap<String, AtomicBoolean> _readOnlyMap = new ConcurrentHashMap<String, AtomicBoolean>();
   private ConcurrentMap<String, Collection<String>> _fieldsMap = new ConcurrentHashMap<String, Collection<String>>();
   private AtomicReference<Map<String, List<String>>> _tableToClusterCache = new AtomicReference<Map<String, List<String>>>(new HashMap<String, List<String>>());
   private Thread _enabledTables;
   private Thread _tablesToCluster;
+  private Thread _safeMode;
 
   public ZookeeperClusterStatus(ZooKeeper zooKeeper) {
     _zk = zooKeeper;
     _running.set(true);
     watchForEnabledTables();
     watchForTables();
+    watchForSafeMode();
   }
 
   public ZookeeperClusterStatus(String connectionStr) throws IOException {
@@ -137,7 +140,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           }
         }
       };
-      
+
       @Override
       public void run() {
         while (_running.get()) {
@@ -175,6 +178,59 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     _tablesToCluster.start();
   }
 
+  private void watchForSafeMode() {
+    _safeMode = new Thread(new Runnable() {
+      private Watcher _watcher = new Watcher() {
+        @Override
+        public void process(WatchedEvent event) {
+          synchronized (_safeModeMap) {
+            _safeModeMap.notifyAll();
+          }
+        }
+      };
+
+      @Override
+      public void run() {
+        while (_running.get()) {
+          try {
+            doWatch();
+          } catch (Throwable t) {
+            LOG.error("unknown error", t);
+          }
+        }
+      }
+
+      private void doWatch() throws KeeperException, InterruptedException {
+        synchronized (_safeModeMap) {
+          String clusterPath = ZookeeperPathConstants.getClustersPath();
+          List<String> clusters = _zk.getChildren(forPathToExist(clusterPath), _watcher);
+          for (String cluster : clusters) {
+            AtomicBoolean safeMode = _safeModeMap.get(cluster);
+            if (safeMode == null) {
+              safeMode = new AtomicBoolean();
+              _safeModeMap.put(cluster, safeMode);
+            }
+            String safemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
+            Stat stat = _zk.exists(safemodePath, _watcher);
+            if (stat != null) {
+              byte[] data = _zk.getData(safemodePath, _watcher, stat);
+              long timestamp = Long.parseLong(new String(data));
+              if (timestamp < System.currentTimeMillis()) {
+                safeMode.set(false);
+                continue;
+              }
+            }
+            safeMode.set(true);
+          }
+          _safeModeMap.wait(BlurConstants.ZK_WAIT_TIME);
+        }
+      }
+    });
+    _safeMode.setDaemon(true);
+    _safeMode.setName("cluster-status-safe-mode-watcher");
+    _safeMode.start();
+  }
+
   private void watchForEnabledTables() {
     _enabledTables = new Thread(new Runnable() {
       private Watcher _watcher = new Watcher() {
@@ -185,7 +241,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
           }
         }
       };
-      
+
       @Override
       public void run() {
         while (_running.get()) {
@@ -225,11 +281,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     _enabledTables.setName("cluster-status-enabled-tables-watcher");
     _enabledTables.start();
   }
-  
+
   private String forPathToExist(String path) throws KeeperException, InterruptedException {
     Stat stat = _zk.exists(path, false);
     while (stat == null) {
-      LOG.info("Waiting for path [{0}] to exist before continuing.",path);
+      LOG.info("Waiting for path [{0}] to exist before continuing.", path);
       Thread.sleep(1000);
       stat = _zk.exists(path, false);
     }
@@ -242,6 +298,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getClusterList() {
+    LOG.info("trace getClusterList");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath(), false);
     } catch (KeeperException e) {
@@ -253,6 +310,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getControllerServerList() {
+    LOG.info("trace getControllerServerList");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getOnlineControllersPath(), false);
     } catch (KeeperException e) {
@@ -264,6 +322,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getOnlineShardServers(String cluster) {
+    LOG.info("trace getOnlineShardServers");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes", false);
     } catch (KeeperException e) {
@@ -275,6 +334,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getShardServerList(String cluster) {
+    LOG.info("trace getShardServerList");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/shard-nodes", false);
     } catch (KeeperException e) {
@@ -294,6 +354,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return true;
       }
     }
+    LOG.info("trace exists");
     try {
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         return false;
@@ -316,6 +377,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return enabled.get();
       }
     }
+    LOG.info("trace isEnabled");
     String tablePathIsEnabled = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
     try {
       if (_zk.exists(tablePathIsEnabled, false) == null) {
@@ -331,6 +393,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
+    LOG.info("trace getTableDescriptor");
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) == null) {
@@ -387,6 +450,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getTableList(String cluster) {
+    LOG.info("trace getTableList");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
     } catch (KeeperException e) {
@@ -413,6 +477,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         throw new RuntimeException("Table [" + table + "] is registered in more than 1 cluster [" + clusters + "].");
       }
     }
+    LOG.info("trace getCluster");
     List<String> clusterList = getClusterList();
     for (String cluster : clusterList) {
       try {
@@ -431,6 +496,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public void clearLocks(String cluster, String table) {
+    LOG.info("trace clearLocks");
     String lockPath = ZookeeperPathConstants.getLockPath(cluster, table);
     try {
       if (_zk.exists(lockPath, false) == null) {
@@ -449,7 +515,15 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public boolean isInSafeMode(String cluster) {
+  public boolean isInSafeMode(boolean useCache, String cluster) {
+    if (useCache) {
+      AtomicBoolean safeMode = _safeModeMap.get(cluster);
+      if (safeMode == null) {
+        return true;
+      }
+      return safeMode.get();
+    }
+    LOG.info("trace isInSafeMode");
     try {
       String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
       Stat stat = _zk.exists(blurSafemodePath, false);
@@ -475,6 +549,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public int getShardCount(String cluster, String table) {
+    LOG.info("trace getShardCount");
     try {
       return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
     } catch (NumberFormatException e) {
@@ -488,6 +563,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public Set<String> getBlockCacheFileTypes(String cluster, String table) {
+    LOG.info("trace getBlockCacheFileTypes");
     try {
       byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
       if (data == null) {
@@ -511,6 +587,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isBlockCacheEnabled(String cluster, String table) {
+    LOG.info("trace isBlockCacheEnabled");
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), false) == null) {
         return false;
@@ -525,6 +602,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public Collection<String> readCacheFieldsForTable(String cluster, String table) {
+    LOG.info("trace readCacheFieldsForTable");
     Collection<String> fields = _fieldsMap.get(getClusterTableKey(cluster, table));
     if (fields == null) {
       return EMPTY_COLLECTION;
@@ -534,6 +612,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public void writeCacheFieldsForTable(String cluster, String table, Collection<String> fieldNames) {
+    LOG.info("trace writeCacheFieldsForTable");
     Collection<String> cachedFields = readCacheFieldsForTable(cluster, table);
     for (String fieldName : fieldNames) {
       if (cachedFields.contains(fieldName)) {
@@ -570,6 +649,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return flag.get();
       }
     }
+    LOG.info("trace isReadOnly");
     String path = ZookeeperPathConstants.getTableReadOnlyPath(cluster, table);
     AtomicBoolean flag = new AtomicBoolean();
     try {

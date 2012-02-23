@@ -6,6 +6,7 @@
 #= require ../../../vendor/assets/javascripts/d3.min
 #= require ../../../vendor/assets/javascripts/d3.layout.min
 #= require ../../../vendor/assets/javascripts/jquery.dataTables
+#= require ../../../vendor/assets/javascripts/jquery.flot.min
 #= require_tree ../../../vendor/assets/javascripts
 #= require_self
 

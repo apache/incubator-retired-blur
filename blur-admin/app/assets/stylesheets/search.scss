@@ -20,7 +20,7 @@
   min-width: 200px;
   top: 35px;
   right: 0px;
-  background-color: #ddd;
+  background-color: #E6E6E6;
   position: absolute;
   @include border-bottom-radius(5px);
   border: solid 1px #bbb;
@@ -48,7 +48,7 @@
     left: 0;
     padding: 10px 0px 0px 10px;
     box-sizing: border-box;
-    @include background-image(linear-gradient(#ffffff, #cccccc));
+    @include background-image(linear-gradient(#ffffff, #E6E6E6));
     #filters_wrap{
       & > div{ display:inline-block; }
       .partial-section, .body { padding: 0.5em; }
@@ -91,6 +91,10 @@
           td:first-child{ font-weight: bold; }
         }
         input{ width: 50px; }
+        #filter_columns{
+          max-height: 250px;
+          overflow: auto;
+        }
       }
 
       #loading-spinner { vertical-align: middle; }

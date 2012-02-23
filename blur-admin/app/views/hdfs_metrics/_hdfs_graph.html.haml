@@ -8,23 +8,21 @@
 		.graph_data.tabbable.tabs-left
 			%ul.nav.nav-tabs
 				%li.active
-					%a{:href => '#live_dead', 'data-toggle' => 'tab'}
-						Live/Dead Nodes
-				%li
-					%a{:href => '#capacity', 'data-toggle' => 'tab'}
+					%a{:href => '#disk', 'data-toggle' => 'tab'}
 						Capacity/Usage
 				%li
-					%a{:href => '#replicated_corrupt', 'data-toggle' => 'tab'}
+					%a{:href => '#nodes', 'data-toggle' => 'tab'}
+						Live/Dead Nodes
+				%li
+					%a{:href => '#block', 'data-toggle' => 'tab'}
 						Under Replicated/Corrupt Blocks
 			.tab-content
-				%div.tab-pane.active#live_dead
+				%div.tab-pane.active#disk
 					.graph
 						Loading Graph...
-				%div.tab-pane#capacity
+				%div.tab-pane#nodes
 					.graph
 						Loading Graph...
-				%div.tab-pane#replicated_corrupt
+				%div.tab-pane#block
 					.graph
-						Loading Graph...
-
-	
+						Loading Graph...	

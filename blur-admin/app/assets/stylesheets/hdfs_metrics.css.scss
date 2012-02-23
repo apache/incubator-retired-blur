@@ -1,4 +1,4 @@
-$instance_height: 200px;
+$instance_height: 300px;
 $title_height: 35px;
 $graph_height: $instance_height - $title_height;
 
@@ -16,7 +16,8 @@ $graph_height: $instance_height - $title_height;
 	h3{ line-height: $title_height; }
 	text-align: center;
 	border: 1px solid #ddd;
-	background-image: -webkit-linear-gradient(top, white, white 25%, #E6E6E6);
+	@include background-image(linear-gradient(white, #E6E6E6));
+
 }
 
 #metrics_page_wrapper{
@@ -66,7 +67,11 @@ $graph_height: $instance_height - $title_height;
 				width: 100%;
 				padding: 10px 10px 0 3%;
 				.graph{
+					margin: 5px 5px 5px 230px;
 					height: $graph_height - 20;
+					.base{
+						position: absolute;
+					}
 				}
 			}
 

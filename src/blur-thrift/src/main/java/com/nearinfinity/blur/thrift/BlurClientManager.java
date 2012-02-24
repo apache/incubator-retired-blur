@@ -172,6 +172,14 @@ public class BlurClientManager {
           }
           try {
             return command.call((CLIENT) client.get());
+          } catch (RuntimeException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof TTransportException) {
+              TTransportException t = (TTransportException) cause;
+              if (handleError(connection,client,retries,command,t,maxRetries,backOffTime,maxBackOffTime)) {
+                throw t;
+              }
+            }
           } catch (TTransportException e) {
             if (handleError(connection,client,retries,command,e,maxRetries,backOffTime,maxBackOffTime)) {
               throw e;

@@ -30,7 +30,7 @@ $(document).ready ->
 	#request graph data
 	#id : hdfs id, action: (disk, nodes, block), req_data(optional):
 		#req_data.stat_id for data after a certain ID (update)
-		#req_data.stat_days for specifying a different range (overwrite
+		#req_data.stat_mins for specifying a different range (overwrite)
 	request_data = (id, action, req_data) ->
 		$.ajax 
 			url: 'hdfs_metrics/' + id + '/' + action,
@@ -67,10 +67,10 @@ $(document).ready ->
 		action = $(this).attr('href').slice(1)
 		request_data(hdfs_id, action)
 
-	update_graphs = (element, days) ->
+	update_graphs = (element, mins) ->
 		hdfs_id = $(element).attr('id')
 		action = $(element).find('li.active > a').attr('href').slice(1)
-		request_data(hdfs_id, action, {stat_days: days})
+		request_data(hdfs_id, action, {stat_mins: mins})
 
 	update_live_graphs = () ->
 		$('.graph_instance').each ->

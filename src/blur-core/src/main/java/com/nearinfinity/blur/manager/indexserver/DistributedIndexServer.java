@@ -63,7 +63,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
-import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
+import com.nearinfinity.blur.manager.writer.BlurNRTIndex;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
@@ -534,27 +534,16 @@ public class DistributedIndexServer extends AbstractIndexServer {
       reader.init();
       index = reader;
     } else {
-//      BlurRtIndex rtIndex = new BlurRtIndex();
-//      rtIndex.setAnalyzer(getAnalyzer(table));
-//      rtIndex.setDirectory(dir);
-//      rtIndex.setLimit(1000);
-//      rtIndex.init();
-//      index = rtIndex;
-      BlurIndexWriter writer = new BlurIndexWriter();
-      writer.setCloser(_closer);
-      writer.setCommiter(_commiter);
+      BlurNRTIndex writer = new BlurNRTIndex();
       writer.setAnalyzer(getAnalyzer(table));
       writer.setDirectory(dir);
-      writer.setRefresher(_refresher);
-      writer.setBlurMetrics(_blurMetrics);
+      writer.setExecutorService(_openerService);
       writer.setShard(shard);
       writer.setTable(table);
-      writer.setIndexDeletionPolicy(_indexDeletionPolicy);
-      writer.setSimilarity(getSimilarity(table));
-      writer.setClusterStatus(_clusterStatus);
+      writer.setTimeBetweenCommits(TimeUnit.SECONDS.toMillis(60));
+      writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(10));
       writer.init();
       index = writer;
-      
     }
     _filterCache.opening(table, shard, index);
     return warmUp(index, table, shard);

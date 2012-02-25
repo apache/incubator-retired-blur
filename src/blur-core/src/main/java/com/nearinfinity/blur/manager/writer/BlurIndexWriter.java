@@ -150,10 +150,9 @@ public class BlurIndexWriter extends AbstractBlurIndex {
   }
 
   @Override
-  public boolean replaceRow(boolean wal, Row row) throws IOException {
+  public void replaceRow(boolean wal, Row row) throws IOException {
     synchronized (_writer) {
       _rowIndexWriter.replace(wal, row);
-      return true;
     }
   }
 

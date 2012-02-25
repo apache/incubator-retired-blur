@@ -38,21 +38,24 @@ public class PrimeDocCache {
 
   public static final OpenBitSet EMPTY_BIT_SET = new OpenBitSet();
   private static final Term PRIME_DOC_TERM = new Term(PRIME_DOC, PRIME_DOC_VALUE);
-  
-  private static Map<IndexReader,OpenBitSet> primeDocMap = new ConcurrentHashMap<IndexReader, OpenBitSet>();
+
+  private static Map<Object, OpenBitSet> primeDocMap = new ConcurrentHashMap<Object, OpenBitSet>();
 
   public static synchronized OpenBitSet getPrimeDocBitSet(IndexReader reader) throws IOException {
-    OpenBitSet bitSet = primeDocMap.get(reader);
+    Object key = reader.getCoreCacheKey();
+    OpenBitSet bitSet = primeDocMap.get(key);
     if (bitSet == null) {
       reader.addReaderFinishedListener(new ReaderFinishedListener() {
         @Override
         public void finished(IndexReader reader) {
-          primeDocMap.remove(reader);
+          Object key = reader.getCoreCacheKey();
+          LOG.debug("Current size [" + primeDocMap.size() + "] Prime Doc BitSet removing for segment [" + reader + "]");
+          primeDocMap.remove(key);
         }
       });
-      LOG.info("Prime Doc BitSet missing for segment [" + reader + "]");
+      LOG.debug("Prime Doc BitSet missing for segment [" + reader + "] current size [" + primeDocMap.size() + "]");
       bitSet = new OpenBitSet(reader.maxDoc());
-      primeDocMap.put(reader,bitSet);
+      primeDocMap.put(key, bitSet);
       TermDocs termDocs = reader.termDocs(PRIME_DOC_TERM);
       while (termDocs.next()) {
         bitSet.set(termDocs.doc());

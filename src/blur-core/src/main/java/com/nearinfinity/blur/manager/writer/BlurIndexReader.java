@@ -31,7 +31,7 @@ public class BlurIndexReader extends AbstractBlurIndex {
   }
 
   @Override
-  public boolean replaceRow(boolean wal, Row row) throws IOException {
+  public void replaceRow(boolean wal, Row row) throws IOException {
     throw new RuntimeException("Read-only shard");
   }
 

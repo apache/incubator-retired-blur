@@ -41,7 +41,12 @@ public class PrimeDocCache {
 
   private static Map<Object, OpenBitSet> primeDocMap = new ConcurrentHashMap<Object, OpenBitSet>();
 
-  public static synchronized OpenBitSet getPrimeDocBitSet(IndexReader reader) throws IOException {
+  /**
+   * The way this method is called via warm up methods the likelihood of
+   * creating multiple bitsets during a race condition is very low, that's why
+   * this method is not synced.
+   */
+  public static OpenBitSet getPrimeDocBitSet(IndexReader reader) throws IOException {
     Object key = reader.getCoreCacheKey();
     OpenBitSet bitSet = primeDocMap.get(key);
     if (bitSet == null) {

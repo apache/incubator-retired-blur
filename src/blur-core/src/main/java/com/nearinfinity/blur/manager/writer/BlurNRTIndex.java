@@ -33,6 +33,7 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 
 public class BlurNRTIndex extends BlurIndex {
@@ -44,7 +45,15 @@ public class BlurNRTIndex extends BlurIndex {
   private SearcherWarmer _warmer = new SearcherWarmer() {
     @Override
     public void warm(IndexSearcher s) throws IOException {
-
+      IndexReader indexReader = s.getIndexReader();
+      IndexReader[] subReaders = indexReader.getSequentialSubReaders();
+      if (subReaders == null) {
+        PrimeDocCache.getPrimeDocBitSet(indexReader);
+      } else {
+        for (IndexReader reader : subReaders) {
+          PrimeDocCache.getPrimeDocBitSet(reader);
+        }
+      }
     }
   };
   private NRTManager _nrtManager;
@@ -61,6 +70,11 @@ public class BlurNRTIndex extends BlurIndex {
   private String _shard;
   private long _timeBetweenCommits;
   private Similarity _similarity;
+  private volatile long _lastRefresh;
+  private long _timeBetweenRefreshs;
+  private double _nrtCachingMaxMergeSizeMB;
+  private int _nrtCachingMaxCachedMB;
+  private Thread _refresher;
 
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
@@ -68,12 +82,38 @@ public class BlurNRTIndex extends BlurIndex {
     conf.setSimilarity(_similarity);
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
-    
-    NRTCachingDirectory cachingDirectory = new NRTCachingDirectory(_directory, 5.0, 60);
+
+    NRTCachingDirectory cachingDirectory = new NRTCachingDirectory(_directory, _nrtCachingMaxMergeSizeMB, _nrtCachingMaxCachedMB);
     _writer = new IndexWriter(cachingDirectory, conf);
     _nrtManager = new NRTManager(_writer, _executorService, _warmer, APPLY_ALL_DELETES);
     _manager = _nrtManager.getSearcherManager(APPLY_ALL_DELETES);
+    _lastRefresh = System.nanoTime();
     startCommiter();
+    startRefresher();
+  }
+  
+  private void startRefresher() {
+    _refresher = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        while (!_isClosed.get()) {
+          try {
+            LOG.info("Refreshing of [{0}/{1}].", _table, _shard);
+            maybeReopen();
+          } catch (IOException e) {
+            LOG.error("Error during refresh of [{0}/{1}].", _table, _shard, e);
+          }
+          try {
+            Thread.sleep(_timeBetweenRefreshs);
+          } catch (InterruptedException e) {
+            LOG.error("Unknown error with refresher thread [{0}/{1}].", _table, _shard, e);
+          }
+        }
+      }
+    });
+    _refresher.setDaemon(true);
+    _refresher.setName("Refresh Thread [" + _table + "/" + _shard + "]");
+    _refresher.start();
   }
 
   private void startCommiter() {
@@ -104,14 +144,16 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void replaceRow(boolean wal, Row row) throws IOException {
-    _nrtManager.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
-    _manager.maybeReopen();
+    boolean waitToBeVisible = false;
+    long generation = _nrtManager.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
+    waitToBeVisible(waitToBeVisible, generation);
   }
 
   @Override
   public void deleteRow(boolean wal, String rowId) throws IOException {
-    _nrtManager.deleteDocuments(ROW_ID.createTerm(rowId));
-    _manager.maybeReopen();
+    boolean waitToBeVisible = false;
+    long generation = _nrtManager.deleteDocuments(ROW_ID.createTerm(rowId));
+    waitToBeVisible(waitToBeVisible, generation);
   }
 
   @Override
@@ -122,6 +164,8 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void close() throws IOException {
+    //@TODO make sure that locks are cleaned up.
+    _writer.close();
     _isClosed.set(true);
     _manager.close();
     _nrtManager.close();
@@ -139,7 +183,27 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void optimize(int numberOfSegmentsPerShard) throws IOException {
-    LOG.info("Optimize is not supported");
+    _writer.forceMerge(numberOfSegmentsPerShard);
+  }
+
+  private void waitToBeVisible(boolean waitToBeVisible, long generation) throws IOException {
+    if (waitToBeVisible) {
+      // if visibility is required then reopen.
+      _manager.maybeReopen();
+      _lastRefresh = System.nanoTime();
+      _nrtManager.waitForGeneration(generation, APPLY_ALL_DELETES);
+    } else {
+      // if not, then check to see if reopened is needed.
+      maybeReopen();
+    }
+  }
+
+  private void maybeReopen() throws IOException {
+    if (_lastRefresh + _timeBetweenRefreshs < System.nanoTime()) {
+      if (_manager.maybeReopen()) {
+        _lastRefresh = System.nanoTime();
+      }
+    }
   }
 
   private List<Document> getDocs(Row row) {
@@ -192,5 +256,17 @@ public class BlurNRTIndex extends BlurIndex {
 
   public void setSimilarity(Similarity similarity) {
     _similarity = similarity;
+  }
+
+  public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
+    _timeBetweenRefreshs = timeBetweenRefreshs;
+  }
+
+  public void setNrtCachingMaxMergeSizeMB(double nrtCachingMaxMergeSizeMB) {
+    _nrtCachingMaxMergeSizeMB = nrtCachingMaxMergeSizeMB;
+  }
+
+  public void setNrtCachingMaxCachedMB(int nrtCachingMaxCachedMB) {
+    _nrtCachingMaxCachedMB = nrtCachingMaxCachedMB;
   }
 }

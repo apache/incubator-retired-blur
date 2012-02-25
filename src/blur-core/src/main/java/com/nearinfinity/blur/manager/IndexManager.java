@@ -32,10 +32,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -49,11 +49,12 @@ import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.document.FieldSelectorResult;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
-import org.apache.lucene.index.IndexReader.FieldOption;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Filter;
 import org.apache.lucene.search.FilteredQuery;
@@ -61,12 +62,10 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.BooleanClause.Occur;
 
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
-import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.FacetQuery;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableSearcher;
@@ -95,12 +94,11 @@ import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
-import com.nearinfinity.blur.utils.ForkJoin;
-import com.nearinfinity.blur.utils.PrimeDocCache;
-import com.nearinfinity.blur.utils.TermDocIterable;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService.Cancel;
+import com.nearinfinity.blur.utils.ForkJoin;
 import com.nearinfinity.blur.utils.ForkJoin.Merger;
 import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
+import com.nearinfinity.blur.utils.TermDocIterable;
 
 public class IndexManager {
 
@@ -785,7 +783,7 @@ public class IndexManager {
         BlurIndex index = entry.getValue();
         reader = index.getIndexReader(_forceRefresh);
         String shard = entry.getKey();
-        BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache(_table).getIndexReaderCache(shard));
+        IndexSearcher searcher = new IndexSearcher(reader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         return new BlurResultIterableSearcher(_running, (Query) _query.clone(), _table, shard, searcher, _selector);
       } finally {

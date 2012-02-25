@@ -35,11 +35,12 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.LockObtainFailedException;
 import org.apache.lucene.store.RAMDirectory;
@@ -48,11 +49,9 @@ import org.junit.Test;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.index.WalIndexWriter;
-import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 public class SuperQueryTest {
 
@@ -67,7 +66,7 @@ public class SuperQueryTest {
     printAll(new Term("person.name", "aaron"), reader);
     printAll(new Term("address.street", "sulgrave"), reader);
     printAll(new Term(PRIME_DOC, PRIME_DOC_VALUE), reader);
-    BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test2").getIndexReaderCache("test2"));
+    IndexSearcher searcher = new IndexSearcher(reader);
     TopDocs topDocs = searcher.search(booleanQuery, 10);
     assertEquals(2, topDocs.totalHits);
     assertEquals("1", searcher.doc(topDocs.scoreDocs[0].doc).get(ROW_ID));
@@ -76,7 +75,7 @@ public class SuperQueryTest {
 
   @Test
   public void testAggregateScoreTypes() throws Exception {
-    BlurSearcher searcher = createSearcher();
+    IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
     booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.AGGREGATE), Occur.SHOULD);
     booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.AGGREGATE), Occur.MUST);
@@ -90,7 +89,7 @@ public class SuperQueryTest {
 
   @Test
   public void testBestScoreTypes() throws Exception {
-    BlurSearcher searcher = createSearcher();
+    IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
     booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.BEST), Occur.SHOULD);
     booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.BEST), Occur.MUST);
@@ -111,7 +110,7 @@ public class SuperQueryTest {
 
   @Test
   public void testConstantScoreTypes() throws Exception {
-    BlurSearcher searcher = createSearcher();
+    IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
     booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.CONSTANT), Occur.SHOULD);
     booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.CONSTANT), Occur.MUST);
@@ -125,7 +124,7 @@ public class SuperQueryTest {
 
   @Test
   public void testSuperScoreTypes() throws Exception {
-    BlurSearcher searcher = createSearcher();
+    IndexSearcher searcher = createSearcher();
     BooleanQuery booleanQuery = new BooleanQuery();
     booleanQuery.add(wrapSuper("person.name", "aaron", ScoreType.SUPER), Occur.SHOULD);
     booleanQuery.add(wrapSuper("address.street", "sulgrave", ScoreType.SUPER), Occur.MUST);
@@ -144,10 +143,10 @@ public class SuperQueryTest {
     }
   }
 
-  private static BlurSearcher createSearcher() throws Exception {
+  private static IndexSearcher createSearcher() throws Exception {
     Directory directory = createIndex();
     IndexReader reader = IndexReader.open(directory);
-    return new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test2").getIndexReaderCache("test2"));
+    return new IndexSearcher(reader);
   }
 
   public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {

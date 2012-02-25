@@ -19,7 +19,6 @@ package com.nearinfinity.blur.lucene.search;
 import java.io.IOException;
 
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.SegmentReader;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
@@ -29,9 +28,8 @@ import org.apache.lucene.util.OpenBitSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.nearinfinity.blur.manager.writer.lucene.SnapshotIndexReader;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.PrimeDocCache.IndexReaderCache;
+import com.nearinfinity.blur.utils.PrimeDocCache;
 
 @SuppressWarnings("deprecation")
 public class SuperQuery extends AbstractWrapperQuery {
@@ -54,12 +52,8 @@ public class SuperQuery extends AbstractWrapperQuery {
   }
 
   public Weight createWeight(Searcher searcher) throws IOException {
-    if (searcher instanceof BlurSearcher) {
-      IndexReaderCache indexReaderCache = ((BlurSearcher) searcher).getIndexReaderCache();
-      Weight weight = _query.createWeight(searcher);
-      return new SuperWeight(weight, _query.toString(), this, indexReaderCache, scoreType);
-    }
-    throw new UnsupportedOperationException("Searcher must be a blur seacher.");
+    Weight weight = _query.createWeight(searcher);
+    return new SuperWeight(weight, _query.toString(), this, scoreType);
   }
 
   public Query rewrite(IndexReader reader) throws IOException {
@@ -85,13 +79,11 @@ public class SuperQuery extends AbstractWrapperQuery {
     private String originalQueryStr;
     private Query query;
     private ScoreType scoreType;
-    private IndexReaderCache indexReaderCache;
 
-    public SuperWeight(Weight weight, String originalQueryStr, Query query, IndexReaderCache indexReaderCache, ScoreType scoreType) {
+    public SuperWeight(Weight weight, String originalQueryStr, Query query, ScoreType scoreType) {
       this.weight = weight;
       this.originalQueryStr = originalQueryStr;
       this.query = query;
-      this.indexReaderCache = indexReaderCache;
       this.scoreType = scoreType;
     }
 
@@ -121,15 +113,8 @@ public class SuperQuery extends AbstractWrapperQuery {
       if (scorer == null) {
         return null;
       }
-      if (reader instanceof SegmentReader) {
-        OpenBitSet primeDocBitSet = indexReaderCache.getPrimeDocBitSet((SegmentReader) reader);
-        return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
-      } else if (reader instanceof SnapshotIndexReader) {
-        OpenBitSet primeDocBitSet = indexReaderCache.getPrimeDocBitSet((SnapshotIndexReader) reader);
-        return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
-      } else {
-        throw new UnsupportedOperationException("Reader is not a segment reader [" + reader.getClass() + "] [" + reader + "].");
-      }
+      OpenBitSet primeDocBitSet = PrimeDocCache.getPrimeDocBitSet(reader);
+      return new SuperScorer(scorer, primeDocBitSet, originalQueryStr, scoreType);
     }
 
     @Override

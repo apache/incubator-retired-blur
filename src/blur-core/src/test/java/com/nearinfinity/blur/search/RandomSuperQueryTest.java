@@ -33,6 +33,7 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.QueryWrapperFilter;
@@ -45,14 +46,12 @@ import org.junit.Test;
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.index.WalIndexWriter;
-import com.nearinfinity.blur.lucene.search.BlurSearcher;
 import com.nearinfinity.blur.lucene.search.SuperParser;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.PrimeDocCache;
 import com.nearinfinity.blur.utils.RowWalIndexWriter;
 public class RandomSuperQueryTest {
 
@@ -83,7 +82,7 @@ public class RandomSuperQueryTest {
     System.out.print("Running searches [" + sampler.size() + "]... ");
     System.out.flush();
     assertTrue(!sampler.isEmpty());
-    BlurSearcher searcher = new BlurSearcher(reader, PrimeDocCache.getTableCache().getShardCache("test").getIndexReaderCache("test"));
+    IndexSearcher searcher = new IndexSearcher(reader);
     long s = System.currentTimeMillis();
     for (String str : sampler) {
       Query query = new SuperParser(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION), true, filter, ScoreType.AGGREGATE).parse(str);

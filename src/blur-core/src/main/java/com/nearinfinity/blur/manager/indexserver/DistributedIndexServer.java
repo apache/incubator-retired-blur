@@ -541,7 +541,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setShard(shard);
       writer.setTable(table);
       writer.setTimeBetweenCommits(TimeUnit.SECONDS.toMillis(60));
-      writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(10));
+      writer.setSimilarity(getSimilarity(table));
       writer.init();
       index = writer;
     }

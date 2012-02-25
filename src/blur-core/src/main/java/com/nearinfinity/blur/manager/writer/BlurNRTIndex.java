@@ -1,9 +1,12 @@
 package com.nearinfinity.blur.manager.writer;
 
+import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.document.Document;
@@ -15,13 +18,14 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.NRTManager;
 import org.apache.lucene.search.SearcherManager;
 import org.apache.lucene.search.SearcherWarmer;
+import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NRTCachingDirectory;
-import org.apache.lucene.util.Version;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
@@ -56,16 +60,19 @@ public class BlurNRTIndex extends BlurIndex {
   private String _table;
   private String _shard;
   private long _timeBetweenCommits;
-  private long _timeBetweenRefreshs;
-  private long _lastRefresh;
+  private Similarity _similarity;
 
   public void init() throws IOException {
-    IndexWriterConfig conf = new IndexWriterConfig(Version.LUCENE_35, _analyzer);
+    IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
+    conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
+    conf.setSimilarity(_similarity);
+    TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
+    mergePolicy.setUseCompoundFile(false);
+    
     NRTCachingDirectory cachingDirectory = new NRTCachingDirectory(_directory, 5.0, 60);
     _writer = new IndexWriter(cachingDirectory, conf);
     _nrtManager = new NRTManager(_writer, _executorService, _warmer, APPLY_ALL_DELETES);
     _manager = _nrtManager.getSearcherManager(APPLY_ALL_DELETES);
-    _lastRefresh = System.nanoTime();
     startCommiter();
   }
 
@@ -98,22 +105,17 @@ public class BlurNRTIndex extends BlurIndex {
   @Override
   public void replaceRow(boolean wal, Row row) throws IOException {
     _nrtManager.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
+    _manager.maybeReopen();
   }
 
   @Override
   public void deleteRow(boolean wal, String rowId) throws IOException {
     _nrtManager.deleteDocuments(ROW_ID.createTerm(rowId));
+    _manager.maybeReopen();
   }
 
   @Override
   public IndexReader getIndexReader(boolean forceRefresh) throws IOException {
-    if (forceRefresh) {
-      _nrtManager.maybeReopen(APPLY_ALL_DELETES);
-    }
-    if (_lastRefresh + _timeBetweenRefreshs < System.nanoTime()) {
-      _manager.maybeReopen();
-      _lastRefresh = System.nanoTime();
-    }
     IndexSearcher searcher = _manager.acquire();
     return searcher.getIndexReader();
   }
@@ -175,7 +177,7 @@ public class BlurNRTIndex extends BlurIndex {
   public void setExecutorService(ExecutorService executorService) {
     _executorService = executorService;
   }
-  
+
   public void setTable(String table) {
     _table = table;
   }
@@ -188,7 +190,7 @@ public class BlurNRTIndex extends BlurIndex {
     _timeBetweenCommits = timeBetweenCommits;
   }
 
-  public void setTimeBetweenRefreshs(long timeBetweenRefreshs) {
-    _timeBetweenRefreshs = timeBetweenRefreshs;
+  public void setSimilarity(Similarity similarity) {
+    _similarity = similarity;
   }
 }

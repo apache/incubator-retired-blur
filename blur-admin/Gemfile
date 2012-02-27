@@ -26,9 +26,12 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'capybara'
   gem 'ci_reporter'
-  gem 'cover_me'
   gem 'rails-erd'
   gem 'factory_girl_rails'
   gem 'launchy'
+end
+
+group :test do
+    gem 'simplecov'
 end
 

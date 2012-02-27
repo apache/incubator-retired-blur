@@ -63,8 +63,6 @@ describe UserSessionsController do
       delete :destroy
       response.should redirect_to(login_path)
       flash[:notice].should_not be_blank
-
-
     end
   end
 end

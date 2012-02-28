@@ -3,9 +3,18 @@ require 'spec_helper'
 describe ApplicationController do
   describe 'Application methods' do
     before(:each) do
-      @ability = Ability.new User.new
+      @user = FactoryGirl.create :user
+      @ability = Ability.new @user
       @ability.stub!(:can?).and_return(true)
       controller.stub!(:current_ability).and_return(@ability)
+    end
+
+    it "Current user should grab the current user session and set the current user" do
+      @session = mock(UserSession, :user => @user)
+      controller.stub!(:current_user_session).and_return @session
+      controller.should_receive(:current_user_session)
+      get 'help', :tab => 'search'
+      assigns(:current_user).should == @user
     end
 
     it "help should render the help menu with the given tab" do 
@@ -15,7 +24,7 @@ describe ApplicationController do
     end
   end
 
-  describe 'Visiting a page without authorization' do
+  describe 'Enable Authorization: Visiting a page without authorization' do
     it "without a current_user" do
       get 'help', :tab => 'search'
       response.should redirect_to(login_path)

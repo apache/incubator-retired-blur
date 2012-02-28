@@ -38,9 +38,6 @@ class Ability
         # view times on blur queries
         can :times, :blur_queries
 
-        # Can modify own filter preferences
-        can :update, :preferences, {:user_id => user.id, :pref_type => 'filter'}
-
         # View hosts and schema on blur_tables
         can :hosts, :blur_tables
         can :schema, :blur_tables

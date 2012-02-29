@@ -130,7 +130,7 @@ $(document).ready ->
   upload = (el) ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path')
-    $.get Routes.hdfs_upload_form_path(), (data)->
+    $.get Routes.hdfs_upload_form_path(id), (data) ->
       $().popup
         body:data
         title: 'Upload File'

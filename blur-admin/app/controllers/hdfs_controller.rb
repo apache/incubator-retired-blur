@@ -84,7 +84,7 @@ class HdfsController < ApplicationController
   
   def upload
     begin
-      if !(params[:upload].nil? or params[:path].nil? or params[:hdfs_id].nil?)
+      if !(params[:upload].nil? or params[:path].nil? or params[:id].nil?)
         f = params[:upload]
         @path = params[:path]
         if f.tempfile.size > 26214400

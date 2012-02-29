@@ -58,8 +58,8 @@ BlurAdmin::Application.routes.draw do
   match 'hdfs/:id/move' => 'hdfs#move_file', :via => :post, :as => :hdfs_move
   match 'hdfs/:id/mkdir' => 'hdfs#mkdir', :via => :post, :as => :hdfs_mkdir
   match 'hdfs/:id/delete_file' => 'hdfs#delete_file', :via => :post, :as => :hdfs_delete
-  match 'hdfs/upload_form' => 'hdfs#upload_form', :via => :get, :as => :hdfs_upload_form
-  match 'hdfs/upload/' => 'hdfs#upload', :via =>:post, :as => :hdfs_upload
+  match 'hdfs/:id/upload_form' => 'hdfs#upload_form', :via => :get, :as => :hdfs_upload_form
+  match 'hdfs/:id/upload/' => 'hdfs#upload', :via =>:post, :as => :hdfs_upload
   match 'hdfs/:id/structure' => 'hdfs#file_tree', :via =>:get, :as => :hdfs_structure
 
   match 'help/:tab' => 'application#help', :as => :help

@@ -312,9 +312,9 @@
   blur_query_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_queries/"], ["format"], arguments)
   },
-// hdfs => /hdfs(/:id/show(/*fs_path))(.:format)
+// hdfs => /hdfs(/:id(/show(*fs_path)))(.:format)
   hdfs_path: function(options) {
-  return Utils.build_path(0, ["/hdfs(/", "/show(/*fs_path))"], ["fs_path", "id", "format"], arguments)
+  return Utils.build_path(0, ["/hdfs(/", "(/show(*fs_path)))"], ["fs_path", "id", "format"], arguments)
   },
 // hdfs_info => /hdfs/:id/info(.:format)
   hdfs_info_path: function(_id, options) {
@@ -348,13 +348,13 @@
   hdfs_delete_path: function(_id, options) {
   return Utils.build_path(1, ["/hdfs/", "/delete_file"], ["format"], arguments)
   },
-// hdfs_upload_form => /hdfs/upload_form(.:format)
-  hdfs_upload_form_path: function(options) {
-  return Utils.build_path(0, ["/hdfs/upload_form"], ["format"], arguments)
+// hdfs_upload_form => /hdfs/:id/upload_form(.:format)
+  hdfs_upload_form_path: function(_id, options) {
+  return Utils.build_path(1, ["/hdfs/", "/upload_form"], ["format"], arguments)
   },
-// hdfs_upload => /hdfs/upload(.:format)
-  hdfs_upload_path: function(options) {
-  return Utils.build_path(0, ["/hdfs/upload"], ["format"], arguments)
+// hdfs_upload => /hdfs/:id/upload(.:format)
+  hdfs_upload_path: function(_id, options) {
+  return Utils.build_path(1, ["/hdfs/", "/upload"], ["format"], arguments)
   },
 // hdfs_structure => /hdfs/:id/structure(.:format)
   hdfs_structure_path: function(_id, options) {

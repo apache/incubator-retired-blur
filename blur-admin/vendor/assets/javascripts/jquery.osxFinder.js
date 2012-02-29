@@ -65,7 +65,7 @@
       // Take the path array and build the folder directory
       var buildFileTreeFromPath = function(pathPieces, currentPath){
         for( pieceIndex in pathPieces ){
-          var piece = pathPieces[pieceIndex];
+          var piece = unescape(pathPieces[pieceIndex]);
           currentPath += '/' + piece;
           // Find the folder
           var selectedFolder = el.find('li[hdfs_path="' + currentPath + '"]');

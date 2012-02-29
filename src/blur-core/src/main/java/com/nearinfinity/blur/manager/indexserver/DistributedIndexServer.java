@@ -542,7 +542,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setTable(table);
       writer.setTimeBetweenCommits(TimeUnit.SECONDS.toMillis(60));
       writer.setSimilarity(getSimilarity(table));
-      writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(100));
+      writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(500));
       writer.setNrtCachingMaxCachedMB(60);
       writer.setNrtCachingMaxMergeSizeMB(5.0);
       writer.init();

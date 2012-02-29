@@ -91,7 +91,7 @@ public class BlurNRTIndex extends BlurIndex {
     startCommiter();
     startRefresher();
   }
-  
+
   private void startRefresher() {
     _refresher = new Thread(new Runnable() {
       @Override
@@ -164,11 +164,15 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void close() throws IOException {
-    //@TODO make sure that locks are cleaned up.
-    _writer.close();
+    // @TODO make sure that locks are cleaned up.
     _isClosed.set(true);
-    _manager.close();
-    _nrtManager.close();
+    try {
+      _writer.close();
+      _manager.close();
+      _nrtManager.close();
+    } finally {
+      _directory.close();
+    }
   }
 
   @Override

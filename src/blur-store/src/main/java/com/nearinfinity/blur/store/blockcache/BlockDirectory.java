@@ -31,7 +31,7 @@ public class BlockDirectory extends DirectIODirectory {
   public static long getRealPosition(long block, long positionInBlock) {
     return (block << BLOCK_SHIFT) + positionInBlock;
   }
-  
+
   public static Cache NO_CACHE = new Cache() {
 
     @Override
@@ -62,11 +62,11 @@ public class BlockDirectory extends DirectIODirectory {
   private Set<String> _blockCacheFileTypes;
 
   public BlockDirectory(String dirName, DirectIODirectory directory) throws IOException {
-    this(dirName,directory,NO_CACHE);
+    this(dirName, directory, NO_CACHE);
   }
-  
+
   public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache) throws IOException {
-    this(dirName,directory,NO_CACHE,null);
+    this(dirName, directory, cache, null);
   }
 
   public BlockDirectory(String dirName, DirectIODirectory directory, Cache cache, Set<String> blockCacheFileTypes) throws IOException {
@@ -85,7 +85,7 @@ public class BlockDirectory extends DirectIODirectory {
   public IndexInput openInput(String name, int bufferSize) throws IOException {
     final IndexInput source = _directory.openInput(name, _blockSize);
     if (_blockCacheFileTypes == null || isCachableFile(name)) {
-      return new CachedIndexInput(source, _blockSize, _dirName, name, _cache, bufferSize);
+      return new CachedIndexInput(source, _blockSize, name, getFileCacheName(name), _cache, bufferSize);
     }
     return source;
   }
@@ -101,7 +101,7 @@ public class BlockDirectory extends DirectIODirectory {
 
   @Override
   public IndexInput openInput(final String name) throws IOException {
-    return openInput(name,_blockSize);
+    return openInput(name, _blockSize);
   }
 
   static class CachedIndexInput extends CustomBufferedIndexInput {
@@ -112,21 +112,12 @@ public class BlockDirectory extends DirectIODirectory {
     private String _cacheName;
     private Cache _cache;
 
-    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache) {
-      super(name);
+    public CachedIndexInput(IndexInput source, int blockSize, String name, String cacheName, Cache cache, int bufferSize) {
+      super(name, bufferSize);
       _source = source;
       _blockSize = blockSize;
       _fileLength = source.length();
-      _cacheName = dirName + "/" + name;
-      _cache = cache;
-    }
-
-    public CachedIndexInput(IndexInput source, int blockSize, String dirName, String name, Cache cache, int bufferSize) {
-      super(name,bufferSize);
-      _source = source;
-      _blockSize = blockSize;
-      _fileLength = source.length();
-      _cacheName = dirName + "/" + name;
+      _cacheName = cacheName;
       _cache = cache;
     }
 
@@ -141,11 +132,6 @@ public class BlockDirectory extends DirectIODirectory {
     public long length() {
       return _source.length();
     }
-
-//    @Override
-//    public void close() throws IOException {
-//      _source.close();
-//    }
 
     @Override
     protected void seekInternal(long pos) throws IOException {
@@ -179,8 +165,7 @@ public class BlockDirectory extends DirectIODirectory {
       long position = getRealPosition(blockId, 0);
       int length = (int) Math.min(_blockSize, _fileLength - position);
       _source.seek(position);
-      
-      
+
       byte[] buf = BufferStore.takeBuffer(_blockSize);
       _source.readBytes(buf, 0, length);
       System.arraycopy(buf, blockOffset, b, off, lengthToReadInBlock);
@@ -200,7 +185,15 @@ public class BlockDirectory extends DirectIODirectory {
 
   @Override
   public void close() throws IOException {
+    String[] files = listAll();
+    for (String file : files) {
+      _cache.delete(getFileCacheName(file));
+    }
     _directory.close();
+  }
+
+  private String getFileCacheName(String name) throws IOException {
+    return _dirName + "/" + name + ":" + fileModified(name);
   }
 
   public void clearLock(String name) throws IOException {
@@ -245,8 +238,8 @@ public class BlockDirectory extends DirectIODirectory {
   }
 
   public void deleteFile(String name) throws IOException {
+    _cache.delete(getFileCacheName(name));
     _directory.deleteFile(name);
-    _cache.delete(name);
   }
 
   public boolean fileExists(String name) throws IOException {

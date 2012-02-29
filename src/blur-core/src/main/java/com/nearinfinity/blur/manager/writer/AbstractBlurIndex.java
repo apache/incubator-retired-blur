@@ -88,6 +88,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
   @Override
   public void close() throws IOException {
     close(null);
+    _directory.close();
   }
 
   public void close(Callable<Void> innerClose) throws IOException {

@@ -232,7 +232,7 @@ struct SimpleQuery {
   2:bool superQueryOn = 1,
   3:ScoreType type = ScoreType.SUPER, 
   4:string postSuperFilter,
-  5:string preSuperFilter,
+  5:string preSuperFilter
 }
 
 struct ExpertQuery {
@@ -249,7 +249,13 @@ struct BlurQuery {
   1:SimpleQuery simpleQuery,
   2:ExpertQuery expertQuery,
   3:list<Facet> facets,
+  /**
+   * Selector is used to fetch data in the search results, if null only location ids will be fetched.
+   */
   4:Selector selector,
+  /**
+   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
+   */
   5:bool allowStaleData = 0,
   6:bool useCacheIfPresent = 1,
   7:i64 start = 0,

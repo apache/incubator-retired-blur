@@ -739,14 +739,14 @@ public class IndexManager {
     }
   }
 
-  private boolean isSameRecord(Record existingRecord, Record mutationRecord) {
-    if (existingRecord.recordId.equals(mutationRecord.recordId)) {
-      if (existingRecord.family.equals(mutationRecord.family)) {
-        return true;
-      }
-    }
-    return false;
-  }
+//  private boolean isSameRecord(Record existingRecord, Record mutationRecord) {
+//    if (existingRecord.recordId.equals(mutationRecord.recordId)) {
+//      if (existingRecord.family.equals(mutationRecord.family)) {
+//        return true;
+//      }
+//    }
+//    return false;
+//  }
 
   private int getNumberOfShards(String table) {
     return _indexServer.getShardCount(table);

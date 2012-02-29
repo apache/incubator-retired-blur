@@ -1,7 +1,6 @@
 package com.nearinfinity.blur.manager.writer;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.lucene.index.IndexReader;
 

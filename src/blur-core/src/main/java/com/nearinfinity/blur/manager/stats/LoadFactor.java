@@ -1,7 +1,5 @@
 package com.nearinfinity.blur.manager.stats;
 
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -15,36 +13,36 @@ public class LoadFactor {
   
   private static final Log LOG = LogFactory.getLog(LoadFactor.class);
 
-  public static void main(String[] args) throws InterruptedException {
-    LoadFactor loadFactor = new LoadFactor();
-    loadFactor.init();
-    loadFactor.add("heapUsed", new Sampler() {
-      private MemoryMXBean bean = ManagementFactory.getMemoryMXBean();
-
-      @Override
-      public long sample() {
-        return bean.getHeapMemoryUsage().getUsed();
-      }
-    });
-
-    new Thread(new Runnable() {
-      @Override
-      public void run() {
-        long total = 0;
-        while (true) {
-          total += doWork();
-        }
-      }
-    }).start();
-
-    while (true) {
-      System.out.println("one     = " + (long) loadFactor.getOneMinuteLoadFactor("heapUsed"));
-      System.out.println("five    = " + (long) loadFactor.getFiveMinuteLoadFactor("heapUsed"));
-      System.out.println("fifteen = " + (long) loadFactor.getFifteenMinuteLoadFactor("heapUsed"));
-      Thread.sleep(5000);
-    }
-
-  }
+//  public static void main(String[] args) throws InterruptedException {
+//    LoadFactor loadFactor = new LoadFactor();
+//    loadFactor.init();
+//    loadFactor.add("heapUsed", new Sampler() {
+//      private MemoryMXBean bean = ManagementFactory.getMemoryMXBean();
+//
+//      @Override
+//      public long sample() {
+//        return bean.getHeapMemoryUsage().getUsed();
+//      }
+//    });
+//
+//    new Thread(new Runnable() {
+//      @Override
+//      public void run() {
+//        long total = 0;
+//        while (true) {
+//          total += doWork();
+//        }
+//      }
+//    }).start();
+//
+//    while (true) {
+//      System.out.println("one     = " + (long) loadFactor.getOneMinuteLoadFactor("heapUsed"));
+//      System.out.println("five    = " + (long) loadFactor.getFiveMinuteLoadFactor("heapUsed"));
+//      System.out.println("fifteen = " + (long) loadFactor.getFifteenMinuteLoadFactor("heapUsed"));
+//      Thread.sleep(5000);
+//    }
+//
+//  }
 
   protected static int doWork() {
     StringBuilder builder = new StringBuilder();

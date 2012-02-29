@@ -22,7 +22,7 @@
           evtEl.addClass('osxSelected').siblings().removeClass('osxSelected');
           var url = evtEl.children('a').attr('href');
           self._requestNextFinderWindow(url);
-          self._trigger("navigated", null, {'url':url.replace('expand', 'show')});
+          self._trigger("navigated", null, {'url':url.replace(/expand|file_info/, 'show')});
         }
       });
       self._trigger("done");

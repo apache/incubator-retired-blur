@@ -367,10 +367,6 @@
 // root => /
   root_path: function(options) {
   return Utils.build_path(0, ["/"], [], arguments)
-  },
-// rails_info_properties => /rails/info/properties(.:format)
-  rails_info_properties_path: function(options) {
-  return Utils.build_path(0, ["/rails/info/properties"], ["format"], arguments)
   }}
 ;
   window.Routes.options = defaults;

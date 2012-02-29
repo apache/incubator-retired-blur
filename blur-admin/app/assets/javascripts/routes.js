@@ -312,9 +312,9 @@
   blur_query_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_queries/"], ["format"], arguments)
   },
-// hdfs => /hdfs(.:format)
+// hdfs => /hdfs(/:id/show(/*fs_path))(.:format)
   hdfs_path: function(options) {
-  return Utils.build_path(0, ["/hdfs"], ["format"], arguments)
+  return Utils.build_path(0, ["/hdfs(/", "/show(/*fs_path))"], ["fs_path", "id", "format"], arguments)
   },
 // hdfs_info => /hdfs/:id/info(.:format)
   hdfs_info_path: function(_id, options) {
@@ -328,13 +328,13 @@
   hdfs_slow_folder_info_path: function(_id, options) {
   return Utils.build_path(1, ["/hdfs/", "/slow_folder_info"], ["format"], arguments)
   },
-// hdfs_expand => /hdfs/:id/expand(*fs_path)(.:format)
+// hdfs_expand => /hdfs/:id/expand(*fs_path)
   hdfs_expand_path: function(_id, options) {
-  return Utils.build_path(1, ["/hdfs/", "/expand(*fs_path)"], ["fs_path", "format"], arguments)
+  return Utils.build_path(1, ["/hdfs/", "/expand(*fs_path)"], ["fs_path"], arguments)
   },
-// hdfs_file_info => /hdfs/:id/file_info(*fs_path)(.:format)
+// hdfs_file_info => /hdfs/:id/file_info(*fs_path)
   hdfs_file_info_path: function(_id, options) {
-  return Utils.build_path(1, ["/hdfs/", "/file_info(*fs_path)"], ["fs_path", "format"], arguments)
+  return Utils.build_path(1, ["/hdfs/", "/file_info(*fs_path)"], ["fs_path"], arguments)
   },
 // hdfs_move => /hdfs/:id/move(.:format)
   hdfs_move_path: function(_id, options) {

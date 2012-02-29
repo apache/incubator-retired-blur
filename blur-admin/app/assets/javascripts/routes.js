@@ -152,6 +152,14 @@
   user_sessions_path: function(options) {
   return Utils.build_path(0, ["/user_sessions"], ["format"], arguments)
   },
+// login => /login(.:format)
+  login_path: function(options) {
+  return Utils.build_path(0, ["/login"], ["format"], arguments)
+  },
+// logout => /logout(.:format)
+  logout_path: function(options) {
+  return Utils.build_path(0, ["/logout"], ["format"], arguments)
+  },
 // user_preference => /users/:user_id/preferences/:pref_type(.:format)
   user_preference_path: function(_user_id, _pref_type, options) {
   return Utils.build_path(2, ["/users/", "/preferences/"], ["format"], arguments)
@@ -183,6 +191,30 @@
 // edit_search => /search/edit(.:format)
   edit_search_path: function(options) {
   return Utils.build_path(0, ["/search/edit"], ["format"], arguments)
+  },
+// search_load => /search/load/:search_id(.:format)
+  search_load_path: function(_search_id, options) {
+  return Utils.build_path(1, ["/search/load/"], ["format"], arguments)
+  },
+// delete_search => /search/delete/:search_id/:blur_table(.:format)
+  delete_search_path: function(_search_id, _blur_table, options) {
+  return Utils.build_path(2, ["/search/delete/", "/"], ["format"], arguments)
+  },
+// fetch_results => /search/:search_id/:blur_table(.:format)
+  fetch_results_path: function(_search_id, _blur_table, options) {
+  return Utils.build_path(2, ["/search/", "/"], ["format"], arguments)
+  },
+// search_save => /search/save(.:format)
+  search_save_path: function(options) {
+  return Utils.build_path(0, ["/search/save"], ["format"], arguments)
+  },
+// update_search => /search/:search_id(.:format)
+  update_search_path: function(_search_id, options) {
+  return Utils.build_path(1, ["/search/"], ["format"], arguments)
+  },
+// search_filters => /search/:blur_table_id/filters(.:format)
+  search_filters_path: function(_blur_table_id, options) {
+  return Utils.build_path(1, ["/search/", "/filters"], ["format"], arguments)
   },
 // zookeepers => /zookeepers(.:format)
   zookeepers_path: function(options) {
@@ -220,21 +252,21 @@
   destroy_zookeeper_path: function(_id, options) {
   return Utils.build_path(1, ["/zookeepers/"], ["format"], arguments)
   },
-// delete_selected_blur_tables => /blur_tables/destroy(.:format)
-  delete_selected_blur_tables_path: function(options) {
-  return Utils.build_path(0, ["/blur_tables/destroy"], ["format"], arguments)
-  },
-// enable_selected_blur_tables => /blur_tables/enable(.:format)
-  enable_selected_blur_tables_path: function(options) {
+// enable_selected_blur_tables_blur_tables => /blur_tables/enable(.:format)
+  enable_selected_blur_tables_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/enable"], ["format"], arguments)
   },
-// disable_selected_blur_tables => /blur_tables/disable(.:format)
-  disable_selected_blur_tables_path: function(options) {
+// disable_selected_blur_tables_blur_tables => /blur_tables/disable(.:format)
+  disable_selected_blur_tables_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/disable"], ["format"], arguments)
   },
-// forget_selected_blur_tables => /blur_tables/forget(.:format)
-  forget_selected_blur_tables_path: function(options) {
+// forget_selected_blur_tables_blur_tables => /blur_tables/forget(.:format)
+  forget_selected_blur_tables_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/forget"], ["format"], arguments)
+  },
+// destroy_selected_blur_tables_blur_tables => /blur_tables(.:format)
+  destroy_selected_blur_tables_blur_tables_path: function(options) {
+  return Utils.build_path(0, ["/blur_tables"], ["format"], arguments)
   },
 // hosts_blur_table => /blur_tables/:id/hosts(.:format)
   hosts_blur_table_path: function(_id, options) {
@@ -251,18 +283,6 @@
 // blur_tables => /blur_tables(.:format)
   blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables"], ["format"], arguments)
-  },
-// new_blur_table => /blur_tables/new(.:format)
-  new_blur_table_path: function(options) {
-  return Utils.build_path(0, ["/blur_tables/new"], ["format"], arguments)
-  },
-// edit_blur_table => /blur_tables/:id/edit(.:format)
-  edit_blur_table_path: function(_id, options) {
-  return Utils.build_path(1, ["/blur_tables/", "/edit"], ["format"], arguments)
-  },
-// blur_table => /blur_tables/:id(.:format)
-  blur_table_path: function(_id, options) {
-  return Utils.build_path(1, ["/blur_tables/"], ["format"], arguments)
   },
 // refresh => /blur_queries/refresh/:time_length(.:format)
   refresh_path: function(_time_length, options) {
@@ -291,42 +311,6 @@
 // blur_query => /blur_queries/:id(.:format)
   blur_query_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_queries/"], ["format"], arguments)
-  },
-// search_filters => /search/:blur_table_id/filters(.:format)
-  search_filters_path: function(_blur_table_id, options) {
-  return Utils.build_path(1, ["/search/", "/filters"], ["format"], arguments)
-  },
-// login => /login(.:format)
-  login_path: function(options) {
-  return Utils.build_path(0, ["/login"], ["format"], arguments)
-  },
-// logout => /logout(.:format)
-  logout_path: function(options) {
-  return Utils.build_path(0, ["/logout"], ["format"], arguments)
-  },
-// search_load => /search/load/:search_id(.:format)
-  search_load_path: function(_search_id, options) {
-  return Utils.build_path(1, ["/search/load/"], ["format"], arguments)
-  },
-// delete_search => /search/delete/:search_id/:blur_table(.:format)
-  delete_search_path: function(_search_id, _blur_table, options) {
-  return Utils.build_path(2, ["/search/delete/", "/"], ["format"], arguments)
-  },
-// fetch_results => /search/:search_id/:blur_table(.:format)
-  fetch_results_path: function(_search_id, _blur_table, options) {
-  return Utils.build_path(2, ["/search/", "/"], ["format"], arguments)
-  },
-// search_save => /search/save(.:format)
-  search_save_path: function(options) {
-  return Utils.build_path(0, ["/search/save"], ["format"], arguments)
-  },
-// update_search => /search/:search_id(.:format)
-  update_search_path: function(_search_id, options) {
-  return Utils.build_path(1, ["/search/"], ["format"], arguments)
-  },
-// help => /help/:tab(.:format)
-  help_path: function(_tab, options) {
-  return Utils.build_path(1, ["/help/"], ["format"], arguments)
   },
 // hdfs => /hdfs(.:format)
   hdfs_path: function(options) {
@@ -376,9 +360,17 @@
   hdfs_structure_path: function(_id, options) {
   return Utils.build_path(1, ["/hdfs/", "/structure"], ["format"], arguments)
   },
+// help => /help/:tab(.:format)
+  help_path: function(_tab, options) {
+  return Utils.build_path(1, ["/help/"], ["format"], arguments)
+  },
 // root => /
   root_path: function(options) {
   return Utils.build_path(0, ["/"], [], arguments)
+  },
+// rails_info_properties => /rails/info/properties(.:format)
+  rails_info_properties_path: function(options) {
+  return Utils.build_path(0, ["/rails/info/properties"], ["format"], arguments)
   }}
 ;
   window.Routes.options = defaults;

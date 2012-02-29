@@ -1,14 +1,11 @@
 require 'spec_helper'
 
 describe HdfsMetricsController do
-  before(:each) do
-    @ability = Ability.new User.new
-    @ability.stub!(:can?).and_return(true)
-    controller.stub!(:current_ability).and_return(@ability)
-  end
-
   describe "actions" do
     before(:each) do
+      @ability = Ability.new User.new
+      @ability.stub!(:can?).and_return(true)
+      controller.stub!(:current_ability).and_return(@ability)
       @hdfs_index = FactoryGirl.create_list :hdfs, 2
       Hdfs.stub(:all).and_return(@hdfs_index)
     end

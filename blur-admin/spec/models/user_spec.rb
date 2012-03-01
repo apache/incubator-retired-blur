@@ -82,5 +82,11 @@ describe 'User Model' do
       @user.should be_valid
     end
   end
+
+  describe 'ability' do
+    it 'should create a new ability when an ability isnt cached' do
+      pending
+    end
+  end
 end
 

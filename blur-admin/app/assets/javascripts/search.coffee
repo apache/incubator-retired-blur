@@ -4,7 +4,7 @@ $(document).ready ->
     headerHeight = parseInt($('#top').css('height'))
     footerHeight = parseInt($('#ft').css('height'))
     resultWrapper = $('#results_wrapper')
-    $('#results_wrapper').css('height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 10))
+    $('#results_wrapper').css('max-height', window.innerHeight - (footerHeight + headerHeight + parseInt(resultWrapper.css('margin-top')) + 10))
   
   hide_all_tabs = () ->
     $('.tab:visible').slideUp 'fast'

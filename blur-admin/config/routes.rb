@@ -42,7 +42,7 @@ BlurAdmin::Application.routes.draw do
   end
 
   match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh
-  resources :blur_queries do
+  resources :blur_queries, :only => :index do
     member do
       get 'more_info'
       get 'times'

@@ -34,38 +34,51 @@ describe BlurQueriesController do
           response.should render_template "index"
         end
       end
-
     end
 
     describe "GET refresh" do
       before do
-        mock_time = Time.local(2011, 6, 28, 10, 20, 30)
-        Time.stub(:now).and_return(mock_time + 30.seconds)
-
-        # Set up association chain
         @zookeeper  = FactoryGirl.create :zookeeper
         @blur_table = FactoryGirl.create :blur_table
-        @blur_query = FactoryGirl.create :blur_query, :created_at => mock_time
+        @blur_query = FactoryGirl.create :blur_query
 
         @zookeeper.stub(:blur_tables).and_return([@blur_table])
-        BlurQuery.stub_chain(:joins, :where, :includes, :order, :filter_on_time_range).and_return([@blur_query])
+        BlurQuery.stub_chain(:where_zookeeper, :where).and_return([@blur_query])
         @blur_query.stub(:zookeeper).and_return(@zookeeper)
+        @blur_query.stub(:blur_table).and_return(@blur_table)
 
         # ApplicationController.current_zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
         Zookeeper.stub_chain(:order, :first).and_return @zookeeper
-
       end
+
       it "assigns the current zookeeper to @current_zookeeper" do
-        pending "New Table Implementation"
-        get :refresh, :time_since_refresh => ''
+        get :refresh, :time_length => 1
         assigns(:current_zookeeper).should == @zookeeper
+      end
+
+      it "calls the sql with the proper parameters" do
+        BlurQuery.should_receive(:where_zookeeper).with(@zookeeper.id).and_return(@blur_query)
+        @blur_query.should_receive(:where)
+          .with('blur_queries.updated_at > ?', kind_of(ActiveSupport::TimeWithZone))
+          .and_return([@blur_query])
+        get :refresh, :time_length => 1
+      end
+
+      it "calls summary on each of the queries" do
+        @blur_queries = FactoryGirl.create_list :blur_query, 3
+        @blur_queries.each do |query|
+          query.should_receive(:summary).with(@user).and_return({})
+        end
+        BlurQuery.stub_chain(:where_zookeeper, :where).and_return(@blur_queries)
+        get :refresh, :time_length => 1
       end
     end
 
     describe "PUT update" do
       before do
         BlurQuery.stub!(:find).and_return(@blur_query)
+        @blur_query.stub!(:cancel)
       end
 
       it "should assign @blur_query to be the blur query specified by the id parameter" do
@@ -91,16 +104,16 @@ describe BlurQueriesController do
     end
 
     describe "GET more_info" do
-      it "should render the more_info partial" do
-        BlurQuery.stub_chain(:includes, :find)
-        get :more_info, :id => '1'
-        response.should render_template(:partial => '_more_info')
-      end
-
       it "should assign @blur_query to be the blur query specified by the id parameter" do
-        BlurQuery.stub_chain(:includes, :find).and_return(@blur_query)
+        BlurQuery.stub_chain(:find).and_return(@blur_query)
         get :more_info, :id => '1'
         assigns(:blur_query).should == @blur_query
+      end
+
+      it "should render the more_info partial" do
+        BlurQuery.stub_chain(:find)
+        get :more_info, :id => '1'
+        response.should render_template(:partial => '_more_info')
       end
     end
   end

@@ -6,15 +6,12 @@ class BlurQueriesController < ApplicationController
 
   def refresh
     lower_range = params[:time_length].to_i.minute.ago
-    queries = BlurQuery.where_zookeeper(@current_zookeeper.id)
-      .where("blur_queries.updated_at > ?", lower_range)
-      .includes(:blur_table).all
+    queries = BlurQuery.where_zookeeper(@current_zookeeper.id).where("blur_queries.updated_at > ?", lower_range)
     query_summaries = queries.collect do |query| 
       summary = query.summary(current_user)
       summary[:action] = ''
       summary
     end
-    
     render :json => {:aaData => query_summaries}.to_json
   end
 

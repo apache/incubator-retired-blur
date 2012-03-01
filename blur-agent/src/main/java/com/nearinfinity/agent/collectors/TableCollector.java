@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.thrift.TException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -15,6 +16,7 @@ import com.nearinfinity.agent.TableMap;
 import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
@@ -23,10 +25,11 @@ public class TableCollector {
 	private static final Log log = LogFactory.getLog(TableCollector.class);
 	
 	public static void startCollecting(String connection, final String zookeeperName, final JdbcTemplate jdbc) {
+		log.debug("Collecting table info");
 		try {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
 				@Override
-				public Void call(Client client) {
+				public Void call(Client client) throws BlurException, TException {
 					List<Map<String, Object>> zookeepers = jdbc.queryForList("select id from zookeepers where name = ?", zookeeperName);
 					
 					if (zookeepers.size() != 1) {
@@ -42,9 +45,12 @@ public class TableCollector {
 						List<String> tables = null;
 						try {
 							tables = client.tableListByCluster(clusterName);
-						} catch (Exception e) {
+						} catch (BlurException e) {
 							log.error("Unable to get table list for cluster [" + clusterName + "].  Unable to retrieve stats for tables.", e);
-							return null;
+							throw e;
+						} catch (TException e) {
+							log.error("Unable to get table list for cluster [" + clusterName + "].  Unable to retrieve stats for tables.", e);
+							throw e;
 						}
 						
 						if (tables != null) {
@@ -150,7 +156,7 @@ public class TableCollector {
 				}
 			});
 		} catch (Exception e) {
-			log.debug(e);
+			log.warn("Got an error while collecting tables.  Will try again next pass.", e);
 		}
 	}
 }

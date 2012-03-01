@@ -9,6 +9,7 @@ import java.util.TimeZone;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.thrift.TException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONValue;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,6 +18,7 @@ import com.nearinfinity.agent.TableMap;
 import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
 import com.nearinfinity.blur.thrift.generated.SimpleQuery;
 
@@ -24,10 +26,11 @@ public class QueryCollector {
 	private static final Log log = LogFactory.getLog(QueryCollector.class);
 	
 	public static void startCollecting(String connection, final String zookeeperName, final JdbcTemplate jdbc) {
+		log.debug("Collecting queries");
 		try {
 			BlurClientManager.execute(connection, new BlurCommand<Void>() {
 				@Override
-				public Void call(Client client) {
+				public Void call(Client client) throws BlurException, TException {
 					Calendar now = getUTCCal(new Date().getTime());
 					
 					Calendar twoMinutesAgo = Calendar.getInstance();
@@ -49,9 +52,12 @@ public class QueryCollector {
 						List<String> tables = null;
 						try {
 							tables = client.tableListByCluster(clusterName);
-						} catch (Exception e) {
-							log.error("Unable to get table list for cluster [" + clusterName + "].  Unable to retrieve stats for tables.", e);
-							return null;
+						} catch (BlurException e) {
+							log.error("Unable to get table list for cluster [" + clusterName + "].  Unable to retrieve queries for tables.", e);
+							throw e;
+						} catch (TException e) {
+							log.error("Unable to get table list for cluster [" + clusterName + "].  Unable to retrieve queries for tables.", e);
+							throw e;
 						}
 						
 						if (tables != null) {
@@ -152,7 +158,7 @@ public class QueryCollector {
 				}
 			});
 		} catch (Exception e) {
-			log.debug(e);
+			log.warn("Got an error while collecting queries.  Will try again next pass.", e);
 		}
 		
 	}

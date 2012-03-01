@@ -1,28 +1,28 @@
-%tr[blur_query]{'data-age' => Time.now - blur_query.created_at }>
-  %td.userid= print_value(blur_query.userid)
+%tr[@blur_query]{'data-age' => Time.now - @blur_query.created_at }>
+  %td.userid= print_value(@blur_query.userid)
   - if can? :index, :blur_queries, :query_string
-    - if blur_query.query_string
-      %td.query_string{:title => format_title(blur_query.query_string)}
-        = truncate(blur_query.query_string, :length => 75, :ommision => "...")
+    - if @blur_query.query_string
+      %td.query_string{:title => format_title(@blur_query.query_string)}
+        = truncate(@blur_query.query_string, :length => 75, :ommision => "...")
     - else
       %td.query_string
         = 'Not Available'
-  %td= print_value(blur_query.blur_table.table_name)
-  %td.start= print_value(blur_query.start)
-  %td.fetch_num= print_value(blur_query.fetch_num)
+  %td= print_value(@blur_query.blur_table.table_name)
+  %td.start= print_value(@blur_query.start)
+  %td.fetch_num= print_value(@blur_query.fetch_num)
   %td
-    - if blur_query.state == 0
-      = print_value(blur_query.complete) {number_to_percentage(100 * blur_query.complete, :precision => 0)}
-    - elsif blur_query.state == 1
-      = print_value(blur_query.complete) {number_to_percentage(100 * blur_query.complete, :precision => 0)}
+    - if @blur_query.state == 0
+      = print_value(@blur_query.complete) {number_to_percentage(100 * @blur_query.complete, :precision => 0)}
+    - elsif @blur_query.state == 1
+      = print_value(@blur_query.complete) {number_to_percentage(100 * @blur_query.complete, :precision => 0)}
       (Interrupted)
     - else
       Complete
   %td.query-actions
     - if can? :update, :blur_queries
-      - if blur_query.state == 0
-        = form_tag blur_query_path(blur_query), :method => :put, :remote => true, :class => :cancel do
+      - if @blur_query.state == 0
+        = form_tag @blur_query_path(@blur_query), :method => :put, :remote => true, :class => :cancel do
           = hidden_field_tag :cancel, true
           = tag :input, :type => :button, :value => 'Cancel', :class => "cancel_query_button btn"
-    = link_to "More Info", more_info_blur_query_path(blur_query), :class => 'more_info', :remote => true, :style => 'margin-right: 3px'
-    = link_to "Times", times_blur_query_path(blur_query), :class => 'times', :remote => true
+    = link_to "More Info", more_info_blur_query_path(@blur_query), :class => 'more_info', :remote => true, :style => 'margin-right: 3px'
+    = link_to "Times", times_blur_query_path(@blur_query), :class => 'times', :remote => true

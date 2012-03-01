@@ -41,12 +41,9 @@ class ZookeepersController < ApplicationController
 
   def show_current
     @zookeeper = @current_zookeeper
-
     @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
     @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'
-    respond_to do |format|
-      format.html { render :show_current }
-    end
+    render :show_current
   end
 
   def make_current
@@ -58,10 +55,7 @@ class ZookeepersController < ApplicationController
     zookeeper_results = []
     connection = ActiveRecord::Base.connection()
     connection.execute(QUERY).each(:as => :hash) { |row| zookeeper_results << row }
-
-    respond_to do |format|
-      format.json { render :json => zookeeper_results }
-    end
+    render :json => zookeeper_results
   end
 
   def destroy_shard

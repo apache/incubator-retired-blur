@@ -49,7 +49,12 @@ $(document).ready ->
   # Reload the filters when the table selector is changed
   $('#blur_table').change ->
     $('#filter_columns').addClass('hidden')
-    $('#filter_columns').load Routes.search_filters_path($(this).val()), setup_filter_tree
+    $.ajax
+      url: Routes.search_filters_path($(this).val())
+      type: 'PUT'
+      success: (data) =>
+        $('#filter_columns').html(data)
+        setup_filter_tree()
       
   # listener that checks if the submit button should be enabled on keystrokes
   $('#query_string, #save_name').live "keydown", (name) ->

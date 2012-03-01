@@ -179,6 +179,8 @@ public class BlurClientManager {
               if (handleError(connection,client,retries,command,t,maxRetries,backOffTime,maxBackOffTime)) {
                 throw t;
               }
+            } else {
+              throw e;
             }
           } catch (TTransportException e) {
             if (handleError(connection,client,retries,command,e,maxRetries,backOffTime,maxBackOffTime)) {

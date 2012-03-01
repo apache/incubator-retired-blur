@@ -2,7 +2,6 @@ class BlurTablesController < ApplicationController
 
   before_filter :current_zookeeper, :only => [:index, :reload, :enable, :disable, :destroy, :reload, :forget]
   before_filter :zookeepers, :only => :index
-  before_filter :table, :except => [:index, :reload, :update_all, :delete_all, :forget, :forget_all, :enable, :disable, :destroy]
 
   def index
     @blur_tables = @current_zookeeper.blur_tables.order('status DESC, table_name ASC').includes('cluster')
@@ -16,8 +15,8 @@ class BlurTablesController < ApplicationController
   def enable
     params[:tables].map {|table| BlurTable.find(table)}.each do |table|
       table.status = STATUS[:enabling]
-        table.save
-        table.enable @current_zookeeper.blur_urls
+      table.save
+      table.enable @current_zookeeper.blur_urls
     end
     render_table_json
   end
@@ -26,7 +25,7 @@ class BlurTablesController < ApplicationController
     params[:tables].map {|table| BlurTable.find(table)}.each do |table|
       table.status = STATUS[:disabling]
       table.save
-      table.disable(@current_zookeeper.blur_urls)
+      table.disable @current_zookeeper.blur_urls
     end
     render_table_json
   end
@@ -49,24 +48,16 @@ class BlurTablesController < ApplicationController
   end
 
   def schema
-    respond_to do |format|
-      format.html {render :partial => 'schema', :locals => {:blur_table => @table}}
-    end
+    render :partial => 'schema', :locals => {:blur_table => BlurTable.find(params[:id])}
   end
 
   def hosts
-    respond_to do |format|
-      format.html {render :partial => 'hosts', :locals => {:blur_table => @table}}
-    end
+    render :partial => 'hosts', :locals => {:blur_table => BlurTable.find(params[:id])}
   end
       
   private
     STATUS = {:enabling => 5, :active => 4, :disabling => 3, :disabled => 2, :deleting => 1, :deleted => 0}
     STATUS_SELECTOR = {:active => [4, 3], :disabled => [2, 5, 1], :deleted => [0]}
-  
-    def table
-      @table = BlurTable.find(params[:id])
-    end
     
     def render_table_json
       tables = @current_zookeeper.blur_tables.order('table_name ASC').includes('cluster')

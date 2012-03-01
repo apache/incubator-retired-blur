@@ -22,7 +22,7 @@
           evtEl.addClass('osxSelected').siblings().removeClass('osxSelected');
           var url = evtEl.children('a').attr('href');
           self._requestNextFinderWindow(url);
-          self._trigger("navigated", null, {'url':url.replace('expand', 'show')});
+          self._trigger("navigated", null, {'url':url.replace(/expand|file_info/, 'show')});
         }
       });
       self._trigger("done");
@@ -65,7 +65,7 @@
       // Take the path array and build the folder directory
       var buildFileTreeFromPath = function(pathPieces, currentPath){
         for( pieceIndex in pathPieces ){
-          var piece = pathPieces[pieceIndex];
+          var piece = unescape(pathPieces[pieceIndex]);
           currentPath += '/' + piece;
           // Find the folder
           var selectedFolder = el.find('li[hdfs_path="' + currentPath + '"]');

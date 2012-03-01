@@ -145,11 +145,6 @@ describe Ability do
       @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'column'
       @ability.should_not be_able_to :update, @preference
     end
-
-    it "can change own filter preferences" do
-      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'filter'
-      @ability.should be_able_to :update, @preference
-    end
   end
 
   describe "when an editor" do

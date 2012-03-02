@@ -242,7 +242,7 @@ public class Agent {
 					updateNodeOverageInfo(jdbc, licenseFileLines, props);
 				}
 			}
-		}).start();
+		}, "Node Count Monitor").start();
 	}
 	
 	private void monitorClusterCount(final List<String> licenseFileLines, final JdbcTemplate jdbc) {
@@ -258,7 +258,7 @@ public class Agent {
 					updateClusterOverageInfo(jdbc, licenseFileLines);
 				}
 			}
-		}).start();
+		}, "Cluster Count Monitor").start();
 	}
 	
 	private void updateClusterOverageInfo(JdbcTemplate jdbc, List<String> licenseFileLines) {
@@ -384,7 +384,7 @@ public class Agent {
 							}
 						}
 					}
-				}).start();
+				}, "Query Collector - " + zookeeper).start();
 				new Thread(new Runnable(){
 					@Override
 					public void run() {
@@ -397,7 +397,7 @@ public class Agent {
 							}
 						}
 					}
-				}).start();
+				}, "Query Cleaner - " + zookeeper).start();
 			}
 		}
 		if (activeCollectors.contains("tables")) {
@@ -416,7 +416,7 @@ public class Agent {
 							}
 						}
 					}
-				}).start();
+				}, "Table Collector - " + zookeeper).start();
 			}
 		}
 
@@ -444,7 +444,7 @@ public class Agent {
 							}
 						}
 					}
-				}).start();
+				}, "HDFS Collector - " + name).start();
 				new Thread(new Runnable(){
 					@Override
 					public void run() {
@@ -457,7 +457,7 @@ public class Agent {
 							}
 						}
 					}
-				}).start();
+				}, "HDFS Cleaner - " + name).start();
 			}
 		}
 	}
@@ -485,7 +485,7 @@ public class Agent {
 			List<String> zooKeeperInstances = new ArrayList<String>(Arrays.asList(props.getProperty("zk.instances").split("\\|")));
 			for (String zkInstance : zooKeeperInstances) {
 				String zkUrl = props.getProperty("zk."+zkInstance+".url");
-				new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props)).start();
+				new Thread(new ZookeeperInstance(zkInstance, zkUrl, jdbc, props), "Zookeeper-" + zkInstance).start();
 			}
 		}
 	}

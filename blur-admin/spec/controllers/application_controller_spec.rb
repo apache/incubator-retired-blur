@@ -32,14 +32,14 @@ describe ApplicationController do
       end
 
       it "with a current user and no ability to view the root page redirects to logout_url" do 
-        @user = FactoryGirl.create :user, :roles => '0'
+        @user = FactoryGirl.create :user, :roles => []
         controller.stub!(:current_user).and_return(@user)
         get 'help', :tab => 'search'
         response.should redirect_to(logout_url)
       end
 
       it "with a current user and ability to view the root page redirects to index zookeeper" do 
-        @user = FactoryGirl.create :user, :roles => '0'
+        @user = FactoryGirl.create :user, :roles => []
         controller.stub!(:current_user).and_return(@user)
         controller.stub!(:can?).and_return(true)
         get 'help', :tab => 'search'

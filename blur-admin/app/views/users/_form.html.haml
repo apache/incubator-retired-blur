@@ -18,12 +18,15 @@
       - elsif user[field_name]
         %strong= "#{field_name}: "
         = user[field_name]
-
-  =f.toggles 'Roles' do
-    - User.valid_roles.each do |role|
-      - if (!user.new_record? and can? :update, user, role) |
-        or ( user.new_record? and can? :create, user, role) |
-        = f.check_box role, role.capitalize
+  %label 
+    Roles
+    %ul.inputs-list
+      - User::ROLES.each do |role|
+        %li
+          - if (user.is? :admin)
+            = check_box_tag "user[roles][]", role, user.is?(role) 
+            %span
+              =role.to_s.humanize
   - if current_user
     = f.submit 'Save'
   - else

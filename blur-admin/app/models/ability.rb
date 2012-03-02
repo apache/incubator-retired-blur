@@ -4,7 +4,6 @@ class Ability
   def initialize(user)
 
     if user # logged in
-
       # view, edit, and destroy own account
       can [:show, :edit, :destroy], :users, :id => user.id
 
@@ -14,8 +13,7 @@ class Ability
       # logout
       can :destroy, :user_sessions
 
-      if user.role? :reader
-
+      if user.reader?
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
         can :show, [:zookeepers, :help]
@@ -45,24 +43,24 @@ class Ability
 
       end
 
-      if user.role? :editor
+      if user.editor?
         can [:enable, :disable, :destroy, :update_all, :delete_all, :forget, :forget_all], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper], :zookeepers
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 
-      if user.role? :auditor
+      if user.auditor?
         can :index, :blur_queries, :query_string
         can :more_info, :blur_queries, :query_string
       end
 
-      if user.role? :admin
+      if user.admin?
         can [:index, :edit, :destroy, :create, :new], :users
-        can :update, :users, [:email, User.valid_roles]
+        can :update, :users, [:email, :roles]
       end
 
-      if user.role? :searcher
+      if user.searcher?
         # search
         can :access, :search
 

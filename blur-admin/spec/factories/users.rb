@@ -5,7 +5,7 @@ FactoryGirl.define do
 		sequence (:email)     {|n| "user#{n}@example.com"}
 		password              "password"
 		password_confirmation "password"
-		roles                 {User.valid_roles}
+		roles                 {['editor', 'admin', 'reader', 'auditor', 'searcher']}
 
     factory :user_with_preferences do
       after_create do |user|

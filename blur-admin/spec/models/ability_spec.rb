@@ -30,7 +30,7 @@ describe Ability do
     end
 
     it "can not create a user (register) with roles" do
-      User.valid_roles.each do |role|
+      User::ROLES.each do |role|
         @ability.should_not be_able_to :create, :users, role
       end
     end
@@ -121,7 +121,7 @@ describe Ability do
 
   describe "when a reader" do
     before(:each) do
-      @user = FactoryGirl.create :user, :roles => [:reader]
+      @user = FactoryGirl.create :user, :roles => ['reader']
       @ability = Ability.new @user
     end
 
@@ -149,7 +149,7 @@ describe Ability do
 
   describe "when an editor" do
     before(:each) do
-      @user = FactoryGirl.create :user, :roles => [:editor]
+      @user = FactoryGirl.create :user, :roles => ['editor']
       @ability = Ability.new @user
     end
   
@@ -166,7 +166,7 @@ describe Ability do
 
   describe "when an auditor" do
     before(:each) do
-      @user = FactoryGirl.create :user, :roles => [:auditor]
+      @user = FactoryGirl.create :user, :roles => ['auditor']
       @ability = Ability.new @user
     end
   
@@ -178,7 +178,7 @@ describe Ability do
   
   describe "when an admin" do
     before(:each) do
-      @user = FactoryGirl.create :user, :roles => [:admin]
+      @user = FactoryGirl.create :user, :roles => ['admin']
       @ability = Ability.new @user
       @other_user = User.new
     end
@@ -190,15 +190,14 @@ describe Ability do
     end
 
     it "can update other users' roles" do
-      @ability.should be_able_to :update, @other_user, :admin
-      @ability.should be_able_to :update, @other_user, :editor
+      @ability.should be_able_to :update, @other_user, :roles
     end
 
     it "can not view other individual users" do
       @ability.should_not be_able_to :show, @other_user
     end
 
-    it "can not update other users' username, email, or password" do
+    it "can not update other users' username, or password" do
       @ability.should_not be_able_to :update, @other_user, :username
       @ability.should_not be_able_to :update, @other_user, :password
       @ability.should_not be_able_to :update, @other_user, :password_confirmation
@@ -216,7 +215,7 @@ describe Ability do
 
   describe "when a searcher" do
     before do
-      @user = FactoryGirl.create :user, :roles => [:searcher]
+      @user = FactoryGirl.create :user, :roles => ['searcher']
       @ability = Ability.new @user
     end
 

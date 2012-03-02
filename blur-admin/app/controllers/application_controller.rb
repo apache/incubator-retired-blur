@@ -1,6 +1,5 @@
 class ApplicationController < ActionController::Base
   protect_from_forgery
-  check_authorization
   
   require 'thrift/blur'
   require 'blur_thrift_client'
@@ -8,7 +7,8 @@ class ApplicationController < ActionController::Base
   before_filter :current_user_session, :current_user
   helper_method :license, :current_user
 
-  rescue_from CanCan::AccessDenied do |exception|
+  enable_authorization do |exception|
+    puts exception.inspect
     if current_user
       if can? :index, :zookeepers
         redirect_to root_url, :alert => "Unauthorized"

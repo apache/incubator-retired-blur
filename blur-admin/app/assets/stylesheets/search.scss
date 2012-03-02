@@ -68,6 +68,7 @@
         .btn{
           width: 10%;
           @include border-left-radius(0px);
+          margin-bottom: 9px;
         }
         img{
           position: absolute;
@@ -135,8 +136,18 @@
     overflow: auto;
     border: 1px solid #999;
     display: inline-block;
+    &.noResults{
+      border: none;
+    }
+
     #results_container{
       position: relative;
+      .no-results{
+        padding-top: 1em;
+        font-weight: bold;
+        line-height: 1.5em;
+        font-size: 1.5em;
+      }
       #results_info{
         background-color: white;
         text-align: left;

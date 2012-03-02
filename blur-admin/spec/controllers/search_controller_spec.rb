@@ -12,10 +12,10 @@ describe SearchController do
 
     describe "show" do
       before :each do
-        @blur_tables = [Factory.stub(:blur_table), Factory.stub(:blur_table)]
+        @blur_tables = [FactoryGirl.create(:blur_table), FactoryGirl.create(:blur_table)]
         @blur_table = @blur_tables[0]
         # Set up association chain
-        @zookeeper  = Factory.stub :zookeeper
+        @zookeeper  = FactoryGirl.create :zookeeper
 
         # ApplicationController.current_zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
@@ -23,7 +23,7 @@ describe SearchController do
         # ApplicationController.zookeepers
         Zookeeper.stub(:order).and_return [@zookeeper]
 
-        @search = Factory.stub :search
+        @search = FactoryGirl.create :search
         @user.stub_chain(:searches, :order).and_return [@search]
       end
 
@@ -54,7 +54,7 @@ describe SearchController do
     
     describe "filters" do
       before :each do 
-        @blur_table = Factory.stub( :blur_table )
+        @blur_table = FactoryGirl.create( :blur_table )
         BlurTable.stub(:find).and_return @blur_table
       end
 
@@ -77,10 +77,10 @@ describe SearchController do
 
     describe "GET create" do
       before :each do
-        @search     = Factory.stub :search
-        @blur_table = Factory.stub :blur_table
-        @user       = Factory.stub :user
-        @preference = Factory.stub :preference
+        @search     = FactoryGirl.create :search
+        @blur_table = FactoryGirl.create :blur_table
+        @user       = FactoryGirl.create :user
+        @preference = FactoryGirl.create :preference
         @client = mock(Blur::Blur::Client)
         Preference.stub(:find_or_create_by_user_id_and_pref_type).and_return(@preference)
         BlurTable.stub(:find).and_return(@blur_table)
@@ -94,7 +94,7 @@ describe SearchController do
         @search.stub(:fetch_results).and_return(results)
 
         # Set up association chain
-        @zookeeper  = Factory.stub :zookeeper
+        @zookeeper  = FactoryGirl.create :zookeeper
 
         # ApplicationController.current_zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
@@ -175,7 +175,7 @@ describe SearchController do
 
     describe "load" do
       before(:each) do
-        @search = Factory.stub :search
+        @search = FactoryGirl.create :search
         Search.stub(:new).and_return(@search)
       end
 
@@ -189,7 +189,7 @@ describe SearchController do
 
     describe "delete" do
       before(:each) do
-        @search = Factory.stub :search
+        @search = FactoryGirl.create :search
         Search.stub(:new).and_return(@search)
         Search.stub(:find).and_return(@search)
         Search.stub(:delete)
@@ -214,7 +214,7 @@ describe SearchController do
 
       it "saves and renders the saved partial" do
         BlurTable.stub(:find)
-        @search = Factory.stub :search
+        @search = FactoryGirl.create :search
         @user.stub(:searches).and_return [@search]
         @user.stub(:id).and_return [1]      
         Search.stub(:find).and_return(@search)

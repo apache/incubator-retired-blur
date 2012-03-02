@@ -14,7 +14,7 @@ class Ability
       # logout
       can :destroy, :user_sessions
 
-      if user.has_role? :reader
+      if user.role? :reader
 
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
@@ -45,24 +45,24 @@ class Ability
 
       end
 
-      if user.has_role? :editor
+      if user.role? :editor
         can [:enable, :disable, :destroy, :update_all, :delete_all, :forget, :forget_all], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper], :zookeepers
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 
-      if user.has_role? :auditor
+      if user.role? :auditor
         can :index, :blur_queries, :query_string
         can :more_info, :blur_queries, :query_string
       end
 
-      if user.has_role? :admin
+      if user.role? :admin
         can [:index, :edit, :destroy, :create, :new], :users
-        can :update, :users, [:email,User.valid_roles]
+        can :update, :users, [:email, User.valid_roles]
       end
 
-      if user.has_role? :searcher
+      if user.role? :searcher
         # search
         can :access, :search
 

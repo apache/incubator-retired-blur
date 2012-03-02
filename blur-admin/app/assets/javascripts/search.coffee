@@ -93,12 +93,12 @@ $(document).ready ->
   ########### more Functions #############
 
   fetch_error = (error) ->
-    $('#results_container').html "<div>An error has occured: #{error}</div>"
-    $('#results_wrapper').removeClass('hidden')
+    $('#results_container').html "<div class='no-results'>An error has occured: #{error}</div>"
+    $('#results_wrapper').addClass('noResults').removeClass('hidden')
 
   no_results = ->
-    $('#results_container').html '<div>No results for your search.</div>'
-    $('#results_wrapper').removeClass('hidden')
+    $('#results_container').html '<div class="no-results">No results for your search.</div>'
+    $('#results_wrapper').addClass('noResults').removeClass('hidden')
 
   # disable buttons on load
   toggle_submit()
@@ -152,12 +152,9 @@ $(document).ready ->
       if data
         $('#results_container').html data
         resizeSearch()
-        $('#results_wrapper').removeClass('hidden')
+        $('#results_wrapper').removeClass('hidden noResults')
       else
-        #hides number of results option if there are no results
-        error_content = '<div>No results for your search.</div>'
-        $('#results_container').html(error_content)
-        $('#results_wrapper').removeClass('hidden')
+        no_results()
     .live 'ajax:error', (event, xhr, status, error) ->
       fetch_error error
 

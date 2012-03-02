@@ -59,7 +59,7 @@ describe Ability do
 
   describe "when a user with no roles" do
     before(:each) do
-      @user = Factory.stub :user, :roles => []
+      @user = FactoryGirl.create :user, :roles => []
       @ability = Ability.new @user
     end
 
@@ -121,7 +121,7 @@ describe Ability do
 
   describe "when a reader" do
     before(:each) do
-      @user = Factory.stub :user, :roles => [:reader]
+      @user = FactoryGirl.create :user, :roles => [:reader]
       @ability = Ability.new @user
     end
 
@@ -142,14 +142,14 @@ describe Ability do
     end
 
     it "can not change own column preferences" do
-      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'column'
+      @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'column'
       @ability.should_not be_able_to :update, @preference
     end
   end
 
   describe "when an editor" do
     before(:each) do
-      @user = Factory.stub :user, :roles => [:editor]
+      @user = FactoryGirl.create :user, :roles => [:editor]
       @ability = Ability.new @user
     end
   
@@ -166,7 +166,7 @@ describe Ability do
 
   describe "when an auditor" do
     before(:each) do
-      @user = Factory.stub :user, :roles => [:auditor]
+      @user = FactoryGirl.create :user, :roles => [:auditor]
       @ability = Ability.new @user
     end
   
@@ -178,7 +178,7 @@ describe Ability do
   
   describe "when an admin" do
     before(:each) do
-      @user = Factory.stub :user, :roles => [:admin]
+      @user = FactoryGirl.create :user, :roles => [:admin]
       @ability = Ability.new @user
       @other_user = User.new
     end
@@ -216,7 +216,7 @@ describe Ability do
 
   describe "when a searcher" do
     before do
-      @user = Factory.stub :user, :roles => [:searcher]
+      @user = FactoryGirl.create :user, :roles => [:searcher]
       @ability = Ability.new @user
     end
 
@@ -224,11 +224,11 @@ describe Ability do
       @ability.should be_able_to :access, :search
     end
     it "can change own column preferences" do
-      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'column'
+      @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'column'
       @ability.should be_able_to :update, @preference
     end
     it "can not change own filter preferences" do
-      @preference = Factory.stub :preference, :user_id => @user.id, :pref_type => 'filter'
+      @preference = FactoryGirl.create :preference, :user_id => @user.id, :pref_type => 'filter'
       @ability.should_not be_able_to :update, @preference
     end
   end

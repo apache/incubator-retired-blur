@@ -18,7 +18,7 @@ describe BlurQueriesController do
 
     describe "GET index" do
       before do
-        @zookeeper  = Factory.stub :zookeeper
+        @zookeeper  = FactoryGirl.create :zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
         Zookeeper.stub(:order).and_return [@zookeeper]
       end

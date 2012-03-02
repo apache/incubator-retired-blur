@@ -24,7 +24,6 @@
       - if (!user.new_record? and can? :update, user, role) |
         or ( user.new_record? and can? :create, user, role) |
         = f.check_box role, role.capitalize
-        %br
   - if current_user
     = f.submit 'Save'
   - else

@@ -110,4 +110,14 @@ ul{ margin: 5px; }
     padding:2px;
     margin:2px;
   }
+
+  .inputs-list{
+    list-style-type: none;
+    li{
+      padding: 10px 0 10px 0;
+      input[type=checkbox]{
+        display: inline-block;
+      }
+    }
+  }
 }

@@ -15,10 +15,10 @@ BlurAdmin::Application.routes.draw do
   resource :search, :controller => 'search'
   match 'search/load/:search_id' => 'search#load', :as => :search_load
   match 'search/delete/:search_id/:blur_table' => 'search#delete', :via => :delete, :as => :delete_search
-  match 'search/:search_id/:blur_table' => 'search#create', :as => :fetch_results
+  match 'search/:search_id/:blur_table' => 'search#create', :via => :get, :as => :fetch_results
   match 'search/save/' => 'search#save', :via => :post
   match 'search/:search_id' => 'search#update', :via => :put, :as => :update_search
-  match 'search/:blur_table_id/filters' => 'search#filters' , :via => :get, :as => :search_filters
+  match 'search/:blur_table_id/filters' => 'search#filters' , :via => :put, :as => :search_filters
   match 'reload/:blur_table' => 'search#reload'
 
   resources :zookeepers, :only => :index
@@ -42,7 +42,7 @@ BlurAdmin::Application.routes.draw do
   end
 
   match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh
-  resources :blur_queries do
+  resources :blur_queries, :only => :index do
     member do
       get 'more_info'
       get 'times'

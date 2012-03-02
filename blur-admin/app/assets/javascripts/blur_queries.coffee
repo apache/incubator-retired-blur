@@ -45,7 +45,7 @@ $(document).ready ->
   process_row = (row, data, rowIdx, dataIdx) ->
     action_td = $('td:last-child', row)
     if action_td.html() == ''
-      action_td.append("<a href='#{Routes.more_info_blur_query_path(data['id'])}' class='more_info' data-remote='true' style='margin-right: 3px'>More Info</a>")
+      action_td.append("<a href='#{Routes.more_info_blur_query_path(data['id'])}' class='more_info' style='margin-right: 3px'>More Info</a>")
       if data['state'] == 'Running' && data['can_update']
         action_td.append("<form accept-charset='UTF-8' action='#{Routes.blur_query_path(data['id'])}' class='cancel' data-remote='true' method='post'><div style='margin:0;padding:0;display:inline'><input name='_method' type='hidden' value='put'></div><input id='cancel' name='cancel' type='hidden' value='true'><input class='cancel_query_button btn btn-small' type='submit' value='Cancel'></form>")
     time = data.time.substring(0, data.time.indexOf(' ')).split(':')
@@ -87,11 +87,16 @@ $(document).ready ->
     return value unless value.length > length
     "#{value.substring(0,length)}#{ommission ? ommission : ''}"
     
-  $('.more_info').live 'ajax:success', (evt, data, status, xhr) ->
-    $().popup
-      title: "Additional Info"
-      titleClass:'title'
-      body:data
+  $('.more_info').live 'click', (e) ->
+    e.preventDefault()
+    $.ajax
+      url: $(this).attr('href')
+      type: 'GET'
+      success: (data) -> 
+        $().popup
+          title: "Additional Info"
+          titleClass:'title'
+          body:data
 
   # Initialize page
   load_queries()

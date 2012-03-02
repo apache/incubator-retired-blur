@@ -5,33 +5,24 @@ class BlurQueriesController < ApplicationController
   before_filter :zookeepers, :only => [:index, :refresh]
 
   def refresh
-    lower_range = Time.now - (params[:time_length].to_i * 60)
-    queries = BlurQuery.where_zookeeper(@current_zookeeper.id)
-      .where("blur_queries.updated_at > ?", lower_range)
-      .includes(:blur_table).all
+    lower_range = params[:time_length].to_i.minute.ago
+    queries = BlurQuery.where_zookeeper(@current_zookeeper.id).where("blur_queries.updated_at > ?", lower_range)
     query_summaries = queries.collect do |query| 
       summary = query.summary(current_user)
       summary[:action] = ''
       summary
     end
-    
     render :json => {:aaData => query_summaries}.to_json
   end
 
   def update
     @blur_query = BlurQuery.find params[:id]
-    if params[:cancel] == 'true'
-      @blur_query.cancel
-    end
-    respond_to do |format|
-      format.html {render :partial => 'blur_query', :locals => { :blur_query => @blur_query }}
-    end
+    @blur_query.cancel if params[:cancel] == 'true'
+    render :partial => 'blur_query'
   end
 
   def more_info
-    @blur_query = BlurQuery.includes(:blur_table).find(params[:id])
-    respond_to do |format|
-      format.html {render :partial => 'more_info', :locals => {:blur_query => @blur_query}}
-    end
+    @blur_query = BlurQuery.find(params[:id])
+    render :partial => 'more_info'
   end
 end

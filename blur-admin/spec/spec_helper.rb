@@ -15,10 +15,10 @@ end
 ENV["RAILS_ENV"] ||= 'test'
 require File.expand_path("../../config/environment", __FILE__)
 require 'rspec/rails'
-require 'rspec/autorun'
-require 'authlogic/test_case'
 require 'capybara/rspec'
 require 'capybara/rails'
+require 'rspec/autorun'
+require 'authlogic/test_case'
 require 'cancan/matchers'
 include Authlogic::TestCase
 

@@ -7,8 +7,8 @@ describe "environment status" do
   before do
     @zookeepers = Array.new(3).collect {Factory.create :zookeeper_with_blur_tables}
     visit login_path
-    fill_in 'Username', :with => user.username
-    fill_in 'Password', :with => user.password
+    fill_in 'user_session_username', :with => user.username
+    fill_in 'user_session_password', :with => user.password
     click_button 'Log In'
     @zookeeper = @zookeepers[1]
     visit "/zookeepers/#{@zookeeper.id}"
@@ -16,7 +16,7 @@ describe "environment status" do
 
   it "shows a current zookeeper selector in the header" do
     @zookeepers.each do |zookeeper|
-      find("#top").find("[value='#{@zookeeper.id}']").should have_content @zookeeper.name
+      find(".navbar").find("[value='#{@zookeeper.id}']").should have_content @zookeeper.name
     end
   end
 

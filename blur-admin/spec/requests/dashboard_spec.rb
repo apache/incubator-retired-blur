@@ -7,8 +7,8 @@ describe "dashboard" do
   before do
     @zookeepers = Array.new(5).collect {Factory.create :zookeeper_with_blur_tables}
     visit login_path
-    fill_in 'Username', :with => user.username
-    fill_in 'Password', :with => user.password
+    fill_in 'user_session_username', :with => user.username
+    fill_in 'user_session_password', :with => user.password
     click_button 'Log In'
     visit root_path
   end

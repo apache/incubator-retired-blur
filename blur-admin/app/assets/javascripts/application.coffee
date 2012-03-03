@@ -1,4 +1,5 @@
 #= require jquery
+#= require modernizr
 #= require jquery_ujs
 #= require jquery-ui
 #= require bootstrap
@@ -40,6 +41,8 @@ $(document).ready ->
       
   $('.help-section').live 'click', ->
     $(this).children('.help-content').slideToggle('fast')
+
+  $('.dropdown-toggle').dropdown();
     
   # Fix menus with no zookeeper context
   if typeof Zookeeper != 'undefined' && Zookeeper.instances

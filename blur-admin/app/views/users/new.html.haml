@@ -1,5 +1,12 @@
 - content_for :title, 'New User'
 
-#new_user_wrapper
-  %h2 Register
-  = render 'form', :user => @user, :cancel_path => (@current_user ? users_path : login_path)
+- if current_user
+	#new_user_wrapper
+		%h2 New User
+		= render 'form', :user => @user, :cancel_path => users_path
+- else
+	#login_wrapper
+		= link_to image_tag('blur_logo.png'), root_path
+		#new_user_wrapper.well
+			%h2 Register
+			= render 'form', :user => @user, :cancel_path => login_path

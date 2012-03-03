@@ -84,9 +84,7 @@
     }
   }
 
-  .ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
-
-  .icon { height: 32px; width: 32px; }
+  //.ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
 }
 
 #modal{

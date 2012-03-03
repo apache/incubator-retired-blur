@@ -1,3 +1,7 @@
+#queries-table_wrapper > .row:first-child > div:last-child {
+  float: right;
+}
+
 #blur_queries_wrapper {
   padding-top: 2em;
   padding-bottom: 2em;
@@ -5,8 +9,12 @@
   @include clearfix;
   .dataTables_filter{ 
     width: 100%;
+		float: right;
     input{ width: 96%; }
   }
+	dataTables_info {
+	  padding-top: 8px;
+	}
   .row > *:first-child {
     vertical-align: top;
     padding-top: 15px;
@@ -36,11 +44,12 @@
     .cancel_query_button{ margin: 0; }
 
     form.cancel {
-      @include inline-block;
+			display: inline-block;
+			@include ie7-inline-block;
       margin-right: 3px;
       margin-bottom: 0;
     }
-    tr:not(.oldRunning){
+    tbody tr:not(.oldRunning){
       & + .oldRunning, .oldRunning:first-child{
         td{
           border-top: 1px solid #FF0000;

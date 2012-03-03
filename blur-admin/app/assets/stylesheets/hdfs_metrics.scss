@@ -16,8 +16,7 @@ $graph_height: $instance_height - $title_height;
 	h3{ line-height: $title_height; }
 	text-align: center;
 	border: 1px solid #ddd;
-	@include background-image(linear-gradient(white, #E6E6E6));
-
+	@include gradient-vertical(#fff, #e6e6e6);
 }
 
 #metrics_page_wrapper{
@@ -31,10 +30,14 @@ $graph_height: $instance_height - $title_height;
 		position: relative;
 		height: $instance_height;
 		&:first-child{
-			.graph_title{ @include border-top-radius(10px) }
+			.graph_title{ 
+				//COMPASS==@include border-top-radius(10px) 
+			}
 		}
 		&:last-child{
-			.graph_content{ @include border-bottom-radius(10px) }
+			.graph_content{ 
+				//COMPASS==@include border-bottom-radius(10px) 
+			}
 		}
 		&:not(:last-child){
 			.graph_content{

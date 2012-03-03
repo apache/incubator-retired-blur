@@ -300,6 +300,10 @@
   blur_queries_path: function(options) {
   return Utils.build_path(0, ["/blur_queries"], ["format"], arguments)
   },
+// blur_query => /blur_queries/:id(.:format)
+  blur_query_path: function(_id, options) {
+  return Utils.build_path(1, ["/blur_queries/"], ["format"], arguments)
+  },
 // hdfs => /hdfs(/:id(/show(*fs_path)))(.:format)
   hdfs_path: function(options) {
   return Utils.build_path(0, ["/hdfs(/", "(/show(*fs_path)))"], ["fs_path", "id", "format"], arguments)
@@ -355,6 +359,10 @@
 // root => /
   root_path: function(options) {
   return Utils.build_path(0, ["/"], [], arguments)
+  },
+// rails_info_properties => /rails/info/properties(.:format)
+  rails_info_properties_path: function(options) {
+  return Utils.build_path(0, ["/rails/info/properties"], ["format"], arguments)
   }}
 ;
   window.Routes.options = defaults;

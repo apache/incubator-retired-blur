@@ -1,16 +1,16 @@
 #searches.partial-section
-  -if searches.length != 0 && !blur_table.nil?
-    -searches.each do |search|
-      -val = is_valid_search?(search)
-      .search_element{:id => search.id}
-        .search-name{:title => val ? search.name : "This is not a valid search for this schema"}
-          =search.name
-        .search-buttons
-          #edit_icon.icon.action-icon{ :title => "Edit Query"}
-            .edit
-          #delete_icon.icon.action-icon{ :title => "Delete Query"}
-            .delete
-        .clear
+	-if searches.length != 0 && !blur_table.nil?
+		-searches.each do |search|
+			-val = is_valid_search?(search)
+			.search_element{:id => search.id}
+				.search-name{:title => val ? search.name : "This is not a valid search for this schema"}
+					=search.name
+				.search-buttons
+					%button#edit_icon{ :title => "Edit Query" }
+						%i.icon-pencil
+					%button#delete_icon{ :title => "Delete Query" }
+						%i.icon-remove
+				.clearfix
 
-  -else
-    %div You do not have any saved searches.
+	-else
+		%div You do not have any saved searches.

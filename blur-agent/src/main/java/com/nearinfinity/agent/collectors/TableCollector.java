@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -13,10 +14,15 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.TableMap;
+import com.nearinfinity.agent.collectors.model.Column;
+import com.nearinfinity.agent.collectors.model.Family;
 import com.nearinfinity.blur.thrift.BlurClientManager;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
+import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.BlurException;
+import com.nearinfinity.blur.thrift.generated.ColumnDefinition;
+import com.nearinfinity.blur.thrift.generated.ColumnFamilyDefinition;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
@@ -26,7 +32,6 @@ public class TableCollector {
 	
 	public static void startCollecting(String connection, final String zookeeperName, final JdbcTemplate jdbc) {
 		log.debug("Collecting table info");
-		System.out.println("tables");
 		try {
 			List<Map<String, Object>> zookeepers = jdbc.queryForList("select id from zookeepers where name = ?", zookeeperName);
 			
@@ -98,13 +103,85 @@ public class TableCollector {
 								}
 								
 								String schemaString = "";
-								if (schema != null) {
-									try {
-										schemaString = mapper.writeValueAsString(schema);
-									} catch (Exception e) {
-										log.error("Unable to convert schema to json.", e);
+								if (schema != null && descriptor != null) {
+									List<Family> columnDefs = new ArrayList<Family>();
+									Map<String, Set<String>> columnFamilies = schema.getColumnFamilies();
+									if (columnFamilies != null) {
+										for (Map.Entry<String, Set<String>> schemaEntry : columnFamilies.entrySet()) {
+											Family family = new Family(schemaEntry.getKey());
+											for (String columnName : schemaEntry.getValue()) {
+												Column column = new Column(columnName);
+												column.setLive(true);
+												family.getColumns().add(column);
+											}
+											columnDefs.add(family);
+										}
 									}
 									
+									AnalyzerDefinition analyzerDefinition = descriptor.getAnalyzerDefinition();
+									if (analyzerDefinition != null) {
+										Map<String, ColumnFamilyDefinition> columnFamilyDefinitions = analyzerDefinition.getColumnFamilyDefinitions();
+										ColumnDefinition analyzerDefaultDefinition = analyzerDefinition.getDefaultDefinition();
+										if (columnFamilyDefinitions == null) {
+											for (Family family : columnDefs) {
+												for (Column column : family.getColumns()) {
+													if (analyzerDefaultDefinition == null) {
+														column.setAnalyzer("UNKNOWN");
+													} else {
+														column.setAnalyzer(analyzerDefaultDefinition.getAnalyzerClassName());
+														column.setFullText(analyzerDefaultDefinition.isFullTextIndex());
+													}
+												}
+											}
+										} else {
+											for (Map.Entry<String, ColumnFamilyDefinition> describeEntry : columnFamilyDefinitions.entrySet()) {
+												Family family = new Family(describeEntry.getKey());
+												int familyIndex = columnDefs.indexOf(family);
+												
+												if (familyIndex == -1) {
+													columnDefs.add(family);
+												} else {
+													family = columnDefs.get(familyIndex);
+												}
+												
+												Map<String, ColumnDefinition> columnDefinitions = describeEntry.getValue().getColumnDefinitions();
+												ColumnDefinition columnDefaultDefinition = describeEntry.getValue().getDefaultDefinition();
+												if (columnDefinitions == null) {
+													for (Column column : family.getColumns()) {
+														if (columnDefaultDefinition == null && analyzerDefaultDefinition == null) {
+															column.setAnalyzer("UNKNOWN");
+														} else if (columnDefaultDefinition == null) {
+															column.setAnalyzer(analyzerDefaultDefinition.getAnalyzerClassName());
+															column.setFullText(analyzerDefaultDefinition.isFullTextIndex());
+														} else {
+															column.setAnalyzer(columnDefaultDefinition.getAnalyzerClassName());
+															column.setFullText(columnDefaultDefinition.isFullTextIndex());
+														}
+													}
+												} else {
+													for (Map.Entry<String, ColumnDefinition> columnDescription : columnDefinitions.entrySet()) {
+														Column column = new Column(columnDescription.getKey());
+														int columnIndex = family.getColumns().indexOf(column);
+														
+														if (columnIndex == -1) {
+															family.getColumns().add(column);
+														} else {
+															column = family.getColumns().get(columnIndex);
+														}
+														
+														column.setAnalyzer(columnDescription.getValue().getAnalyzerClassName());
+														column.setFullText(columnDescription.getValue().isFullTextIndex());
+													}
+												}									
+											}
+										}
+									}
+									
+									try {
+										schemaString = mapper.writeValueAsString(columnDefs);
+									} catch (Exception e) {
+										log.error("Unable to convert column definition to json.", e);
+									}
 								}
 								
 								Map<String, String> shardServerLayout = null;
@@ -137,7 +214,7 @@ public class TableCollector {
 										log.error("Unable to convert shard server layout to json.", e);
 									}
 								}
-								String tableAnalyzer = descriptor.analyzerDefinition.fullTextAnalyzerClassName;
+								String tableAnalyzer = descriptor.getAnalyzerDefinition().getFullTextAnalyzerClassName();
 								
 								TableStats tableStats = null;
 								Long tableBytes = null;

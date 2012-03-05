@@ -1,3 +1,5 @@
+#= require jquery.jstree
+
 $(document).ready ->
   ########### METHODS ###############
   resizeSearch = () ->

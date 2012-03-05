@@ -1,14 +1,9 @@
 #= require jquery
-#= require modernizr
 #= require jquery_ujs
 #= require jquery-ui
+#= require modernizr
 #= require bootstrap
-#= require ../../../vendor/assets/javascripts/bootstrap-modal-helper
-#= require ../../../vendor/assets/javascripts/d3.min
-#= require ../../../vendor/assets/javascripts/d3.layout.min
-#= require ../../../vendor/assets/javascripts/jquery.dataTables
-#= require ../../../vendor/assets/javascripts/jquery.flot.min
-#= require_tree ../../../vendor/assets/javascripts
+#= require bootstrap-modal-helper
 #= require_self
 
 $(document).ready ->

@@ -1,3 +1,7 @@
+#= require d3/d3
+#= require flot/flot
+#= require_self
+
 $(document).ready ->
 	#hash of labels and object lookup strings for the various actions
 	hdfs_request_lookup = 

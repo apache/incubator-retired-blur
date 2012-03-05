@@ -1,3 +1,9 @@
+#= require jquery.contextMenu
+#= require jquery.osxFinder
+#= require d3/d3
+#= require flot/flot
+#= require_self
+
 $(document).ready ->
   # Old browser support
   if typeof(history.pushState) == 'undefined'

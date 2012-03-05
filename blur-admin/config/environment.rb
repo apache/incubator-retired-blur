@@ -5,7 +5,7 @@ require File.expand_path('../application', __FILE__)
 BlurAdmin::Application.initialize!
 
 #generate the routes file
-JsRoutes.generate!
+#JsRoutes.generate!
 
 #setup authlogic
 BlurAdmin::Application.configure do

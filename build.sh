@@ -20,8 +20,8 @@ cd blur-admin
 bundle install
 
 echo "Compiling assets"
+bundle exec rake RAILS_ENV=production assets:clean
 bundle exec rake RAILS_ENV=production assets:precompile
-#bundle exec rake barista:brew
 
 cd ../build
 mkdir rails
@@ -29,9 +29,8 @@ mkdir rails
 echo "Copying Rails files"
 cp ../blur-admin/Rakefile ../blur-admin/config.ru rails
 
-echo "Copying and cleaning app"
+echo "Copying app"
 cp -r ../blur-admin/app rails
-rm -r rails/app/assets
 
 echo "Copying config"
 cp -r ../blur-admin/config rails
@@ -58,8 +57,9 @@ touch rails/tmp/placeholder.txt
 echo "Copying vendor"
 cp -r ../blur-admin/vendor rails
 
-echo "Copy production Gemfile"
+echo "Copy production files"
 cp ../etc/default/Gemfile rails/
+cp ../etc/default/database.yml rails/config/
 
 if [ -n "$2" ] && [ $2 = "--certs" ]; then
   echo "Overlaying Cert Auth"

@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   helper_method :license, :current_user
 
   enable_authorization do |exception|
-    puts exception.inspect
+    logger.error exception.inspect
     if current_user
       if can? :index, :zookeepers
         redirect_to root_url, :alert => "Unauthorized"

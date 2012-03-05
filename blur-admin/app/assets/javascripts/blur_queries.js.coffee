@@ -1,3 +1,6 @@
+#= require jquery.dataTables
+#= require_self
+
 $.extend $.fn.dataTableExt.oStdClasses, {
   "sSortAsc":"header headerSortDown",
   "sSortDesc":"header headerSortUp",

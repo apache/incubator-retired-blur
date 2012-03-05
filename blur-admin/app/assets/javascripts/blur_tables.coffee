@@ -1,3 +1,4 @@
+#= require jquery.jstree
 $(document).ready ->
   refresh_timeout = null
   state_lookup = 

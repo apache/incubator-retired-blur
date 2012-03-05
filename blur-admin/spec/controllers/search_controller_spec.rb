@@ -154,7 +154,7 @@ describe SearchController do
       end
       it "assigns the @schema variable to hold the sorted column families and columns of the search" do
         get :create, :search_id  => @search.id
-        assigns(:schema).keys.should == %w[ColumnFamily2 ColumnFamily3 ColumnFamily1]
+        assigns(:schema).keys.should == %w[ColumnFamily1 ColumnFamily2 ColumnFamily3]
       end
       # it "assigns the @result_count and @result_time instance variables" do
       #       get :create, :search_id  => @search.id

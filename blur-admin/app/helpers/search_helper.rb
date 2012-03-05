@@ -17,8 +17,9 @@ module SearchHelper
 
     #Set difference of search columns from schema columns
     search_columns.each do |family, columns|
-      schema[family] ||= []
-      test_arr = columns - schema[family]
+      schema_family = schema.select{|v| v['name'] == family}.first
+      schema_columns = schema_family.nil? ? [] : schema_family['columns'].collect{|v| v['name']}
+      test_arr = columns - schema_columns
       if test_arr.length > 0
         return false
       end

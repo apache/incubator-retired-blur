@@ -33,26 +33,62 @@ describe BlurTable do
     it "sorts the columns and column families alphabetically" do
       @unsorted_table = Factory.create :blur_table,
         :table_name => 'test_table',
-        :table_schema =>
-          { :table              => 'test-table',
-            :setTable           => true,
-            :setColumnFamilies  => true,
-            :columnFamiliesSize => 3,
-            :columnFamilies     => { 'ColumnFamily2' => %w[Column2B Column2C Column2A],
-                                     'ColumnFamily1' => %w[Column1B Column1C Column1A],
-                                     'ColumnFamily3' => %w[Column3B Column3C Column3A] }
-          }.to_json
+        :table_schema =>      [
+                                {
+                                  "name" => 'ColumnFamily2',
+                                  "columns" => [
+                                    {"name" => 'Column2A'},
+                                    {"name" => 'Column2B'},
+                                    {"name" => 'Column2C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily1',
+                                  "columns" => [
+                                    {"name" => 'Column1A'},
+                                    {"name" => 'Column1B'},
+                                    {"name" => 'Column1C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily3',
+                                  "columns" => [
+                                    {"name" => 'Column3A'},
+                                    {"name" => 'Column3B'},
+                                    {"name" => 'Column3C'}
+                                  ]
+                                }
+                              ].to_json
+
       @sorted_table = Factory.create :blur_table,
         :table_name => 'test-table',
-        :table_schema =>
-          { :table              => 'test-table',
-            :setTable           => true,
-            :setColumnFamilies  => true,
-            :columnFamiliesSize => 3,
-            :columnFamilies     => { 'ColumnFamily1' => %w[Column1A Column1B Column1C],
-                                     'ColumnFamily2' => %w[Column2A Column2B Column2C],
-                                     'ColumnFamily3' => %w[Column3A Column3B Column3C] }
-          }.to_json
+        :table_schema =>      [
+                                {
+                                  "name" => 'ColumnFamily1',
+                                  "columns" => [
+                                    {"name" => 'Column1A'},
+                                    {"name" => 'Column1B'},
+                                    {"name" => 'Column1C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily2',
+                                  "columns" => [
+                                    {"name" => 'Column2A'},
+                                    {"name" => 'Column2B'},
+                                    {"name" => 'Column2C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily3',
+                                  "columns" => [
+                                    {"name" => 'Column3A'},
+                                    {"name" => 'Column3B'},
+                                    {"name" => 'Column3C'}
+                                  ]
+                                }
+                              ].to_json
+
 
         @unsorted_table.schema.should == @sorted_table.schema
     end
@@ -60,28 +96,64 @@ describe BlurTable do
     it "sorts the column families by an optionally supplied block" do
       @unsorted_table = Factory.create :blur_table,
         :table_name => 'test_table',
-        :table_schema =>
-          { :table              => 'test-table',
-            :setTable           => true,
-            :setColumnFamilies  => true,
-            :columnFamiliesSize => 3,
-            :columnFamilies     => { 'ColumnFamily1' => %w[Column1B Column1C Column1A],
-                                     'ColumnFamily2' => %w[Column2B Column2C Column2A],
-                                     'ColumnFamily3' => %w[Column3B Column3C Column3A] }
-          }.to_json
+        :table_schema =>      [
+                                {
+                                  "name" => 'ColumnFamily1',
+                                  "columns" => [
+                                    {"name" => 'Column1A'},
+                                    {"name" => 'Column1B'},
+                                    {"name" => 'Column1C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily2',
+                                  "columns" => [
+                                    {"name" => 'Column2A'},
+                                    {"name" => 'Column2B'},
+                                    {"name" => 'Column2C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily3',
+                                  "columns" => [
+                                    {"name" => 'Column3A'},
+                                    {"name" => 'Column3B'},
+                                    {"name" => 'Column3C'}
+                                  ]
+                                }
+                              ].to_json
+
       @reverse_sort_table = Factory.create :blur_table,
         :table_name => 'test_table',
-        :table_schema =>
-          { :table              => 'test-table',
-            :setTable           => true,
-            :setColumnFamilies  => true,
-            :columnFamiliesSize => 3,
-            :columnFamilies     => { 'ColumnFamily3' => %w[Column3B Column3C Column3A],
-                                     'ColumnFamily2' => %w[Column2B Column2C Column2A],
-                                     'ColumnFamily1' => %w[Column1B Column1C Column1A] }
-          }.to_json
+        :table_schema =>      [
+                                {
+                                  "name" => 'ColumnFamily3',
+                                  "columns" => [
+                                    {"name" => 'Column3A'},
+                                    {"name" => 'Column3B'},
+                                    {"name" => 'Column3C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily2',
+                                  "columns" => [
+                                    {"name" => 'Column2A'},
+                                    {"name" => 'Column2B'},
+                                    {"name" => 'Column2C'}
+                                  ]
+                                },
+                                {
+                                  "name" => 'ColumnFamily1',
+                                  "columns" => [
+                                    {"name" => 'Column1A'},
+                                    {"name" => 'Column1B'},
+                                    {"name" => 'Column1C'}
+                                  ]
+                                }
+                              ].to_json
 
-      @unsorted_table.schema.should == @reverse_sort_table.schema {|a, b| b <=> a}
+
+      @reverse_sort_table.schema.should == @unsorted_table.schema {|a, b| a['name'] <=> b['name']}
     end
 
     it "returns nil when the server has not been populated" do

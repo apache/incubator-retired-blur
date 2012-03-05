@@ -5,14 +5,25 @@
   %h4 Schema 
   .info.table_info_tree
     %ul
-      - blur_table.schema.each do |family, columns|
-        %li#family{:id=>"#{blur_table.table_name}.#{family}", :class => "family-node"}
+      -puts blur_table.schema
+      - blur_table.schema.each do |family|
+        %li#family{:id=>"#{blur_table.table_name}.#{family['name']}", :class => "family-node"}
           %a{:href=>'#'}
-            = "#{family} (#{blur_table.table_analyzer})"
+            = "#{family['name']} (#{blur_table.table_analyzer})"
           %ul
-            - columns.each do |column|
-              %li#column{:id=>"#{blur_table.table_name}.#{family}.#{column}"}
-                %a{:href=>'#'}= column
+            - family['columns'].each do |column|
+              %li#column{:id=>"#{blur_table.table_name}.#{family['name']}.#{column['name']}"}
+                -colClass = column['live'] ? 'live-col' : 'disabled-col'
+                %a{:href=>'#', :class => colClass}
+                  =column['name']
+                %ul
+                  %li
+                    %a{:href=>'#'}="Live: #{column['live']}"
+                  %li
+                    %a{:href=>'#'}="Analyzer: (#{column['analyzer']})"
+                  %li
+                    %a{:href=>'#'}="Full Text: #{column['fullText']}"
+                      
 - else
   %div
     Not Available

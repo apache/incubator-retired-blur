@@ -49,12 +49,18 @@ class Search < ActiveRecord::Base
 
   def schema(blur_table)
     tmp_schema = columns_hash
-    column_families.each do |family|
-      tmp_schema[family] = ['recordId']
-      tmp_schema[family] << blur_table.schema[family]
-      tmp_schema[family].flatten!
+    tmp_schema.clone.each do |family,cols|
+      cols.collect!{|v| {"name" => v}}
+      tmp_schema[family] = {"name" => family, "columns" => cols}
     end
-    tmp_schema
+    column_families.each do |family|
+      col_fam = blur_table.schema.select{|v| v['name'] == family}.first
+      col_fam['columns'].insert(0,{"name" => 'recordId'})
+      tmp_schema[family] = col_fam
+    end
+    puts tmp_schema.sort
+    puts tmp_schema.sort.count
+    tmp_schema.sort
   end
   
   private

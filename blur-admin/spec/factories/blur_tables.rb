@@ -7,13 +7,32 @@ FactoryGirl.define do
     status                { 1 + rand(2) }
     sequence(:table_uri)  { |n| "blur_table#{n}.blur.example.com" }
     table_analyzer        'standard.table_analyzer'
-    table_schema          {{  :table => table_name, 
-                              :setTable => true,
-                              :setColumnFamilies  => true,  
-                              :columnFamiliesSize => 3,
-                              :columnFamilies     => { 'ColumnFamily1' => %w[Column1A Column1B Column1C],
-                                                      'ColumnFamily2' => %w[Column2A Column2B Column2C],
-                                                      'ColumnFamily3' => %w[Column3A Column3B Column3C] }}.to_json}
+    table_schema          {[
+                            {
+                              "name" => 'ColumnFamily1',
+                              "columns" => [
+                                {"name" => 'Column1A'},
+                                {"name" => 'Column1B'},
+                                {"name" => 'Column1C'}
+                              ]
+                            },
+                            {
+                              "name" => 'ColumnFamily2',
+                              "columns" => [
+                                {"name" => 'Column2A'},
+                                {"name" => 'Column2B'},
+                                {"name" => 'Column2C'}
+                              ]
+                            },
+                            {
+                              "name" => 'ColumnFamily3',
+                              "columns" => [
+                                {"name" => 'Column3A'},
+                                {"name" => 'Column3B'},
+                                {"name" => 'Column3C'}
+                              ]
+                            }
+                          ].to_json}
     server                {{  'Host1:101' => %w[shard-001 shard-002 shard-003],
                               'Host2:102' => %w[shard-004 shard-005 shard-006]}.to_json}
     ignore do

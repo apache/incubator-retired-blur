@@ -32,10 +32,10 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
 
   resources :blur_tables, :except => [:new, :create, :edit, :show, :update, :destroy] do
-    put 'enable', :on => :collection, :as => :enable_selected_blur_tables
-    put 'disable', :on => :collection, :as => :disable_selected_blur_tables
-    delete 'forget', :on => :collection, :as => :forget_selected_blur_tables
-    delete 'destroy', :on => :collection, :as => :destroy_selected_blur_tables
+    put 'enable', :on => :collection, :as => :enable_selected
+    put 'disable', :on => :collection, :as => :disable_selected
+    delete 'forget', :on => :collection, :as => :forget_selected
+    delete 'destroy', :on => :collection, :as => :destroy_selected
     get 'hosts', :on => :member
     get 'schema', :on => :member
     get 'reload', :on => :collection, :as => :reload

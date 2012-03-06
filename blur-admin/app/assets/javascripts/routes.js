@@ -252,20 +252,20 @@
   destroy_zookeeper_path: function(_id, options) {
   return Utils.build_path(1, ["/zookeepers/"], ["format"], arguments)
   },
-// enable_selected_blur_tables_blur_tables => /blur_tables/enable(.:format)
-  enable_selected_blur_tables_blur_tables_path: function(options) {
+// enable_selected_blur_tables => /blur_tables/enable(.:format)
+  enable_selected_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/enable"], ["format"], arguments)
   },
-// disable_selected_blur_tables_blur_tables => /blur_tables/disable(.:format)
-  disable_selected_blur_tables_blur_tables_path: function(options) {
+// disable_selected_blur_tables => /blur_tables/disable(.:format)
+  disable_selected_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/disable"], ["format"], arguments)
   },
-// forget_selected_blur_tables_blur_tables => /blur_tables/forget(.:format)
-  forget_selected_blur_tables_blur_tables_path: function(options) {
+// forget_selected_blur_tables => /blur_tables/forget(.:format)
+  forget_selected_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/forget"], ["format"], arguments)
   },
-// destroy_selected_blur_tables_blur_tables => /blur_tables(.:format)
-  destroy_selected_blur_tables_blur_tables_path: function(options) {
+// destroy_selected_blur_tables => /blur_tables(.:format)
+  destroy_selected_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables"], ["format"], arguments)
   },
 // hosts_blur_table => /blur_tables/:id/hosts(.:format)
@@ -359,6 +359,10 @@
 // root => /
   root_path: function(options) {
   return Utils.build_path(0, ["/"], [], arguments)
+  },
+// rails_info_properties => /rails/info/properties(.:format)
+  rails_info_properties_path: function(options) {
+  return Utils.build_path(0, ["/rails/info/properties"], ["format"], arguments)
   }}
 ;
   window.Routes.options = defaults;

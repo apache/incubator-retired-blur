@@ -30,3 +30,17 @@ html{
   box-sizing: border-box;
   overflow: auto;
 }
+#modal{
+	max-height:400px;
+	overflow:none;
+	.modal-body{
+		max-height:340px;
+		overflow-y:scroll;
+		margin-bottom:60px;
+	}
+	.modal-footer{
+		position:absolute;
+		bottom:0px;
+		width: 530px;
+	}
+}

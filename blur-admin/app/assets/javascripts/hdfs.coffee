@@ -79,6 +79,7 @@ $(document).ready ->
     if from_id == to_id
       $.post Routes.hdfs_move_path(to_id), { 'from': from_path, 'to': to_path}, ()->
         $('#hdfs-dir-context-menu').disableContextMenuItems('#paste')
+        reload_hdfs()
       
   rename = (el) ->
     id = el.attr('hdfs_id')
@@ -120,13 +121,15 @@ $(document).ready ->
     id = file.attr('hdfs_id');
     path = file.attr('hdfs_path');
     if(confirm("Are you sure you wish to delete " + path + "? This action can not be undone."))
-      $.post Routes.hdfs_delete_path(id), { 'path': path}
+      $.post Routes.hdfs_delete_path(id), {'path': path}, ()->
+        reload_hdfs()
       
   window.uploading = false
   finishUploading = (path)->
     $("li[hdfs_path='" + path + "']").click()
     $().closePopup()
     window.uploading = false
+    reload_hdfs()
   window.finishUploading = finishUploading
   
   uploadFailed = (error)->
@@ -292,6 +295,9 @@ $(document).ready ->
             'margin-left':'-560px'
           $('.modal-footer').css
             'width':'1090px'
+  reload_hdfs = () ->
+    $('.osxSelected').removeClass('osxSelected')
+    navigateUsingPath()
             
   ###
   #Methods for HTML History manipulation

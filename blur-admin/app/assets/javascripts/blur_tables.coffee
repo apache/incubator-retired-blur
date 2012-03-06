@@ -219,6 +219,7 @@ $(document).ready ->
     cluster_table = $(this).siblings('table')
     cluster_id = cluster_table.attr('blur_cluster_id')
     blur_tables = cluster_table.children('tbody').children('.blur_table')
+    checked_tables = blur_tables.filter('.highlighted-row')
     table_ids = new Array()
     blur_tables.each (index, element) ->
       if $(element).children('td').children('input[type="checkbox"]').is(':checked')
@@ -229,6 +230,8 @@ $(document).ready ->
       beforeSend: ->
         clearTimeout(refresh_timeout)
       success: (data) ->
+        if(action == 'forget')
+          checked_tables.remove()
         rebuild_table(data)
       data:
         tables: table_ids
@@ -278,7 +281,7 @@ $(document).ready ->
         msg = "Are you sure you want to forget these tables?"
       when 'delete'
         delete_tables = (delete_index) ->
-          $.extend(sharedAjaxSettings, { type: 'DELETE', url: Routes.delete_selected_blur_tables_path() })
+          $.extend(sharedAjaxSettings, { type: 'DELETE', url: Routes.destroy_selected_blur_tables_path() })
           sharedAjaxSettings.data.delete_index = delete_index
           $.ajax(sharedAjaxSettings)
           pending_change(cluster_id, table_ids,'disabled','Deleting')

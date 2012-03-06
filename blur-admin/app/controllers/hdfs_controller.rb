@@ -10,7 +10,9 @@ class HdfsController < ApplicationController
   def info
     @hdfs = Hdfs.find(params[:id]).hdfs_stats.last
     if @hdfs
-      render :partial => 'info'
+      respond_to do |format|
+        format.html{render :partial => 'info'}
+      end
     else
       render :text => "<div>Stats for hdfs ##{params[:id]} not found, is the blur tools agent running?</div>"
     end
@@ -20,7 +22,9 @@ class HdfsController < ApplicationController
     client = build_client_from_id
     @path = params[:fs_path]
     @stat = client.stat @path
-    render :partial => 'folder_info'
+    respond_to do |format|
+      format.html{render :partial => 'folder_info'}
+    end
   end
 
   def slow_folder_info
@@ -47,8 +51,9 @@ class HdfsController < ApplicationController
       file_ending = stat.path.split('/').last
       {:name=> file_ending, :is_dir=>stat.isdir}
     end
-
-    render :partial => 'expand'
+    respond_to do |format|
+      format.html{render :partial => 'expand'}
+    end
   end
 
   def mkdir
@@ -60,9 +65,11 @@ class HdfsController < ApplicationController
   end
 
   def file_info
-   client = build_client_from_id
-   @stat = client.stat params[:fs_path]
-   render :partial => 'file_info'
+    client = build_client_from_id
+    @stat = client.stat params[:fs_path]
+    respond_to do |format|
+      format.html{render :partial => 'file_info'}
+    end
   end
   
   def move_file

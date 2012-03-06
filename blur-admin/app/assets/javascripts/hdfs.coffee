@@ -88,32 +88,33 @@ $(document).ready ->
       titleClass: 'title'
       shown: ()->
         $('#newName input').focus()
-      btnClasses:
-        "Create": "primary"
       btns:
-        "Create": ()->
-          newName = $('#newName input').val()
-          newFullPath = "#{from_path.substring(0, from_path.lastIndexOf('/')+1)}#{newName}"
-          $.ajax Routes.hdfs_move_path(id),
-            type: 'post',
-            data:
-              from: from_path
-              to: newFullPath
-            success: () ->
-              el.attr('hdfs_path', newFullPath)
-              link = el.find('a')
-              link.html(newName)
-              href = link.attr('href')
-              link.attr('href', href.replace(from_path, newFullPath))
-              if(el.hasClass('osxSelected'))
-                nextWin = el.parents('.innerWindow').next()
-                display_href = el.find('a').attr('href')
-                nextWin.load(display_href)
-              else
-                el.click()
-          $().closePopup()
-        "Cancel": () ->
-          $().closePopup()
+        "Create": 
+          class: "primary"
+          func: ()->
+            newName = $('#newName input').val()
+            newFullPath = "#{from_path.substring(0, from_path.lastIndexOf('/')+1)}#{newName}"
+            $.ajax Routes.hdfs_move_path(id),
+              type: 'post',
+              data:
+                from: from_path
+                to: newFullPath
+              success: () ->
+                el.attr('hdfs_path', newFullPath)
+                link = el.find('a')
+                link.html(newName)
+                href = link.attr('href')
+                link.attr('href', href.replace(from_path, newFullPath))
+                if(el.hasClass('osxSelected'))
+                  nextWin = el.parents('.innerWindow').next()
+                  display_href = el.find('a').attr('href')
+                  nextWin.load(display_href)
+                else
+                  el.click()
+            $().closePopup()
+        "Cancel": 
+          func: () ->
+            $().closePopup()
     
   delete_file = (file) ->
     id = file.attr('hdfs_id');
@@ -289,6 +290,8 @@ $(document).ready ->
           $('#modal').css
             'width':'1120px'
             'margin-left':'-560px'
+          $('.modal-footer').css
+            'width':'1090px'
             
   ###
   #Methods for HTML History manipulation

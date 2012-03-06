@@ -58,8 +58,6 @@ class Search < ActiveRecord::Base
       col_fam['columns'].insert(0,{"name" => 'recordId'})
       tmp_schema[family] = col_fam
     end
-    puts tmp_schema.sort
-    puts tmp_schema.sort.count
     tmp_schema.sort
   end
   

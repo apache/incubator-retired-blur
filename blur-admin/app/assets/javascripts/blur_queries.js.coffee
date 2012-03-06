@@ -1,4 +1,5 @@
 #= require jquery.dataTables
+#= require datatables.fnReloadAjax
 #= require_self
 
 $.extend $.fn.dataTableExt.oStdClasses, {
@@ -60,21 +61,22 @@ $(document).ready ->
       $(row).addClass('oldRunning')
     row
   add_refresh_rates = (data_table) ->
-    refresh_content = '<div class="span3">Auto Refresh: '
+    refresh_content = '<div class="span3">Auto Refresh: <div class="btn-group">'
     options = [{'key':'Off', 'value':-1},{'key':'10s', 'value':10},{'key':'1m', 'value':60},{'key':'10m', 'value':600}]
     
     $.each options, (idx, val) ->
-      link_class = if idx == 0 then 'selected' else 'unselected'
-      refresh_content += "<a href='javascript:void(0)' class='refresh_option #{link_class}' data-refresh_val='#{val.value}'>#{val.key}</a>"
+      link_class = if idx == 0 then 'btn-primary' else ''
+      refresh_content += "<a href='javascript:void(0)' class='refresh_option #{link_class} btn' data-refresh_val='#{val.value}'>#{val.key}</a>"
     
-    refresh_content += '</div>'
+    refresh_content += '</div></div>'
     $('#queries-table_wrapper > .row:first-child').prepend(refresh_content)
-    $('.dataTables_wrapper .row .span3:first-child').append('<div id="refresh-queries" class="icon"><div class="refresh"/></div>')
+    $('.dataTables_wrapper .row .span3:first-child .btn-group').append('<a id="refresh-queries" class="btn"><i class="icon-refresh"/></a>')
     $('#refresh-queries').click () ->
-      data_table.fnReloadAjax()
+      if $(this).attr('disabled') != 'disabled'
+        data_table.fnReloadAjax()
     $('a.refresh_option').click () ->
-      $('a.refresh_option').removeClass('selected').addClass('unselected')
-      $(this).addClass('selected').removeClass('unselected')
+      $('a.refresh_option').removeClass('btn-primary')
+      $(this).addClass('btn-primary')
       prev_refresh_rate = refresh_rate
       refresh_rate = $(this).data('refresh_val')
       if prev_refresh_rate == -1
@@ -82,9 +84,9 @@ $(document).ready ->
       else if refresh_rate == -1 && refresh_timeout
         clearTimeout(refresh_timeout)
       if refresh_rate == -1
-        $('#refresh-queries').removeClass('invisible')
+        $('#refresh-queries').removeAttr('disabled')
       else
-        $('#refresh-queries').addClass('invisible')
+        $('#refresh-queries').attr('disabled', 'disabled')
   truncate = (value, length, ommission) ->
     return null unless value
     return value unless value.length > length

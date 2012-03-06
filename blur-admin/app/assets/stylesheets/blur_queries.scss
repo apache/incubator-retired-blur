@@ -18,19 +18,11 @@
   .row > *:first-child {
     vertical-align: top;
     padding-top: 15px;
-    a {
-      margin-right: 5px;
-      &.selected {
-        color: black;
-        &:hover { text-decoration: none; }
-      }
-      &.unselected { text-decoration: underline; }
-    }
+
   }
   .range_select{
     select{ width: 100px; }
   }
-  #refresh-queries{ margin: -6px 0; }
   .dataTables_processing {
     padding-top: 8px;
   }

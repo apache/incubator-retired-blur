@@ -38,11 +38,13 @@ class ApplicationController < ActionController::Base
 
   private
   def current_zookeeper
-    if @current_zookeeper.nil? || @current_zookeeper.id != session[:current_zookeeper_id]
-      @current_zookeeper = Zookeeper.find_by_id(session[:current_zookeeper_id])
-      session.delete :current_zookeeper_id if @current_zookeeper.nil?
-      session[:current_zookeeper_id] = @current_zookeeper.id unless @current_zookeeper.nil?
+    if Zookeeper.count == 1
+      @current_zookeeper = Zookeeper.first
+    else
+      @current_zookeeper = Zookeeper.find_by_id session[:current_zookeeper_id]
     end
+    session[:current_zookeeper_id] = @current_zookeeper.id unless @current_zookeeper.nil?
+    
     if @current_zookeeper.nil?
       if request.xhr?
         render :status => :conflict, :text => "No Current Zookeeper"

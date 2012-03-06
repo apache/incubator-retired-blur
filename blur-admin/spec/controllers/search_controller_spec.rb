@@ -19,6 +19,7 @@ describe SearchController do
 
         # ApplicationController.current_zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+        Zookeeper.stub!(:first).and_return(@zookeeper)
         # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
         # ApplicationController.zookeepers
         Zookeeper.stub(:order).and_return [@zookeeper]
@@ -98,6 +99,7 @@ describe SearchController do
 
         # ApplicationController.current_zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+        Zookeeper.stub!(:first).and_return(@zookeeper)
         # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
       end
 

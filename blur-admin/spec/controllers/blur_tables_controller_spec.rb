@@ -13,6 +13,7 @@ describe BlurTablesController do
       controller.stub!(:thrift_client).and_return(@client)
       controller.stub!(:current_ability).and_return(@ability)
       Zookeeper.stub!(:find_by_id).and_return(@zookeeper)
+      Zookeeper.stub!(:first).and_return(@zookeeper)
     end
 
     describe "GET index" do

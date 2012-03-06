@@ -25,6 +25,10 @@ div.osxFinder div.innerWindow>ul>li {
     padding-left: 5px;
     line-height: 19px;
 }
+div.osxFinder div.innerWindow>ul>li>a {
+    text-decoration: none;
+    color: black;
+}
 div.osxFinder div.innerWindow>ul>li img {
     vertical-align: middle;
 }

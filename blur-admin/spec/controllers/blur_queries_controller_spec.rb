@@ -20,6 +20,7 @@ describe BlurQueriesController do
       before do
         @zookeeper  = FactoryGirl.create :zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+        Zookeeper.stub!(:first).and_return(@zookeeper)
         Zookeeper.stub(:order).and_return [@zookeeper]
       end
 
@@ -49,6 +50,7 @@ describe BlurQueriesController do
 
         # ApplicationController.current_zookeeper
         Zookeeper.stub(:find_by_id).and_return(@zookeeper)
+        Zookeeper.stub!(:first).and_return(@zookeeper)
         Zookeeper.stub_chain(:order, :first).and_return @zookeeper
       end
 

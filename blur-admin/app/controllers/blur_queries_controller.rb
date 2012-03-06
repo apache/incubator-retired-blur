@@ -18,11 +18,15 @@ class BlurQueriesController < ApplicationController
   def update
     @blur_query = BlurQuery.find params[:id]
     @blur_query.cancel if params[:cancel] == 'true'
-    render :partial => 'blur_query'
+    respond_to do |format|
+      format.html{render :partial => 'blur_query'}
+    end
   end
 
   def more_info
     @blur_query = BlurQuery.find(params[:id])
-    render :partial => 'more_info'
+    respond_to do |format|
+      format.html{render :partial => 'more_info'}
+    end
   end
 end

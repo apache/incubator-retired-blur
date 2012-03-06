@@ -48,11 +48,15 @@ class BlurTablesController < ApplicationController
   end
 
   def schema
-    render :partial => 'schema', :locals => {:blur_table => BlurTable.find(params[:id])}
+    respond_to do |format|
+      format.html {render :partial => 'schema', :locals => {:blur_table => BlurTable.find(params[:id])}}
+    end
   end
 
   def hosts
-    render :partial => 'hosts', :locals => {:blur_table => BlurTable.find(params[:id])}
+    respond_to do |format|
+      format.html {render :partial => 'hosts', :locals => {:blur_table => BlurTable.find(params[:id])}}
+    end
   end
       
   private

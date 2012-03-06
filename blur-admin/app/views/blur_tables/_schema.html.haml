@@ -1,28 +1,29 @@
 - if blur_table.schema
-  %h4 Location
-  %a{:href => "/hdfs/#{blur_table.cluster_id}/show#{blur_table.table_uri[/(?<!\/)\/(?!\/).*/]}"}
-    = blur_table.table_uri
-  %h4 Schema 
-  .info.table_info_tree
-    %ul
-      -puts blur_table.schema
-      - blur_table.schema.each do |family|
-        %li#family{:id=>"#{blur_table.table_name}.#{family['name']}", :class => "family-node"}
-          %a{:href=>'#'}
-            = "#{family['name']} (#{blur_table.table_analyzer})"
-          %ul
-            - family['columns'].each do |column|
-              %li#column{:id=>"#{blur_table.table_name}.#{family['name']}.#{column['name']}"}
-                -colClass = column['live'] ? 'live-col' : 'disabled-col'
-                %a{:href=>'#', :class => colClass}
-                  =column['name']
-                %ul
-                  %li
-                    %a{:href=>'#'}="Live: #{column['live']}"
-                  %li
-                    %a{:href=>'#'}="Analyzer: (#{column['analyzer']})"
-                  %li
-                    %a{:href=>'#'}="Full Text: #{column['fullText']}"
+  .schema_wrap
+    %h4 Location
+    %a{:href => "/hdfs/#{blur_table.cluster_id}/show#{blur_table.table_uri[/(?<!\/)\/(?!\/).*/]}"}
+      = blur_table.table_uri
+    %h4 Schema 
+    .info.table_info_tree
+      %ul
+        -puts blur_table.schema
+        - blur_table.schema.each do |family|
+          %li#family{:id=>"#{blur_table.table_name}.#{family['name']}", :class => "family-node"}
+            %a{:href=>'#'}
+              = "#{family['name']} (#{blur_table.table_analyzer})"
+            %ul
+              - family['columns'].each do |column|
+                %li#column{:id=>"#{blur_table.table_name}.#{family['name']}.#{column['name']}"}
+                  -colClass = column['live'] ? 'live-col' : 'disabled-col'
+                  %a{:href=>'#', :class => colClass}
+                    =column['name']
+                  %ul
+                    %li
+                      %a{:href=>'#'}="Live: #{column['live']}"
+                    %li
+                      %a{:href=>'#'}="Analyzer: (#{column['analyzer']})"
+                    %li
+                      %a{:href=>'#'}="Full Text: #{column['fullText']}"
                       
 - else
   %div

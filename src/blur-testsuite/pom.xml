@@ -23,6 +23,11 @@
 			<version>0.1.rc2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
+			<groupId>com.nearinfinity.blur</groupId>
+			<artifactId>blur-thrift</artifactId>
+			<version>0.1.rc2-SNAPSHOT</version>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.7</version>

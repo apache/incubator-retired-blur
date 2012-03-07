@@ -220,6 +220,7 @@ describe HdfsController do
       context "All the params are defined" do
         before(:each) do
           @upload = fixture_file_upload(Rails.root + 'spec/fixtures/test.png', 'image/png')
+          @path = "biz/bar/foo"
           class << @upload
             attr_reader :tempfile
           end
@@ -229,7 +230,6 @@ describe HdfsController do
         end
 
         it "accepts a file less than 25Mb in size" do
-          @path = "biz/bar/foo"
           @upload.tempfile.size = 50
           @hdfs_client.should_receive(:put).with(@upload.tempfile.path, @path + '/' + @upload.original_filename)
           HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
@@ -238,7 +238,6 @@ describe HdfsController do
         end
 
         it "rejects a file greater than 25Mb in size" do
-          @path = "biz/bar/foo"
           @upload.tempfile.size = 26220000
           post :upload, :path => @path, :id => 1, :upload => @upload
           response.body.should render_template :partial => "_upload"
@@ -251,6 +250,12 @@ describe HdfsController do
           HdfsThriftClient.should_not_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
           post :upload
           response.should render_template :partial => '_upload'
+          assigns(:error).should_not be_blank
+        end
+
+        it "raises an exception and sets the error variable" do
+          post :upload, :path => 'path', :id => 1, :upload => 'NOT A FILE'
+          response.body.should render_template :partial => "_upload"
           assigns(:error).should_not be_blank
         end
       end

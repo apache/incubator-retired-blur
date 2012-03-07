@@ -64,6 +64,40 @@ describe ZookeepersController do
         get :show_current
         response.should render_template :show_current
       end
+
+      describe "testing ApplicationController current ZK logic" do
+        it "with only one zookeeper it should set the current_zookeeper to be the first zookeeper found" do
+          Zookeeper.should_receive(:first)
+          get :show_current, nil, nil
+          assigns(:current_zookeeper).should == @zookeeper
+          session[:current_zookeeper_id].should == @zookeeper.id
+        end
+
+        it "with more than one zookeeper it should set the current_zookeeper to be the ZK with the session ID" do
+          session[:current_zookeeper_id] = 1
+          Zookeeper.should_receive(:find_by_id).with(1).and_return @zookeeper
+          Zookeeper.stub!(:count).and_return(2)
+          get :show_current, nil, nil
+          assigns(:current_zookeeper).should == @zookeeper
+          session[:current_zookeeper_id].should == @zookeeper.id
+        end
+
+        it "should not set the session ID if no ZK is found and should redirect to the root path" do
+          Zookeeper.stub!(:first).and_return nil
+          get :show_current, nil, nil
+          assigns(:current_zookeeper).should == nil
+          session[:current_zookeeper_id].should == nil
+          response.should redirect_to :root
+        end
+
+        it "should not set the session ID if no ZK is found and should redirect to the root path for xhr requests" do
+          Zookeeper.stub!(:first).and_return nil
+          xhr :get, :show_current, nil, nil
+          assigns(:current_zookeeper).should == nil
+          session[:current_zookeeper_id].should == nil
+          response.response_code.should == 409
+        end
+      end
     end
 
     describe 'PUT make_current' do

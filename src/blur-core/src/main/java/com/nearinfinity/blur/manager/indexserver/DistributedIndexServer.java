@@ -64,6 +64,7 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurNRTIndex;
+import com.nearinfinity.blur.manager.writer.TransactionRecorder;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
@@ -109,12 +110,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
   private String cluster = BlurConstants.BLUR_CLUSTER;
+  private TransactionRecorder _recorder = new TransactionRecorder();
+  private Path _walPath;
 
   public static interface ReleaseReader {
     void release() throws IOException;
   }
 
-  public void init() throws KeeperException, InterruptedException {
+  public void init() throws KeeperException, InterruptedException, IOException {
     setupZookeeper();
     _openerService = Executors.newThreadPool("shard-opener", _shardOpenerThreadCount);
     _closer = new BlurIndexCloser();
@@ -126,6 +129,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } finally {
       BlurUtil.unlockForSafeMode(_zookeeper, lockPath);
     }
+    _recorder.setConfiguration(_configuration);
+    _recorder.setWalPath(_walPath);
+    _recorder.init();
     waitInSafeModeIfNeeded();
     _running.set(true);
     setupTableWarmer();
@@ -146,9 +152,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   private void watchForShardServerChanges() {
     _shardServerWatcherDaemon = new Thread(new Runnable() {
-      
+
       private List<String> _prevOnlineShards;
-      
+
       private Watcher watcher = new Watcher() {
         @Override
         public void process(WatchedEvent event) {
@@ -157,14 +163,14 @@ public class DistributedIndexServer extends AbstractIndexServer {
           }
         }
       };
-      
+
       @Override
       public void run() {
         while (_running.get()) {
           try {
             doAction();
           } catch (Throwable t) {
-            LOG.error("Unknown error",t);
+            LOG.error("Unknown error", t);
           }
         }
       }
@@ -184,12 +190,12 @@ public class DistributedIndexServer extends AbstractIndexServer {
               }
               for (String oldOnlineShard : oldOnlineShards) {
                 if (!onlineShards.contains(oldOnlineShard)) {
-                  LOG.info("Node went offline [{0}]",oldOnlineShard);
+                  LOG.info("Node went offline [{0}]", oldOnlineShard);
                 }
               }
               for (String onlineShard : onlineShards) {
                 if (!oldOnlineShards.contains(onlineShard)) {
-                  LOG.info("Node came online [{0}]",onlineShard);
+                  LOG.info("Node came online [{0}]", onlineShard);
                 }
               }
             }
@@ -545,6 +551,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(500));
       writer.setNrtCachingMaxCachedMB(60);
       writer.setNrtCachingMaxMergeSizeMB(5.0);
+      writer.setRecorder(_recorder);
       writer.init();
       index = writer;
     }
@@ -846,4 +853,9 @@ public class DistributedIndexServer extends AbstractIndexServer {
   public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
     _indexDeletionPolicy = indexDeletionPolicy;
   }
+
+  public void setWalPath(Path walPath) {
+    _walPath = walPath;
+  }
+
 }

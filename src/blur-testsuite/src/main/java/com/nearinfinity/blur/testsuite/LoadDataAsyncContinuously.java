@@ -31,14 +31,14 @@ public class LoadDataAsyncContinuously {
   public static void main(String[] args) throws BlurException, TException, IOException {
     loadWords();
     while (true) {
-      final boolean wal = false;
+      final boolean wal = true;
       final int numberOfColumns = 3;
       int numberRows = 100000;
       final int numberRecordsPerRow = 2;
       final int numberOfFamilies = 3;
       final int numberOfWords = 30;
       int count = 0;
-      int max = 100;
+      int max = 1000;
       long start = System.currentTimeMillis();
       final String table = "test-table";
       AsyncClientPool pool = new AsyncClientPool();

@@ -75,6 +75,7 @@ public class BlurNRTIndex extends BlurIndex {
   private double _nrtCachingMaxMergeSizeMB;
   private int _nrtCachingMaxCachedMB;
   private Thread _refresher;
+  private TransactionRecorder _recorder;
 
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
@@ -144,6 +145,9 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void replaceRow(boolean wal, Row row) throws IOException {
+    if (wal) {
+      _recorder.replaceRow(row);
+    }
     boolean waitToBeVisible = false;
     long generation = _nrtManager.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
     waitToBeVisible(waitToBeVisible, generation);
@@ -151,6 +155,9 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void deleteRow(boolean wal, String rowId) throws IOException {
+    if (wal) {
+      _recorder.deleteRow(rowId);
+    }
     boolean waitToBeVisible = false;
     long generation = _nrtManager.deleteDocuments(ROW_ID.createTerm(rowId));
     waitToBeVisible(waitToBeVisible, generation);
@@ -272,5 +279,9 @@ public class BlurNRTIndex extends BlurIndex {
 
   public void setNrtCachingMaxCachedMB(int nrtCachingMaxCachedMB) {
     _nrtCachingMaxCachedMB = nrtCachingMaxCachedMB;
+  }
+
+  public void setRecorder(TransactionRecorder recorder) {
+    _recorder = recorder;
   }
 }

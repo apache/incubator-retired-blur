@@ -704,7 +704,7 @@ public class IndexManager {
     }
   }
 
-  private void doUpdateRecordMutation(RecordMutation recordMutation, Record existingRecord, Row newRow) {
+  private static void doUpdateRecordMutation(RecordMutation recordMutation, Record existingRecord, Row newRow) {
     Record mutationRecord = recordMutation.record;
     switch (recordMutation.recordMutationType) {
     case DELETE_ENTIRE_RECORD:

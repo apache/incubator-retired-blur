@@ -44,6 +44,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.thrift.transport.TTransportException;
@@ -169,6 +170,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY,60000));
     indexServer.setWarmup(indexWarmup);
     indexServer.setIndexDeletionPolicy(indexDeletionPolicy);
+//    indexServer.setWalPath(new Path("hdfs://blur-vm/" + nodeName.replace(":", "_") + ".wal"));
+    indexServer.setWalPath(new Path("hdfs://localhost:9000/" + nodeName.replace(":", "_") + ".wal"));
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();

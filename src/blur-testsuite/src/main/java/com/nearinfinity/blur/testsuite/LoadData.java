@@ -28,10 +28,10 @@ public class LoadData {
 
   public static void main(String[] args) throws BlurException, TException, IOException {
     loadWords();
-    final boolean wal = false;
+    final boolean wal = true;
     final int numberOfColumns = 3;
     int numberRows = 100000;
-    final int numberRecordsPerRow = 2;
+    final int numberRecordsPerRow = 1;
     final int numberOfFamilies = 3;
     final int numberOfWords = 30;
     int count = 0;

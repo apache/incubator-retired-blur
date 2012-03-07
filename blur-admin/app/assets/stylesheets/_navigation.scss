@@ -29,7 +29,7 @@ $nav-height: 40px;
     }
   }
 	.navbar-inner {
-		background: transparent image-url('gradient.png') repeat-x 0 -58px;
+		background: transparent url('gradient.png') repeat-x 0 -58px;
 		@include border-radius(0);
 		height: $nav-height;
 		> ul li {

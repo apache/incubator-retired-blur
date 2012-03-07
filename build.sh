@@ -43,7 +43,8 @@ cp -r ../blur-admin/db rails
 echo "Copying lib"
 cp -r ../blur-admin/lib rails
 rm -r rails/lib/pounder
-rm -r rails/lib/tasks/*.rake
+rm -r rails/lib/tasks/pounder.rake
+rm -r rails/lib/tasks/sass.rake
 
 echo "Copying public"
 cp -r ../blur-admin/public rails

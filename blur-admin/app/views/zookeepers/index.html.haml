@@ -11,4 +11,14 @@
   - else
     %h4 No Zookeeper Instances Available
   .clearfix
+
+#hdfs_dash_wrapper
+  %h2 HDFS
+
+  - if @hdfs_all.any?
+    #hdfses 
+      = render :partial => 'hdfs_stat', :collection => @hdfs_all, :as => :hdfs
+  - else
+    %h4 No HDFS found
+  .clearfix
     

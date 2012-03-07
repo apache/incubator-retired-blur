@@ -219,28 +219,28 @@ describe HdfsController do
 
       context "All the params are defined" do
         before(:each) do
-          @uploadfile = mock(ActionDispatch::Http::UploadedFile)
-          @tempfile = mock(File)
-          @uploadfile.stub!(:original_filename).and_return("test.png")
-          @uploadfile.stub!(:tempfile).and_return(@tempfile)
-          @tempfile.stub!(:path).and_return("foo/bar/biz")
+          @upload = fixture_file_upload(Rails.root + 'spec/fixtures/test.png', 'image/png')
+          class << @upload
+            attr_reader :tempfile
+          end
+          class << @upload.tempfile
+            attr_accessor :size
+          end
         end
 
         it "accepts a file less than 25Mb in size" do
-          pending "Need to build the file hash to send as the param, or stub the param get"
-          @tempfile.stub(:size).and_return(500)
           @path = "biz/bar/foo"
+          @upload.tempfile.size = 50
+          @hdfs_client.should_receive(:put).with(@upload.tempfile.path, @path + '/' + @upload.original_filename)
           HdfsThriftClient.should_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
-          @hdfs_client.should_receive(:put).with('foo/bar/biz', 'biz/bar/foo/test.png')
-          post :upload, {:path => 'biz/bar/foo', :hdfs_id => 1, :upload => @uploadfile}
+          post :upload, :path => @path, :id => 1, :upload => @upload
           response.body.should render_template :partial => "_upload"
         end
 
         it "rejects a file greater than 25Mb in size" do
-          pending "Need to build the file hash to send as the param, or stub the param get"
-          @tempfile.stub(:size).and_return(27000000)
-          HdfsThriftClient.should_not_receive(:client).with("#{@hdfs.host}:#{@hdfs.port}")
-          post :upload, {:path => 'biz/bar/foo', :hdfs_id => 1, :upload => @uploadfile}
+          @path = "biz/bar/foo"
+          @upload.tempfile.size = 26220000
+          post :upload, :path => @path, :id => 1, :upload => @upload
           response.body.should render_template :partial => "_upload"
           assigns(:error).should_not be_blank
         end

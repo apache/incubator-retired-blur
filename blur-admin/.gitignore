@@ -16,3 +16,6 @@
 
 # Ignore compiled assets
 /public/assets/*
+
+#ignore rubymine
+/.idea

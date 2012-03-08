@@ -226,8 +226,10 @@ $(document).ready ->
         # Update node colors
         if this.stats.dead_nodes == -1 || this.stats.live_nodes == -1
           hdfs_table.find('.node-row').hide()
+          hdfs_table.find('node-access-row').show()
         else
           hdfs_table.find('.node-row').show()
+          hdfs_table.find('node-access-row').hide()
           if this.stats.live_nodes == 0
             live_nodes.removeClass(ONLINE).addClass(OFFLINE)
             status = 'offline'

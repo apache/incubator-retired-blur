@@ -39,6 +39,7 @@ BlurAdmin::Application.routes.draw do
     get 'hosts', :on => :member
     get 'schema', :on => :member
     get 'reload', :on => :collection, :as => :reload
+    post 'terms', :on => :member
   end
 
   match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh

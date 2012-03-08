@@ -232,6 +232,9 @@ $(document).ready ->
     else
       that = sq
     that.prop('disabled',$(this).is(':checked'))
+setTimeout ->
+  $('#search_submit').click()
+,1000
     
     
 

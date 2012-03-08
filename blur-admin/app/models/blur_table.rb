@@ -28,10 +28,6 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
-  def num_shards
-    self.schema.values.flatten.count if self.schema
-  end
-
   def is_enabled?
     self.status == 4
   end

@@ -33,6 +33,8 @@ class ZookeepersController < ApplicationController
 
   def index
     @zookeepers = Zookeeper.select('name, id, status').order('name')
+    @hdfs_all = Hdfs.all
+    @hdfs_stats= Hdfs.all.collect{|h| hdfs_hash = {"hdfs" => h}; hdfs_hash['stats'] = h.hdfs_stats.last; h= hdfs_hash}
   end
 
   def show
@@ -55,7 +57,8 @@ class ZookeepersController < ApplicationController
     zookeeper_results = []
     connection = ActiveRecord::Base.connection()
     connection.execute(QUERY).each(:as => :hash) { |row| zookeeper_results << row }
-    render :json => zookeeper_results
+    hdfs= Hdfs.all.collect{|h| hdfs_hash = JSON(h.to_json); hdfs_hash['stats'] = JSON(h.hdfs_stats.last.to_json); h= hdfs_hash}
+    render :json => {"zookeeper_data" => zookeeper_results, "hdfs_data" => hdfs}
   end
 
   def destroy_shard

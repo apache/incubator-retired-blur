@@ -1,6 +1,7 @@
 $(document).ready ->
   ONLINE='btn-success'
   OFFLINE='btn-danger'
+  WARNING='btn-warning'
   NA=''
   
   # Updates all fields on the dashboard
@@ -9,14 +10,14 @@ $(document).ready ->
       # Updates the fields for each zookeeper
       for index, storedZK of Zookeeper.instances
         safe = false
-        for ZK in data
+        for ZK in data.zookeeper_data
           if ZK.id == storedZK.id
             safe = true
             break
         if !safe
           delete Zookeeper.instances[index]
       $('.updated').removeClass('updated')
-      $.each( data, ->
+      $.each( data.zookeeper_data, ->
         zookeeper_table = $('.zookeeper_info').find("#" + this.id )
         new_table = !zookeeper_table.length > 0
         if new_table
@@ -176,7 +177,90 @@ $(document).ready ->
 
         $('#zookeepers_wrapper').show()
       )
-      $('.zookeeper_info:not(.updated)').remove()
+
+
+      ###
+      #HDFS Update
+      ###
+      $.each( data.hdfs_data, ->
+        hdfs_table = $('.hdfs_info').find("#" + this.id )
+        new_table = !hdfs_table.length > 0
+        if new_table
+          hdfs_new = $($('.hdfs_info')[0]).clone()
+          hdfs_table = hdfs_new.find('table')
+          hdfs_table.attr('id', this.id)
+        hdfs_table.closest('.hdfs_info').addClass('updated')
+        status = 'online'
+
+        # Update block counts
+        corr_blocks= hdfs_table.find(".blocks-corr")
+        corr_blocks.find('> .number').html(this.stats.corrupt_blocks)
+        missing_blocks = hdfs_table.find(".blocks-miss")
+        missing_blocks.find('> .number').html(this.stats.missing_blocks)
+
+        # Update the block colors
+        if this.stats.corrupt_blocks == 0
+          corr_blocks.addClass(ONLINE).removeClass(OFFLINE).removeClass(NA)
+        else if this.stats.corrupt_blocks > 0
+          status = 'offline'
+          corr_blocks.removeClass(ONLINE).addClass(OFFLINE).removeClass(NA)
+        else
+          corr_blocks.removeClass(ONLINE).removeClass(OFFLINE).addClass(NA)
+
+        if this.stats.missing_blocks == 0
+          missing_blocks.addClass(ONLINE).removeClass(OFFLINE).removeClass(NA)
+        else if this.stats.missing_blocks > 0
+          status = 'offline'
+          missing_blocks.removeClass(ONLINE).addClass(OFFLINE).removeClass(NA)
+        else
+          missing_blocks.removeClass(ONLINE).removeClass(OFFLINE).addClass(NA)
+      
+        # Update node counts
+        live_nodes= hdfs_table.find(".nodes-live")
+        live_nodes.find('> .number').html(this.stats.live_nodes)
+        dead_nodes= hdfs_table.find(".nodes-dead")
+        dead_nodes.find('> .number').html(this.stats.dead_nodes)
+        under_nodes= hdfs_table.find(".nodes-under")
+        under_nodes.find('> .number').html(this.stats.under_replicated)
+
+        # Update node colors
+        if this.stats.dead_nodes == -1 || this.stats.live_nodes == -1
+          hdfs_table.find('.node-row').hide()
+        else
+          hdfs_table.find('.node-row').show()
+          if this.stats.live_nodes == 0
+            live_nodes.removeClass(ONLINE).addClass(OFFLINE)
+            status = 'offline'
+          else
+            live_nodes.addClass(ONLINE).removeClass(OFFLINE)
+          if this.stats.dead_nodes == 0
+            dead_nodes.addClass(ONLINE).removeClass(WARNING)
+          else
+            dead_nodes.removeClass(ONLINE).addClass(WARNING)
+            if status != 'offline'
+              status= 'wrning'
+        if this.stats.under_replicated == 0
+          under_nodes.addClass(ONLINE).removeClass(OFFLINE)
+        else
+          under_nodes.removeClass(ONLINE).addClass(OFFLINE)
+          status = 'offline'
+
+
+        #update the table css
+        if status == 'offline'
+          hdfs_table.find('.hdfs-title').addClass(OFFLINE).removeClass(ONLINE).removeClass(WARNING)
+        else if status == 'wrning'
+          hdfs_table.find('.hdfs-title').removeClass(OFFLINE).removeClass(ONLINE).addClass(WARNING)
+        else
+          hdfs_table.find('.hdfs-title').removeClass(OFFLINE).addClass(ONLINE).removeClass(WARNING)
+        hdfs_table.closest('.hdfs_info').removeClass('online').removeClass('offline').removeClass('wrning').addClass(status)
+
+        if new_table
+          $('#hdfses').append(hdfs_new)
+
+        $('#hdfs_dash_wrapper').show()
+      )
+      $('.zookeeper_info:not(.updated), .hdfs_info:not(.updated)').remove()
 
     # Sets auto updates to run every 5 secs
     setTimeout(load_dashboard, 5000)

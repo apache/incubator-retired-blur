@@ -39,14 +39,14 @@
   h3 { margin-top: 0.5em; border-bottom: $twitter-border;}
 }
 
-#zookeepers_wrapper{
+#zookeepers_wrapper, #hdfs_dash_wrapper{
   display: none;
   @include standard-font; 
   @include zoo-widget;
   margin-top: 2em;
 
-  .zookeeper_info {
-    min-width: 400px;
+  .zookeeper_info, .hdfs_info {
+    width: 500px;
     margin: 0px 10px 20px 20px;
     float: left;
     display: inline-block;
@@ -55,10 +55,14 @@
     &:hover { cursor: pointer; background: #FFFCD6; }
     &.online{ border-color: $green-border-color; }
     &.offline{ border-color: $red-border-color; }
-    table{ margin:0; }
+    &.wrning{ border-color: #F9A732;}
+    table{ margin:0; width:100%; }
 		table tbody th { text-align:center; vertical-align:middle; }
   }
-  .zookeeper-title{
+  .center{
+    text-align:center;
+  }
+  .zookeeper-title, .hdfs-title{
 		@include zoo-status;
     font-size:125%;
     padding: 5px 10px;
@@ -69,7 +73,7 @@
   }
   .warning{ height: 18px; text-align: center; }
   .status{ width:160px; @include zoo-status; }
-  #zookeepers{ height: 100%; }
+  #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
   .number, .word, .zookeeper-name, .zookeeper-status { display: inline-block; }
   .number {width: 20px; text-align: right; }

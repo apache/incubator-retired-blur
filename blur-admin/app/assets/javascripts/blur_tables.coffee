@@ -311,71 +311,17 @@ $(document).ready ->
       body: msg
       btns: btns
 
+  ###
+  Terms functions
+  ###
 
-  terms_to_list= (terms) ->
-    table_html = "<ul class='terms-list well'>"
-    for term in terms
-      table_html += "<li>#{term}</li>"
-    table_html += "</ul>"
-  #Listener for terms link
-  $('.terms').live 'click', (evt) ->
-    term = $(this)
-    table_id = $(this).attr('table_id')
-    family = $(this).attr('family_name')
-    column = $(this).attr('column_name')
-    $.ajax
-      type: 'POST'
-      url: Routes.terms_blur_table_path(table_id)
-      data:
-        family: family
-        column: column
-        startWith: '' 
-        size: 21
-      success: (data) ->
-        content = "<div class='form-search' table_id='#{table_id}' family_name='#{family}' column_name='#{column}'><input type='search' class='term-search span2' placeholder='Search...'/><a class='btn btn-primary term-search-btn'>Search</a><a class='btn btn-danger reset-term-search'><i class='icon-remove'/></a></div>" 
-        content += terms_to_list(data)
-        prevTerm = data[data.length - 1]
-        if data.length == 21
-          content += "<a href='#' class='more-terms' table_id='#{table_id}' family_name='#{family}' column_name='#{column}' prev_term='#{prevTerm}'>More...</a>"
-        term.popover
-          title: column + " terms<i class='icon-remove popover-close' style='position:absolute; top:15px;right:15px'></i>"
-          content: content
-          trigger: 'focus'
-          placement: 'right'
-        term.popover('show')
-  #Listener for more terms
-  $('.more-terms').live 'click', (evt) ->
-    moreLink = $(this)
-    table_id = $(this).attr('table_id')
-    family = $(this).attr('family_name')
-    column = $(this).attr('column_name')
-    prevTerm = $(this).attr('prev_term')
-    $.ajax
-      type: 'POST'
-      url: Routes.terms_blur_table_path(table_id)
-      data:
-        family: family
-        column: column
-        startWith: prevTerm 
-        size: 21
-      dataType: 'json'
-      success: (data) ->
-        moreLink.siblings('.terms-list').replaceWith(terms_to_list(data))
-        if data.length == 21
-          moreLink.attr('prev_term', data[data.length - 1])
-        else
-          moreLink.remove()
-  $('.term-search').live 'keydown', (evt) ->
-    if evt.which == 13
-      evt.preventDefault()  
-      $(this).siblings('.term-search-btn').click()
-  #Listener for term search
-  $('.term-search-btn').live 'click', (evt) ->
-    btn = $(this)
-    table_id = btn.parent().attr('table_id')
-    family = btn.parent().attr('family_name')
-    column = btn.parent().attr('column_name')
-    startWith = btn.siblings('.term-search').val()
+  #populates the popover with terms, using startWith if provided
+  get_terms = (searchDiv,startWith) ->
+    table_id = searchDiv.attr('table_id')
+    family = searchDiv.attr('family_name')
+    column = searchDiv.attr('column_name')
+    if typeof(startWith) == 'undefined'
+      startWith = ''
     $.ajax
       type: 'POST'
       url: Routes.terms_blur_table_path(table_id)
@@ -386,39 +332,62 @@ $(document).ready ->
         size: 21
       dataType: 'json'
       success: (data) ->
-        btn.hide()
-        btn.siblings('.reset-term-search').show()
-        moreLink = btn.parents('.popover-content').find('.more-terms')
-        moreLink.siblings('.terms-list').replaceWith(terms_to_list(data))
+        searchDiv.siblings('.terms-list').replaceWith(terms_to_list(data))
         if data.length == 21
-          moreLink.attr('prev_term', data[data.length - 1])
+          searchDiv.siblings('.more-terms').attr('prev_term', data[data.length - 1])
         else
-          moreLink.remove()
+          searchDiv.siblings('.more-terms').remove()
+  #converts an array of terms to a <ul>
+  terms_to_list= (terms) ->
+    table_html = "<ul class='terms-list well'>"
+    for term in terms
+      table_html += "<li>#{term}</li>"
+    table_html += "</ul>"
+
+  #Listener for terms link, creates the popover
+  $('.terms').live 'click', (evt) ->
+    term = $(this)
+    table_id = $(this).attr('table_id')
+    family = $(this).attr('family_name')
+    column = $(this).attr('column_name')
+    content = "<div id='new-popover-search' class='form-search' table_id='#{table_id}' family_name='#{family}' column_name='#{column}'><input type='search' class='term-search span2' placeholder='Search...'/><a class='btn btn-primary term-search-btn'>Search</a><a class='btn btn-danger reset-term-search'><i class='icon-remove'/></a></div>"
+    content += "<ul class='terms-list'><li>Loading...</li></ul><a href='#' class='more-terms'>More...</a>"
+    term.popover
+      title: column + " terms<i class='icon-remove popover-close' style='position:absolute; top:15px;right:15px'></i>"
+      content: content
+      trigger: 'focus'
+      placement: 'right'
+    term.popover('show')
+    newPopover = $('#new-popover-search')
+    get_terms(newPopover)
+    newPopover.removeAttr('id').parents('.popover').css('top','0px').children('.arrow').remove()
+  #Listener for more terms
+  $('.more-terms').live 'click', (evt) ->
+    searchDiv = $(this).siblings('.form-search')
+    prevTerm = $(this).attr('prev_term')
+    get_terms(searchDiv,prevTerm)
+  #Listener for term search input
+  $('.term-search').live 'keydown', (evt) ->
+    if evt.which == 13
+      evt.preventDefault()  
+      $(this).siblings('.term-search-btn').click()
+  #Listener for term search
+  $('.term-search-btn').live 'click', (evt) ->
+    btn = $(this)
+    searchDiv = btn.parent()
+    startWith = btn.siblings('.term-search').val()
+    get_terms(searchDiv,startWith)
+    btn.hide()
+    btn.siblings('.reset-term-search').show()
+    btn.siblings('.term-search').val('')
   #Listener for reset term search
   $('.reset-term-search').live 'click', (evt) ->
     btn = $(this)
-    table_id = btn.parent().attr('table_id')
-    family = btn.parent().attr('family_name')
-    column = btn.parent().attr('column_name')
-    $.ajax
-      type: 'POST'
-      url: Routes.terms_blur_table_path(table_id)
-      data:
-        family: family
-        column: column
-        startWith: ''
-        size: 21
-      dataType: 'json'
-      success: (data) ->
-        btn.hide()
-        btn.siblings('.term-search-btn').show()
-        btn.siblings('.term-search').val('')
-        moreLink = btn.parents('.popover-content').find('.more-terms')
-        moreLink.siblings('.terms-list').replaceWith(terms_to_list(data))
-        if data.length == 21
-          moreLink.attr('prev_term', data[data.length - 1])
-        else
-          moreLink.remove()
+    searchDiv = btn.parent()
+    get_terms(searchDiv)
+    btn.hide()
+    btn.siblings('.term-search-btn').show()
+    btn.siblings('.term-search').val('')
   #Listener for popover-close
   $('.popover-close').live 'click', (evt) ->
     $(this).parents('.popover').remove()

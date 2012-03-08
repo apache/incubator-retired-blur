@@ -41,4 +41,33 @@ tr.highlighted-row td{ background:#FAD08A !important; }
   display:none;
 }
 
+.terms-list{
+  list-style-type:none;
+  max-height:400px;
+  overflow-y:scroll;
+  padding:5px;
+  & > li{
+    margin-top:-12px;
+    &:first-child{
+      margin-top:0;
+    }
+  }
+}
+.search-term-link{
+  cursor:pointer;
+  &:hover{
+    background-color:#CCC;
+  }
+}
+.term-input{
+  cursor:default;
+  & > span{
+    cursor:text;
+    padding-left:10px;
+  }
+}
+.more-terms{
+  margin-top:10px;
+}
+
 

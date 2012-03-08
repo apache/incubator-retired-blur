@@ -334,14 +334,14 @@ $(document).ready ->
       success: (data) ->
         searchDiv.siblings('.terms-list').replaceWith(terms_to_list(data))
         if data.length == 21
-          searchDiv.siblings('.more-terms').attr('prev_term', data[data.length - 1])
+          searchDiv.siblings('.more-terms').attr('prev_term', data[data.length - 1]).children('.more-terms-btn').removeAttr('disabled')
         else
-          searchDiv.siblings('.more-terms').remove()
+          searchDiv.siblings('.more-terms').children('.more-terms-btn').attr('disabled','disabled')
   #converts an array of terms to a <ul>
   terms_to_list= (terms) ->
     table_html = "<ul class='terms-list well'>"
     for term in terms
-      table_html += "<li>#{term}</li>"
+      table_html += "<li class='input-prepend term-li'><span class='add-on search-term-link' term='#{term}'><i class='icon-search'></i></span><span class='input uneditable-input term-input'><span>#{term}</span></span></li>"
     table_html += "</ul>"
 
   #Listener for terms link, creates the popover
@@ -350,8 +350,8 @@ $(document).ready ->
     table_id = $(this).attr('table_id')
     family = $(this).attr('family_name')
     column = $(this).attr('column_name')
-    content = "<div id='new-popover-search' class='form-search' table_id='#{table_id}' family_name='#{family}' column_name='#{column}'><input type='search' class='term-search span2' placeholder='Search...'/><a class='btn btn-primary term-search-btn'>Search</a><a class='btn btn-danger reset-term-search'><i class='icon-remove'/></a></div>"
-    content += "<ul class='terms-list'><li>Loading...</li></ul><a href='#' class='more-terms'>More...</a>"
+    content = "<div id='new-popover-search' class='form-search' table_id='#{table_id}' family_name='#{family}' column_name='#{column}'><input type='search' class='term-search span2' placeholder='Search...'/><a class='btn btn-primary term-search-btn'>Search</a></div>"
+    content += "<ul class='terms-list'><li>Loading...</li></ul><div class='more-terms btn-group'><a href='#' class='more-terms-btn btn btn-primary'>More...</a><a href='#' class='reset-terms btn'><i class='icon-refresh'></i></a></div>"
     term.popover
       title: column + " terms<i class='icon-remove popover-close' style='position:absolute; top:15px;right:15px'></i>"
       content: content
@@ -362,9 +362,9 @@ $(document).ready ->
     get_terms(newPopover)
     newPopover.removeAttr('id').parents('.popover').css('top','0px').children('.arrow').remove()
   #Listener for more terms
-  $('.more-terms').live 'click', (evt) ->
-    searchDiv = $(this).siblings('.form-search')
-    prevTerm = $(this).attr('prev_term')
+  $('.more-terms-btn').live 'click', (evt) ->
+    searchDiv = $(this).parent().siblings('.form-search')
+    prevTerm = $(this).parent().attr('prev_term')
     get_terms(searchDiv,prevTerm)
   #Listener for term search input
   $('.term-search').live 'keydown', (evt) ->
@@ -377,18 +377,21 @@ $(document).ready ->
     searchDiv = btn.parent()
     startWith = btn.siblings('.term-search').val()
     get_terms(searchDiv,startWith)
-    btn.hide()
-    btn.siblings('.reset-term-search').show()
-    btn.siblings('.term-search').val('')
   #Listener for reset term search
-  $('.reset-term-search').live 'click', (evt) ->
+  $('.reset-terms').live 'click', (evt) ->
     btn = $(this)
-    searchDiv = btn.parent()
+    searchDiv = btn.parent().siblings('.form-search')
     get_terms(searchDiv)
-    btn.hide()
-    btn.siblings('.term-search-btn').show()
-    btn.siblings('.term-search').val('')
+    searchDiv.children('.term-search').val('')
   #Listener for popover-close
   $('.popover-close').live 'click', (evt) ->
     $(this).parents('.popover').remove()
+  #Listener for search link
+  $('.search-term-link').live 'click', (evt) ->
+    searchDiv = $(this).parents('.terms-list').siblings('.form-search')
+    term = $(this).attr('term')
+    table_id = searchDiv.attr('table_id')
+    family = searchDiv.attr('family_name')
+    column = searchDiv.attr('column_name')
+    window.location = Routes.search_path() + "?table_id=#{table_id}&query=" + encodeURIComponent("#{family}.#{column}:#{term}")
     

@@ -13,10 +13,10 @@
 }
 .bulk-action-selector{ margin: 10px 5px 10px 0px; }
 tr.highlighted-row td{ background:#FAD08A !important; }
-.live-col{
+.live-col > a{
   color: $green-border-color ! important;
 }
-.disabled-col{
+.disabled-col > a{
   color: $red-border-color ! important;
 }
 

@@ -27,7 +27,6 @@ public class QueryCollector {
 	
 	public static void startCollecting(String connection, final String zookeeperName, final JdbcTemplate jdbc) {
 		log.debug("Collecting queries");
-		System.out.println("queries");
 		
 		try {
 			Calendar now = getUTCCal(new Date().getTime());

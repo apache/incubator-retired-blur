@@ -245,7 +245,8 @@ $(document).ready ->
           under_nodes.addClass(ONLINE).removeClass(OFFLINE)
         else
           under_nodes.removeClass(ONLINE).addClass(OFFLINE)
-          status = 'offline'
+          if status != 'offline'
+              status= 'wrning'
 
 
         #update the table css

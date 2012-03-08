@@ -8,13 +8,13 @@
       #filters_wrap
         #standard
           .search_field
-            = search_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String"
+            = search_field_tag :query_string, params[:query_string], :placeholder => "Enter a Query String", :value => @query
           = submit_tag "Search", :id => "search_submit", :class => "btn btn-primary"
           %img.hidden{:id => "loading-spinner",
               :src => image_path("loader.gif"),
               :alt => "Loading..."}
         #blur-table
-          = select_tag :blur_table, grouped_options_for_select(@filter_table_collection)
+          = select_tag :blur_table, grouped_options_for_select(@filter_table_collection, @blur_table.id)
         #advanced
           .header
             Advanced

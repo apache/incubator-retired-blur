@@ -28,10 +28,6 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
-  def num_shards
-    self.schema.values.flatten.count if self.schema
-  end
-
   def is_enabled?
     self.status == 4
   end
@@ -43,7 +39,9 @@ class BlurTable < ActiveRecord::Base
   def is_deleted?
     self.status == 0
   end
-
+  def terms(blur_urls,family,column,startWith,size)
+    return BlurThriftClient.client(blur_urls).terms self.table_name, family, column, startWith, size
+  end
   def enable(blur_urls)
     begin
       BlurThriftClient.client(blur_urls).enableTable self.table_name

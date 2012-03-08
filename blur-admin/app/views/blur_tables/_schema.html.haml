@@ -13,9 +13,8 @@
               = "#{family['name']} (#{blur_table.table_analyzer})"
             %ul
               - family['columns'].each do |column|
-                %li#column{:id=>"#{blur_table.table_name}.#{family['name']}.#{column['name']}"}
-                  -colClass = column['live'] ? 'live-col' : 'disabled-col'
-                  %a{:href=>'#', :class => colClass}
+                %li#column{:id=>"#{blur_table.table_name}.#{family['name']}.#{column['name']}", :class => column['live'] ? 'live-col' : 'disabled-col'}
+                  %a{:href=>'#'}
                     =column['name']
                   %ul
                     %li
@@ -24,6 +23,8 @@
                       %a{:href=>'#'}="Analyzer: (#{column['analyzer']})"
                     %li
                       %a{:href=>'#'}="Full Text: #{column['fullText']}"
+                    %li
+                      %span.terms{:family_name => family['name'], :column_name => column['name'], :table_id => blur_table.id} View Terms
                       
 - else
   %div

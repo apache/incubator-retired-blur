@@ -9,7 +9,13 @@ class SearchController < ApplicationController
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
-    @blur_table = @blur_tables[0]
+    @blur_table = BlurTable.find_by_id(params[:table_id])
+    if @blur_table.nil?
+      @blur_table = @blur_tables[0]
+      @query = ''
+    else
+      @query = params[:query].nil? ? '' : params[:query]
+    end
     @columns = @blur_table.schema &preference_sort(current_user.column_preference.value || []) if @blur_table
     @searches = current_user.searches.order("name")
     @filter_table_collection = {}

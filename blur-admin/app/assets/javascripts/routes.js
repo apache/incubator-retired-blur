@@ -280,6 +280,10 @@
   reload_blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/reload"], ["format"], arguments)
   },
+// terms_blur_table => /blur_tables/:id/terms(.:format)
+  terms_blur_table_path: function(_id, options) {
+  return Utils.build_path(1, ["/blur_tables/", "/terms"], ["format"], arguments)
+  },
 // blur_tables => /blur_tables(.:format)
   blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables"], ["format"], arguments)

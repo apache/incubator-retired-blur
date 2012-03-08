@@ -33,5 +33,9 @@ describe BlurTablesController do
     it "schema routes to #schema" do
       get("/blur_tables/1/schema").should route_to(:controller => "blur_tables", :action => "schema", :id => '1')
     end
+
+    it "terms routes to #terms" do
+      post("/blur_tables/1/terms").should route_to(:controller => "blur_tables", :action => "terms", :id => '1')
+    end
   end
 end

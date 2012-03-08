@@ -13,11 +13,61 @@
 }
 .bulk-action-selector{ margin: 10px 5px 10px 0px; }
 tr.highlighted-row td{ background:#FAD08A !important; }
-.live-col{
+.live-col > a{
   color: $green-border-color ! important;
 }
-.disabled-col{
+.disabled-col > a{
   color: $red-border-color ! important;
+}
+.popover-close{
+  position:absolute;
+  top:15px;
+  right:15px;
+  &:hover{
+    background-color:#CCC;
+    border-radius:3px;
+  }
+}
+.terms{
+  color:#08C;
+  text-decoration:none;
+  cursor:pointer;
+  &:hover{
+    color:#048;
+    text-decoration:underline;
+  }
+}
+.reset-term-search{
+  display:none;
+}
+
+.terms-list{
+  list-style-type:none;
+  max-height:400px;
+  overflow-y:scroll;
+  padding:5px;
+  & > li{
+    margin-top:-12px;
+    &:first-child{
+      margin-top:0;
+    }
+  }
+}
+.search-term-link{
+  cursor:pointer;
+  &:hover{
+    background-color:#CCC;
+  }
+}
+.term-input{
+  cursor:default;
+  & > span{
+    cursor:text;
+    padding-left:10px;
+  }
+}
+.more-terms{
+  margin-top:10px;
 }
 
 

@@ -23,6 +23,8 @@
                       %a{:href=>'#'}="Analyzer: (#{column['analyzer']})"
                     %li
                       %a{:href=>'#'}="Full Text: #{column['fullText']}"
+                    %li
+                      %span.terms{:family_name => family['name'], :column_name => column['name'], :table_id => blur_table.id} View Terms
                       
 - else
   %div

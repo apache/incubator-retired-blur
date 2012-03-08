@@ -19,5 +19,26 @@ tr.highlighted-row td{ background:#FAD08A !important; }
 .disabled-col > a{
   color: $red-border-color ! important;
 }
+.popover-close{
+  position:absolute;
+  top:15px;
+  right:15px;
+  &:hover{
+    background-color:#CCC;
+    border-radius:3px;
+  }
+}
+.terms{
+  color:#08C;
+  text-decoration:none;
+  cursor:pointer;
+  &:hover{
+    color:#048;
+    text-decoration:underline;
+  }
+}
+.reset-term-search{
+  display:none;
+}
 
 

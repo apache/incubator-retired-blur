@@ -1,4 +1,6 @@
 #= require jquery.jstree
+#= require bootstrap-tooltip
+#= require bootstrap-popover
 $(document).ready ->
   refresh_timeout = null
   state_lookup = 
@@ -308,4 +310,116 @@ $(document).ready ->
       titleClass: 'title'
       body: msg
       btns: btns
+
+
+  terms_to_list= (terms) ->
+    table_html = "<ul class='terms-list well'>"
+    for term in terms
+      table_html += "<li>#{term}</li>"
+    table_html += "</ul>"
+  #Listener for terms link
+  $('.terms').live 'click', (evt) ->
+    term = $(this)
+    table_id = $(this).attr('table_id')
+    family = $(this).attr('family_name')
+    column = $(this).attr('column_name')
+    $.ajax
+      type: 'POST'
+      url: Routes.terms_blur_table_path(table_id)
+      data:
+        family: family
+        column: column
+        startWith: '' 
+        size: 21
+      success: (data) ->
+        content = "<div class='form-search' table_id='#{table_id}' family_name='#{family}' column_name='#{column}'><input type='search' class='term-search span2' placeholder='Search...'/><a class='btn btn-primary term-search-btn'>Search</a><a class='btn btn-danger reset-term-search'><i class='icon-remove'/></a></div>" 
+        content += terms_to_list(data)
+        prevTerm = data[data.length - 1]
+        if data.length == 21
+          content += "<a href='#' class='more-terms' table_id='#{table_id}' family_name='#{family}' column_name='#{column}' prev_term='#{prevTerm}'>More...</a>"
+        term.popover
+          title: column + " terms<i class='icon-remove popover-close' style='position:absolute; top:15px;right:15px'></i>"
+          content: content
+          trigger: 'focus'
+          placement: 'right'
+        term.popover('show')
+  #Listener for more terms
+  $('.more-terms').live 'click', (evt) ->
+    moreLink = $(this)
+    table_id = $(this).attr('table_id')
+    family = $(this).attr('family_name')
+    column = $(this).attr('column_name')
+    prevTerm = $(this).attr('prev_term')
+    $.ajax
+      type: 'POST'
+      url: Routes.terms_blur_table_path(table_id)
+      data:
+        family: family
+        column: column
+        startWith: prevTerm 
+        size: 21
+      dataType: 'json'
+      success: (data) ->
+        moreLink.siblings('.terms-list').replaceWith(terms_to_list(data))
+        if data.length == 21
+          moreLink.attr('prev_term', data[data.length - 1])
+        else
+          moreLink.remove()
+  $('.term-search').live 'keydown', (evt) ->
+    if evt.which == 13
+      evt.preventDefault()  
+      $(this).siblings('.term-search-btn').click()
+  #Listener for term search
+  $('.term-search-btn').live 'click', (evt) ->
+    btn = $(this)
+    table_id = btn.parent().attr('table_id')
+    family = btn.parent().attr('family_name')
+    column = btn.parent().attr('column_name')
+    startWith = btn.siblings('.term-search').val()
+    $.ajax
+      type: 'POST'
+      url: Routes.terms_blur_table_path(table_id)
+      data:
+        family: family
+        column: column
+        startWith: startWith
+        size: 21
+      dataType: 'json'
+      success: (data) ->
+        btn.hide()
+        btn.siblings('.reset-term-search').show()
+        moreLink = btn.parents('.popover-content').find('.more-terms')
+        moreLink.siblings('.terms-list').replaceWith(terms_to_list(data))
+        if data.length == 21
+          moreLink.attr('prev_term', data[data.length - 1])
+        else
+          moreLink.remove()
+  #Listener for reset term search
+  $('.reset-term-search').live 'click', (evt) ->
+    btn = $(this)
+    table_id = btn.parent().attr('table_id')
+    family = btn.parent().attr('family_name')
+    column = btn.parent().attr('column_name')
+    $.ajax
+      type: 'POST'
+      url: Routes.terms_blur_table_path(table_id)
+      data:
+        family: family
+        column: column
+        startWith: ''
+        size: 21
+      dataType: 'json'
+      success: (data) ->
+        btn.hide()
+        btn.siblings('.term-search-btn').show()
+        btn.siblings('.term-search').val('')
+        moreLink = btn.parents('.popover-content').find('.more-terms')
+        moreLink.siblings('.terms-list').replaceWith(terms_to_list(data))
+        if data.length == 21
+          moreLink.attr('prev_term', data[data.length - 1])
+        else
+          moreLink.remove()
+  #Listener for popover-close
+  $('.popover-close').live 'click', (evt) ->
+    $(this).parents('.popover').remove()
     

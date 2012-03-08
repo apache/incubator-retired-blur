@@ -1,6 +1,6 @@
 class BlurTablesController < ApplicationController
 
-  before_filter :current_zookeeper, :only => [:index, :reload, :enable, :disable, :destroy, :reload, :forget]
+  before_filter :current_zookeeper, :only => [:index, :reload, :enable, :disable, :destroy, :reload, :forget, :terms]
   before_filter :zookeepers, :only => :index
 
   def index
@@ -57,6 +57,14 @@ class BlurTablesController < ApplicationController
     respond_to do |format|
       format.html {render :partial => 'hosts', :locals => {:blur_table => BlurTable.find(params[:id])}}
     end
+  end
+
+  def terms
+      puts 'TEST'
+      puts params.inspect
+      table = BlurTable.find(params[:id])
+      terms = table.terms @current_zookeeper.blur_urls, params[:family], params[:column], params[:startWith], params[:size].to_i
+      render :json => terms
   end
       
   private

@@ -58,7 +58,11 @@ $(document).ready ->
       col_span = colspan_lookup[table]
       row.append("<td colspan='#{col_span}'>#{capitalize_first(state) + ' ' +blur_table['table_name']}...</td>")
     else
-      row.append("<td><input class='bulk-action-checkbox' type='checkbox'/></td><td class='blur_table_name'>#{blur_table['table_name']}</td>")        
+      row_html = "<td class='checkbox-td'><input class='bulk-action-checkbox' type='checkbox'/>" 
+      if blur_table['has_queried_recently?']
+        row_html += "<i class='icon-exclamation-sign queries-running-icon'></i>"
+      row_html += "</td><td class='blur_table_name'>#{blur_table['table_name']}</td>"
+      row.append(row_html)        
       if table == 'active'
         host_html = "<td class='blur_table_hosts_shards'>"
         if blur_table['server']

@@ -73,6 +73,6 @@ class BlurTablesController < ApplicationController
     
     def render_table_json
       tables = @current_zookeeper.blur_tables.order('table_name ASC').includes('cluster')
-      render :json => tables
+      render :json => tables, :methods => [:has_queried_recently?]
     end
 end

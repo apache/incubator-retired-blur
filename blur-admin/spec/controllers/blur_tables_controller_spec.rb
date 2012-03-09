@@ -56,7 +56,7 @@ describe BlurTablesController do
       it "render_table_json should render JSON" do
         get :reload
         response.content_type.should == 'application/json'
-        response.body.should == [@blur_table].to_json()
+        response.body.should == [@blur_table].to_json(:methods => [:has_queried_recently?])
       end
     end
 

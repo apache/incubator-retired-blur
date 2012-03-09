@@ -5,7 +5,9 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.SessionExpiredException;
+import org.apache.zookeeper.KeeperException.SessionMovedException;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -18,7 +20,6 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	private int instanceId;
 	private JdbcTemplate jdbc;
 	private ZooKeeper zk;
-	private Watcher watcher;
 	private Properties props;
 	
 	private static final Log log = LogFactory.getLog(ZookeeperInstance.class);
@@ -52,20 +53,19 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	}
 
 	@Override
-	public void run() {	
+	public void run() {
 		while(true) {
 			if (zk == null) {
 				try {
-					watcher = new ZookeeperWatcher(this);
-					zk = new ZooKeeper(url, 3000, watcher);
+					zk = new ZooKeeper(url, 3000, null );
 				} catch (IOException e) {
-					watcher = null;
 					zk = null;
 				}
 			}
 			
 			if (zk == null) {
 				log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
+				System.out.println("not online");
 				updateZookeeperStatus(false);
 				try {
 					Thread.sleep(30000);
@@ -75,17 +75,33 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 				}
 			} else {
 				updateZookeeperStatus(true);
-				runInitialRegistration();
 				try {
-					synchronized(watcher) {
-						watcher.wait();
-					}
-					log.info("Zookeeper Watcher was woken up, time to do work.");
+					ControllerCollector.collect(this, instanceId);
+					ClusterCollector.collect(this, instanceId);
+				} catch (KeeperException e) {
+					handleZkError(zk, e);
+				} catch (InterruptedException e) {
+					handleZkError(zk, e);
+				}
+				try {
+					Thread.sleep(10000); // poll every 10 seconds
 				} catch (InterruptedException e) {
 					log.info("Exiting Zookeeper instance");
 					return;
-				}
+				} 
 			}
+		}
+	}
+	
+	private void handleZkError(ZooKeeper zk, Exception e) {
+		try {
+			zk.close();
+		} catch (InterruptedException e1) {
+		}
+		zk = null;
+		if( !(e instanceof SessionExpiredException || e instanceof SessionMovedException) ) {
+			log.warn("error talking to zookeeper", e);
+			System.out.println(e.getMessage());
 		}
 	}
 	
@@ -110,11 +126,6 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 	
 	public String getName() {
 		return name;
-	}
-	
-	private void runInitialRegistration() {
-		ControllerCollector.collect(this);
-		ClusterCollector.collect(this);
 	}
 
 }

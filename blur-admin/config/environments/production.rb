@@ -20,6 +20,8 @@ BlurAdmin::Application.configure do
   # Generate digests for assets URLs
   config.assets.digest = true
   
+  config.assets.precompile += Dir.foreach('app/assets/javascripts/').reject{|file| (file =~ /.*\.coffee/).nil?}
+  
   config.action_dispatch.x_sendfile_header = "X-Sendfile"
   
   class LogFormatter < Logger::Formatter

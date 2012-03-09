@@ -20,7 +20,11 @@
 	- if (user.is?(:admin))
 		= f.toggles 'Roles' do
 			- User::ROLES.each do |role|
-				= f.check_box "user[roles][]", role.to_s.humanize, :checked => user.is?(role)
+				%li
+					%label
+						= check_box_tag "user[roles][]", role, user.is?(role)
+						%span
+							= role.to_s.humanize
 	- if current_user
 		= f.submit 'Save', :class => 'btn btn-primary'
 	- else

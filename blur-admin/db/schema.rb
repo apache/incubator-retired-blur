@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20120226002653) do
+ActiveRecord::Schema.define(:version => 20120309015311) do
 
   create_table "blur_queries", :force => true do |t|
     t.text     "query_string"
@@ -23,8 +23,8 @@ ActiveRecord::Schema.define(:version => 20120226002653) do
     t.string   "facets"
     t.integer  "start"
     t.integer  "fetch_num"
-    t.text     "pre_filters",              :limit => 2147483647
-    t.text     "post_filters",             :limit => 2147483647
+    t.text     "pre_filters",              :limit => 16777215
+    t.text     "post_filters",             :limit => 16777215
     t.text     "selector_column_families"
     t.text     "selector_columns"
     t.string   "userid"
@@ -56,6 +56,7 @@ ActiveRecord::Schema.define(:version => 20120226002653) do
   create_table "clusters", :force => true do |t|
     t.string  "name"
     t.integer "zookeeper_id"
+    t.boolean "safe_mode"
   end
 
   add_index "clusters", ["zookeeper_id"], :name => "index_clusters_on_zookeeper_id"

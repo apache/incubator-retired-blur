@@ -2,10 +2,10 @@ class HdfsStat < ActiveRecord::Base
   belongs_to :hdfs
 
   def capacity
-  	self.present_capacity / 1024**3
+  	self.present_capacity.to_f / 1024**3
   end
 
   def used
-	self.dfs_used / 1024**3
+	self.dfs_used.to_f / 1024**3
   end
 end

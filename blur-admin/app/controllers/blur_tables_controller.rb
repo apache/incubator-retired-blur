@@ -72,7 +72,8 @@ class BlurTablesController < ApplicationController
     STATUS_SELECTOR = {:active => [4, 3], :disabled => [2, 5, 1], :deleted => [0]}
     
     def render_table_json
-      tables = @current_zookeeper.blur_tables.order('table_name ASC').includes('cluster')
-      render :json => tables, :methods => [:has_queried_recently?]
+      tables = @current_zookeeper.blur_tables.order('table_name ASC')
+      clusters = @current_zookeeper.clusters
+      render :json => {:clusters=>clusters, :tables=>tables}, :methods => [:has_queried_recently?]
     end
 end

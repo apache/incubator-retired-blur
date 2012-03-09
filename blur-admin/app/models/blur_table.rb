@@ -28,6 +28,10 @@ class BlurTable < ActiveRecord::Base
     end
   end
 
+  def has_queried_recently?
+    self.blur_queries.where("created_at > '#{5.minutes.ago}'").count > 0
+  end
+
   def is_enabled?
     self.status == 4
   end

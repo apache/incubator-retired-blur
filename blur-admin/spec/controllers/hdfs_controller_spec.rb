@@ -138,11 +138,11 @@ describe HdfsController do
 
     describe "GET mkdir" do
       before(:each) do
-        @hdfs_client.stub!(:mkdir)
+        @hdfs_client.stub!(:mkdirs)
       end
 
       it "assigns the correct instance variables and calls correct client method" do
-        @hdfs_client.should_receive(:mkdir).with("/folder/")
+        @hdfs_client.should_receive(:mkdirs).with("/folder/")
         get :mkdir, :id => @hdfs.id, :fs_path => '/', :folder => 'folder'
       end
 

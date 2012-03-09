@@ -13,3 +13,4 @@ log
 *.idea
 coverage
 coverage.data
+extra/nohup.out

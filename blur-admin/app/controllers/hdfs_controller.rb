@@ -60,7 +60,7 @@ class HdfsController < ApplicationController
     client = build_client_from_id
     path = "#{params[:fs_path]}/#{params[:folder]}/"
     path.gsub!(/\/\//, "/")
-    client.mkdir(path)
+    client.mkdirs(path)
     render :nothing => true
   end
 

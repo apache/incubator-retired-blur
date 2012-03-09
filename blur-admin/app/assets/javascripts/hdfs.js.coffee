@@ -14,9 +14,9 @@ $(document).ready ->
     headerHeight = 0; footerHeight = 0;
     prevHeight = window.innerHeight
     windowLoaded = () ->
-      headerHeight = parseInt($('#top').css('height'), 10)
+      headerHeight = parseInt($('#top').css('height'), 10) + parseInt($('.navbar').css('height'), 10)
       footerHeight = parseInt($('#ft').css('height'), 10)
-      newHeight = window.innerHeight - (footerHeight + headerHeight) - 10
+      newHeight = window.innerHeight - (footerHeight + headerHeight) - 20
       $('#hdfs_wrapper').animate({height: newHeight + 'px'}, 400)
     window.onload = windowLoaded
     $(window).resize ()->
@@ -275,6 +275,8 @@ $(document).ready ->
           $('#modal').css
             'width':'1120px'
             'margin-left':'-560px'
+          $('.modal-footer').css
+            'width':'1090px'
 
   show_dir_props = (id, path) ->
     title = "Properties for #{path}"

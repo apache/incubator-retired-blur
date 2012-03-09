@@ -6,9 +6,9 @@
 				.search-name{:title => val ? search.name : "This is not a valid search for this schema"}
 					=search.name
 				.search-buttons
-					%button#edit_icon{ :title => "Edit Query" }
+					%a.btn#edit_icon{ :title => "Edit Query" }
 						%i.icon-pencil
-					%button#delete_icon{ :title => "Delete Query" }
+					%a.btn#delete_icon{ :title => "Delete Query" }
 						%i.icon-remove
 				.clearfix
 

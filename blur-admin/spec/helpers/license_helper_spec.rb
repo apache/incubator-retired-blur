@@ -7,7 +7,7 @@ describe LicenseHelper do
   end
   describe "license text" do
     before(:each) do
-      @prefix = 'Licensed to: NIC on 08 Sep 2011.'
+      @prefix = "Licensed to: NIC on #{@license.issued_date.strftime('%d %b %Y')}."
     end
 
     describe 'License expiration' do

@@ -46,13 +46,10 @@ public class TableCollector extends Collector {
 
 	private void updateOnlineTables(List<String> tables) throws KeeperException, InterruptedException {
 		for (String table : tables) {
-			String uri = null;
-			boolean enabled = false;
+			String tablePath = "/blur/clusters/" + clusterName + "/tables/" + table;
 
-			uri = new String(getZk()
-					.getData("/blur/clusters/" + clusterName + "/tables/" + table + "/uri", false, null));
-			enabled = getZk().getChildren("/blur/clusters/" + clusterName + "/tables/" + table, false).contains(
-					"enabled");
+			String uri = new String(getZk().getData(tablePath + "/uri", false, null));
+			boolean enabled = getZk().getChildren(tablePath, false).contains("enabled");
 
 			int updatedCount = getJdbc().update(
 					"update blur_tables set table_uri=?, status=? where table_name=? and cluster_id=?", uri,

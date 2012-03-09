@@ -6,6 +6,8 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.KeeperException.SessionExpiredException;
+import org.apache.zookeeper.KeeperException.SessionMovedException;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -63,6 +65,7 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 			
 			if (zk == null) {
 				log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
+				System.out.println("not online");
 				updateZookeeperStatus(false);
 				try {
 					Thread.sleep(30000);
@@ -96,7 +99,10 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 		} catch (InterruptedException e1) {
 		}
 		zk = null;
-		log.warn("error talking to zookeeper", e);
+		if( !(e instanceof SessionExpiredException || e instanceof SessionMovedException) ) {
+			log.warn("error talking to zookeeper", e);
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	private void updateZookeeperStatus(boolean online) {

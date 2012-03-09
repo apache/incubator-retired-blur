@@ -134,6 +134,8 @@ tar -cvzf "agent-$version.tar.gz" "agent-$version"
 #################################
 
 cp ../etc/INSTALL .
-tar -cvzf "blur-tools-$version.tar.gz" "blur-console-$version.tar.gz" "agent-$version.tar.gz" INSTALL
+cp ../etc/install.sh .
+cp ../etc/VERSION .
+tar -cvzf "blur-tools-$version.tar.gz" "blur-console-$version.tar.gz" "agent-$version.tar.gz" INSTALL install.sh VERSION
 
 echo "Build complete"

@@ -16,17 +16,20 @@ import org.apache.thrift.TEnum;
  */
 public enum RowMutationType implements org.apache.thrift.TEnum {
   /**
-   * Indicates that the entire Row is to be deleted.
+   * Indicates that the entire Row is to be deleted.  No changes are
+   * made if the specified row does not exist.
    */
   DELETE_ROW(0),
   /**
    * Indicates that the entire Row is to be deleted, and then a new
-   * Row with the same id is to be added.
+   * Row with the same id is to be added.  If the specified row does
+   * not exist, the new row will still be created.
    */
   REPLACE_ROW(1),
   /**
    * Indicates that mutations of the underlying Records will be
-   * processed individually.
+   * processed individually.  Mutation will result in a BlurException
+   * if the specified row does not exist.
    */
   UPDATE_ROW(2);
 

@@ -388,6 +388,22 @@ require 'blur_types'
             return
           end
 
+          def isInSafeMode(cluster)
+            send_isInSafeMode(cluster)
+            return recv_isInSafeMode()
+          end
+
+          def send_isInSafeMode(cluster)
+            send_message('isInSafeMode', IsInSafeMode_args, :cluster => cluster)
+          end
+
+          def recv_isInSafeMode()
+            result = receive_message(IsInSafeMode_result)
+            return result.success unless result.success.nil?
+            raise result.ex unless result.ex.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'isInSafeMode failed: unknown result')
+          end
+
         end
 
         class Processor
@@ -655,6 +671,17 @@ require 'blur_types'
               result.ex = ex
             end
             write_result(result, oprot, 'optimize', seqid)
+          end
+
+          def process_isInSafeMode(seqid, iprot, oprot)
+            args = read_args(iprot, IsInSafeMode_args)
+            result = IsInSafeMode_result.new()
+            begin
+              result.success = @handler.isInSafeMode(args.cluster)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'isInSafeMode', seqid)
           end
 
         end
@@ -1473,6 +1500,40 @@ require 'blur_types'
           EX = 1
 
           FIELDS = {
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class IsInSafeMode_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          CLUSTER = 1
+
+          FIELDS = {
+            CLUSTER => {:type => ::Thrift::Types::STRING, :name => 'cluster'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class IsInSafeMode_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          EX = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::BOOL, :name => 'success'},
             EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
           }
 

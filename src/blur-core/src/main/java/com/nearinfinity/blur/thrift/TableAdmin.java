@@ -23,6 +23,16 @@ public abstract class TableAdmin implements Iface {
   protected ClusterStatus _clusterStatus;
 
   @Override
+  public boolean isInSafeMode(String cluster) throws BlurException, TException {
+    try {
+      return _clusterStatus.isInSafeMode(true, cluster);
+    } catch (Exception e) {
+      LOG.error("Unknown error during safe mode check of [cluster={0}]", e, cluster);
+      throw new BException(e.getMessage(), e);
+    }
+  }
+
+  @Override
   public final void createTable(TableDescriptor tableDescriptor) throws BlurException, TException {
     try {
       // @todo Remove this once issue #27 is resolved

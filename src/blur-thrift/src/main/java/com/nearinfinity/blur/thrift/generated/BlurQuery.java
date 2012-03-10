@@ -42,7 +42,13 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
   public SimpleQuery simpleQuery; // required
   public ExpertQuery expertQuery; // required
   public List<Facet> facets; // required
+  /**
+   * Selector is used to fetch data in the search results, if null only location ids will be fetched.
+   */
   public Selector selector; // required
+  /**
+   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
+   */
   public boolean allowStaleData; // required
   public boolean useCacheIfPresent; // required
   public long start; // required
@@ -60,7 +66,13 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     SIMPLE_QUERY((short)1, "simpleQuery"),
     EXPERT_QUERY((short)2, "expertQuery"),
     FACETS((short)3, "facets"),
+    /**
+     * Selector is used to fetch data in the search results, if null only location ids will be fetched.
+     */
     SELECTOR((short)4, "selector"),
+    /**
+     * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
+     */
     ALLOW_STALE_DATA((short)5, "allowStaleData"),
     USE_CACHE_IF_PRESENT((short)6, "useCacheIfPresent"),
     START((short)7, "start"),
@@ -429,10 +441,16 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
   }
 
+  /**
+   * Selector is used to fetch data in the search results, if null only location ids will be fetched.
+   */
   public Selector getSelector() {
     return this.selector;
   }
 
+  /**
+   * Selector is used to fetch data in the search results, if null only location ids will be fetched.
+   */
   public BlurQuery setSelector(Selector selector) {
     this.selector = selector;
     return this;
@@ -453,10 +471,16 @@ public class BlurQuery implements org.apache.thrift.TBase<BlurQuery, BlurQuery._
     }
   }
 
+  /**
+   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
+   */
   public boolean isAllowStaleData() {
     return this.allowStaleData;
   }
 
+  /**
+   * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
+   */
   public BlurQuery setAllowStaleData(boolean allowStaleData) {
     this.allowStaleData = allowStaleData;
     setAllowStaleDataIsSet(true);

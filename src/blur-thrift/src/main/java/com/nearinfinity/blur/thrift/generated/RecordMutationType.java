@@ -17,21 +17,27 @@ import org.apache.thrift.TEnum;
 public enum RecordMutationType implements org.apache.thrift.TEnum {
   /**
    * Indicates the Record with the given recordId in the given Row
-   * is to be deleted.
+   * is to be deleted.  If the target record does not exist, then
+   * no changes are made.
    */
   DELETE_ENTIRE_RECORD(0),
   /**
    * Indicates the Record with the given recordId in the given Row
    * is to be deleted, and a new Record with the same id is to be added.
+   * If the specified record does not exist the new record is still
+   * added.
    */
   REPLACE_ENTIRE_RECORD(1),
   /**
-   * Replace the columns that are specified in the Record mutation.
+   * Replace the columns that are specified in the Record mutation.  If
+   * the target record does not exist then this mutation will result in
+   * a BlurException.
    */
   REPLACE_COLUMNS(2),
   /**
    * Append the columns in the Record mutation to the Record that
-   * could already exist.
+   * could already exist.  If the target record does not exist then this
+   * mutation will result in a BlurException.
    */
   APPEND_COLUMN_VALUES(3);
 

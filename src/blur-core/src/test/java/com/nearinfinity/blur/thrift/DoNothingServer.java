@@ -155,4 +155,9 @@ public class DoNothingServer implements Iface {
   public void optimize(String table, int numberOfSegmentsPerShard) throws BlurException, TException {
     
   }
+
+  @Override
+  public boolean isInSafeMode(String cluster) throws BlurException, TException {
+    return false;
+  }
 }

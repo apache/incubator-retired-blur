@@ -3715,6 +3715,150 @@ sub write {
   return $xfer;
 }
 
+package Blur::Blur_isInSafeMode_args;
+use base qw(Class::Accessor);
+Blur::Blur_isInSafeMode_args->mk_accessors( qw( cluster ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{cluster} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{cluster}) {
+      $self->{cluster} = $vals->{cluster};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_isInSafeMode_args';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::STRING) {
+        $xfer += $input->readString(\$self->{cluster});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_isInSafeMode_args');
+  if (defined $self->{cluster}) {
+    $xfer += $output->writeFieldBegin('cluster', TType::STRING, 1);
+    $xfer += $output->writeString($self->{cluster});
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
+package Blur::Blur_isInSafeMode_result;
+use base qw(Class::Accessor);
+Blur::Blur_isInSafeMode_result->mk_accessors( qw( success ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{success} = undef;
+  $self->{ex} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{success}) {
+      $self->{success} = $vals->{success};
+    }
+    if (defined $vals->{ex}) {
+      $self->{ex} = $vals->{ex};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'Blur_isInSafeMode_result';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^0$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{success});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^1$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{ex} = new Blur::BlurException();
+        $xfer += $self->{ex}->read($input);
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('Blur_isInSafeMode_result');
+  if (defined $self->{success}) {
+    $xfer += $output->writeFieldBegin('success', TType::BOOL, 0);
+    $xfer += $output->writeBool($self->{success});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{ex}) {
+    $xfer += $output->writeFieldBegin('ex', TType::STRUCT, 1);
+    $xfer += $self->{ex}->write($output);
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::BlurIf;
 
 use strict;
@@ -3894,6 +4038,13 @@ sub optimize{
   my $self = shift;
   my $table = shift;
   my $numberOfSegmentsPerShard = shift;
+
+  die 'implement interface';
+}
+
+sub isInSafeMode{
+  my $self = shift;
+  my $cluster = shift;
 
   die 'implement interface';
 }
@@ -4086,6 +4237,13 @@ sub optimize{
   my $table = ($request->{'table'}) ? $request->{'table'} : undef;
   my $numberOfSegmentsPerShard = ($request->{'numberOfSegmentsPerShard'}) ? $request->{'numberOfSegmentsPerShard'} : undef;
   return $self->{impl}->optimize($table, $numberOfSegmentsPerShard);
+}
+
+sub isInSafeMode{
+  my ($self, $request) = @_;
+
+  my $cluster = ($request->{'cluster'}) ? $request->{'cluster'} : undef;
+  return $self->{impl}->isInSafeMode($cluster);
 }
 
 package Blur::BlurClient;
@@ -5211,6 +5369,52 @@ sub recv_optimize{
   }
   return;
 }
+sub isInSafeMode{
+  my $self = shift;
+  my $cluster = shift;
+
+    $self->send_isInSafeMode($cluster);
+  return $self->recv_isInSafeMode();
+}
+
+sub send_isInSafeMode{
+  my $self = shift;
+  my $cluster = shift;
+
+  $self->{output}->writeMessageBegin('isInSafeMode', TMessageType::CALL, $self->{seqid});
+  my $args = new Blur::Blur_isInSafeMode_args();
+  $args->{cluster} = $cluster;
+  $args->write($self->{output});
+  $self->{output}->writeMessageEnd();
+  $self->{output}->getTransport()->flush();
+}
+
+sub recv_isInSafeMode{
+  my $self = shift;
+
+  my $rseqid = 0;
+  my $fname;
+  my $mtype = 0;
+
+  $self->{input}->readMessageBegin(\$fname, \$mtype, \$rseqid);
+  if ($mtype == TMessageType::EXCEPTION) {
+    my $x = new TApplicationException();
+    $x->read($self->{input});
+    $self->{input}->readMessageEnd();
+    die $x;
+  }
+  my $result = new Blur::Blur_isInSafeMode_result();
+  $result->read($self->{input});
+  $self->{input}->readMessageEnd();
+
+  if (defined $result->{success} ) {
+    return $result->{success};
+  }
+  if (defined $result->{ex}) {
+    die $result->{ex};
+  }
+  die "isInSafeMode failed: unknown result";
+}
 package Blur::BlurProcessor;
 
 use strict;
@@ -5648,6 +5852,23 @@ sub process_optimize {
       $result->{ex} = $@;
     }
     $output->writeMessageBegin('optimize', TMessageType::REPLY, $seqid);
+    $result->write($output);
+    $output->writeMessageEnd();
+    $output->getTransport()->flush();
+}
+
+sub process_isInSafeMode {
+    my ($self, $seqid, $input, $output) = @_;
+    my $args = new Blur::Blur_isInSafeMode_args();
+    $args->read($input);
+    $input->readMessageEnd();
+    my $result = new Blur::Blur_isInSafeMode_result();
+    eval {
+      $result->{success} = $self->{handler}->isInSafeMode($args->cluster);
+    }; if( UNIVERSAL::isa($@,'Blur::BlurException') ){ 
+      $result->{ex} = $@;
+    }
+    $output->writeMessageBegin('isInSafeMode', TMessageType::REPLY, $seqid);
     $result->write($output);
     $output->writeMessageEnd();
     $output->getTransport()->flush();

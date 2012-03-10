@@ -19,6 +19,7 @@
 <li><a href="Blur.html#Fn_Blur_enableTable">enableTable</a></li>
 <li><a href="Blur.html#Fn_Blur_fetchRow">fetchRow</a></li>
 <li><a href="Blur.html#Fn_Blur_getTableStats">getTableStats</a></li>
+<li><a href="Blur.html#Fn_Blur_isInSafeMode">isInSafeMode</a></li>
 <li><a href="Blur.html#Fn_Blur_mutate">mutate</a></li>
 <li><a href="Blur.html#Fn_Blur_mutateBatch">mutateBatch</a></li>
 <li><a href="Blur.html#Fn_Blur_optimize">optimize</a></li>
@@ -182,8 +183,10 @@ through records of a row, this count will reflect the entire row.
 <tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td></td><td>default</td><td></td></tr>
 <tr><td>2</td><td>expertQuery</td><td><code><a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a></code></td><td></td><td>default</td><td></td></tr>
 <tr><td>3</td><td>facets</td><td><code>list&lt;<code><a href="Blur.html#Struct_Facet">Facet</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>selector</td><td><code><a href="Blur.html#Struct_Selector">Selector</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>allowStaleData</td><td><code>bool</code></td><td></td><td>default</td><td>0</td></tr>
+<tr><td>4</td><td>selector</td><td><code><a href="Blur.html#Struct_Selector">Selector</a></code></td><td>Selector is used to fetch data in the search results, if null only location ids will be fetched.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>allowStaleData</td><td><code>bool</code></td><td>@deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
+</td><td>default</td><td>0</td></tr>
 <tr><td>6</td><td>useCacheIfPresent</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
 <tr><td>7</td><td>start</td><td><code>i64</code></td><td></td><td>default</td><td>0</td></tr>
 <tr><td>8</td><td>fetch</td><td><code>i32</code></td><td></td><td>default</td><td>10</td></tr>
@@ -358,5 +361,8 @@ through records of a row, this count will reflect the entire row.
 </pre></div><div class="definition"><h4 id="Fn_Blur_optimize">Function: Blur.optimize</h4>
 <pre><code>void</code> optimize(<code>string</code> table,
               <code>i32</code> numberOfSegmentsPerShard)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_isInSafeMode">Function: Blur.isInSafeMode</h4>
+<pre><code>bool</code> isInSafeMode(<code>string</code> cluster)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div></body></html>

@@ -37,13 +37,16 @@ module Blur
     end
 
     module RowMutationType
-      # Indicates that the entire Row is to be deleted.
+      # Indicates that the entire Row is to be deleted.  No changes are
+      # made if the specified row does not exist.
       DELETE_ROW = 0
       # Indicates that the entire Row is to be deleted, and then a new
-      # Row with the same id is to be added.
+      # Row with the same id is to be added.  If the specified row does
+      # not exist, the new row will still be created.
       REPLACE_ROW = 1
       # Indicates that mutations of the underlying Records will be
-      # processed individually.
+      # processed individually.  Mutation will result in a BlurException
+      # if the specified row does not exist.
       UPDATE_ROW = 2
       VALUE_MAP = {0 => "DELETE_ROW", 1 => "REPLACE_ROW", 2 => "UPDATE_ROW"}
       VALID_VALUES = Set.new([DELETE_ROW, REPLACE_ROW, UPDATE_ROW]).freeze
@@ -51,15 +54,21 @@ module Blur
 
     module RecordMutationType
       # Indicates the Record with the given recordId in the given Row
-      # is to be deleted.
+      # is to be deleted.  If the target record does not exist, then
+      # no changes are made.
       DELETE_ENTIRE_RECORD = 0
       # Indicates the Record with the given recordId in the given Row
       # is to be deleted, and a new Record with the same id is to be added.
+      # If the specified record does not exist the new record is still
+      # added.
       REPLACE_ENTIRE_RECORD = 1
-      # Replace the columns that are specified in the Record mutation.
+      # Replace the columns that are specified in the Record mutation.  If
+      # the target record does not exist then this mutation will result in
+      # a BlurException.
       REPLACE_COLUMNS = 2
       # Append the columns in the Record mutation to the Record that
-      # could already exist.
+      # could already exist.  If the target record does not exist then this
+      # mutation will result in a BlurException.
       APPEND_COLUMN_VALUES = 3
       VALUE_MAP = {0 => "DELETE_ENTIRE_RECORD", 1 => "REPLACE_ENTIRE_RECORD", 2 => "REPLACE_COLUMNS", 3 => "APPEND_COLUMN_VALUES"}
       VALID_VALUES = Set.new([DELETE_ENTIRE_RECORD, REPLACE_ENTIRE_RECORD, REPLACE_COLUMNS, APPEND_COLUMN_VALUES]).freeze
@@ -330,7 +339,9 @@ module Blur
         SIMPLEQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'simpleQuery', :class => Blur::SimpleQuery},
         EXPERTQUERY => {:type => ::Thrift::Types::STRUCT, :name => 'expertQuery', :class => Blur::ExpertQuery},
         FACETS => {:type => ::Thrift::Types::LIST, :name => 'facets', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::Facet}},
+        # Selector is used to fetch data in the search results, if null only location ids will be fetched.
         SELECTOR => {:type => ::Thrift::Types::STRUCT, :name => 'selector', :class => Blur::Selector},
+        # @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
         ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData', :default => false},
         USECACHEIFPRESENT => {:type => ::Thrift::Types::BOOL, :name => 'useCacheIfPresent', :default => true},
         START => {:type => ::Thrift::Types::I64, :name => 'start', :default => 0},

@@ -14,7 +14,7 @@
               :src => image_path("loader.gif"),
               :alt => "Loading..."}
         #blur-table
-          = select_tag :blur_table, grouped_options_for_select(@filter_table_collection, @blur_table.id)
+          = select_tag :blur_table, grouped_options_for_select(@filter_table_collection, @blur_table ? @blur_table.id : nil)
         #advanced
           .header
             Advanced

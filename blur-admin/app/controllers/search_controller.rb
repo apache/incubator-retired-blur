@@ -29,9 +29,15 @@ class SearchController < ApplicationController
   def filters
     blur_table = BlurTable.find params[:blur_table_id]
     columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value)) : []
-    respond_to do |format|
-      format.html {render :partial =>"filters", :locals => {:columns => columns}}
+    
+    filter_list = columns.collect do |family|
+      col_fam = {:title => family['name'], :key => "family_-sep-_#{family['name']}", :addClass => 'check_filter', :select => true}
+      col_fam[:children] = family['columns'].collect do |column|
+        {:title => column['name'], :key => "column_-sep-_#{family['name']}_-sep-_#{column['name']}", :addClass=>'check_filter', :select => true}
+      end
+      col_fam
     end
+    render :json => filter_list.to_json
   end
 
   #Create action is a large action that handles all of the filter data

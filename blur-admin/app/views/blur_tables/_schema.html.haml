@@ -6,7 +6,6 @@
     %h4 Schema 
     .info.table_info_tree
       %ul
-        -puts blur_table.schema
         - blur_table.schema.each do |family|
           %li#family{:id=>"#{blur_table.table_name}.#{family['name']}", :class => "family-node"}
             %a{:href=>'#'}
@@ -18,13 +17,14 @@
                     =column['name']
                   %ul
                     %li
-                      %a{:href=>'#'}="Live: #{column['live']}"
+                      %a{:href=>'#'}="Indexed?: #{column['live']}"
                     %li
-                      %a{:href=>'#'}="Analyzer: (#{column['analyzer']})"
+                      %a{:href=>'#'}="Analyzer: #{column['analyzer']}"
                     %li
-                      %a{:href=>'#'}="Full Text: #{column['fullText']}"
-                    %li
-                      %span.terms{:family_name => family['name'], :column_name => column['name'], :table_id => blur_table.id} View Terms
+                      %a{:href=>'#'}="Full Text?: #{column['fullText']}"
+                    %li{:data=>{:family_name=>family['name'], :column_name => column['name'], :table_id => blur_table.id}}
+                      %a{:href=>'#'}
+                        %span.terms{:family_name => family['name'], :column_name => column['name'], :table_id => blur_table.id} View Terms
                       
 - else
   %div

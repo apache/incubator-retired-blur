@@ -185,13 +185,6 @@
     }
   }
 
-  // jstree styles
-  .jstree-icon { cursor: pointer; }
-  .jstree a { 
-    @include standard-font;
-    &:hover{ color: #06C; }
-  }
-
   #saved, #store , #advanced { & .body { display: none; } }
 
   .header {

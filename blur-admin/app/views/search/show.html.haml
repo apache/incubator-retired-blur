@@ -28,8 +28,8 @@
           .body.tab
             .filter.section
               .filtered-title Column Families
-              #filter_columns.hidden
-                = render 'filters', :columns => @columns
+              #filter_columns
+                .column_family_filter{:name=>"column_data[]"}
             .section
               %table
                 %tr.filter

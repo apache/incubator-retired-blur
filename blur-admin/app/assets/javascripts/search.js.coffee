@@ -1,4 +1,4 @@
-#= require jquery.jstree
+#= require jquery.dynatree
 
 $(document).ready ->
   ########### METHODS ###############
@@ -15,24 +15,19 @@ $(document).ready ->
   
   # method to initialize the filter tree
   setup_filter_tree = () ->
-    $('.column_family_filter').jstree
-      plugins: ["themes", "html_data", "checkbox", "sort", "ui"],
-      themes:
-        theme: 'apple',
-        icons: false,
-      checkbox:
-        override_ui: true,
-        real_checkboxes: true,
-        real_checkboxes_names: (n)->
-          ['column_data[]', n[0].id]
-    .delegate "a", "click", -> toggle_submit()
+    $('.column_family_filter').dynatree
+      checkbox: true,
+      selectMode: 3,
+      initAjax: get_filter_ajax()
 
-    $('.column_family_filter').bind "loaded.jstree", ->
-      $('#filter_columns').removeClass('hidden')
+  get_filter_ajax = () ->
+    options =
+      url: Routes.search_filters_path($('#blur_table').val()),
+      type: 'put'
 
   # Function to enable or disable submit button based on checkbox status
   toggle_submit = () ->
-    if $('.jstree-checked').length > 0 and $('#query_string').val() isnt  ''
+    if $(".column_family_filter").dynatree("getTree").getSelectedNodes().length > 0 and $('#query_string').val() isnt  ''
       $('#search_submit').removeAttr('disabled')
       if $('#save_name').val() isnt ''
         $('#save_button, #update_button').removeAttr('disabled')
@@ -41,6 +36,7 @@ $(document).ready ->
 
   ########### PAGE ACTIONS ##############
   # Setup the filters onload
+  $.ui.dynatree.nodedatadefaults["icon"] = false;
   setup_filter_tree()
   $(window).resize ()->
     if prevHeight != window.innerHeight
@@ -50,13 +46,11 @@ $(document).ready ->
   ########### PAGE ELEMENT LISTENERS ##############
   # Reload the filters when the table selector is changed
   $('#blur_table').change ->
-    $('#filter_columns').addClass('hidden')
-    $.ajax
-      url: Routes.search_filters_path($(this).val())
-      type: 'PUT'
-      success: (data) =>
-        $('#filter_columns').html(data)
-        setup_filter_tree()
+    $(".column_family_filter").dynatree("option", "initAjax", get_filter_ajax())
+    tree = $(".column_family_filter").dynatree("getTree")
+    prevMode = tree.enableUpdate(false)
+    tree.reload()
+    tree.enableUpdate(prevMode)
       
   # listener that checks if the submit button should be enabled on keystrokes
   $('#query_string, #save_name').live "keydown", (name) ->
@@ -67,7 +61,7 @@ $(document).ready ->
     if name.keyCode == 13 && !name.shiftKey
       name.preventDefault()
       if $('#search_submit').attr 'disabled'
-        error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query seach.</div>'
+        error_content = '<div style="color:red;font-style:italic; font-weight:bold">Invalid query search.</div>'
         $('#results_container').html(error_content)
         $('#results_wrapper').removeClass('hidden')
       else
@@ -118,9 +112,9 @@ $(document).ready ->
   $('.tab:visible, .header').live 'click', (e) ->
     e.stopPropagation()
 
-
   populate_form = (data) ->
-    $('.column_family_filter').jstree('uncheck_all')
+    $(".column_family_filter").dynatree("getRoot").visit (node) ->
+      node.select(false)
     $('#result_count').val(data.fetch)
     $('#offset').val(data.offset)
     $('#query_string').val(data.query)
@@ -132,11 +126,9 @@ $(document).ready ->
     if data.record_only
       $('#record_only').click();
 
-    #uncheck everything so we only check what we saved
-    $('.column_family_filter').jstree('uncheck_all')
     #check everything in the tree
     for column in data.column_object
-      $('.column_family_filter').jstree 'check_node', "##{column}"
+      $(".column_family_filter").dynatree("getTree").selectKey(column)
     $('#search_submit').removeAttr('disabled')
     $('#save_button').removeAttr('disabled')
     $('#update_button').removeAttr('disabled')
@@ -149,16 +141,23 @@ $(document).ready ->
 
   ########### PAGE AJAX LISTENERS ##############
   # fetch the result of a new search
-  $('#search_form')
-    .live 'ajax:success', (evt, data, status, xhr) ->
-      if data
-        $('#results_container').html data
-        resizeSearch()
-        $('#results_wrapper').removeClass('hidden noResults')
-      else
-        no_results()
-    .live 'ajax:error', (event, xhr, status, error) ->
-      fetch_error error
+  $('#search_form').submit ->
+    form_data = $(this).serializeArray()
+    tree = $('.column_family_filter').dynatree('getTree')
+    form_data = form_data.concat(tree.serializeArray())
+    $.ajax Routes.search_path(),
+      data: form_data,
+      type: 'post'
+      success: (data, status, xhr) ->
+        if data
+	        $('#results_container').html data
+	        resizeSearch()
+	        $('#results_wrapper').removeClass('hidden noResults')
+        else
+	        no_results()
+      error: (xhr, status, error)->
+        fetch_error error
+    return false
 
   #ajax listener for the edit action
   $('#edit_icon').live 'click', ->
@@ -187,9 +186,12 @@ $(document).ready ->
 
   #ajax listener for the save action
   $('#save_button').live 'click', (evt) ->
+    form_data = $('#search_form').serializeArray()
+    tree = $('.column_family_filter').dynatree('getTree')
+    form_data = form_data.concat(tree.serializeArray())
     $.ajax Routes.search_save_path(),
       type: 'POST',
-      data: $('#search_form').serialize(),
+      data: form_data,
       success: (data) ->
         if data
         #display the results from the save
@@ -210,9 +212,12 @@ $(document).ready ->
         match_found = true
         search_id = $(value).attr('id')
     if send_request
+      form_data = $('#search_form').serializeArray()
+      tree = $('.column_family_filter').dynatree('getTree')
+      form_data = form_data.concat(tree.serializeArray())
       $.ajax Routes.update_search_path(search_id),
         type: 'PUT',
-        data: $('#search_form').serialize()
+        data: form_data
     else
       if match_found
         contentBody = "There are multiple saves with the same name."

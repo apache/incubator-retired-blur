@@ -1,4 +1,4 @@
-#= require jquery.jstree
+#= require jquery.dynatree
 #= require bootstrap-tooltip
 #= require bootstrap-popover
 $(document).ready ->
@@ -148,14 +148,10 @@ $(document).ready ->
   reload_table_info()
 
   # Function to initialize a filter tree on the passed in element
+  $.ui.dynatree.nodedatadefaults["icon"] = false;
   setup_filter_tree = (selector) ->
-    selector.jstree
-      plugins: ["themes", "html_data", "sort", "ui"],
-      themes:
-        theme: 'apple',
-        icons: false,
-    .bind "select_node.jstree", (event, data) -> 
-      $(this).jstree('toggle_node')
+    console.log(selector)
+    selector.dynatree()
 
   # Ajax request handling for hosts/schema link
   $('a.hosts, a.info')

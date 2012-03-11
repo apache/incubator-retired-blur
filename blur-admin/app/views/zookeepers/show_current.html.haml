@@ -69,7 +69,7 @@
                   %ul
                     - @zookeeper.clusters.sort_by{|c| c.name}.each do |cluster|
                       %li
-                        = cluster.name
+                        = "#{cluster.name}#{cluster.safe_mode ? " (safe mode)" :""}"
                         -if can? :destroy_cluster, :zookeepers
                           =link_to 'Remove Cluster', destroy_cluster_path(@zookeeper, cluster.id), :method=>:delete, :confirm => 'Are you sure you want to remove this cluster?'
                         %ul

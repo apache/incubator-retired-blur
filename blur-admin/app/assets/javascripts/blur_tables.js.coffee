@@ -111,11 +111,17 @@ $(document).ready ->
   
   rebuild_table = (data) ->
     $('.no-tables, .remove-next-update').remove()
-    if data.length == 0
+    if data == null || data['tables'] == null || data['tables'].length == 0
       no_data()
     else
+      if(data['clusters'] != null && data['clusters'].length>0)
+        for cluster in data['clusters']
+          tab_title = cluster['name']
+          if(cluster['safe_mode'])
+            tab_title += ' (safe mode)'
+          $('#cluster_tab_'+cluster['id'] + ' a').html(tab_title)
       currently_checked_rows = get_selected_tables()
-      for blur_table in data
+      for blur_table in data['tables']
         selected_row = $('tr[blur_table_id=' + blur_table.id + ']')
         if selected_row.length
           if selected_row.data('status') != state_lookup[blur_table['status']]
@@ -140,8 +146,8 @@ $(document).ready ->
 
   reload_table_info = () ->
     $.get( "#{Routes.reload_blur_tables_path()}", (data) ->
-      rebuild_table(data)).error( (data) ->
-          if data.status == 409
+      rebuild_table(data)).error( (error_data) ->
+          if error_data.status == 409
             window.location.replace(document.location.origin);
         )
   window.reload_table_info = reload_table_info

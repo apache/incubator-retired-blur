@@ -168,7 +168,7 @@ public class IndexManager {
     }
     IndexReader reader = null;
     try {
-      reader = index.getIndexReader(!selector.allowStaleData);
+      reader = index.getIndexReader();
       fetchRow(reader, table, selector, fetchResult);
       if (_blurMetrics != null) {
         if (fetchResult.rowResult != null) {
@@ -204,7 +204,7 @@ public class IndexManager {
     if (blurIndex == null) {
       throw new BlurException("Shard [" + shardName + "] is not being servered by this shardserver.", null);
     }
-    IndexReader reader = blurIndex.getIndexReader(!selector.allowStaleData);
+    IndexReader reader = blurIndex.getIndexReader();
     try {
       IndexSearcher searcher = new IndexSearcher(reader);
       BooleanQuery query = new BooleanQuery();
@@ -295,7 +295,7 @@ public class IndexManager {
         Filter postFilter = QueryParserUtil.parseFilter(table, simpleQuery.postSuperFilter, true, analyzer, _filterCache);
         Query userQuery = QueryParserUtil.parseQuery(simpleQuery.queryStr, simpleQuery.superQueryOn, analyzer, postFilter, preFilter, getScoreType(simpleQuery.type));
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
+        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, _blurMetrics);
       } else {
         Query query = getQuery(blurQuery.expertQuery);
         Filter filter = getFilter(blurQuery.expertQuery);
@@ -306,7 +306,7 @@ public class IndexManager {
           userQuery = query;
         }
         Query facetedQuery = getFacetedQuery(blurQuery, userQuery, facetedCounts, analyzer);
-        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, !blurQuery.allowStaleData, _blurMetrics);
+        call = new SimpleQueryParallelCall(running, table, status, _indexServer, facetedQuery, blurQuery.selector, _blurMetrics);
       }
       MergerBlurResultIterable merger = new MergerBlurResultIterable(blurQuery);
       return ForkJoin.execute(_executor, blurIndexes.entrySet(), call, new Cancel() {
@@ -490,7 +490,7 @@ public class IndexManager {
       @Override
       public Long call(Entry<String, BlurIndex> input) throws Exception {
         BlurIndex index = input.getValue();
-        IndexReader reader = index.getIndexReader(true);
+        IndexReader reader = index.getIndexReader();
         try {
           return recordFrequency(reader, columnFamily, columnName, value);
         } finally {
@@ -523,7 +523,7 @@ public class IndexManager {
       @Override
       public List<String> call(Entry<String, BlurIndex> input) throws Exception {
         BlurIndex index = input.getValue();
-        IndexReader reader = index.getIndexReader(true);
+        IndexReader reader = index.getIndexReader();
         try {
           return terms(reader, columnFamily, columnName, startWith, size);
         } finally {
@@ -588,7 +588,7 @@ public class IndexManager {
     schema.columnFamilies = new TreeMap<String, Set<String>>();
     Map<String, BlurIndex> blurIndexes = _indexServer.getIndexes(table);
     for (BlurIndex blurIndex : blurIndexes.values()) {
-      IndexReader reader = blurIndex.getIndexReader(true);
+      IndexReader reader = blurIndex.getIndexReader();
       try {
         Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
         for (String fieldName : fieldNames) {
@@ -759,11 +759,10 @@ public class IndexManager {
     private IndexServer _indexServer;
     private Query _query;
     private Selector _selector;
-    private boolean _forceRefresh;
     private BlurMetrics _blurMetrics;
     private AtomicBoolean _running;
 
-    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector, boolean forceRefresh,
+    public SimpleQueryParallelCall(AtomicBoolean running, String table, QueryStatus status, IndexServer indexServer, Query query, Selector selector,
         BlurMetrics blurMetrics) {
       _running = running;
       _table = table;
@@ -771,7 +770,6 @@ public class IndexManager {
       _indexServer = indexServer;
       _query = query;
       _selector = selector;
-      _forceRefresh = forceRefresh;
       _blurMetrics = blurMetrics;
     }
 
@@ -781,7 +779,7 @@ public class IndexManager {
       IndexReader reader = null;
       try {
         BlurIndex index = entry.getValue();
-        reader = index.getIndexReader(_forceRefresh);
+        reader = index.getIndexReader();
         String shard = entry.getKey();
         IndexSearcher searcher = new IndexSearcher(reader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));

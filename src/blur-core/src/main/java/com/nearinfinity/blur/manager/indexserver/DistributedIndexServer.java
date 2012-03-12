@@ -315,7 +315,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
       private void updateMetrics(BlurMetrics blurMetrics, Map<String, BlurIndex> indexes, AtomicLong segmentCount, AtomicLong indexMemoryUsage) throws IOException {
         for (BlurIndex index : indexes.values()) {
-          IndexReader reader = index.getIndexReader(false);
+          IndexReader reader = index.getIndexReader();
           try {
             IndexReader[] readers = reader.getSequentialSubReaders();
             if (readers != null) {
@@ -558,7 +558,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private BlurIndex warmUp(BlurIndex index, String table, String shard) throws IOException {
-    final IndexReader reader = index.getIndexReader(true);
+    final IndexReader reader = index.getIndexReader();
     warmUpAllSegments(reader);
     _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {
       @Override

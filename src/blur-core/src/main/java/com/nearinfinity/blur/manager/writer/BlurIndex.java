@@ -13,7 +13,7 @@ public abstract class BlurIndex {
   
   public abstract void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException;
 
-  public abstract IndexReader getIndexReader(boolean forceRefresh) throws IOException;
+  public abstract IndexReader getIndexReader() throws IOException;
 
   public abstract void close() throws IOException;
 

@@ -24,7 +24,6 @@ import org.junit.Test;
 import com.nearinfinity.blur.lucene.LuceneConstant;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
-import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
 
 public class BlurUtilsTest {

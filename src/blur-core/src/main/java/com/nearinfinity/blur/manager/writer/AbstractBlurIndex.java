@@ -76,10 +76,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
   }
 
   @Override
-  public IndexReader getIndexReader(boolean forceRefresh) throws IOException {
-    if (forceRefresh) {
-      refresh();
-    }
+  public IndexReader getIndexReader() throws IOException {
     IndexReader indexReader = _indexReaderRef.get();
     indexReader.incRef();
     return indexReader;

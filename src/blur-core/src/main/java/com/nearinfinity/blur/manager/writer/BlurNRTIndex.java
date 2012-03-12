@@ -181,7 +181,7 @@ public class BlurNRTIndex extends BlurIndex {
   }
 
   @Override
-  public IndexReader getIndexReader(boolean forceRefresh) throws IOException {
+  public IndexReader getIndexReader() throws IOException {
     IndexSearcher searcher = _manager.acquire();
     return searcher.getIndexReader();
   }

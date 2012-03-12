@@ -30,12 +30,12 @@ public class BlurIndexReader extends AbstractBlurIndex {
   }
 
   @Override
-  public void replaceRow(boolean wal, Row row) throws IOException {
+  public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
     throw new RuntimeException("Read-only shard");
   }
 
   @Override
-  public void deleteRow(boolean wal, String rowId) throws IOException {
+  public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
     throw new RuntimeException("Read-only shard");
   }
 

@@ -630,13 +630,13 @@ public class IndexManager {
     switch (type) {
     case REPLACE_ROW:
       Row row = MutationHelper.getRowFromMutations(mutation.rowId, mutation.recordMutations);
-      blurIndex.replaceRow(mutation.wal, row);
+      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, row);
       break;
     case UPDATE_ROW:
       doUpdateRowMutation(mutation, blurIndex);
       break;
     case DELETE_ROW:
-      blurIndex.deleteRow(mutation.wal, mutation.rowId);
+      blurIndex.deleteRow(mutation.waitToBeVisible, mutation.wal, mutation.rowId);
       break;
     default:
       throw new RuntimeException("Not supported [" + type + "]");
@@ -698,7 +698,7 @@ public class IndexManager {
       }
 
       // Finally, replace the existing row with the new row we have built.
-      blurIndex.replaceRow(mutation.wal, newRow);
+      blurIndex.replaceRow(mutation.waitToBeVisible, mutation.wal, newRow);
     } else {
       throw new BException("Mutation cannot update row that does not exist.", mutation);
     }

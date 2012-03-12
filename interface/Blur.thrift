@@ -296,7 +296,8 @@ struct RowMutation {
   2:string rowId,
   3:bool wal = 1,
   4:RowMutationType rowMutationType,
-  5:list<RecordMutation> recordMutations
+  5:list<RecordMutation> recordMutations,
+  6:bool waitToBeVisible
 }
 
 

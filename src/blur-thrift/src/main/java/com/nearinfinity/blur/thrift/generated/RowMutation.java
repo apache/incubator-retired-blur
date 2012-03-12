@@ -28,6 +28,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   private static final org.apache.thrift.protocol.TField WAL_FIELD_DESC = new org.apache.thrift.protocol.TField("wal", org.apache.thrift.protocol.TType.BOOL, (short)3);
   private static final org.apache.thrift.protocol.TField ROW_MUTATION_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("rowMutationType", org.apache.thrift.protocol.TType.I32, (short)4);
   private static final org.apache.thrift.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutations", org.apache.thrift.protocol.TType.LIST, (short)5);
+  private static final org.apache.thrift.protocol.TField WAIT_TO_BE_VISIBLE_FIELD_DESC = new org.apache.thrift.protocol.TField("waitToBeVisible", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   public String table; // required
   public String rowId; // required
@@ -38,6 +39,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
    */
   public RowMutationType rowMutationType; // required
   public List<RecordMutation> recordMutations; // required
+  public boolean waitToBeVisible; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -49,7 +51,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
      * @see RowMutationType
      */
     ROW_MUTATION_TYPE((short)4, "rowMutationType"),
-    RECORD_MUTATIONS((short)5, "recordMutations");
+    RECORD_MUTATIONS((short)5, "recordMutations"),
+    WAIT_TO_BE_VISIBLE((short)6, "waitToBeVisible");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -74,6 +77,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
           return ROW_MUTATION_TYPE;
         case 5: // RECORD_MUTATIONS
           return RECORD_MUTATIONS;
+        case 6: // WAIT_TO_BE_VISIBLE
+          return WAIT_TO_BE_VISIBLE;
         default:
           return null;
       }
@@ -115,7 +120,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
 
   // isset id assignments
   private static final int __WAL_ISSET_ID = 0;
-  private BitSet __isset_bit_vector = new BitSet(1);
+  private static final int __WAITTOBEVISIBLE_ISSET_ID = 1;
+  private BitSet __isset_bit_vector = new BitSet(2);
 
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
@@ -131,6 +137,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     tmpMap.put(_Fields.RECORD_MUTATIONS, new org.apache.thrift.meta_data.FieldMetaData("recordMutations", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, RecordMutation.class))));
+    tmpMap.put(_Fields.WAIT_TO_BE_VISIBLE, new org.apache.thrift.meta_data.FieldMetaData("waitToBeVisible", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(RowMutation.class, metaDataMap);
   }
@@ -145,7 +153,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     String rowId,
     boolean wal,
     RowMutationType rowMutationType,
-    List<RecordMutation> recordMutations)
+    List<RecordMutation> recordMutations,
+    boolean waitToBeVisible)
   {
     this();
     this.table = table;
@@ -154,6 +163,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     setWalIsSet(true);
     this.rowMutationType = rowMutationType;
     this.recordMutations = recordMutations;
+    this.waitToBeVisible = waitToBeVisible;
+    setWaitToBeVisibleIsSet(true);
   }
 
   /**
@@ -179,6 +190,7 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       }
       this.recordMutations = __this__recordMutations;
     }
+    this.waitToBeVisible = other.waitToBeVisible;
   }
 
   public RowMutation deepCopy() {
@@ -193,6 +205,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
 
     this.rowMutationType = null;
     this.recordMutations = null;
+    setWaitToBeVisibleIsSet(false);
+    this.waitToBeVisible = false;
   }
 
   public String getTable() {
@@ -337,6 +351,29 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     }
   }
 
+  public boolean isWaitToBeVisible() {
+    return this.waitToBeVisible;
+  }
+
+  public RowMutation setWaitToBeVisible(boolean waitToBeVisible) {
+    this.waitToBeVisible = waitToBeVisible;
+    setWaitToBeVisibleIsSet(true);
+    return this;
+  }
+
+  public void unsetWaitToBeVisible() {
+    __isset_bit_vector.clear(__WAITTOBEVISIBLE_ISSET_ID);
+  }
+
+  /** Returns true if field waitToBeVisible is set (has been assigned a value) and false otherwise */
+  public boolean isSetWaitToBeVisible() {
+    return __isset_bit_vector.get(__WAITTOBEVISIBLE_ISSET_ID);
+  }
+
+  public void setWaitToBeVisibleIsSet(boolean value) {
+    __isset_bit_vector.set(__WAITTOBEVISIBLE_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TABLE:
@@ -379,6 +416,14 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       }
       break;
 
+    case WAIT_TO_BE_VISIBLE:
+      if (value == null) {
+        unsetWaitToBeVisible();
+      } else {
+        setWaitToBeVisible((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -398,6 +443,9 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
 
     case RECORD_MUTATIONS:
       return getRecordMutations();
+
+    case WAIT_TO_BE_VISIBLE:
+      return Boolean.valueOf(isWaitToBeVisible());
 
     }
     throw new IllegalStateException();
@@ -420,6 +468,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       return isSetRowMutationType();
     case RECORD_MUTATIONS:
       return isSetRecordMutations();
+    case WAIT_TO_BE_VISIBLE:
+      return isSetWaitToBeVisible();
     }
     throw new IllegalStateException();
   }
@@ -479,6 +529,15 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       if (!(this_present_recordMutations && that_present_recordMutations))
         return false;
       if (!this.recordMutations.equals(that.recordMutations))
+        return false;
+    }
+
+    boolean this_present_waitToBeVisible = true;
+    boolean that_present_waitToBeVisible = true;
+    if (this_present_waitToBeVisible || that_present_waitToBeVisible) {
+      if (!(this_present_waitToBeVisible && that_present_waitToBeVisible))
+        return false;
+      if (this.waitToBeVisible != that.waitToBeVisible)
         return false;
     }
 
@@ -548,6 +607,16 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetWaitToBeVisible()).compareTo(typedOther.isSetWaitToBeVisible());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetWaitToBeVisible()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.waitToBeVisible, typedOther.waitToBeVisible);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -612,6 +681,14 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
           break;
+        case 6: // WAIT_TO_BE_VISIBLE
+          if (field.type == org.apache.thrift.protocol.TType.BOOL) {
+            this.waitToBeVisible = iprot.readBool();
+            setWaitToBeVisibleIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
         default:
           org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
       }
@@ -657,6 +734,9 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
       }
       oprot.writeFieldEnd();
     }
+    oprot.writeFieldBegin(WAIT_TO_BE_VISIBLE_FIELD_DESC);
+    oprot.writeBool(this.waitToBeVisible);
+    oprot.writeFieldEnd();
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -700,6 +780,10 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     } else {
       sb.append(this.recordMutations);
     }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("waitToBeVisible:");
+    sb.append(this.waitToBeVisible);
     first = false;
     sb.append(")");
     return sb.toString();

@@ -76,7 +76,7 @@ public class BlurNRTIndex extends BlurIndex {
   private double _nrtCachingMaxCachedMB = 5.0;
   private Thread _refresher;
   private TransactionRecorder _recorder;
-  
+
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
@@ -150,10 +150,10 @@ public class BlurNRTIndex extends BlurIndex {
   }
 
   @Override
-  public void replaceRow(boolean wal, Row row) throws IOException {
+  public void replaceRow(boolean waitToBeVisible, boolean wal, Row row) throws IOException {
     List<Record> records = row.records;
     if (records == null || records.isEmpty()) {
-      deleteRow(wal, row.id);
+      deleteRow(waitToBeVisible, wal, row.id);
       return;
     }
     if (wal) {
@@ -163,13 +163,12 @@ public class BlurNRTIndex extends BlurIndex {
         _recorder.replaceRow(row);
       }
     }
-    boolean waitToBeVisible = true;
     long generation = _nrtManager.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
     waitToBeVisible(waitToBeVisible, generation);
   }
 
   @Override
-  public void deleteRow(boolean wal, String rowId) throws IOException {
+  public void deleteRow(boolean waitToBeVisible, boolean wal, String rowId) throws IOException {
     if (wal) {
       if (_recorder == null) {
         LOG.warn("No transaction recorder set.");
@@ -177,7 +176,6 @@ public class BlurNRTIndex extends BlurIndex {
         _recorder.deleteRow(rowId);
       }
     }
-    boolean waitToBeVisible = true;
     long generation = _nrtManager.deleteDocuments(ROW_ID.createTerm(rowId));
     waitToBeVisible(waitToBeVisible, generation);
   }

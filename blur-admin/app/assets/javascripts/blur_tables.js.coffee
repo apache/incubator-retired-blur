@@ -58,11 +58,13 @@ $(document).ready ->
       col_span = colspan_lookup[table]
       row.append("<td colspan='#{col_span}'>#{capitalize_first(state) + ' ' +blur_table['table_name']}...</td>")
     else
-      row_html = "<td class='checkbox-td'><input class='bulk-action-checkbox' type='checkbox'/>" 
-      if blur_table['has_queried_recently?']
-        row_html += "<i class='icon-exclamation-sign queries-running-icon'></i>"
+      row_html = "<td class='checkbox-td'><input class='bulk-action-checkbox' type='checkbox'/><i class='icon-exclamation-sign queries-running-icon'></i>" 
       row_html += "</td><td class='blur_table_name'>#{blur_table['table_name']}</td>"
-      row.append(row_html)        
+      row.append(row_html) 
+      if blur_table['has_queried_recently?']
+        row.find('.queries-running-icon').show()
+      else
+        row.find('.queries-running-icon').hide()    
       if table == 'active'
         host_html = "<td class='blur_table_hosts_shards'>"
         if blur_table['server']
@@ -108,7 +110,15 @@ $(document).ready ->
           if number_of_checkboxes == 0
             check_all.prop('disabled',true)
           check_all.prop('checked',false)      
-  
+  set_cluster_alert = ()->
+    clusters = $('#blur_tables li')
+    clusters.each (index) ->
+      cluster_id = $(this).attr('id')
+      cluster_id = parseInt(cluster_id.substring(cluster_id.length - 1),10)
+      if $(".cluster[data-cluster_id='#{cluster_id}']").find('.queries-running-icon:visible').length > 0
+        $(this).find('a .queries-running-icon').show()
+      else
+        $(this).find('a .queries-running-icon').hide()
   rebuild_table = (data) ->
     $('.no-tables, .remove-next-update').remove()
     if data == null || data['tables'] == null || data['tables'].length == 0
@@ -119,7 +129,7 @@ $(document).ready ->
           tab_title = cluster['name']
           if(cluster['safe_mode'])
             tab_title += ' (safe mode)'
-          $('#cluster_tab_'+cluster['id'] + ' a').html(tab_title)
+          $('#cluster_tab_'+cluster['id'] + ' a .cluster-title').html(tab_title)
       currently_checked_rows = get_selected_tables()
       for blur_table in data['tables']
         selected_row = $('tr[blur_table_id=' + blur_table.id + ']')
@@ -141,6 +151,7 @@ $(document).ready ->
           new_row_container = $("div#cluster_#{blur_table['cluster_id']}_#{table_lookup[blur_table['status']]} table tbody")
           new_row_container.append(build_table_row(blur_table))
       set_checkbox_state()
+      set_cluster_alert()
     
     refresh_timeout = setTimeout('window.reload_table_info()', 10000)
 

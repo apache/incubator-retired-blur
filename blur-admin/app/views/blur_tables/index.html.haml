@@ -5,7 +5,9 @@
 %ul#blur_tables.nav-tabs.nav
   - @clusters.each_with_index do |cluster,i|
     %li#cluster_tab{:id=>cluster.id, :class =>("active" unless i != 0)}
-      %a{:href=>"#cluster_#{cluster.id}", "data-toggle"=>"tab"}= cluster.name
+      %a{:href=>"#cluster_#{cluster.id}", "data-toggle"=>"tab"}
+        %span.cluster-title cluster.name
+        %i.icon-exclamation-sign.queries-running-icon
 #tables-wrapper.tab-content
   - @clusters.each_with_index do |cluster,i|
     #cluster.tab-pane.cluster{:id => cluster.id,:class =>("active" unless i != 0), :data => {:cluster_id => cluster.id}}

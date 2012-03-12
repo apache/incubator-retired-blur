@@ -11,10 +11,6 @@ $(document).ready ->
   # reload page with new zookeeper
   $('#zookeeper_id').live 'change', ->
     $(this).closest('form').submit()
-
-  # Remove blue oval around clicked jstree elements
-  $('.jstree-clicked').live 'click', ->
-    $('.jstree-clicked').removeAttr('class', 'jstree-clicked')
         
   #fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow")

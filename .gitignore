@@ -14,3 +14,5 @@ log
 coverage
 coverage.data
 extra/nohup.out
+/blur-admin/public/javascripts
+/blur-admin/public/stylesheets

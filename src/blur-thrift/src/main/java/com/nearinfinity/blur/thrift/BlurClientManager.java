@@ -154,11 +154,14 @@ public class BlurClientManager {
       shuffledConnections.addAll(connections);
       
       Collections.shuffle(shuffledConnections, random);
+      boolean allBad = true;
+      int connectionErrorCount = 0;
       while (true) {
         for (Connection connection : shuffledConnections) {
           if (isBadConnection(connection)) {
             continue;
           }
+          allBad = false;
           client.set(null);
           try {
             client.set(getClient(connection));
@@ -190,6 +193,18 @@ public class BlurClientManager {
             if (client.get() != null) {
               returnClient(connection, client);
             }
+          }
+        }
+        if (allBad) {
+          connectionErrorCount++;
+          LOG.error("All connections are bad [" + connectionErrorCount + "].");
+          if (connectionErrorCount >= 5) {
+            throw new IOException("All connections are bad.");
+          }
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            throw new BException("Unknown error.", e);
           }
         }
       }

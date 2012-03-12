@@ -1897,7 +1897,7 @@ sub write {
 
 package Blur::RowMutation;
 use base qw(Class::Accessor);
-Blur::RowMutation->mk_accessors( qw( table rowId wal rowMutationType recordMutations ) );
+Blur::RowMutation->mk_accessors( qw( table rowId wal rowMutationType recordMutations waitToBeVisible ) );
 
 sub new {
   my $classname = shift;
@@ -1908,6 +1908,7 @@ sub new {
   $self->{wal} = 1;
   $self->{rowMutationType} = undef;
   $self->{recordMutations} = undef;
+  $self->{waitToBeVisible} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{table}) {
       $self->{table} = $vals->{table};
@@ -1923,6 +1924,9 @@ sub new {
     }
     if (defined $vals->{recordMutations}) {
       $self->{recordMutations} = $vals->{recordMutations};
+    }
+    if (defined $vals->{waitToBeVisible}) {
+      $self->{waitToBeVisible} = $vals->{waitToBeVisible};
     }
   }
   return bless ($self, $classname);
@@ -1990,6 +1994,12 @@ sub read {
         $xfer += $input->skip($ftype);
       }
       last; };
+      /^6$/ && do{      if ($ftype == TType::BOOL) {
+        $xfer += $input->readBool(\$self->{waitToBeVisible});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
         $xfer += $input->skip($ftype);
     }
     $xfer += $input->readFieldEnd();
@@ -2034,6 +2044,11 @@ sub write {
       }
       $xfer += $output->writeListEnd();
     }
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{waitToBeVisible}) {
+    $xfer += $output->writeFieldBegin('waitToBeVisible', TType::BOOL, 6);
+    $xfer += $output->writeBool($self->{waitToBeVisible});
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

@@ -49,7 +49,7 @@ public abstract class AbstractIndexServer implements IndexServer {
             indexCount = new IndexCount();
             indexCounts.counts.put(shard, indexCount);
           }
-          indexReader = index.getValue().getIndexReader(false);
+          indexReader = index.getValue().getIndexReader();
           if (!isValid(indexCount,indexReader)) {
             indexCount.count = indexReader.numDocs();
             indexCount.version = indexReader.getVersion();
@@ -93,7 +93,7 @@ public abstract class AbstractIndexServer implements IndexServer {
             indexCount = new IndexCount();
             indexCounts.counts.put(shard, indexCount);
           }
-          indexReader = index.getValue().getIndexReader(false);
+          indexReader = index.getValue().getIndexReader();
           if (!isValid(indexCount,indexReader)) {
             indexCount.count = getRowCount(indexReader);
             indexCount.version = indexReader.getVersion();

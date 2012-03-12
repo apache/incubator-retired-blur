@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
@@ -45,14 +44,13 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.DirectIODirectory;
-import com.nearinfinity.blur.index.WalIndexWriter;
+import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.lucene.search.SuperParser;
-import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.RowWalIndexWriter;
+import com.nearinfinity.blur.utils.RowIndexWriter;
 public class RandomSuperQueryTest {
 
   private static final int MOD_COLS_USED_FOR_SKIPPING = 3;
@@ -100,9 +98,8 @@ public class RandomSuperQueryTest {
     for (int i = 0; i < columnFamilies.length; i++) {
       columns.put(columnFamilies[i], genWords(random, MIN_NUM_COLS, MAX_NUM_COLS, "col"));
     }
-    BlurMetrics metrics = new BlurMetrics(new Configuration());
-    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)), metrics);
-    RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION)));
+    IndexWriter writer = new IndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
+    RowIndexWriter indexWriter = new RowIndexWriter(writer, new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION)));
     int numberOfDocs = random.nextInt(MAX_NUM_OF_DOCS) + 1;
     for (int i = 0; i < numberOfDocs; i++) {
       indexWriter.replace(false, generatSuperDoc(random, columns, sampler));

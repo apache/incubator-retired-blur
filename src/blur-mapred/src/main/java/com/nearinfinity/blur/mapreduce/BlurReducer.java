@@ -59,6 +59,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.apache.lucene.store.NoLockFactory;
 import org.apache.lucene.util.IOUtils;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -70,19 +71,17 @@ import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
-import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.mapreduce.BlurMutate.MUTATE_TYPE;
 import com.nearinfinity.blur.mapreduce.BlurTask.INDEXING_TYPE;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
-import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.Converter;
 import com.nearinfinity.blur.utils.IterableConverter;
-import com.nearinfinity.blur.utils.RowWalIndexWriter;
+import com.nearinfinity.blur.utils.RowIndexWriter;
 
 public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritable, BlurMutate> {
 
@@ -310,7 +309,9 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     String cluster = tableDescriptor.cluster;
     String table = tableDescriptor.name;
     String shard = _blurTask.getShardName(context);
-    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
+//    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
+    //@todo
+    NoLockFactory lockFactory = NoLockFactory.getNoLockFactory();
 
     Directory destDirectory = getDestDirectory(descriptor, directoryPath);
     destDirectory.setLockFactory(lockFactory);
@@ -458,7 +459,9 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
       String cluster = tableDescriptor.cluster;
       String table = tableDescriptor.name;
       String shard = _blurTask.getShardName(context);
-      ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
+      //@todo
+      NoLockFactory lockFactory = NoLockFactory.getNoLockFactory();
+//      ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table), shard, getNodeName(context));
       _directory.setLockFactory(lockFactory);
       return;
     case REBUILD:
@@ -528,7 +531,7 @@ public class BlurReducer extends Reducer<BytesWritable, BlurMutate, BytesWritabl
     document.add(new Field(ROW_ID, record.getRowId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(RECORD_ID, record.getRecordId(), Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     String columnFamily = record.getFamily();
-    RowWalIndexWriter.addColumns(document, _analyzer, builder, columnFamily, new IterableConverter<BlurColumn, Column>(record.getColumns(), new Converter<BlurColumn, Column>() {
+    RowIndexWriter.addColumns(document, _analyzer, builder, columnFamily, new IterableConverter<BlurColumn, Column>(record.getColumns(), new Converter<BlurColumn, Column>() {
       @Override
       public Column convert(BlurColumn from) throws Exception {
         _fieldCounter.increment(1);

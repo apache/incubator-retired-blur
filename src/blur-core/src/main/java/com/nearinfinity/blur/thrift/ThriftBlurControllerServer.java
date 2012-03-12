@@ -35,7 +35,6 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_R
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
-import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
@@ -58,8 +57,8 @@ import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.client.BlurClientRemote;
-import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
+import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.zookeeper.ZkUtils;
 
@@ -73,13 +72,13 @@ public class ThriftBlurControllerServer extends ThriftServer {
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
 
     BlurConfiguration configuration = new BlurConfiguration();
-    
+
     String bindAddress = configuration.get(BLUR_CONTROLLER_BIND_ADDRESS);
-    int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT,-1);
+    int bindPort = configuration.getInt(BLUR_CONTROLLER_BIND_PORT, -1);
     bindPort += serverIndex;
-    
-    LOG.info("Shard Server using index [{0}] bind address [{1}]",serverIndex,bindAddress + ":" + bindPort);
-    
+
+    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + bindPort);
+
     Configuration config = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(config);
 
@@ -89,18 +88,13 @@ public class ThriftBlurControllerServer extends ThriftServer {
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
 
-    boolean crazyMode = false;
-    if (args.length == 1 && args[1].equals(CRAZY)) {
-      crazyMode = true;
-    }
-
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
     ZookeeperSystemTime.checkSystemTime(zooKeeper, configuration.getLong(BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE, 3000));
 
     final ZookeeperClusterStatus clusterStatus = new ZookeeperClusterStatus(zooKeeper);
 
     BlurClient client = new BlurClientRemote();
-    
+
     final BlurControllerServer controllerServer = new BlurControllerServer();
     controllerServer.setClient(client);
     controllerServer.setClusterStatus(clusterStatus);
@@ -120,9 +114,9 @@ public class ThriftBlurControllerServer extends ThriftServer {
     controllerServer.setMaxFetchDelay(configuration.getInt(BLUR_CONTROLLER_RETRY_MAX_FETCH_DELAY, 2000));
     controllerServer.setMaxMutateDelay(configuration.getInt(BLUR_CONTROLLER_RETRY_MAX_MUTATE_DELAY, 2000));
     controllerServer.setMaxDefaultDelay(configuration.getInt(BLUR_CONTROLLER_RETRY_MAX_DEFAULT_DELAY, 2000));
-    
+
     controllerServer.init();
-    
+
     Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(blurMetrics, controllerServer, Iface.class);
 
     int threadCount = configuration.getInt(BLUR_CONTROLLER_SERVER_THRIFT_THREAD_COUNT, 32);
@@ -133,12 +127,7 @@ public class ThriftBlurControllerServer extends ThriftServer {
     server.setBindAddress(bindAddress);
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
-    if (crazyMode) {
-      System.err.println("Crazy mode!!!!!");
-      server.setIface(ThriftBlurShardServer.crazyMode(iface));
-    } else {
-      server.setIface(iface);
-    }
+    server.setIface(iface);
 
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {

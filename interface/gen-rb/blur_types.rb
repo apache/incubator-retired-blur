@@ -437,13 +437,15 @@ module Blur
       WAL = 3
       ROWMUTATIONTYPE = 4
       RECORDMUTATIONS = 5
+      WAITTOBEVISIBLE = 6
 
       FIELDS = {
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
         WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal', :default => true},
         ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
-        RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}}
+        RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}},
+        WAITTOBEVISIBLE => {:type => ::Thrift::Types::BOOL, :name => 'waitToBeVisible'}
       }
 
       def struct_fields; FIELDS; end

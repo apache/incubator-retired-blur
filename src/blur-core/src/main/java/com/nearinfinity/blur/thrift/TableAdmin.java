@@ -1,6 +1,7 @@
 package com.nearinfinity.blur.thrift;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.thrift.TException;
 import org.apache.zookeeper.ZooKeeper;
@@ -73,9 +74,29 @@ public abstract class TableAdmin implements Iface {
         throw new BlurException("Table [" + table + "] not found.", null);
       }
       EnableTable.enableTable(_zookeeper, cluster, table);
+      waitForTheTableToEnable(cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during enable of [table={0}]", e, table);
       throw new BException(e.getMessage(), e);
+    }
+  }
+
+  private void waitForTheTableToEnable(String cluster, String table) throws BlurException, TException {
+    TableDescriptor describe = describe(table);
+    int shardCount = describe.shardCount;
+    LOG.info("Waiting for shards to enabled on table [" + table + "]");
+    while (true) {
+      Map<String, String> shardServerLayout = shardServerLayout(table);
+      LOG.info("Shards [" + shardServerLayout.size() + "/" + shardCount + "] of table [" + table + "] enabled");
+      if (shardServerLayout.size() == shardCount) {
+        return;
+      }
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException e) {
+        LOG.error("Unknown error while enabling table [" + table + "]", e);
+        throw new BException("Unknown error while enabling table [" + table + "]", e);
+      }
     }
   }
 

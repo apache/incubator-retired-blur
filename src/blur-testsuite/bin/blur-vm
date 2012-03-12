@@ -29,6 +29,9 @@ start)
 stop)
   ssh blur@$BLUR_VM_IP /home/blur/blur/bin/stop-all.sh
  ;;
+ssh)
+  ssh -X blur@$BLUR_VM_IP
+ ;;
 compile)
   cd $bin/../../
   mvn clean install
@@ -68,5 +71,5 @@ install-pub-key)
   fi
  ;;
 *)
- echo "Usage: $0 { start | stop | compile | deploy | install | clean-data | install-pub-key }" >&2
+ echo "Usage: $0 { start | stop | compile | deploy | install | clean-data | install-pub-key | ssh }" >&2
 esac

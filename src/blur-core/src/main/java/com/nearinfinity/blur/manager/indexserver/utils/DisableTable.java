@@ -17,21 +17,15 @@
 package com.nearinfinity.blur.manager.indexserver.utils;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
-import com.nearinfinity.blur.log.Log;
-import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
-import com.nearinfinity.blur.utils.BlurConstants;
 
 public class DisableTable {
 
-  private final static Log LOG = LogFactory.getLog(DisableTable.class);
+//  private final static Log LOG = LogFactory.getLog(DisableTable.class);
 
   public static void disableTable(ZooKeeper zookeeper, String cluster, String table) throws IOException, InterruptedException, KeeperException {
     if (zookeeper.exists(ZookeeperPathConstants.getTablePath(cluster, table) , false) == null) {
@@ -42,30 +36,30 @@ public class DisableTable {
       throw new IOException("Table [" + table + "] already disabled.");
     }
     zookeeper.delete(blurTableEnabledPath, -1);
-    waitForWriteLocksToClear(zookeeper, cluster, table);
+//    waitForWriteLocksToClear(zookeeper, cluster, table);
   }
 
-  private static void waitForWriteLocksToClear(ZooKeeper zookeeper, String cluster, String table) throws KeeperException, InterruptedException {
-    final Object object = new Object();
-    String path = ZookeeperPathConstants.getLockPath(cluster, table);
-    while (true) {
-      synchronized (object) {
-        List<String> list = zookeeper.getChildren(path, new Watcher() {
-          @Override
-          public void process(WatchedEvent event) {
-            synchronized (object) {
-              object.notifyAll();
-            }
-          }
-        });
-        if (list.isEmpty()) {
-          LOG.info("All [{0}] locks for table [{1}]", list.size(), table);
-          return;
-        } else {
-          LOG.info("Waiting for locks to be released [{0}] total [{1}]", list.size(), list);
-          object.wait(BlurConstants.ZK_WAIT_TIME);
-        }
-      }
-    }
-  }
+//  private static void waitForWriteLocksToClear(ZooKeeper zookeeper, String cluster, String table) throws KeeperException, InterruptedException {
+//    final Object object = new Object();
+//    String path = ZookeeperPathConstants.getLockPath(cluster, table);
+//    while (true) {
+//      synchronized (object) {
+//        List<String> list = zookeeper.getChildren(path, new Watcher() {
+//          @Override
+//          public void process(WatchedEvent event) {
+//            synchronized (object) {
+//              object.notifyAll();
+//            }
+//          }
+//        });
+//        if (list.isEmpty()) {
+//          LOG.info("All [{0}] locks for table [{1}]", list.size(), table);
+//          return;
+//        } else {
+//          LOG.info("Waiting for locks to be released [{0}] total [{1}]", list.size(), list);
+//          object.wait(BlurConstants.ZK_WAIT_TIME);
+//        }
+//      }
+//    }
+//  }
 }

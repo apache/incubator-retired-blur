@@ -31,16 +31,12 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_WAL_PATH;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_CONNECTION;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_ZOOKEEPER_SYSTEM_TIME_TOLERANCE;
-import static com.nearinfinity.blur.utils.BlurConstants.CRAZY;
 import static com.nearinfinity.blur.utils.BlurUtil.quietClose;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.conf.Configuration;
@@ -85,7 +81,7 @@ public class ThriftBlurShardServer extends ThriftServer {
   public static void main(String[] args) throws TTransportException, IOException, KeeperException, InterruptedException, BlurException {
     int serverIndex = getServerIndex(args);
     LOG.info("Setting up Shard Server");
-    
+
     Thread.setDefaultUncaughtExceptionHandler(new SimpleUncaughtExceptionHandler());
     BlurConfiguration configuration = new BlurConfiguration();
     // setup block cache
@@ -96,42 +92,38 @@ public class ThriftBlurShardServer extends ThriftServer {
     int bankCount = configuration.getInt(BLUR_SHARD_BLOCKCACHE_SLAB_COUNT, 1);
     Configuration config = new Configuration();
     BlurMetrics blurMetrics = new BlurMetrics(config);
-    boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION,true);
-    
+    boolean directAllocation = configuration.getBoolean(BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION, true);
+
     int slabSize = numberOfBlocksPerBank * blockSize;
-    LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]",bankCount,directAllocation);
-    LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes",slabSize,bankCount,((long) bankCount * (long) slabSize));
-    
-    BufferStore.init(configuration,blurMetrics);
+    LOG.info("Number of slabs of block cache [{0}] with direct memory allocation set to [{1}]", bankCount, directAllocation);
+    LOG.info("Block cache target memory usage, slab size of [{0}] will allocate [{1}] slabs and use ~[{2}] bytes", slabSize, bankCount, ((long) bankCount * (long) slabSize));
+
+    BufferStore.init(configuration, blurMetrics);
     BlockCache blockCache;
     try {
       long totalMemory = bankCount * numberOfBlocksPerBank * blockSize;
       blockCache = new BlockCache(blurMetrics, directAllocation, totalMemory, slabSize, blockSize);
     } catch (OutOfMemoryError e) {
       if ("Direct buffer memory".equals(e.getMessage())) {
-        System.err.println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");
+        System.err
+            .println("The max direct memory is too low.  Either increase by setting (-XX:MaxDirectMemorySize=<size>g -XX:+UseLargePages) or disable direct allocation by (blur.shard.blockcache.direct.memory.allocation=false) in blur-site.properties");
         System.exit(1);
       }
       throw e;
     }
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, blurMetrics);
-    
+
     String bindAddress = configuration.get(BLUR_SHARD_BIND_ADDRESS);
-    int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT,-1);
+    int bindPort = configuration.getInt(BLUR_SHARD_BIND_PORT, -1);
     bindPort += serverIndex;
-    
-    LOG.info("Shard Server using index [{0}] bind address [{1}]",serverIndex,bindAddress + ":" + bindPort);
+
+    LOG.info("Shard Server using index [{0}] bind address [{1}]", serverIndex, bindAddress + ":" + bindPort);
 
     String nodeNameHostName = getNodeName(configuration, BLUR_SHARD_HOSTNAME);
     String nodeName = nodeNameHostName + ":" + bindPort;
     String zkConnectionStr = isEmpty(configuration.get(BLUR_ZOOKEEPER_CONNECTION), BLUR_ZOOKEEPER_CONNECTION);
 
     BlurQueryChecker queryChecker = new BlurQueryChecker(configuration);
-
-    boolean crazyMode = false;
-    if (args.length == 1 && args[0].equals(CRAZY)) {
-      crazyMode = true;
-    }
 
     final ZooKeeper zooKeeper = ZkUtils.newZooKeeper(zkConnectionStr);
     try {
@@ -151,7 +143,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
     IndexDeletionPolicy indexDeletionPolicy = getIndexDeletionPolicy(configuration);
-    
+
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
     indexServer.setCache(cache);
@@ -162,11 +154,12 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setShardOpenerThreadCount(configuration.getInt(BLUR_SHARD_OPENER_THREAD_COUNT, 16));
     indexServer.setZookeeper(zooKeeper);
     indexServer.setFilterCache(filterCache);
-    indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY,60000));
+    indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000));
     indexServer.setWarmup(indexWarmup);
     indexServer.setIndexDeletionPolicy(indexDeletionPolicy);
-//    indexServer.setWalPath(new Path("hdfs://blur-vm/" + nodeName.replace(":", "_") + ".wal"));
-    indexServer.setWalPath(new Path("hdfs://localhost:9000/" + nodeName.replace(":", "_") + ".wal"));
+    String walLogPath = configuration.get(BLUR_SHARD_WAL_PATH, "hdfs://localhost");
+    String walLogPathStr = walLogPath + "/" + nodeName.replace(":", "_") + "-" + System.currentTimeMillis() + ".wal";
+    indexServer.setWalPath(new Path(walLogPathStr));
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();
@@ -176,7 +169,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexManager.setBlurMetrics(blurMetrics);
     indexManager.setFilterCache(filterCache);
     indexManager.init();
-    
+
     final BlurShardServer shardServer = new BlurShardServer();
     shardServer.setIndexServer(indexServer);
     shardServer.setIndexManager(indexManager);
@@ -186,7 +179,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     shardServer.setMaxTimeToLive(configuration.getLong(BLUR_SHARD_CACHE_MAX_TIMETOLIVE, TimeUnit.MINUTES.toMillis(1)));
     shardServer.setQueryChecker(queryChecker);
     shardServer.init();
-    
+
     Iface iface = BlurUtil.recordMethodCallsAndAverageTimes(blurMetrics, shardServer, Iface.class);
 
     int threadCount = configuration.getInt(BLUR_SHARD_SERVER_THRIFT_THREAD_COUNT, 32);
@@ -196,14 +189,9 @@ public class ThriftBlurShardServer extends ThriftServer {
     server.setBindAddress(bindAddress);
     server.setBindPort(bindPort);
     server.setThreadCount(threadCount);
-    if (crazyMode) {
-      System.err.println("Crazy mode!!!!!");
-      server.setIface(crazyMode(iface));
-    } else {
-      server.setIface(iface);
-    }
+    server.setIface(iface);
     server.setConfiguration(configuration);
-    
+
     // This will shutdown the server when the correct path is set in zk
     new BlurServerShutDown().register(new BlurShutdown() {
       @Override
@@ -241,7 +229,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     }
     return new DefaultBlurFilterCache();
   }
-  
+
   private static BlurIndexWarmup getIndexWarmup(BlurConfiguration configuration) {
     String _blurFilterCacheClass = configuration.get(BLUR_SHARD_INDEX_WARMUP_CLASS);
     if (_blurFilterCacheClass != null) {
@@ -254,23 +242,4 @@ public class ThriftBlurShardServer extends ThriftServer {
     }
     return new DefaultBlurIndexWarmup();
   }
-
-  public static Iface crazyMode(final Iface iface) {
-    return (Iface) Proxy.newProxyInstance(Iface.class.getClassLoader(), new Class[] { Iface.class }, new InvocationHandler() {
-      private Random random = new Random();
-      private long strikeTime = System.currentTimeMillis() + 100;
-
-      @Override
-      public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        long now = System.currentTimeMillis();
-        if (strikeTime < now) {
-          strikeTime = now + random.nextInt(2000);
-          System.err.println("Crazy Monkey Strikes!!! Next strike [" + strikeTime + "]");
-          throw new RuntimeException("Crazy Monkey Strikes!!!");
-        }
-        return method.invoke(iface, args);
-      }
-    });
-  }
-
 }

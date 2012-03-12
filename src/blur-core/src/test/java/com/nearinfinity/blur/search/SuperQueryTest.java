@@ -28,7 +28,6 @@ import static junit.framework.Assert.assertEquals;
 import java.io.IOException;
 import java.util.UUID;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
@@ -48,11 +47,10 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.index.DirectIODirectory;
-import com.nearinfinity.blur.index.WalIndexWriter;
+import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.lucene.search.SuperQuery;
-import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
-import com.nearinfinity.blur.utils.RowWalIndexWriter;
+import com.nearinfinity.blur.utils.RowIndexWriter;
 public class SuperQueryTest {
 
   @Test
@@ -151,10 +149,9 @@ public class SuperQueryTest {
 
   public static Directory createIndex() throws CorruptIndexException, LockObtainFailedException, IOException {
     Directory directory = new RAMDirectory();
-    BlurMetrics metrics = new BlurMetrics(new Configuration());
-    WalIndexWriter writer = new WalIndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)), metrics);
+    IndexWriter writer = new IndexWriter(DirectIODirectory.wrap(directory), new IndexWriterConfig(LUCENE_VERSION, new StandardAnalyzer(LUCENE_VERSION)));
     BlurAnalyzer analyzer = new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION));
-    RowWalIndexWriter indexWriter = new RowWalIndexWriter(writer, analyzer);
+    RowIndexWriter indexWriter = new RowIndexWriter(writer, analyzer);
     indexWriter.replace(false, newRow("1", newRecord("person", UUID.randomUUID().toString(), newColumn("name", "aaron")), newRecord("person", UUID.randomUUID().toString(),
         newColumn("name", "aaron")), newRecord("address", UUID.randomUUID().toString(), newColumn("street", "sulgrave"))));
     indexWriter.replace(false, newRow("2", newRecord("person", UUID.randomUUID().toString(), newColumn("name", "hannah")), newRecord("address", UUID.randomUUID().toString(),

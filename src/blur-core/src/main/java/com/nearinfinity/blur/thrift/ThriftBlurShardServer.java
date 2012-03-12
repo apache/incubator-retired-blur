@@ -67,7 +67,6 @@ import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown;
 import com.nearinfinity.blur.manager.indexserver.BlurServerShutDown.BlurShutdown;
 import com.nearinfinity.blur.manager.indexserver.DefaultBlurIndexWarmup;
 import com.nearinfinity.blur.manager.indexserver.DistributedIndexServer;
-import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.BufferStore;
@@ -149,9 +148,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     final BlurIndexRefresher refresher = new BlurIndexRefresher();
     refresher.init();
 
-    final BlurIndexCommiter commiter = new BlurIndexCommiter();
-    commiter.init();
-
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
     IndexDeletionPolicy indexDeletionPolicy = getIndexDeletionPolicy(configuration);
@@ -160,7 +156,6 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setBlurMetrics(blurMetrics);
     indexServer.setCache(cache);
     indexServer.setClusterStatus(clusterStatus);
-    indexServer.setCommiter(commiter);
     indexServer.setConfiguration(config);
     indexServer.setNodeName(nodeName);
     indexServer.setRefresher(refresher);
@@ -214,7 +209,7 @@ public class ThriftBlurShardServer extends ThriftServer {
       @Override
       public void shutdown() {
         ThreadWatcher threadWatcher = ThreadWatcher.instance();
-        quietClose(commiter, refresher, server, shardServer, indexManager, indexServer, threadWatcher);
+        quietClose(refresher, server, shardServer, indexManager, indexServer, threadWatcher);
         System.exit(0);
       }
     }, zooKeeper);

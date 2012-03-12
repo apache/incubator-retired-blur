@@ -60,7 +60,6 @@ import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
 import com.nearinfinity.blur.manager.indexserver.utils.CreateTable;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
-import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurNRTIndex;
@@ -70,7 +69,7 @@ import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
-import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
+import com.nearinfinity.blur.store.lock.BlurLockFactory;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
@@ -93,7 +92,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private String _nodeName;
   private int _shardOpenerThreadCount;
   private BlurIndexRefresher _refresher;
-  private BlurIndexCommiter _commiter;
   private BlockDirectoryCache _cache;
   private BlurMetrics _blurMetrics;
   private ZooKeeper _zookeeper;
@@ -498,7 +496,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     Path tablePath = new Path(getTableDescriptor(table).tableUri);
     Path hdfsDirPath = new Path(tablePath, shard);
 
-    ZookeeperLockFactory lockFactory = new ZookeeperLockFactory(_zookeeper, ZookeeperPathConstants.getLockPath(BlurConstants.BLUR_CLUSTER, table), shard, getNodeName());
+    BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurConstants.getPid());
 
     DirectIODirectory directory = new HdfsDirectory(hdfsDirPath);
     directory.setLockFactory(lockFactory);
@@ -546,8 +544,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setExecutorService(_openerService);
       writer.setShard(shard);
       writer.setTable(table);
-      writer.setTimeBetweenCommits(TimeUnit.SECONDS.toMillis(60));
       writer.setSimilarity(getSimilarity(table));
+      writer.setTimeBetweenCommits(TimeUnit.SECONDS.toMillis(60));
       writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(500));
       writer.setNrtCachingMaxCachedMB(60);
       writer.setNrtCachingMaxMergeSizeMB(5.0);
@@ -816,10 +814,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
 
   public void setRefresher(BlurIndexRefresher refresher) {
     _refresher = refresher;
-  }
-
-  public void setCommiter(BlurIndexCommiter commiter) {
-    _commiter = commiter;
   }
 
   public void setCache(BlockDirectoryCache cache) {

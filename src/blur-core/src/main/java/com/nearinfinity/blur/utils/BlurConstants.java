@@ -95,4 +95,8 @@ public class BlurConstants {
       throw new RuntimeException("Unknown error parsing configuration.", e);
     }
   }
+
+  public static int getPid() {
+    return 0;
+  }
 }

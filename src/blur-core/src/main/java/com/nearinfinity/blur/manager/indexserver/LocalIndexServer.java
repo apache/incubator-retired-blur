@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.analysis.KeywordAnalyzer;
@@ -49,11 +51,9 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.writer.BlurIndex;
 import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
-import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
-import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
-import com.nearinfinity.blur.manager.writer.BlurIndexWriter;
-import com.nearinfinity.blur.metrics.BlurMetrics;
+import com.nearinfinity.blur.manager.writer.BlurNRTIndex;
 import com.nearinfinity.blur.store.compressed.CompressedFieldDataDirectory;
+
 public class LocalIndexServer extends AbstractIndexServer {
 
   private final static Log LOG = LogFactory.getLog(LocalIndexServer.class);
@@ -63,9 +63,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   private BlurIndexCloser _closer;
   private int _blockSize = 65536;
   private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
-  private BlurIndexRefresher _refresher;
-  private BlurIndexCommiter _commiter;
-  private BlurMetrics _metrics;
+  private ExecutorService _executorService = Executors.newCachedThreadPool();
 
   public LocalIndexServer(File file) {
     _localDir = file;
@@ -78,7 +76,7 @@ public class LocalIndexServer extends AbstractIndexServer {
   public BlurAnalyzer getAnalyzer(String table) {
     return new BlurAnalyzer(new StandardAnalyzer(LUCENE_VERSION, new HashSet<String>()));
   }
-  
+
   @Override
   public SortedSet<String> getShardListCurrentServerOnly(String table) throws IOException {
     Map<String, BlurIndex> tableMap = _readersMap.get(table);
@@ -135,7 +133,7 @@ public class LocalIndexServer extends AbstractIndexServer {
             new IndexWriter(directory, new IndexWriterConfig(LUCENE_VERSION, new KeywordAnalyzer())).close();
           }
           String shardName = f.getName();
-          shards.put(shardName, openIndex(table, directory));
+          shards.put(shardName, openIndex(table, shardName, directory));
         }
       }
       return shards;
@@ -143,17 +141,16 @@ public class LocalIndexServer extends AbstractIndexServer {
     throw new IOException("Table [" + table + "] not found.");
   }
 
-  private BlurIndex openIndex(String table, Directory dir) throws CorruptIndexException, IOException {
-    BlurIndexWriter writer = new BlurIndexWriter();
-    writer.setDirectory(DirectIODirectory.wrap(dir));
-    writer.setAnalyzer(getAnalyzer(table));
-    writer.setCloser(_closer);
-    writer.setRefresher(_refresher);
-    writer.setCommiter(_commiter);
-    writer.setBlurMetrics(_metrics);
-    writer.setSimilarity(getSimilarity(table));
-    writer.init();
-    return writer;
+  private BlurIndex openIndex(String table, String shard, Directory dir) throws CorruptIndexException, IOException {
+    BlurNRTIndex index = new BlurNRTIndex();
+    index.setAnalyzer(getAnalyzer(table));
+    index.setDirectory(DirectIODirectory.wrap(dir));
+    index.setExecutorService(_executorService);
+    index.setShard(shard);
+    index.setSimilarity(getSimilarity(table));
+    index.setTable(table);
+    index.init();
+    return index;
   }
 
   @Override
@@ -224,17 +221,5 @@ public class LocalIndexServer extends AbstractIndexServer {
       size += file.length();
     }
     return size;
-  }
-
-  public void setRefresher(BlurIndexRefresher refresher) {
-    _refresher = refresher;
-  }
-
-  public void setCommiter(BlurIndexCommiter commiter) {
-    _commiter = commiter;
-  }
-
-  public void setBlurMetrics(BlurMetrics metrics) {
-    _metrics = metrics;
   }
 }

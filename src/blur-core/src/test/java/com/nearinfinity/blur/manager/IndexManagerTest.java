@@ -51,7 +51,6 @@ import org.junit.Test;
 
 import com.nearinfinity.blur.manager.indexserver.LocalIndexServer;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
-import com.nearinfinity.blur.manager.writer.BlurIndexCommiter;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.thrift.generated.BlurException;
@@ -63,10 +62,8 @@ import com.nearinfinity.blur.thrift.generated.FetchRecordResult;
 import com.nearinfinity.blur.thrift.generated.FetchResult;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.RecordMutation;
-import com.nearinfinity.blur.thrift.generated.RecordMutationType;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.thrift.generated.RowMutation;
-import com.nearinfinity.blur.thrift.generated.RowMutationType;
 import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.ScoreType;
 import com.nearinfinity.blur.thrift.generated.Selector;
@@ -82,22 +79,15 @@ public class IndexManagerTest {
   private LocalIndexServer server;
   private IndexManager indexManager;
   private BlurIndexRefresher refresher;
-  private BlurIndexCommiter commiter;
 
   @Before
   public void setUp() throws BlurException, IOException {
     File file = new File("./tmp/indexer-manager-test");
     rm(file);
     new File(new File(file, TABLE), SHARD_NAME).mkdirs();
-    BlurMetrics metrics = new BlurMetrics(new Configuration());
     refresher = new BlurIndexRefresher();
     refresher.init();
-    commiter = new BlurIndexCommiter();
-    commiter.init();
     server = new LocalIndexServer(file);
-    server.setRefresher(refresher);
-    server.setCommiter(commiter);
-    server.setBlurMetrics(metrics);
 
     indexManager = new IndexManager();
     indexManager.setStatusCleanupTimerDelay(1000);
@@ -111,7 +101,6 @@ public class IndexManagerTest {
 
   @After
   public void teardown() {
-    commiter.close();
     refresher.close();
     indexManager.close();
   }
@@ -504,6 +493,7 @@ public class IndexManagerTest {
     RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-2");
 
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-2", rm);
+    
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-2");

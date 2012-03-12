@@ -27,9 +27,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.index.DirectIODirectory;
 import com.nearinfinity.blur.metrics.BlurMetrics;
@@ -37,7 +34,7 @@ import com.nearinfinity.blur.store.blockcache.BlockCache;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
 import com.nearinfinity.blur.store.hdfs.HdfsDirectory;
-import com.nearinfinity.blur.store.lock.ZookeeperLockFactory;
+import com.nearinfinity.blur.store.lock.BlurLockFactory;
 public class BenchmarkDirectory {
 
   public static void main(String[] args) throws IOException {
@@ -48,18 +45,13 @@ public class BenchmarkDirectory {
     BlockCache blockCache = new BlockCache(new BlurMetrics(new Configuration()),true,totalMemory,slabSize,blockSize);
     BlurMetrics metrics = new BlurMetrics(new Configuration());
     BlockDirectoryCache cache = new BlockDirectoryCache(blockCache, metrics);
-    
-    ZooKeeper zooKeeper = new ZooKeeper("localhost", 30000, new Watcher() {
-      @Override
-      public void process(WatchedEvent event) {
-        
-      }
-    });
-    
-    ZookeeperLockFactory factory = new ZookeeperLockFactory(zooKeeper, "/test-zk-lock", "shard-0", "localhost:40020");
 
+    Configuration configuration = new Configuration();
     Path p = new Path("hdfs://localhost:9000/bench");
-    FileSystem fs = FileSystem.get(p.toUri(), new Configuration());
+    BlurLockFactory factory = new BlurLockFactory(configuration, p, "localhost", 0);
+
+    
+    FileSystem fs = FileSystem.get(p.toUri(), configuration);
     fs.delete(p, true);
 
     final HdfsDirectory dir = new HdfsDirectory(p);

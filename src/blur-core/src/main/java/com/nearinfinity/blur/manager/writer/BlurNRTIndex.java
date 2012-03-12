@@ -15,7 +15,6 @@ import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TieredMergePolicy;
@@ -28,13 +27,14 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NRTCachingDirectory;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.index.IndexWriter;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.Record;
 import com.nearinfinity.blur.thrift.generated.Row;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.PrimeDocCache;
-import com.nearinfinity.blur.utils.RowWalIndexWriter;
+import com.nearinfinity.blur.utils.RowIndexWriter;
 
 public class BlurNRTIndex extends BlurIndex {
 
@@ -68,15 +68,15 @@ public class BlurNRTIndex extends BlurIndex {
   private ExecutorService _executorService;
   private String _table;
   private String _shard;
-  private long _timeBetweenCommits;
+  private long _timeBetweenCommits = TimeUnit.SECONDS.toMillis(60);
   private Similarity _similarity;
   private volatile long _lastRefresh;
-  private long _timeBetweenRefreshs;
-  private double _nrtCachingMaxMergeSizeMB;
-  private int _nrtCachingMaxCachedMB;
+  private long _timeBetweenRefreshs = TimeUnit.MILLISECONDS.toMillis(500);
+  private double _nrtCachingMaxMergeSizeMB = 60;
+  private double _nrtCachingMaxCachedMB = 5.0;
   private Thread _refresher;
   private TransactionRecorder _recorder;
-
+  
   public void init() throws IOException {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
@@ -99,7 +99,7 @@ public class BlurNRTIndex extends BlurIndex {
       public void run() {
         while (!_isClosed.get()) {
           try {
-            LOG.info("Refreshing of [{0}/{1}].", _table, _shard);
+            LOG.debug("Refreshing of [{0}/{1}].", _table, _shard);
             maybeReopen();
           } catch (IOException e) {
             LOG.error("Error during refresh of [{0}/{1}].", _table, _shard, e);
@@ -107,6 +107,9 @@ public class BlurNRTIndex extends BlurIndex {
           try {
             Thread.sleep(_timeBetweenRefreshs);
           } catch (InterruptedException e) {
+            if (_isClosed.get()) {
+              return;
+            }
             LOG.error("Unknown error with refresher thread [{0}/{1}].", _table, _shard, e);
           }
         }
@@ -133,6 +136,9 @@ public class BlurNRTIndex extends BlurIndex {
           try {
             Thread.sleep(_timeBetweenCommits);
           } catch (InterruptedException e) {
+            if (_isClosed.get()) {
+              return;
+            }
             LOG.error("Unknown error with committer thread [{0}/{1}].", _table, _shard, e);
           }
         }
@@ -145,10 +151,19 @@ public class BlurNRTIndex extends BlurIndex {
 
   @Override
   public void replaceRow(boolean wal, Row row) throws IOException {
-    if (wal) {
-      _recorder.replaceRow(row);
+    List<Record> records = row.records;
+    if (records == null || records.isEmpty()) {
+      deleteRow(wal, row.id);
+      return;
     }
-    boolean waitToBeVisible = false;
+    if (wal) {
+      if (_recorder == null) {
+        LOG.warn("No transaction recorder set.");
+      } else {
+        _recorder.replaceRow(row);
+      }
+    }
+    boolean waitToBeVisible = true;
     long generation = _nrtManager.updateDocuments(ROW_ID.createTerm(row.id), getDocs(row));
     waitToBeVisible(waitToBeVisible, generation);
   }
@@ -156,9 +171,13 @@ public class BlurNRTIndex extends BlurIndex {
   @Override
   public void deleteRow(boolean wal, String rowId) throws IOException {
     if (wal) {
-      _recorder.deleteRow(rowId);
+      if (_recorder == null) {
+        LOG.warn("No transaction recorder set.");
+      } else {
+        _recorder.deleteRow(rowId);
+      }
     }
-    boolean waitToBeVisible = false;
+    boolean waitToBeVisible = true;
     long generation = _nrtManager.deleteDocuments(ROW_ID.createTerm(rowId));
     waitToBeVisible(waitToBeVisible, generation);
   }
@@ -173,6 +192,8 @@ public class BlurNRTIndex extends BlurIndex {
   public void close() throws IOException {
     // @TODO make sure that locks are cleaned up.
     _isClosed.set(true);
+    _committer.interrupt();
+    _refresher.interrupt();
     try {
       _writer.close();
       _manager.close();
@@ -200,8 +221,8 @@ public class BlurNRTIndex extends BlurIndex {
   private void waitToBeVisible(boolean waitToBeVisible, long generation) throws IOException {
     if (waitToBeVisible) {
       // if visibility is required then reopen.
-      _manager.maybeReopen();
       _lastRefresh = System.nanoTime();
+      _nrtManager.maybeReopen(true);
       _nrtManager.waitForGeneration(generation, APPLY_ALL_DELETES);
     } else {
       // if not, then check to see if reopened is needed.
@@ -211,7 +232,7 @@ public class BlurNRTIndex extends BlurIndex {
 
   private void maybeReopen() throws IOException {
     if (_lastRefresh + _timeBetweenRefreshs < System.nanoTime()) {
-      if (_manager.maybeReopen()) {
+      if (_nrtManager.maybeReopen(true)) {
         _lastRefresh = System.nanoTime();
       }
     }
@@ -237,7 +258,7 @@ public class BlurNRTIndex extends BlurIndex {
     Document document = new Document();
     document.add(new Field(BlurConstants.ROW_ID, rowId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
     document.add(new Field(BlurConstants.RECORD_ID, record.recordId, Store.YES, Index.NOT_ANALYZED_NO_NORMS));
-    RowWalIndexWriter.addColumns(document, _analyzer, builder, record.family, record.columns);
+    RowIndexWriter.addColumns(document, _analyzer, builder, record.family, record.columns);
     return document;
   }
 

@@ -143,6 +143,8 @@ public class ThriftBlurShardServer extends ThriftServer {
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
     IndexDeletionPolicy indexDeletionPolicy = getIndexDeletionPolicy(configuration);
+    
+    String walLogPath = configuration.get(BLUR_SHARD_WAL_PATH, "hdfs://localhost");
 
     final DistributedIndexServer indexServer = new DistributedIndexServer();
     indexServer.setBlurMetrics(blurMetrics);
@@ -157,9 +159,7 @@ public class ThriftBlurShardServer extends ThriftServer {
     indexServer.setSafeModeDelay(configuration.getLong(BLUR_SHARD_SAFEMODEDELAY, 60000));
     indexServer.setWarmup(indexWarmup);
     indexServer.setIndexDeletionPolicy(indexDeletionPolicy);
-    String walLogPath = configuration.get(BLUR_SHARD_WAL_PATH, "hdfs://localhost");
-    String walLogPathStr = walLogPath + "/" + nodeName.replace(":", "_") + "-" + System.currentTimeMillis() + ".wal";
-    indexServer.setWalPath(new Path(walLogPathStr));
+    indexServer.setWalPath(new Path(walLogPath));
     indexServer.init();
 
     final IndexManager indexManager = new IndexManager();

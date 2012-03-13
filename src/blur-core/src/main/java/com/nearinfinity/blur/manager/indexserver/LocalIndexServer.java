@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -64,12 +66,15 @@ public class LocalIndexServer extends AbstractIndexServer {
   private int _blockSize = 65536;
   private CompressionCodec _compression = CompressedFieldDataDirectory.DEFAULT_COMPRESSION;
   private ExecutorService _executorService = Executors.newCachedThreadPool();
+  private Path _walPath;
+  private Configuration _configuration = new Configuration();
 
-  public LocalIndexServer(File file) {
+  public LocalIndexServer(File file, Path walPath) {
     _localDir = file;
     _localDir.mkdirs();
     _closer = new BlurIndexCloser();
     _closer.init();
+    _walPath = walPath;
   }
 
   @Override
@@ -149,6 +154,8 @@ public class LocalIndexServer extends AbstractIndexServer {
     index.setShard(shard);
     index.setSimilarity(getSimilarity(table));
     index.setTable(table);
+    index.setWalPath(new Path(new Path(_walPath,table),shard));
+    index.setConfiguration(_configuration);
     index.init();
     return index;
   }

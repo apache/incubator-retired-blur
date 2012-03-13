@@ -549,7 +549,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(500));
       writer.setNrtCachingMaxCachedMB(60);
       writer.setNrtCachingMaxMergeSizeMB(5.0);
-      writer.setRecorder(_recorder);
+      writer.setWalPath(_walPath);
+      writer.setConfiguration(_configuration);
       writer.init();
       index = writer;
     }

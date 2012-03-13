@@ -45,6 +45,7 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,16 +79,13 @@ public class IndexManagerTest {
   private static final String FAMILY = "test-family";
   private LocalIndexServer server;
   private IndexManager indexManager;
-  private BlurIndexRefresher refresher;
 
   @Before
-  public void setUp() throws BlurException, IOException {
+  public void setUp() throws BlurException, IOException, InterruptedException {
     File file = new File("./tmp/indexer-manager-test");
     rm(file);
     new File(new File(file, TABLE), SHARD_NAME).mkdirs();
-    refresher = new BlurIndexRefresher();
-    refresher.init();
-    server = new LocalIndexServer(file);
+    server = new LocalIndexServer(file,new Path("./tmp/indexer-manager-test"));
 
     indexManager = new IndexManager();
     indexManager.setStatusCleanupTimerDelay(1000);
@@ -95,13 +93,11 @@ public class IndexManagerTest {
     indexManager.setThreadCount(1);
     indexManager.setBlurMetrics(new BlurMetrics(new Configuration()));
     indexManager.init();
-
     setupData();
   }
 
   @After
   public void teardown() {
-    refresher.close();
     indexManager.close();
   }
 

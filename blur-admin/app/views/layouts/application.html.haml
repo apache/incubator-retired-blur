@@ -1,7 +1,7 @@
 !!!5
 %html
 	%head
-		=csrf_meta_tag
+		= csrf_meta_tag
 		= javascript_include_tag 'application', 'routes'
 		= yield(:javascript)
 		= stylesheet_link_tag 'application', :media => "all" 

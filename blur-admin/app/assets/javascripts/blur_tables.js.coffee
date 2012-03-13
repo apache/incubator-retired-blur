@@ -126,10 +126,11 @@ $(document).ready ->
     else
       if(data['clusters'] != null && data['clusters'].length>0)
         for cluster in data['clusters']
-          tab_title = cluster['name']
+          safe_mode_icon = $('#cluster_tab_'+cluster['id'] + ' i.safemode-icon')
           if(cluster['safe_mode'])
-            tab_title += ' (safe mode)'
-          $('#cluster_tab_'+cluster['id'] + ' a .cluster-title').html(tab_title)
+            safe_mode_icon.show()
+          else
+            safe_mode_icon.hide();
       currently_checked_rows = get_selected_tables()
       for blur_table in data['tables']
         selected_row = $('tr[blur_table_id=' + blur_table.id + ']')

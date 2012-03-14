@@ -5,7 +5,6 @@ $(document).ready ->
     $.ajax Routes.user_preference_path(user_id, 'column'),
       type: 'PUT',
       data: $('#my-cols').sortable('serialize'),
-      success: (data) ->
     
   #make this sortable
   $('#my-cols').sortable

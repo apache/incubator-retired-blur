@@ -1,6 +1,6 @@
 #= require jquery
-#= require jquery_ujs
 #= require jquery-ui
+#= require jquery_ujs
 #= require modernizr
 #= require bootstrap
 #= require bootstrap-modal-helper

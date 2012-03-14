@@ -50,12 +50,12 @@ $(document).ready ->
     $("<div class='context_menus'>
       <ul id='hdfs-root-context-menu' class='contextMenu'>
       <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
-      <li class='edit' ><a href='#upload'>Upload File</a></li>
+      <li class='edit' style='display:none'><a href='#upload'>Upload File</a></li>
       <li class='props separator'><a href='#props'>Properties</a></li>
       </ul>
       <ul id='hdfs-dir-context-menu' class='contextMenu'>
       <li class='mkdir'><a href='#mkdir'>New Folder</a></li>
-      <li class='edit' ><a href='#upload'>Upload File</a></li>
+      <li class='edit' style='display:none'><a href='#upload'>Upload File</a></li>
       <li class='rename'><a href='#rename'>Rename</a></li>
       <li class='cut'><a href='#cut'>Cut</a></li>
       <li class='paste'><a href='#paste'>Paste</a></li>

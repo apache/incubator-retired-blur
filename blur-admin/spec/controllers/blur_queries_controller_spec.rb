@@ -60,7 +60,8 @@ describe BlurQueriesController do
       end
 
       it "calls the sql with the proper parameters" do
-        BlurQuery.should_receive(:where_zookeeper).with(@zookeeper.id).and_return(@blur_query)
+        BlurTable.should_receive(:find_all_by_status).with(4).and_return([@blur_table])
+        @blur_table.stub_chain(:blur_queries, :where_zookeeper).and_return(@blur_query)
         @blur_query.should_receive(:where)
           .with('blur_queries.updated_at > ?', kind_of(ActiveSupport::TimeWithZone))
           .and_return([@blur_query])
@@ -72,7 +73,8 @@ describe BlurQueriesController do
         @blur_queries.each do |query|
           query.should_receive(:summary).with(@user).and_return({})
         end
-        BlurQuery.stub_chain(:where_zookeeper, :where).and_return(@blur_queries)
+        BlurTable.should_receive(:find_all_by_status).with(4).and_return([@blur_table])
+        @blur_table.stub_chain(:blur_queries, :where_zookeeper, :where).and_return(@blur_queries)
         get :refresh, :time_length => 1
       end
     end

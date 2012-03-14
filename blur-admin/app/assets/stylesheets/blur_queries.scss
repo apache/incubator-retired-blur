@@ -12,7 +12,7 @@
 		float: right;
     input{ width: 96%; }
   }
-	dataTables_info {
+	.dataTables_info {
 	  padding-top: 8px;
 	}
   .row > *:first-child {
@@ -53,6 +53,31 @@
       td{
         background: rgba(247, 225, 225, 0.8);
         border-bottom: 1px solid #FF0000;
+      }
+    }
+    th{
+      position: relative;
+      cursor: pointer;
+
+      &.headerSortDown{
+        .icon-chevron-up{ display: none; }
+      }
+
+      &.headerSortUp{
+        .icon-chevron-down{ display: none; }
+      }
+
+      i{
+        position:absolute;
+        &.icon-chevron-up{
+          top: 5px;
+          right: 10px;
+        }
+
+        &.icon-chevron-down{
+          bottom: 5px;
+          right: 10px;
+        }
       }
     }
   }

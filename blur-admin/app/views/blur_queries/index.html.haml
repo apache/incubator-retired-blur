@@ -13,13 +13,11 @@
   %table#queries-table.table.table-striped.table-bordered
     %thead
       %tr
-        %th User ID
-        - if can? :index, :blur_queries, :query_string
-          %th Query
-        %th Table Name
-        %th Starting Record
-        %th Time Submitted
-        %th Status
-        %th State
-        %th Actions/Info
+        - headers = ['User ID']
+        - headers << 'Query' if can? :index, :blur_queries, :query_string
+        - headers.push 'Table Name', 'Starting Record', 'Time Submitted', 'Status', 'State', 'Actions/Info'
+        - headers.each do |header|
+          %th
+            =header
+            =render :partial => 'icons'
     %tbody

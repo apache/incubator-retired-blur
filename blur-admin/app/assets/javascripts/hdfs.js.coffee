@@ -140,16 +140,17 @@ $(document).ready ->
   upload = (el) ->
     id = el.attr('hdfs_id')
     path = el.attr('hdfs_path')
-    $.get Routes.hdfs_upload_form_path(id), (data) ->
-      $().popup
-        body:data
-        title: 'Upload File'
-        titleClass: 'title'
-        show: ()->
-          $('#fpath-input').val(path)
-          $('#hdfs-id-input').val(id)
-        hide: ()->
-          !window.uploading
+    modal_container = $('<div id="upload_form_modal_container"></div>')
+    modal_container.load Routes.hdfs_upload_form_path(id), (data) ->
+        $().popup
+          body:data
+          title: 'Upload File'
+          titleClass: 'title'
+          show: ()->
+            $('#fpath-input').val(path)
+            $('#hdfs-id-input').val(id)
+          hide: ()->
+            !window.uploading
           
   $('#upload-form').live 'submit', ()->
     window.uploading = true

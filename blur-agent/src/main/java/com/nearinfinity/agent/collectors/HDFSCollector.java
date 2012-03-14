@@ -27,13 +27,15 @@ public class HDFSCollector {
 				@Override
 				public void run() {
 					try {						
-						String[] uriParts = uriString.split(":");
-						String host = uriParts[0];
-						String port = uriParts[1];
+						URI uri = new URI(uriString);
+						String host = uri.getHost();
+						String port = String.valueOf(uri.getPort());
+//						String[] uriParts = uriString.split(":");
+//						String host = uriParts[0];
+//						String port = uriParts[1];
 						
 						int hdfsId = jdbc.queryForInt("select id from hdfs where name = ?", name);
 						
-						URI uri = new URI(uriString);
 						FileSystem fileSystem = FileSystem.get(uri, new Configuration());
 	
 						if (fileSystem instanceof DistributedFileSystem) {

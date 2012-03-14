@@ -44,3 +44,10 @@ html{
 		width: 530px;
 	}
 }
+
+// Tree overrides
+ul.dynatree-container {
+	background-color: inherit !important;
+	color: inherit !important;
+	border: none !important;
+}

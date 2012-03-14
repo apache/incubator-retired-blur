@@ -57,6 +57,7 @@
         },
         error: function(data) {
           innerWindow.html("error retrieving [" + url + "]");
+          self.element.append(innerWindow);
         }
       });
       return innerWindow;

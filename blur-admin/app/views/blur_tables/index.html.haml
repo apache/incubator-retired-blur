@@ -4,8 +4,11 @@
 
 %ul#blur_tables.nav-tabs.nav
   - @clusters.each_with_index do |cluster,i|
-    %li{:class =>("active" unless i != 0)}
-      %a{:href=>"#cluster_#{cluster.id}", "data-toggle"=>"tab"}= cluster.name
+    %li#cluster_tab{:id=>cluster.id, :class =>("active" unless i != 0)}
+      %a{:href=>"#cluster_#{cluster.id}", "data-toggle"=>"tab"}
+        %span.cluster-title= cluster.name
+        %i.icon-exclamation-sign.queries-running-icon{:style=>'display:none', :title=>'Has queries within 5 minutes'}
+        %i.icon-lock.safemode-icon{:style=>'display:none', :title=>'In Safe Mode'}
 #tables-wrapper.tab-content
   - @clusters.each_with_index do |cluster,i|
     #cluster.tab-pane.cluster{:id => cluster.id,:class =>("active" unless i != 0), :data => {:cluster_id => cluster.id}}

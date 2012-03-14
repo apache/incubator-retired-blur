@@ -3,17 +3,15 @@ package com.nearinfinity.agent.zookeeper;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.KeeperException.SessionExpiredException;
 import org.apache.zookeeper.KeeperException.SessionMovedException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.ZooKeeper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -98,26 +96,38 @@ public class ZookeeperInstance implements InstanceManager, Runnable {
 				}
 			} else {
 				try {
-					if (!latch.await(10, TimeUnit.SECONDS)) {
+					if (latch.await(10, TimeUnit.SECONDS)) {
+						updateZookeeperStatus(true);
+					} else {
 						closeZookeeper();
+						updateZookeeperStatus(false);
 					}
 				} catch (InterruptedException e1) {
 					closeZookeeper();
+					updateZookeeperStatus(false);
 				}
-				updateZookeeperStatus(true);
-				try {
-					ControllerCollector.collect(this, instanceId);
-					ClusterCollector.collect(this, instanceId);
-				} catch (KeeperException e) {
-					handleZkError(e);
-				} catch (InterruptedException e) {
-					handleZkError(e);
-				}
-				try {
-					Thread.sleep(10000); // poll every 10 seconds
-				} catch (InterruptedException e) {
-					log.info("Exiting Zookeeper instance");
-					return;
+				if(zk == null){
+					log.info("Instance is not online.  Going to sleep for 30 seconds and try again.");
+					try {
+						Thread.sleep(30000);
+					} catch (InterruptedException e) {
+						// do nothing
+					}
+				} else {
+					try {
+						ControllerCollector.collect(this, instanceId);
+						ClusterCollector.collect(this, instanceId);
+					} catch (KeeperException e) {
+						handleZkError(e);
+					} catch (InterruptedException e) {
+						handleZkError(e);
+					}
+					try {
+						Thread.sleep(10000); // poll every 10 seconds
+					} catch (InterruptedException e) {
+						log.info("Exiting Zookeeper instance");
+						return;
+					}
 				}
 			}
 		}

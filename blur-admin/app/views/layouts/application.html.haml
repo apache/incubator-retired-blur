@@ -1,7 +1,7 @@
 !!!5
 %html
 	%head
-		=csrf_meta_tag
+		= csrf_meta_tag
 		= javascript_include_tag 'application', 'routes'
 		= yield(:javascript)
 		= stylesheet_link_tag 'application', :media => "all" 
@@ -80,5 +80,5 @@
 				%a#page-help{:href => '#'} Help
 				| Developed by 
 				%a{:href => "http://www.nearinfinity.com"} Near Infinity
-				| Version 1.0
+				| Version 1.1
 #help-menu{:style => 'display: none', "data-controller" => params[:controller], "data-action" => params[:action]}

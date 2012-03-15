@@ -30,18 +30,18 @@ $(document).ready(function(){
   //Click event for selecting a column from all possible columns
   $('.fam').live('click', function(){ 
     $(this).toggleClass('my-select');
-    clicked = $('#' + $(this).attr('id') + '.sel-fam');
+    var clicked = $('#' + $(this).attr('id') + '.sel-fam');
 
     //if the element isnt in the list of selected columns
     //add the column to your pref list
     if (clicked.length == 0)
     {
       $('#no-saved').hide();
-      app = $(this).clone().removeClass('fam my-select').addClass('sel-fam');
+      var app = $(this).clone().removeClass('fam my-select').addClass('sel-fam');
       $('#my-cols').append(app.hide());
       app.fadeIn('slow', function(){ save_pref(); });
     }
-    
+
     //else the element is already in the list of selected columns
     //remove it from the list of selected columns
     else

@@ -50,4 +50,17 @@ ul.dynatree-container {
 	background-color: inherit !important;
 	color: inherit !important;
 	border: none !important;
+	a:focus, span.dynatree-focused a:link {
+		background-color: inherit !important;
+	}
+	li {
+		a:focus {
+			outline: none !important;
+		}
+		a {
+			background-color: inherit !important;
+			color: inherit !important;
+		}
+		border: none !important
+	}
 }

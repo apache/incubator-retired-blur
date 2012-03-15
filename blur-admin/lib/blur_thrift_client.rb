@@ -8,8 +8,9 @@ class BlurThriftClient
     else
       urls = Array(host_port)
     end
-    blacklist_timeout = urls.size
-    blacklist_timeout = -1 if blacklist_timeout < 2
-    @@connections[urls] ||= ThriftClient.new Blur::Blur::Client, urls, :server_retry_period=> blacklist_timeout, :retries => 10
+    #blacklist_timeout = urls.size
+    #blacklist_timeout = -1 if blacklist_timeout < 2
+    #@@connections[urls] ||= ThriftClient.new Blur::Blur::Client, urls, :server_retry_period=> blacklist_timeout, :retries => 10
+    ThriftClient.new Blur::Blur::Client, urls, :retries => 10
   end
 end

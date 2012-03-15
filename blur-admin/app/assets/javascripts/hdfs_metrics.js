@@ -118,7 +118,7 @@ $(document).ready(function(){
 			var action = $(this).find('li.active > a').attr('href').slice(1);
 			var reqData = !hdfs_data[hdfs_id][action].largest_id !== null ?
 				{stat_id: hdfs_data[hdfs_id][action].largest_id} : {stat_mins: time_length};
-			request_data(hdfs_id, action, {stat_mins: reqData})
+			request_data(hdfs_id, action, reqData)
 		});
 		setTimeout(function(){
 			update_live_graphs()
@@ -133,7 +133,7 @@ $(document).ready(function(){
 
 	setTimeout(function(){
 		update_live_graphs()
-	}, 60000);
+	}, 5000);
 });
 
 

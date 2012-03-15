@@ -265,8 +265,8 @@ $(document).ready ->
       )
       $('.zookeeper_info:not(.updated), .hdfs_info:not(.updated)').remove()
 
-    # Sets auto updates to run every 5 secs
-    setTimeout(load_dashboard, 5000)
+      # Sets auto updates to run every 5 secs
+      setTimeout(load_dashboard, 5000)
 
   load_dashboard()
 

@@ -51,7 +51,7 @@ $(document).ready ->
 					hdfs_stat2.data.push [entry_date, point[request_options.stat_2]]
 				#if the reqdata object and the property stat id are set
 				#then we are updating old data
-				if req_data.stat_id
+				if req_data and req_data.stat_id
 					length = hdfs_stat1.data.length
 					hdfs_data[id][action].metrics[0].data.splice(0, length)
 					hdfs_data[id][action].metrics[1].data.splice(0, length)
@@ -89,7 +89,7 @@ $(document).ready ->
 		, 60000
 
 	$('.graph_instance').each ->
-		update_graphs(this, 1)
+		update_graphs(this, 5)
 
 	setTimeout ->
 		update_live_graphs()

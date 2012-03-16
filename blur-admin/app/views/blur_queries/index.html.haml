@@ -18,6 +18,7 @@
         - headers.push 'Table Name', 'Starting Record', 'Time Submitted', 'Status', 'State', 'Actions/Info'
         - headers.each do |header|
           %th
-            =header
-            =render :partial => 'icons'
+            .header_content
+              %div=header
+              =render :partial => 'icons'
     %tbody

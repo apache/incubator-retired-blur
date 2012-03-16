@@ -108,7 +108,7 @@ describe ZookeepersController do
 
       it 'renders the javascript redirect' do
         put :make_current
-        response.body.should include "window.location ="
+        response.body.should == ""
       end
     end
 

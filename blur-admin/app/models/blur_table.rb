@@ -16,7 +16,7 @@ class BlurTable < ActiveRecord::Base
   end
 
   def schema
-    if self.table_schema
+    if !self.table_schema.blank?
       # sort columns, and then sort column families
       if block_given?
         (JSON.parse self.table_schema).each{|n| n['columns'].sort_by!{|k| k['name']}}.sort &Proc.new

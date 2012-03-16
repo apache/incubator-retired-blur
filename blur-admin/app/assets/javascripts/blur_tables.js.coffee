@@ -62,9 +62,9 @@ $(document).ready ->
       row_html += "</td><td class='blur_table_name'>#{blur_table['table_name']}</td>"
       row.append(row_html) 
       if blur_table['has_queried_recently?']
-        row.find('.queries-running-icon').show()
+        row.find('.queries-running-icon').show().addClass('icon-visible')
       else
-        row.find('.queries-running-icon').hide()    
+        row.find('.queries-running-icon').hide().removeClass('icon-visible')    
       if table == 'active'
         host_html = "<td class='blur_table_hosts_shards'>"
         if blur_table['server']
@@ -115,7 +115,7 @@ $(document).ready ->
     clusters.each (index) ->
       cluster_id = $(this).attr('id')
       cluster_id = parseInt(cluster_id.substring(cluster_id.length - 1),10)
-      if $(".cluster[data-cluster_id='#{cluster_id}']").find('.queries-running-icon:visible').length > 0
+      if $(".cluster[data-cluster_id='#{cluster_id}']").find('.queries-running-icon.icon-visible').length > 0
         $(this).find('a .queries-running-icon').show()
       else
         $(this).find('a .queries-running-icon').hide()

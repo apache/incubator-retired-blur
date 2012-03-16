@@ -36,7 +36,7 @@ describe HdfsMetricsController do
       end
 
       it "put disk with stat_mins = 2 should return all within last 2 minutes" do
-        put :disk_cap_usage, :id => @hdfs.id, :stat_min => 2
+        put :disk_cap_usage, :id => @hdfs.id, :stat_mins => 2
         assigns(:results).length.should == 2
         response.content_type.should == 'application/json'
       end
@@ -66,7 +66,7 @@ describe HdfsMetricsController do
       end
 
       it "put disk with stat_mins = 2 should return all within last 2 minutes" do
-        put :live_dead_nodes, :id => @hdfs.id, :stat_min => 2
+        put :live_dead_nodes, :id => @hdfs.id, :stat_mins => 2
         assigns(:results).length.should == 2
         response.content_type.should == 'application/json'
       end
@@ -96,7 +96,7 @@ describe HdfsMetricsController do
       end
 
       it "put disk with stat_mins = 2 should return all within last 2 minutes" do
-        put :block_info, :id => @hdfs.id, :stat_min => 2
+        put :block_info, :id => @hdfs.id, :stat_mins => 2
         assigns(:results).length.should == 2
         response.content_type.should == 'application/json'
       end

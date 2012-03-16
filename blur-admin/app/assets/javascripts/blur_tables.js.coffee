@@ -143,7 +143,10 @@ $(document).ready ->
           for property in properties_to_update
             selected_row.find('blur_table_' + property).text(blur_table[property])  
           shard_info = get_host_shard_info(blur_table)
-
+          if blur_table['has_queried_recently?']
+            selected_row.find('.queries-running-icon').show().addClass('icon-visible')
+          else
+            selected_row.find('.queries-running-icon').hide().removeClass('icon-visible')   
           if blur_table['server']
             selected_row.find('blur_table_hosts_shards a').text(shard_info.hosts + "/" + shard_info.shards)
           else
@@ -168,7 +171,6 @@ $(document).ready ->
   # Function to initialize a filter tree on the passed in element
   $.ui.dynatree.nodedatadefaults["icon"] = false;
   setup_filter_tree = (selector) ->
-    console.log(selector)
     selector.dynatree()
 
   # Ajax request handling for hosts/schema link

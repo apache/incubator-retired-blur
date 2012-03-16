@@ -56,19 +56,29 @@
       }
     }
     th{
-      position: relative;
       cursor: pointer;
+			margin-right: 10px;
+			.header_content {
+				position: relative;
+				div {
+					display: inline-block;
+					margin-right: 10px;
+				}
+			}
 
       &.headerSortDown{
         .icon-chevron-up{ display: none; }
+				.icon-chevron-down{ display: block; }
       }
 
       &.headerSortUp{
+				.icon-chevron-up{ display: block; }
         .icon-chevron-down{ display: none; }
       }
 
       i{
         position:absolute;
+				display: none;
         &.icon-chevron-up{
           top: 5px;
           right: 10px;

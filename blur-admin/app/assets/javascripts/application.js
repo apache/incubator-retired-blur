@@ -12,6 +12,9 @@ $(document).ready(function(){
   $('#zookeeper_id').live('change', function(){
     $(this).closest('form').submit();
   });
+	$('#change_current_zookeeper').bind('ajax:success', function() {
+		window.location.reload();
+	});
         
   //fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow");
@@ -78,7 +81,7 @@ $(document).ready(function(){
       {
         var select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>";
         $.each(Zookeeper.instances, function(){
-          select_box += "<option value='#{this.id}'>#{this.name}</option>";
+          select_box += "<option value='" + this.id + "'>" + this.name + "</option>";
         });
         select_box += "</select></div>" ;
         $().popup({
@@ -90,7 +93,9 @@ $(document).ready(function(){
               {
                 type: 'put',
                 data:{ id: $(this).val() },
-                success: function(){ window.location = self.href; }
+                success: function(){ 
+									window.location = self.href; 
+								}
               });
               $().closePopup();
             });

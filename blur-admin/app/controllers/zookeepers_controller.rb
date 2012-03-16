@@ -57,10 +57,10 @@ class ZookeepersController < ApplicationController
     zookeeper_results = []
     connection = ActiveRecord::Base.connection()
     connection.execute(QUERY).each(:as => :hash) { |row| zookeeper_results << row }
-    hdfs= Hdfs.all.collect do |h|
-        hdfs_hash = JSON(h.to_json)
-        hdfs_hash['stats'] = JSON(h.hdfs_stats.last.to_json) unless h.hdfs_stats.blank?
-        hdfs_hash
+    hdfs = Hdfs.all.collect do |h|
+      hdfs_hash = h.serializable_hash
+      hdfs_hash[:stats] =  h.hdfs_stats.last
+      hdfs_hash
     end
     render :json => {"zookeeper_data" => zookeeper_results, "hdfs_data" => hdfs}
   end

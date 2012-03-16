@@ -22,7 +22,7 @@ class HdfsMetricsController < ApplicationController
   def hdfs_stat_select(properties)
     hdfs = Hdfs.find params[:id]
     properties = [:id, :created_at] + properties
-    minutes = params[:stat_min].nil? ? 1 : params[:stat_min].to_i
+    minutes = params[:stat_mins].nil? ? 1 : params[:stat_mins].to_i
     where_clause = params[:stat_id] ? "id > #{params[:stat_id]}" : "created_at >= '#{minutes.minute.ago}'"
     return hdfs.hdfs_stats.where(where_clause).select(properties)
   end

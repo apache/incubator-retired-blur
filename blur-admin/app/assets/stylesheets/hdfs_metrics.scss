@@ -29,16 +29,6 @@ $graph_height: $instance_height - $title_height;
 	.graph_instance{
 		position: relative;
 		height: $instance_height;
-		&:first-child{
-			.graph_title{ 
-				//COMPASS==@include border-top-radius(10px) 
-			}
-		}
-		&:last-child{
-			.graph_content{ 
-				//COMPASS==@include border-bottom-radius(10px) 
-			}
-		}
 		&:not(:last-child){
 			.graph_content{
 				border-bottom: none;
@@ -70,10 +60,10 @@ $graph_height: $instance_height - $title_height;
 				width: 100%;
 				padding: 10px 10px 0 3%;
 				.graph{
-					margin: 5px 5px 5px 230px;
+					margin: 5px 5px 5px 5px;
 					height: $graph_height - 20;
 					.base{
-						position: absolute;
+						//position: absolute;
 					}
 				}
 			}

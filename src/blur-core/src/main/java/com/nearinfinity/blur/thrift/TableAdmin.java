@@ -15,6 +15,7 @@ import com.nearinfinity.blur.manager.indexserver.utils.EnableTable;
 import com.nearinfinity.blur.manager.indexserver.utils.RemoveTable;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
+import com.nearinfinity.blur.thrift.generated.TableStats;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 
 public abstract class TableAdmin implements Iface {
@@ -22,6 +23,11 @@ public abstract class TableAdmin implements Iface {
   private static final Log LOG = LogFactory.getLog(TableAdmin.class);
   protected ZooKeeper _zookeeper;
   protected ClusterStatus _clusterStatus;
+  
+  @Override
+  public TableStats getTableStats(String table) throws BlurException, TException {
+    return tableStats(table);
+  }
 
   @Override
   public boolean isInSafeMode(String cluster) throws BlurException, TException {

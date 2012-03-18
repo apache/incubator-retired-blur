@@ -235,6 +235,22 @@ require 'blur_types'
             raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'getTableStats failed: unknown result')
           end
 
+          def tableStats(table)
+            send_tableStats(table)
+            return recv_tableStats()
+          end
+
+          def send_tableStats(table)
+            send_message('tableStats', TableStats_args, :table => table)
+          end
+
+          def recv_tableStats()
+            result = receive_message(TableStats_result)
+            return result.success unless result.success.nil?
+            raise result.ex unless result.ex.nil?
+            raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'tableStats failed: unknown result')
+          end
+
           def terms(table, columnFamily, columnName, startWith, size)
             send_terms(table, columnFamily, columnName, startWith, size)
             return recv_terms()
@@ -561,6 +577,17 @@ require 'blur_types'
               result.ex = ex
             end
             write_result(result, oprot, 'getTableStats', seqid)
+          end
+
+          def process_tableStats(seqid, iprot, oprot)
+            args = read_args(iprot, TableStats_args)
+            result = TableStats_result.new()
+            begin
+              result.success = @handler.tableStats(args.table)
+            rescue Blur::BlurException => ex
+              result.ex = ex
+            end
+            write_result(result, oprot, 'tableStats', seqid)
           end
 
           def process_terms(seqid, iprot, oprot)
@@ -1148,6 +1175,40 @@ require 'blur_types'
         end
 
         class GetTableStats_result
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          SUCCESS = 0
+          EX = 1
+
+          FIELDS = {
+            SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => Blur::TableStats},
+            EX => {:type => ::Thrift::Types::STRUCT, :name => 'ex', :class => Blur::BlurException}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class TableStats_args
+          include ::Thrift::Struct, ::Thrift::Struct_Union
+          TABLE = 1
+
+          FIELDS = {
+            TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'}
+          }
+
+          def struct_fields; FIELDS; end
+
+          def validate
+          end
+
+          ::Thrift::Struct.generate_accessors self
+        end
+
+        class TableStats_result
           include ::Thrift::Struct, ::Thrift::Struct_Union
           SUCCESS = 0
           EX = 1

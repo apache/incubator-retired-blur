@@ -34,6 +34,7 @@
 <li><a href="Blur.html#Fn_Blur_shardServerList">shardServerList</a></li>
 <li><a href="Blur.html#Fn_Blur_tableList">tableList</a></li>
 <li><a href="Blur.html#Fn_Blur_tableListByCluster">tableListByCluster</a></li>
+<li><a href="Blur.html#Fn_Blur_tableStats">tableStats</a></li>
 <li><a href="Blur.html#Fn_Blur_terms">terms</a></li>
 </ul>
 </td>
@@ -71,8 +72,11 @@
 </tr></table>
 <hr/><h2 id="Enumerations">Enumerations</h2>
 <div class="definition"><h3 id="Enum_ScoreType">Enumeration: ScoreType</h3>
-The scoring type used during a SuperQuery to score multi Record
-hits within a ColumnFamily.
+The scoring type used during a SuperQuery to score multi Record hits within a ColumnFamily.<br/><br/>
+SUPER - During a multi Record match, a calculation of the best match Record plus how often it occurs within the match Row produces the score that is used in the scoring of the SuperQuery.<br/><br/>
+AGGREGATE - During a multi Record match, the aggregate score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
+BEST - During a multi Record match, the best score of all the Records within a ColumnFamily is used in the scoring of the SuperQuery.<br/><br/>
+CONSTANT - A constant score of 1 is used in the scoring of the SuperQuery.<br/>
 <br/><br/><table>
 <tr><td><code>SUPER</code></td><td><code>0</code></td></tr>
 <tr><td><code>AGGREGATE</code></td><td><code>1</code></td></tr>
@@ -80,23 +84,31 @@ hits within a ColumnFamily.
 <tr><td><code>CONSTANT</code></td><td><code>3</code></td></tr>
 </table></div>
 <div class="definition"><h3 id="Enum_QueryState">Enumeration: QueryState</h3>
-The state of a query.
+The state of a query.<br/><br/>
+RUNNING - Query is running.<br/><br/>
+INTERRUPTED - Query has been interrupted.<br/><br/>
+COMPLETE - Query is complete.<br/>
 <br/><br/><table>
 <tr><td><code>RUNNING</code></td><td><code>0</code></td></tr>
 <tr><td><code>INTERRUPTED</code></td><td><code>1</code></td></tr>
 <tr><td><code>COMPLETE</code></td><td><code>2</code></td></tr>
 </table></div>
 <div class="definition"><h3 id="Enum_RowMutationType">Enumeration: RowMutationType</h3>
-Specifies the type of Row mutation that should occur during
-a mutation of a given Row.
+Specifies the type of Row mutation that should occur during a mutation of a given Row.<br/><br/>
+DELETE_ROW - Indicates that the entire Row is to be deleted.  No changes are made if the specified row does not exist.<br/><br/>
+REPLACE_ROW - Indicates that the entire Row is to be deleted, and then a new Row with the same id is to be added.  If the specified row does not exist, the new row will still be created.<br/><br/>
+UPDATE_ROW - Indicates that mutations of the underlying Records will be processed individually.  Mutation will result in a BlurException if the specified row does not exist.<br/>
 <br/><br/><table>
 <tr><td><code>DELETE_ROW</code></td><td><code>0</code></td></tr>
 <tr><td><code>REPLACE_ROW</code></td><td><code>1</code></td></tr>
 <tr><td><code>UPDATE_ROW</code></td><td><code>2</code></td></tr>
 </table></div>
 <div class="definition"><h3 id="Enum_RecordMutationType">Enumeration: RecordMutationType</h3>
-Specifies the type of Record mutation that should occur during
-a mutation of a given Record.
+Specifies the type of Record mutation that should occur during a mutation of a given Record.<br/><br/>
+DELETE_ENTIRE_RECORD -  Indicates the Record with the given recordId in the given Row is to be deleted.  If the target record does not exist, then no changes are made.<br/><br/>
+REPLACE_ENTIRE_RECORD - Indicates the Record with the given recordId in the given Row is to be deleted, and a new Record with the same id is to be added. If the specified record does not exist the new record is still added.<br/><br/>
+REPLACE_COLUMNS - Replace the columns that are specified in the Record mutation.  If the target record does not exist then this mutation will result in a BlurException.<br/><br/>
+APPEND_COLUMN_VALUES - Append the columns in the Record mutation to the Record that could already exist.  If the target record does not exist then this mutation will result in a BlurException.<br/>
 <br/><br/><table>
 <tr><td><code>DELETE_ENTIRE_RECORD</code></td><td><code>0</code></td></tr>
 <tr><td><code>REPLACE_ENTIRE_RECORD</code></td><td><code>1</code></td></tr>
@@ -141,13 +153,20 @@ through records of a row, this count will reflect the entire row.
 </table><br/>Rows contain a list of records.
 <br/></div><div class="definition"><h3 id="Struct_Selector">Struct: Selector</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>recordOnly</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>locationId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>rowId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>recordId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>set&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>7</td><td>allowStaleData</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>recordOnly</td><td><code>bool</code></td><td>Fetch the Record only, not the entire Row.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>locationId</td><td><code>string</code></td><td>The location id of the Record or Row to be fetched.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>rowId</td><td><code>string</code></td><td>The row id of the Row to be fetched, not to be used with location id.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>recordId</td><td><code>string</code></td><td>The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>columnFamiliesToFetch</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>The column families to fetch.  If null, fetch all.  If empty, fetch none.
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>columnsToFetch</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+</td><td>default</td><td></td></tr>
+<tr><td>7</td><td>allowStaleData</td><td><code>bool</code></td><td>@deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
+</td><td>default</td><td></td></tr>
 </table><br/>Select carries the request for information to be retrieved from the stored columns.
 <br/></div><div class="definition"><h3 id="Struct_FetchRowResult">Struct: FetchRowResult</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
@@ -216,12 +235,16 @@ through records of a row, this count will reflect the entire row.
 <tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td></td><td>default</td><td></td></tr>
 </table><br/></div><div class="definition"><h3 id="Struct_RowMutation">Struct: RowMutation</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>table</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>rowId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>wal</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
+<tr><td>1</td><td>table</td><td><code>string</code></td><td>The that that the row mutation is to act upon.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>rowId</td><td><code>string</code></td><td>The row id that the row mutation is to act upon.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>wal</td><td><code>bool</code></td><td>Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
+</td><td>default</td><td>1</td></tr>
 <tr><td>4</td><td>rowMutationType</td><td><code><a href="Blur.html#Enum_RowMutationType">RowMutationType</a></code></td><td></td><td>default</td><td></td></tr>
 <tr><td>5</td><td>recordMutations</td><td><code>list&lt;<code><a href="Blur.html#Struct_RecordMutation">RecordMutation</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>6</td><td>waitToBeVisible</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>6</td><td>waitToBeVisible</td><td><code>bool</code></td><td>On mutate waits for the mutation to be visible to queries and fetch requests.
+</td><td>default</td><td>0</td></tr>
 </table><br/></div><div class="definition"><h3 id="Struct_CpuTime">Struct: CpuTime</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
 <tr><td>1</td><td>cpuTime</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
@@ -281,47 +304,74 @@ through records of a row, this count will reflect the entire row.
 <div class="definition"><h4 id="Fn_Blur_shardClusterList">Function: Blur.shardClusterList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> shardClusterList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_shardServerList">Function: Blur.shardServerList</h4>
+</pre>Returns a list of all the shard clusters.
+<br/></div><div class="definition"><h4 id="Fn_Blur_shardServerList">Function: Blur.shardServerList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> shardServerList(<code>string</code> cluster)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_controllerServerList">Function: Blur.controllerServerList</h4>
+</pre>Returns a list of all the shard servers for the given cluster.
+@param cluster the cluster name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_controllerServerList">Function: Blur.controllerServerList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> controllerServerList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_shardServerLayout">Function: Blur.shardServerLayout</h4>
+</pre>Returns a list of all the controller servers.
+<br/></div><div class="definition"><h4 id="Fn_Blur_shardServerLayout">Function: Blur.shardServerLayout</h4>
 <pre><code>map&lt;<code>string</code>, <code>string</code>&gt;</code> shardServerLayout(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_tableList">Function: Blur.tableList</h4>
+</pre>Returns a map of the layout of the given table, where the key is the shard name and the value is the shard server.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_tableList">Function: Blur.tableList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> tableList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_tableListByCluster">Function: Blur.tableListByCluster</h4>
+</pre>Returns a list of the table names across all shard clusters.
+<br/></div><div class="definition"><h4 id="Fn_Blur_tableListByCluster">Function: Blur.tableListByCluster</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> tableListByCluster(<code>string</code> cluster)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_describe">Function: Blur.describe</h4>
+</pre>Returns a list of the table names for the given cluster.
+@param cluster the cluster name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_describe">Function: Blur.describe</h4>
 <pre><code><a href="Blur.html#Struct_TableDescriptor">TableDescriptor</a></code> describe(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
+</pre>Returns a table descriptor for the given table.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_query">Function: Blur.query</h4>
 <pre><code><a href="Blur.html#Struct_BlurResults">BlurResults</a></code> query(<code>string</code> table,
                   <code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code> blurQuery)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>
+</pre>Executes a query against a the given table and returns the results.  If this method is executed against a controller the results will contain the aggregated results from all the shards.  If this method is executed against a shard server the results will only contain aggregated results from the shards of the given table that are being served on the shard server, if any.
+@param table the table name.
+@param blurQuery the query to execute.
+<br/></div><div class="definition"><h4 id="Fn_Blur_cancelQuery">Function: Blur.cancelQuery</h4>
 <pre><code>void</code> cancelQuery(<code>string</code> table,
                  <code>i64</code> uuid)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_currentQueries">Function: Blur.currentQueries</h4>
+</pre>Cancels a query that is executing against the given table with the given uuid.  Note, the cancel call maybe take some time for the query actually stops executing.
+@param table the table name.
+@param uuid the uuid of the query.
+<br/></div><div class="definition"><h4 id="Fn_Blur_currentQueries">Function: Blur.currentQueries</h4>
 <pre><code>list&lt;<code><a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a></code>&gt;</code> currentQueries(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_queryStatusIdList">Function: Blur.queryStatusIdList</h4>
+</pre>@deprecated This method should avoided, @see #queryStatusIdList and #queryStatusById.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_queryStatusIdList">Function: Blur.queryStatusIdList</h4>
 <pre><code>list&lt;<code>i64</code>&gt;</code> queryStatusIdList(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_queryStatusById">Function: Blur.queryStatusById</h4>
+</pre>Returns a list of the query ids of queries that have recently been executed for the given table.
+@param table the table name.
+<br/></div><div class="definition"><h4 id="Fn_Blur_queryStatusById">Function: Blur.queryStatusById</h4>
 <pre><code><a href="Blur.html#Struct_BlurQueryStatus">BlurQueryStatus</a></code> queryStatusById(<code>string</code> table,
                                 <code>i64</code> uuid)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
-</pre></div><div class="definition"><h4 id="Fn_Blur_schema">Function: Blur.schema</h4>
+</pre>Returns the query status for the given table and query uuid.
+@param table the table name.
+@param uuid the uuid of the query.
+<br/></div><div class="definition"><h4 id="Fn_Blur_schema">Function: Blur.schema</h4>
 <pre><code><a href="Blur.html#Struct_Schema">Schema</a></code> schema(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div><div class="definition"><h4 id="Fn_Blur_getTableStats">Function: Blur.getTableStats</h4>
 <pre><code><a href="Blur.html#Struct_TableStats">TableStats</a></code> getTableStats(<code>string</code> table)
+    throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
+</pre></div><div class="definition"><h4 id="Fn_Blur_tableStats">Function: Blur.tableStats</h4>
+<pre><code><a href="Blur.html#Struct_TableStats">TableStats</a></code> tableStats(<code>string</code> table)
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre></div><div class="definition"><h4 id="Fn_Blur_terms">Function: Blur.terms</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> terms(<code>string</code> table,

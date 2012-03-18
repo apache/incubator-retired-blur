@@ -136,7 +136,7 @@ public class BlurShardServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public TableStats getTableStats(String table) throws BlurException, TException {
+  public TableStats tableStats(String table) throws BlurException, TException {
     checkTable(_cluster, table);
     try {
       TableStats tableStats = new TableStats();

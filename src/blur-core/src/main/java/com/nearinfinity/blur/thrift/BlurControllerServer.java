@@ -412,7 +412,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   @Override
-  public TableStats getTableStats(final String table) throws BlurException, TException {
+  public TableStats tableStats(final String table) throws BlurException, TException {
     checkTable(table);
     try {
       return scatterGather(getCluster(table), new BlurCommand<TableStats>() {

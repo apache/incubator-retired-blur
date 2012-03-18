@@ -30,8 +30,17 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   private static final org.apache.thrift.protocol.TField RECORD_MUTATIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("recordMutations", org.apache.thrift.protocol.TType.LIST, (short)5);
   private static final org.apache.thrift.protocol.TField WAIT_TO_BE_VISIBLE_FIELD_DESC = new org.apache.thrift.protocol.TField("waitToBeVisible", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
+  /**
+   * The that that the row mutation is to act upon.
+   */
   public String table; // required
+  /**
+   * The row id that the row mutation is to act upon.
+   */
   public String rowId; // required
+  /**
+   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
+   */
   public boolean wal; // required
   /**
    * 
@@ -39,12 +48,24 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
    */
   public RowMutationType rowMutationType; // required
   public List<RecordMutation> recordMutations; // required
+  /**
+   * On mutate waits for the mutation to be visible to queries and fetch requests.
+   */
   public boolean waitToBeVisible; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The that that the row mutation is to act upon.
+     */
     TABLE((short)1, "table"),
+    /**
+     * The row id that the row mutation is to act upon.
+     */
     ROW_ID((short)2, "rowId"),
+    /**
+     * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
+     */
     WAL((short)3, "wal"),
     /**
      * 
@@ -52,6 +73,9 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
      */
     ROW_MUTATION_TYPE((short)4, "rowMutationType"),
     RECORD_MUTATIONS((short)5, "recordMutations"),
+    /**
+     * On mutate waits for the mutation to be visible to queries and fetch requests.
+     */
     WAIT_TO_BE_VISIBLE((short)6, "waitToBeVisible");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -146,6 +170,8 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
   public RowMutation() {
     this.wal = true;
 
+    this.waitToBeVisible = false;
+
   }
 
   public RowMutation(
@@ -205,14 +231,20 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
 
     this.rowMutationType = null;
     this.recordMutations = null;
-    setWaitToBeVisibleIsSet(false);
     this.waitToBeVisible = false;
+
   }
 
+  /**
+   * The that that the row mutation is to act upon.
+   */
   public String getTable() {
     return this.table;
   }
 
+  /**
+   * The that that the row mutation is to act upon.
+   */
   public RowMutation setTable(String table) {
     this.table = table;
     return this;
@@ -233,10 +265,16 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     }
   }
 
+  /**
+   * The row id that the row mutation is to act upon.
+   */
   public String getRowId() {
     return this.rowId;
   }
 
+  /**
+   * The row id that the row mutation is to act upon.
+   */
   public RowMutation setRowId(String rowId) {
     this.rowId = rowId;
     return this;
@@ -257,10 +295,16 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     }
   }
 
+  /**
+   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
+   */
   public boolean isWal() {
     return this.wal;
   }
 
+  /**
+   * Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
+   */
   public RowMutation setWal(boolean wal) {
     this.wal = wal;
     setWalIsSet(true);
@@ -351,10 +395,16 @@ public class RowMutation implements org.apache.thrift.TBase<RowMutation, RowMuta
     }
   }
 
+  /**
+   * On mutate waits for the mutation to be visible to queries and fetch requests.
+   */
   public boolean isWaitToBeVisible() {
     return this.waitToBeVisible;
   }
 
+  /**
+   * On mutate waits for the mutation to be visible to queries and fetch requests.
+   */
   public RowMutation setWaitToBeVisible(boolean waitToBeVisible) {
     this.waitToBeVisible = waitToBeVisible;
     setWaitToBeVisibleIsSet(true);

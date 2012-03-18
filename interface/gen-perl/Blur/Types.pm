@@ -1908,7 +1908,7 @@ sub new {
   $self->{wal} = 1;
   $self->{rowMutationType} = undef;
   $self->{recordMutations} = undef;
-  $self->{waitToBeVisible} = undef;
+  $self->{waitToBeVisible} = 0;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{table}) {
       $self->{table} = $vals->{table};

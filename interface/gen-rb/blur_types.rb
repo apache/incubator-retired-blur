@@ -7,68 +7,34 @@
 
 module Blur
     module ScoreType
-      # During a multi Record match, a calculation of the best match
-      # Record plus how often it occurs within the match Row produces
-      # the score that is used in the scoring of the SuperQuery.
       SUPER = 0
-      # During a multi Record match, the aggregate score of all the
-      # Records within a ColumnFamily is used in the scoring of the
-      # SuperQuery.
       AGGREGATE = 1
-      # During a multi Record match, the best score of all the
-      # Records within a ColumnFamily is used in the scoring of the
-      # SuperQuery.
       BEST = 2
-      # A constant score of 1 is used in the scoring of the SuperQuery.
       CONSTANT = 3
       VALUE_MAP = {0 => "SUPER", 1 => "AGGREGATE", 2 => "BEST", 3 => "CONSTANT"}
       VALID_VALUES = Set.new([SUPER, AGGREGATE, BEST, CONSTANT]).freeze
     end
 
     module QueryState
-      # Query is running.
       RUNNING = 0
-      # Query has been interrupted.
       INTERRUPTED = 1
-      # Query is complete.
       COMPLETE = 2
       VALUE_MAP = {0 => "RUNNING", 1 => "INTERRUPTED", 2 => "COMPLETE"}
       VALID_VALUES = Set.new([RUNNING, INTERRUPTED, COMPLETE]).freeze
     end
 
     module RowMutationType
-      # Indicates that the entire Row is to be deleted.  No changes are
-      # made if the specified row does not exist.
       DELETE_ROW = 0
-      # Indicates that the entire Row is to be deleted, and then a new
-      # Row with the same id is to be added.  If the specified row does
-      # not exist, the new row will still be created.
       REPLACE_ROW = 1
-      # Indicates that mutations of the underlying Records will be
-      # processed individually.  Mutation will result in a BlurException
-      # if the specified row does not exist.
       UPDATE_ROW = 2
       VALUE_MAP = {0 => "DELETE_ROW", 1 => "REPLACE_ROW", 2 => "UPDATE_ROW"}
       VALID_VALUES = Set.new([DELETE_ROW, REPLACE_ROW, UPDATE_ROW]).freeze
     end
 
     module RecordMutationType
-      # Indicates the Record with the given recordId in the given Row
-      # is to be deleted.  If the target record does not exist, then
-      # no changes are made.
       DELETE_ENTIRE_RECORD = 0
-      # Indicates the Record with the given recordId in the given Row
-      # is to be deleted, and a new Record with the same id is to be added.
-      # If the specified record does not exist the new record is still
-      # added.
       REPLACE_ENTIRE_RECORD = 1
-      # Replace the columns that are specified in the Record mutation.  If
-      # the target record does not exist then this mutation will result in
-      # a BlurException.
       REPLACE_COLUMNS = 2
-      # Append the columns in the Record mutation to the Record that
-      # could already exist.  If the target record does not exist then this
-      # mutation will result in a BlurException.
       APPEND_COLUMN_VALUES = 3
       VALUE_MAP = {0 => "DELETE_ENTIRE_RECORD", 1 => "REPLACE_ENTIRE_RECORD", 2 => "REPLACE_COLUMNS", 3 => "APPEND_COLUMN_VALUES"}
       VALID_VALUES = Set.new([DELETE_ENTIRE_RECORD, REPLACE_ENTIRE_RECORD, REPLACE_COLUMNS, APPEND_COLUMN_VALUES]).freeze
@@ -179,12 +145,19 @@ module Blur
       ALLOWSTALEDATA = 7
 
       FIELDS = {
+        # Fetch the Record only, not the entire Row.
         RECORDONLY => {:type => ::Thrift::Types::BOOL, :name => 'recordOnly'},
+        # The location id of the Record or Row to be fetched.
         LOCATIONID => {:type => ::Thrift::Types::STRING, :name => 'locationId'},
+        # The row id of the Row to be fetched, not to be used with location id.
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
+        # The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
         RECORDID => {:type => ::Thrift::Types::STRING, :name => 'recordId'},
+        # The column families to fetch.  If null, fetch all.  If empty, fetch none.
         COLUMNFAMILIESTOFETCH => {:type => ::Thrift::Types::SET, :name => 'columnFamiliesToFetch', :element => {:type => ::Thrift::Types::STRING}},
+        # The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
         COLUMNSTOFETCH => {:type => ::Thrift::Types::MAP, :name => 'columnsToFetch', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::SET, :element => {:type => ::Thrift::Types::STRING}}},
+        # @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
         ALLOWSTALEDATA => {:type => ::Thrift::Types::BOOL, :name => 'allowStaleData'}
       }
 
@@ -440,12 +413,16 @@ module Blur
       WAITTOBEVISIBLE = 6
 
       FIELDS = {
+        # The that that the row mutation is to act upon.
         TABLE => {:type => ::Thrift::Types::STRING, :name => 'table'},
+        # The row id that the row mutation is to act upon.
         ROWID => {:type => ::Thrift::Types::STRING, :name => 'rowId'},
+        # Write ahead log, by default all updates are written to a write ahead log before the update is applied.  That way if a failure occurs before the index is committed the WAL can be replayed to recover any data that could have been lost.
         WAL => {:type => ::Thrift::Types::BOOL, :name => 'wal', :default => true},
         ROWMUTATIONTYPE => {:type => ::Thrift::Types::I32, :name => 'rowMutationType', :enum_class => Blur::RowMutationType},
         RECORDMUTATIONS => {:type => ::Thrift::Types::LIST, :name => 'recordMutations', :element => {:type => ::Thrift::Types::STRUCT, :class => Blur::RecordMutation}},
-        WAITTOBEVISIBLE => {:type => ::Thrift::Types::BOOL, :name => 'waitToBeVisible'}
+        # On mutate waits for the mutation to be visible to queries and fetch requests.
+        WAITTOBEVISIBLE => {:type => ::Thrift::Types::BOOL, :name => 'waitToBeVisible', :default => false}
       }
 
       def struct_fields; FIELDS; end

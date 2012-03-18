@@ -34,22 +34,64 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
   private static final org.apache.thrift.protocol.TField COLUMNS_TO_FETCH_FIELD_DESC = new org.apache.thrift.protocol.TField("columnsToFetch", org.apache.thrift.protocol.TType.MAP, (short)6);
   private static final org.apache.thrift.protocol.TField ALLOW_STALE_DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("allowStaleData", org.apache.thrift.protocol.TType.BOOL, (short)7);
 
+  /**
+   * Fetch the Record only, not the entire Row.
+   */
   public boolean recordOnly; // required
+  /**
+   * The location id of the Record or Row to be fetched.
+   */
   public String locationId; // required
+  /**
+   * The row id of the Row to be fetched, not to be used with location id.
+   */
   public String rowId; // required
+  /**
+   * The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
+   */
   public String recordId; // required
+  /**
+   * The column families to fetch.  If null, fetch all.  If empty, fetch none.
+   */
   public Set<String> columnFamiliesToFetch; // required
+  /**
+   * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+   */
   public Map<String,Set<String>> columnsToFetch; // required
+  /**
+   * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
+   */
   public boolean allowStaleData; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * Fetch the Record only, not the entire Row.
+     */
     RECORD_ONLY((short)1, "recordOnly"),
+    /**
+     * The location id of the Record or Row to be fetched.
+     */
     LOCATION_ID((short)2, "locationId"),
+    /**
+     * The row id of the Row to be fetched, not to be used with location id.
+     */
     ROW_ID((short)3, "rowId"),
+    /**
+     * The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
+     */
     RECORD_ID((short)4, "recordId"),
+    /**
+     * The column families to fetch.  If null, fetch all.  If empty, fetch none.
+     */
     COLUMN_FAMILIES_TO_FETCH((short)5, "columnFamiliesToFetch"),
+    /**
+     * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+     */
     COLUMNS_TO_FETCH((short)6, "columnsToFetch"),
+    /**
+     * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
+     */
     ALLOW_STALE_DATA((short)7, "allowStaleData");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -233,10 +275,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.allowStaleData = false;
   }
 
+  /**
+   * Fetch the Record only, not the entire Row.
+   */
   public boolean isRecordOnly() {
     return this.recordOnly;
   }
 
+  /**
+   * Fetch the Record only, not the entire Row.
+   */
   public Selector setRecordOnly(boolean recordOnly) {
     this.recordOnly = recordOnly;
     setRecordOnlyIsSet(true);
@@ -256,10 +304,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     __isset_bit_vector.set(__RECORDONLY_ISSET_ID, value);
   }
 
+  /**
+   * The location id of the Record or Row to be fetched.
+   */
   public String getLocationId() {
     return this.locationId;
   }
 
+  /**
+   * The location id of the Record or Row to be fetched.
+   */
   public Selector setLocationId(String locationId) {
     this.locationId = locationId;
     return this;
@@ -280,10 +334,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
   }
 
+  /**
+   * The row id of the Row to be fetched, not to be used with location id.
+   */
   public String getRowId() {
     return this.rowId;
   }
 
+  /**
+   * The row id of the Row to be fetched, not to be used with location id.
+   */
   public Selector setRowId(String rowId) {
     this.rowId = rowId;
     return this;
@@ -304,10 +364,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
   }
 
+  /**
+   * The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
+   */
   public String getRecordId() {
     return this.recordId;
   }
 
+  /**
+   * The record id of the Record to be fetched, not to be used with location id.  However the row id needs to be provided to locate the correct Row with the requested Record.
+   */
   public Selector setRecordId(String recordId) {
     this.recordId = recordId;
     return this;
@@ -343,10 +409,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.columnFamiliesToFetch.add(elem);
   }
 
+  /**
+   * The column families to fetch.  If null, fetch all.  If empty, fetch none.
+   */
   public Set<String> getColumnFamiliesToFetch() {
     return this.columnFamiliesToFetch;
   }
 
+  /**
+   * The column families to fetch.  If null, fetch all.  If empty, fetch none.
+   */
   public Selector setColumnFamiliesToFetch(Set<String> columnFamiliesToFetch) {
     this.columnFamiliesToFetch = columnFamiliesToFetch;
     return this;
@@ -378,10 +450,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     this.columnsToFetch.put(key, val);
   }
 
+  /**
+   * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+   */
   public Map<String,Set<String>> getColumnsToFetch() {
     return this.columnsToFetch;
   }
 
+  /**
+   * The columns in the families to fetch.  If null, fetch all.  If empty, fetch none.
+   */
   public Selector setColumnsToFetch(Map<String,Set<String>> columnsToFetch) {
     this.columnsToFetch = columnsToFetch;
     return this;
@@ -402,10 +480,16 @@ public class Selector implements org.apache.thrift.TBase<Selector, Selector._Fie
     }
   }
 
+  /**
+   * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
+   */
   public boolean isAllowStaleData() {
     return this.allowStaleData;
   }
 
+  /**
+   * @deprecated This value is no longer used.  This allows the fetch to see the most current data that has been added to the table.
+   */
   public Selector setAllowStaleData(boolean allowStaleData) {
     this.allowStaleData = allowStaleData;
     setAllowStaleDataIsSet(true);

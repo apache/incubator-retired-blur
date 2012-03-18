@@ -160,4 +160,9 @@ public class DoNothingServer implements Iface {
   public boolean isInSafeMode(String cluster) throws BlurException, TException {
     return false;
   }
+
+  @Override
+  public TableStats tableStats(String table) throws BlurException, TException {
+    return null;
+  }
 }

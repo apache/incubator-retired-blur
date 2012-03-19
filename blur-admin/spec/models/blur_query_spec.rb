@@ -28,6 +28,14 @@ describe BlurQuery do
     end
   end
 
+  describe 'zookeeper' do
+    it 'should return the zookeeper associated with this query' do 
+      @zoo_with_query = FactoryGirl.create :zookeeper_with_blur_query
+      @zooquery = @zoo_with_query.blur_queries[0]
+      @zooquery.zookeeper.should == @zoo_with_query
+    end
+  end
+
   describe 'state string' do
     it 'should return running when the state is 0' do
       @query.state = 0
@@ -92,6 +100,18 @@ describe BlurQuery do
         @query.total_shards = 4
         @query.complete_shards = 2
         @query.summary(@user)[:status].should == '50%'
+      end
+
+      it 'should return the percent complete and interrupted if the state is 1' do
+        @query.state = 1
+        @query.total_shards = 4
+        @query.complete_shards = 2
+        @query.summary(@user)[:status].should == '(Interrupted) - 50%'
+      end
+
+      it 'should return complete if the state is 2' do
+        @query.state = 2
+        @query.summary(@user)[:status].should == 'Complete'
       end
     end
   end

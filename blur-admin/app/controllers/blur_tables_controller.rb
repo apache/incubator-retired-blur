@@ -74,13 +74,8 @@ class BlurTablesController < ApplicationController
     def render_table_json
       tables = @current_zookeeper.blur_tables.order('table_name ASC')
       clusters = @current_zookeeper.clusters.order('name')
-      # this doesn't work since has_queried_recently is on the tables, not the hash, so doing it the hard way
-      #render :json => {:clusters=>clusters, :tables=>tables}, :methods => [:has_queried_recently?]
-      json = '{"clusters":'
-      json += clusters.to_json
-      json += ',"tables":'
-      json += tables.to_json(:except=>[:table_schema,:server,:table_analyzer],:methods=>[:has_queried_recently?])
-      json += '}'
-      render :json=>json
+      json = '{"clusters":' + clusters.to_json
+      json += ',"tables":' + tables.to_json(:except => [:table_schema, :table_analyzer], :methods => [:has_queried_recently?]) + '}'
+      render :json => json
     end
 end

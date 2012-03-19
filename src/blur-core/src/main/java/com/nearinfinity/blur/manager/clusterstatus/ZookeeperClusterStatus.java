@@ -255,6 +255,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
       private void doWatch() throws KeeperException, InterruptedException {
         synchronized (_enabledMap) {
+          _tableDescriptorCache.clear();
           String clusterPath = ZookeeperPathConstants.getClustersPath();
           List<String> clusters = _zk.getChildren(forPathToExist(clusterPath), _watcher);
           for (String cluster : clusters) {
@@ -390,9 +391,17 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
     return true;
   }
+  
+  private Map<String,TableDescriptor> _tableDescriptorCache = new ConcurrentHashMap<String, TableDescriptor>();
 
   @Override
   public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
+    if (useCache) {
+      TableDescriptor tableDescriptor = _tableDescriptorCache.get(cluster +"/" + table);
+      if (tableDescriptor != null) {
+        return tableDescriptor;
+      }
+    }
     LOG.info("trace getTableDescriptor");
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
@@ -421,11 +430,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     tableDescriptor.cluster = cluster;
     return tableDescriptor;
   }
-
-  // private int getShardCountFromTablePath(String path) throws
-  // NumberFormatException, KeeperException, InterruptedException {
-  // return Integer.parseInt(new String(getData(path)));
-  // }
 
   private AnalyzerDefinition getAnalyzerDefinition(byte[] data) {
     TMemoryInputTransport trans = new TMemoryInputTransport(data);

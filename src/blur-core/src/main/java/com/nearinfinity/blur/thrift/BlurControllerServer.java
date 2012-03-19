@@ -35,9 +35,6 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.thrift.TException;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.KeeperException.Code;
 import org.apache.zookeeper.ZooDefs.Ids;
 
 import com.nearinfinity.blur.concurrent.Executors;
@@ -56,6 +53,8 @@ import com.nearinfinity.blur.manager.status.MergerQueryStatus;
 import com.nearinfinity.blur.manager.status.MergerQueryStatusSingle;
 import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
+import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.BlurQuery;
 import com.nearinfinity.blur.thrift.generated.BlurQueryStatus;
@@ -66,17 +65,17 @@ import com.nearinfinity.blur.thrift.generated.Schema;
 import com.nearinfinity.blur.thrift.generated.Selector;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.thrift.generated.TableStats;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
-import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurExecutorCompletionService;
 import com.nearinfinity.blur.utils.BlurUtil;
 import com.nearinfinity.blur.utils.ForkJoin;
+import com.nearinfinity.blur.utils.ForkJoin.Merger;
+import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
 import com.nearinfinity.blur.utils.QueryCache;
 import com.nearinfinity.blur.utils.QueryCacheEntry;
 import com.nearinfinity.blur.utils.QueryCacheKey;
-import com.nearinfinity.blur.utils.ForkJoin.Merger;
-import com.nearinfinity.blur.utils.ForkJoin.ParallelCall;
+import com.nearinfinity.blur.zookeeper.WatchChildren;
+import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 
 public class BlurControllerServer extends TableAdmin implements Iface {
 
@@ -97,7 +96,6 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private QueryCache _queryCache;
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
-  private List<Thread> _shardServerWatcherDaemons = new ArrayList<Thread>();
 
   private int _maxFetchRetries = 1;
   private int _maxMutateRetries = 1;
@@ -129,77 +127,27 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getClustersPath());
   }
 
-  private void watchForLayoutChanges(final String cluster) {
-    Thread shardServerWatcherDaemon = new Thread(new Runnable() {
-      private Watcher watcher = new Watcher() {
+  private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
+    //@TODO watch for cluster changes
+    List<String> tables = _zookeeper.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
+    //watch for table changes
+    for (String table : tables) {
+      new WatchChildren(_zookeeper, ZookeeperPathConstants.getTablePath(cluster, table)).watch(new OnChange() {
         @Override
-        public void process(WatchedEvent event) {
-          synchronized (_shardServerLayout) {
-            _shardServerLayout.notifyAll();
-          }
+        public void action(List<String> children) {
+          updateLayout();
         }
-      };
-      private Set<String> prevShardNodes;
-      private Set<String> prevTables;
-      
-      @Override
-      public void run() {
-        while (_running.get()) {
-          try {
-            doAction(cluster);
-          } catch (Throwable t) {
-            LOG.error("Unknown error", t);
-          }
+      });
+      //watch for shard changes
+      new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
+        @Override
+        public void action(List<String> children) {
+          updateLayout();
         }
-      }
-
-      private void doAction(final String cluster) {
-        synchronized (_shardServerLayout) {
-          try {
-            String shardNodesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes";
-            String tablesPath = ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/tables";
-            Set<String> shardNodes = new TreeSet<String>(_zookeeper.getChildren(shardNodesPath, watcher));
-            Set<String> tables = new TreeSet<String>(_zookeeper.getChildren(tablesPath, watcher));
-            if (isShardNodesChanged(shardNodes) || isTablesNodesChanged(tables)) {
-              LOG.info("Layout changing for cluster [{0}], because of table or shard server change.", cluster);
-              updateLayout();
-              prevShardNodes = shardNodes;
-              prevTables = tables;
-            }
-            _shardServerLayout.wait(BlurConstants.ZK_WAIT_TIME);
-          } catch (KeeperException e) {
-            if (e.code() == Code.SESSIONEXPIRED) {
-              LOG.error("Zookeeper session expired.");
-              _running.set(false);
-              return;
-            }
-            LOG.error("Unknown Error", e);
-          } catch (InterruptedException e) {
-            LOG.error("Unknown Error", e);
-          }
-        }
-      }
-
-      private boolean isTablesNodesChanged(Set<String> tables) {
-        if (prevTables != null && prevTables.equals(tables)) {
-          return false;
-        }
-        return true;
-      }
-
-      private boolean isShardNodesChanged(Set<String> shardNodes) {
-        if (prevShardNodes != null && prevShardNodes.equals(shardNodes)) {
-          return false;
-        }
-        return true;
-      }
-    });
-    shardServerWatcherDaemon.setName("Shard-Server-Watcher-Daemon-Cluster[" + cluster + "]");
-    shardServerWatcherDaemon.setDaemon(true);
-    shardServerWatcherDaemon.start();
-    _shardServerWatcherDaemons.add(shardServerWatcherDaemon);
+      });
+    }
   }
-
+  
   private synchronized void updateLayout() {
     List<String> tableList = _clusterStatus.getTableList();
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();

@@ -41,9 +41,6 @@ import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.search.Similarity;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.KeeperException.Code;
-import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
@@ -73,6 +70,8 @@ import com.nearinfinity.blur.store.lock.BlurLockFactory;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
 import com.nearinfinity.blur.utils.BlurUtil;
+import com.nearinfinity.blur.zookeeper.WatchChildren;
+import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 
 public class DistributedIndexServer extends AbstractIndexServer {
 
@@ -102,7 +101,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndexCloser _closer;
   private Timer _timerTableWarmer;
   private BlurFilterCache _filterCache;
-  private Thread _shardServerWatcherDaemon;
   private AtomicBoolean _running = new AtomicBoolean();
   private long _safeModeDelay;
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
@@ -149,71 +147,31 @@ public class DistributedIndexServer extends AbstractIndexServer {
   }
 
   private void watchForShardServerChanges() {
-    _shardServerWatcherDaemon = new Thread(new Runnable() {
-
-      private List<String> _prevOnlineShards;
-
-      private Watcher watcher = new Watcher() {
-        @Override
-        public void process(WatchedEvent event) {
-          synchronized (_layoutManagers) {
-            _layoutManagers.notifyAll();
-          }
-        }
-      };
-
+    ZookeeperPathConstants.getOnlineShardsPath(cluster);
+    new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
+      private List<String> _prevOnlineShards = new ArrayList<String>();
       @Override
-      public void run() {
-        while (_running.get()) {
-          try {
-            doAction();
-          } catch (Throwable t) {
-            LOG.error("Unknown error", t);
+      public void action(List<String> onlineShards) {
+        List<String> oldOnlineShards = _prevOnlineShards;
+        _prevOnlineShards = onlineShards;
+        _layoutManagers.clear();
+        _layoutCache.clear();
+        LOG.info("Online shard servers changed, clearing layout managers and cache.");
+        if (oldOnlineShards == null) {
+          oldOnlineShards = new ArrayList<String>();
+        }
+        for (String oldOnlineShard : oldOnlineShards) {
+          if (!onlineShards.contains(oldOnlineShard)) {
+            LOG.info("Node went offline [{0}]", oldOnlineShard);
           }
         }
-      }
-
-      private void doAction() {
-        synchronized (_layoutManagers) {
-          try {
-            List<String> onlineShards = new ArrayList<String>(_zookeeper.getChildren(ZookeeperPathConstants.getOnlineShardsPath(cluster), watcher));
-            if (_prevOnlineShards == null || !onlineShards.equals(_prevOnlineShards)) {
-              List<String> oldOnlineShards = _prevOnlineShards;
-              _prevOnlineShards = onlineShards;
-              _layoutManagers.clear();
-              _layoutCache.clear();
-              LOG.info("Online shard servers changed, clearing layout managers and cache.");
-              if (oldOnlineShards == null) {
-                oldOnlineShards = new ArrayList<String>();
-              }
-              for (String oldOnlineShard : oldOnlineShards) {
-                if (!onlineShards.contains(oldOnlineShard)) {
-                  LOG.info("Node went offline [{0}]", oldOnlineShard);
-                }
-              }
-              for (String onlineShard : onlineShards) {
-                if (!oldOnlineShards.contains(onlineShard)) {
-                  LOG.info("Node came online [{0}]", onlineShard);
-                }
-              }
-            }
-            _layoutManagers.wait(BlurConstants.ZK_WAIT_TIME);
-          } catch (KeeperException e) {
-            if (e.code() == Code.SESSIONEXPIRED) {
-              LOG.error("Zookeeper session expired.");
-              _running.set(false);
-              return;
-            }
-            LOG.error("Unknown Error", e);
-          } catch (InterruptedException e) {
-            LOG.error("Unknown Error", e);
+        for (String onlineShard : onlineShards) {
+          if (!oldOnlineShards.contains(onlineShard)) {
+            LOG.info("Node came online [{0}]", onlineShard);
           }
         }
       }
     });
-    _shardServerWatcherDaemon.setName("Shard-Server-Watcher-Daemon");
-    _shardServerWatcherDaemon.setDaemon(true);
-    _shardServerWatcherDaemon.start();
   }
 
   private void waitInSafeModeIfNeeded() throws KeeperException, InterruptedException {
@@ -260,15 +218,8 @@ public class DistributedIndexServer extends AbstractIndexServer {
     String tablesPath = ZookeeperPathConstants.getTablesPath(cluster);
     List<String> tables = _zookeeper.getChildren(tablesPath, false);
     for (String table : tables) {
-      createIfMissing(ZookeeperPathConstants.getLockPath(cluster, table));
-      createIfMissing(ZookeeperPathConstants.getTableFieldNamesPath(cluster, table));
-    }
-  }
-
-  private void createIfMissing(String path) throws KeeperException, InterruptedException {
-    if (_zookeeper.exists(path, false) == null) {
-      LOG.info("Creating missing path in zookeeper [{0}]", path);
-      _zookeeper.create(path, null, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getLockPath(cluster, table));
+      BlurUtil.createIfMissing(_zookeeper, ZookeeperPathConstants.getTableFieldNamesPath(cluster, table));
     }
   }
 

@@ -45,7 +45,9 @@ html{
 	}
 }
 
-
+input[placeholder].placeholder{
+	color: #888 !important;
+}
 
 #login_wrapper{
 	#error_explanation{

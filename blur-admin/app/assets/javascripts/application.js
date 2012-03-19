@@ -2,6 +2,7 @@
 //= require jquery-ui
 //= require jquery_ujs
 //= require modernizr
+//= require placeholder
 //= require bootstrap
 //= require bootstrap-modal-helper
 //= require_self

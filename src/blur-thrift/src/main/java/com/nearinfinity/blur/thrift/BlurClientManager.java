@@ -250,10 +250,10 @@ public class BlurClientManager {
   }
 
   public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws BlurException, TException, IOException {
-    return execute(getCommands(connectionStr),command,maxRetries,backOffTime,maxBackOffTime);
+    return execute(getConnections(connectionStr),command,maxRetries,backOffTime,maxBackOffTime);
   }
   
-  private static List<Connection> getCommands(String connectionStr) {
+  public static List<Connection> getConnections(String connectionStr) {
     int start = 0;
     int index = connectionStr.indexOf(',');
     if (index >= 0) {
@@ -270,7 +270,7 @@ public class BlurClientManager {
   }
 
   public static <CLIENT, T> T execute(String connectionStr, AbstractCommand<CLIENT, T> command) throws BlurException, TException, IOException {
-    return execute(getCommands(connectionStr),command);
+    return execute(getConnections(connectionStr),command);
   }
 
   private static void returnClient(Connection connection, AtomicReference<Blur.Client> client) {

@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.CorruptIndexException;
+import org.apache.lucene.index.IndexDeletionPolicy;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.TieredMergePolicy;
@@ -56,6 +57,8 @@ public class BlurNRTIndex extends BlurIndex {
   private Thread _refresher;
   private TransactionRecorder _recorder;
   private Configuration _configuration;
+  private Path _walPath;
+  private IndexDeletionPolicy _indexDeletionPolicy;
 
   private SearcherWarmer _warmer = new SearcherWarmer() {
     @Override
@@ -71,7 +74,6 @@ public class BlurNRTIndex extends BlurIndex {
       }
     }
   };
-  private Path _walPath;
 
   public void init() throws IOException {
     Path walTablePath = new Path(_walPath, _table);
@@ -80,6 +82,7 @@ public class BlurNRTIndex extends BlurIndex {
     IndexWriterConfig conf = new IndexWriterConfig(LUCENE_VERSION, _analyzer);
     conf.setWriteLockTimeout(TimeUnit.MINUTES.toMillis(5));
     conf.setSimilarity(_similarity);
+    conf.setIndexDeletionPolicy(_indexDeletionPolicy);
     TieredMergePolicy mergePolicy = (TieredMergePolicy) conf.getMergePolicy();
     mergePolicy.setUseCompoundFile(false);
 
@@ -276,5 +279,9 @@ public class BlurNRTIndex extends BlurIndex {
 
   public void setConfiguration(Configuration configuration) {
     _configuration = configuration;
+  }
+  
+  public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
+    _indexDeletionPolicy = indexDeletionPolicy;
   }
 }

@@ -26,7 +26,7 @@ import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_QUE
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_CACHE_MAX_TIMETOLIVE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_FILTER_CACHE_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_HOSTNAME;
-import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_CLASS;
+import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_INDEX_WARMUP_CLASS;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_OPENER_THREAD_COUNT;
 import static com.nearinfinity.blur.utils.BlurConstants.BLUR_SHARD_SAFEMODEDELAY;
@@ -42,7 +42,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.lucene.index.IndexDeletionPolicy;
-import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.KeeperException.Code;
@@ -53,6 +52,7 @@ import com.nearinfinity.blur.concurrent.SimpleUncaughtExceptionHandler;
 import com.nearinfinity.blur.concurrent.ThreadWatcher;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.lucene.index.TimeBasedIndexDeletionPolicy;
 import com.nearinfinity.blur.manager.BlurFilterCache;
 import com.nearinfinity.blur.manager.BlurQueryChecker;
 import com.nearinfinity.blur.manager.DefaultBlurFilterCache;
@@ -142,7 +142,7 @@ public class ThriftBlurShardServer extends ThriftServer {
 
     BlurFilterCache filterCache = getFilterCache(configuration);
     BlurIndexWarmup indexWarmup = getIndexWarmup(configuration);
-    IndexDeletionPolicy indexDeletionPolicy = getIndexDeletionPolicy(configuration);
+    IndexDeletionPolicy indexDeletionPolicy = new TimeBasedIndexDeletionPolicy(configuration.getLong(BLUR_SHARD_INDEX_DELETION_POLICY_MAXAGE, 300000));
     
     String walLogPath = configuration.get(BLUR_SHARD_WAL_PATH, "hdfs://localhost");
 
@@ -202,19 +202,6 @@ public class ThriftBlurShardServer extends ThriftServer {
       }
     }, zooKeeper);
     server.start();
-  }
-
-  private static IndexDeletionPolicy getIndexDeletionPolicy(BlurConfiguration configuration) {
-    String _class = configuration.get(BLUR_SHARD_INDEX_DELETION_POLICY_CLASS);
-    if (_class != null) {
-      try {
-        Class<?> clazz = Class.forName(_class);
-        return (IndexDeletionPolicy) clazz.newInstance();
-      } catch (Exception e) {
-        throw new RuntimeException(e);
-      }
-    }
-    return new KeepOnlyLastCommitDeletionPolicy();
   }
 
   private static BlurFilterCache getFilterCache(BlurConfiguration configuration) {

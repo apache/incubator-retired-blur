@@ -551,6 +551,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setNrtCachingMaxMergeSizeMB(5.0);
       writer.setWalPath(_walPath);
       writer.setConfiguration(_configuration);
+      writer.setIndexDeletionPolicy(_indexDeletionPolicy);
       writer.init();
       index = writer;
     }

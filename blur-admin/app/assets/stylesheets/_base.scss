@@ -35,13 +35,35 @@ html{
 	overflow:none;
 	.modal-body{
 		max-height:440px;
-		overflow-y:scroll;
+		overflow-y:auto;
 		margin-bottom:60px;
 	}
 	.modal-footer{
 		position:absolute;
 		bottom:0px;
 		width: 530px;
+	}
+}
+
+
+
+#login_wrapper{
+	#error_explanation{
+		ul{
+			list-style: none;
+			color:red;
+		}
+	}
+
+	.help-inline{
+		color: red;
+		padding: 0px;
+		margin: 5px;
+	}
+
+	input:not(.btn){
+		display:block;
+		margin:auto;
 	}
 }
 

@@ -60,8 +60,6 @@ class BlurTablesController < ApplicationController
   end
 
   def terms
-      puts 'TEST'
-      puts params.inspect
       table = BlurTable.find(params[:id])
       terms = table.terms @current_zookeeper.blur_urls, params[:family], params[:column], params[:startWith], params[:size].to_i
       render :json => terms

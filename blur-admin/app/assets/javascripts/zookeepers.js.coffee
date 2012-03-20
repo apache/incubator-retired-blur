@@ -192,6 +192,9 @@ $(document).ready ->
         hdfs_table.closest('.hdfs_info').addClass('updated')
         status = 'online'
 
+        if this.stats == null
+          this.stats = {}
+
         # Update block counts
         corr_blocks= hdfs_table.find(".blocks-corr")
         corr_blocks.find('> .number').html(this.stats.corrupt_blocks)
@@ -199,7 +202,7 @@ $(document).ready ->
         missing_blocks.find('> .number').html(this.stats.missing_blocks)
 
         # Update the block colors
-        if this.stats.corrupt_blocks == 0
+        if this.stats && this.stats.corrupt_blocks == 0
           corr_blocks.addClass(ONLINE).removeClass(OFFLINE).removeClass(NA)
         else if this.stats.corrupt_blocks > 0
           status = 'offline'

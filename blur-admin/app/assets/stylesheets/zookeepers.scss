@@ -52,12 +52,15 @@
     display: inline-block;
     border: 1px solid;
     @include border-radius(5px);
-    &:hover { cursor: pointer; background: #FFFCD6; }
     &.online{ border-color: $green-border-color; }
     &.offline{ border-color: $red-border-color; }
     &.wrning{ border-color: #F9A732;}
     table{ margin:0; width:100%; }
-		table tbody th { text-align:center; vertical-align:middle; }
+    table tbody th { text-align:center; vertical-align:middle; }
+  }
+  .zookeeper_info {
+    cursor: pointer;
+    background: #FFFCD6;
   }
   .center{
     text-align:center;

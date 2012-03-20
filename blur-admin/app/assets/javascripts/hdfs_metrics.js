@@ -70,36 +70,36 @@ $(document).ready(function(){
 			data: req_data,
 			success: function(data){
 				if (!hdfs_data[id]){
-					hdfs_data[id] = { disk: {}, nodes: {}, block: {} };
+					hdfs_data[id] = { disk: { metrics: [] }, nodes: { metrics: [] }, block: { metrics: [] } };
 				}
-				for(action in hdfs_request_lookup){
+				for(var action in hdfs_request_lookup){
 					var request_options = hdfs_request_lookup[action];
-					for( i in data ){
+					var hdfs_data_1 = {label: request_options.label_1, data: []};
+					var hdfs_data_2 = {label: request_options.label_2, data: []};
+					for( var i in data ){
 						var point = data[i];
 						var entry_date = new Date(point.created_at).getTime();
-						if (req_data && req_data.stat_id)
-						{
-							var length = hdfs_stat1.data.length;
+						hdfs_data_1.data.push([entry_date, point[request_options.stat_1]]);
+						hdfs_data_2.data.push([entry_date, point[request_options.stat_2]]);
+					}
+					if (req_data && req_data.stat_id){
+							var length = data.length;
 							hdfs_data[id][action].metrics[0].data.splice(0, length);
 							hdfs_data[id][action].metrics[1].data.splice(0, length);
-							hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_stat1.data);
-							hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_stat2.data);
-						}
-						else
-						{
-							hdfs_data[id][action].metrics = [point[request_options.stat_1], point[request_options.stat_2]];
-						}
+							hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_data_1.data);
+							hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_data_2.data);
+					}	else {
+						hdfs_data[id][action].metrics.push(hdfs_data_1, hdfs_data_2);
 					}
-				}
-				//if the reqdata object and the property stat id are set
-				//then we are updating old data
-				
-				if (point){
-					hdfs_data[id][action].largest_id = point.id;
-				}
-				var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id)
-				if (graph_container.hasClass('active')){
-					draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
+
+					if (point){
+						hdfs_data[id][action].largest_id = point.id;
+					}
+
+					var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id)
+					if (graph_container.hasClass('active')){
+						draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
+					}
 				}
 			}
 		});
@@ -121,7 +121,7 @@ $(document).ready(function(){
 			//TODO: check to see if live is checked
 			var hdfs_id = $(this).attr('id');
 			for (var index = 0; index < actions.length; index++){
-				request_data(hdfs_id, actions[index], {stat_id: hdfs_data[hdfs_id][actions[index]].largest_id});
+				request_data(hdfs_id, {stat_id: hdfs_data[hdfs_id][actions[index]].largest_id});
 			}
 		});
 		setTimeout(function(){
@@ -153,9 +153,11 @@ $(document).ready(function(){
 
 	// Page listeners
 	$('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
-		var hdfs_id = $(this).closest('.graph_instance').attr('id');
+		var instance = $(this).closest('.graph_instance')
+		var hdfs_id = instance.attr('id');
+		var container = instance.find('.graph');
 		var action = $(this).data('action');
-		request_data(hdfs_id, action);
+		draw_graph(container, hdfs_data[hdfs_id][action]);
 	});
 
 	$('.joined_instance').on('shown', 'a[data-toggle="tab"]', function(e){
@@ -172,7 +174,12 @@ $(document).ready(function(){
 	$('.joined_instance#joinedGraph').find('i.icon-remove-sign').on('click', function(e){
 		var container = $('.combined_graph');
 		container.hide();
-		joinedGraphData.plot.remove();
+		for(var action in joinedGraphData){
+			if(joinedGraphData[action].plot){
+				joinedGraphData[action].plot.shutdown();
+			}
+		}
+		container.find('.tab-pane > .graph').empty();
 		$('.create_graph_prompt').show();
 		container.find('.graph_title > h3').text('');
 		joinedGraphData = {disk: {metrics:[]}, nodes: {metrics:[]}, block: {metrics:[]}};

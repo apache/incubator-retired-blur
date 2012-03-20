@@ -1,8 +1,6 @@
 BlurAdmin::Application.routes.draw do
   resources :hdfs_metrics, :only => [:index]
-  match 'hdfs_metrics/:id/disk' => 'hdfs_metrics#disk_cap_usage', :via => :put, :as => :disk_usage_stats
-  match 'hdfs_metrics/:id/nodes' => 'hdfs_metrics#live_dead_nodes', :via => :put, :as => :node_stats
-  match 'hdfs_metrics/:id/block' => 'hdfs_metrics#block_info', :via => :put, :as => :block_stats
+  match 'hdfs_metrics/:id/stats' => 'hdfs_metrics#stats', :via => :put, :as => :hdfs_stats
 
   resources :user_sessions, :only => [:create]
   match 'login' => 'user_sessions#new', :as => :login

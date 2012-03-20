@@ -136,17 +136,9 @@
   hdfs_metrics_path: function(options) {
   return Utils.build_path(0, ["/hdfs_metrics"], ["format"], arguments)
   },
-// disk_usage_stats => /hdfs_metrics/:id/disk(.:format)
-  disk_usage_stats_path: function(_id, options) {
-  return Utils.build_path(1, ["/hdfs_metrics/", "/disk"], ["format"], arguments)
-  },
-// node_stats => /hdfs_metrics/:id/nodes(.:format)
-  node_stats_path: function(_id, options) {
-  return Utils.build_path(1, ["/hdfs_metrics/", "/nodes"], ["format"], arguments)
-  },
-// block_stats => /hdfs_metrics/:id/block(.:format)
-  block_stats_path: function(_id, options) {
-  return Utils.build_path(1, ["/hdfs_metrics/", "/block"], ["format"], arguments)
+// hdfs_stats => /hdfs_metrics/:id/stats(.:format)
+  hdfs_stats_path: function(_id, options) {
+  return Utils.build_path(1, ["/hdfs_metrics/", "/stats"], ["format"], arguments)
   },
 // user_sessions => /user_sessions(.:format)
   user_sessions_path: function(options) {
@@ -363,6 +355,10 @@
 // root => /
   root_path: function(options) {
   return Utils.build_path(0, ["/"], [], arguments)
+  },
+// rails_info_properties => /rails/info/properties(.:format)
+  rails_info_properties_path: function(options) {
+  return Utils.build_path(0, ["/rails/info/properties"], ["format"], arguments)
   }}
 ;
   window.Routes.options = defaults;

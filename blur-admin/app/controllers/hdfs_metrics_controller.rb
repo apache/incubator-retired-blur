@@ -3,19 +3,9 @@ class HdfsMetricsController < ApplicationController
     @hdfs_index = Hdfs.all
   end
 
-  def disk_cap_usage
-    @results = hdfs_stat_select [:present_capacity, :dfs_used]
+  def stats
+    @results = hdfs_stat_select [:present_capacity, :dfs_used, :live_nodes, :dead_nodes, :under_replicated, :corrupt_blocks]
     render :json => @results, :methods => [:capacity, :used], :except => [:present_capacity, :dfs_used]
-  end
-
-  def live_dead_nodes
-    @results = hdfs_stat_select [:live_nodes, :dead_nodes]
-    render :json => @results
-  end
-
-  def block_info
-    @results = hdfs_stat_select [:under_replicated, :corrupt_blocks]
-    render :json => @results
   end
 
   private

@@ -8,21 +8,21 @@
 		.graph_data.tabbable.tabs-left
 			%ul.nav.nav-tabs
 				%li.active
-					%a{:href => '#disk', 'data-toggle' => 'tab'}
+					%a{:href => "#disk_#{hdfs_instance.id}", 'data-toggle' => 'tab', 'data-action' => 'disk'}
 						Capacity/Usage
 				%li
-					%a{:href => '#nodes', 'data-toggle' => 'tab'}
+					%a{:href => "#nodes_#{hdfs_instance.id}", 'data-toggle' => 'tab', 'data-action' => 'nodes'}
 						Live/Dead Nodes
 				%li
-					%a{:href => '#block', 'data-toggle' => 'tab'}
+					%a{:href => "#block_#{hdfs_instance.id}", 'data-toggle' => 'tab', 'data-action' => 'block'}
 						Under Replicated/Corrupt Blocks
 			.tab-content
-				%div.tab-pane.active#disk
+				%div.tab-pane.active{:id => "disk_#{hdfs_instance.id}"}
 					.graph
 						Loading Graph...
-				%div.tab-pane#nodes
+				%div.tab-pane{:id => "nodes_#{hdfs_instance.id}"}
 					.graph
 						Loading Graph...
-				%div.tab-pane#block
+				%div.tab-pane{:id => "block_#{hdfs_instance.id}"}
 					.graph
 						Loading Graph...	

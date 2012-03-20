@@ -1,8 +1,17 @@
 //= require d3/d3
 //= require flot/flot
+//= require flot/jquery.flot.resize.min
 //= require_self
 
 $(document).ready(function(){
+	//Page constants
+	var hdfs_data = {};
+	var joinedGraphData = {disk: {metrics:[]}, nodes: {metrics:[]}, block: {metrics:[]}};
+	var time_length = 5;
+	var refresh_time = 5000;
+	var refresh_joined_time = 1000;
+	var actions = ['disk', 'nodes', 'block'];
+
 	//hash of labels and object lookup strings for the various actions
 	var hdfs_request_lookup =
 	{
@@ -29,11 +38,11 @@ $(document).ready(function(){
 		}
 	};
 
-	var draw_graph = function(id, graph_data){
+	// Page Methods
+	var draw_graph = function(selector, graph_data){
 		if (!graph_data.plot)
 		{
-			var hdfs_active_graph = $('.graph_instance#' + id).find('.tab-pane.active > .graph');
-			graph_data.plot = $.plot(hdfs_active_graph, graph_data.metrics, 
+			graph_data.plot = $.plot(selector, graph_data.metrics, 
 			{
 				xaxis:
 				{
@@ -54,86 +63,135 @@ $(document).ready(function(){
 	//id : hdfs id, action: (disk, nodes, block), req_data(optional):
 		//req_data.stat_id for data after a certain ID (update)
 		//req_data.stat_mins for specifying a different range (overwrite)
-	var request_data = function(id, action, req_data){
+	var request_data = function(id, req_data){
 		$.ajax({
-			url: 'hdfs_metrics/' + id + '/' + action,
+			url: Routes.hdfs_stats_path(id),
 			type: 'PUT',
 			data: req_data,
 			success: function(data){
-				var request_options = hdfs_request_lookup[action];
-				var hdfs_stat1 = { label: request_options.label_1, data: [] };
-				var hdfs_stat2 = { label: request_options.label_2, data: [] };
-				//format the returned data into something that flot can use
-				for( i in data )
-				{
-					var point = data[i];
-					var entry_date = new Date(point.created_at).getTime();
-					hdfs_stat1.data.push([entry_date, point[request_options.stat_1]]);
-					hdfs_stat2.data.push([entry_date, point[request_options.stat_2]]);
+				if (!hdfs_data[id]){
+					hdfs_data[id] = { disk: {}, nodes: {}, block: {} };
+				}
+				for(action in hdfs_request_lookup){
+					var request_options = hdfs_request_lookup[action];
+					for( i in data ){
+						var point = data[i];
+						var entry_date = new Date(point.created_at).getTime();
+						if (req_data && req_data.stat_id)
+						{
+							var length = hdfs_stat1.data.length;
+							hdfs_data[id][action].metrics[0].data.splice(0, length);
+							hdfs_data[id][action].metrics[1].data.splice(0, length);
+							hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_stat1.data);
+							hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_stat2.data);
+						}
+						else
+						{
+							hdfs_data[id][action].metrics = [point[request_options.stat_1], point[request_options.stat_2]];
+						}
+					}
 				}
 				//if the reqdata object and the property stat id are set
 				//then we are updating old data
-				if (req_data && req_data.stat_id)
-				{
-					var length = hdfs_stat1.data.length;
-					hdfs_data[id][action].metrics[0].data.splice(0, length);
-					hdfs_data[id][action].metrics[1].data.splice(0, length);
-					hdfs_data[id][action].metrics[0].data = hdfs_data[id][action].metrics[0].data.concat(hdfs_stat1.data);
-					hdfs_data[id][action].metrics[1].data = hdfs_data[id][action].metrics[1].data.concat(hdfs_stat2.data);
-				}
-				else
-				{
-					if (!hdfs_data[id])
-					{
-						hdfs_data[id] = { disk: {}, nodes: {}, block: {} };
-					}
-					hdfs_data[id][action].metrics = [hdfs_stat1, hdfs_stat2];
-				}
+				
 				if (point){
 					hdfs_data[id][action].largest_id = point.id;
 				}
-				draw_graph(id, hdfs_data[id][action]);
+				var graph_container = $('.graph_instance#' + id).find('.tab-pane#' + action + '_' + id)
+				if (graph_container.hasClass('active')){
+					draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
+				}
 			}
 		});
 	};
 
-	var hdfs_data = {}
-
-	$('.graph_instance').on('show', 'a[data-toggle="tab"]', function(e){
-		var hdfs_id = $(this).closest('.graph_instance').attr('id');
-		var action = $(this).attr('href').slice(1);
-		request_data(hdfs_id, action);
-	});
-
-	var update_graphs = function(element){
-		var hdfs_id = $(element).attr('id');
-		var action = $(element).find('li.active > a').attr('href').slice(1);
-		request_data(hdfs_id, action, {stat_mins: time_length});
+	var update_joined_graphs = function(){
+		var joinedInstance = $('.joined_instance#joinedGraph:visible');
+		if(joinedInstance.length > 0){
+			var action = joinedInstance.find('li.active > a').data('action');
+			draw_graph(joinedInstance.find('.tab-pane.active > .graph'), joinedGraphData[action]);
+		}
+		setTimeout(function(){
+			update_joined_graphs(action);
+		}, refresh_joined_time);
 	};
 
 	var update_live_graphs = function(){
 		$('.graph_instance').each(function(){
 			//TODO: check to see if live is checked
 			var hdfs_id = $(this).attr('id');
-			var action = $(this).find('li.active > a').attr('href').slice(1);
-			var reqData = !hdfs_data[hdfs_id][action].largest_id !== null ?
-				{stat_id: hdfs_data[hdfs_id][action].largest_id} : {stat_mins: time_length};
-			request_data(hdfs_id, action, reqData)
+			for (var index = 0; index < actions.length; index++){
+				request_data(hdfs_id, actions[index], {stat_id: hdfs_data[hdfs_id][actions[index]].largest_id});
+			}
 		});
 		setTimeout(function(){
-			update_live_graphs()
-		}, 60000);
+			update_live_graphs();
+		}, refresh_time);
 	};
 
-	var time_length = 5;
+	var gather_data_and_draw = function(action){
+		var joinedInstance = $('.joined_instance#joinedGraph');
+		var container = $('.combined_graph');
+		var graphTitles = [];
+		$('.graph_instance').each(function(){
+			if($(this).find('input[type=checkbox]:checked').length > 0){
+				var graphId = parseInt($(this).attr('id'), 10);
+				graphTitles.push($(this).find('.graph_title > h3').text());
+				if (!joinedGraphData[action].metrics.length > 0){
+					joinedGraphData[action].metrics = joinedGraphData[action].metrics.concat(hdfs_data[graphId][action].metrics);
+				}
+			}
+		});
+		if (joinedGraphData[action].metrics.length > 0){
+			draw_graph(joinedInstance.find('.tab-pane.active > .graph'), joinedGraphData[action]);
+		} else {
+			//Gather the data for this action for every graph that is checked
+		}
+		
+		container.find('.graph_title > h3').text('Composite Graph: ' + graphTitles.join(', '));
+	};
 
-	$('.graph_instance').each(function(){
-		update_graphs(this);
+	// Page listeners
+	$('.graph_instance').on('shown', 'a[data-toggle="tab"]', function(e){
+		var hdfs_id = $(this).closest('.graph_instance').attr('id');
+		var action = $(this).data('action');
+		request_data(hdfs_id, action);
 	});
 
+	$('.joined_instance').on('shown', 'a[data-toggle="tab"]', function(e){
+		var action = $(this).data('action');
+		gather_data_and_draw(action);
+	});
+
+	$('.create_graph_prompt').on('click', function(e){
+		$('.create_graph_prompt').hide();
+		$('.combined_graph').show();
+		gather_data_and_draw('disk');
+	});
+
+	$('.joined_instance#joinedGraph').find('i.icon-remove-sign').on('click', function(e){
+		var container = $('.combined_graph');
+		container.hide();
+		joinedGraphData.plot.remove();
+		$('.create_graph_prompt').show();
+		container.find('.graph_title > h3').text('');
+		joinedGraphData = {disk: {metrics:[]}, nodes: {metrics:[]}, block: {metrics:[]}};
+	});
+
+	$('.graph_instance').each(function(){
+		var hdfs_id = $(this).attr('id');
+		request_data(hdfs_id, {stat_mins: time_length});
+	});
+
+	// Refresh Timers
+
 	setTimeout(function(){
-		update_live_graphs()
-	}, 5000);
+		update_live_graphs();
+	}, refresh_time);
+
+	setTimeout(function(){
+		update_joined_graphs();
+	}, refresh_joined_time);
 });
 
 

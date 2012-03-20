@@ -1,0 +1,27 @@
+.joined_instance{:id => 'joinedGraph'}
+  .graph_title
+    %h3
+    %i.icon-remove-sign
+  .graph_content
+    .graph_select
+    .graph_data.tabbable.tabs-left
+      %ul.nav.nav-tabs
+        %li.active
+          %a{:href => '#disk_joined', 'data-toggle' => 'tab', 'data-action' => 'disk'}
+            Capacity/Usage
+        %li
+          %a{:href => '#nodes_joined', 'data-toggle' => 'tab', 'data-action' => 'nodes'}
+            Live/Dead Nodes
+        %li
+          %a{:href => '#block_joined', 'data-toggle' => 'tab', 'data-action' => 'block'}
+            Under Replicated/Corrupt Blocks
+      .tab-content
+        %div.tab-pane.active#disk_joined
+          .graph
+            Loading Graph...
+        %div.tab-pane#nodes_joined
+          .graph
+            Loading Graph...
+        %div.tab-pane#block_joined
+          .graph
+            Loading Graph...  

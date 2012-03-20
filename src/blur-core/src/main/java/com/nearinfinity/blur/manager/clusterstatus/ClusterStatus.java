@@ -25,7 +25,7 @@ import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
 public abstract class ClusterStatus {
 
-  public abstract List<String> getOnlineShardServers(String cluster);
+  public abstract List<String> getOnlineShardServers(boolean useCache, String cluster);
 
   public abstract List<String> getControllerServerList();
 
@@ -48,29 +48,29 @@ public abstract class ClusterStatus {
   public abstract boolean isEnabled(boolean useCache, String cluster, String table);
 
   public abstract boolean exists(boolean useCache, String cluster, String table);
-  
+
   public abstract boolean isInSafeMode(boolean useCache, String cluster);
 
-  public List<String> getOfflineShardServers(String cluster) {
+  public List<String> getOfflineShardServers(boolean useCache, String cluster) {
     List<String> shardServerList = new ArrayList<String>(getShardServerList(cluster));
-    shardServerList.removeAll(getOnlineShardServers(cluster));
+    shardServerList.removeAll(getOnlineShardServers(useCache, cluster));
     return shardServerList;
   }
 
   public abstract void clearLocks(String cluster, String table);
 
-  public abstract int getShardCount(String cluster, String table);
-  
+  public abstract int getShardCount(boolean useCache, String cluster, String table);
+
   public abstract boolean isBlockCacheEnabled(String cluster, String table);
-  
+
   public abstract Set<String> getBlockCacheFileTypes(String cluster, String table);
 
   public abstract List<String> getTableList(String cluster);
 
   public abstract void writeCacheFieldsForTable(String cluster, String table, Collection<String> fieldNames);
-  
+
   public abstract Collection<String> readCacheFieldsForTable(String cluster, String table);
 
   public abstract boolean isReadOnly(boolean useCache, String cluster, String table);
-  
+
 }

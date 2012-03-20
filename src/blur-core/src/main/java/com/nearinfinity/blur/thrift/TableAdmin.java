@@ -193,7 +193,7 @@ public abstract class TableAdmin implements Iface {
   @Override
   public final TableDescriptor describe(final String table) throws BlurException, TException {
     try {
-      String cluster = _clusterStatus.getCluster(false, table);
+      String cluster = _clusterStatus.getCluster(true, table);
       if (cluster == null) {
         throw new BlurException("Table [" + table + "] not found.", null);
       }

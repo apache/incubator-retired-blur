@@ -47,6 +47,8 @@ import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurConstants;
+import com.nearinfinity.blur.zookeeper.WatchChildren;
+import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 
 public class ZookeeperClusterStatus extends ClusterStatus {
 
@@ -72,7 +74,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       long s2 = System.nanoTime();
       System.out.println(status.getControllerServerList());
       long s3 = System.nanoTime();
-      System.out.println(status.getOnlineShardServers("default"));
+      System.out.println(status.getOnlineShardServers(true, "default"));
       long s4 = System.nanoTime();
       System.out.println(status.getShardServerList("default"));
       long s5 = System.nanoTime();
@@ -80,7 +82,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       long s6 = System.nanoTime();
 
       for (String cluster : status.getClusterList()) {
-        System.out.println("cluster=" + cluster + " " + status.getOnlineShardServers(cluster));
+        System.out.println("cluster=" + cluster + " " + status.getOnlineShardServers(true, cluster));
         System.out.println("cluster=" + cluster + " " + status.getShardServerList(cluster));
       }
       long s7 = System.nanoTime();
@@ -112,6 +114,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   private Thread _enabledTables;
   private Thread _tablesToCluster;
   private Thread _safeMode;
+  private AtomicReference<Map<String,List<String>>> _onlineShardsNodes = new AtomicReference<Map<String,List<String>>>();
 
   public ZookeeperClusterStatus(ZooKeeper zooKeeper) {
     _zk = zooKeeper;
@@ -322,7 +325,21 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public List<String> getOnlineShardServers(String cluster) {
+  public List<String> getOnlineShardServers(boolean useCache, String cluster) {
+    if (useCache) {
+      synchronized (_onlineShardsNodes) {
+        Map<String, List<String>> map = _onlineShardsNodes.get();
+        if (map != null) {
+          List<String> shards = map.get(cluster);
+          if (shards != null) {
+            return shards;
+          }
+        } else {
+          _onlineShardsNodes.set(new ConcurrentHashMap<String, List<String>>());
+          watchForOnlineShardNodes(cluster);
+        }
+      }
+    }
     LOG.info("trace getOnlineShardServers");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/online/shard-nodes", false);
@@ -331,6 +348,16 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     }
+  }
+  
+  private void watchForOnlineShardNodes(final String cluster) {
+    new WatchChildren(_zk, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
+      @Override
+      public void action(List<String> children) {
+        Map<String, List<String>> map = _onlineShardsNodes.get();
+        map.put(cluster, children);
+      }
+    });
   }
 
   @Override
@@ -391,13 +418,13 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     }
     return true;
   }
-  
-  private Map<String,TableDescriptor> _tableDescriptorCache = new ConcurrentHashMap<String, TableDescriptor>();
+
+  private Map<String, TableDescriptor> _tableDescriptorCache = new ConcurrentHashMap<String, TableDescriptor>();
 
   @Override
   public TableDescriptor getTableDescriptor(boolean useCache, String cluster, String table) {
     if (useCache) {
-      TableDescriptor tableDescriptor = _tableDescriptorCache.get(cluster +"/" + table);
+      TableDescriptor tableDescriptor = _tableDescriptorCache.get(table);
       if (tableDescriptor != null) {
         return tableDescriptor;
       }
@@ -428,6 +455,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       throw new RuntimeException(e);
     }
     tableDescriptor.cluster = cluster;
+    _tableDescriptorCache.put(table, tableDescriptor);
     return tableDescriptor;
   }
 
@@ -552,7 +580,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
   }
 
   @Override
-  public int getShardCount(String cluster, String table) {
+  public int getShardCount(boolean useCache, String cluster, String table) {
+    if (useCache) {
+      TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
+      return tableDescriptor.shardCount;
+    }
     LOG.info("trace getShardCount");
     try {
       return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));

@@ -128,9 +128,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
-    //@TODO watch for cluster changes
+    // @TODO watch for cluster changes
     List<String> tables = _zookeeper.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
-    //watch for table changes
+    // watch for table changes
     for (String table : tables) {
       new WatchChildren(_zookeeper, ZookeeperPathConstants.getTablePath(cluster, table)).watch(new OnChange() {
         @Override
@@ -138,7 +138,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
           updateLayout();
         }
       });
-      //watch for shard changes
+      // watch for shard changes
       new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
         @Override
         public void action(List<String> children) {
@@ -147,7 +147,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       });
     }
   }
-  
+
   private synchronized void updateLayout() {
     List<String> tableList = _clusterStatus.getTableList();
     HashMap<String, Map<String, String>> newLayout = new HashMap<String, Map<String, String>>();
@@ -158,7 +158,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
         continue;
       }
       List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
-      List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(cluster);
+      List<String> offlineShardServers = _clusterStatus.getOfflineShardServers(false, cluster);
       List<String> shardList = getShardList(cluster, table);
       layoutManager.setNodes(shardServerList);
       layoutManager.setNodesOffline(offlineShardServers);
@@ -209,7 +209,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
     checkTable(table);
     String cluster = _clusterStatus.getCluster(true, table);
     _queryChecker.checkQuery(blurQuery);
-    int shardCount = _clusterStatus.getShardCount(cluster, table);
+    int shardCount = _clusterStatus.getShardCount(true, cluster, table);
 
     OUTER: for (int retries = 0; retries < _maxDefaultRetries; retries++) {
       try {
@@ -315,7 +315,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
       throw new BException("Unknown error while trying to get current searches [{0}]", e, table);
     }
   }
-  
+
   @Override
   public List<Long> queryStatusIdList(final String table) throws BlurException, TException {
     checkTable(table);
@@ -488,7 +488,7 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   }
 
   private <R> R scatterGather(String cluster, final BlurCommand<R> command, Merger<R> merger) throws Exception {
-    return ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(cluster), new ParallelCall<String, R>() {
+    return ForkJoin.execute(_executor, _clusterStatus.getOnlineShardServers(true, cluster), new ParallelCall<String, R>() {
       @SuppressWarnings("unchecked")
       @Override
       public R call(String hostnamePort) throws Exception {

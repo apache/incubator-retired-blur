@@ -150,6 +150,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     ZookeeperPathConstants.getOnlineShardsPath(cluster);
     new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
       private List<String> _prevOnlineShards = new ArrayList<String>();
+
       @Override
       public void action(List<String> onlineShards) {
         List<String> oldOnlineShards = _prevOnlineShards;
@@ -615,7 +616,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
     }
 
     List<String> shardServerList = _clusterStatus.getShardServerList(cluster);
-    List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(cluster));
+    List<String> offlineShardServers = new ArrayList<String>(_clusterStatus.getOfflineShardServers(false, cluster));
     List<String> shardList = getShardList(table);
 
     layoutManager.setNodes(shardServerList);

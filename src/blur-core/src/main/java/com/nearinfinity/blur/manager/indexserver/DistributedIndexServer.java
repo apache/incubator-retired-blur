@@ -486,7 +486,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
       reader.setTable(table);
       reader.setIndexDeletionPolicy(_indexDeletionPolicy);
       reader.setSimilarity(getSimilarity(table));
-      reader.setClusterStatus(_clusterStatus);
       reader.init();
       index = reader;
     } else {

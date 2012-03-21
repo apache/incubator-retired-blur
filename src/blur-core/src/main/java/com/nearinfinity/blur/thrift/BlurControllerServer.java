@@ -129,23 +129,20 @@ public class BlurControllerServer extends TableAdmin implements Iface {
 
   private void watchForLayoutChanges(final String cluster) throws KeeperException, InterruptedException {
     // @TODO watch for cluster changes
-    List<String> tables = _zookeeper.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
-    // watch for table changes
-    for (String table : tables) {
-      new WatchChildren(_zookeeper, ZookeeperPathConstants.getTablePath(cluster, table)).watch(new OnChange() {
-        @Override
-        public void action(List<String> children) {
-          updateLayout();
-        }
-      });
-      // watch for shard changes
-      new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
-        @Override
-        public void action(List<String> children) {
-          updateLayout();
-        }
-      });
-    }
+    new WatchChildren(_zookeeper, ZookeeperPathConstants.getTablesPath(cluster)).watch(new OnChange() {
+      @Override
+      public void action(List<String> children) {
+        LOG.info("Layout change.");
+        updateLayout();
+      }
+    });
+    new WatchChildren(_zookeeper, ZookeeperPathConstants.getOnlineShardsPath(cluster)).watch(new OnChange() {
+      @Override
+      public void action(List<String> children) {
+        LOG.info("Layout change.");
+        updateLayout();
+      }
+    });
   }
 
   private synchronized void updateLayout() {

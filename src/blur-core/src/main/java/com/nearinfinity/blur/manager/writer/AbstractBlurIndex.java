@@ -2,29 +2,26 @@ package com.nearinfinity.blur.manager.writer;
 
 import static com.nearinfinity.blur.lucene.LuceneConstant.LUCENE_VERSION;
 
-import com.nearinfinity.blur.analysis.BlurAnalyzer;
-import com.nearinfinity.blur.index.DirectIODirectory;
-import com.nearinfinity.blur.manager.clusterstatus.ClusterStatus;
-import com.nearinfinity.blur.utils.BlurConstants;
-import org.apache.lucene.index.IndexDeletionPolicy;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexReader.FieldOption;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
-import org.apache.lucene.index.TieredMergePolicy;
-import org.apache.lucene.search.Similarity;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.lucene.index.IndexDeletionPolicy;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.KeepOnlyLastCommitDeletionPolicy;
+import org.apache.lucene.index.TieredMergePolicy;
+import org.apache.lucene.search.Similarity;
+
+import com.nearinfinity.blur.analysis.BlurAnalyzer;
+import com.nearinfinity.blur.index.DirectIODirectory;
+
 public abstract class AbstractBlurIndex extends BlurIndex {
 
   private BlurAnalyzer _analyzer;
   private BlurIndexCloser _closer;
-  private ClusterStatus _clusterStatus;
   private DirectIODirectory _directory;
   private IndexDeletionPolicy _indexDeletionPolicy = new KeepOnlyLastCommitDeletionPolicy();
   private AtomicReference<IndexReader> _indexReaderRef = new AtomicReference<IndexReader>();
@@ -47,16 +44,8 @@ public abstract class AbstractBlurIndex extends BlurIndex {
   }
 
   protected void initIndexReader(IndexReader reader) throws IOException {
-    _indexReaderRef.set(updateSchema(reader));
+    _indexReaderRef.set(reader);
     _refresher.register(this);
-  }
-
-  private IndexReader updateSchema(IndexReader reader) {
-    if (_clusterStatus != null) {
-      Collection<String> fieldNames = reader.getFieldNames(FieldOption.ALL);
-      _clusterStatus.writeCacheFieldsForTable(BlurConstants.BLUR_CLUSTER,_table,fieldNames);
-    }
-    return reader;
   }
 
   @Override
@@ -70,7 +59,7 @@ public abstract class AbstractBlurIndex extends BlurIndex {
     }
     IndexReader reader = IndexReader.openIfChanged(oldReader, true);
     if (reader != null && oldReader != reader) {
-      _indexReaderRef.set(updateSchema(reader));
+      _indexReaderRef.set(reader);
       _closer.close(oldReader);
     }
   }
@@ -112,10 +101,6 @@ public abstract class AbstractBlurIndex extends BlurIndex {
 
   public void setCloser(BlurIndexCloser closer) {
     _closer = closer;
-  }
-
-  public void setClusterStatus(ClusterStatus clusterStatus) {
-    _clusterStatus = clusterStatus;
   }
 
   public void setDirectory(DirectIODirectory directory) {

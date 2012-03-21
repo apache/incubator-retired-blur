@@ -81,20 +81,17 @@ public abstract class TableAdmin implements Iface {
       }
       EnableTable.enableTable(_zookeeper, cluster, table);
       waitForTheTableToEnable(cluster, table);
+      waitForTheTableToEngage(cluster, table);
     } catch (Exception e) {
       LOG.error("Unknown error during enable of [table={0}]", e, table);
       throw new BException(e.getMessage(), e);
     }
   }
 
-  private void waitForTheTableToEnable(String cluster, String table) throws BlurException, TException {
-    TableDescriptor describe = describe(table);
-    int shardCount = describe.shardCount;
-    LOG.info("Waiting for shards to enabled on table [" + table + "]");
+  private void waitForTheTableToEnable(String cluster, String table) throws BlurException {
+    LOG.info("Waiting for shards to engage on table [" + table + "]");
     while (true) {
-      Map<String, String> shardServerLayout = shardServerLayout(table);
-      LOG.info("Shards [" + shardServerLayout.size() + "/" + shardCount + "] of table [" + table + "] enabled");
-      if (shardServerLayout.size() == shardCount) {
+      if (_clusterStatus.isEnabled(true, cluster, table)) {
         return;
       }
       try {
@@ -102,6 +99,25 @@ public abstract class TableAdmin implements Iface {
       } catch (InterruptedException e) {
         LOG.error("Unknown error while enabling table [" + table + "]", e);
         throw new BException("Unknown error while enabling table [" + table + "]", e);
+      }
+    }
+  }
+
+  private void waitForTheTableToEngage(String cluster, String table) throws BlurException, TException {
+    TableDescriptor describe = describe(table);
+    int shardCount = describe.shardCount;
+    LOG.info("Waiting for shards to engage on table [" + table + "]");
+    while (true) {
+      Map<String, String> shardServerLayout = shardServerLayout(table);
+      LOG.info("Shards [" + shardServerLayout.size() + "/" + shardCount + "] of table [" + table + "] engaged");
+      if (shardServerLayout.size() == shardCount) {
+        return;
+      }
+      try {
+        Thread.sleep(3000);
+      } catch (InterruptedException e) {
+        LOG.error("Unknown error while engaging table [" + table + "]", e);
+        throw new BException("Unknown error while engaging table [" + table + "]", e);
       }
     }
   }

@@ -11,20 +11,19 @@ $graph_height: $instance_height - $title_height;
 	height: $title_height;
 	h3{ line-height: $title_height; }
 	text-align: center;
-	border: 1px solid #ddd;
-	@include gradient-vertical(#fff, #e6e6e6);
+	border: 1px solid #ccc;
+	@include gradient-vertical(#fff, #F4F4F4);
 }
 
 @mixin clickable{
 	cursor: pointer;
 	&:hover{
-		opacity: .75;
+		opacity: .6;
 	}
 }
 
 #metrics_page_wrapper{
 	.create_graph_prompt{
-		@include border-radius(10px);
 		margin-top: 10px;
 		@include clickable_title;
 		@include clickable;
@@ -58,7 +57,7 @@ $graph_height: $instance_height - $title_height;
 			@include graph_component;
 			width: 100%;
 			height: $graph_height;
-			border: 1px solid #ddd;
+			border: 1px solid #ccc;
 			position: absolute;
 			.graph_select{
 				@include graph_component;
@@ -66,7 +65,7 @@ $graph_height: $instance_height - $title_height;
 				height: 100%;
 				float: left;
 				text-align: center;
-				border-right: 1px solid #ddd;
+				border-right: 1px solid #ccc;
 				input{
 					margin-top: $graph_height/2 - 10;
 				}

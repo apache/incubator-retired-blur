@@ -11,10 +11,10 @@
     min-width: 200px;
 	  top: 35px;
 	  right: 0px;
-	  background-color: #E6E6E6;
+	  background-color: #F4F4F4;
 	  position: absolute;
 		@include border-radius-bottom;
-	  border: solid 1px #bbb;
+	  border: solid 1px #ccc;
 	  border-top: none;
   }
   img{ 
@@ -45,7 +45,8 @@
     left: 0;
     padding: 10px 0px 0px 10px;
     box-sizing: border-box;
-		@include gradient-vertical(#fff, #e6e6e6);
+		@include gradient-vertical(#fff, #F4F4F4);
+    border-bottom: 1px solid #ccc;
     #filters_wrap{
       & > div{ display:inline-block; }
       .partial-section, .body { padding: 0.5em; }

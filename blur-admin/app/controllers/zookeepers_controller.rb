@@ -49,8 +49,6 @@ class ZookeepersController < ApplicationController
   end
 
   def make_current
-    # Javascript redirect (has to be done in js)
-    #render :js => "window.location = '#{request.referer}'"
     render :text => ''
   end
 

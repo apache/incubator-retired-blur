@@ -8,8 +8,7 @@ $(document).ready(function(){
 	var hdfs_data = {};
 	var joinedGraphData = {disk: {metrics:[]}, nodes: {metrics:[]}, block: {metrics:[]}};
 	var time_length = 5;
-	var refresh_time = 5000;
-	var refresh_joined_time = 1000;
+	var refresh_time = 15000;
 	var actions = ['disk', 'nodes', 'block'];
 
 	//hash of labels and object lookup strings for the various actions
@@ -69,6 +68,9 @@ $(document).ready(function(){
 			type: 'PUT',
 			data: req_data,
 			success: function(data){
+				if (data.length <= 0){
+					return;
+				}
 				if (!hdfs_data[id]){
 					hdfs_data[id] = { disk: { metrics: [] }, nodes: { metrics: [] }, block: { metrics: [] } };
 				}
@@ -101,6 +103,7 @@ $(document).ready(function(){
 						draw_graph(graph_container.find('.graph'), hdfs_data[id][action]);
 					}
 				}
+				update_joined_graphs();
 			}
 		});
 	};
@@ -111,9 +114,6 @@ $(document).ready(function(){
 			var action = joinedInstance.find('li.active > a').data('action');
 			draw_graph(joinedInstance.find('.tab-pane.active > .graph'), joinedGraphData[action]);
 		}
-		setTimeout(function(){
-			update_joined_graphs(action);
-		}, refresh_joined_time);
 	};
 
 	var update_live_graphs = function(){
@@ -142,12 +142,7 @@ $(document).ready(function(){
 				}
 			}
 		});
-		if (joinedGraphData[action].metrics.length > 0){
-			draw_graph(joinedInstance.find('.tab-pane.active > .graph'), joinedGraphData[action]);
-		} else {
-			//Gather the data for this action for every graph that is checked
-		}
-		
+		draw_graph(joinedInstance.find('.tab-pane.active > .graph'), joinedGraphData[action]);
 		container.find('.graph_title > h3').text('Composite Graph: ' + graphTitles.join(', '));
 	};
 
@@ -195,10 +190,6 @@ $(document).ready(function(){
 	setTimeout(function(){
 		update_live_graphs();
 	}, refresh_time);
-
-	setTimeout(function(){
-		update_joined_graphs();
-	}, refresh_joined_time);
 });
 
 

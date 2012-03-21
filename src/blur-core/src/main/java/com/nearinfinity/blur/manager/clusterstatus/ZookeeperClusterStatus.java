@@ -60,8 +60,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
     zooKeeper.getChildren("/", false);
 
-    boolean useCache = false;
-
     ZookeeperClusterStatus status = new ZookeeperClusterStatus(zooKeeper);
     // for (int i = 0; i < 1; i++) {
     while (true) {
@@ -79,42 +77,6 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
 
       Thread.sleep(100);
-
-      // long s1 = System.nanoTime();
-      // System.out.println(status.getClusterList());
-      // long s2 = System.nanoTime();
-      // System.out.println(status.getControllerServerList());
-      // long s3 = System.nanoTime();
-      // System.out.println(status.getOnlineShardServers(true, "default"));
-      // long s4 = System.nanoTime();
-      // System.out.println(status.getShardServerList("default"));
-      // long s5 = System.nanoTime();
-      // System.out.println(status.getTableList());
-      // long s6 = System.nanoTime();
-      //
-      // for (String cluster : status.getClusterList()) {
-      // System.out.println("cluster=" + cluster + " " +
-      // status.getOnlineShardServers(true, cluster));
-      // System.out.println("cluster=" + cluster + " " +
-      // status.getShardServerList(cluster));
-      // }
-      // long s7 = System.nanoTime();
-      //
-      // for (String table : status.getTableList()) {
-      // System.out.println("table=" + table + " " +
-      // status.getTableDescriptor(useCache, "default", table));
-      // System.out.println(status.exists(useCache, "default", table));
-      // System.out.println(status.isEnabled(useCache, "default", table));
-      // }
-      // long s8 = System.nanoTime();
-      //
-      // System.out.println(s2 - s1);
-      // System.out.println(s3 - s2);
-      // System.out.println(s4 - s3);
-      // System.out.println(s5 - s4);
-      // System.out.println(s6 - s5);
-      // System.out.println(s7 - s6);
-      // System.out.println(s8 - s7);
     }
   }
 
@@ -316,7 +278,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getShardServerList(String cluster) {
-    LOG.info("trace getShardServerList");
+    LOG.debug("trace getShardServerList");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getClustersPath() + "/" + cluster + "/shard-nodes", false);
     } catch (KeeperException e) {
@@ -336,7 +298,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return false;
       }
     }
-    LOG.info("trace exists");
+    LOG.debug("trace exists");
     try {
       if (_zk.exists(ZookeeperPathConstants.getTablePath(cluster, table), false) == null) {
         return false;
@@ -359,7 +321,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return enabled;
       }
     }
-    LOG.info("trace isEnabled");
+    LOG.debug("trace isEnabled");
     String tablePathIsEnabled = ZookeeperPathConstants.getTableEnabledPath(cluster, table);
     try {
       if (_zk.exists(tablePathIsEnabled, false) == null) {
@@ -383,7 +345,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return tableDescriptor;
       }
     }
-    LOG.info("trace getTableDescriptor");
+    LOG.debug("trace getTableDescriptor");
     TableDescriptor tableDescriptor = new TableDescriptor();
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableEnabledPath(cluster, table), false) == null) {
@@ -436,7 +398,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public List<String> getTableList(String cluster) {
-    LOG.info("trace getTableList");
+    LOG.debug("trace getTableList");
     try {
       return _zk.getChildren(ZookeeperPathConstants.getTablesPath(cluster), false);
     } catch (KeeperException e) {
@@ -462,7 +424,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return cluster;
       }
     }
-    LOG.info("trace getCluster");
+    LOG.debug("trace getCluster");
     List<String> clusterList = getClusterList();
     for (String cluster : clusterList) {
       try {
@@ -481,7 +443,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public void clearLocks(String cluster, String table) {
-    LOG.info("trace clearLocks");
+    LOG.debug("trace clearLocks");
     String lockPath = ZookeeperPathConstants.getLockPath(cluster, table);
     try {
       if (_zk.exists(lockPath, false) == null) {
@@ -508,7 +470,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       }
       return safeModeTimestamp < System.currentTimeMillis() ? false : true;
     }
-    LOG.info("trace isInSafeMode");
+    LOG.debug("trace isInSafeMode");
     try {
       String blurSafemodePath = ZookeeperPathConstants.getSafemodePath(cluster);
       Stat stat = _zk.exists(blurSafemodePath, false);
@@ -538,7 +500,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       TableDescriptor tableDescriptor = getTableDescriptor(true, cluster, table);
       return tableDescriptor.shardCount;
     }
-    LOG.info("trace getShardCount");
+    LOG.debug("trace getShardCount");
     try {
       return Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableShardCountPath(cluster, table))));
     } catch (NumberFormatException e) {
@@ -552,7 +514,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public Set<String> getBlockCacheFileTypes(String cluster, String table) {
-    LOG.info("trace getBlockCacheFileTypes");
+    LOG.debug("trace getBlockCacheFileTypes");
     try {
       byte[] data = getData(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table));
       if (data == null) {
@@ -576,7 +538,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
 
   @Override
   public boolean isBlockCacheEnabled(String cluster, String table) {
-    LOG.info("trace isBlockCacheEnabled");
+    LOG.debug("trace isBlockCacheEnabled");
     try {
       if (_zk.exists(ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), false) == null) {
         return false;
@@ -598,7 +560,7 @@ public class ZookeeperClusterStatus extends ClusterStatus {
         return flag;
       }
     }
-    LOG.info("trace isReadOnly");
+    LOG.debug("trace isReadOnly");
     String path = ZookeeperPathConstants.getTableReadOnlyPath(cluster, table);
     Boolean flag = null;
     try {

@@ -44,7 +44,6 @@ public class WatchChildren {
 
       }
     }), path);
-
   }
 
   public WatchChildren(ZooKeeper zooKeeper, String path) {

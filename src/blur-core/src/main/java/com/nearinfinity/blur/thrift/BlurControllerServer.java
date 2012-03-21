@@ -51,7 +51,6 @@ import com.nearinfinity.blur.manager.results.MergerBlurResultIterable;
 import com.nearinfinity.blur.manager.stats.MergerTableStats;
 import com.nearinfinity.blur.manager.status.MergerQueryStatus;
 import com.nearinfinity.blur.manager.status.MergerQueryStatusSingle;
-import com.nearinfinity.blur.thrift.client.BlurClient;
 import com.nearinfinity.blur.thrift.commands.BlurCommand;
 import com.nearinfinity.blur.thrift.generated.Blur.Client;
 import com.nearinfinity.blur.thrift.generated.Blur.Iface;
@@ -78,6 +77,17 @@ import com.nearinfinity.blur.zookeeper.WatchChildren;
 import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 
 public class BlurControllerServer extends TableAdmin implements Iface {
+  
+  public static abstract class BlurClient {
+    public abstract <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws Exception;
+  }
+  
+  public static class BlurClientRemote extends BlurClient {
+    @Override
+    public <T> T execute(String node, BlurCommand<T> command, int maxRetries, long backOffTime, long maxBackOffTime) throws Exception {
+      return BlurClientManager.execute(node,command,maxRetries,backOffTime,maxBackOffTime);
+    }
+  }
 
   private static final String CONTROLLER_THREAD_POOL = "controller-thread-pool";
   private static final Log LOG = LogFactory.getLog(BlurControllerServer.class);
@@ -97,9 +107,9 @@ public class BlurControllerServer extends TableAdmin implements Iface {
   private BlurQueryChecker _queryChecker;
   private AtomicBoolean _running = new AtomicBoolean();
 
-  private int _maxFetchRetries = 1;
-  private int _maxMutateRetries = 1;
-  private int _maxDefaultRetries = 1;
+  private int _maxFetchRetries = 3;
+  private int _maxMutateRetries = 3;
+  private int _maxDefaultRetries = 3;
   private long _fetchDelay = 500;
   private long _mutateDelay = 500;
   private long _defaultDelay = 500;

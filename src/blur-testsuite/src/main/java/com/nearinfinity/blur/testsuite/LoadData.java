@@ -10,9 +10,8 @@ import java.util.Random;
 
 import org.apache.thrift.TException;
 
-import com.nearinfinity.blur.thrift.BlurClientManager;
-import com.nearinfinity.blur.thrift.commands.BlurCommand;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.BlurClient;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.Column;
 import com.nearinfinity.blur.thrift.generated.Record;
@@ -45,22 +44,18 @@ public class LoadData {
         System.out.println("Rows indexed [" + i + "] at [" + rate + "/s]");
         count = 0;
       }
-      BlurClientManager.execute(args[0], new BlurCommand<String>() {
-        @Override
-        public String call(Client client) throws BlurException, TException {
-          RowMutation mutation = new RowMutation();
-          mutation.setTable(table);
-          String rowId = getRowId();
-          mutation.setRowId(rowId);
-          mutation.setWal(wal);
-          mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
-          for (int j = 0; j < numberRecordsPerRow; j++) {
-            mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));
-          }
-          client.mutate(mutation);
-          return rowId;
-        }
-      }, 2, 100, 100);
+      
+      Iface client = BlurClient.getClient(args[0]);
+      RowMutation mutation = new RowMutation();
+      mutation.setTable(table);
+      String rowId = getRowId();
+      mutation.setRowId(rowId);
+      mutation.setWal(wal);
+      mutation.setRowMutationType(RowMutationType.REPLACE_ROW);
+      for (int j = 0; j < numberRecordsPerRow; j++) {
+        mutation.addToRecordMutations(getRecordMutation(numberOfColumns, numberOfFamilies, numberOfWords));
+      }
+      client.mutate(mutation);
       count++;
     }
   }

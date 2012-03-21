@@ -4,10 +4,9 @@ import java.io.IOException;
 
 import org.apache.thrift.TException;
 
-import com.nearinfinity.blur.thrift.BlurClientManager;
-import com.nearinfinity.blur.thrift.commands.BlurCommand;
+import com.nearinfinity.blur.thrift.BlurClient;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
-import com.nearinfinity.blur.thrift.generated.Blur.Client;
+import com.nearinfinity.blur.thrift.generated.Blur.Iface;
 import com.nearinfinity.blur.thrift.generated.BlurException;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 
@@ -28,13 +27,8 @@ public class CreateTable {
     
     tableDescriptor.shardCount = shardCount;
     tableDescriptor.tableUri = uri;
-    
-    BlurClientManager.execute(connectionStr, new BlurCommand<Void>() {
-      @Override
-      public Void call(Client client) throws BlurException, TException {
-        client.createTable(tableDescriptor);
-        return null;
-      }
-    });
+
+    Iface client = BlurClient.getClient(connectionStr);
+    client.createTable(tableDescriptor);
   }
 }

@@ -1,6 +1,7 @@
 class BlurQueriesController < ApplicationController
   respond_to :html, :only => :index
   respond_to :json, :except => :index
+  before_filter :set_zookeeper, :only => :index
   before_filter :current_zookeeper, :only => [:index, :refresh]
   before_filter :zookeepers, :only => [:index, :refresh]
 

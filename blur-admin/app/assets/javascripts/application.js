@@ -67,15 +67,7 @@ $(document).ready(function(){
           title: 'Select a Zookeeper Instance to use:',
           shown: function(){
             $('#zookeeper_selector').change(function(){
-              $.ajax(Routes.make_current_zookeeper_path(), 
-              {
-                type: 'put',
-                data:{ id: $(this).val() },
-                success: function(){ 
-									window.location = self.href; 
-								}
-              });
-              $().closePopup();
+							window.location = Routes.zookeeper_path($(this).val()); 
             });
           }
         });

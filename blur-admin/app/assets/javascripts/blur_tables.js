@@ -89,7 +89,7 @@ $(document).ready(function() {
       if (table === 'active') {
         var host_html = "<td class='blur_table_hosts_shards'>";
         if (blur_table['server']) {
-          host_html += "<a class='hosts' href='" + (Routes.hosts_blur_table_path(id)) + "' data-remote='true'>" + host_info['hosts'] + " / " + host_info['shards'] + "</a>";
+          host_html += "<a class='hosts' href='" + (Routes.blur_tables_hosts_path(id)) + "' data-remote='true'>" + host_info['hosts'] + " / " + host_info['shards'] + "</a>";
         } else {
           host_html += "Unknown";
         }
@@ -100,7 +100,7 @@ $(document).ready(function() {
         row.append("<td class='blur_table_record_count'>" + (number_commas(blur_table['record_count'])) + "</td>");
       }
       if (table === 'active') {
-        row.append("<td class='blur_table_info'><a class='info' href='" + (Routes.schema_blur_table_path(id)) + "' data-remote='true'>view</a></td>");
+        row.append("<td class='blur_table_info'><a class='info' href='" + (Routes.blur_tables_schema_path(id)) + "' data-remote='true'>view</a></td>");
       }
       return row;
     }
@@ -218,8 +218,12 @@ $(document).ready(function() {
   };
 
   var reload_table_info = function() {
-    $.get("" + (Routes.reload_blur_tables_path()), function(data) {
-      rebuild_table(data);
+    $.ajax({
+      type: 'POST',
+      url: Routes.blur_tables_reload_path(),
+      success: function(data) {
+        rebuild_table(data);
+      }
     });
   };
 
@@ -261,7 +265,7 @@ $(document).ready(function() {
     if (typeof startWith === 'undefined') startWith = '';
     $.ajax({
       type: 'POST',
-      url: Routes.terms_blur_table_path(table_id),
+      url: Routes.blur_tables_terms_path(table_id),
       data: {
         family: family,
         column: column,
@@ -373,7 +377,7 @@ $(document).ready(function() {
             func: function() {
               $.extend(sharedAjaxSettings, {
                 type: 'PUT',
-                url: Routes.enable_selected_blur_tables_path()
+                url: Routes.blur_tables_enable_selected_path()
               });
               $.ajax(sharedAjaxSettings);
               pending_change(cluster_id, table_ids, 'disabled', 'Enabling');
@@ -396,7 +400,7 @@ $(document).ready(function() {
             func: function() {
               $.extend(sharedAjaxSettings, {
                 type: 'PUT',
-                url: Routes.disable_selected_blur_tables_path()
+                url: Routes.blur_tables_disable_selected_path()
               });
               $.ajax(sharedAjaxSettings);
               pending_change(cluster_id, table_ids, 'active', 'Disabling');
@@ -419,7 +423,7 @@ $(document).ready(function() {
             func: function() {
               $.extend(sharedAjaxSettings, {
                 type: 'DELETE',
-                url: Routes.forget_selected_blur_tables_path()
+                url: Routes.blur_tables_forget_selected_path()
               });
               $.ajax(sharedAjaxSettings);
               pending_change(cluster_id, table_ids, 'deleted', 'Forgetting');
@@ -439,7 +443,7 @@ $(document).ready(function() {
         var delete_tables = function(delete_index) {
           $.extend(sharedAjaxSettings, {
             type: 'DELETE',
-            url: Routes.destroy_selected_blur_tables_path()
+            url: Routes.blur_tables_destroy_selected_path()
           });
           sharedAjaxSettings.data.delete_index = delete_index;
           $.ajax(sharedAjaxSettings);

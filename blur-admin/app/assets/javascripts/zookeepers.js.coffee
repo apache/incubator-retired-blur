@@ -269,7 +269,7 @@ $(document).ready ->
   load_dashboard()
 
   $('.zookeeper_info').live 'click', ->
-    window.location = Routes.show_zookeeper_path($(this).children('table').attr('id'))
+    window.location = Routes.zookeeper_path($(this).children('table').attr('id'))
   $('a.long_running_queries').live 'click', ->
     url = $(this).attr('href')
     $.ajax url, 

@@ -10,7 +10,8 @@ BlurAdmin::Application.routes.draw do
     match '/preferences/:pref_type' => 'preferences#update', :via => :put, :as => :preference
   end
 
-  resource :search, :controller => 'search'
+  resource :search, :controller => 'search', :only => [:create, :show, :update, :delete]
+  match 'search(/:id)' => 'search#show', :via => :get
   match 'search/load/:search_id' => 'search#load', :as => :search_load
   match 'search/delete/:search_id/:blur_table' => 'search#delete', :via => :delete, :as => :delete_search
   match 'search/:search_id/:blur_table' => 'search#create', :via => :get, :as => :fetch_results
@@ -20,28 +21,31 @@ BlurAdmin::Application.routes.draw do
   match 'reload/:blur_table' => 'search#reload'
 
   resources :zookeepers, :only => :index
-  match 'zookeeper' => 'zookeepers#show_current', :as => :zookeeper
-  match 'zookeepers/make_current' => 'zookeepers#make_current', :via => :put, :as => :make_current_zookeeper
+  match 'zookeeper(/:id)' => 'zookeepers#show', :via => :get, :as => :zookeeper
   match 'zookeepers/dashboard' => 'zookeepers#dashboard', :via => :get, :as => :dashboard
-  match 'zookeepers/:id' => 'zookeepers#show', :via => :get, :as => :show_zookeeper
   match 'zookeepers/:id/controller/:controller_id' => 'zookeepers#destroy_controller', :via => :delete, :as => :destroy_controller
   match 'zookeepers/:id/shard/:shard_id' => 'zookeepers#destroy_shard', :via => :delete, :as => :destroy_shard
   match 'zookeepers/:id/cluster/:cluster_id' => 'zookeepers#destroy_cluster', :via => :delete, :as => :destroy_cluster
   match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
 
-  resources :blur_tables, :except => [:new, :create, :edit, :show, :update, :destroy] do
-    put 'enable', :on => :collection, :as => :enable_selected
-    put 'disable', :on => :collection, :as => :disable_selected
-    delete 'forget', :on => :collection, :as => :forget_selected
-    delete 'destroy', :on => :collection, :as => :destroy_selected
-    get 'hosts', :on => :member
-    get 'schema', :on => :member
-    get 'reload', :on => :collection, :as => :reload
-    post 'terms', :on => :member
+  namespace :blur_tables do
+    get '(/:id)', :as => :index, :action => 'index'
+    put 'enable', :as => :enable_selected
+    put 'disable', :as => :disable_selected
+    delete 'forget', :as => :forget_selected
+    delete '/', :as => :destroy_selected, :action => 'destroy'
+    get '/:id/hosts', :as => :hosts, :action => 'hosts'
+    get '/:id/schema', :as => :schema, :action => 'schema'
+    post 'reload', :as => :reload
+    post '/:id/terms', :as => :terms, :action => 'terms'
   end
 
   match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh
-  resources :blur_queries, :only => [:index, :update] do
+  resources :blur_queries, :only => [:update] do
+    collection do
+      get '(/:id)', :as => :index, :action => :index
+    end
+
     member do
       get 'more_info'
       get 'times'

@@ -131,11 +131,6 @@ describe BlurTablesController do
         @blur_table.should_receive(:blur_destroy).at_least(:once).with(false, kind_of(String))
         delete :destroy, :tables => @tables, :delete_index => 'not true'
       end
-
-      #it "should render JSON" do
-      #  delete :destroy, :tables => @tables
-      #  response.content_type.should == 'application/json'
-      #end
     end
 
     describe "DELETE forget" do

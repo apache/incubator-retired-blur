@@ -28,14 +28,6 @@ describe BlurQuery do
     end
   end
 
-  describe 'zookeeper' do
-    it 'should return the zookeeper associated with this query' do 
-      @zoo_with_query = FactoryGirl.create :zookeeper_with_blur_query
-      @zooquery = @zoo_with_query.blur_queries[0]
-      @zooquery.zookeeper.should == @zoo_with_query
-    end
-  end
-
   describe 'state string' do
     it 'should return running when the state is 0' do
       @query.state = 0

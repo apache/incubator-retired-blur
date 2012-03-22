@@ -7,7 +7,7 @@ class BlurQueriesController < ApplicationController
 
   def refresh
     lower_range = params[:time_length].to_i.minute.ago
-    @current_zookeeper.blur_queries.where("blur_queries.updated_at > ? and blur_tables.status = ?", lower_range, 4).collect do |query| 
+    query_summaries = @current_zookeeper.blur_queries.where("blur_queries.updated_at > ? and blur_tables.status = ?", lower_range, 4).collect do |query| 
       summary = query.summary(current_user)
       summary[:action] = ''
       summary

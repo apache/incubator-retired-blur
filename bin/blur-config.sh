@@ -21,6 +21,37 @@ export BLUR_HOME="$bin"/..
 export BLUR_HOME_CONF=$BLUR_HOME/conf
 
 . $BLUR_HOME/conf/blur-env.sh
+if [ -z "$JAVA_HOME" ]; then
+  cat 1>&2 <<EOF
++======================================================================+
+|      Error: JAVA_HOME is not set and Java could not be found         |
++----------------------------------------------------------------------+
+| Please download the latest Sun JDK from the Sun Java web site        |
+|       > http://java.sun.com/javase/downloads/ <                      |
+|                                                                      |
+| Hadoop and Blur requires Java 1.6 or later.                          |
+| NOTE: This script will find Sun Java whether you install using the   |
+|       binary or the RPM based installer.                             |
++======================================================================+
+EOF
+  exit 1
+fi
+
+if [ -z "$HADOOP_HOME" ]; then
+  cat 1>&2 <<EOF
++======================================================================+
+|      Error: HADOOP_HOME is not set                                   |
++----------------------------------------------------------------------+
+| Please download the stable Hadoop version from Apache web site       |
+|       > http://hadoop.apache.org/ <                                  |
+|                                                                      |
+| Blur requires Hadoop 0.20.205 or later.                              |
++======================================================================+
+EOF
+  exit 1
+fi
+
+export JAVA=$JAVA_HOME/bin/java
 
 export BLUR_LOGS=${BLUR_LOGS:=$BLUR_HOME/logs}
 
@@ -47,5 +78,18 @@ for f in $BLUR_HOME/lib/*.jar; do
 done
 
 export BLUR_CLASSPATH
+
+# setup 'java.library.path' for native-hadoop code if necessary
+if [ -d "${HADOOP_HOME}/build/native" -o -d "${HADOOP_HOME}/lib/native" -o -d "${HADOOP_HOME}/sbin" ]; then
+  JAVA_PLATFORM=`CLASSPATH=${BLUR_CLASSPATH} ${JAVA} -Xmx32m ${HADOOP_JAVA_PLATFORM_OPTS} org.apache.hadoop.util.PlatformName | sed -e "s/ /_/g"`
+
+  if [ -d "${HADOOP_HOME}/lib/native" ]; then
+    if [ "x$JAVA_LIBRARY_PATH" != "x" ]; then
+      JAVA_LIBRARY_PATH=${JAVA_LIBRARY_PATH}:${HADOOP_HOME}/lib/native/${JAVA_PLATFORM}
+    else
+      JAVA_LIBRARY_PATH=${HADOOP_HOME}/lib/native/${JAVA_PLATFORM}
+    fi
+  fi
+fi
 
 HOSTNAME=`hostname`

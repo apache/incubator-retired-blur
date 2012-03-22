@@ -19,6 +19,7 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/blur-config.sh
 
-"$JAVA_HOME"/bin/java $BLUR_COMMAND -cp $BLUR_CLASSPATH $@
+"$JAVA_HOME"/bin/java -Djava.library.path=$JAVA_LIBRARY_PATH $BLUR_COMMAND -cp $BLUR_CLASSPATH $@
+
 
 

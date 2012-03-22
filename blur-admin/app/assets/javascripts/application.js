@@ -8,15 +8,6 @@
 //= require_self
 
 $(document).ready(function(){
-  //Zookeeper context switch
-  //reload page with new zookeeper
-  $('#zookeeper_id').live('change', function(){
-    $(this).closest('form').submit();
-  });
-	$('#change_current_zookeeper').bind('ajax:success', function() {
-		window.location.reload();
-	});
-        
   //fade out flash messages for logging in and out
   $("#flash").delay(5000).fadeOut("slow");
   
@@ -46,33 +37,4 @@ $(document).ready(function(){
   });
 
   $('.dropdown-toggle').dropdown();
-    
-  //Fix menus with no zookeeper context
-  if (typeof Zookeeper != 'undefined' && Zookeeper.instances) {
-    $('#env_link, #tables_link, #queries_link, #search_link').click(function(evt){
-      var self = this;
-      if (Zookeeper.instances.length == 0) {
-        alert('There are no Zookeeper Instances registered yet.  This page will not work until then.');
-        return false;
-      } else if (Zookeeper.instances.length == 1) {
-        return;
-      } else {
-        var select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>";
-        $.each(Zookeeper.instances, function(){
-          select_box += "<option value='" + this.id + "'>" + this.name + "</option>";
-        });
-        select_box += "</select></div>" ;
-        $().popup({
-          body: select_box,
-          title: 'Select a Zookeeper Instance to use:',
-          shown: function(){
-            $('#zookeeper_selector').change(function(){
-							window.location = Routes.zookeeper_path({id: $(this).val()}); 
-            });
-          }
-        });
-        return false;
-      }
-    });
-  }
 });

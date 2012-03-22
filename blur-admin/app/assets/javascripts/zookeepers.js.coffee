@@ -266,6 +266,28 @@ $(document).ready ->
       # Sets auto updates to run every 5 secs
       setTimeout(load_dashboard, 5000)
 
+  if (typeof Zookeeper != 'undefined' && Zookeeper.instances)
+    $('#env_link, #tables_link, #queries_link, #search_link').click (evt) ->
+      self = this
+      if Zookeeper.instances.length == 0
+        alert 'There are no Zookeeper Instances registered yet.  This page will not work until then.'
+        return false
+      else if Zookeeper.instances.length == 1
+        return
+      else
+        select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>"
+        $.each(Zookeeper.instances, () ->
+          select_box += "<option value='" + this.id + "'>" + this.name + "</option>"
+        )
+        select_box += "</select></div>"
+        $().popup
+          body: select_box
+          title: 'Select a Zookeeper Instance to use:'
+          shown: () ->
+            $('#zookeeper_selector').change ->
+              window.location = Routes.zookeeper_path({id: $(this).val()}); 
+        return false
+
   load_dashboard()
 
   $('.zookeeper_info').live 'click', ->

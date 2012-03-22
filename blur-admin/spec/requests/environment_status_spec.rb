@@ -5,13 +5,13 @@ describe "environment status" do
   let(:user) { Factory.create :user }
 
   before do
-    @zookeepers = Array.new(3).collect {Factory.create :zookeeper_with_blur_tables}
+    @zookeepers = FactoryGirl.create_list :zookeeper_with_blur_tables, 3
     visit login_path
     fill_in 'user_session_username', :with => user.username
     fill_in 'user_session_password', :with => user.password
     click_button 'Log In'
     @zookeeper = @zookeepers[1]
-    visit "/zookeepers/#{@zookeeper.id}"
+    visit "/zookeeper/#{@zookeeper.id}"
   end
 
   it "shows a current zookeeper selector in the header" do

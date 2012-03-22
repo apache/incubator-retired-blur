@@ -1,6 +1,7 @@
 class ZookeepersController < ApplicationController
 
   before_filter :set_zookeeper, :only => [:show]
+  before_filter :zookeepers, :only => [:show]
   before_filter :current_zookeeper, :only => [:show]
 
   QUERY = "

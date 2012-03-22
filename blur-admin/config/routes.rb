@@ -29,7 +29,7 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
 
   namespace :blur_tables do
-    get '(/:id)', :as => :index, :action => 'index'
+    get '(/:id)', :action => 'index'
     put 'enable', :as => :enable_selected
     put 'disable', :as => :disable_selected
     delete 'forget', :as => :forget_selected
@@ -41,11 +41,8 @@ BlurAdmin::Application.routes.draw do
   end
 
   match 'blur_queries/refresh/:time_length' => 'blur_queries#refresh', :via => :get, :as => :refresh
+  match 'blur_queries(/:id)' => 'blur_queries#index', :via => :get, :as => :blur_queries
   resources :blur_queries, :only => [:update] do
-    collection do
-      get '(/:id)', :as => :index, :action => :index
-    end
-
     member do
       get 'more_info'
       get 'times'

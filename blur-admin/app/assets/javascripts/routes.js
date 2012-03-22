@@ -176,14 +176,6 @@
   search_path: function(options) {
   return Utils.build_path(0, ["/search"], ["format"], arguments)
   },
-// new_search => /search/new(.:format)
-  new_search_path: function(options) {
-  return Utils.build_path(0, ["/search/new"], ["format"], arguments)
-  },
-// edit_search => /search/edit(.:format)
-  edit_search_path: function(options) {
-  return Utils.build_path(0, ["/search/edit"], ["format"], arguments)
-  },
 // search_load => /search/load/:search_id(.:format)
   search_load_path: function(_search_id, options) {
   return Utils.build_path(1, ["/search/load/"], ["format"], arguments)
@@ -236,8 +228,8 @@
   destroy_zookeeper_path: function(_id, options) {
   return Utils.build_path(1, ["/zookeepers/"], ["format"], arguments)
   },
-// blur_tables_index => /blur_tables(/:id)(.:format)
-  blur_tables_index_path: function(options) {
+// blur_tables => /blur_tables(/:id)(.:format)
+  blur_tables_path: function(options) {
   return Utils.build_path(0, ["/blur_tables(/", ")"], ["id", "format"], arguments)
   },
 // blur_tables_enable_selected => /blur_tables/enable(.:format)
@@ -276,6 +268,10 @@
   refresh_path: function(_time_length, options) {
   return Utils.build_path(1, ["/blur_queries/refresh/"], ["format"], arguments)
   },
+// blur_queries => /blur_queries(/:id)(.:format)
+  blur_queries_path: function(options) {
+  return Utils.build_path(0, ["/blur_queries(/", ")"], ["id", "format"], arguments)
+  },
 // more_info_blur_query => /blur_queries/:id/more_info(.:format)
   more_info_blur_query_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_queries/", "/more_info"], ["format"], arguments)
@@ -283,10 +279,6 @@
 // times_blur_query => /blur_queries/:id/times(.:format)
   times_blur_query_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_queries/", "/times"], ["format"], arguments)
-  },
-// blur_queries => /blur_queries(.:format)
-  blur_queries_path: function(options) {
-  return Utils.build_path(0, ["/blur_queries"], ["format"], arguments)
   },
 // blur_query => /blur_queries/:id(.:format)
   blur_query_path: function(_id, options) {

@@ -17,7 +17,6 @@ class Ability
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
         can :show, [:zookeepers, :help]
-        can [:show_current, :make_current], :zookeepers
         can :dashboard, :zookeepers
         can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree], :hdfs
         can [:stats], :hdfs_metrics

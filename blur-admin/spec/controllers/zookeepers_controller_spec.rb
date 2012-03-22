@@ -30,45 +30,34 @@ describe ZookeepersController do
     end
 
     describe 'GET show' do
-      it "redirects to the zookeeper page" do
+      it "assigns the current zookeeper to @zookeeper" do
         get :show
-        response.should redirect_to :zookeeper
-      end
-
-      it "assigns the passed in id to the session" do
-        get :show, :id => @zookeeper.id
-        session[:current_zookeeper_id].should == @zookeeper.id.to_s
-      end
-    end
-
-    describe 'GET show_current' do
-      it "assigns the collection all zookeepers to @zookeepers" do
-        get :show_current
-        assigns(:zookeepers).should == [@zookeeper]
+        assigns(:zookeeper).should == @zookeeper
       end
 
       it "assigns the current zookeeper to @zookeeper" do
-        get :show_current
+        get :show, :id => @zookeeper
         assigns(:zookeeper).should == @zookeeper
+        session[:current_zookeeper_id].should == @zookeeper.id
       end
 
       it "assigns the shards nodes and the controller nodes" do
         @zookeeper.stub_chain(:shards, :count).and_return(1)
         @zookeeper.stub_chain(:controllers, :count).and_return(1)
-        get :show_current
+        get :show
         assigns(:shard_nodes).should == 1
         assigns(:controller_nodes).should == 1
       end
 
       it "renders the show_current view" do
-        get :show_current
-        response.should render_template :show_current
+        get :show
+        response.should render_template :show
       end
 
       describe "testing ApplicationController current ZK logic" do
         it "with only one zookeeper it should set the current_zookeeper to be the first zookeeper found" do
           Zookeeper.should_receive(:first)
-          get :show_current, nil, nil
+          get :show, nil, nil
           assigns(:current_zookeeper).should == @zookeeper
           session[:current_zookeeper_id].should == @zookeeper.id
         end
@@ -77,14 +66,14 @@ describe ZookeepersController do
           session[:current_zookeeper_id] = 1
           Zookeeper.should_receive(:find_by_id).with(1).and_return @zookeeper
           Zookeeper.stub!(:count).and_return(2)
-          get :show_current, nil, nil
+          get :show, nil, nil
           assigns(:current_zookeeper).should == @zookeeper
           session[:current_zookeeper_id].should == @zookeeper.id
         end
 
         it "should not set the session ID if no ZK is found and should redirect to the root path" do
           Zookeeper.stub!(:first).and_return nil
-          get :show_current, nil, nil
+          get :show, nil, nil
           assigns(:current_zookeeper).should == nil
           session[:current_zookeeper_id].should == nil
           response.should redirect_to :root
@@ -92,23 +81,11 @@ describe ZookeepersController do
 
         it "should not set the session ID if no ZK is found and should redirect to the root path for xhr requests" do
           Zookeeper.stub!(:first).and_return nil
-          xhr :get, :show_current, nil, nil
+          xhr :get, :show, nil, nil
           assigns(:current_zookeeper).should == nil
           session[:current_zookeeper_id].should == nil
           response.response_code.should == 409
         end
-      end
-    end
-
-    describe 'PUT make_current' do
-      it "assigns the passed in id to the session" do
-        put :make_current, :id => @zookeeper.id
-        session[:current_zookeeper_id].should == @zookeeper.id.to_s
-      end
-
-      it 'renders the javascript redirect' do
-        put :make_current
-        response.body.should == ""
       end
     end
 

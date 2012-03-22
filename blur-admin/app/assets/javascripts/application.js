@@ -67,7 +67,7 @@ $(document).ready(function(){
           title: 'Select a Zookeeper Instance to use:',
           shown: function(){
             $('#zookeeper_selector').change(function(){
-							window.location = Routes.zookeeper_path($(this).val()); 
+							window.location = Routes.zookeeper_path({id: $(this).val()}); 
             });
           }
         });

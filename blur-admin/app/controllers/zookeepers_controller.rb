@@ -2,7 +2,7 @@ class ZookeepersController < ApplicationController
 
   before_filter :set_zookeeper, :only => [:show]
   before_filter :zookeepers, :only => [:show]
-  before_filter :current_zookeeper, :only => [:show]
+  before_filter :current_zookeeper, :only => [:show, :long_running_queries]
 
   QUERY = "
     select
@@ -58,6 +58,12 @@ class ZookeepersController < ApplicationController
       hdfs_hash
     end
     render :json => {"zookeeper_data" => zookeeper_results, "hdfs_data" => hdfs}
+  end
+
+  def long_running_queries
+    long_queries = @current_zookeeper.blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 2)
+      .collect{|query| query.summary(current_user)}
+    render :json => long_queries
   end
 
   def destroy_shard

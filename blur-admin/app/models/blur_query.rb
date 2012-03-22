@@ -4,6 +4,7 @@ class BlurQuery < ActiveRecord::Base
   include ActionView::Helpers::NumberHelper
   belongs_to :blur_table
   has_one :cluster, :through => :blur_table
+  has_one :zookeeper, :through => :cluster
 
   def cancel
     begin
@@ -14,11 +15,6 @@ class BlurQuery < ActiveRecord::Base
       logger.error e
       return false
     end
-  end
-
-  # rails 3.0 does not allow nested has_one :through relationships
-  def zookeeper
-    self.blur_table.zookeeper
   end
 
   def state_str
@@ -37,17 +33,22 @@ class BlurQuery < ActiveRecord::Base
       self.complete_shards / self.total_shards.to_f
     end
   end
-  
-  def self.where_zookeeper(zookeeper_id)
-    joins(:blur_table => :cluster).where(:blur_table =>{:clusters => {:zookeeper_id => zookeeper_id}}).includes(:blur_table).order("created_at DESC")
-  end
 
   def summary(user)
-    if user.can?(:index, :blur_queries, :query_string)
-      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :query => print_value(query_string), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.getlocal.strftime('%r'), :status => summary_state, :state => state_str}
-    else
-      {:id => id, :can_update => user.can?(:update, :blur_queries), :userid => print_value(userid), :tablename => print_value(blur_table.table_name), :start => print_value(start, 0), :time => created_at.strftime('%r'), :status => summary_state, :state => state}
-    end
+    summary_hash = 
+    {
+      :id => id, 
+      :can_update => user.can?(:update, :blur_queries), 
+      :userid => print_value(userid), 
+      :query => print_value(query_string), 
+      :tablename => print_value(blur_table.table_name), 
+      :start => print_value(start, 0), 
+      :time => created_at.getlocal.strftime('%r'), 
+      :status => summary_state, 
+      :state => state_str 
+    }
+    summary_hash.delete(:query) if user.cannot?(:index, :blur_queries, :query_string)
+    summary_hash
   end
 
   private

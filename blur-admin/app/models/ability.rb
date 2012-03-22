@@ -17,7 +17,7 @@ class Ability
         # view pages
         can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
         can :show, [:zookeepers, :help]
-        can :dashboard, :zookeepers
+        can [:dashboard, :long_running_queries], :zookeepers
         can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree], :hdfs
         can [:stats], :hdfs_metrics
         can :help, :application
@@ -26,7 +26,6 @@ class Ability
         attributes = BlurQuery.new.attribute_names.collect{|att| att.to_sym}
         attributes.delete :query_string
         can :index, :blur_queries, attributes
-        can :long_running, :blur_queries, attributes
 
         # view more info on queries with everything but query_string
         can :more_info, :blur_queries, attributes

@@ -27,6 +27,7 @@ BlurAdmin::Application.routes.draw do
   match 'zookeepers/:id/shard/:shard_id' => 'zookeepers#destroy_shard', :via => :delete, :as => :destroy_shard
   match 'zookeepers/:id/cluster/:cluster_id' => 'zookeepers#destroy_cluster', :via => :delete, :as => :destroy_cluster
   match 'zookeepers/:id/' => 'zookeepers#destroy_zookeeper', :via => :delete, :as => :destroy_zookeeper
+  match 'zookeepers/:id/long_running' => 'zookeepers#long_running_queries', :via => :post, :as => :long_running_queries
 
   namespace :blur_tables do
     get '(/:id)', :action => 'index'

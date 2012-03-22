@@ -71,14 +71,6 @@ describe BlurQuery do
     end
   end
 
-  describe 'BlurQuery find by zookeeper id' do
-    it 'should return only the queries that are associated with the given zookeeper' do 
-      @zoo_with_queries = FactoryGirl.create :zookeeper_with_blur_queries
-      @zooqueries = @zoo_with_queries.blur_queries
-      BlurQuery.where_zookeeper(@zoo_with_queries.id).should == @zooqueries
-    end
-  end 
-
   describe 'summary' do
     it 'should hide the query when the user does not have the proper privileges' do 
       @user = FactoryGirl.create :user, :roles => ['reader']

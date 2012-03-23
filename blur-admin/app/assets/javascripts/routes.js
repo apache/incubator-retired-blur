@@ -176,14 +176,6 @@
   search_path: function(options) {
   return Utils.build_path(0, ["/search"], ["format"], arguments)
   },
-// new_search => /search/new(.:format)
-  new_search_path: function(options) {
-  return Utils.build_path(0, ["/search/new"], ["format"], arguments)
-  },
-// edit_search => /search/edit(.:format)
-  edit_search_path: function(options) {
-  return Utils.build_path(0, ["/search/edit"], ["format"], arguments)
-  },
 // search_load => /search/load/:search_id(.:format)
   search_load_path: function(_search_id, options) {
   return Utils.build_path(1, ["/search/load/"], ["format"], arguments)
@@ -212,21 +204,13 @@
   zookeepers_path: function(options) {
   return Utils.build_path(0, ["/zookeepers"], ["format"], arguments)
   },
-// zookeeper => /zookeeper(.:format)
+// zookeeper => /zookeeper(/:id)(.:format)
   zookeeper_path: function(options) {
-  return Utils.build_path(0, ["/zookeeper"], ["format"], arguments)
-  },
-// make_current_zookeeper => /zookeepers/make_current(.:format)
-  make_current_zookeeper_path: function(options) {
-  return Utils.build_path(0, ["/zookeepers/make_current"], ["format"], arguments)
+  return Utils.build_path(0, ["/zookeeper(/", ")"], ["id", "format"], arguments)
   },
 // dashboard => /zookeepers/dashboard(.:format)
   dashboard_path: function(options) {
   return Utils.build_path(0, ["/zookeepers/dashboard"], ["format"], arguments)
-  },
-// show_zookeeper => /zookeepers/:id(.:format)
-  show_zookeeper_path: function(_id, options) {
-  return Utils.build_path(1, ["/zookeepers/"], ["format"], arguments)
   },
 // destroy_controller => /zookeepers/:id/controller/:controller_id(.:format)
   destroy_controller_path: function(_id, _controller_id, options) {
@@ -244,45 +228,49 @@
   destroy_zookeeper_path: function(_id, options) {
   return Utils.build_path(1, ["/zookeepers/"], ["format"], arguments)
   },
-// enable_selected_blur_tables => /blur_tables/enable(.:format)
-  enable_selected_blur_tables_path: function(options) {
+// blur_tables => /blur_tables(/:id)(.:format)
+  blur_tables_path: function(options) {
+  return Utils.build_path(0, ["/blur_tables(/", ")"], ["id", "format"], arguments)
+  },
+// blur_tables_enable_selected => /blur_tables/enable(.:format)
+  blur_tables_enable_selected_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/enable"], ["format"], arguments)
   },
-// disable_selected_blur_tables => /blur_tables/disable(.:format)
-  disable_selected_blur_tables_path: function(options) {
+// blur_tables_disable_selected => /blur_tables/disable(.:format)
+  blur_tables_disable_selected_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/disable"], ["format"], arguments)
   },
-// forget_selected_blur_tables => /blur_tables/forget(.:format)
-  forget_selected_blur_tables_path: function(options) {
+// blur_tables_forget_selected => /blur_tables/forget(.:format)
+  blur_tables_forget_selected_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/forget"], ["format"], arguments)
   },
-// destroy_selected_blur_tables => /blur_tables(.:format)
-  destroy_selected_blur_tables_path: function(options) {
+// blur_tables_destroy_selected => /blur_tables(.:format)
+  blur_tables_destroy_selected_path: function(options) {
   return Utils.build_path(0, ["/blur_tables"], ["format"], arguments)
   },
-// hosts_blur_table => /blur_tables/:id/hosts(.:format)
-  hosts_blur_table_path: function(_id, options) {
+// blur_tables_hosts => /blur_tables/:id/hosts(.:format)
+  blur_tables_hosts_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_tables/", "/hosts"], ["format"], arguments)
   },
-// schema_blur_table => /blur_tables/:id/schema(.:format)
-  schema_blur_table_path: function(_id, options) {
+// blur_tables_schema => /blur_tables/:id/schema(.:format)
+  blur_tables_schema_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_tables/", "/schema"], ["format"], arguments)
   },
-// reload_blur_tables => /blur_tables/reload(.:format)
-  reload_blur_tables_path: function(options) {
+// blur_tables_reload => /blur_tables/reload(.:format)
+  blur_tables_reload_path: function(options) {
   return Utils.build_path(0, ["/blur_tables/reload"], ["format"], arguments)
   },
-// terms_blur_table => /blur_tables/:id/terms(.:format)
-  terms_blur_table_path: function(_id, options) {
+// blur_tables_terms => /blur_tables/:id/terms(.:format)
+  blur_tables_terms_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_tables/", "/terms"], ["format"], arguments)
-  },
-// blur_tables => /blur_tables(.:format)
-  blur_tables_path: function(options) {
-  return Utils.build_path(0, ["/blur_tables"], ["format"], arguments)
   },
 // refresh => /blur_queries/refresh/:time_length(.:format)
   refresh_path: function(_time_length, options) {
   return Utils.build_path(1, ["/blur_queries/refresh/"], ["format"], arguments)
+  },
+// blur_queries => /blur_queries(/:id)(.:format)
+  blur_queries_path: function(options) {
+  return Utils.build_path(0, ["/blur_queries(/", ")"], ["id", "format"], arguments)
   },
 // more_info_blur_query => /blur_queries/:id/more_info(.:format)
   more_info_blur_query_path: function(_id, options) {
@@ -291,10 +279,6 @@
 // times_blur_query => /blur_queries/:id/times(.:format)
   times_blur_query_path: function(_id, options) {
   return Utils.build_path(1, ["/blur_queries/", "/times"], ["format"], arguments)
-  },
-// blur_queries => /blur_queries(.:format)
-  blur_queries_path: function(options) {
-  return Utils.build_path(0, ["/blur_queries"], ["format"], arguments)
   },
 // blur_query => /blur_queries/:id(.:format)
   blur_query_path: function(_id, options) {

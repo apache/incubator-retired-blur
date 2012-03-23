@@ -28,14 +28,6 @@ describe BlurQuery do
     end
   end
 
-  describe 'zookeeper' do
-    it 'should return the zookeeper associated with this query' do 
-      @zoo_with_query = FactoryGirl.create :zookeeper_with_blur_query
-      @zooquery = @zoo_with_query.blur_queries[0]
-      @zooquery.zookeeper.should == @zoo_with_query
-    end
-  end
-
   describe 'state string' do
     it 'should return running when the state is 0' do
       @query.state = 0
@@ -70,14 +62,6 @@ describe BlurQuery do
       @query.complete.should == 0.5
     end
   end
-
-  describe 'BlurQuery find by zookeeper id' do
-    it 'should return only the queries that are associated with the given zookeeper' do 
-      @zoo_with_queries = FactoryGirl.create :zookeeper_with_blur_queries
-      @zooqueries = @zoo_with_queries.blur_queries
-      BlurQuery.where_zookeeper(@zoo_with_queries.id).should == @zooqueries
-    end
-  end 
 
   describe 'summary' do
     it 'should hide the query when the user does not have the proper privileges' do 

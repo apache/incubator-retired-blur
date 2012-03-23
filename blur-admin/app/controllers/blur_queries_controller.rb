@@ -1,16 +1,13 @@
 class BlurQueriesController < ApplicationController
   respond_to :html, :only => :index
   respond_to :json, :except => :index
+  before_filter :set_zookeeper, :only => :index
   before_filter :current_zookeeper, :only => [:index, :refresh]
   before_filter :zookeepers, :only => [:index, :refresh]
 
   def refresh
     lower_range = params[:time_length].to_i.minute.ago
-    queries = BlurTable.find_all_by_status(4).collect{ |table|
-      table.blur_queries.where_zookeeper(@current_zookeeper.id).where("blur_queries.updated_at > ?", lower_range)
-    }.flatten
-
-    query_summaries = queries.collect do |query| 
+    query_summaries = @current_zookeeper.blur_queries.where("blur_queries.updated_at > ? and blur_tables.status = ?", lower_range, 4).collect do |query| 
       summary = query.summary(current_user)
       summary[:action] = ''
       summary

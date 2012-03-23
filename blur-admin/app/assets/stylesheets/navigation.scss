@@ -38,6 +38,9 @@ $nav-height: 40px;
 				background-color: transparent;
 			}
 		}
+    #zookeeper_select > select{
+      margin: 6px;
+    }
 	}
   #bd {
     @include clearfix;

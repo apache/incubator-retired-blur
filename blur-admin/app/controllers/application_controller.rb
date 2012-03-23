@@ -61,4 +61,8 @@ class ApplicationController < ActionController::Base
   def current_user_session
     @current_user_session ||= UserSession.find
   end
+
+  def set_zookeeper
+    session[:current_zookeeper_id] = params[:id] if params[:id]
+  end
 end

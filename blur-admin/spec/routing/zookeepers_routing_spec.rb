@@ -8,11 +8,7 @@ describe ZookeepersController do
     end
 
     it "zookeeper routes to #show_current" do
-      get("/zookeeper").should route_to(:controller => "zookeepers", :action => "show_current")
-    end
-
-    it "make_current routes to #make_current" do
-      put("/zookeepers/make_current").should route_to(:controller => "zookeepers", :action => "make_current")
+      get("/zookeeper").should route_to(:controller => "zookeepers", :action => "show")
     end
 
     it "dashboard routes to #dashboard" do
@@ -20,7 +16,7 @@ describe ZookeepersController do
     end
 
     it "zookeepers with id routes to #show" do
-      get("/zookeepers/1").should route_to(:controller => "zookeepers", :action => "show", :id => '1')
+      get("/zookeeper/1").should route_to(:controller => "zookeepers", :action => "show", :id => '1')
     end
 
     it "zookeepers with id and controller_id routes to #destroy_controller" do

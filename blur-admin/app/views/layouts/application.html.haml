@@ -36,7 +36,7 @@
 							- action = params[:action]
 							%li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
 								= link_to 'Dashboard', root_path
-							%li{:class => controller == 'zookeepers' && action == 'show_current' && 'active'}
+							%li{:class => controller == 'zookeepers' && action == 'show' && 'active'}
 								= link_to 'Environment Status', zookeeper_path, :id => 'env_link'
 							%li{:class => controller == 'blur_tables' && 'active'}
 								= link_to 'Blur Tables', blur_tables_path, :id => 'tables_link'
@@ -61,8 +61,7 @@
 							- if @current_zookeeper && @zookeepers && @zookeepers.length > 1
 								%li
 									#zookeeper_select
-										= form_tag make_current_zookeeper_path, :id => 'change_current_zookeeper', :class=>"navbar-search", :method => :put, :remote => :true do
-											= select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
+										= select_tag( :id, options_from_collection_for_select( @zookeepers, :id, :name, @current_zookeeper.id ), :id => 'zookeeper_id' )
 								%li.divider-vertical
 							%li
 								= link_to "Account", @current_user

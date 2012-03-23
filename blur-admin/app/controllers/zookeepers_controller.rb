@@ -1,8 +1,8 @@
 class ZookeepersController < ApplicationController
 
-  before_filter :current_zookeeper, :only => [:show_current]
-  before_filter :zookeepers, :only => [:show_current]
-  before_filter :reset_zookeeper, :only => [:show, :make_current]
+  before_filter :set_zookeeper, :only => [:show]
+  before_filter :zookeepers, :only => [:show]
+  before_filter :current_zookeeper, :only => [:show, :long_running_queries]
 
   QUERY = "
     select
@@ -34,22 +34,18 @@ class ZookeepersController < ApplicationController
   def index
     @zookeepers = Zookeeper.select('name, id, status').order('name')
     @hdfs_all = Hdfs.all
-    @hdfs_stats= Hdfs.all.collect{|h| hdfs_hash = {"hdfs" => h}; hdfs_hash['stats'] = h.hdfs_stats.last; h= hdfs_hash}
+    @hdfs_stats= Hdfs.all.collect do |h|
+      hdfs_hash = {"hdfs" => h}
+      hdfs_hash[:stats] = h.hdfs_stats.last
+      hdfs_hash
+    end
   end
 
   def show
-    redirect_to :zookeeper
-  end
-
-  def show_current
     @zookeeper = @current_zookeeper
     @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
     @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'
-    render :show_current
-  end
-
-  def make_current
-    render :text => ''
+    render :show
   end
 
   def dashboard
@@ -62,6 +58,12 @@ class ZookeepersController < ApplicationController
       hdfs_hash
     end
     render :json => {"zookeeper_data" => zookeeper_results, "hdfs_data" => hdfs}
+  end
+
+  def long_running_queries
+    long_queries = @current_zookeeper.blur_queries.where('created_at < ? and state = ?', 1.minute.ago, 2)
+      .collect{|query| query.summary(current_user)}
+    render :json => long_queries
   end
 
   def destroy_shard
@@ -83,9 +85,4 @@ class ZookeepersController < ApplicationController
     Zookeeper.destroy(params[:id])
     redirect_to :zookeeper
   end
-
-  private
-    def reset_zookeeper
-      session[:current_zookeeper_id] = params[:id] if params[:id]
-    end
 end

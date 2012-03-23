@@ -19,7 +19,7 @@ describe BlurTablesController do
     end
 
     it "reload routes to #reload" do
-      get("/blur_tables/reload").should route_to(:controller => "blur_tables", :action => "reload")
+      post("/blur_tables/reload").should route_to(:controller => "blur_tables", :action => "reload")
     end
 
     it "destroy routes to #destroy" do

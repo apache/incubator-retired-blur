@@ -8,14 +8,12 @@
     _create: function() {
       var self = this,
         o = self.options,
-        el = self.element,
-        container = $('<div/>').addClass('innerContainer');
+        el = self.element;
       el.addClass('osxFinder');
       el.children('ul').each(function() {
         var divWrapper = self._createInnerWindow();
         $(this).wrap(divWrapper);
       });
-      el.children().wrapAll(container);
       el.on('click', 'div.innerWindow > ul > li', function(e) {
         e.preventDefault();
         var evtEl = $(this);
@@ -30,12 +28,12 @@
       self._trigger("done");
     },
     _createInnerWindow: function() {
-      var currentCount = this.element.find('div.innerWindow').size();
+      var currentCount = this.element.children('div.innerWindow').size();
       var width = this.options.width;
-      var child_width = (currentCount + 1) * (width + 4);
-      this.element.find('.innerContainer').css({'min-width': child_width})
       return $('<div/>').addClass('innerWindow').css({
-        'width': width
+        'width': width,
+        'left': (currentCount * (width + 1)) + 2,
+        'top' : 2
       });
     },
     _ensureLastWindowVisible: function() {
@@ -53,13 +51,13 @@
         async: async,
         success:function(data) {
           innerWindow.append(data);
-          self.element.find('.innerContainer').append(innerWindow);
+          self.element.append(innerWindow);
           self._ensureLastWindowVisible();
           self._trigger("added", null,{"innerWindow":innerWindow,"url":url + "/"});
         },
         error: function(data) {
           innerWindow.html("error retrieving [" + url + "]");
-          self.element.find('.innerContainer').append(innerWindow);
+          self.element.append(innerWindow);
         }
       });
       return innerWindow;

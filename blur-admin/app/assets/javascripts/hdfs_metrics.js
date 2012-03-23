@@ -84,6 +84,9 @@ $(document).ready(function(){
 						hdfs_data_1.data.push([entry_date, point[request_options.stat_1]]);
 						hdfs_data_2.data.push([entry_date, point[request_options.stat_2]]);
 					}
+					//Current implementation is a fixed size queue for storing data
+					// Future implementations may allow you to change the range (length of queue, still fixed to a size)
+					// Future might also allow to grow the size of the queue overtime (length of queue appends data and never truncates)
 					if (req_data && req_data.stat_id){
 							var length = data.length;
 							hdfs_data[id][action].metrics[0].data.splice(0, length);

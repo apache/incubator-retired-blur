@@ -1,22 +1,17 @@
 div.osxFinder {
     border: 1px solid black;
+    overflow-x: auto;
+    width: 100%;
     height: 100%;
-    padding: 4px 2px 4px 2px;
-}
-
-div.osxFinder div.innerContainer {
-  overflow-y: hidden;
-  overflow-x: auto;
-  height: 100%;
+    position: relative;
 }
 
 div.osxFinder div.innerWindow {
-    height: 100%;
+    height: 98%;
     border: 1px solid black;
     overflow: auto;
-    box-sizing: border-box;
-    margin: 0 2px 0 2px;
-    float: left;
+    position: absolute;
+    top: 0;
 }
 
 div.osxFinder div.innerWindow ul {

@@ -3,7 +3,7 @@
   border: none;
   margin: 15px 10px 0;
   table { margin-bottom: 5px; }
-  .active a, .active a:hover{ background-color:#FAFCFF; }
+  .active a, .active a:hover{ background-color:#F9F9F9; }
 }
 #tables-wrapper{
   border: $twitter-border;
@@ -13,7 +13,7 @@
 
 .cluster-tabs{
   margin:15px 0;
-  .active a, .active a:hover{ background-color:#FAFCFF; }
+  .active a, .active a:hover{ background-color:#F9F9F9; }
 }
 .bulk-action-selector{ margin: 10px 5px 10px 0px; }
 tr.highlighted-row td{ background:#FAD08A !important; }
@@ -79,5 +79,7 @@ tr.highlighted-row td{ background:#FAD08A !important; }
 .checkbox-td{
   width:50px;
 }
+
+
 
 

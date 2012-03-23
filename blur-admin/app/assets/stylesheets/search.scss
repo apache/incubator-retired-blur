@@ -67,6 +67,9 @@
           width: 10%;
           @include border-radius-left(0);
           margin-bottom: 9px;
+          &:disabled{
+            height: 30px;
+          }
         }
         img{
           position: absolute;

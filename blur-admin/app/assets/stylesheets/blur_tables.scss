@@ -5,7 +5,11 @@
   table { margin-bottom: 5px; }
   .active a, .active a:hover{ background-color:#FAFCFF; }
 }
-#tables-wrapper{ border: $twitter-border; padding:10px; }
+#tables-wrapper{
+  border: $twitter-border;
+  padding:10px;
+  @include border-radius(5px)
+}
 
 .cluster-tabs{
   margin:15px 0;

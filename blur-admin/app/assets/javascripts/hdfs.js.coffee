@@ -323,10 +323,6 @@ $(document).ready ->
   $(document.body).append(tree_context_menu())
   setup_context_menus();
   paste_buffer = {}
-  $('#hdfs_browser').resizable
-    handles:'s'
-    stop: () ->
-      $(this).css('width', '')
   $('path').live 'click', () ->
     $().closePopup()
     id = $('#top_level .osxSelected').attr 'hdfs_id'

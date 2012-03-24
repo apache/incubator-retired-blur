@@ -2622,7 +2622,7 @@ sub new {
   my $classname = shift;
   my $self      = {};
   my $vals      = shift || {};
-  $self->{analyzerClassName} = undef;
+  $self->{analyzerClassName} = "org.apache.lucene.analysis.standard.StandardAnalyzer";
   $self->{fullTextIndex} = undef;
   $self->{alternateColumnDefinitions} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
@@ -2849,7 +2849,7 @@ sub new {
   my $self      = {};
   my $vals      = shift || {};
   $self->{defaultDefinition} = undef;
-  $self->{fullTextAnalyzerClassName} = undef;
+  $self->{fullTextAnalyzerClassName} = "org.apache.lucene.analysis.standard.StandardAnalyzer";
   $self->{columnFamilyDefinitions} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{defaultDefinition}) {

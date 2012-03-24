@@ -512,7 +512,7 @@ struct AlternateColumnDefinition {
  *
  */
 struct ColumnDefinition {
-  1:string analyzerClassName,
+  1:string analyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer",
   2:bool fullTextIndex,
   3:map<string,AlternateColumnDefinition> alternateColumnDefinitions
 }
@@ -542,7 +542,7 @@ struct AnalyzerDefinition {
   /**
    *
    */
-  2:string fullTextAnalyzerClassName,
+  2:string fullTextAnalyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer",
   /**
    *
    */

@@ -118,6 +118,8 @@ public class ColumnDefinition implements org.apache.thrift.TBase<ColumnDefinitio
   }
 
   public ColumnDefinition() {
+    this.analyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+
   }
 
   public ColumnDefinition(
@@ -165,7 +167,8 @@ public class ColumnDefinition implements org.apache.thrift.TBase<ColumnDefinitio
 
   @Override
   public void clear() {
-    this.analyzerClassName = null;
+    this.analyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+
     setFullTextIndexIsSet(false);
     this.fullTextIndex = false;
     this.alternateColumnDefinitions = null;

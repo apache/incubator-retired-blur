@@ -134,6 +134,8 @@ public class AnalyzerDefinition implements org.apache.thrift.TBase<AnalyzerDefin
   }
 
   public AnalyzerDefinition() {
+    this.fullTextAnalyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+
   }
 
   public AnalyzerDefinition(
@@ -181,7 +183,8 @@ public class AnalyzerDefinition implements org.apache.thrift.TBase<AnalyzerDefin
   @Override
   public void clear() {
     this.defaultDefinition = null;
-    this.fullTextAnalyzerClassName = null;
+    this.fullTextAnalyzerClassName = "org.apache.lucene.analysis.standard.StandardAnalyzer";
+
     this.columnFamilyDefinitions = null;
   }
 

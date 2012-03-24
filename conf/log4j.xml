@@ -23,31 +23,19 @@
 		</layout>
 	</appender>
 	
-	<appender name="ASYNC-METRICS" class="org.apache.log4j.AsyncAppender">
-		<appender-ref ref="METRICS-FILE" />
-	</appender>
-	
-	<appender name="METRICS-FILE" class="org.apache.log4j.DailyRollingFileAppender">
-		<param name="File" value="${blur.logs.dir}/${blur.log.file}.metrics" />
-		<param name="DatePattern" value="'.'yyyyMMdd" />
-		<param name="Append" value="true" />
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%-5p %d{yyyyMMdd_HH:mm:ss:sss_z} [%t] %c{2}: %m%n" />
-		</layout>
-	</appender>
-	
-	<logger name="METRICS-FILE" additivity="false">
-		<level value="INFO"/>
-		<appender-ref ref="ASYNC-METRICS" />
-	</logger>
-	
 	<logger name="org.apache.hadoop">
     	<level value="ERROR" />
 	    <appender-ref ref="ASYNC"/>
 	</logger>
 
-	<root>
+	<!--root>
+	For production use, the async configuration will be better for performance at the cost of not seeing the final flushed log events.
 		<priority value="INFO" />
 		<appender-ref ref="ASYNC" />
+	</root-->
+
+	<root>
+		<priority value="INFO" />
+		<appender-ref ref="FILE" />
 	</root>
 </log4j:configuration>

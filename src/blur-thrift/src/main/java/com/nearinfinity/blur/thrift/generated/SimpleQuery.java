@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+ */
 public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQuery._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("SimpleQuery");
 
@@ -29,26 +32,52 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
   private static final org.apache.thrift.protocol.TField POST_SUPER_FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("postSuperFilter", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField PRE_SUPER_FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("preSuperFilter", org.apache.thrift.protocol.TType.STRING, (short)5);
 
+  /**
+   * A Lucene syntax based query.
+   */
   public String queryStr; // required
+  /**
+   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   */
   public boolean superQueryOn; // required
   /**
+   * The scoring type, see the document on ScoreType for explanation of each score type.
    * 
    * @see ScoreType
    */
   public ScoreType type; // required
+  /**
+   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   */
   public String postSuperFilter; // required
+  /**
+   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   */
   public String preSuperFilter; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * A Lucene syntax based query.
+     */
     QUERY_STR((short)1, "queryStr"),
+    /**
+     * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+     */
     SUPER_QUERY_ON((short)2, "superQueryOn"),
     /**
+     * The scoring type, see the document on ScoreType for explanation of each score type.
      * 
      * @see ScoreType
      */
     TYPE((short)3, "type"),
+    /**
+     * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+     */
     POST_SUPER_FILTER((short)4, "postSuperFilter"),
+    /**
+     * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+     */
     PRE_SUPER_FILTER((short)5, "preSuperFilter");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -193,10 +222,16 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     this.preSuperFilter = null;
   }
 
+  /**
+   * A Lucene syntax based query.
+   */
   public String getQueryStr() {
     return this.queryStr;
   }
 
+  /**
+   * A Lucene syntax based query.
+   */
   public SimpleQuery setQueryStr(String queryStr) {
     this.queryStr = queryStr;
     return this;
@@ -217,10 +252,16 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     }
   }
 
+  /**
+   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   */
   public boolean isSuperQueryOn() {
     return this.superQueryOn;
   }
 
+  /**
+   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   */
   public SimpleQuery setSuperQueryOn(boolean superQueryOn) {
     this.superQueryOn = superQueryOn;
     setSuperQueryOnIsSet(true);
@@ -241,6 +282,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
   }
 
   /**
+   * The scoring type, see the document on ScoreType for explanation of each score type.
    * 
    * @see ScoreType
    */
@@ -249,6 +291,7 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
   }
 
   /**
+   * The scoring type, see the document on ScoreType for explanation of each score type.
    * 
    * @see ScoreType
    */
@@ -272,10 +315,16 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     }
   }
 
+  /**
+   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   */
   public String getPostSuperFilter() {
     return this.postSuperFilter;
   }
 
+  /**
+   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   */
   public SimpleQuery setPostSuperFilter(String postSuperFilter) {
     this.postSuperFilter = postSuperFilter;
     return this;
@@ -296,10 +345,16 @@ public class SimpleQuery implements org.apache.thrift.TBase<SimpleQuery, SimpleQ
     }
   }
 
+  /**
+   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   */
   public String getPreSuperFilter() {
     return this.preSuperFilter;
   }
 
+  /**
+   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   */
   public SimpleQuery setPreSuperFilter(String preSuperFilter) {
     this.preSuperFilter = preSuperFilter;
     return this;

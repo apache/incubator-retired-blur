@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
+ */
 public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchResult._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FetchResult");
 
@@ -29,18 +32,48 @@ public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchRe
   private static final org.apache.thrift.protocol.TField ROW_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("rowResult", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField RECORD_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("recordResult", org.apache.thrift.protocol.TType.STRUCT, (short)5);
 
+  /**
+   * True if the result exists, false if it doesn't.
+   */
   public boolean exists; // required
+  /**
+   * If the row was marked as deleted.
+   */
   public boolean deleted; // required
+  /**
+   * The table the fetch result came from.
+   */
   public String table; // required
+  /**
+   * The row result if a row was selected form the Selector.
+   */
   public FetchRowResult rowResult; // required
+  /**
+   * The record result if a record was selected form the Selector.
+   */
   public FetchRecordResult recordResult; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * True if the result exists, false if it doesn't.
+     */
     EXISTS((short)1, "exists"),
+    /**
+     * If the row was marked as deleted.
+     */
     DELETED((short)2, "deleted"),
+    /**
+     * The table the fetch result came from.
+     */
     TABLE((short)3, "table"),
+    /**
+     * The row result if a row was selected form the Selector.
+     */
     ROW_RESULT((short)4, "rowResult"),
+    /**
+     * The record result if a record was selected form the Selector.
+     */
     RECORD_RESULT((short)5, "recordResult");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -181,10 +214,16 @@ public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchRe
     this.recordResult = null;
   }
 
+  /**
+   * True if the result exists, false if it doesn't.
+   */
   public boolean isExists() {
     return this.exists;
   }
 
+  /**
+   * True if the result exists, false if it doesn't.
+   */
   public FetchResult setExists(boolean exists) {
     this.exists = exists;
     setExistsIsSet(true);
@@ -204,10 +243,16 @@ public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchRe
     __isset_bit_vector.set(__EXISTS_ISSET_ID, value);
   }
 
+  /**
+   * If the row was marked as deleted.
+   */
   public boolean isDeleted() {
     return this.deleted;
   }
 
+  /**
+   * If the row was marked as deleted.
+   */
   public FetchResult setDeleted(boolean deleted) {
     this.deleted = deleted;
     setDeletedIsSet(true);
@@ -227,10 +272,16 @@ public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchRe
     __isset_bit_vector.set(__DELETED_ISSET_ID, value);
   }
 
+  /**
+   * The table the fetch result came from.
+   */
   public String getTable() {
     return this.table;
   }
 
+  /**
+   * The table the fetch result came from.
+   */
   public FetchResult setTable(String table) {
     this.table = table;
     return this;
@@ -251,10 +302,16 @@ public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchRe
     }
   }
 
+  /**
+   * The row result if a row was selected form the Selector.
+   */
   public FetchRowResult getRowResult() {
     return this.rowResult;
   }
 
+  /**
+   * The row result if a row was selected form the Selector.
+   */
   public FetchResult setRowResult(FetchRowResult rowResult) {
     this.rowResult = rowResult;
     return this;
@@ -275,10 +332,16 @@ public class FetchResult implements org.apache.thrift.TBase<FetchResult, FetchRe
     }
   }
 
+  /**
+   * The record result if a record was selected form the Selector.
+   */
   public FetchRecordResult getRecordResult() {
     return this.recordResult;
   }
 
+  /**
+   * The record result if a record was selected form the Selector.
+   */
   public FetchResult setRecordResult(FetchRecordResult recordResult) {
     this.recordResult = recordResult;
     return this;

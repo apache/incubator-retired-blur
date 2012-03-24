@@ -20,15 +20,24 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * FetchRowResult contains row result from a fetch.
+ */
 public class FetchRowResult implements org.apache.thrift.TBase<FetchRowResult, FetchRowResult._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FetchRowResult");
 
   private static final org.apache.thrift.protocol.TField ROW_FIELD_DESC = new org.apache.thrift.protocol.TField("row", org.apache.thrift.protocol.TType.STRUCT, (short)1);
 
+  /**
+   * The row fetched.
+   */
   public Row row; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The row fetched.
+     */
     ROW((short)1, "row");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -124,10 +133,16 @@ public class FetchRowResult implements org.apache.thrift.TBase<FetchRowResult, F
     this.row = null;
   }
 
+  /**
+   * The row fetched.
+   */
   public Row getRow() {
     return this.row;
   }
 
+  /**
+   * The row fetched.
+   */
   public FetchRowResult setRow(Row row) {
     this.row = row;
     return this;

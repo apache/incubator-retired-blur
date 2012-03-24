@@ -22,6 +22,9 @@ import org.slf4j.LoggerFactory;
 
 public class Blur {
 
+  /**
+   * 
+   */
   public interface Iface {
 
     /**

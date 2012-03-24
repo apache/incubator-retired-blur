@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurResults._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurResults");
 
@@ -30,20 +33,56 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
   private static final org.apache.thrift.protocol.TField EXCEPTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("exceptions", org.apache.thrift.protocol.TType.LIST, (short)5);
   private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRUCT, (short)6);
 
+  /**
+   * 
+   */
   public long totalResults; // required
+  /**
+   * 
+   */
   public Map<String,Long> shardInfo; // required
+  /**
+   * 
+   */
   public List<BlurResult> results; // required
+  /**
+   * 
+   */
   public List<Long> facetCounts; // required
+  /**
+   * 
+   */
   public List<BlurException> exceptions; // required
+  /**
+   * 
+   */
   public BlurQuery query; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     TOTAL_RESULTS((short)1, "totalResults"),
+    /**
+     * 
+     */
     SHARD_INFO((short)2, "shardInfo"),
+    /**
+     * 
+     */
     RESULTS((short)3, "results"),
+    /**
+     * 
+     */
     FACET_COUNTS((short)4, "facetCounts"),
+    /**
+     * 
+     */
     EXCEPTIONS((short)5, "exceptions"),
+    /**
+     * 
+     */
     QUERY((short)6, "query");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -224,10 +263,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     this.query = null;
   }
 
+  /**
+   * 
+   */
   public long getTotalResults() {
     return this.totalResults;
   }
 
+  /**
+   * 
+   */
   public BlurResults setTotalResults(long totalResults) {
     this.totalResults = totalResults;
     setTotalResultsIsSet(true);
@@ -258,10 +303,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     this.shardInfo.put(key, val);
   }
 
+  /**
+   * 
+   */
   public Map<String,Long> getShardInfo() {
     return this.shardInfo;
   }
 
+  /**
+   * 
+   */
   public BlurResults setShardInfo(Map<String,Long> shardInfo) {
     this.shardInfo = shardInfo;
     return this;
@@ -297,10 +348,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     this.results.add(elem);
   }
 
+  /**
+   * 
+   */
   public List<BlurResult> getResults() {
     return this.results;
   }
 
+  /**
+   * 
+   */
   public BlurResults setResults(List<BlurResult> results) {
     this.results = results;
     return this;
@@ -336,10 +393,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     this.facetCounts.add(elem);
   }
 
+  /**
+   * 
+   */
   public List<Long> getFacetCounts() {
     return this.facetCounts;
   }
 
+  /**
+   * 
+   */
   public BlurResults setFacetCounts(List<Long> facetCounts) {
     this.facetCounts = facetCounts;
     return this;
@@ -375,10 +438,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     this.exceptions.add(elem);
   }
 
+  /**
+   * 
+   */
   public List<BlurException> getExceptions() {
     return this.exceptions;
   }
 
+  /**
+   * 
+   */
   public BlurResults setExceptions(List<BlurException> exceptions) {
     this.exceptions = exceptions;
     return this;
@@ -399,10 +468,16 @@ public class BlurResults implements org.apache.thrift.TBase<BlurResults, BlurRes
     }
   }
 
+  /**
+   * 
+   */
   public BlurQuery getQuery() {
     return this.query;
   }
 
+  /**
+   * 
+   */
   public BlurResults setQuery(BlurQuery query) {
     this.query = query;
     return this;

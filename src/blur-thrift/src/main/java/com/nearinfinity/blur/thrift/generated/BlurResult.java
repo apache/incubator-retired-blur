@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResult._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurResult");
 
@@ -27,14 +30,32 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
   private static final org.apache.thrift.protocol.TField SCORE_FIELD_DESC = new org.apache.thrift.protocol.TField("score", org.apache.thrift.protocol.TType.DOUBLE, (short)2);
   private static final org.apache.thrift.protocol.TField FETCH_RESULT_FIELD_DESC = new org.apache.thrift.protocol.TField("fetchResult", org.apache.thrift.protocol.TType.STRUCT, (short)3);
 
+  /**
+   * 
+   */
   public String locationId; // required
+  /**
+   * 
+   */
   public double score; // required
+  /**
+   * 
+   */
   public FetchResult fetchResult; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     LOCATION_ID((short)1, "locationId"),
+    /**
+     * 
+     */
     SCORE((short)2, "score"),
+    /**
+     * 
+     */
     FETCH_RESULT((short)3, "fetchResult");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -154,10 +175,16 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     this.fetchResult = null;
   }
 
+  /**
+   * 
+   */
   public String getLocationId() {
     return this.locationId;
   }
 
+  /**
+   * 
+   */
   public BlurResult setLocationId(String locationId) {
     this.locationId = locationId;
     return this;
@@ -178,10 +205,16 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     }
   }
 
+  /**
+   * 
+   */
   public double getScore() {
     return this.score;
   }
 
+  /**
+   * 
+   */
   public BlurResult setScore(double score) {
     this.score = score;
     setScoreIsSet(true);
@@ -201,10 +234,16 @@ public class BlurResult implements org.apache.thrift.TBase<BlurResult, BlurResul
     __isset_bit_vector.set(__SCORE_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public FetchResult getFetchResult() {
     return this.fetchResult;
   }
 
+  /**
+   * 
+   */
   public BlurResult setFetchResult(FetchResult fetchResult) {
     this.fetchResult = fetchResult;
     return this;

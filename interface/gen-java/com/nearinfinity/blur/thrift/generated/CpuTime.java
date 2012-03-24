@@ -20,18 +20,33 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("CpuTime");
 
   private static final org.apache.thrift.protocol.TField CPU_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("cpuTime", org.apache.thrift.protocol.TType.I64, (short)1);
   private static final org.apache.thrift.protocol.TField REAL_TIME_FIELD_DESC = new org.apache.thrift.protocol.TField("realTime", org.apache.thrift.protocol.TType.I64, (short)2);
 
+  /**
+   * 
+   */
   public long cpuTime; // required
+  /**
+   * 
+   */
   public long realTime; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     CPU_TIME((short)1, "cpuTime"),
+    /**
+     * 
+     */
     REAL_TIME((short)2, "realTime");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -142,10 +157,16 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
     this.realTime = 0;
   }
 
+  /**
+   * 
+   */
   public long getCpuTime() {
     return this.cpuTime;
   }
 
+  /**
+   * 
+   */
   public CpuTime setCpuTime(long cpuTime) {
     this.cpuTime = cpuTime;
     setCpuTimeIsSet(true);
@@ -165,10 +186,16 @@ public class CpuTime implements org.apache.thrift.TBase<CpuTime, CpuTime._Fields
     __isset_bit_vector.set(__CPUTIME_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public long getRealTime() {
     return this.realTime;
   }
 
+  /**
+   * 
+   */
   public CpuTime setRealTime(long realTime) {
     this.realTime = realTime;
     setRealTimeIsSet(true);

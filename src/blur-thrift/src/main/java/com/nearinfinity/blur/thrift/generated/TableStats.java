@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class TableStats implements org.apache.thrift.TBase<TableStats, TableStats._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TableStats");
 
@@ -29,18 +32,48 @@ public class TableStats implements org.apache.thrift.TBase<TableStats, TableStat
   private static final org.apache.thrift.protocol.TField ROW_COUNT_FIELD_DESC = new org.apache.thrift.protocol.TField("rowCount", org.apache.thrift.protocol.TType.I64, (short)4);
   private static final org.apache.thrift.protocol.TField QUERIES_FIELD_DESC = new org.apache.thrift.protocol.TField("queries", org.apache.thrift.protocol.TType.I64, (short)5);
 
+  /**
+   * 
+   */
   public String tableName; // required
+  /**
+   * 
+   */
   public long bytes; // required
+  /**
+   * 
+   */
   public long recordCount; // required
+  /**
+   * 
+   */
   public long rowCount; // required
+  /**
+   * 
+   */
   public long queries; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     TABLE_NAME((short)1, "tableName"),
+    /**
+     * 
+     */
     BYTES((short)2, "bytes"),
+    /**
+     * 
+     */
     RECORD_COUNT((short)3, "recordCount"),
+    /**
+     * 
+     */
     ROW_COUNT((short)4, "rowCount"),
+    /**
+     * 
+     */
     QUERIES((short)5, "queries");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -183,10 +216,16 @@ public class TableStats implements org.apache.thrift.TBase<TableStats, TableStat
     this.queries = 0;
   }
 
+  /**
+   * 
+   */
   public String getTableName() {
     return this.tableName;
   }
 
+  /**
+   * 
+   */
   public TableStats setTableName(String tableName) {
     this.tableName = tableName;
     return this;
@@ -207,10 +246,16 @@ public class TableStats implements org.apache.thrift.TBase<TableStats, TableStat
     }
   }
 
+  /**
+   * 
+   */
   public long getBytes() {
     return this.bytes;
   }
 
+  /**
+   * 
+   */
   public TableStats setBytes(long bytes) {
     this.bytes = bytes;
     setBytesIsSet(true);
@@ -230,10 +275,16 @@ public class TableStats implements org.apache.thrift.TBase<TableStats, TableStat
     __isset_bit_vector.set(__BYTES_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public long getRecordCount() {
     return this.recordCount;
   }
 
+  /**
+   * 
+   */
   public TableStats setRecordCount(long recordCount) {
     this.recordCount = recordCount;
     setRecordCountIsSet(true);
@@ -253,10 +304,16 @@ public class TableStats implements org.apache.thrift.TBase<TableStats, TableStat
     __isset_bit_vector.set(__RECORDCOUNT_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public long getRowCount() {
     return this.rowCount;
   }
 
+  /**
+   * 
+   */
   public TableStats setRowCount(long rowCount) {
     this.rowCount = rowCount;
     setRowCountIsSet(true);
@@ -276,10 +333,16 @@ public class TableStats implements org.apache.thrift.TBase<TableStats, TableStat
     __isset_bit_vector.set(__ROWCOUNT_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public long getQueries() {
     return this.queries;
   }
 
+  /**
+   * 
+   */
   public TableStats setQueries(long queries) {
     this.queries = queries;
     setQueriesIsSet(true);

@@ -164,47 +164,119 @@ struct Selector {
   7:bool allowStaleData
 }
 
+/**
+ * FetchRowResult contains row result from a fetch.
+ */
 struct FetchRowResult {
+  /**
+   * The row fetched.
+   */
   1:Row row
 }
 
+/**
+ * FetchRecordResult contains rowid of the record and the record result from a fetch.
+ */
 struct FetchRecordResult {
+  /**
+   * The row id of the record being fetched.
+   */
   1:string rowid,
+  /**
+   * The record fetched.
+   */
   2:Record record
 }
 
+/**
+ * FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
+ */
 struct FetchResult {
+  /**
+   * True if the result exists, false if it doesn't.
+   */
   1:bool exists,
+  /**
+   * If the row was marked as deleted.
+   */
   2:bool deleted,
+  /**
+   * The table the fetch result came from.
+   */
   3:string table,
+  /**
+   * The row result if a row was selected form the Selector.
+   */
   4:FetchRowResult rowResult,
+  /**
+   * The record result if a record was selected form the Selector.
+   */
   5:FetchRecordResult recordResult
 }
 
-
-
-
+/**
+ * The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+ */
 struct SimpleQuery {
+  /**
+   * A Lucene syntax based query.
+   */
   1:string queryStr,
+  /**
+   * If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+   */
   2:bool superQueryOn = 1,
+  /**
+   * The scoring type, see the document on ScoreType for explanation of each score type.
+   */
   3:ScoreType type = ScoreType.SUPER, 
+  /**
+   * The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+   */
   4:string postSuperFilter,
+  /**
+   * The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+   */
   5:string preSuperFilter
 }
 
+/**
+ *
+ */
 struct ExpertQuery {
+  /**
+   *
+   */
   1:binary query,
+  /**
+   *
+   */
   2:binary filter
 }
 
+/**
+ *
+ */
 struct Facet {
   1:string queryStr,
   2:i64 minimumNumberOfBlurResults = 9223372036854775807
 }
 
+/**
+ *
+ */
 struct BlurQuery {
+  /**
+   *
+   */
   1:SimpleQuery simpleQuery,
+  /**
+   *
+   */
   2:ExpertQuery expertQuery,
+  /**
+   *
+   */
   3:list<Facet> facets,
   /**
    * Selector is used to fetch data in the search results, if null only location ids will be fetched.
@@ -214,40 +286,113 @@ struct BlurQuery {
    * @deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
    */
   5:bool allowStaleData = 0,
+  /**
+   *
+   */
   6:bool useCacheIfPresent = 1,
+  /**
+   *
+   */
   7:i64 start = 0,
+  /**
+   *
+   */
   8:i32 fetch = 10, 
+  /**
+   *
+   */
   9:i64 minimumNumberOfResults = 9223372036854775807,
+  /**
+   *
+   */
   10:i64 maxQueryTime = 9223372036854775807,
+  /**
+   *
+   */
   11:i64 uuid,
+  /**
+   *
+   */
   12:string userContext,
+  /**
+   *
+   */
   13:bool cacheResult = 1,
+  /**
+   *
+   */
   14:i64 startTime = 0,
+  /**
+   *
+   */
   15:bool modifyFileCaches = 1
 }
 
+/**
+ *
+ */
 struct BlurResult {
+  /**
+   *
+   */
   1:string locationId,
+  /**
+   *
+   */
   2:double score,
+  /**
+   *
+   */
   3:FetchResult fetchResult
 }
 
+/**
+ *
+ */
 struct BlurResults {
+  /**
+   *
+   */
   1:i64 totalResults = 0,
+  /**
+   *
+   */
   2:map<string,i64> shardInfo,
+  /**
+   *
+   */
   3:list<BlurResult> results,
+  /**
+   *
+   */
   4:list<i64> facetCounts,
+  /**
+   *
+   */
   5:list<BlurException> exceptions,
+  /**
+   *
+   */
   6:BlurQuery query
 }
 
-
-
+/**
+ *
+ */
 struct RecordMutation {
+  /**
+   *
+   */
   1:RecordMutationType recordMutationType,
+  /**
+   *
+   */
   2:Record record
 }
 
+/**
+ *
+ */
 struct RowMutation {
   /**
    * The that that the row mutation is to act upon.
@@ -269,73 +414,198 @@ struct RowMutation {
   6:bool waitToBeVisible = 0
 }
 
-
-
+/**
+ *
+ */
 struct CpuTime {
+  /**
+   *
+   */
   1:i64 cpuTime,
+  /**
+   *
+   */
   2:i64 realTime
 }
 
+/**
+ *
+ */
 struct BlurQueryStatus {
+  /**
+   *
+   */
   1:BlurQuery query,
+  /**
+   *
+   */
   2:map<string,CpuTime> cpuTimes,
+  /**
+   *
+   */
   3:i32 completeShards,
+  /**
+   *
+   */
   4:i32 totalShards,
+  /**
+   *
+   */
   5:QueryState state,
+  /**
+   *
+   */
   6:i64 uuid
 }
 
+/**
+ *
+ */
 struct TableStats {
+  /**
+   *
+   */
   1:string tableName,
+  /**
+   *
+   */
   2:i64 bytes,
+  /**
+   *
+   */
   3:i64 recordCount,
+  /**
+   *
+   */
   4:i64 rowCount,
+  /**
+   *
+   */
   5:i64 queries
 }
 
+/**
+ *
+ */
 struct Schema {
+  /**
+   *
+   */
   1:string table,
+  /**
+   *
+   */
   2:map<string,set<string>> columnFamilies
 }
 
-
-
+/**
+ *
+ */
 struct AlternateColumnDefinition {
+  /**
+   *
+   */
   1:string analyzerClassName
 }
 
+/**
+ *
+ */
 struct ColumnDefinition {
   1:string analyzerClassName,
   2:bool fullTextIndex,
   3:map<string,AlternateColumnDefinition> alternateColumnDefinitions
 }
 
+/**
+ *
+ */
 struct ColumnFamilyDefinition {
+  /**
+   *
+   */
   1:ColumnDefinition defaultDefinition,
+  /**
+   *
+   */
   2:map<string,ColumnDefinition> columnDefinitions
 }
 
+/**
+ *
+ */
 struct AnalyzerDefinition {
+  /**
+   *
+   */
   1:ColumnDefinition defaultDefinition,
+  /**
+   *
+   */
   2:string fullTextAnalyzerClassName,
+  /**
+   *
+   */
   3:map<string,ColumnFamilyDefinition> columnFamilyDefinitions
 }
 
+/**
+ *
+ */
 struct TableDescriptor {
+  /**
+   *
+   */
   1:bool isEnabled = 1,
+  /**
+   *
+   */
   2:AnalyzerDefinition analyzerDefinition,
+  /**
+   *
+   */
   3:i32 shardCount = 1,
+  /**
+   *
+   */
   4:string tableUri,
+  /**
+   *
+   */
   5:string compressionClass = 'org.apache.hadoop.io.compress.DefaultCodec',
+  /**
+   *
+   */
   6:i32 compressionBlockSize = 32768,
+  /**
+   *
+   */
   7:string cluster,
+  /**
+   *
+   */
   8:string name,
+  /**
+   *
+   */
   9:string similarityClass,
+  /**
+   *
+   */
   10:bool blockCaching = 1,
+  /**
+   *
+   */
   11:set<string> blockCachingFileTypes,
+  /**
+   *
+   */
   12:bool readOnly = 0
 }
 
+/**
+ *
+ */
 service Blur {
 
   /**

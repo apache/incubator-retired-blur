@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor, TableDescriptor._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TableDescriptor");
 
@@ -36,32 +39,104 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final org.apache.thrift.protocol.TField BLOCK_CACHING_FILE_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("blockCachingFileTypes", org.apache.thrift.protocol.TType.SET, (short)11);
   private static final org.apache.thrift.protocol.TField READ_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("readOnly", org.apache.thrift.protocol.TType.BOOL, (short)12);
 
+  /**
+   * 
+   */
   public boolean isEnabled; // required
+  /**
+   * 
+   */
   public AnalyzerDefinition analyzerDefinition; // required
+  /**
+   * 
+   */
   public int shardCount; // required
+  /**
+   * 
+   */
   public String tableUri; // required
+  /**
+   * 
+   */
   public String compressionClass; // required
+  /**
+   * 
+   */
   public int compressionBlockSize; // required
+  /**
+   * 
+   */
   public String cluster; // required
+  /**
+   * 
+   */
   public String name; // required
+  /**
+   * 
+   */
   public String similarityClass; // required
+  /**
+   * 
+   */
   public boolean blockCaching; // required
+  /**
+   * 
+   */
   public Set<String> blockCachingFileTypes; // required
+  /**
+   * 
+   */
   public boolean readOnly; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     IS_ENABLED((short)1, "isEnabled"),
+    /**
+     * 
+     */
     ANALYZER_DEFINITION((short)2, "analyzerDefinition"),
+    /**
+     * 
+     */
     SHARD_COUNT((short)3, "shardCount"),
+    /**
+     * 
+     */
     TABLE_URI((short)4, "tableUri"),
+    /**
+     * 
+     */
     COMPRESSION_CLASS((short)5, "compressionClass"),
+    /**
+     * 
+     */
     COMPRESSION_BLOCK_SIZE((short)6, "compressionBlockSize"),
+    /**
+     * 
+     */
     CLUSTER((short)7, "cluster"),
+    /**
+     * 
+     */
     NAME((short)8, "name"),
+    /**
+     * 
+     */
     SIMILARITY_CLASS((short)9, "similarityClass"),
+    /**
+     * 
+     */
     BLOCK_CACHING((short)10, "blockCaching"),
+    /**
+     * 
+     */
     BLOCK_CACHING_FILE_TYPES((short)11, "blockCachingFileTypes"),
+    /**
+     * 
+     */
     READ_ONLY((short)12, "readOnly");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -293,10 +368,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
 
   }
 
+  /**
+   * 
+   */
   public boolean isIsEnabled() {
     return this.isEnabled;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setIsEnabled(boolean isEnabled) {
     this.isEnabled = isEnabled;
     setIsEnabledIsSet(true);
@@ -316,10 +397,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     __isset_bit_vector.set(__ISENABLED_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public AnalyzerDefinition getAnalyzerDefinition() {
     return this.analyzerDefinition;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setAnalyzerDefinition(AnalyzerDefinition analyzerDefinition) {
     this.analyzerDefinition = analyzerDefinition;
     return this;
@@ -340,10 +427,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  /**
+   * 
+   */
   public int getShardCount() {
     return this.shardCount;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setShardCount(int shardCount) {
     this.shardCount = shardCount;
     setShardCountIsSet(true);
@@ -363,10 +456,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     __isset_bit_vector.set(__SHARDCOUNT_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public String getTableUri() {
     return this.tableUri;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setTableUri(String tableUri) {
     this.tableUri = tableUri;
     return this;
@@ -387,10 +486,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  /**
+   * 
+   */
   public String getCompressionClass() {
     return this.compressionClass;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setCompressionClass(String compressionClass) {
     this.compressionClass = compressionClass;
     return this;
@@ -411,10 +516,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  /**
+   * 
+   */
   public int getCompressionBlockSize() {
     return this.compressionBlockSize;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setCompressionBlockSize(int compressionBlockSize) {
     this.compressionBlockSize = compressionBlockSize;
     setCompressionBlockSizeIsSet(true);
@@ -434,10 +545,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     __isset_bit_vector.set(__COMPRESSIONBLOCKSIZE_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public String getCluster() {
     return this.cluster;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setCluster(String cluster) {
     this.cluster = cluster;
     return this;
@@ -458,10 +575,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  /**
+   * 
+   */
   public String getName() {
     return this.name;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setName(String name) {
     this.name = name;
     return this;
@@ -482,10 +605,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  /**
+   * 
+   */
   public String getSimilarityClass() {
     return this.similarityClass;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setSimilarityClass(String similarityClass) {
     this.similarityClass = similarityClass;
     return this;
@@ -506,10 +635,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  /**
+   * 
+   */
   public boolean isBlockCaching() {
     return this.blockCaching;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setBlockCaching(boolean blockCaching) {
     this.blockCaching = blockCaching;
     setBlockCachingIsSet(true);
@@ -544,10 +679,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.blockCachingFileTypes.add(elem);
   }
 
+  /**
+   * 
+   */
   public Set<String> getBlockCachingFileTypes() {
     return this.blockCachingFileTypes;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setBlockCachingFileTypes(Set<String> blockCachingFileTypes) {
     this.blockCachingFileTypes = blockCachingFileTypes;
     return this;
@@ -568,10 +709,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     }
   }
 
+  /**
+   * 
+   */
   public boolean isReadOnly() {
     return this.readOnly;
   }
 
+  /**
+   * 
+   */
   public TableDescriptor setReadOnly(boolean readOnly) {
     this.readOnly = readOnly;
     setReadOnlyIsSet(true);

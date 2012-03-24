@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class AnalyzerDefinition implements org.apache.thrift.TBase<AnalyzerDefinition, AnalyzerDefinition._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AnalyzerDefinition");
 
@@ -27,14 +30,32 @@ public class AnalyzerDefinition implements org.apache.thrift.TBase<AnalyzerDefin
   private static final org.apache.thrift.protocol.TField FULL_TEXT_ANALYZER_CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("fullTextAnalyzerClassName", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField COLUMN_FAMILY_DEFINITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamilyDefinitions", org.apache.thrift.protocol.TType.MAP, (short)3);
 
+  /**
+   * 
+   */
   public ColumnDefinition defaultDefinition; // required
+  /**
+   * 
+   */
   public String fullTextAnalyzerClassName; // required
+  /**
+   * 
+   */
   public Map<String,ColumnFamilyDefinition> columnFamilyDefinitions; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     DEFAULT_DEFINITION((short)1, "defaultDefinition"),
+    /**
+     * 
+     */
     FULL_TEXT_ANALYZER_CLASS_NAME((short)2, "fullTextAnalyzerClassName"),
+    /**
+     * 
+     */
     COLUMN_FAMILY_DEFINITIONS((short)3, "columnFamilyDefinitions");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -164,10 +185,16 @@ public class AnalyzerDefinition implements org.apache.thrift.TBase<AnalyzerDefin
     this.columnFamilyDefinitions = null;
   }
 
+  /**
+   * 
+   */
   public ColumnDefinition getDefaultDefinition() {
     return this.defaultDefinition;
   }
 
+  /**
+   * 
+   */
   public AnalyzerDefinition setDefaultDefinition(ColumnDefinition defaultDefinition) {
     this.defaultDefinition = defaultDefinition;
     return this;
@@ -188,10 +215,16 @@ public class AnalyzerDefinition implements org.apache.thrift.TBase<AnalyzerDefin
     }
   }
 
+  /**
+   * 
+   */
   public String getFullTextAnalyzerClassName() {
     return this.fullTextAnalyzerClassName;
   }
 
+  /**
+   * 
+   */
   public AnalyzerDefinition setFullTextAnalyzerClassName(String fullTextAnalyzerClassName) {
     this.fullTextAnalyzerClassName = fullTextAnalyzerClassName;
     return this;
@@ -223,10 +256,16 @@ public class AnalyzerDefinition implements org.apache.thrift.TBase<AnalyzerDefin
     this.columnFamilyDefinitions.put(key, val);
   }
 
+  /**
+   * 
+   */
   public Map<String,ColumnFamilyDefinition> getColumnFamilyDefinitions() {
     return this.columnFamilyDefinitions;
   }
 
+  /**
+   * 
+   */
   public AnalyzerDefinition setColumnFamilyDefinitions(Map<String,ColumnFamilyDefinition> columnFamilyDefinitions) {
     this.columnFamilyDefinitions = columnFamilyDefinitions;
     return this;

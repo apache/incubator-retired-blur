@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, RecordMutation._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("RecordMutation");
 
@@ -28,18 +31,26 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
 
   /**
    * 
+   * 
    * @see RecordMutationType
    */
   public RecordMutationType recordMutationType; // required
+  /**
+   * 
+   */
   public Record record; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     /**
      * 
+     * 
      * @see RecordMutationType
      */
     RECORD_MUTATION_TYPE((short)1, "recordMutationType"),
+    /**
+     * 
+     */
     RECORD((short)2, "record");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -147,6 +158,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
 
   /**
    * 
+   * 
    * @see RecordMutationType
    */
   public RecordMutationType getRecordMutationType() {
@@ -154,6 +166,7 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
   }
 
   /**
+   * 
    * 
    * @see RecordMutationType
    */
@@ -177,10 +190,16 @@ public class RecordMutation implements org.apache.thrift.TBase<RecordMutation, R
     }
   }
 
+  /**
+   * 
+   */
   public Record getRecord() {
     return this.record;
   }
 
+  /**
+   * 
+   */
   public RecordMutation setRecord(Record record) {
     this.record = record;
     return this;

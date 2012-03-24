@@ -20,18 +20,33 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("Schema");
 
   private static final org.apache.thrift.protocol.TField TABLE_FIELD_DESC = new org.apache.thrift.protocol.TField("table", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField COLUMN_FAMILIES_FIELD_DESC = new org.apache.thrift.protocol.TField("columnFamilies", org.apache.thrift.protocol.TType.MAP, (short)2);
 
+  /**
+   * 
+   */
   public String table; // required
+  /**
+   * 
+   */
   public Map<String,Set<String>> columnFamilies; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     TABLE((short)1, "table"),
+    /**
+     * 
+     */
     COLUMN_FAMILIES((short)2, "columnFamilies");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -155,10 +170,16 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     this.columnFamilies = null;
   }
 
+  /**
+   * 
+   */
   public String getTable() {
     return this.table;
   }
 
+  /**
+   * 
+   */
   public Schema setTable(String table) {
     this.table = table;
     return this;
@@ -190,10 +211,16 @@ public class Schema implements org.apache.thrift.TBase<Schema, Schema._Fields>, 
     this.columnFamilies.put(key, val);
   }
 
+  /**
+   * 
+   */
   public Map<String,Set<String>> getColumnFamilies() {
     return this.columnFamilies;
   }
 
+  /**
+   * 
+   */
   public Schema setColumnFamilies(Map<String,Set<String>> columnFamilies) {
     this.columnFamilies = columnFamilies;
     return this;

@@ -20,18 +20,33 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFamilyDefinition, ColumnFamilyDefinition._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ColumnFamilyDefinition");
 
   private static final org.apache.thrift.protocol.TField DEFAULT_DEFINITION_FIELD_DESC = new org.apache.thrift.protocol.TField("defaultDefinition", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField COLUMN_DEFINITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("columnDefinitions", org.apache.thrift.protocol.TType.MAP, (short)2);
 
+  /**
+   * 
+   */
   public ColumnDefinition defaultDefinition; // required
+  /**
+   * 
+   */
   public Map<String,ColumnDefinition> columnDefinitions; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     DEFAULT_DEFINITION((short)1, "defaultDefinition"),
+    /**
+     * 
+     */
     COLUMN_DEFINITIONS((short)2, "columnDefinitions");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -151,10 +166,16 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
     this.columnDefinitions = null;
   }
 
+  /**
+   * 
+   */
   public ColumnDefinition getDefaultDefinition() {
     return this.defaultDefinition;
   }
 
+  /**
+   * 
+   */
   public ColumnFamilyDefinition setDefaultDefinition(ColumnDefinition defaultDefinition) {
     this.defaultDefinition = defaultDefinition;
     return this;
@@ -186,10 +207,16 @@ public class ColumnFamilyDefinition implements org.apache.thrift.TBase<ColumnFam
     this.columnDefinitions.put(key, val);
   }
 
+  /**
+   * 
+   */
   public Map<String,ColumnDefinition> getColumnDefinitions() {
     return this.columnDefinitions;
   }
 
+  /**
+   * 
+   */
   public ColumnFamilyDefinition setColumnDefinitions(Map<String,ColumnDefinition> columnDefinitions) {
     this.columnDefinitions = columnDefinitions;
     return this;

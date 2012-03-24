@@ -20,6 +20,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus, BlurQueryStatus._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("BlurQueryStatus");
 
@@ -30,28 +33,60 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
   private static final org.apache.thrift.protocol.TField STATE_FIELD_DESC = new org.apache.thrift.protocol.TField("state", org.apache.thrift.protocol.TType.I32, (short)5);
   private static final org.apache.thrift.protocol.TField UUID_FIELD_DESC = new org.apache.thrift.protocol.TField("uuid", org.apache.thrift.protocol.TType.I64, (short)6);
 
+  /**
+   * 
+   */
   public BlurQuery query; // required
+  /**
+   * 
+   */
   public Map<String,CpuTime> cpuTimes; // required
+  /**
+   * 
+   */
   public int completeShards; // required
+  /**
+   * 
+   */
   public int totalShards; // required
   /**
+   * 
    * 
    * @see QueryState
    */
   public QueryState state; // required
+  /**
+   * 
+   */
   public long uuid; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     QUERY((short)1, "query"),
+    /**
+     * 
+     */
     CPU_TIMES((short)2, "cpuTimes"),
+    /**
+     * 
+     */
     COMPLETE_SHARDS((short)3, "completeShards"),
+    /**
+     * 
+     */
     TOTAL_SHARDS((short)4, "totalShards"),
     /**
+     * 
      * 
      * @see QueryState
      */
     STATE((short)5, "state"),
+    /**
+     * 
+     */
     UUID((short)6, "uuid");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -217,10 +252,16 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     this.uuid = 0;
   }
 
+  /**
+   * 
+   */
   public BlurQuery getQuery() {
     return this.query;
   }
 
+  /**
+   * 
+   */
   public BlurQueryStatus setQuery(BlurQuery query) {
     this.query = query;
     return this;
@@ -252,10 +293,16 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     this.cpuTimes.put(key, val);
   }
 
+  /**
+   * 
+   */
   public Map<String,CpuTime> getCpuTimes() {
     return this.cpuTimes;
   }
 
+  /**
+   * 
+   */
   public BlurQueryStatus setCpuTimes(Map<String,CpuTime> cpuTimes) {
     this.cpuTimes = cpuTimes;
     return this;
@@ -276,10 +323,16 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     }
   }
 
+  /**
+   * 
+   */
   public int getCompleteShards() {
     return this.completeShards;
   }
 
+  /**
+   * 
+   */
   public BlurQueryStatus setCompleteShards(int completeShards) {
     this.completeShards = completeShards;
     setCompleteShardsIsSet(true);
@@ -299,10 +352,16 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     __isset_bit_vector.set(__COMPLETESHARDS_ISSET_ID, value);
   }
 
+  /**
+   * 
+   */
   public int getTotalShards() {
     return this.totalShards;
   }
 
+  /**
+   * 
+   */
   public BlurQueryStatus setTotalShards(int totalShards) {
     this.totalShards = totalShards;
     setTotalShardsIsSet(true);
@@ -324,6 +383,7 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
 
   /**
    * 
+   * 
    * @see QueryState
    */
   public QueryState getState() {
@@ -331,6 +391,7 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
   }
 
   /**
+   * 
    * 
    * @see QueryState
    */
@@ -354,10 +415,16 @@ public class BlurQueryStatus implements org.apache.thrift.TBase<BlurQueryStatus,
     }
   }
 
+  /**
+   * 
+   */
   public long getUuid() {
     return this.uuid;
   }
 
+  /**
+   * 
+   */
   public BlurQueryStatus setUuid(long uuid) {
     this.uuid = uuid;
     setUuidIsSet(true);

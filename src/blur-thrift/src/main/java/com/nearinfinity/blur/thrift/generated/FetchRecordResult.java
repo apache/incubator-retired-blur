@@ -20,18 +20,33 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * FetchRecordResult contains rowid of the record and the record result from a fetch.
+ */
 public class FetchRecordResult implements org.apache.thrift.TBase<FetchRecordResult, FetchRecordResult._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FetchRecordResult");
 
   private static final org.apache.thrift.protocol.TField ROWID_FIELD_DESC = new org.apache.thrift.protocol.TField("rowid", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField RECORD_FIELD_DESC = new org.apache.thrift.protocol.TField("record", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
+  /**
+   * The row id of the record being fetched.
+   */
   public String rowid; // required
+  /**
+   * The record fetched.
+   */
   public Record record; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * The row id of the record being fetched.
+     */
     ROWID((short)1, "rowid"),
+    /**
+     * The record fetched.
+     */
     RECORD((short)2, "record");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -137,10 +152,16 @@ public class FetchRecordResult implements org.apache.thrift.TBase<FetchRecordRes
     this.record = null;
   }
 
+  /**
+   * The row id of the record being fetched.
+   */
   public String getRowid() {
     return this.rowid;
   }
 
+  /**
+   * The row id of the record being fetched.
+   */
   public FetchRecordResult setRowid(String rowid) {
     this.rowid = rowid;
     return this;
@@ -161,10 +182,16 @@ public class FetchRecordResult implements org.apache.thrift.TBase<FetchRecordRes
     }
   }
 
+  /**
+   * The record fetched.
+   */
   public Record getRecord() {
     return this.record;
   }
 
+  /**
+   * The record fetched.
+   */
   public FetchRecordResult setRecord(Record record) {
     this.record = record;
     return this;

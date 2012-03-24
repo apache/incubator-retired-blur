@@ -170,70 +170,119 @@ through records of a row, this count will reflect the entire row.
 </table><br/>Select carries the request for information to be retrieved from the stored columns.
 <br/></div><div class="definition"><h3 id="Struct_FetchRowResult">Struct: FetchRowResult</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>row</td><td><code><a href="Blur.html#Struct_Row">Row</a></code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_FetchRecordResult">Struct: FetchRecordResult</h3>
+<tr><td>1</td><td>row</td><td><code><a href="Blur.html#Struct_Row">Row</a></code></td><td>The row fetched.
+</td><td>default</td><td></td></tr>
+</table><br/>FetchRowResult contains row result from a fetch.
+<br/></div><div class="definition"><h3 id="Struct_FetchRecordResult">Struct: FetchRecordResult</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>rowid</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_FetchResult">Struct: FetchResult</h3>
+<tr><td>1</td><td>rowid</td><td><code>string</code></td><td>The row id of the record being fetched.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td>The record fetched.
+</td><td>default</td><td></td></tr>
+</table><br/>FetchRecordResult contains rowid of the record and the record result from a fetch.
+<br/></div><div class="definition"><h3 id="Struct_FetchResult">Struct: FetchResult</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>exists</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>deleted</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>table</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>rowResult</td><td><code><a href="Blur.html#Struct_FetchRowResult">FetchRowResult</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>recordResult</td><td><code><a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a></code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_SimpleQuery">Struct: SimpleQuery</h3>
+<tr><td>1</td><td>exists</td><td><code>bool</code></td><td>True if the result exists, false if it doesn't.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>deleted</td><td><code>bool</code></td><td>If the row was marked as deleted.
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>table</td><td><code>string</code></td><td>The table the fetch result came from.
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>rowResult</td><td><code><a href="Blur.html#Struct_FetchRowResult">FetchRowResult</a></code></td><td>The row result if a row was selected form the Selector.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>recordResult</td><td><code><a href="Blur.html#Struct_FetchRecordResult">FetchRecordResult</a></code></td><td>The record result if a record was selected form the Selector.
+</td><td>default</td><td></td></tr>
+</table><br/>FetchResult contains the row or record fetch result based if the Selector was going to fetch the entire row or a single record.
+<br/></div><div class="definition"><h3 id="Struct_SimpleQuery">Struct: SimpleQuery</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>superQueryOn</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
-<tr><td>3</td><td>type</td><td><code><a href="Blur.html#Enum_ScoreType">ScoreType</a></code></td><td></td><td>default</td><td>UNKNOWN</td></tr>
-<tr><td>4</td><td>postSuperFilter</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>preSuperFilter</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_ExpertQuery">Struct: ExpertQuery</h3>
+<tr><td>1</td><td>queryStr</td><td><code>string</code></td><td>A Lucene syntax based query.
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>superQueryOn</td><td><code>bool</code></td><td>If the super query is on, meaning the query will be perform against all the records (joining records in some cases) and the result will be Rows (groupings of Record).
+</td><td>default</td><td>1</td></tr>
+<tr><td>3</td><td>type</td><td><code><a href="Blur.html#Enum_ScoreType">ScoreType</a></code></td><td>The scoring type, see the document on ScoreType for explanation of each score type.
+</td><td>default</td><td>UNKNOWN</td></tr>
+<tr><td>4</td><td>postSuperFilter</td><td><code>string</code></td><td>The post super filter (normal Lucene syntax), is a filter performed after the join to filter out entire rows from the results.
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>preSuperFilter</td><td><code>string</code></td><td>The pre super filter (normal Lucene syntax), is a filter performed before the join to filter out records from the results.
+</td><td>default</td><td></td></tr>
+</table><br/>The SimpleQuery object holds the query string (normal Lucene syntax), filters and type of scoring (used when super query is on).
+<br/></div><div class="definition"><h3 id="Struct_ExpertQuery">Struct: ExpertQuery</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>query</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>filter</td><td><code>binary</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_Facet">Struct: Facet</h3>
+<tr><td>1</td><td>query</td><td><code>binary</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>filter</td><td><code>binary</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_Facet">Struct: Facet</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
 <tr><td>1</td><td>queryStr</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>2</td><td>minimumNumberOfBlurResults</td><td><code>i64</code></td><td></td><td>default</td><td>9223372036854775807</td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_BlurQuery">Struct: BlurQuery</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>expertQuery</td><td><code><a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>facets</td><td><code>list&lt;<code><a href="Blur.html#Struct_Facet">Facet</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
+<tr><td>1</td><td>simpleQuery</td><td><code><a href="Blur.html#Struct_SimpleQuery">SimpleQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>expertQuery</td><td><code><a href="Blur.html#Struct_ExpertQuery">ExpertQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>facets</td><td><code>list&lt;<code><a href="Blur.html#Struct_Facet">Facet</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
 <tr><td>4</td><td>selector</td><td><code><a href="Blur.html#Struct_Selector">Selector</a></code></td><td>Selector is used to fetch data in the search results, if null only location ids will be fetched.
 </td><td>default</td><td></td></tr>
 <tr><td>5</td><td>allowStaleData</td><td><code>bool</code></td><td>@deprecated This value is no longer used.  This allows the query to see the most current data that has been added to the table.
 </td><td>default</td><td>0</td></tr>
-<tr><td>6</td><td>useCacheIfPresent</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
-<tr><td>7</td><td>start</td><td><code>i64</code></td><td></td><td>default</td><td>0</td></tr>
-<tr><td>8</td><td>fetch</td><td><code>i32</code></td><td></td><td>default</td><td>10</td></tr>
-<tr><td>9</td><td>minimumNumberOfResults</td><td><code>i64</code></td><td></td><td>default</td><td>9223372036854775807</td></tr>
-<tr><td>10</td><td>maxQueryTime</td><td><code>i64</code></td><td></td><td>default</td><td>9223372036854775807</td></tr>
-<tr><td>11</td><td>uuid</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>12</td><td>userContext</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>13</td><td>cacheResult</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
-<tr><td>14</td><td>startTime</td><td><code>i64</code></td><td></td><td>default</td><td>0</td></tr>
-<tr><td>15</td><td>modifyFileCaches</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_BlurResult">Struct: BlurResult</h3>
+<tr><td>6</td><td>useCacheIfPresent</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>7</td><td>start</td><td><code>i64</code></td><td>
+</td><td>default</td><td>0</td></tr>
+<tr><td>8</td><td>fetch</td><td><code>i32</code></td><td>
+</td><td>default</td><td>10</td></tr>
+<tr><td>9</td><td>minimumNumberOfResults</td><td><code>i64</code></td><td>
+</td><td>default</td><td>9223372036854775807</td></tr>
+<tr><td>10</td><td>maxQueryTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td>9223372036854775807</td></tr>
+<tr><td>11</td><td>uuid</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>12</td><td>userContext</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>13</td><td>cacheResult</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>14</td><td>startTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td>0</td></tr>
+<tr><td>15</td><td>modifyFileCaches</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_BlurResult">Struct: BlurResult</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>locationId</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>score</td><td><code>double</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>fetchResult</td><td><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_BlurResults">Struct: BlurResults</h3>
+<tr><td>1</td><td>locationId</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>score</td><td><code>double</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>fetchResult</td><td><code><a href="Blur.html#Struct_FetchResult">FetchResult</a></code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_BlurResults">Struct: BlurResults</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>totalResults</td><td><code>i64</code></td><td></td><td>default</td><td>0</td></tr>
-<tr><td>2</td><td>shardInfo</td><td><code>map&lt;<code>string</code>, <code>i64</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>results</td><td><code>list&lt;<code><a href="Blur.html#Struct_BlurResult">BlurResult</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>facetCounts</td><td><code>list&lt;<code>i64</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>exceptions</td><td><code>list&lt;<code><a href="Blur.html#Struct_BlurException">BlurException</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>6</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_RecordMutation">Struct: RecordMutation</h3>
+<tr><td>1</td><td>totalResults</td><td><code>i64</code></td><td>
+</td><td>default</td><td>0</td></tr>
+<tr><td>2</td><td>shardInfo</td><td><code>map&lt;<code>string</code>, <code>i64</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>results</td><td><code>list&lt;<code><a href="Blur.html#Struct_BlurResult">BlurResult</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>facetCounts</td><td><code>list&lt;<code>i64</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>exceptions</td><td><code>list&lt;<code><a href="Blur.html#Struct_BlurException">BlurException</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_RecordMutation">Struct: RecordMutation</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>recordMutationType</td><td><code><a href="Blur.html#Enum_RecordMutationType">RecordMutationType</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_RowMutation">Struct: RowMutation</h3>
+<tr><td>1</td><td>recordMutationType</td><td><code><a href="Blur.html#Enum_RecordMutationType">RecordMutationType</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>record</td><td><code><a href="Blur.html#Struct_Record">Record</a></code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_RowMutation">Struct: RowMutation</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
 <tr><td>1</td><td>table</td><td><code>string</code></td><td>The that that the row mutation is to act upon.
 </td><td>default</td><td></td></tr>
@@ -245,63 +294,107 @@ through records of a row, this count will reflect the entire row.
 <tr><td>5</td><td>recordMutations</td><td><code>list&lt;<code><a href="Blur.html#Struct_RecordMutation">RecordMutation</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>6</td><td>waitToBeVisible</td><td><code>bool</code></td><td>On mutate waits for the mutation to be visible to queries and fetch requests.
 </td><td>default</td><td>0</td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_CpuTime">Struct: CpuTime</h3>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_CpuTime">Struct: CpuTime</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>cpuTime</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>realTime</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_BlurQueryStatus">Struct: BlurQueryStatus</h3>
+<tr><td>1</td><td>cpuTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>realTime</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_BlurQueryStatus">Struct: BlurQueryStatus</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>cpuTimes</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_CpuTime">CpuTime</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>completeShards</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>totalShards</td><td><code>i32</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_QueryState">QueryState</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>6</td><td>uuid</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_TableStats">Struct: TableStats</h3>
+<tr><td>1</td><td>query</td><td><code><a href="Blur.html#Struct_BlurQuery">BlurQuery</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>cpuTimes</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_CpuTime">CpuTime</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>completeShards</td><td><code>i32</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>totalShards</td><td><code>i32</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>state</td><td><code><a href="Blur.html#Enum_QueryState">QueryState</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>6</td><td>uuid</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_TableStats">Struct: TableStats</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>tableName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>bytes</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>recordCount</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>4</td><td>rowCount</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>queries</td><td><code>i64</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_Schema">Struct: Schema</h3>
+<tr><td>1</td><td>tableName</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>bytes</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>recordCount</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>4</td><td>rowCount</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>queries</td><td><code>i64</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_Schema">Struct: Schema</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>table</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>columnFamilies</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_AlternateColumnDefinition">Struct: AlternateColumnDefinition</h3>
+<tr><td>1</td><td>table</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>columnFamilies</td><td><code>map&lt;<code>string</code>, <code>set&lt;<code>string</code>&gt;</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_AlternateColumnDefinition">Struct: AlternateColumnDefinition</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>analyzerClassName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
+<tr><td>1</td><td>analyzerClassName</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_ColumnDefinition">Struct: ColumnDefinition</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
 <tr><td>1</td><td>analyzerClassName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>2</td><td>fullTextIndex</td><td><code>bool</code></td><td></td><td>default</td><td></td></tr>
 <tr><td>3</td><td>alternateColumnDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_AlternateColumnDefinition">AlternateColumnDefinition</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_ColumnFamilyDefinition">Struct: ColumnFamilyDefinition</h3>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_ColumnFamilyDefinition">Struct: ColumnFamilyDefinition</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>columnDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_AnalyzerDefinition">Struct: AnalyzerDefinition</h3>
+<tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>columnDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_AnalyzerDefinition">Struct: AnalyzerDefinition</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>2</td><td>fullTextAnalyzerClassName</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>columnFamilyDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnFamilyDefinition">ColumnFamilyDefinition</a></code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-</table><br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
+<tr><td>1</td><td>defaultDefinition</td><td><code><a href="Blur.html#Struct_ColumnDefinition">ColumnDefinition</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>2</td><td>fullTextAnalyzerClassName</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>columnFamilyDefinitions</td><td><code>map&lt;<code>string</code>, <code><a href="Blur.html#Struct_ColumnFamilyDefinition">ColumnFamilyDefinition</a></code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+</table><br/><p/>
+<br/></div><div class="definition"><h3 id="Struct_TableDescriptor">Struct: TableDescriptor</h3>
 <table><tr><th>Key</th><th>Field</th><th>Type</th><th>Description</th><th>Requiredness</th><th>Default value</th></tr>
-<tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
-<tr><td>2</td><td>analyzerDefinition</td><td><code><a href="Blur.html#Struct_AnalyzerDefinition">AnalyzerDefinition</a></code></td><td></td><td>default</td><td></td></tr>
-<tr><td>3</td><td>shardCount</td><td><code>i32</code></td><td></td><td>default</td><td>1</td></tr>
-<tr><td>4</td><td>tableUri</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>5</td><td>compressionClass</td><td><code>string</code></td><td></td><td>default</td><td>"org.apache.hadoop.io.compress.DefaultCodec"</td></tr>
-<tr><td>6</td><td>compressionBlockSize</td><td><code>i32</code></td><td></td><td>default</td><td>32768</td></tr>
-<tr><td>7</td><td>cluster</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>8</td><td>name</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>9</td><td>similarityClass</td><td><code>string</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>10</td><td>blockCaching</td><td><code>bool</code></td><td></td><td>default</td><td>1</td></tr>
-<tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td></td><td>default</td><td></td></tr>
-<tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td></td><td>default</td><td>0</td></tr>
-</table><br/></div><hr/><h2 id="Services">Services</h2>
+<tr><td>1</td><td>isEnabled</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>2</td><td>analyzerDefinition</td><td><code><a href="Blur.html#Struct_AnalyzerDefinition">AnalyzerDefinition</a></code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>3</td><td>shardCount</td><td><code>i32</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>4</td><td>tableUri</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>5</td><td>compressionClass</td><td><code>string</code></td><td>
+</td><td>default</td><td>"org.apache.hadoop.io.compress.DefaultCodec"</td></tr>
+<tr><td>6</td><td>compressionBlockSize</td><td><code>i32</code></td><td>
+</td><td>default</td><td>32768</td></tr>
+<tr><td>7</td><td>cluster</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>8</td><td>name</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>9</td><td>similarityClass</td><td><code>string</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>10</td><td>blockCaching</td><td><code>bool</code></td><td>
+</td><td>default</td><td>1</td></tr>
+<tr><td>11</td><td>blockCachingFileTypes</td><td><code>set&lt;<code>string</code>&gt;</code></td><td>
+</td><td>default</td><td></td></tr>
+<tr><td>12</td><td>readOnly</td><td><code>bool</code></td><td>
+</td><td>default</td><td>0</td></tr>
+</table><br/><p/>
+<br/></div><hr/><h2 id="Services">Services</h2>
 <h3 id="Svc_Blur">Service: Blur</h3>
-<div class="definition"><h4 id="Fn_Blur_shardClusterList">Function: Blur.shardClusterList</h4>
+<p/>
+<br/><div class="definition"><h4 id="Fn_Blur_shardClusterList">Function: Blur.shardClusterList</h4>
 <pre><code>list&lt;<code>string</code>&gt;</code> shardClusterList()
     throws <code><a href="Blur.html#Struct_BlurException">BlurException</a></code>
 </pre>Returns a list of all the shard clusters.

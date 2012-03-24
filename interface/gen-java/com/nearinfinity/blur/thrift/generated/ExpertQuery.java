@@ -20,18 +20,33 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQuery._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ExpertQuery");
 
   private static final org.apache.thrift.protocol.TField QUERY_FIELD_DESC = new org.apache.thrift.protocol.TField("query", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField FILTER_FIELD_DESC = new org.apache.thrift.protocol.TField("filter", org.apache.thrift.protocol.TType.STRING, (short)2);
 
+  /**
+   * 
+   */
   public ByteBuffer query; // required
+  /**
+   * 
+   */
   public ByteBuffer filter; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     QUERY((short)1, "query"),
+    /**
+     * 
+     */
     FILTER((short)2, "filter");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -139,6 +154,9 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
     this.filter = null;
   }
 
+  /**
+   * 
+   */
   public byte[] getQuery() {
     setQuery(org.apache.thrift.TBaseHelper.rightSize(query));
     return query == null ? null : query.array();
@@ -148,6 +166,9 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
     return query;
   }
 
+  /**
+   * 
+   */
   public ExpertQuery setQuery(byte[] query) {
     setQuery(query == null ? (ByteBuffer)null : ByteBuffer.wrap(query));
     return this;
@@ -173,6 +194,9 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
     }
   }
 
+  /**
+   * 
+   */
   public byte[] getFilter() {
     setFilter(org.apache.thrift.TBaseHelper.rightSize(filter));
     return filter == null ? null : filter.array();
@@ -182,6 +206,9 @@ public class ExpertQuery implements org.apache.thrift.TBase<ExpertQuery, ExpertQ
     return filter;
   }
 
+  /**
+   * 
+   */
   public ExpertQuery setFilter(byte[] filter) {
     setFilter(filter == null ? (ByteBuffer)null : ByteBuffer.wrap(filter));
     return this;

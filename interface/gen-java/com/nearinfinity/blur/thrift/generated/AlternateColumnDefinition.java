@@ -20,15 +20,24 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * 
+ */
 public class AlternateColumnDefinition implements org.apache.thrift.TBase<AlternateColumnDefinition, AlternateColumnDefinition._Fields>, java.io.Serializable, Cloneable {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("AlternateColumnDefinition");
 
   private static final org.apache.thrift.protocol.TField ANALYZER_CLASS_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("analyzerClassName", org.apache.thrift.protocol.TType.STRING, (short)1);
 
+  /**
+   * 
+   */
   public String analyzerClassName; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+    /**
+     * 
+     */
     ANALYZER_CLASS_NAME((short)1, "analyzerClassName");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -124,10 +133,16 @@ public class AlternateColumnDefinition implements org.apache.thrift.TBase<Altern
     this.analyzerClassName = null;
   }
 
+  /**
+   * 
+   */
   public String getAnalyzerClassName() {
     return this.analyzerClassName;
   }
 
+  /**
+   * 
+   */
   public AlternateColumnDefinition setAnalyzerClassName(String analyzerClassName) {
     this.analyzerClassName = analyzerClassName;
     return this;

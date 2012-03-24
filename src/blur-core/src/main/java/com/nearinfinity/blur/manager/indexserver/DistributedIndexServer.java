@@ -60,7 +60,6 @@ import com.nearinfinity.blur.manager.writer.BlurIndexCloser;
 import com.nearinfinity.blur.manager.writer.BlurIndexReader;
 import com.nearinfinity.blur.manager.writer.BlurIndexRefresher;
 import com.nearinfinity.blur.manager.writer.BlurNRTIndex;
-import com.nearinfinity.blur.manager.writer.TransactionRecorder;
 import com.nearinfinity.blur.metrics.BlurMetrics;
 import com.nearinfinity.blur.store.blockcache.BlockDirectory;
 import com.nearinfinity.blur.store.blockcache.BlockDirectoryCache;
@@ -75,6 +74,7 @@ import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
 
 public class DistributedIndexServer extends AbstractIndexServer {
 
+  private static final String LOGS = "logs";
   private static final Log LOG = LogFactory.getLog(DistributedIndexServer.class);
   private static final long _delay = TimeUnit.SECONDS.toMillis(5);
 
@@ -106,8 +106,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndexWarmup _warmup = new DefaultBlurIndexWarmup();
   private IndexDeletionPolicy _indexDeletionPolicy;
   private String cluster = BlurConstants.BLUR_CLUSTER;
-  private TransactionRecorder _recorder = new TransactionRecorder();
-  private Path _walPath;
 
   public static interface ReleaseReader {
     void release() throws IOException;
@@ -125,9 +123,6 @@ public class DistributedIndexServer extends AbstractIndexServer {
     } finally {
       BlurUtil.unlockForSafeMode(_zookeeper, lockPath);
     }
-    _recorder.setConfiguration(_configuration);
-    _recorder.setWalPath(_walPath);
-    _recorder.init();
     waitInSafeModeIfNeeded();
     _running.set(true);
     setupTableWarmer();
@@ -446,6 +441,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
   private BlurIndex openShard(String table, String shard) throws IOException {
     LOG.info("Opening shard [{0}] for table [{1}]", shard, table);
     Path tablePath = new Path(getTableDescriptor(table).tableUri);
+    Path walTablePath = new Path(tablePath, LOGS);
     Path hdfsDirPath = new Path(tablePath, shard);
 
     BlurLockFactory lockFactory = new BlurLockFactory(_configuration, hdfsDirPath, _nodeName, BlurConstants.getPid());
@@ -500,7 +496,7 @@ public class DistributedIndexServer extends AbstractIndexServer {
       writer.setTimeBetweenRefreshs(TimeUnit.MILLISECONDS.toNanos(500));
       writer.setNrtCachingMaxCachedMB(60);
       writer.setNrtCachingMaxMergeSizeMB(5.0);
-      writer.setWalPath(_walPath);
+      writer.setWalPath(walTablePath);
       writer.setConfiguration(_configuration);
       writer.setIndexDeletionPolicy(_indexDeletionPolicy);
       writer.init();
@@ -800,9 +796,4 @@ public class DistributedIndexServer extends AbstractIndexServer {
   public void setIndexDeletionPolicy(IndexDeletionPolicy indexDeletionPolicy) {
     _indexDeletionPolicy = indexDeletionPolicy;
   }
-
-  public void setWalPath(Path walPath) {
-    _walPath = walPath;
-  }
-
 }

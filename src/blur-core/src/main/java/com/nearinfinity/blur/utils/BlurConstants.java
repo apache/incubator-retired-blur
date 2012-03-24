@@ -49,7 +49,6 @@ public class BlurConstants {
   public static final String BLUR_SHARD_BLOCKCACHE_DIRECT_MEMORY_ALLOCATION = "blur.shard.blockcache.direct.memory.allocation";
   public static final String BLUR_SHARD_BLOCKCACHE_SLAB_COUNT = "blur.shard.blockcache.slab.count";
   public static final String BLUR_SHARD_SAFEMODEDELAY = "blur.shard.safemodedelay";
-  public static final String BLUR_SHARD_WAL_PATH = "blur.shard.wal.path";
   public static final String BLUR_CONTROLLER_HOSTNAME = "blur.controller.hostname";
   public static final String BLUR_CONTROLLER_BIND_PORT = "blur.controller.bind.port";
   public static final String BLUR_CONTROLLER_BIND_ADDRESS = "blur.controller.bind.address";

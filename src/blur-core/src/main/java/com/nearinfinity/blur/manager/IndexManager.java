@@ -783,7 +783,8 @@ public class IndexManager {
         String shard = entry.getKey();
         IndexSearcher searcher = new IndexSearcher(reader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
-        return new BlurResultIterableSearcher(_running, (Query) _query.clone(), _table, shard, searcher, _selector);
+        Query rewrite = searcher.rewrite((Query) _query.clone());
+        return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector);
       } finally {
         _blurMetrics.queriesInternal.incrementAndGet();
         // this will allow for closing of index

@@ -29,16 +29,21 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DeflateCodec;
 import org.apache.lucene.search.Similarity;
+import org.apache.thrift.TBase;
+import org.apache.thrift.TException;
+import org.apache.thrift.protocol.TJSONProtocol;
+import org.apache.thrift.transport.TMemoryBuffer;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooDefs.Ids;
+import org.apache.zookeeper.ZooKeeper;
 
 import com.nearinfinity.blur.analysis.BlurAnalyzer;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.lucene.search.FairSimilarity;
 import com.nearinfinity.blur.manager.clusterstatus.ZookeeperPathConstants;
+import com.nearinfinity.blur.thrift.generated.ColumnPreCache;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.utils.BlurUtil;
 
@@ -80,12 +85,14 @@ public class CreateTable {
     boolean blockCaching = tableDescriptor.blockCaching;
     Set<String> blockCachingFileTypes = tableDescriptor.blockCachingFileTypes;
     String blurTablePath = ZookeeperPathConstants.getTablePath(cluster, table);
+    ColumnPreCache columnPreCache = tableDescriptor.columnPreCache;
 
     if (zookeeper.exists(blurTablePath, false) != null) {
       throw new IOException("Table [" + table + "] already exists.");
     }
     setupFileSystem(uri, shardCount);
     createPath(zookeeper, blurTablePath, analyzer.toJSON().getBytes());
+    createPath(zookeeper, ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table), toBytes(columnPreCache));
     createPath(zookeeper, ZookeeperPathConstants.getTableUriPath(cluster, table), uri.getBytes());
     createPath(zookeeper, ZookeeperPathConstants.getTableShardCountPath(cluster, table), Integer.toString(shardCount).getBytes());
     createPath(zookeeper, ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table), compressionCodec.getClass().getName().getBytes());
@@ -100,6 +107,21 @@ public class CreateTable {
       createPath(zookeeper, ZookeeperPathConstants.getTableBlockCachingPath(cluster, table), null);
     }
     createPath(zookeeper, ZookeeperPathConstants.getTableBlockCachingFileTypesPath(cluster, table), toBytes(blockCachingFileTypes));
+  }
+
+  private static byte[] toBytes(TBase<?,?> base) {
+    if (base == null) {
+      return null;
+    }
+    TMemoryBuffer trans = new TMemoryBuffer(1024);
+    TJSONProtocol protocol = new TJSONProtocol(trans);
+    try {
+      base.write(protocol);
+    } catch (TException e) {
+      throw new RuntimeException(e);
+    }
+    trans.close();
+    return trans.getArray();
   }
 
   private static int zeroCheck(int i, String message) {

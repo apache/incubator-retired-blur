@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryInputTransport;
@@ -40,6 +41,7 @@ import org.apache.zookeeper.data.Stat;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
 import com.nearinfinity.blur.thrift.generated.AnalyzerDefinition;
+import com.nearinfinity.blur.thrift.generated.ColumnPreCache;
 import com.nearinfinity.blur.thrift.generated.TableDescriptor;
 import com.nearinfinity.blur.zookeeper.WatchChildren;
 import com.nearinfinity.blur.zookeeper.WatchChildren.OnChange;
@@ -357,10 +359,11 @@ public class ZookeeperClusterStatus extends ClusterStatus {
       tableDescriptor.tableUri = new String(getData(ZookeeperPathConstants.getTableUriPath(cluster, table)));
       tableDescriptor.compressionClass = new String(getData(ZookeeperPathConstants.getTableCompressionCodecPath(cluster, table)));
       tableDescriptor.compressionBlockSize = Integer.parseInt(new String(getData(ZookeeperPathConstants.getTableCompressionBlockSizePath(cluster, table))));
-      tableDescriptor.analyzerDefinition = getAnalyzerDefinition(getData(ZookeeperPathConstants.getTablePath(cluster, table)));
+      tableDescriptor.analyzerDefinition = fromBytes(getData(ZookeeperPathConstants.getTablePath(cluster, table)), AnalyzerDefinition.class);
       tableDescriptor.blockCaching = isBlockCacheEnabled(cluster, table);
       tableDescriptor.blockCachingFileTypes = getBlockCacheFileTypes(cluster, table);
       tableDescriptor.name = table;
+      tableDescriptor.columnPreCache = fromBytes(getData(ZookeeperPathConstants.getTableColumnsToPreCache(cluster, table)), ColumnPreCache.class);
       byte[] data = getData(ZookeeperPathConstants.getTableSimilarityPath(cluster, table));
       if (data != null) {
         tableDescriptor.similarityClass = new String(data);
@@ -375,17 +378,25 @@ public class ZookeeperClusterStatus extends ClusterStatus {
     return tableDescriptor;
   }
 
-  private AnalyzerDefinition getAnalyzerDefinition(byte[] data) {
-    TMemoryInputTransport trans = new TMemoryInputTransport(data);
-    TJSONProtocol protocol = new TJSONProtocol(trans);
-    AnalyzerDefinition analyzerDefinition = new AnalyzerDefinition();
+  @SuppressWarnings("unchecked")
+  private <T extends TBase<?, ?>> T fromBytes(byte[] data, Class<T> clazz) {
     try {
-      analyzerDefinition.read(protocol);
+      if (data == null) {
+        return null;
+      }
+      TBase<?, ?> base = clazz.newInstance();
+      TMemoryInputTransport trans = new TMemoryInputTransport(data);
+      TJSONProtocol protocol = new TJSONProtocol(trans);
+      base.read(protocol);
+      trans.close();
+      return (T) base;
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
     } catch (TException e) {
       throw new RuntimeException(e);
     }
-    trans.close();
-    return analyzerDefinition;
   }
 
   private byte[] getData(String path) throws KeeperException, InterruptedException {

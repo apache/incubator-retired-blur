@@ -107,4 +107,8 @@ public class ZookeeperPathConstants {
     return getTablePath(cluster, table) + "/readonly";
   }
 
+  public static String getTableColumnsToPreCache(String cluster, String table) {
+    return getTablePath(cluster, table) + "/precache";
+  }
+
 }

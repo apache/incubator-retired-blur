@@ -2961,9 +2961,94 @@ sub write {
   return $xfer;
 }
 
+package Blur::ColumnPreCache;
+use base qw(Class::Accessor);
+Blur::ColumnPreCache->mk_accessors( qw( preCacheCols ) );
+
+sub new {
+  my $classname = shift;
+  my $self      = {};
+  my $vals      = shift || {};
+  $self->{preCacheCols} = undef;
+  if (UNIVERSAL::isa($vals,'HASH')) {
+    if (defined $vals->{preCacheCols}) {
+      $self->{preCacheCols} = $vals->{preCacheCols};
+    }
+  }
+  return bless ($self, $classname);
+}
+
+sub getName {
+  return 'ColumnPreCache';
+}
+
+sub read {
+  my ($self, $input) = @_;
+  my $xfer  = 0;
+  my $fname;
+  my $ftype = 0;
+  my $fid   = 0;
+  $xfer += $input->readStructBegin(\$fname);
+  while (1) 
+  {
+    $xfer += $input->readFieldBegin(\$fname, \$ftype, \$fid);
+    if ($ftype == TType::STOP) {
+      last;
+    }
+    SWITCH: for($fid)
+    {
+      /^1$/ && do{      if ($ftype == TType::LIST) {
+        {
+          my $_size133 = 0;
+          $self->{preCacheCols} = [];
+          my $_etype136 = 0;
+          $xfer += $input->readListBegin(\$_etype136, \$_size133);
+          for (my $_i137 = 0; $_i137 < $_size133; ++$_i137)
+          {
+            my $elem138 = undef;
+            $xfer += $input->readString(\$elem138);
+            push(@{$self->{preCacheCols}},$elem138);
+          }
+          $xfer += $input->readListEnd();
+        }
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+        $xfer += $input->skip($ftype);
+    }
+    $xfer += $input->readFieldEnd();
+  }
+  $xfer += $input->readStructEnd();
+  return $xfer;
+}
+
+sub write {
+  my ($self, $output) = @_;
+  my $xfer   = 0;
+  $xfer += $output->writeStructBegin('ColumnPreCache');
+  if (defined $self->{preCacheCols}) {
+    $xfer += $output->writeFieldBegin('preCacheCols', TType::LIST, 1);
+    {
+      $xfer += $output->writeListBegin(TType::STRING, scalar(@{$self->{preCacheCols}}));
+      {
+        foreach my $iter139 (@{$self->{preCacheCols}}) 
+        {
+          $xfer += $output->writeString($iter139);
+        }
+      }
+      $xfer += $output->writeListEnd();
+    }
+    $xfer += $output->writeFieldEnd();
+  }
+  $xfer += $output->writeFieldStop();
+  $xfer += $output->writeStructEnd();
+  return $xfer;
+}
+
 package Blur::TableDescriptor;
 use base qw(Class::Accessor);
-Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly ) );
+Blur::TableDescriptor->mk_accessors( qw( isEnabled analyzerDefinition shardCount tableUri compressionClass compressionBlockSize cluster name similarityClass blockCaching blockCachingFileTypes readOnly columnPreCache ) );
 
 sub new {
   my $classname = shift;
@@ -2981,6 +3066,7 @@ sub new {
   $self->{blockCaching} = 1;
   $self->{blockCachingFileTypes} = undef;
   $self->{readOnly} = 0;
+  $self->{columnPreCache} = undef;
   if (UNIVERSAL::isa($vals,'HASH')) {
     if (defined $vals->{isEnabled}) {
       $self->{isEnabled} = $vals->{isEnabled};
@@ -3017,6 +3103,9 @@ sub new {
     }
     if (defined $vals->{readOnly}) {
       $self->{readOnly} = $vals->{readOnly};
+    }
+    if (defined $vals->{columnPreCache}) {
+      $self->{columnPreCache} = $vals->{columnPreCache};
     }
   }
   return bless ($self, $classname);
@@ -3104,15 +3193,15 @@ sub read {
       last; };
       /^11$/ && do{      if ($ftype == TType::SET) {
         {
-          my $_size133 = 0;
+          my $_size140 = 0;
           $self->{blockCachingFileTypes} = {};
-          my $_etype136 = 0;
-          $xfer += $input->readSetBegin(\$_etype136, \$_size133);
-          for (my $_i137 = 0; $_i137 < $_size133; ++$_i137)
+          my $_etype143 = 0;
+          $xfer += $input->readSetBegin(\$_etype143, \$_size140);
+          for (my $_i144 = 0; $_i144 < $_size140; ++$_i144)
           {
-            my $elem138 = undef;
-            $xfer += $input->readString(\$elem138);
-            $self->{blockCachingFileTypes}->{$elem138} = 1;
+            my $elem145 = undef;
+            $xfer += $input->readString(\$elem145);
+            $self->{blockCachingFileTypes}->{$elem145} = 1;
           }
           $xfer += $input->readSetEnd();
         }
@@ -3122,6 +3211,13 @@ sub read {
       last; };
       /^12$/ && do{      if ($ftype == TType::BOOL) {
         $xfer += $input->readBool(\$self->{readOnly});
+      } else {
+        $xfer += $input->skip($ftype);
+      }
+      last; };
+      /^13$/ && do{      if ($ftype == TType::STRUCT) {
+        $self->{columnPreCache} = new Blur::ColumnPreCache();
+        $xfer += $self->{columnPreCache}->read($input);
       } else {
         $xfer += $input->skip($ftype);
       }
@@ -3193,9 +3289,9 @@ sub write {
     {
       $xfer += $output->writeSetBegin(TType::STRING, scalar(@{$self->{blockCachingFileTypes}}));
       {
-        foreach my $iter139 (@{$self->{blockCachingFileTypes}})
+        foreach my $iter146 (@{$self->{blockCachingFileTypes}})
         {
-          $xfer += $output->writeString($iter139);
+          $xfer += $output->writeString($iter146);
         }
       }
       $xfer += $output->writeSetEnd();
@@ -3205,6 +3301,11 @@ sub write {
   if (defined $self->{readOnly}) {
     $xfer += $output->writeFieldBegin('readOnly', TType::BOOL, 12);
     $xfer += $output->writeBool($self->{readOnly});
+    $xfer += $output->writeFieldEnd();
+  }
+  if (defined $self->{columnPreCache}) {
+    $xfer += $output->writeFieldBegin('columnPreCache', TType::STRUCT, 13);
+    $xfer += $self->{columnPreCache}->write($output);
     $xfer += $output->writeFieldEnd();
   }
   $xfer += $output->writeFieldStop();

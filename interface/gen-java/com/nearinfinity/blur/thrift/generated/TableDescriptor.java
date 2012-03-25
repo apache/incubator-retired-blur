@@ -38,6 +38,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
   private static final org.apache.thrift.protocol.TField BLOCK_CACHING_FIELD_DESC = new org.apache.thrift.protocol.TField("blockCaching", org.apache.thrift.protocol.TType.BOOL, (short)10);
   private static final org.apache.thrift.protocol.TField BLOCK_CACHING_FILE_TYPES_FIELD_DESC = new org.apache.thrift.protocol.TField("blockCachingFileTypes", org.apache.thrift.protocol.TType.SET, (short)11);
   private static final org.apache.thrift.protocol.TField READ_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("readOnly", org.apache.thrift.protocol.TType.BOOL, (short)12);
+  private static final org.apache.thrift.protocol.TField COLUMN_PRE_CACHE_FIELD_DESC = new org.apache.thrift.protocol.TField("columnPreCache", org.apache.thrift.protocol.TType.STRUCT, (short)13);
 
   /**
    * 
@@ -87,6 +88,10 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
    * 
    */
   public boolean readOnly; // required
+  /**
+   * Sets what column families and columns to prefetch into block cache on shard open.
+   */
+  public ColumnPreCache columnPreCache; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -137,7 +142,11 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     /**
      * 
      */
-    READ_ONLY((short)12, "readOnly");
+    READ_ONLY((short)12, "readOnly"),
+    /**
+     * Sets what column families and columns to prefetch into block cache on shard open.
+     */
+    COLUMN_PRE_CACHE((short)13, "columnPreCache");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -176,6 +185,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
           return BLOCK_CACHING_FILE_TYPES;
         case 12: // READ_ONLY
           return READ_ONLY;
+        case 13: // COLUMN_PRE_CACHE
+          return COLUMN_PRE_CACHE;
         default:
           return null;
       }
@@ -251,6 +262,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.READ_ONLY, new org.apache.thrift.meta_data.FieldMetaData("readOnly", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+    tmpMap.put(_Fields.COLUMN_PRE_CACHE, new org.apache.thrift.meta_data.FieldMetaData("columnPreCache", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ColumnPreCache.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TableDescriptor.class, metaDataMap);
   }
@@ -282,7 +295,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     String similarityClass,
     boolean blockCaching,
     Set<String> blockCachingFileTypes,
-    boolean readOnly)
+    boolean readOnly,
+    ColumnPreCache columnPreCache)
   {
     this();
     this.isEnabled = isEnabled;
@@ -302,6 +316,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.blockCachingFileTypes = blockCachingFileTypes;
     this.readOnly = readOnly;
     setReadOnlyIsSet(true);
+    this.columnPreCache = columnPreCache;
   }
 
   /**
@@ -340,6 +355,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       this.blockCachingFileTypes = __this__blockCachingFileTypes;
     }
     this.readOnly = other.readOnly;
+    if (other.isSetColumnPreCache()) {
+      this.columnPreCache = new ColumnPreCache(other.columnPreCache);
+    }
   }
 
   public TableDescriptor deepCopy() {
@@ -366,6 +384,7 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     this.blockCachingFileTypes = null;
     this.readOnly = false;
 
+    this.columnPreCache = null;
   }
 
   /**
@@ -738,6 +757,36 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     __isset_bit_vector.set(__READONLY_ISSET_ID, value);
   }
 
+  /**
+   * Sets what column families and columns to prefetch into block cache on shard open.
+   */
+  public ColumnPreCache getColumnPreCache() {
+    return this.columnPreCache;
+  }
+
+  /**
+   * Sets what column families and columns to prefetch into block cache on shard open.
+   */
+  public TableDescriptor setColumnPreCache(ColumnPreCache columnPreCache) {
+    this.columnPreCache = columnPreCache;
+    return this;
+  }
+
+  public void unsetColumnPreCache() {
+    this.columnPreCache = null;
+  }
+
+  /** Returns true if field columnPreCache is set (has been assigned a value) and false otherwise */
+  public boolean isSetColumnPreCache() {
+    return this.columnPreCache != null;
+  }
+
+  public void setColumnPreCacheIsSet(boolean value) {
+    if (!value) {
+      this.columnPreCache = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case IS_ENABLED:
@@ -836,6 +885,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       }
       break;
 
+    case COLUMN_PRE_CACHE:
+      if (value == null) {
+        unsetColumnPreCache();
+      } else {
+        setColumnPreCache((ColumnPreCache)value);
+      }
+      break;
+
     }
   }
 
@@ -877,6 +934,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     case READ_ONLY:
       return Boolean.valueOf(isReadOnly());
 
+    case COLUMN_PRE_CACHE:
+      return getColumnPreCache();
+
     }
     throw new IllegalStateException();
   }
@@ -912,6 +972,8 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       return isSetBlockCachingFileTypes();
     case READ_ONLY:
       return isSetReadOnly();
+    case COLUMN_PRE_CACHE:
+      return isSetColumnPreCache();
     }
     throw new IllegalStateException();
   }
@@ -1034,6 +1096,15 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       if (!(this_present_readOnly && that_present_readOnly))
         return false;
       if (this.readOnly != that.readOnly)
+        return false;
+    }
+
+    boolean this_present_columnPreCache = true && this.isSetColumnPreCache();
+    boolean that_present_columnPreCache = true && that.isSetColumnPreCache();
+    if (this_present_columnPreCache || that_present_columnPreCache) {
+      if (!(this_present_columnPreCache && that_present_columnPreCache))
+        return false;
+      if (!this.columnPreCache.equals(that.columnPreCache))
         return false;
     }
 
@@ -1173,6 +1244,16 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         return lastComparison;
       }
     }
+    lastComparison = Boolean.valueOf(isSetColumnPreCache()).compareTo(typedOther.isSetColumnPreCache());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetColumnPreCache()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.columnPreCache, typedOther.columnPreCache);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
     return 0;
   }
 
@@ -1268,13 +1349,13 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
         case 11: // BLOCK_CACHING_FILE_TYPES
           if (field.type == org.apache.thrift.protocol.TType.SET) {
             {
-              org.apache.thrift.protocol.TSet _set75 = iprot.readSetBegin();
-              this.blockCachingFileTypes = new HashSet<String>(2*_set75.size);
-              for (int _i76 = 0; _i76 < _set75.size; ++_i76)
+              org.apache.thrift.protocol.TSet _set79 = iprot.readSetBegin();
+              this.blockCachingFileTypes = new HashSet<String>(2*_set79.size);
+              for (int _i80 = 0; _i80 < _set79.size; ++_i80)
               {
-                String _elem77; // required
-                _elem77 = iprot.readString();
-                this.blockCachingFileTypes.add(_elem77);
+                String _elem81; // required
+                _elem81 = iprot.readString();
+                this.blockCachingFileTypes.add(_elem81);
               }
               iprot.readSetEnd();
             }
@@ -1286,6 +1367,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
           if (field.type == org.apache.thrift.protocol.TType.BOOL) {
             this.readOnly = iprot.readBool();
             setReadOnlyIsSet(true);
+          } else { 
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+          }
+          break;
+        case 13: // COLUMN_PRE_CACHE
+          if (field.type == org.apache.thrift.protocol.TType.STRUCT) {
+            this.columnPreCache = new ColumnPreCache();
+            this.columnPreCache.read(iprot);
           } else { 
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
           }
@@ -1351,9 +1440,9 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
       oprot.writeFieldBegin(BLOCK_CACHING_FILE_TYPES_FIELD_DESC);
       {
         oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, this.blockCachingFileTypes.size()));
-        for (String _iter78 : this.blockCachingFileTypes)
+        for (String _iter82 : this.blockCachingFileTypes)
         {
-          oprot.writeString(_iter78);
+          oprot.writeString(_iter82);
         }
         oprot.writeSetEnd();
       }
@@ -1362,6 +1451,11 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     oprot.writeFieldBegin(READ_ONLY_FIELD_DESC);
     oprot.writeBool(this.readOnly);
     oprot.writeFieldEnd();
+    if (this.columnPreCache != null) {
+      oprot.writeFieldBegin(COLUMN_PRE_CACHE_FIELD_DESC);
+      this.columnPreCache.write(oprot);
+      oprot.writeFieldEnd();
+    }
     oprot.writeFieldStop();
     oprot.writeStructEnd();
   }
@@ -1445,6 +1539,14 @@ public class TableDescriptor implements org.apache.thrift.TBase<TableDescriptor,
     if (!first) sb.append(", ");
     sb.append("readOnly:");
     sb.append(this.readOnly);
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("columnPreCache:");
+    if (this.columnPreCache == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.columnPreCache);
+    }
     first = false;
     sb.append(")");
     return sb.toString();

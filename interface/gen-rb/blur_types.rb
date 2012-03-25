@@ -679,6 +679,24 @@ module Blur
     end
 
     # 
+    class ColumnPreCache
+      include ::Thrift::Struct, ::Thrift::Struct_Union
+      PRECACHECOLS = 1
+
+      FIELDS = {
+        # This map sets what column families and columns to prefetch into block cache on shard open.
+        PRECACHECOLS => {:type => ::Thrift::Types::LIST, :name => 'preCacheCols', :element => {:type => ::Thrift::Types::STRING}}
+      }
+
+      def struct_fields; FIELDS; end
+
+      def validate
+      end
+
+      ::Thrift::Struct.generate_accessors self
+    end
+
+    # 
     class TableDescriptor
       include ::Thrift::Struct, ::Thrift::Struct_Union
       ISENABLED = 1
@@ -693,6 +711,7 @@ module Blur
       BLOCKCACHING = 10
       BLOCKCACHINGFILETYPES = 11
       READONLY = 12
+      COLUMNPRECACHE = 13
 
       FIELDS = {
         # 
@@ -718,7 +737,9 @@ module Blur
         # 
         BLOCKCACHINGFILETYPES => {:type => ::Thrift::Types::SET, :name => 'blockCachingFileTypes', :element => {:type => ::Thrift::Types::STRING}},
         # 
-        READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false}
+        READONLY => {:type => ::Thrift::Types::BOOL, :name => 'readOnly', :default => false},
+        # Sets what column families and columns to prefetch into block cache on shard open.
+        COLUMNPRECACHE => {:type => ::Thrift::Types::STRUCT, :name => 'columnPreCache', :class => Blur::ColumnPreCache}
       }
 
       def struct_fields; FIELDS; end

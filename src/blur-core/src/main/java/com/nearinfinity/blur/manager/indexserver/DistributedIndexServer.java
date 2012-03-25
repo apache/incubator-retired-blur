@@ -503,10 +503,11 @@ public class DistributedIndexServer extends AbstractIndexServer {
       index = writer;
     }
     _filterCache.opening(table, shard, index);
-    return warmUp(index, table, shard);
+    TableDescriptor tableDescriptor = _clusterStatus.getTableDescriptor(true, cluster, table);
+    return warmUp(index, tableDescriptor, shard);
   }
 
-  private BlurIndex warmUp(BlurIndex index, String table, String shard) throws IOException {
+  private BlurIndex warmUp(BlurIndex index, TableDescriptor table, String shard) throws IOException {
     final IndexReader reader = index.getIndexReader();
     warmUpAllSegments(reader);
     _warmup.warmBlurIndex(table, shard, reader, index.isClosed(), new ReleaseReader() {

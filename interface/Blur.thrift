@@ -552,6 +552,16 @@ struct AnalyzerDefinition {
 /**
  *
  */
+struct ColumnPreCache {
+  /**
+   * This map sets what column families and columns to prefetch into block cache on shard open.
+   */
+  1:list<string> preCacheCols
+}
+
+/**
+ *
+ */
 struct TableDescriptor {
   /**
    *
@@ -600,7 +610,11 @@ struct TableDescriptor {
   /**
    *
    */
-  12:bool readOnly = 0
+  12:bool readOnly = 0,
+  /**
+   * Sets what column families and columns to prefetch into block cache on shard open.
+   */
+  13:ColumnPreCache columnPreCache
 }
 
 /**

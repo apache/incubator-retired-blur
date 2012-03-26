@@ -74,7 +74,7 @@
     text-align: left;
 		@include border-radius-bottom(0);
   }
-  .warning{ height: 18px; text-align: center; }
+  td div.warning{ height: 18px; text-align: center; }
   .status{ width:160px; @include zoo-status; }
   #zookeepers,#hdfses{ height: 100%; }
 	h2 { color: $zk-header-color; @include box-title;}
@@ -85,3 +85,25 @@
 
 .grey_box { background-color: $grey-color; @include border; }
 
+.progress-up-down {
+  background-color: #DD514C;
+  background-image: -moz-linear-gradient(center top , #EE5F5B, #C43C35);
+  position: relative;
+  display: inline-block;
+  width: 190px;
+  margin-bottom: 0;
+  .bar.up {
+    background-color: #5EB95E;
+    padding-left: 10px;
+    text-align: left;
+    background-image: -moz-linear-gradient(center top , #62C462, #57A957);
+  }
+  .down {
+    padding-right: 10px;
+    position: absolute;
+    width: 50%;
+    text-align: right;
+    right: 0;
+    top: 0;
+  }
+}

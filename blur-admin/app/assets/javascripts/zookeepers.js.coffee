@@ -77,39 +77,13 @@ $(document).ready ->
                   .html('<div>Inconsistent Blur Versions</div>')
 
         number_shards_online = parseInt(this.shard_total,10) - parseInt(this.shard_offline_node,10)
-        if number_shards_online > 0
-          status_shards.find('.shards-online')
-                      .removeClass(NA)
-                      .addClass(ONLINE)
-                      .find('> .number')
-                      .html('<div>' + number_shards_online + '</div>')
-        else
-          status_shards.find('.shards-online')
-                      .removeClass(ONLINE)
-                      .addClass(NA)
-                      .find('> .number')
-                      .html('<div>0</div>')
-        if number_shards_online == 1
-          status_shards.find('.shards-online > .word').html('<div>Shard Online</div>')
-        else
-          status_shards.find('.shards-online > .word').html('<div>Shards Online</div>')
-
+        status_shards.find('.shards-online .number').html(number_shards_online)
         if parseInt(this.shard_offline_node,10) == 0
-          status_shards.find('.shards-offline')
-                      .removeClass(OFFLINE)
-                      .addClass(NA)
-                      .find('> .number')
-                      .html('<div>0</div>')
+          status_shards.find('.shards-offline .number').html('')
         else
-          status_shards.find('.shards-offline')
-                      .removeClass(NA)
-                      .addClass(OFFLINE)
-                      .find('> .number')
-                      .html('<div>' + parseInt(this.shard_offline_node,10) + '</div>')
-        if parseInt(this.shard_offline_node,10) == 1
-          status_shards.find('.shards-offline > .word').html('<div>Shard Offline</div>')
-        else
-          status_shards.find('.shards-offline > .word').html('<div>Shards Offline</div>')
+          status_shards.find('.shards-offline .number').html(parseInt(this.shard_offline_node,10))
+        if(this.shard_total>0)
+          status_shards.find('.shards-online').css('width',(number_shards_online/this.shard_total*100)+'%')
 
         # Updates the fields for the zookeeper's controllers
         status_controllers = zookeeper_table.find(".stat-cont")
@@ -135,40 +109,15 @@ $(document).ready ->
                         .html('<div>Inconsistent Blur Versions</div>')
 
         number_controllers_online = parseInt(this.controller_total,10) - parseInt(this.controller_offline_node,10)
-        if number_controllers_online > 0
-          status_controllers.find('.controllers-online')
-                            .removeClass(NA)
-                            .addClass(ONLINE)
-                            .find('> .number')
-                            .html('<div>' + number_controllers_online + '</div>')
-        else
-          status_controllers.find('.controllers-online')
-                            .removeClass(ONLINE)
-                            .addClass(NA)
-                            .find('> .number')
-                            .html('<div>0</div>')
-        if number_controllers_online == 1
-          status_controllers.find('.controllers-online > .word').html('<div>Controller Online</div>')
-        else
-          status_controllers.find('.controllers-online > .word').html('<div>Controllers Online</div>')
+        status_controllers.find('.controllers-online .number').html(number_controllers_online)
 
         if parseInt(this.controller_offline_node,10) == 0
-          status_controllers.find('.controllers-offline')
-                            .removeClass(OFFLINE)
-                            .addClass(NA)
-                            .find('> .number')
-                            .html('<div>0</div>')
+          status_controllers.find('.controllers-offline .number').html('')
         else
-          status_controllers.find('.controllers-offline')
-                            .removeClass(NA)
-                            .addClass(OFFLINE)
-                            .find('> .number')
-                            .html('<div>' + parseInt(this.controller_offline_node,10) + '</div>')          
-        if parseInt(this.controller_offline_node,10) == 1
-          status_controllers.find('.controllers-offline > .word').html('<div>Controller Offline</div>')
-        else
-          status_controllers.find('.controllers-offline > .word').html('<div>Controllers Offline</div>')
-        
+          status_controllers.find('.controllers-offline .number').html(parseInt(this.controller_offline_node,10))
+        if(this.controller_total>0)
+          status_shards.find('.controllers-online').css('width',(number_controllers_online/this.controller_total*100)+'%')
+
         if new_table
           $('#zookeepers').append(zookeeper_new)
           Zookeeper.push
@@ -220,25 +169,16 @@ $(document).ready ->
       
         # Update node counts
         live_nodes= hdfs_table.find(".nodes-live")
-        live_nodes.find('> .number').html(this.stats.live_nodes)
+        live_nodes.find('.number').html(this.stats.live_nodes)
         dead_nodes= hdfs_table.find(".nodes-dead")
-        dead_nodes.find('> .number').html(this.stats.dead_nodes)
+        dead_nodes.find('.number').html(this.stats.dead_nodes)
+        nodes_total = this.stats.live_nodes+this.stats.dead_nodes;
+        if(nodes_total > 0)
+          dead_nodes.css('width',(this.stats.live_nodes/nodes_total*100)+'%')
         under_nodes= hdfs_table.find(".nodes-under")
         under_nodes.find('> .number').html(this.stats.under_replicated)
 
         # Update node colors
-        if this.stats.dead_nodes != -1 && this.stats.live_nodes != -1
-          if this.stats.live_nodes == 0
-            live_nodes.removeClass(ONLINE).addClass(OFFLINE)
-            status = 'offline'
-          else
-            live_nodes.addClass(ONLINE).removeClass(OFFLINE)
-          if this.stats.dead_nodes == 0
-            dead_nodes.addClass(ONLINE).removeClass(WARNING)
-          else
-            dead_nodes.removeClass(ONLINE).addClass(WARNING)
-            if status != 'offline'
-              status = 'wrning'
         if this.stats.under_replicated == 0
           under_nodes.addClass(ONLINE).removeClass(WARNING)
         else

@@ -18,18 +18,18 @@
             %span.number 0
             Corrupt Blocks
         %td.center
-          .nodes-live.label.status.center
-            %span.number 0
-            Live Nodes
+          .progress.progress-up-down
+            .bar.up.nodes-live{:style=>'width:100%'}
+              %span.number 0
+              Online/Offline
+            .down.nodes-dead
+              %span.number
       %tr
         %td.center
           .blocks-miss.label.status.center
             %span.number 0
             Missing Blocks
-        %td.center
-          .nodes-dead.label.status.center
-            %span.number 0
-            Dead Nodes
+        %td.center &nbsp;
       %tr
         %td.center
           .nodes-under.label.status.center

@@ -9,11 +9,16 @@ class SearchController < ApplicationController
     # required because of the lazy loading (in this case where a few more variables
     # depend on the result)
     @blur_tables = @current_zookeeper.blur_tables.where('status = 4').order("table_name").includes(:cluster).all
-    @blur_table = @blur_tables[0]
+    @blur_table = BlurTable.find_by_id(params[:table_id])
+    if @blur_table.nil?
+      @blur_table = @blur_tables[0]
+      @query = ''
+    else
+      @query = params[:query].nil? ? '' : params[:query]
+    end
     @columns = @blur_table.schema &preference_sort(current_user.column_preference.value || []) if @blur_table
     @searches = current_user.searches.order("name")
     @filter_table_collection = {}
-    puts @blur_tables.inspect
     @blur_tables.each do |table|
         @filter_table_collection[table.cluster.name] ||= []
         @filter_table_collection[table.cluster.name] << [table.table_name, table.id]
@@ -24,9 +29,15 @@ class SearchController < ApplicationController
   def filters
     blur_table = BlurTable.find params[:blur_table_id]
     columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value)) : []
-    respond_to do |format|
-      format.html {render :partial =>"filters", :locals => {:columns => columns}}
+    
+    filter_list = columns.collect do |family|
+      col_fam = {:title => family['name'], :key => "family_-sep-_#{family['name']}", :addClass => 'check_filter', :select => true}
+      col_fam[:children] = family['columns'].collect do |column|
+        {:title => column['name'], :key => "column_-sep-_#{family['name']}_-sep-_#{column['name']}", :addClass=>'check_filter', :select => true}
+      end
+      col_fam
     end
+    render :json => filter_list.to_json
   end
 
   #Create action is a large action that handles all of the filter data
@@ -98,8 +109,8 @@ class SearchController < ApplicationController
       end
       @results << result
     end
-    @schema = Hash[search.schema(blur_table).sort &preference_sort(current_user.column_preference.value || [])]
-
+    pref_sort = preference_sort(current_user.column_preference.value || [])
+    @schema = Hash[search.schema(blur_table).sort &pref_sort]
     respond_to do |format|
       format.html {render 'create', :layout => false}
     end
@@ -120,15 +131,6 @@ class SearchController < ApplicationController
     @blur_table = BlurTable.find params[:blur_table]
     respond_to do |format|
       format.html {render :partial =>"saved", :locals => {:searches => @searches, :blur_table => @blur_table}}
-    end
-  end
-
-  def reload
-    @searches = current_user.searches.reverse
-    @blur_table = BlurTable.find params[:blur_table]
-    respond_to do |format|
-      format.html {render :partial =>"saved", :locals => {:searches => @searches,
-                                                          :blur_table => @blur_table}}
     end
   end
 

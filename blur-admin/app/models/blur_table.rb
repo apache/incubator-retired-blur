@@ -19,17 +19,17 @@ class BlurTable < ActiveRecord::Base
     if self.table_schema
       # sort columns, and then sort column families
       if block_given?
-        Hash[(JSON.parse self.table_schema)['columnFamilies'].each {|k, v| v.sort!}.sort &Proc.new]
+        (JSON.parse self.table_schema).each{|n| n['columns'].sort_by!{|k| k['name']}}.sort &Proc.new
       else
-        Hash[(JSON.parse self.table_schema)['columnFamilies'].each {|k, v| v.sort!}.sort]
+        (JSON.parse self.table_schema).each{|n| n['columns'].sort_by!{|k| k['name']}}.sort_by{|k| k['name']}
       end
     else
       return nil
     end
   end
 
-  def num_shards
-    self.schema.values.flatten.count if self.schema
+  def has_queried_recently?
+    self.blur_queries.where("created_at > '#{5.minutes.ago}'").count > 0
   end
 
   def is_enabled?
@@ -43,7 +43,9 @@ class BlurTable < ActiveRecord::Base
   def is_deleted?
     self.status == 0
   end
-
+  def terms(blur_urls,family,column,startWith,size)
+    return BlurThriftClient.client(blur_urls).terms self.table_name, family, column, startWith, size
+  end
   def enable(blur_urls)
     begin
       BlurThriftClient.client(blur_urls).enableTable self.table_name

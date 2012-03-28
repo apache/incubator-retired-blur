@@ -4,7 +4,6 @@ class Ability
   def initialize(user)
 
     if user # logged in
-
       # view, edit, and destroy own account
       can [:show, :edit, :destroy], :users, :id => user.id
 
@@ -14,14 +13,14 @@ class Ability
       # logout
       can :destroy, :user_sessions
 
-      if user.has_role? :reader
-
+      if user.reader?
         # view pages
-        can :index, [:zookeepers, :blur_tables, :hdfs]
+        can :index, [:zookeepers, :blur_tables, :hdfs, :hdfs_metrics]
         can :show, [:zookeepers, :help]
         can [:show_current, :make_current], :zookeepers
         can :dashboard, :zookeepers
         can [:expand, :file_info, :info, :folder_info, :slow_folder_info, :file_tree], :hdfs
+        can [:disk_cap_usage, :live_dead_nodes, :block_info], :hdfs_metrics
         can :help, :application
 
         # can view everything but query_string on blur_tables:
@@ -37,34 +36,29 @@ class Ability
         # view times on blur queries
         can :times, :blur_queries
 
-        # Can modify own filter preferences
-        can :update, :preferences, {:user_id => user.id, :pref_type => 'filter'}
-
         # View hosts and schema on blur_tables
-        can :hosts, :blur_tables
-        can :schema, :blur_tables
-        can :reload, :blur_tables
+        can [:hosts, :schema, :reload, :terms], :blur_tables
 
       end
 
-      if user.has_role? :editor
-        can [:update, :destroy, :update_all, :delete_all, :forget, :forget_all], :blur_tables
+      if user.editor?
+        can [:enable, :disable, :destroy, :update_all, :delete_all, :forget, :forget_all], :blur_tables
         can :update, :blur_queries
         can [:destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper], :zookeepers
         can [:move_file, :delete_file, :mkdir,:upload_form,:upload], :hdfs
       end
 
-      if user.has_role? :auditor
+      if user.auditor?
         can :index, :blur_queries, :query_string
         can :more_info, :blur_queries, :query_string
       end
 
-      if user.has_role? :admin
+      if user.admin?
         can [:index, :edit, :destroy, :create, :new], :users
-        can :update, :users, [:email,User.valid_roles]
+        can :update, :users, [:email, :roles]
       end
 
-      if user.has_role? :searcher
+      if user.searcher?
         # search
         can :access, :search
 

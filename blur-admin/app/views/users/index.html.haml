@@ -1,23 +1,23 @@
 - content_for :title, 'Users'
 
 #admin_wrapper
-  %h2 Users
-  #users_table
-    %table
-      %tr
-        %th Username
-        %th Name
-        %th Email
-        %th Roles
-        %th
-        %th
-      - for user in @users
-        %tr
-          %td= user.username
-          %td= user.name
-          %td= user.email
-          %td= user.roles.to_a.join ', '
-          %td= link_to 'Edit', edit_user_path(user)
-          %td= link_to 'Delete', user, :confirm => 'Are you sure?', :method => :delete
-
-  %p= link_to "New User", new_user_path
+	%h2 Users
+	#users_table
+		%table.table.table-bordered.table-striped
+			%tr
+				%th Username
+				%th Name
+				%th Email
+				%th Roles
+				%th Actions
+			- for user in @users
+				%tr
+					%td= user.username
+					%td= user.name
+					%td= user.email
+					%td= user.roles.to_a.join ', '
+					%td
+						=link_to raw('<i class="icon-pencil"></i> Edit'), edit_user_path(user), :class => 'btn'
+						- if current_user != user
+							= link_to raw('<i class="icon-trash icon-white"></i> Delete'), user, :confirm => 'Are you sure?', :method => :delete, :class => 'btn btn-danger'
+	%p= link_to raw('<i class="icon-user"></i> New User'), new_user_path, :class => 'btn'

@@ -1,0 +1,124 @@
+#newFolder {
+  text-align: center;
+  input {
+    width: 20em;
+  }
+}
+
+
+#hdfs_wrapper{
+  @include standard-font;
+  padding-bottom: 20px;
+  @include box-sizing(border-box);
+  height: 300px;
+
+  #hdfs_browser {
+    background-color: $grey-div-color;
+    @include border;
+    @include border-radius;
+    overflow-y: hidden;
+    div.innerWindow {
+      @include border;
+      background-color: white;
+      .noFiles {
+        font-size: 1.2em;
+        font-style: italic;
+        text-align: center;
+      }
+      >ul>li {
+        &.file, &.folder, &.hdfs_instance {
+          a {
+            @include box-sizing(border-box);
+            display: block;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 20px;
+          }
+        }
+        &.folder, &.hdfs_instance {
+          background: url("expand_folder.png") no-repeat scroll right center transparent;
+        }
+        &.file a {
+          background: url("file16.png") no-repeat scroll left center transparent;
+          padding-left: 20px;
+        }
+        &.hdfs_instance a {
+          background: url("database16.png") no-repeat scroll left center transparent;
+          padding-left: 20px;
+        }
+        &.folder a {
+          background: url("folder16.png") no-repeat scroll left center transparent;
+          padding-left: 20px;
+        }
+        &:hover {
+          border:  1px solid #B8D6FD;
+        }
+        &.osxSelected {
+          background-color:#3875D7;
+          border:  1px solid #3875D7;
+          a {
+            color: white;
+          }
+        }
+      }
+    }
+  }
+
+  #file_details_table {
+    tr:nth-child(even) { background-color: white; };
+    tr:nth-child(odd) { background-color: $grey-div-color; }
+    table { margin: 0; @include border;}
+    th {
+      background-color: $table-hd-color;
+      color: $table-hd-text;
+    }
+    th.name, td.name {text-align: left; }
+    th, td {
+      @include standard-font;
+      text-align: center;
+    }
+    tr:hover {
+      cursor: pointer;
+      background: $row-hover;
+    }
+  }
+
+  //.ui-button, a { cursor: pointer; @include standard-font; text-decoration: none; }
+}
+
+#modal{
+  max-height: 600px;
+  .search-info-section{
+    width: 49%;
+    display: inline-block;
+    vertical-align: top;
+    .radial-graph{
+      position: relative;
+      text-align: center;
+      height: 400px;
+      width: 100%;
+      path{
+        cursor: pointer;
+        &:hover{
+          opacity: .6;
+        }
+      }
+      .graphtip{
+        position: absolute;
+        display: block;
+        z-index: 50;
+        #tipcontent{
+          padding: 1px 6px 1px 6px;
+          border: 4px solid #e2e2e2;
+          max-width: 400px;
+          background: white;
+          color: black;
+          @include border-radius(5px);
+        }
+      }
+    }
+  }
+}
+
+

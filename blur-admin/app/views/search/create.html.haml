@@ -6,14 +6,14 @@
       %thead
         %tr.familysets
           %th.rowId
-          - @schema.each do |family, columns|
-            %th{:colspan => columns.count, :children => columns.count, :class => "family_-sep-_#{family}", :id => family }= family
+          - @schema.each do |familyName,family|
+            %th{:colspan => family['columns'].count, :children => family['columns'].count, :class => "family_-sep-_#{family['name']}", :id => family['name'] }= family['name']
         %tr.columnsets
           %th.rowId rowId
-          - @schema.each do |family, columns|
-            - columns.each do |column|
-              %th{:class => "column_-sep-_#{family}_-sep-_#{column} family_-sep-_#{family}"}
-                = column.gsub(/([A-Z])/, '&shy;\1').html_safe
+          - @schema.each do |familyName,family|
+            - family['columns'].each do |column|
+              %th{:class => "column_-sep-_#{family['name']}_-sep-_#{column['name']} family_-sep-_#{family['name']}"}
+                = column['name'].gsub(/([A-Z])/, '&shy;\1').html_safe
 
       %tbody
         -current_row_id = ""
@@ -22,20 +22,20 @@
           - max_record_count.times do |i|
             %tr{:class => (current_row_id != result[:id]) ? "first" : ""}
 
-              - @schema.each_with_index do |(column_family, columns), j|
+              - @schema.each_with_index do |(familyName,column_family), j|
                 - if i == 0 and j == 0
                   %td{:class => "first", :title => "rowId"}= result[:id]
                   -current_row_id = result[:id]
                 - if i == 1 and j == 0
                   %td{:rowspan => max_record_count - 1}
-                - record = result[column_family][i] if result[column_family]
+                - record = result[column_family['name']][i] if result[column_family['name']]
 
                 - if record # then insert the record
-                  - columns.each do |column|
-                    %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} column_-sep-_#{column_family}_-sep-_#{column} family_-sep-_#{column_family}",
-                        :title => column}
-                      = record[column]
+                  - column_family['columns'].each do |column|
+                    %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} column_-sep-_#{column_family['name']}_-sep-_#{column['name']} family_-sep-_#{column_family['name']}",
+                        :title => column['name']}
+                      = record[column['name']]
 
                 - else # fill in the remaining space with a big cell
-                  %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} family_-sep-_#{column_family} family_-sep-_#{column_family}_-sep-_empty",
-                      :colspan => columns.length}
+                  %td{:class => "#{((j % 2) == 1 ? 'even' : 'odd' )} family_-sep-_#{column_family['name']} family_-sep-_#{column_family['name']}_-sep-_empty",
+                      :colspan => column_family['columns'].length}

@@ -1,0 +1,203 @@
+@mixin search-tab {
+  width: 9%;
+  text-align: left;
+  .header{
+    text-align: center;
+    cursor: pointer;
+  }
+  position: relative;
+  border-right: 1px solid #ccc;
+  .body{
+    min-width: 200px;
+	  top: 35px;
+	  right: 0px;
+	  background-color: #E6E6E6;
+	  position: absolute;
+		@include border-radius-bottom;
+	  border: solid 1px #bbb;
+	  border-top: none;
+  }
+  img{ 
+    vertical-align: middle;
+    padding: 0px 0px 4px 4px;
+  }
+}
+
+@mixin title-style{
+  text-align: center;
+  font-weight: bold;
+  padding-bottom: 10px;
+}
+#search_page_wrapper {
+	.hidden{ display: none; }
+  text-align: center;
+  .section{
+    border-top: 1px solid #ccc;   
+    padding: 10px 0 10px 0;     
+  }
+
+  #filter_section {
+    width: 100%;
+    z-index: 999;
+    @include standard-font;
+    position: fixed;
+    top: 95px;
+    left: 0;
+    padding: 10px 0px 0px 10px;
+    box-sizing: border-box;
+		@include gradient-vertical(#fff, #e6e6e6);
+    #filters_wrap{
+      & > div{ display:inline-block; }
+      .partial-section, .body { padding: 0.5em; }
+
+      #standard{
+        position: relative;
+        width: 69%;
+        .search_field{
+          display: inline-block;
+          width: 89%;
+          #query_string{
+            width: 100%;
+            @include border-radius-right(0);
+            padding-right: 0px;
+          }
+        }
+        .btn{
+          width: 10%;
+          @include border-radius-left(0);
+          margin-bottom: 9px;
+        }
+        img{
+          position: absolute;
+          padding: 6px 4px;
+        }
+      }
+      
+      #blur-table{
+        width: 9%;
+        margin: 0 5px 0 15px;
+        #blur_table{
+          width: 100%;
+        }
+      }
+      
+      #advanced{
+        @include search-tab;
+        border-left: 1px solid #ccc;
+        .body{
+          #blur_table{ width: 100%; }
+          td:first-child{ font-weight: bold; }
+        }
+        input{ width: 50px; }
+        #filter_columns{
+          max-height: 250px;
+          overflow: auto;
+        }
+      }
+
+      #loading-spinner { vertical-align: middle; }
+    
+      #saved{
+        text-align: center;
+        @include search-tab;
+        .action-icon{ cursor: pointer; }
+        .saved-title{ @include title-style; }
+      }
+    }
+  }
+
+    
+    .filter {
+      font-weight: bold;
+      td{
+        padding: 3px;
+      }
+      .filtered-title{
+        @include title-style;
+      }
+    }
+
+    .filter#buttons { 
+      text-align: center; 
+      button{font-size:85%;} 
+      display: inline-block;
+      width: 100%;
+      padding-top: 10px;
+    }
+    
+    #search_form{ margin: 0px; }
+
+  #results_wrapper{
+    margin-top:55px;
+    max-width: 100%;
+    overflow: auto;
+    border: 1px solid #999;
+    display: inline-block;
+    &.noResults{
+      border: none;
+    }
+
+    #results_container{
+      position: relative;
+      .no-results{
+        padding-top: 1em;
+        font-weight: bold;
+        line-height: 1.5em;
+        font-size: 1.5em;
+      }
+      #results_info{
+        background-color: white;
+        text-align: left;
+      }
+
+      #results_section{
+        display: inline-block;
+        background-color : white;
+        width: auto;
+      }
+    }
+    table {
+      border-top: solid 1px #ccc;
+      margin: 0px;
+      empty-cells: show;
+      td{ min-width: 100px; }
+      thead {
+        background-color: $table-hd-color;
+        th {
+          background: transparent;
+          text-align: center;
+          color: $table-hd-text;
+          font-weight: bold;
+          font-size: 120%;
+        }
+        tr.columnsets th {
+          font-weight: normal;
+          }
+      }
+      tbody {
+        td.even {
+          background-color: $table-hd-color
+        }
+        tr.first{
+          @include border-top;
+        }
+      }
+    }
+  }
+
+  #saved, #store , #advanced { & .body { display: none; } }
+
+  .header {
+    padding: 5px 0;
+    img{
+      vertical-align: middle;
+    }
+		label { cursor: pointer; }
+  }
+
+  // Navigation Tab label div
+  .tab { background-color:#EEE; }
+  .search-name{float:left;}
+  .search-buttons{float:right;}
+}
+

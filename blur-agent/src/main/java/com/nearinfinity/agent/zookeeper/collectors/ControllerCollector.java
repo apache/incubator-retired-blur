@@ -1,79 +1,67 @@
 package com.nearinfinity.agent.zookeeper.collectors;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooKeeper;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.nearinfinity.agent.zookeeper.InstanceManager;
 
-public class ControllerCollector {
-	private ZooKeeper zk;
-	private int instanceId;
-	private JdbcTemplate jdbc;
-	
-	private static final Log log = LogFactory.getLog(ControllerCollector.class);
-	
-	private ControllerCollector(InstanceManager manager) {
-		this.zk = manager.getInstance();
-		this.instanceId = manager.getInstanceId();
-		this.jdbc = manager.getJdbc();
+public class ControllerCollector extends Collector {
 
-		updateControllers();
+	private static final Log log = LogFactory.getLog(ControllerCollector.class);
+	private int zkId;
+
+	private ControllerCollector(InstanceManager manager, int zkId) throws KeeperException, InterruptedException {
+		super(manager);
+		this.zkId = zkId;
+		collect();
 	}
-	
-	private void updateControllers() {
+
+	private void collect() throws KeeperException, InterruptedException {
 		List<String> onlineControllers = getControllers();
 		markOfflineControllers(onlineControllers);
 		updateOnlineControllers(onlineControllers);
 	}
-	
+
 	private void markOfflineControllers(List<String> controllers) {
 		if (controllers.isEmpty()) {
-			jdbc.update("update controllers set status = 0 where zookeeper_id = ?", instanceId);
+			getJdbc().update("update controllers set status = 0 where zookeeper_id = ?", zkId);
 		} else {
-			jdbc.update("update controllers set status = 0 where node_name not in ('" + StringUtils.join(controllers, "','") + "') and zookeeper_id = ?", instanceId);
+			getJdbc().update(
+					"update controllers set status = 0 where node_name not in ('"
+							+ StringUtils.join(controllers, "','") + "') and zookeeper_id = ?", zkId);
 		}
 	}
-	
-	private void updateOnlineControllers(List<String> controllers) {
+
+	private void updateOnlineControllers(List<String> controllers) throws KeeperException, InterruptedException {
 		for (String controller : controllers) {
 			String blurVersion = "UNKNOWN";
-			
-			try {
-				byte[] b = zk.getData("/blur/online-controller-nodes", true, null);
-				if (b != null && b.length > 0) {
-					blurVersion = new String(b);
-				}
-			} catch (Exception e) {
-				log.warn("Unable to figure out shard blur version", e);
-			}		
-			
-			int updatedCount = jdbc.update("update controllers set status=1, blur_version=? where node_name=? and zookeeper_id =?", blurVersion, controller, instanceId);
+
+			byte[] b = getZk().getData("/blur/online-controller-nodes", false, null);
+			if (b != null && b.length > 0) {
+				blurVersion = new String(b);
+			}
+
+			int updatedCount = getJdbc().update(
+					"update controllers set status=1, blur_version=? where node_name=? and zookeeper_id =?",
+					blurVersion, controller, zkId);
 
 			if (updatedCount == 0) {
-				jdbc.update("insert into controllers (node_name, status, zookeeper_id, blur_version) values (?, 1, ?, ?)", controller, instanceId, blurVersion);
+				getJdbc().update(
+						"insert into controllers (node_name, status, zookeeper_id, blur_version) values (?, 1, ?, ?)",
+						controller, zkId, blurVersion);
 			}
 		}
 	}
-	
-	private List<String> getControllers() {
-		try {
-			return zk.getChildren("/blur/online-controller-nodes", true);
-		} catch (KeeperException e) {
-			log.error(e);
-		} catch (InterruptedException e) {
-			log.error(e);
-		}
-		return new ArrayList<String>();
+
+	private List<String> getControllers() throws KeeperException, InterruptedException {
+		return getZk().getChildren("/blur/online-controller-nodes", false);
 	}
 
-	public static void collect(InstanceManager manager) {
-		new ControllerCollector(manager);
+	public static void collect(InstanceManager manager, int zkId) throws KeeperException, InterruptedException {
+		new ControllerCollector(manager, zkId);
 	}
 }

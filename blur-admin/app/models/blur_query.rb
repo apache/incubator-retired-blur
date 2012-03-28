@@ -21,12 +21,6 @@ class BlurQuery < ActiveRecord::Base
     self.blur_table.zookeeper
   end
 
-  def times
-    JSON.parse(read_attribute(:times)).each do |shard, value|
-      value.reject! {|type, value| type == 'setCpuTime' or type == 'setRealTime'}
-    end
-  end
-
   def state_str
     case read_attribute(:state)
       when 0 then "Running"

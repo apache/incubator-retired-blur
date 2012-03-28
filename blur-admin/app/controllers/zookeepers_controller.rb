@@ -33,6 +33,8 @@ class ZookeepersController < ApplicationController
 
   def index
     @zookeepers = Zookeeper.select('name, id, status').order('name')
+    @hdfs_all = Hdfs.all
+    @hdfs_stats= Hdfs.all.collect{|h| hdfs_hash = {"hdfs" => h}; hdfs_hash['stats'] = h.hdfs_stats.last; h= hdfs_hash}
   end
 
   def show
@@ -41,27 +43,27 @@ class ZookeepersController < ApplicationController
 
   def show_current
     @zookeeper = @current_zookeeper
-
     @shard_nodes = @zookeeper.shards.count 'DISTINCT blur_version'
     @controller_nodes = @zookeeper.controllers.count 'DISTINCT blur_version'
-    respond_to do |format|
-      format.html { render :show_current }
-    end
+    render :show_current
   end
 
   def make_current
     # Javascript redirect (has to be done in js)
-    render :js => "window.location = '#{request.referer}'"
+    #render :js => "window.location = '#{request.referer}'"
+    render :text => ''
   end
 
   def dashboard
     zookeeper_results = []
     connection = ActiveRecord::Base.connection()
     connection.execute(QUERY).each(:as => :hash) { |row| zookeeper_results << row }
-
-    respond_to do |format|
-      format.json { render :json => zookeeper_results }
+    hdfs = Hdfs.all.collect do |h|
+      hdfs_hash = h.serializable_hash
+      hdfs_hash[:stats] =  h.hdfs_stats.last
+      hdfs_hash
     end
+    render :json => {"zookeeper_data" => zookeeper_results, "hdfs_data" => hdfs}
   end
 
   def destroy_shard

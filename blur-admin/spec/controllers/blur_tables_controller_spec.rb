@@ -1,138 +1,188 @@
 require "spec_helper"
 
 describe BlurTablesController do
-  before(:each) do
-    @client = mock(Blur::Blur::Client)
-    controller.stub!(:thrift_client).and_return(@client)
-    controller.stub!(:close_thrift)
-    @ability = Ability.new User.new
-    @ability.stub!(:can?).and_return(true)
-    controller.stub!(:current_ability).and_return(@ability)
+  describe "actions" do
+    before(:each) do
+      @zookeeper  = FactoryGirl.create :zookeeper
+      @client = mock(Blur::Blur::Client)
+      @blur_table = FactoryGirl.create :blur_table
+      @cluster = FactoryGirl.create_list :cluster, 3
+      @ability = Ability.new User.new
 
-    @blur_table = Factory.stub :blur_table
-  end
-
-  describe "GET index" do
-    before do
-      # Set up association chain
-      @zookeeper  = Factory.stub :zookeeper
-
-      @zookeeper.stub_chain(:blur_tables, :order, :includes).and_return [@blur_table]
-      @blur_table.stub(:zookeeper).and_return @zookeeper
-
-      # ApplicationController.current_zookeeper
-      Zookeeper.stub(:find_by_id).and_return(@zookeeper)
-      # Zookeeper.stub_chain(:order, :first).and_return @zookeeper
-      # ApplicationController.zookeepers
-      Zookeeper.stub(:order).and_return [@zookeeper]
-
+      @ability.stub!(:can?).and_return(true)
+      @zookeeper.stub_chain(:blur_tables, :order).and_return [@blur_table]
+      @zookeeper.stub_chain(:clusters, :order).and_return @cluster
+      controller.stub!(:thrift_client).and_return(@client)
+      controller.stub!(:current_ability).and_return(@ability)
+      Zookeeper.stub!(:find_by_id).and_return(@zookeeper)
+      Zookeeper.stub!(:first).and_return(@zookeeper)
     end
 
-    it "should assign @zookeepers to be the collection of all zookeepers" do
-      get :index
-      assigns(:zookeepers).should == [@zookeeper]
+    describe "GET index" do
+      before(:each) do
+        Zookeeper.stub!(:order).and_return [@zookeeper]
+      end
+
+      it "should assign @zookeepers to be the collection of all zookeepers" do
+        get :index
+        assigns(:zookeepers).should == [@zookeeper]
+      end
+
+      it "should assign @current_zookeeper" do
+        get :index
+        assigns(:current_zookeeper).should == @zookeeper
+      end
+
+      it "should render the index template" do
+        #need to test the new model setup
+        get :index
+        response.should render_template "index"
+      end
+      
+      it "should assign @blur_tables to be the current zookeeper's blur_tables" do
+        @zookeeper.should_receive(:blur_tables)
+        get :index
+        assigns(:blur_tables).should == [@blur_table]
+      end
+
+      it "should assign @clusters to be the current zookeeper's clusters" do
+        @zookeeper.should_receive(:clusters)
+        get :index
+        assigns(:clusters).should == @cluster
+      end
     end
 
-    it "should assign @current_zookeeper" do
-      get :index
-      assigns(:current_zookeeper).should == @zookeeper
+    describe "GET Reload" do
+      it "render_table_json should render JSON" do
+        get :reload
+        response.content_type.should == 'application/json'
+        json = ActiveSupport::JSON.decode(response.body)
+        json['clusters'].first['id'].should == @cluster.first.id
+        json['tables'].first['id'].should == @blur_table.id
+      end
     end
 
-    it "should render the index template" do
-      #need to test the new model setup
-      get :index
-      response.should render_template "index"
-    end
-    
-    it "should assign @blur_tables to be the current zookeeper's blur_tables" do
-      @zookeeper.should_receive(:blur_tables)
-      get :index
-      assigns(:blur_tables).should == [@blur_table]
-    end
-  end
+    describe "PUT enable" do
+      before(:each) do
+        @tables = [1, 2, 3]
+        BlurTable.stub(:find).and_return @blur_table
+        BlurTable.stub!(:enable)
+        @blur_table.stub!(:save)
+      end
 
-  describe "GET schema" do
-    before do
-      BlurTable.stub(:find).and_return @blur_table
+      it "should enable all the given tables" do
+        @tables.each do |id|
+          BlurTable.should_receive(:find).with(id.to_s)
+        end
+        @blur_table.should_receive(:enable).exactly(@tables.length).times
+        put :enable, :tables => @tables
+      end
+
+      #it "should render JSON" do
+      #  put :enable, :tables => @tables
+      #  response.content_type.should == 'application/json'
+      #end
     end
-    it "should the blur table whose schema is requested" do
-      BlurTable.should_receive(:find).with @blur_table.id
-      get :schema, :id => @blur_table.id
+
+    describe "PUT disable" do
+      before(:each) do
+        @tables = [1, 2, 3]
+        BlurTable.stub(:find).and_return @blur_table
+        BlurTable.stub!(:disable)
+        @blur_table.stub!(:save)
+      end
+
+      it "should disable all the given tables" do
+        @tables.each do |id|
+          BlurTable.should_receive(:find).with(id.to_s)
+        end
+        @blur_table.should_receive(:disable).exactly(@tables.length).times
+        put :disable, :tables => @tables
+      end
+
+      #it "should render JSON" do
+      #  put :disable, :tables => @tables
+      #  response.content_type.should == 'application/json'
+      #end
     end
-    it "should render the schema partial" do
-      get :schema, :id => @blur_table.id
-      response.should render_template :partial => "_schema"
+
+    describe "DELETE destroy" do
+      before(:each) do
+        @tables = [1, 2, 3]
+        BlurTable.stub(:find).and_return @blur_table
+        BlurTable.stub!(:blur_destroy)
+        @blur_table.stub!(:save)
+      end
+
+      it "should destroy all the given tables" do
+        @tables.each do |id|
+          BlurTable.should_receive(:find).with(id.to_s)
+        end
+        @blur_table.should_receive(:blur_destroy).exactly(@tables.length).times
+        delete :destroy, :tables => @tables
+      end
+
+      it "should set destroy index to true when the param is true" do
+        @blur_table.should_receive(:blur_destroy).at_least(:once).with(true, kind_of(String))
+        delete :destroy, :tables => @tables, :delete_index => 'true'
+      end
+
+      it "should set destroy index to false when the param is not true" do
+        @blur_table.should_receive(:blur_destroy).at_least(:once).with(false, kind_of(String))
+        delete :destroy, :tables => @tables, :delete_index => 'not true'
+      end
+
+      #it "should render JSON" do
+      #  delete :destroy, :tables => @tables
+      #  response.content_type.should == 'application/json'
+      #end
     end
-    describe "when an XHR request (ajax)" do
+
+    describe "DELETE forget" do
+      before(:each) do
+        @tables = [1, 2, 3]
+        BlurTable.stub(:destroy)
+      end
+
+      it "should forget all the given tables" do
+        @tables.each do |id|
+          BlurTable.should_receive(:destroy).with(id.to_s)
+        end
+        delete :forget, :tables => @tables
+      end
+
+      #it "should render JSON" do
+      #  delete :forget, :tables => @tables
+      #  response.content_type.should == 'application/json'
+      #end
+    end
+
+    describe "GET schema" do
+      before(:each) do
+        BlurTable.stub(:find).and_return @blur_table
+      end
+      it "should the blur table whose schema is requested" do
+        BlurTable.should_receive(:find).with @blur_table.id.to_s
+        get :schema, :id => @blur_table.id
+      end
       it "should render the schema partial" do
-        xhr :get, :schema, :id => @blur_table.id
+        get :schema, :id => @blur_table.id
         response.should render_template :partial => "_schema"
       end
     end
-  end
 
-  describe "GET hosts" do
-    before do
-      BlurTable.stub(:find).and_return @blur_table
-    end
-    it "finds the blur table being whose hosts is requested" do
-      BlurTable.should_receive(:find).with @blur_table.id
-      get :hosts, :id => @blur_table.id
-    end
-    it "should render the hosts partial" do
-      get :hosts, :id => @blur_table.id
-      response.should render_template :partial => "_hosts"
-    end
-    describe "when an XHR request (ajax)" do
+    describe "GET hosts" do
+      before(:each) do
+        BlurTable.stub(:find).and_return @blur_table
+      end
+      it "finds the blur table being whose hosts is requested" do
+        BlurTable.should_receive(:find).with @blur_table.id.to_s
+        get :hosts, :id => @blur_table.id
+      end
       it "should render the hosts partial" do
-        xhr :get, :hosts, :id => @blur_table.id
+        get :hosts, :id => @blur_table.id
         response.should render_template :partial => "_hosts"
       end
     end
-  end
-
-  describe "PUT update" do
-    before do
-      BlurTable.stub(:find).and_return(@blur_table)
-    end
-
-    it "finds the blur table being updated" do
-      #BlurTable.should_receive(:find).with @blur_table.id
-      put :update, :id => @blur_table.id
-    end
-
-    it "enables the table if enable is true" do
-      #@blur_table.should_receive(:enable)
-      put :update, :enable => 'true', :id => @blur_table.id
-    end
-
-    it "disables the table if disable is true" do
-      #@blur_table.should_receive(:disable).and_return(true)
-      put :update, :disable => 'true', :id => @blur_table.id
-    end
-  end
-  
-  describe "DELETE destroy" do
-    before do
-      BlurTable.stub(:find).and_return(@blur_table)
-    end
-
-    it "finds the blur table being deleted" do
-      #BlurTable.should_receive(:find).with(@blur_table.id)
-      @blur_table.stub(:destroy)
-      delete :destroy, :id => @blur_table.id
-    end
-
-    it "should delete a table and preserve the index" do
-      #@blur_table.should_receive(:destroy).with(false)
-      delete :destroy, :id => @blur_table.id, :delete_index => ''
-      response.should render_template nil
-    end
-
-    it "should delete a table and the index" do
-      #@blur_table.should_receive(:destroy).with(true)
-      delete :destroy, :id => @blur_table.id, :delete_index => 'true'
-      response.should render_template nil
-   end
   end
 end

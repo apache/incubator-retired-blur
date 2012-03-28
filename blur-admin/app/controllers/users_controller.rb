@@ -1,5 +1,4 @@
 class UsersController < ApplicationController
-
   load_and_authorize_resource
 
   before_filter :find_user, :only => [:show, :edit, :update, :destroy, :save]
@@ -11,8 +10,7 @@ class UsersController < ApplicationController
 
   def show
     @column_preference = @user.column_preference
-    @filter_preference = @user.filter_preference
-    @choices = BlurTable.select('table_schema').collect {|table| schema = table.schema; schema.keys if schema}.flatten.uniq
+    @choices = BlurTable.select('table_schema').collect {|table| schema = table.schema; schema.collect{|familes| familes['name']} if schema}.flatten.uniq
   end
 
   def new
@@ -29,9 +27,6 @@ class UsersController < ApplicationController
     else
       render 'new'
     end
-  end
-
-  def edit
   end
 
   def update

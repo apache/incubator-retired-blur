@@ -82,5 +82,57 @@ describe 'User Model' do
       @user.should be_valid
     end
   end
+
+  describe 'ability' do
+    it 'should create a new ability when an ability isnt cached' do
+      Ability.should_receive(:new).with(@user)
+      @user.ability
+    end
+  end
+
+  describe 'column preference' do
+    it 'should return your saved preference when a preference exists' do
+      user_with_preference = FactoryGirl.create :user_with_preferences
+      user_with_preference.column_preference.should == user_with_preference.preferences.first
+    end
+
+    it 'should create a new saved preference when a preference does not exist' do
+      user_without_preference = FactoryGirl.create :user
+      user_without_preference.column_preference.pref_type.should == 'column'
+      user_without_preference.column_preference.value.should == []
+    end
+  end
+
+  describe 'roles' do
+    before(:each) do
+      @user_role = FactoryGirl.create :user, :roles => []
+    end
+    it 'roles= should set the roles mask to the mask of the array given' do
+      @user_role.roles = %w[editor]
+      @user_role.roles_mask = 16
+      @user_role.roles = %w[editor admin reader auditor searcher]
+      @user_role.roles_mask = 31
+    end
+
+    it 'roles should return the array of all valid roles for this user' do
+      @user_role.roles = %w[editor]
+      @user_role.roles.should == ['editor']
+    end
+
+    it 'is? should return true if the user is a specific role and false if not' do
+      @user_role.roles = %w[editor]
+      @user_role.is?(:editor).should == true
+      @user_role.is?('editor').should == true
+      @user_role.is?(:admin).should == false
+    end
+
+    it 'the dynamically defined methods should return tru if they are that role' do
+      @user_role.roles = %w[editor]
+      @user_role.editor?.should == true
+      @user_role.admin?.should == false
+      @user_role.editor.should == true
+      @user_role.admin.should == false
+    end
+  end
 end
 

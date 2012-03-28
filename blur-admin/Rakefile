@@ -1,8 +1,8 @@
+#!/usr/bin/env rake
 # Add your own tasks in files placed in lib/tasks ending in .rake,
 # for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 
 require File.expand_path('../config/application', __FILE__)
-require 'rake'
 
 module ::BlurAdmin
   class Application
@@ -16,27 +16,6 @@ end
 
 if Rails.env == 'development' or Rails.env == 'test'
   require 'ci/reporter/rake/rspec'
-  require 'metric_fu'
-  require 'cover_me'
-
-  MetricFu::Configuration.run do |config|
-    config.metrics = [:stats, :roodi, :rails_best_practices, :hotspots]
-    # config.metrics = [:stats, :flog, :flay, :reek, :roodi, :rails_best_practices, :hotspots]
-    config.flog    = { :dirs_to_flog => ['app'] }
-    config.reek    = { :dirs_to_reek => ['app'] }
-    config.roodi   = { :dirs_to_roodi => ['app'] }
-    config.verbose = true
-  end
-
-  CoverMe.config do |c|
-      # what files are you interested in coverage for:
-      c.file_pattern = /(#{CoverMe.config.project.root}\/app\/.+\.rb)/i
-  
-      # what do you want to happen when it finishes:
-      c.at_exit = Proc.new {
-      
-      }
-  end
 end
 
 BlurAdmin::Application.load_tasks

@@ -1,8 +1,8 @@
 .zookeeper_info
-  %table{:id => "#{zookeeper.id}" }
-    %thead{:id => zookeeper.id}
+  %table.zookeeper_table{:id => "#{zookeeper.id}"}
+    %thead
       %tr
-        %th.zookeeper-title.label{ :colspan => 3 }
+        %th.zookeeper-title{ :colspan => 3 }
           .zookeeper-name
             = zookeeper.name
           .zookeeper-status
@@ -11,12 +11,12 @@
     %tbody
       %tr
         %td.index
-        %th.cont.center
+        %th.cont
           Controllers
-        %th.shard.center
+        %th.shard
           Shards
       %tr
-        %th.index.center
+        %th.index
           Blur Version
         %td.cont
           .bv-cont
@@ -27,7 +27,7 @@
             .shards-bv.label.status
               No Shards Available
       %tr
-        %th.index.center
+        %th.index
           Status
         %td.cont
           .stat-cont

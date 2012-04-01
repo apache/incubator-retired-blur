@@ -66,6 +66,7 @@ import org.apache.lucene.search.TopDocs;
 import com.nearinfinity.blur.concurrent.Executors;
 import com.nearinfinity.blur.log.Log;
 import com.nearinfinity.blur.log.LogFactory;
+import com.nearinfinity.blur.lucene.EscapeRewrite;
 import com.nearinfinity.blur.lucene.search.FacetQuery;
 import com.nearinfinity.blur.manager.results.BlurResultIterable;
 import com.nearinfinity.blur.manager.results.BlurResultIterableSearcher;
@@ -781,7 +782,8 @@ public class IndexManager {
         BlurIndex index = entry.getValue();
         reader = index.getIndexReader();
         String shard = entry.getKey();
-        IndexSearcher searcher = new IndexSearcher(reader);
+        IndexReader escapeReader = EscapeRewrite.wrap(reader, _running);
+        IndexSearcher searcher = new IndexSearcher(escapeReader);
         searcher.setSimilarity(_indexServer.getSimilarity(_table));
         Query rewrite = searcher.rewrite((Query) _query.clone());
         return new BlurResultIterableSearcher(_running, rewrite, _table, shard, searcher, _selector);

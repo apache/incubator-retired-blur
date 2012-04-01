@@ -85,7 +85,7 @@ public class IndexManagerTest {
     File file = new File("./tmp/indexer-manager-test");
     rm(file);
     new File(new File(file, TABLE), SHARD_NAME).mkdirs();
-    server = new LocalIndexServer(file,new Path("./tmp/indexer-manager-test"));
+    server = new LocalIndexServer(file, new Path("./tmp/indexer-manager-test"));
 
     indexManager = new IndexManager();
     indexManager.setStatusCleanupTimerDelay(1000);
@@ -111,24 +111,20 @@ public class IndexManagerTest {
   }
 
   private void setupData() throws BlurException, IOException {
-    RowMutation mutation1 = newRowMutation(TABLE, "row-1", newRecordMutation(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"),
-        newColumn("testcol3", "value3")));
-    RowMutation mutation2 = newRowMutation(TABLE, "row-2", newRecordMutation(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"),
-        newColumn("testcol3", "value6")));
-    RowMutation mutation3 = newRowMutation(TABLE, "row-3", newRecordMutation(FAMILY, "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"),
-        newColumn("testcol3", "value9")));
-    RowMutation mutation4 = newRowMutation(TABLE, "row-4", newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"),
-        newColumn("testcol3", "value9")));
-    RowMutation mutation5 = newRowMutation(TABLE, "row-5",
-      newRecordMutation(FAMILY, "record-5A",
-        newColumn("testcol1", "value13"),
-        newColumn("testcol2", "value14"),
-        newColumn("testcol3", "value15")),
-      newRecordMutation(FAMILY, "record-5B",
-        newColumn("testcol1", "value16"),
-        newColumn("testcol2", "value17"),
-        newColumn("testcol3", "value18"),
-        newColumn("testcol3", "value19")));
+    RowMutation mutation1 = newRowMutation(TABLE, "row-1",
+        newRecordMutation(FAMILY, "record-1", newColumn("testcol1", "value1"), newColumn("testcol2", "value2"), newColumn("testcol3", "value3")));
+    RowMutation mutation2 = newRowMutation(TABLE, "row-2",
+        newRecordMutation(FAMILY, "record-2", newColumn("testcol1", "value4"), newColumn("testcol2", "value5"), newColumn("testcol3", "value6")));
+    RowMutation mutation3 = newRowMutation(TABLE, "row-3",
+        newRecordMutation(FAMILY, "record-3", newColumn("testcol1", "value7"), newColumn("testcol2", "value8"), newColumn("testcol3", "value9")));
+    RowMutation mutation4 = newRowMutation(TABLE, "row-4",
+        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value1"), newColumn("testcol2", "value5"), newColumn("testcol3", "value9")));
+    RowMutation mutation5 = newRowMutation(
+        TABLE,
+        "row-5",
+        newRecordMutation(FAMILY, "record-5A", newColumn("testcol1", "value13"), newColumn("testcol2", "value14"), newColumn("testcol3", "value15")),
+        newRecordMutation(FAMILY, "record-5B", newColumn("testcol1", "value16"), newColumn("testcol2", "value17"), newColumn("testcol3", "value18"),
+            newColumn("testcol3", "value19")));
     indexManager.mutate(mutation1);
     indexManager.mutate(mutation2);
     indexManager.mutate(mutation3);
@@ -263,7 +259,7 @@ public class IndexManagerTest {
     blurQuery.uuid = 1;
 
     BlurResultIterable iterable = indexManager.query(TABLE, blurQuery, null);
-    assertEquals(iterable.getTotalResults(), 2);
+    assertEquals(2, iterable.getTotalResults());
     for (BlurResult result : iterable) {
       Selector selector = new Selector().setLocationId(result.getLocationId());
       FetchResult fetchResult = new FetchResult();
@@ -426,8 +422,8 @@ public class IndexManagerTest {
 
   @Test
   public void testMutationReplaceRow() throws Exception {
-    RowMutation mutation = newRowMutation(TABLE, "row-4", newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn(
-        "testcol3", "value4")));
+    RowMutation mutation = newRowMutation(TABLE, "row-4",
+        newRecordMutation(FAMILY, "record-4", newColumn("testcol1", "value2"), newColumn("testcol2", "value3"), newColumn("testcol3", "value4")));
     indexManager.mutate(mutation);
 
     Selector selector = new Selector().setRowId("row-4");
@@ -454,10 +450,7 @@ public class IndexManagerTest {
     indexManager.fetchRow(TABLE, selector, fetchResult);
     Row r = fetchResult.rowResult.row;
     assertNotNull("new row should exist", r);
-    Row row = newRow("row-6", newRecord(FAMILY, "record-6",
-      newColumn("testcol1", "value20"),
-      newColumn("testcol2", "value21"),
-      newColumn("testcol3", "value22")));
+    Row row = newRow("row-6", newRecord(FAMILY, "record-6", newColumn("testcol1", "value20"), newColumn("testcol2", "value21"), newColumn("testcol3", "value22")));
     row.recordCount = 1;
     assertEquals("row should match", row, r);
   }
@@ -489,7 +482,7 @@ public class IndexManagerTest {
     RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-2");
 
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, "row-2", rm);
-    
+
     indexManager.mutate(rowMutation);
 
     Selector selector = new Selector().setRowId("row-2");
@@ -513,7 +506,7 @@ public class IndexManagerTest {
     assertEquals("row should have one record", 1, fetchResult.rowResult.row.getRecordsSize());
   }
 
-  @Test(expected=BlurException.class)
+  @Test(expected = BlurException.class)
   public void testMutationUpdateMissingRowDeleteRecord() throws Exception {
     RecordMutation rm = newRecordMutation(DELETE_ENTIRE_RECORD, FAMILY, "record-6");
 
@@ -592,7 +585,7 @@ public class IndexManagerTest {
     assertEquals("unmodified record should exist", 1, nonMatches);
   }
 
-  @Test(expected=BlurException.class)
+  @Test(expected = BlurException.class)
   public void testMutationUpdateMissingRowReplaceRecord() throws Exception {
     Column c1 = newColumn("testcol1", "value104");
     Column c2 = newColumn("testcol2", "value105");
@@ -677,7 +670,7 @@ public class IndexManagerTest {
     assertTrue("column 2 should be in record", r.columns.contains(c2));
   }
 
-  @Test(expected=BlurException.class)
+  @Test(expected = BlurException.class)
   public void testMutationUpdateRowMissingRecordReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol4", "value999");
     Column c2 = newColumn("testcol5", "value9999");
@@ -687,7 +680,7 @@ public class IndexManagerTest {
     Record r = updateAndFetchRecord("row-1", rec, rm);
   }
 
-  @Test(expected=BlurException.class)
+  @Test(expected = BlurException.class)
   public void testMutationUpdateMissingRowReplaceColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
@@ -737,7 +730,7 @@ public class IndexManagerTest {
     assertEquals("should not find other columns", 0, others);
   }
 
-  @Test(expected=BlurException.class)
+  @Test(expected = BlurException.class)
   public void testMutationUpdateRowMissingRecordAppendColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
@@ -748,7 +741,7 @@ public class IndexManagerTest {
     Record r = updateAndFetchRecord("row-1", rec, rm);
   }
 
-  @Test(expected=BlurException.class)
+  @Test(expected = BlurException.class)
   public void testMutationUpdateMissingRowAppendColumns() throws Exception {
     Column c1 = newColumn("testcol1", "value999");
     Column c2 = newColumn("testcol2", "value9999");
@@ -758,8 +751,7 @@ public class IndexManagerTest {
     Record r = updateAndFetchRecord("row-6", rec, rm);
   }
 
-  private Record updateAndFetchRecord(String rowId, String recordId,
-                                      RecordMutation... recordMutations) throws Exception {
+  private Record updateAndFetchRecord(String rowId, String recordId, RecordMutation... recordMutations) throws Exception {
     RowMutation rowMutation = newRowMutation(UPDATE_ROW, TABLE, rowId, recordMutations);
     indexManager.mutate(rowMutation);
 

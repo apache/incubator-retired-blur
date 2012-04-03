@@ -57,8 +57,8 @@ class Ability
       end
 
       if user.searcher?
-        # search
-        can :access, :search
+        # searches
+        can :access, :searches
 
         # Can modify own column preferences
         can :update, :preferences, {:user_id => user.id, :pref_type => 'column'}

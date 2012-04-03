@@ -32,7 +32,7 @@ class ZookeepersController < ApplicationController
 
   def index
     @zookeepers = Zookeeper.select('name, id, status').order('name')
-    session[:current_zookeeper_id] = @zookeepers.first.id
+    session[:current_zookeeper_id] ||= @zookeepers.first.id
     @hdfs_all = Hdfs.all
     @hdfs_stats= Hdfs.all.collect do |h|
       hdfs_hash = {"hdfs" => h}

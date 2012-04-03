@@ -18,12 +18,12 @@ BlurAdmin::Application.routes.draw do
     #Nested Search Resource
     resources :searches, :only => [:index, :update] do
       member do
-        get 'load'
+        post 'load'
         delete 'delete/:blur_table', :action => :delete, :as => :delete
-        get ':blur_table', :action => :create, :as => :fetch_results
       end
 
       collection do 
+        post ':blur_table', :action => :create, :as => :fetch_results
         post 'save'
         get 'filters/:blur_table', :action => :filters, :as => :filters
       end
@@ -59,7 +59,7 @@ BlurAdmin::Application.routes.draw do
     end
   end
 
-  resources :hdfs, :only => :index do
+  resource :hdfs, :only => :index do
     get '(/:id(/show(*fs_path)))', :action => :index, :on => :collection
     member do
       get 'info'

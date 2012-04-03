@@ -6,7 +6,7 @@ $(document).ready ->
   
   # Updates all fields on the dashboard
   load_dashboard = () ->
-    $.getJSON Routes.dashboard_path(), (data) ->
+    $.getJSON Routes.dashboard_zookeepers_path(), (data) ->
       # Updates the fields for each zookeeper
       for index, storedZK of Zookeeper.instances
         safe = false
@@ -48,9 +48,9 @@ $(document).ready ->
         query_message = '<div></div>'
         if parseInt(this.long_running_queries) > 0
           if parseInt(this.long_running_queries,10) == 1
-            query_message = '<div><a href="' + Routes.blur_queries_path({id: this.id}) + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.long_running_queries_zookeeper_path(this.id) + '" class="long_running_queries">1</a> query has been running for more than a minute</div>'
           else
-            query_message = '<div><a href="' + Routes.blur_queries_path({id: this.id}) + '" class="long_running_queries">' + parseInt(this.long_running_queries) + '</a> queries have been running for more than a minute</div>'
+            query_message = '<div><a href="' + Routes.long_running_queries_zookeeper_path(this.id) + '" class="long_running_queries">' + parseInt(this.long_running_queries) + '</a> queries have been running for more than a minute</div>'
         zookeeper_table.find('.warning').html(query_message)
 
         # Updates the fields for the zookeeper's shards
@@ -225,11 +225,11 @@ $(document).ready ->
           title: 'Select a Zookeeper Instance to use:'
           shown: () ->
             $('#zookeeper_selector').change ->
-              window.location = Routes.zookeeper_path({id: $(this).val()}); 
+              window.location = Routes.zookeeper_path($(this).val()); 
         return false
 
   load_dashboard()
 
   $('.zookeeper_info').live 'click', ->
-    window.location = Routes.zookeeper_path({id: $(this).children('table').attr('id')})
+    window.location = Routes.zookeeper_path($(this).children('table').attr('id'))
 

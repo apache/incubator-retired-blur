@@ -27,7 +27,7 @@ class SearchesController < ApplicationController
 
   #Filter action to help build the tree for column families
   def filters
-    blur_table = BlurTable.find params[:blur_table_id]
+    blur_table = BlurTable.find params[:blur_table]
     columns = blur_table ? (blur_table.schema &preference_sort(current_user.column_preference.value)) : []
     
     filter_list = columns.collect do |family|
@@ -43,20 +43,14 @@ class SearchesController < ApplicationController
   #Create action is a large action that handles all of the filter data
   #and either saves the data or performs a search
   def create
-    #if the search_id param is set than the user is trying to directly run a saved query
-    if params[:id]
-      search = Search.find params[:id]
-    #else build a new search to be used for this specific search
-    else
-      params[:column_data].delete( "neighborhood")
-      search = Search.new(:super_query    =>!params[:super_query].nil?,
-                          :record_only    =>!params[:record_only].nil?,
-                          :fetch          => params[:result_count].to_i,
-                          :offset         => params[:offset].to_i,
-                          :user_id        => current_user.id,
-                          :query          => params[:query_string])
-      search.column_object = params[:column_data]
-    end
+    params[:column_data].delete( "neighborhood")
+    search = Search.new(:super_query    =>!params[:super_query].nil?,
+                        :record_only    =>!params[:record_only].nil?,
+                        :fetch          => params[:result_count].to_i,
+                        :offset         => params[:offset].to_i,
+                        :user_id        => current_user.id,
+                        :query          => params[:query_string])
+    search.column_object = params[:column_data]
 
     #use the model to begin building the blurquery
     blur_table = BlurTable.find params[:blur_table]
@@ -153,7 +147,7 @@ class SearchesController < ApplicationController
   end
 
   def update
-    Search.update(params[:search_id],
+    Search.update(params[:id],
                         :name               => params[:save_name],
                         :super_query =>!params[:super_query].nil?,
                         :record_only =>!params[:record_only].nil?,

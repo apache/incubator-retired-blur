@@ -50,6 +50,10 @@ class ApplicationController < ActionController::Base
   end
 
   def set_zookeeper
+    if Zookeeper.find_by_id(params[:id]).nil?
+      flash[:error] = "A Zookeeper with that particular id does not exist!"
+      redirect_to root_path
+    end
     session[:current_zookeeper_id] = params[:id]
   end
 

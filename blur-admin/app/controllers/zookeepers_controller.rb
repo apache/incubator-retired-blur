@@ -1,7 +1,7 @@
 class ZookeepersController < ApplicationController
 
   before_filter :zookeepers, :only => :show
-  before_filter :set_zookeeper, :except => :index
+  before_filter :set_zookeeper, :except => [:index, :dashboard]
 
   QUERY = "
     select

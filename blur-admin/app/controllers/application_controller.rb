@@ -42,6 +42,7 @@ class ApplicationController < ActionController::Base
       if request.xhr?
         render :status => :conflict, :text => "No Current Zookeeper"
       else
+        flash[:error] = "A Zookeeper with that particular id does not exist!"
         redirect_to root_path
       end
     else
@@ -53,8 +54,9 @@ class ApplicationController < ActionController::Base
     if Zookeeper.find_by_id(params[:id]).nil?
       flash[:error] = "A Zookeeper with that particular id does not exist!"
       redirect_to root_path
+    else
+      session[:current_zookeeper_id] = params[:id]
     end
-    session[:current_zookeeper_id] = params[:id]
   end
 
   def zookeepers

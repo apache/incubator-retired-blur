@@ -59,7 +59,7 @@ BlurAdmin::Application.routes.draw do
     end
   end
 
-  resource :hdfs, :only => :index do
+  resources :hdfs, :only => :index do
     get '(/:id(/show(*fs_path)))', :action => :index, :on => :collection
     member do
       get 'info'

@@ -1,7 +1,6 @@
 class BlurTablesController < ApplicationController
 
-  before_filter :set_zookeeper, :only => :index
-  before_filter :current_zookeeper, :except => [:schema, :hosts]
+  before_filter :current_zookeeper
   before_filter :zookeepers, :only => :index
 
   def index
@@ -50,13 +49,13 @@ class BlurTablesController < ApplicationController
 
   def schema
     respond_to do |format|
-      format.html {render :partial => 'schema', :locals => {:blur_table => BlurTable.find(params[:id])}}
+      format.html {render :partial => 'schema', :locals => {:blur_table => @current_zookeeper.blur_tables.find(params[:id])}}
     end
   end
 
   def hosts
     respond_to do |format|
-      format.html {render :partial => 'hosts', :locals => {:blur_table => BlurTable.find(params[:id])}}
+      format.html {render :partial => 'hosts', :locals => {:blur_table => @current_zookeeper.blur_tables.find(params[:id])}}
     end
   end
 

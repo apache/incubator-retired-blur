@@ -37,11 +37,12 @@
 							%li{:class => controller == 'zookeepers' && action == 'index' && 'active'}
 								= link_to 'Dashboard', root_path
 							%li{:class => controller == 'zookeepers' && action == 'show' && 'active'}
-								= link_to 'Environment Status', zookeeper_path, :id => 'env_link'
+								-puts session[:current_zookeeper_id]
+								= link_to 'Environment Status', zookeeper_path(session[:current_zookeeper_id]), :id => 'env_link'
 							%li{:class => controller == 'blur_tables' && 'active'}
-								= link_to 'Blur Tables', blur_tables_path, :id => 'tables_link'
+								= link_to 'Blur Tables', zookeeper_blur_tables_path, :id => 'tables_link'
 							%li{:class => controller == 'blur_queries' && 'active'}
-								= link_to 'Blur Queries', blur_queries_path, :id => 'queries_link'
+								= link_to 'Blur Queries', zookeeper_blur_queries_path, :id => 'queries_link'
 							- if can? :show, :search
 								%li{:class => controller == 'search' && 'active'}
 									= link_to 'Search', search_path, :id => 'search_link'

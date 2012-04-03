@@ -1,5 +1,4 @@
 class SearchesController < ApplicationController
-  before_filter :set_zookeeper, :only => [:index]
   before_filter :current_zookeeper, :only => [:index, :create]
   before_filter :zookeepers, :only => :index
   before_filter :clean_column_data, :only => [:save, :update]

@@ -65,7 +65,7 @@ $(document).ready(function(){
 	var request_data = function(id, req_data){
 		$.ajax({
 			url: Routes.stats_hdfs_path(id),
-			type: 'PUT',
+			type: 'GET',
 			data: req_data,
 			success: function(data){
 				if (data.length <= 0){

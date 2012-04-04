@@ -2,6 +2,7 @@ class ZookeepersController < ApplicationController
 
   before_filter :zookeepers, :only => :show
   before_filter :set_zookeeper, :except => [:index, :dashboard]
+  before_filter :current_zookeeper, :only => [:show, :destroy_shard, :destroy_controller, :destroy_cluster, :destroy_zookeeper]
 
   QUERY = "
     select
@@ -69,22 +70,25 @@ class ZookeepersController < ApplicationController
   end
 
   def destroy_shard
-    Shard.destroy(params[:shard_id])
+    shard = @current_zookeeper.shards.find_by_id(params[:shard_id])
+    shard.destroy unless shard.nil?
     redirect_to :zookeeper
   end
   
   def destroy_cluster
-    Cluster.destroy(params[:cluster_id])
+    cluster = @current_zookeeper.clusters.find_by_id(params[:cluster_id])
+    cluster.destroy unless cluster.nil?
     redirect_to :zookeeper
   end
 
   def destroy_controller
-    Controller.destroy(params[:controller_id])
+    controller = @current_zookeeper.controllers.find_by_id(params[:controller_id])
+    controller.destroy unless controller.nil?
     redirect_to :zookeeper
   end
   
   def destroy_zookeeper
-    Zookeeper.destroy(params[:id])
+    @current_zookeeper.delete
     redirect_to :zookeeper
   end
 end

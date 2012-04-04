@@ -25,7 +25,7 @@
             -if can? :destroy_zookeeper, :zookeepers
               %tr
                 %td{:colspan => 2}
-                  =link_to 'Remove Zookeeper', destroy_zookeeper_path(@zookeeper), :method => :delete, :confirm=>'Are you sure you want to remove this zookeeper?'
+                  =link_to 'Remove Zookeeper', zookeeper_path(@zookeeper), :method => :delete, :confirm=>'Are you sure you want to remove this zookeeper?'
       #blur
         %h2 Blur Status
         .row-fluid
@@ -51,7 +51,7 @@
                         - else
                           .status.btn-danger
                             Offline
-                          = link_to 'Forget Offline Node', destroy_controller_path(@zookeeper, controller), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
+                          = link_to 'Forget Offline Node', destroy_controller_zookeeper_path(@zookeeper, controller), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
               - else
                 %h3 Controllers
                 #controllers-placeholder
@@ -71,7 +71,7 @@
                       %li
                         = "#{cluster.name}#{cluster.safe_mode ? " (safe mode)" :""}"
                         -if can? :destroy_cluster, :zookeepers
-                          =link_to 'Remove Cluster', destroy_cluster_path(@zookeeper, cluster.id), :method=>:delete, :confirm => 'Are you sure you want to remove this cluster?'
+                          =link_to 'Remove Cluster', destroy_cluster_zookeeper_path(@zookeeper, cluster.id), :method=>:delete, :confirm => 'Are you sure you want to remove this cluster?'
                         %ul
                           - cluster.shards.sort_by{|s| [s.status, s.node_name]}.each do |shard|
                             %li
@@ -84,7 +84,7 @@
                               - else
                                 .status.btn-danger
                                   Offline
-                                = link_to 'Forget Offline Node', destroy_shard_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
+                                = link_to 'Forget Offline Node', destroy_shard_zookeeper_path(@zookeeper, shard), :method=>:delete, :confirm=>'Are you sure you want to forget this node?'
               - else
                 %h3 Shards
                 %p Not Available

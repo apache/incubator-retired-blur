@@ -10,7 +10,7 @@
 				var Zookeeper = {};
 				Zookeeper.instances = #{@zookeepers.collect{|z| {:id=>z.id, :name=>z.name}}.to_json}
 		:javascript
-			var CurrentZookeeper = #{session[:current_zookeeper_id]};
+			var CurrentZookeeper = #{session[:current_zookeeper_id] || 'null'};
 		%title
 			= yield(:title)
 			| Blur Admin
@@ -53,7 +53,7 @@
 									%b.caret
 								%ul.dropdown-menu
 									%li{:class => controller == 'hdfs' && 'active'}
-										= link_to 'HDFS File Browser', hdfs_path
+										= link_to 'HDFS File Browser', hdfs_index_path
 									%li{:class => controller == 'hdfs_metrics' && 'active'}
 										= link_to 'HDFS Metrics', hdfs_metrics_path
 							- if can? :index, :users

@@ -42,7 +42,7 @@ $(document).ready(function(){
       if (Zookeeper.instances.length === 0){
         alert('There are no Zookeeper Instances registered yet.  This page will not work until then.');
         return false;
-      } else if (Zookeeper.instances.length === 1 || CurrentZookeeper !=== null){
+      } else if (Zookeeper.instances.length === 1 || CurrentZookeeper !== null){
         return;
       } else {
         var select_box = "<div style='text-align:center'><select id='zookeeper_selector' style='font-size: 20px'><option value=''></option>";
@@ -55,14 +55,18 @@ $(document).ready(function(){
           title: 'Select a Zookeeper Instance to use:',
           shown: function(){
             $('#zookeeper_selector').change(function(){
-              window.location = window.location + '/zookeepers/' + $(this).val() + $(self).attr('data-url-extension')
-              return false;
+              window.location = window.location.href + 'zookeepers/' + $(this).val() + ($(self).attr('data-url-extension') || '');
             });
           }
         });
+        return false;
       }
     });
   }
+
+  $('#zookeeper_id').change(function(){
+    window.location = window.location.href.replace(/zookeepers\/\d/, 'zookeepers/' + $(this).val());
+  });
 
   $('.dropdown-toggle').dropdown();
 });
